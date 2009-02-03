@@ -46,7 +46,7 @@
    </bean>
 
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
-      <depends>QueueSettingsDeployer</depends>
+      <depends>AddressSettingsDeployer</depends>
       <property name="storageManager">
          <inject bean="StorageManager"/>
       </property>
@@ -95,7 +95,7 @@
             <inject bean="MessagingServer" property="storageManager"/>
          </parameter>
          <parameter>
-            <inject bean="MessagingServer" property="queueSettingsRepository"/>
+            <inject bean="MessagingServer" property="addressSettingsRepository"/>
          </parameter>
          <parameter>
             <inject bean="JMSManagementService"/>
@@ -117,13 +117,13 @@
       </property>
    </bean>
 
-   <bean name="QueueSettingsDeployer" class="org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer">
+   <bean name="AddressSettingsDeployer" class="org.jboss.messaging.core.deployers.impl.AddressSettingsDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>
          </parameter>
          <parameter>
-            <inject bean="MessagingServer" property="queueSettingsRepository" state="Configured"/>
+            <inject bean="MessagingServer" property="addressSettingsRepository" state="Configured"/>
          </parameter>
       </constructor>
    </bean>

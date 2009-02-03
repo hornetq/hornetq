@@ -57,7 +57,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -78,7 +78,7 @@ public class QueueControlTest extends TestCase
 
    private PostOffice postOffice;
 
-   private HierarchicalRepository<QueueSettings> repository;
+   private HierarchicalRepository<AddressSettings> repository;
 
    private MessageCounter messageCounter;
 
@@ -253,7 +253,7 @@ public class QueueControlTest extends TestCase
       final String dlqName = randomString();
 
       expect(queue.getName()).andReturn(queueName);
-      QueueSettings queueSettings = new QueueSettings()
+      AddressSettings addressSettings = new AddressSettings()
       {
          @Override
          public SimpleString getDeadLetterAddress()
@@ -261,7 +261,7 @@ public class QueueControlTest extends TestCase
             return new SimpleString(dlqName);
          }
       };
-      expect(repository.getMatch(queueName.toString())).andReturn(queueSettings);
+      expect(repository.getMatch(queueName.toString())).andReturn(addressSettings);
 
       replayMockedAttributes();
 
@@ -276,7 +276,7 @@ public class QueueControlTest extends TestCase
       final String expiryQueueName = randomString();
 
       expect(queue.getName()).andReturn(queueName);
-      QueueSettings queueSettings = new QueueSettings()
+      AddressSettings addressSettings = new AddressSettings()
       {
          @Override
          public SimpleString getExpiryAddress()
@@ -284,7 +284,7 @@ public class QueueControlTest extends TestCase
             return new SimpleString(expiryQueueName);
          }
       };
-      expect(repository.getMatch(queueName.toString())).andReturn(queueSettings);
+      expect(repository.getMatch(queueName.toString())).andReturn(addressSettings);
 
       replayMockedAttributes();
 

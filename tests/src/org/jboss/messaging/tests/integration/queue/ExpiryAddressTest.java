@@ -35,7 +35,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
@@ -55,9 +55,9 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString ea = new SimpleString("EA");
       SimpleString qName = new SimpleString("q1");
       SimpleString eq = new SimpleString("EA1");
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setExpiryAddress(ea);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(ea);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       clientSession.createQueue(ea, eq, null, false, false);
       clientSession.createQueue(qName, qName, null, false, false);
       
@@ -90,9 +90,9 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString qName = new SimpleString("q1");
       SimpleString eq = new SimpleString("EQ1");
       SimpleString eq2 = new SimpleString("EQ2");
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setExpiryAddress(ea);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(ea);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       clientSession.createQueue(ea, eq, null, false, false);
       clientSession.createQueue(ea, eq2, null, false, false);
       clientSession.createQueue(qName, qName, null, false, false);
@@ -173,9 +173,9 @@ public class ExpiryAddressTest extends UnitTestCase
       final int NUM_MESSAGES = 5;
       SimpleString ea = new SimpleString("DLA");
       SimpleString qName = new SimpleString("q1");
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setExpiryAddress(ea);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(ea);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       SimpleString eq = new SimpleString("EA1");
       clientSession.createQueue(ea, eq, null, false, false);
       clientSession.createQueue(qName, qName, null, false, false);

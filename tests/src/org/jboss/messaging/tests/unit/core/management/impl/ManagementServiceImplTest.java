@@ -44,16 +44,14 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
-import org.jboss.messaging.core.management.impl.QueueControl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 
@@ -86,7 +84,7 @@ public class ManagementServiceImplTest extends TestCase
       expect(configuration.getManagementNotificationAddress()).andReturn(randomSimpleString());
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      HierarchicalRepository<AddressSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       QueueFactory queueFactory = createMock(QueueFactory.class);
       ResourceManager resourceManager = createMock(ResourceManager.class);
       RemotingService remotingService = createMock(RemotingService.class);
@@ -138,7 +136,7 @@ public class ManagementServiceImplTest extends TestCase
       expect(configuration.getManagementNotificationAddress()).andReturn(randomSimpleString());
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      HierarchicalRepository<AddressSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
       QueueFactory queueFactory = createMock(QueueFactory.class);
       ResourceManager resourceManager = createMock(ResourceManager.class);
       RemotingService remotingService = createMock(RemotingService.class);

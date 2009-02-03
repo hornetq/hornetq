@@ -42,7 +42,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
@@ -93,9 +93,9 @@ public class ExpiryRunnerTest extends UnitTestCase
    {
       ClientProducer producer = clientSession.createProducer(qName);
       clientSession.createQueue(qName2, qName2, null, false, false);
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setExpiryAddress(expiryAddress);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(qName2.toString(), queueSettings);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
       ClientProducer producer2 = clientSession.createProducer(qName2);
       int numMessages = 100;
       long expiration = System.currentTimeMillis();
@@ -191,9 +191,9 @@ public class ExpiryRunnerTest extends UnitTestCase
    public void testExpireToMultipleQueues() throws Exception
    {
       clientSession.createQueue(qName, qName2, null, false, false);
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setExpiryAddress(expiryAddress);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(qName2.toString(), queueSettings);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
       ClientProducer producer = clientSession.createProducer(qName);
       int numMessages = 100;
       long expiration = System.currentTimeMillis();
@@ -303,10 +303,10 @@ public class ExpiryRunnerTest extends UnitTestCase
       clientSession.createQueue(qName, qName, null, false, false);
       expiryAddress = new SimpleString("EA");
       expiryQueue = new SimpleString("expiryQ");
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setExpiryAddress(expiryAddress);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), queueSettings);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(qName2.toString(), queueSettings);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
       clientSession.createQueue(expiryAddress, expiryQueue, null, false, false);
    }
 

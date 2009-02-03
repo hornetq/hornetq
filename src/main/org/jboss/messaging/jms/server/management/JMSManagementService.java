@@ -28,7 +28,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -51,7 +51,7 @@ public interface JMSManagementService
                       String jndiBinding,
                       PostOffice postOffice,
                       StorageManager storageManager,
-                      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+                      HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception;
 
    void unregisterQueue(String name) throws Exception;
 
@@ -59,7 +59,7 @@ public interface JMSManagementService
                       String jndiBinding,
                       PostOffice postOffice,
                       StorageManager storageManager,
-                      HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception;
+                      HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception;
 
    void unregisterTopic(String name) throws Exception;
 

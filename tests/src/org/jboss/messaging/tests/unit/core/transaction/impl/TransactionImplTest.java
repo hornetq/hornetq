@@ -34,7 +34,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -50,14 +50,14 @@ public class TransactionImplTest extends UnitTestCase
 {
 	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
-   private final HierarchicalRepository<QueueSettings> queueSettings = 
-   	new HierarchicalObjectRepository<QueueSettings>();
+   private final HierarchicalRepository<AddressSettings> queueSettings =
+   	new HierarchicalObjectRepository<AddressSettings>();
 	
    protected void setUp() throws Exception
    {
    	super.setUp();
    	
-   	queueSettings.setDefault(new QueueSettings());
+   	queueSettings.setDefault(new AddressSettings());
    }
    
    public void testFoo()

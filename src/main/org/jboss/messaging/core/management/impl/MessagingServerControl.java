@@ -295,7 +295,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       SimpleString sName = new SimpleString(name);
       if (postOffice.getBinding(sName) == null)
       {
-         Queue queue = queueFactory.createQueue(-1, sName, null, true, false);
+         Queue queue = queueFactory.createQueue(-1, sAddress, sName, null, true, false);
          Binding binding = new LocalQueueBinding(sAddress, queue);
          storageManager.addQueueBinding(binding);
          postOffice.addBinding(binding);
@@ -314,7 +314,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
       if (postOffice.getBinding(sName) == null)
       {
-         Queue queue = queueFactory.createQueue(-1, sName, filter, durable, false);
+         Queue queue = queueFactory.createQueue(-1, sAddress, sName, filter, durable, false);
          Binding binding = new LocalQueueBinding(sAddress, queue);
          if (durable)
          {

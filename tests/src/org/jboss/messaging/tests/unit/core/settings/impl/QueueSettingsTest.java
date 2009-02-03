@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.unit.core.settings.impl;
 
 import junit.framework.TestCase;
 
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -34,115 +34,115 @@ public class QueueSettingsTest extends TestCase
 {
    public void testDefaults()
    {
-      QueueSettings queueSettings = new QueueSettings();
-      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
-      assertEquals(queueSettings.getDistributionPolicyClass(), null);
-      assertEquals(queueSettings.getDeadLetterAddress(), null);
-      assertEquals(queueSettings.isClustered(), Boolean.valueOf(false));
-      assertEquals(queueSettings.getExpiryAddress(), null);
-      assertEquals(queueSettings.getMaxDeliveryAttempts(), QueueSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS);
-      assertEquals(queueSettings.getMaxSizeBytes(), QueueSettings.DEFAULT_MAX_SIZE_BYTES);
-      assertEquals(queueSettings.getPageSizeBytes(), null);
-      assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), QueueSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT);
-      assertEquals(queueSettings.getRedeliveryDelay(), QueueSettings.DEFAULT_REDELIVER_DELAY);
+      AddressSettings addressSettings = new AddressSettings();
+      assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
+      assertEquals(addressSettings.getDistributionPolicyClass(), null);
+      assertEquals(addressSettings.getDeadLetterAddress(), null);
+      assertEquals(addressSettings.isClustered(), Boolean.valueOf(false));
+      assertEquals(addressSettings.getExpiryAddress(), null);
+      assertEquals(addressSettings.getMaxDeliveryAttempts(), AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS);
+      assertEquals(addressSettings.getMaxSizeBytes(), AddressSettings.DEFAULT_MAX_SIZE_BYTES);
+      assertEquals(addressSettings.getPageSizeBytes(), null);
+      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT);
+      assertEquals(addressSettings.getRedeliveryDelay(), AddressSettings.DEFAULT_REDELIVER_DELAY);
 
    }
 
    public void testSingleMerge()
    {
-      QueueSettings queueSettings = new QueueSettings();
-      QueueSettings queueSettingsToMerge = new QueueSettings();
-      queueSettingsToMerge.setClustered(true);
+      AddressSettings addressSettings = new AddressSettings();
+      AddressSettings addressSettingsToMerge = new AddressSettings();
+      addressSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
-      queueSettingsToMerge.setDeadLetterAddress(DLQ);
-      queueSettingsToMerge.setExpiryAddress(exp);
-      queueSettingsToMerge.setMaxDeliveryAttempts(1000);
-      queueSettingsToMerge.setDropMessagesWhenFull(true);
-      queueSettingsToMerge.setMaxSizeBytes(1001);
-      queueSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
-      queueSettingsToMerge.setRedeliveryDelay((long)1003);
-      queueSettingsToMerge.setPageSizeBytes(1004);
-      queueSettings.merge(queueSettingsToMerge);
-      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
-      assertEquals(queueSettings.getDistributionPolicyClass(), null);
-      assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
-      assertEquals(queueSettings.getDeadLetterAddress(), DLQ);
-      assertEquals(queueSettings.getExpiryAddress(), exp);
-      assertEquals(queueSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
-      assertEquals(queueSettings.getMaxSizeBytes(), Integer.valueOf(1001));
-      assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
-      assertEquals(queueSettings.getRedeliveryDelay(), Long.valueOf(1003));
-      assertEquals(queueSettings.getPageSizeBytes(), (Integer)1004);
-      assertTrue(queueSettings.isDropMessagesWhenFull());
+      addressSettingsToMerge.setDeadLetterAddress(DLQ);
+      addressSettingsToMerge.setExpiryAddress(exp);
+      addressSettingsToMerge.setMaxDeliveryAttempts(1000);
+      addressSettingsToMerge.setDropMessagesWhenFull(true);
+      addressSettingsToMerge.setMaxSizeBytes(1001);
+      addressSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
+      addressSettingsToMerge.setRedeliveryDelay((long)1003);
+      addressSettingsToMerge.setPageSizeBytes(1004);
+      addressSettings.merge(addressSettingsToMerge);
+      assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
+      assertEquals(addressSettings.getDistributionPolicyClass(), null);
+      assertEquals(addressSettings.isClustered(), Boolean.valueOf(true));
+      assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
+      assertEquals(addressSettings.getExpiryAddress(), exp);
+      assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
+      assertEquals(addressSettings.getMaxSizeBytes(), Integer.valueOf(1001));
+      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
+      assertEquals(addressSettings.getRedeliveryDelay(), Long.valueOf(1003));
+      assertEquals(addressSettings.getPageSizeBytes(), (Integer)1004);
+      assertTrue(addressSettings.isDropMessagesWhenFull());
    }
 
    public void testMultipleMerge()
    {
-      QueueSettings queueSettings = new  QueueSettings();
-      QueueSettings queueSettingsToMerge = new QueueSettings();
-      queueSettingsToMerge.setClustered(true);
+      AddressSettings addressSettings = new AddressSettings();
+      AddressSettings addressSettingsToMerge = new AddressSettings();
+      addressSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
-      queueSettingsToMerge.setDeadLetterAddress(DLQ);
-      queueSettingsToMerge.setExpiryAddress(exp);
-      queueSettingsToMerge.setMaxDeliveryAttempts(1000);
-      queueSettingsToMerge.setMaxSizeBytes(1001);
-      queueSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
-      queueSettings.merge(queueSettingsToMerge);
+      addressSettingsToMerge.setDeadLetterAddress(DLQ);
+      addressSettingsToMerge.setExpiryAddress(exp);
+      addressSettingsToMerge.setMaxDeliveryAttempts(1000);
+      addressSettingsToMerge.setMaxSizeBytes(1001);
+      addressSettingsToMerge.setMessageCounterHistoryDayLimit(1002);
+      addressSettings.merge(addressSettingsToMerge);
 
-      QueueSettings queueSettingsToMerge2 = new QueueSettings();
-      queueSettingsToMerge2.setClustered(true);
+      AddressSettings addressSettingsToMerge2 = new AddressSettings();
+      addressSettingsToMerge2.setClustered(true);
       SimpleString exp2 = new SimpleString("testExpiryQueue2");
-      queueSettingsToMerge2.setExpiryAddress(exp2);
-      queueSettingsToMerge2.setMaxSizeBytes(2001);
-      queueSettingsToMerge2.setRedeliveryDelay((long)2003);
-      queueSettings.merge(queueSettingsToMerge2);
+      addressSettingsToMerge2.setExpiryAddress(exp2);
+      addressSettingsToMerge2.setMaxSizeBytes(2001);
+      addressSettingsToMerge2.setRedeliveryDelay((long)2003);
+      addressSettings.merge(addressSettingsToMerge2);
 
-      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
-      assertEquals(queueSettings.getDistributionPolicyClass(), null);
-      assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
-      assertEquals(queueSettings.getDeadLetterAddress(), DLQ);
-      assertEquals(queueSettings.getExpiryAddress(), exp);
-      assertEquals(queueSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
-      assertEquals(queueSettings.getMaxSizeBytes(), Integer.valueOf(1001));
-      assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
-      assertEquals(queueSettings.getRedeliveryDelay(), Long.valueOf(2003));
+      assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
+      assertEquals(addressSettings.getDistributionPolicyClass(), null);
+      assertEquals(addressSettings.isClustered(), Boolean.valueOf(true));
+      assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
+      assertEquals(addressSettings.getExpiryAddress(), exp);
+      assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
+      assertEquals(addressSettings.getMaxSizeBytes(), Integer.valueOf(1001));
+      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
+      assertEquals(addressSettings.getRedeliveryDelay(), Long.valueOf(2003));
    }
 
    public void testMultipleMergeAll()
    {
-      QueueSettings queueSettings = new  QueueSettings();
-      QueueSettings queueSettingsToMerge = new QueueSettings();
-      queueSettingsToMerge.setClustered(true);
+      AddressSettings addressSettings = new AddressSettings();
+      AddressSettings addressSettingsToMerge = new AddressSettings();
+      addressSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
-      queueSettingsToMerge.setDeadLetterAddress(DLQ);
-      queueSettingsToMerge.setExpiryAddress(exp);
-      queueSettingsToMerge.setMaxSizeBytes(1001);
-      queueSettingsToMerge.setRedeliveryDelay((long)1003);
-      queueSettings.merge(queueSettingsToMerge);
+      addressSettingsToMerge.setDeadLetterAddress(DLQ);
+      addressSettingsToMerge.setExpiryAddress(exp);
+      addressSettingsToMerge.setMaxSizeBytes(1001);
+      addressSettingsToMerge.setRedeliveryDelay((long)1003);
+      addressSettings.merge(addressSettingsToMerge);
 
-      QueueSettings queueSettingsToMerge2 = new QueueSettings();
-      queueSettingsToMerge2.setClustered(false);
+      AddressSettings addressSettingsToMerge2 = new AddressSettings();
+      addressSettingsToMerge2.setClustered(false);
       SimpleString exp2 = new SimpleString("testExpiryQueue2");
       SimpleString DLQ2 = new SimpleString("testDlq2");
-      queueSettingsToMerge2.setExpiryAddress(exp2);
-      queueSettingsToMerge2.setDeadLetterAddress(DLQ2);
-      queueSettingsToMerge2.setMaxDeliveryAttempts(2000);
-      queueSettingsToMerge2.setMaxSizeBytes(2001);
-      queueSettingsToMerge2.setMessageCounterHistoryDayLimit(2002);
-      queueSettingsToMerge2.setRedeliveryDelay((long)2003);
-      queueSettings.merge(queueSettingsToMerge2);
+      addressSettingsToMerge2.setExpiryAddress(exp2);
+      addressSettingsToMerge2.setDeadLetterAddress(DLQ2);
+      addressSettingsToMerge2.setMaxDeliveryAttempts(2000);
+      addressSettingsToMerge2.setMaxSizeBytes(2001);
+      addressSettingsToMerge2.setMessageCounterHistoryDayLimit(2002);
+      addressSettingsToMerge2.setRedeliveryDelay((long)2003);
+      addressSettings.merge(addressSettingsToMerge2);
 
-      assertEquals(queueSettings.getDistributionPolicy().getClass(), QueueSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
-      assertEquals(queueSettings.getDistributionPolicyClass(), null);
-      assertEquals(queueSettings.isClustered(), Boolean.valueOf(true));
-      assertEquals(queueSettings.getDeadLetterAddress(), DLQ);
-      assertEquals(queueSettings.getExpiryAddress(), exp);
-      assertEquals(queueSettings.getMaxDeliveryAttempts(), Integer.valueOf(2000));
-      assertEquals(queueSettings.getMaxSizeBytes(), Integer.valueOf(1001));
-      assertEquals(queueSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(2002));
-      assertEquals(queueSettings.getRedeliveryDelay(), Long.valueOf(1003));
+      assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
+      assertEquals(addressSettings.getDistributionPolicyClass(), null);
+      assertEquals(addressSettings.isClustered(), Boolean.valueOf(true));
+      assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
+      assertEquals(addressSettings.getExpiryAddress(), exp);
+      assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(2000));
+      assertEquals(addressSettings.getMaxSizeBytes(), Integer.valueOf(1001));
+      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(2002));
+      assertEquals(addressSettings.getRedeliveryDelay(), Long.valueOf(1003));
    }
 }

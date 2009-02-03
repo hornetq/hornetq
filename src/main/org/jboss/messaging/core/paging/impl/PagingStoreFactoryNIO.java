@@ -46,7 +46,7 @@ import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
@@ -111,7 +111,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       parentExecutor.awaitTermination(30, TimeUnit.SECONDS);
    }
 
-   public synchronized PagingStore newStore(final SimpleString destinationName, final QueueSettings settings) throws Exception
+   public synchronized PagingStore newStore(final SimpleString destinationName, final AddressSettings settings) throws Exception
    {
 
       return new PagingStoreImpl(pagingManager,
@@ -169,7 +169,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       this.postOffice = postOffice;
    }
 
-   public List<PagingStore> reloadStores(final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+   public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception
    {
       File pageDirectory = new File(directory);
 
@@ -213,7 +213,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
             SequentialFileFactory factory = newFileFactory(guid);
 
-            QueueSettings settings = queueSettingsRepository.getMatch(destinationName.toString());
+            AddressSettings settings = queueSettingsRepository.getMatch(destinationName.toString());
 
             PagingStore store = new PagingStoreImpl(pagingManager,
                                                     storageManager,

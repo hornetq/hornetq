@@ -39,7 +39,7 @@ import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
@@ -84,7 +84,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -138,7 +138,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          messagingService.stop();
 
-         messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+         messagingService = createService(true, config, new HashMap<String, AddressSettings>());
          messagingService.start();
 
          sf = createInVMFactory();
@@ -212,7 +212,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -352,7 +352,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -415,7 +415,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
             messagingService.stop();
 
-            messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+            messagingService = createService(true, config, new HashMap<String, AddressSettings>());
             messagingService.start();
 
             sf = createInVMFactory();
@@ -484,7 +484,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -563,7 +563,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -676,9 +676,9 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
       config.setPagingDefaultSize(10 * 1024);
 
-      HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
+      HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
-      QueueSettings set = new QueueSettings();
+      AddressSettings set = new AddressSettings();
       set.setDropMessagesWhenFull(true);
       if (!global)
       {
@@ -842,7 +842,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -886,7 +886,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          messagingService.stop();
 
-         messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+         messagingService = createService(true, config, new HashMap<String, AddressSettings>());
          messagingService.start();
 
          sf = createInVMFactory();

@@ -27,9 +27,9 @@ import junit.framework.TestCase;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.deployers.impl.QueueSettingsDeployer;
+import org.jboss.messaging.core.deployers.impl.AddressSettingsDeployer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.XMLUtil;
 
@@ -38,7 +38,7 @@ import org.jboss.messaging.util.XMLUtil;
  */
 public class QueueSettingsDeployerTest extends TestCase
 {
-   private String conf = "<queue-settings match=\"queues.*\">\n" +
+   private String conf = "<address-settings match=\"queues.*\">\n" +
            "      <manageConfirmations>false</manageConfirmations>\n" +
            "      <dead-letter-address>DLQtest</dead-letter-address>\n" +
            "      <expiry-address>ExpiryQueueTest</expiry-address>\n" +
@@ -46,48 +46,48 @@ public class QueueSettingsDeployerTest extends TestCase
            "      <max-size-bytes>-100</max-size-bytes>\n" +
            "      <distribution-policy-class>org.jboss.messaging.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>\n" +
            "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>\n" +
-           "   </queue-settings>";
+           "   </address-settings>";
 
-   private QueueSettingsDeployer queueSettingsDeployer;
+   private AddressSettingsDeployer addressSettingsDeployer;
 
-   private HierarchicalRepository<QueueSettings> repository;
+   private HierarchicalRepository<AddressSettings> repository;
 
    protected void setUp() throws Exception
    {
       repository = EasyMock.createStrictMock(HierarchicalRepository.class);
       DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
-      queueSettingsDeployer = new QueueSettingsDeployer(deploymentManager, repository);
+      addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, repository);
    }
 
    public void testDeploy() throws Exception
    {
-      final QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setClustered(false);
-      queueSettings.setRedeliveryDelay((long) 100);
-      queueSettings.setMaxSizeBytes(-100);
-      queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");
-      queueSettings.setMessageCounterHistoryDayLimit(1000);
-      queueSettings.setDeadLetterAddress(new SimpleString("DLQtest"));
-      queueSettings.setExpiryAddress(new SimpleString("ExpiryQueueTest"));
+      final AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setClustered(false);
+      addressSettings.setRedeliveryDelay((long) 100);
+      addressSettings.setMaxSizeBytes(-100);
+      addressSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");
+      addressSettings.setMessageCounterHistoryDayLimit(1000);
+      addressSettings.setDeadLetterAddress(new SimpleString("DLQtest"));
+      addressSettings.setExpiryAddress(new SimpleString("ExpiryQueueTest"));
 
-      repository.addMatch(EasyMock.eq("queues.*"),(QueueSettings) EasyMock.anyObject());
+      repository.addMatch(EasyMock.eq("queues.*"),(AddressSettings) EasyMock.anyObject());
       EasyMock.expectLastCall().andAnswer(new IAnswer<Object>()
       {
          public Object answer() throws Throwable
          {
-            QueueSettings q = (QueueSettings) EasyMock.getCurrentArguments()[1];
+            AddressSettings q = (AddressSettings) EasyMock.getCurrentArguments()[1];
             assertFalse(q.isClustered());
-            assertEquals(q.getRedeliveryDelay(), queueSettings.getRedeliveryDelay());
-            assertEquals(q.getMaxSizeBytes(), queueSettings.getMaxSizeBytes());
-            assertEquals(q.getDistributionPolicyClass(), queueSettings.getDistributionPolicyClass());
-            assertEquals(q.getMessageCounterHistoryDayLimit(), queueSettings.getMessageCounterHistoryDayLimit());
-            assertEquals(q.getDeadLetterAddress(), queueSettings.getDeadLetterAddress());
-            assertEquals(q.getExpiryAddress(), queueSettings.getExpiryAddress());
+            assertEquals(q.getRedeliveryDelay(), addressSettings.getRedeliveryDelay());
+            assertEquals(q.getMaxSizeBytes(), addressSettings.getMaxSizeBytes());
+            assertEquals(q.getDistributionPolicyClass(), addressSettings.getDistributionPolicyClass());
+            assertEquals(q.getMessageCounterHistoryDayLimit(), addressSettings.getMessageCounterHistoryDayLimit());
+            assertEquals(q.getDeadLetterAddress(), addressSettings.getDeadLetterAddress());
+            assertEquals(q.getExpiryAddress(), addressSettings.getExpiryAddress());
             return null;
          }
       });
       EasyMock.replay(repository);
-      queueSettingsDeployer.deploy(XMLUtil.stringToElement(conf));
+      addressSettingsDeployer.deploy(XMLUtil.stringToElement(conf));
       EasyMock.verify(repository);
    }
 
@@ -95,7 +95,7 @@ public class QueueSettingsDeployerTest extends TestCase
    {
       repository.removeMatch("queues.*");
       EasyMock.replay(repository);
-      queueSettingsDeployer.undeploy(XMLUtil.stringToElement(conf));
+      addressSettingsDeployer.undeploy(XMLUtil.stringToElement(conf));
       EasyMock.verify(repository);
    }
 

@@ -91,7 +91,7 @@ import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
@@ -149,7 +149,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final StorageManager storageManager;
 
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
 
    private final ResourceManager resourceManager;
 
@@ -199,7 +199,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final RemotingConnection remotingConnection,
                             final StorageManager storageManager,
                             final PostOffice postOffice,
-                            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                            final HierarchicalRepository<AddressSettings> queueSettingsRepository,
                             final ResourceManager resourceManager,
                             final SecurityStore securityStore,
                             final Executor executor,
@@ -1386,7 +1386,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             // We consume a copy of the queue - TODO - this is a temporary measure
             // and will disappear once we can provide a proper iterator on the queue
 
-            theQueue = queueFactory.createQueue(-1, name, filter, false, true);
+            theQueue = queueFactory.createQueue(-1, binding.getAddress(), name, filter, false, true);
 
             // There's no need for any special locking since the list method is synchronized
             List<MessageReference> refs = ((Queue)binding.getBindable()).list(filter);
@@ -1490,7 +1490,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             filter = new FilterImpl(filterString);
          }
 
-         final Queue queue = queueFactory.createQueue(-1, name, filter, durable, temporary);
+         final Queue queue = queueFactory.createQueue(-1, address, name, filter, durable, temporary);
 
          binding = new LocalQueueBinding(address, queue);
 

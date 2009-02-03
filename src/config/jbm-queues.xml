@@ -65,51 +65,55 @@
       <permission type="write" roles="guest,def"/>
    </security>
 
-   <queue-settings match="queuejms.QueueWithOwnDLQAndExpiryQueue">
+   <address-settings match="queuejms.QueueWithOwnDLQAndExpiryQueue">
       <dead-letter-address>queuejms.PrivateDLQ</dead-letter-address>
       <expiry-address>queuejms.PrivateExpiryQueue</expiry-address>
-   </queue-settings>
+   </address-settings>
 
-   <queue-settings match="topicjms.TopicWithOwnDLQAndExpiryQueue">
+   <address-settings match="topicjms.TopicWithOwnDLQAndExpiryQueue">
       <dead-letter-address>queuejms.PrivateDLQ</dead-letter-address>
       <expiry-address>queuejms.PrivateExpiryQueue</expiry-address>
-   </queue-settings>
+   </address-settings>
 
-   <queue-settings match="queuejms.QueueWithOwnRedeliveryDelay">
+   <address-settings match="queuejms.QueueWithOwnRedeliveryDelay">
       <redelivery-delay>5000</redelivery-delay>
-   </queue-settings>
+   </address-settings>
 
-   <queue-settings match="topicjms.TopicWithOwnRedeliveryDelay">
+   <address-settings match="topicjms.TopicWithOwnRedeliveryDelay">
       <redelivery-delay>5000</redelivery-delay>
-   </queue-settings>
+   </address-settings>
 
-   <queue-settings match="queuejms.testDistributedQueue">
+   <address-settings match="queuejms.testDistributedQueue">
       <clustered>true</clustered>
-   </queue-settings>
+   </address-settings>
 
-   <queue-settings match="topicjms.testDistributedTopic">
+   <address-settings match="topicjms.testDistributedTopic">
       <clustered>true</clustered>
-   </queue-settings>
+   </address-settings>
 
-   <queue-settings match="queuejms.testPerfQueue">
+   <address-settings match="queuejms.testPerfQueue">
       <clustered>false</clustered>
-   </queue-settings>
+   </address-settings>
 
-   <queue-settings match="queuejms.MyQueue">
+   <address-settings match="queuejms.MyQueue">
       <max-size-bytes>-1</max-size-bytes>
       <page-size-bytes>10485760</page-size-bytes>
       <drop-messages-when-full>false</drop-messages-when-full>
-   </queue-settings>
+   </address-settings>
 
-   <queue-settings match="queuejms.testGroupQueue">
+   <address-settings match="queuejms.testGroupQueue">
       <max-size-bytes>-1</max-size-bytes>
       <page-size-bytes>10485760</page-size-bytes>
       <drop-messages-when-full>false</drop-messages-when-full>
       <distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor</distribution-policy-class>
-   </queue-settings>
+   </address-settings>
+
+   <address-settings match="topicjms.testSoloTopic">
+      <solo-queue>true</solo-queue>
+   </address-settings>
 
    <!--default for catch all-->
-   <queue-settings match="*">
+   <address-settings match="*">
       <clustered>false</clustered>
       <dead-letter-address>queuejms.DLQ</dead-letter-address>
       <expiry-address>queuejms.ExpiryQueue</expiry-address>
@@ -117,5 +121,5 @@
       <max-size-bytes>-1</max-size-bytes>
       <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributor</distribution-policy-class>
       <message-counter-history-day-limit>10</message-counter-history-day-limit>
-   </queue-settings>
+   </address-settings>
 </settings>

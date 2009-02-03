@@ -36,7 +36,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -117,7 +117,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                              final String jndiBinding,
                              final PostOffice postOffice,
                              final StorageManager storageManager,
-                             HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+                             HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception
    {
       MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
       MessageCounter counter = new MessageCounter(queue.getName(),
@@ -149,7 +149,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                              final String jndiBinding,
                              final PostOffice postOffice,
                              final StorageManager storageManager,
-                             final HierarchicalRepository<QueueSettings> queueSettingsRepository) throws Exception
+                             final HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception
    {
       ObjectName objectName = getJMSTopicObjectName(topic.getTopicName());
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice);

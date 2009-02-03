@@ -80,7 +80,7 @@ import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.SimpleString;
@@ -116,7 +116,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
-   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private HierarchicalRepository<AddressSettings> queueSettingsRepository;
 
    private MessagingServerControl managedServer;
 
@@ -200,7 +200,7 @@ public class ManagementServiceImpl implements ManagementService
    public MessagingServerControlMBean registerServer(final PostOffice postOffice,
                                                      final StorageManager storageManager,
                                                      final Configuration configuration,
-                                                     final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                                     final HierarchicalRepository<AddressSettings> queueSettingsRepository,
                                                      final HierarchicalRepository<Set<Role>> securityRepository,
                                                      final ResourceManager resourceManager,
                                                      final RemotingService remotingService,

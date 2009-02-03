@@ -39,7 +39,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
@@ -111,7 +111,7 @@ public class ServiceTestBase extends UnitTestCase
 
    protected MessagingService createService(final boolean realFiles,
                                             final Configuration configuration,
-                                            final Map<String, QueueSettings> settings)
+                                            final Map<String, AddressSettings> settings)
    {
 
       MessagingService service;
@@ -125,9 +125,9 @@ public class ServiceTestBase extends UnitTestCase
          service = Messaging.newNullStorageMessagingService(configuration);
       }
 
-      for (Map.Entry<String, QueueSettings> setting : settings.entrySet())
+      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
       {
-         service.getServer().getQueueSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         service.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
 
       return service;
@@ -135,12 +135,12 @@ public class ServiceTestBase extends UnitTestCase
 
    protected MessagingService createService(final boolean realFiles)
    {
-      return createService(realFiles, createDefaultConfig(), new HashMap<String, QueueSettings>());
+      return createService(realFiles, createDefaultConfig(), new HashMap<String, AddressSettings>());
    }
 
    protected MessagingService createService(final boolean realFiles, final Configuration configuration)
    {
-      return createService(realFiles, configuration, new HashMap<String, QueueSettings>());
+      return createService(realFiles, configuration, new HashMap<String, AddressSettings>());
    }
 
    protected MessagingService createClusteredServiceWithParams(final int index,
@@ -149,7 +149,7 @@ public class ServiceTestBase extends UnitTestCase
    {
       return createService(realFiles,
                            createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
-                           new HashMap<String, QueueSettings>());
+                           new HashMap<String, AddressSettings>());
    }
 
    protected Configuration createDefaultConfig()

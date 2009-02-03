@@ -45,7 +45,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -102,7 +102,7 @@ public class JMSManagementServiceImplTest extends TestCase
       expect(coreQueue.isDurable()).andReturn(true);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      HierarchicalRepository<AddressSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       ManagementService managementService = createMock(ManagementService.class);
       MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
@@ -129,7 +129,7 @@ public class JMSManagementServiceImplTest extends TestCase
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
       StorageManager storageManager = createMock(StorageManager.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+      HierarchicalRepository<AddressSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
 
       ManagementService managementService = createMock(ManagementService.class);
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));

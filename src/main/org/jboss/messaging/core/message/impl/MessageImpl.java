@@ -70,6 +70,8 @@ public abstract class MessageImpl implements Message
    public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_JBM_ROUTE_TO");
    
    public static final SimpleString HDR_FROM_CLUSTER = new SimpleString("_JBM_FROM_CLUSTER");
+
+   public static final SimpleString HDR_SOLE_MESSAGE = new SimpleString("_JBM_SOLO_MESSAGE");
       
    // Attributes ----------------------------------------------------
 

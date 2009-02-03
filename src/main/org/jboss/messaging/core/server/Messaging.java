@@ -84,7 +84,33 @@ public class Messaging
 
       return new MessagingServiceImpl(server, storageManager, remotingService);
    }
-   
+
+   public static MessagingServiceImpl newMessagingService(final Configuration config, StorageManager storageManager)
+   {
+      RemotingService remotingService = new RemotingServiceImpl(config);
+
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
+                                                                      config.isJMXManagementEnabled());
+
+      remotingService.setManagementService(managementService);
+
+      MessagingServer server = new MessagingServerImpl();
+
+      server.setConfiguration(config);
+
+      server.setStorageManager(storageManager);
+
+      server.setRemotingService(remotingService);
+
+      server.setSecurityManager(securityManager);
+
+      server.setManagementService(managementService);
+
+      return new MessagingServiceImpl(server, storageManager, remotingService);
+   }
+
    public static MessagingServiceImpl newNullStorageMessagingService(final Configuration config, MBeanServer mbeanServer)
    {
       StorageManager storageManager = new NullStorageManager();

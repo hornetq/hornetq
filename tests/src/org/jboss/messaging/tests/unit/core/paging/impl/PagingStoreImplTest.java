@@ -35,7 +35,7 @@ import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.util.SimpleString;
 
@@ -69,7 +69,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                   factory,
                                                   null,
                                                   destinationTestName,
-                                                  new QueueSettings(),
+                                                  new AddressSettings(),
                                                   executor);
 
       storeImpl.start();
@@ -97,7 +97,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                   factory,
                                                   storeFactory,
                                                   destinationTestName,
-                                                  new QueueSettings(),
+                                                  new AddressSettings(),
                                                   executor);
 
       storeImpl.start();
@@ -131,7 +131,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                       factory,
                                       null,
                                       destinationTestName,
-                                      new QueueSettings(),
+                                      new AddressSettings(),
                                       executor);
 
       storeImpl.start();
@@ -156,7 +156,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                   factory,
                                                   storeFactory,
                                                   destinationTestName,
-                                                  new QueueSettings(),
+                                                  new AddressSettings(),
                                                   executor);
 
       storeImpl.start();
@@ -223,7 +223,7 @@ public class PagingStoreImplTest extends PagingStoreTestBase
                                                            factory,
                                                            storeFactory,
                                                            destinationTestName,
-                                                           new QueueSettings(),
+                                                           new AddressSettings(),
                                                            executor);
 
       storeImpl.start();

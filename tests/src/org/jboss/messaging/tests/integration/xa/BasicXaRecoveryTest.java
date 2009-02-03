@@ -37,7 +37,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -53,7 +53,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 {
    private static Logger log = Logger.getLogger(BasicXaRecoveryTest.class);
 
-   private final Map<String, QueueSettings> queueSettings = new HashMap<String, QueueSettings>();
+   private final Map<String, AddressSettings> queueSettings = new HashMap<String, AddressSettings>();
 
    private MessagingService messagingService;
 
@@ -246,11 +246,11 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       SimpleString pageQueue = new SimpleString("pagequeue");
 
-      QueueSettings pageQueueSettings = new QueueSettings();
-      pageQueueSettings.setMaxSizeBytes(100 * 1024);
-      pageQueueSettings.setPageSizeBytes(10 * 1024);
+      AddressSettings pageAddressSettings = new AddressSettings();
+      pageAddressSettings.setMaxSizeBytes(100 * 1024);
+      pageAddressSettings.setPageSizeBytes(10 * 1024);
 
-      queueSettings.put(pageQueue.toString(), pageQueueSettings);
+      queueSettings.put(pageQueue.toString(), pageAddressSettings);
 
       addSettings();
 
@@ -329,11 +329,11 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       SimpleString pageQueue = new SimpleString("pagequeue");
 
-      QueueSettings pageQueueSettings = new QueueSettings();
-      pageQueueSettings.setMaxSizeBytes(100 * 1024);
-      pageQueueSettings.setPageSizeBytes(10 * 1024);
+      AddressSettings pageAddressSettings = new AddressSettings();
+      pageAddressSettings.setMaxSizeBytes(100 * 1024);
+      pageAddressSettings.setPageSizeBytes(10 * 1024);
 
-      queueSettings.put(pageQueue.toString(), pageQueueSettings);
+      queueSettings.put(pageQueue.toString(), pageAddressSettings);
 
       addSettings();
 
@@ -1221,9 +1221,9 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    private void addSettings()
    {
-      for (Map.Entry<String, QueueSettings> setting : queueSettings.entrySet())
+      for (Map.Entry<String, AddressSettings> setting : queueSettings.entrySet())
       {
-         messagingService.getServer().getQueueSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         messagingService.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
    }
 

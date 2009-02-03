@@ -72,7 +72,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
@@ -436,7 +436,7 @@ public class JournalStorageManager implements StorageManager
 
    public void loadMessageJournal(final PostOffice postOffice,
                                   final StorageManager storageManager,
-                                  final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                  final HierarchicalRepository<AddressSettings> queueSettingsRepository,
                                   final Map<Long, Queue> queues,
                                   final ResourceManager resourceManager,
                                   final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
@@ -668,7 +668,7 @@ public class JournalStorageManager implements StorageManager
    
    private void loadPreparedTransactions(final PostOffice postOffice,
                                          final StorageManager storageManager,
-                                         final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                         final HierarchicalRepository<AddressSettings> queueSettingsRepository,
                                          final Map<Long, Queue> queues,
                                          final ResourceManager resourceManager,
                                          final List<PreparedTransactionInfo> preparedTransactions,
@@ -843,12 +843,11 @@ public class JournalStorageManager implements StorageManager
 
             MessageReference removed = queue.removeReferenceWithID(messageID);
 
-            referencesToAck.add(removed);
-
-            if (removed == null)
+            if (removed != null)
             {
-               throw new IllegalStateException("Failed to remove reference for " + messageID);
+               referencesToAck.add(removed);
             }
+
          }
 
          for (MessageReference ack : referencesToAck)

@@ -38,7 +38,7 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
@@ -64,8 +64,8 @@ public class PagingManagerIntegrationTest extends UnitTestCase
    public void testPagingManager() throws Exception
    {
       
-      HierarchicalRepository<QueueSettings> queueSettings = new HierarchicalObjectRepository<QueueSettings>();
-      queueSettings.setDefault(new QueueSettings());
+      HierarchicalRepository<AddressSettings> queueSettings = new HierarchicalObjectRepository<AddressSettings>();
+      queueSettings.setDefault(new AddressSettings());
       
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), 10),
                                                             new NullStorageManager(),

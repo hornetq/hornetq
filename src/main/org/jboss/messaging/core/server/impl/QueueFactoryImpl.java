@@ -30,7 +30,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -43,7 +43,7 @@ import org.jboss.messaging.util.SimpleString;
  */
 public class QueueFactoryImpl implements QueueFactory
 {
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final ScheduledExecutorService scheduledExecutor;
 
@@ -53,10 +53,10 @@ public class QueueFactoryImpl implements QueueFactory
    private final StorageManager storageManager;
       
    public QueueFactoryImpl(final ScheduledExecutorService scheduledExecutor,
-                           final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                           final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                            final StorageManager storageManager)
    {
-      this.queueSettingsRepository = queueSettingsRepository;
+      this.addressSettingsRepository = addressSettingsRepository;
 
       this.scheduledExecutor = scheduledExecutor;
 
@@ -69,24 +69,40 @@ public class QueueFactoryImpl implements QueueFactory
    }
 
    public Queue createQueue(final long persistenceID,
+                            final SimpleString address,
                             final SimpleString name,
                             final Filter filter,
                             final boolean durable,
                             final boolean temporary)
    {
-      QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
       
-      Queue queue = new QueueImpl(persistenceID,
-                                  name,
-                                  filter,                                  
+      Queue queue;
+      if(addressSettings.isSoloQueue())
+      {
+         queue = new SoloQueueImpl(persistenceID,name,
+                                  filter,
                                   durable,
                                   temporary,
                                   scheduledExecutor,
                                   postOffice,
                                   storageManager,
-                                  queueSettingsRepository);
+                                  addressSettingsRepository);
+      }
+      else
+      {
+         queue = new QueueImpl(persistenceID,name,
+                                  filter,
+                                  durable,
+                                  temporary,
+                                  scheduledExecutor,
+                                  postOffice,
+                                  storageManager,
+                                  addressSettingsRepository);
+      }
 
-      queue.setDistributionPolicy(queueSettings.getDistributionPolicy());
+
+      queue.setDistributionPolicy(addressSettings.getDistributionPolicy());
 
       return queue;
    }

@@ -56,7 +56,7 @@ import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -81,7 +81,7 @@ public class MessagingServerControlTest extends TestCase
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
-   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private HierarchicalRepository<AddressSettings> queueSettingsRepository;
 
    private ResourceManager resourceManager;
 

@@ -35,7 +35,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
 
@@ -83,7 +83,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
+      HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
 

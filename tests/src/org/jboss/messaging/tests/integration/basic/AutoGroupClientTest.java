@@ -40,7 +40,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.util.SimpleString;
 
@@ -54,7 +54,7 @@ public class AutoGroupClientTest extends TestCase
    public void testGroupIdAutomaticallySet() throws Exception
    {
       final SimpleString QUEUE = new SimpleString("testGroupQueue");
-      QueueSettings qs = new QueueSettings();
+      AddressSettings qs = new AddressSettings();
       qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
 
       Configuration conf = new ConfigurationImpl();
@@ -65,7 +65,7 @@ public class AutoGroupClientTest extends TestCase
 
       MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
 
-      messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
@@ -115,7 +115,7 @@ public class AutoGroupClientTest extends TestCase
    public void testGroupIdAutomaticallySetMultipleProducers() throws Exception
    {
       final SimpleString QUEUE = new SimpleString("testGroupQueue");
-      QueueSettings qs = new QueueSettings();
+      AddressSettings qs = new AddressSettings();
       qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
 
       Configuration conf = new ConfigurationImpl();
@@ -126,7 +126,7 @@ public class AutoGroupClientTest extends TestCase
 
       MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
 
-      messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
@@ -185,7 +185,7 @@ public class AutoGroupClientTest extends TestCase
    public void testGroupIdAutomaticallyNotSet() throws Exception
    {
       final SimpleString QUEUE = new SimpleString("testGroupQueue");
-      QueueSettings qs = new QueueSettings();
+      AddressSettings qs = new AddressSettings();
       qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
       Configuration conf = new ConfigurationImpl();
 
@@ -194,7 +194,7 @@ public class AutoGroupClientTest extends TestCase
       conf.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
 
       MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
-      messagingService.getServer().getQueueSettingsRepository().addMatch("testGroupQueue", qs);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("testGroupQueue", qs);
       messagingService.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));

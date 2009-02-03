@@ -72,7 +72,7 @@ import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
@@ -111,7 +111,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private SecurityStore securityStore;
 
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository = new HierarchicalObjectRepository<QueueSettings>();
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
 
    private ScheduledExecutorService scheduledExecutor;
 
@@ -220,10 +220,10 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(),
                                             configuration.isSecurityEnabled());
-      queueSettingsRepository.setDefault(new QueueSettings());
+      addressSettingsRepository.setDefault(new AddressSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
                                                           new JBMThreadFactory("JBM-scheduled-threads"));
-      queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository, storageManager);
+      queueFactory = new QueueFactoryImpl(scheduledExecutor, addressSettingsRepository, storageManager);
 
       pagingManager = createPagingManager();
 
@@ -253,7 +253,7 @@ public class MessagingServerImpl implements MessagingServer
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
                                                           configuration,
-                                                          queueSettingsRepository,
+                                                          addressSettingsRepository,
                                                           securityRepository,
                                                           resourceManager,
                                                           remotingService,
@@ -284,6 +284,7 @@ public class MessagingServerImpl implements MessagingServer
          }
 
          Queue queue = queueFactory.createQueue(queueBindingInfo.getPersistenceID(),
+                                                queueBindingInfo.getAddress(),
                                                 queueBindingInfo.getQueueName(),
                                                 filter,
                                                 true,
@@ -301,7 +302,7 @@ public class MessagingServerImpl implements MessagingServer
 
       storageManager.loadMessageJournal(postOffice,
                                         storageManager,
-                                        queueSettingsRepository,
+                                        addressSettingsRepository,
                                         queues,
                                         resourceManager,
                                         duplicateIDMap);
@@ -421,7 +422,7 @@ public class MessagingServerImpl implements MessagingServer
       postOffice = null;
       securityRepository = null;
       securityStore = null;
-      queueSettingsRepository.clear();
+      addressSettingsRepository.clear();
       scheduledExecutor.shutdown();
       queueFactory = null;
       resourceManager = null;
@@ -515,9 +516,9 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    // This is needed for the queue settings deployer
-   public HierarchicalRepository<QueueSettings> getQueueSettingsRepository()
+   public HierarchicalRepository<AddressSettings> getAddressSettingsRepository()
    {
-      return queueSettingsRepository;
+      return addressSettingsRepository;
    }
 
    public ResourceManager getResourceManager()
@@ -757,7 +758,7 @@ public class MessagingServerImpl implements MessagingServer
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
                                                              configuration.getPagingMaxThreads()),
                                    storageManager,
-                                   queueSettingsRepository,
+                                   addressSettingsRepository,
                                    configuration.getPagingMaxGlobalSizeBytes(),
                                    configuration.getPagingDefaultSize(),
                                    configuration.isJournalSyncNonTransactional(),
@@ -787,6 +788,8 @@ public class MessagingServerImpl implements MessagingServer
 
          SimpleString name = new SimpleString(config.getName());
 
+         SimpleString address = new SimpleString(config.getAddress());
+
          Binding binding = postOffice.getBinding(name);
 
          if (binding == null)
@@ -798,7 +801,7 @@ public class MessagingServerImpl implements MessagingServer
                filter = new FilterImpl(new SimpleString(config.getFilterString()));
             }
 
-            Queue queue = queueFactory.createQueue(-1, name, filter, config.isDurable(), false);
+            Queue queue = queueFactory.createQueue(-1, address, name, filter, config.isDurable(), false);
 
             Binding queueBinding = new LocalQueueBinding(new SimpleString(config.getAddress()), queue);
             
@@ -930,7 +933,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               connection,
                                                               storageManager,
                                                               postOffice,
-                                                              queueSettingsRepository,
+                                                              addressSettingsRepository,
                                                               resourceManager,
                                                               securityStore,
                                                               executorFactory.getExecutor(),

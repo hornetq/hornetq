@@ -53,11 +53,10 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
@@ -654,16 +653,16 @@ public class LocalTestServer implements Server, Runnable
 
    public void addQueueSettings(String name, long redeliveryDelay)
    {
-      QueueSettings qs = getMessagingServer().getQueueSettingsRepository().getMatch("*");
-      QueueSettings newSets = new QueueSettings();
+      AddressSettings qs = getMessagingServer().getAddressSettingsRepository().getMatch("*");
+      AddressSettings newSets = new AddressSettings();
       newSets.setRedeliveryDelay(redeliveryDelay);
       newSets.merge(qs);
-      getMessagingServer().getQueueSettingsRepository().addMatch(name, newSets);
+      getMessagingServer().getAddressSettingsRepository().addMatch(name, newSets);
    }
 
    public void removeQueueSettings(String name)
    {
-      getMessagingServer().getQueueSettingsRepository().removeMatch(name);
+      getMessagingServer().getAddressSettingsRepository().removeMatch(name);
    }
 
    public InitialContext getInitialContext() throws Exception
@@ -745,8 +744,8 @@ public class LocalTestServer implements Server, Runnable
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
    {
       SimpleString condition = new SimpleString((queue ? "queuejms." : "topicjms.") + dest);
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setRedeliveryDelay(delay);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setRedeliveryDelay(delay);
       // FIXME we need to expose queue attributes in another way
       // getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);
    }

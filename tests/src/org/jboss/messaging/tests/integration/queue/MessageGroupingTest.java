@@ -42,7 +42,7 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
@@ -555,9 +555,9 @@ public class MessageGroupingTest extends UnitTestCase
       // start the server
       messagingService.start();
 
-      QueueSettings qs = new QueueSettings();
+      AddressSettings qs = new AddressSettings();
       qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
-      messagingService.getServer().getQueueSettingsRepository().addMatch(qName.toString(), qs);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);

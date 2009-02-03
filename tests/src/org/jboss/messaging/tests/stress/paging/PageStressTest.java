@@ -22,7 +22,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
 
@@ -60,19 +60,19 @@ public class PageStressTest extends ServiceTestBase
    {
       Configuration config = createDefaultConfig();
 
-      HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
+      HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
       if (globalPage)
       {
          config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
-         QueueSettings setting = new QueueSettings();
+         AddressSettings setting = new AddressSettings();
          setting.setMaxSizeBytes(-1);
          settings.put("page-adr", setting);
       }
       else
       {
          config.setPagingMaxGlobalSizeBytes(-1);
-         QueueSettings setting = new QueueSettings();
+         AddressSettings setting = new AddressSettings();
          setting.setMaxSizeBytes(20 * 1024 * 1024);
          settings.put("page-adr", setting);
       }
@@ -191,19 +191,19 @@ public class PageStressTest extends ServiceTestBase
    {
       Configuration config = createDefaultConfig();
 
-      HashMap<String, QueueSettings> settings = new HashMap<String, QueueSettings>();
+      HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
       if (globalPage)
       {
          config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
-         QueueSettings setting = new QueueSettings();
+         AddressSettings setting = new AddressSettings();
          setting.setMaxSizeBytes(-1);
          settings.put("page-adr", setting);
       }
       else
       {
          config.setPagingMaxGlobalSizeBytes(-1);
-         QueueSettings setting = new QueueSettings();
+         AddressSettings setting = new AddressSettings();
          setting.setMaxSizeBytes(20 * 1024 * 1024);
          settings.put("page-adr", setting);
       }

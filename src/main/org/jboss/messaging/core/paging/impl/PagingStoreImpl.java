@@ -48,7 +48,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
@@ -138,7 +138,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final SequentialFileFactory fileFactory,
                           final PagingStoreFactory storeFactory,
                           final SimpleString storeName,
-                          final QueueSettings queueSettings,
+                          final AddressSettings addressSettings,
                           final Executor executor)
    {
       if (pagingManager == null)
@@ -152,18 +152,18 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       this.storeName = storeName;
 
-      maxSize = queueSettings.getMaxSizeBytes();
+      maxSize = addressSettings.getMaxSizeBytes();
 
-      if (queueSettings.getPageSizeBytes() != null)
+      if (addressSettings.getPageSizeBytes() != null)
       {
-         pageSize = queueSettings.getPageSizeBytes();
+         pageSize = addressSettings.getPageSizeBytes();
       }
       else
       {
          pageSize = pagingManager.getDefaultPageSize();
       }
 
-      dropMessagesWhenFull = queueSettings.isDropMessagesWhenFull();
+      dropMessagesWhenFull = addressSettings.isDropMessagesWhenFull();
 
       this.executor = executor;
 

@@ -36,7 +36,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -103,7 +103,7 @@ public interface StorageManager extends MessagingComponent
 
    void loadMessageJournal(PostOffice postOffice,
                            StorageManager storageManager,
-                           HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                           HierarchicalRepository<AddressSettings> queueSettingsRepository,
                            Map<Long, Queue> queues,
                            ResourceManager resourceManager,
                            Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;

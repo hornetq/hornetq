@@ -57,7 +57,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.SimpleString;
@@ -107,7 +107,7 @@ public class PageCrashTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -285,7 +285,7 @@ public class PageCrashTest extends ServiceTestBase
          return new PagingManagerImpl(new FailurePagingStoreFactoryNIO(super.getConfiguration().getPagingDirectory(),
                                                                        super.getConfiguration().getPagingMaxThreads()),
                                       super.getStorageManager(),
-                                      super.getQueueSettingsRepository(),
+                                      super.getAddressSettingsRepository(),
                                       super.getConfiguration().getPagingMaxGlobalSizeBytes(),
                                       super.getConfiguration().getPagingDefaultSize(),
                                       super.getConfiguration().isJournalSyncNonTransactional(),
@@ -315,7 +315,7 @@ public class PageCrashTest extends ServiceTestBase
          // Public --------------------------------------------------------
 
          @Override
-         public synchronized PagingStore newStore(final SimpleString destinationName, final QueueSettings settings) throws Exception
+         public synchronized PagingStore newStore(final SimpleString destinationName, final AddressSettings settings) throws Exception
          {
             Field factoryField = PagingStoreFactoryNIO.class.getDeclaredField("executorFactory");
             factoryField.setAccessible(true);
@@ -341,11 +341,11 @@ public class PageCrashTest extends ServiceTestBase
              * @param fileFactory
              * @param storeFactory
              * @param storeName
-             * @param queueSettings
+             * @param addressSettings
              * @param executor
              */
             public FailingPagingStore(final SimpleString storeName,
-                                      final QueueSettings queueSettings,
+                                      final AddressSettings addressSettings,
                                       final Executor executor)
             {
                super(getPostOffice().getPagingManager(),
@@ -354,7 +354,7 @@ public class PageCrashTest extends ServiceTestBase
                      null,
                      FailurePagingStoreFactoryNIO.this,
                      storeName,
-                     queueSettings,
+                     addressSettings,
                      executor);
             }
 

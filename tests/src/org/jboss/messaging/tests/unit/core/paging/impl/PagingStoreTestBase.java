@@ -48,7 +48,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
@@ -109,7 +109,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
       final ArrayList<Page> readPages = new ArrayList<Page>();
 
-      QueueSettings settings = new QueueSettings();
+      AddressSettings settings = new AddressSettings();
       settings.setPageSizeBytes(MAX_SIZE);
 
       final TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),

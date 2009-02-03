@@ -54,7 +54,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
 import org.jboss.messaging.util.SimpleString;
@@ -79,7 +79,7 @@ public class JMSQueueControlTest extends TestCase
 
    private StorageManager storageManager;
 
-   private HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private HierarchicalRepository<AddressSettings> queueSettingsRepository;
 
    private MessageCounter counter;
 
@@ -215,7 +215,7 @@ public class JMSQueueControlTest extends TestCase
    {
       final String deadLetterAddress = randomString();
 
-      QueueSettings settings = new QueueSettings()
+      AddressSettings settings = new AddressSettings()
       {
          @Override
          public SimpleString getDeadLetterAddress()
@@ -237,7 +237,7 @@ public class JMSQueueControlTest extends TestCase
    {
       final String expiryQueue = randomString();
 
-      QueueSettings settings = new QueueSettings()
+      AddressSettings settings = new AddressSettings()
       {
          @Override
          public SimpleString getExpiryAddress()

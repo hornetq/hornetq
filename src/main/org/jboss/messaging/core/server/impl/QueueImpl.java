@@ -12,28 +12,14 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -47,7 +33,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ScheduledDeliveryHandler;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
@@ -55,6 +41,19 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
 import org.jboss.messaging.util.SimpleString;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -73,7 +72,7 @@ public class QueueImpl implements Queue
    public static final int NUM_PRIORITIES = 10;
 
    private volatile long persistenceID = -1;
-   
+
    private final SimpleString name;
 
    private volatile Filter filter;
@@ -110,13 +109,13 @@ public class QueueImpl implements Queue
 
    private final StorageManager storageManager;
 
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
 
    private volatile boolean backup;
 
    private int consumersToFailover = -1;
 
-   public QueueImpl(final long persistenceID,                   
+   public QueueImpl(final long persistenceID,
                     final SimpleString name,
                     final Filter filter,
                     final boolean durable,
@@ -124,10 +123,10 @@ public class QueueImpl implements Queue
                     final ScheduledExecutorService scheduledExecutor,
                     final PostOffice postOffice,
                     final StorageManager storageManager,
-                    final HierarchicalRepository<QueueSettings> queueSettingsRepository)
+                    final HierarchicalRepository<AddressSettings> queueSettingsRepository)
    {
       this.persistenceID = persistenceID;
-      
+
       this.name = name;
 
       this.filter = filter;
@@ -157,7 +156,7 @@ public class QueueImpl implements Queue
    }
 
    // Bindable implementation -------------------------------------------------------------------------------------
-  
+
    public SimpleString getRoutingName()
    {
       return name;
@@ -189,9 +188,9 @@ public class QueueImpl implements Queue
       if (durableRef)
       {
          message.incrementDurableRefCount();
-      }      
+      }
    }
-   
+
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
       boolean durableRef = message.isDurable() && durable;
@@ -203,7 +202,7 @@ public class QueueImpl implements Queue
 
       store.addSize(ref.getMemoryEstimate());
 
-      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+      Long scheduledDeliveryTime = (Long) message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
 
       if (scheduledDeliveryTime != null)
       {
@@ -280,7 +279,7 @@ public class QueueImpl implements Queue
          message.incrementDurableRefCount();
       }
 
-      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+      Long scheduledDeliveryTime = (Long) message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
 
       if (scheduledDeliveryTime != null)
       {
@@ -327,7 +326,7 @@ public class QueueImpl implements Queue
    {
       persistenceID = id;
    }
-   
+
    public Filter getFilter()
    {
       return filter;
@@ -523,9 +522,9 @@ public class QueueImpl implements Queue
       getRefsOperation(tx).addAck(ref);
    }
 
-   private final RefsOperation getRefsOperation(final Transaction tx)
+   final RefsOperation getRefsOperation(final Transaction tx)
    {
-      RefsOperation oper = (RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+      RefsOperation oper = (RefsOperation) tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
 
       if (oper == null)
       {
@@ -1021,9 +1020,9 @@ public class QueueImpl implements Queue
          storageManager.updateDeliveryCount(reference);
       }
 
-      QueueSettings queueSettings = queueSettingsRepository.getMatch(name.toString());
+      AddressSettings addressSettings = queueSettingsRepository.getMatch(name.toString());
 
-      int maxDeliveries = queueSettings.getMaxDeliveryAttempts();
+      int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
 
       if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
       {
@@ -1035,7 +1034,7 @@ public class QueueImpl implements Queue
       }
       else
       {
-         long redeliveryDelay = queueSettings.getRedeliveryDelay();
+         long redeliveryDelay = addressSettings.getRedeliveryDelay();
 
          if (redeliveryDelay > 0)
          {
@@ -1248,7 +1247,7 @@ public class QueueImpl implements Queue
    {
       ServerMessage message = ref.getMessage();
 
-      QueueImpl queue = (QueueImpl)ref.getQueue();
+      QueueImpl queue = (QueueImpl) ref.getQueue();
 
       boolean durableRef = message.isDurable() && queue.durable;
 
@@ -1294,6 +1293,95 @@ public class QueueImpl implements Queue
       }
    }
 
+   void postRollback(LinkedList<MessageReference> refs) throws Exception
+   {
+      synchronized (this)
+      {
+         for (MessageReference ref : refs)
+         {
+            ServerMessage msg = ref.getMessage();
+
+            if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
+            {
+               messageReferences.addFirst(ref, msg.getPriority());
+            }
+         }
+
+         deliver();
+      }
+   }
+
+   final void discardMessage(MessageReference ref, Transaction tx) throws Exception
+   {
+      deliveringCount.decrementAndGet();
+      PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
+      store.addSize(-ref.getMemoryEstimate());
+      QueueImpl queue = (QueueImpl) ref.getQueue();
+      ServerMessage msg = ref.getMessage();
+      boolean durableRef = msg.isDurable() && queue.isDurable();
+
+      if (durableRef)
+      {
+         int count = msg.decrementDurableRefCount();
+
+         if (count == 0)
+         {
+            if (tx == null)
+            {
+               storageManager.deleteMessage(msg.getMessageID());
+            }
+            else
+            {
+               storageManager.deleteMessageTransactional(tx.getID(), getPersistenceID(), msg.getMessageID());
+            }
+         }
+      }
+   }
+
+   final void discardMessage(Long id, Transaction tx) throws Exception
+   {
+      RefsOperation oper = getRefsOperation(tx);
+      Iterator<MessageReference> iterator = oper.refsToAdd.iterator();
+
+      while (iterator.hasNext())
+      {
+         MessageReference ref = iterator.next();
+
+         if (ref.getMessage().getMessageID() == id)
+         {
+            iterator.remove();
+            discardMessage(ref, tx);
+            break;
+         }
+      }
+
+   }
+
+
+   final void rediscardMessage(long id, Transaction tx) throws Exception
+   {
+      RefsOperation oper = getRefsOperation(tx);
+      Iterator<MessageReference> iterator = oper.refsToAdd.iterator();
+
+      while (iterator.hasNext())
+      {
+         MessageReference ref = iterator.next();
+
+         if (ref.getMessage().getMessageID() == id)
+         {
+            iterator.remove();
+            rediscardMessage(ref);
+            break;
+         }
+      }
+   }
+
+   final void rediscardMessage(MessageReference ref) throws Exception
+   {
+      deliveringCount.decrementAndGet();
+      PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
+      store.addSize(-ref.getMemoryEstimate());
+   }
    // Inner classes
    // --------------------------------------------------------------------------
 
@@ -1349,7 +1437,7 @@ public class QueueImpl implements Queue
                {
                   toCancel = new LinkedList<MessageReference>();
 
-                  queueMap.put((QueueImpl)ref.getQueue(), toCancel);
+                  queueMap.put((QueueImpl) ref.getQueue(), toCancel);
                }
 
                toCancel.addFirst(ref);
@@ -1364,17 +1452,7 @@ public class QueueImpl implements Queue
 
             synchronized (queue)
             {
-               for (MessageReference ref : refs)
-               {
-                  ServerMessage msg = ref.getMessage();
-
-                  if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
-                  {
-                     queue.messageReferences.addFirst(ref, msg.getPriority());
-                  }
-               }
-
-               queue.deliver();
+               queue.postRollback(refs);
             }
          }
       }

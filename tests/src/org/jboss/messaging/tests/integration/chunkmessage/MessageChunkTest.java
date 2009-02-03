@@ -46,7 +46,7 @@ import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnector;
 import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnectorFactory;
 import org.jboss.messaging.util.DataConstants;
@@ -87,7 +87,7 @@ public class MessageChunkTest extends ChunkTestBase
 
       Configuration config = createDefaultConfig();
 
-      messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -113,7 +113,7 @@ public class MessageChunkTest extends ChunkTestBase
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+      messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -631,7 +631,7 @@ public class MessageChunkTest extends ChunkTestBase
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
       config.setPagingDefaultSize(10 * 1024);
 
-      messagingService = createService(realFiles, config, new HashMap<String, QueueSettings>());
+      messagingService = createService(realFiles, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -695,7 +695,7 @@ public class MessageChunkTest extends ChunkTestBase
          {
             messagingService.stop();
 
-            messagingService = createService(true, config, new HashMap<String, QueueSettings>());
+            messagingService = createService(true, config, new HashMap<String, AddressSettings>());
             messagingService.start();
 
             sf = createInVMFactory();

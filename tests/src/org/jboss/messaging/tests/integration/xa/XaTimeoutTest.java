@@ -39,7 +39,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
@@ -51,7 +51,7 @@ import org.jboss.messaging.util.UUIDGenerator;
 public class XaTimeoutTest extends UnitTestCase
 {
 
-   private Map<String, QueueSettings> queueSettings = new HashMap<String, QueueSettings>();
+   private Map<String, AddressSettings> queueSettings = new HashMap<String, AddressSettings>();
 
    private MessagingService messagingService;
    

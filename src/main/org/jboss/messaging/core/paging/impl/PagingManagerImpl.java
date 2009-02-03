@@ -38,7 +38,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -67,7 +67,7 @@ public class PagingManagerImpl implements PagingManager
 
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
 
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
 
    private final PagingStoreFactory pagingStoreFactory;
 
@@ -89,7 +89,7 @@ public class PagingManagerImpl implements PagingManager
 
    public PagingManagerImpl(final PagingStoreFactory pagingSPI,
                             final StorageManager storageManager,
-                            final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                            final HierarchicalRepository<AddressSettings> queueSettingsRepository,
                             final long maxGlobalSize,
                             final long defaultPageSize,
                             final boolean syncNonTransactional,

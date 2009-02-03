@@ -13,7 +13,7 @@
    			<xsd:element ref="security" maxOccurs="unbounded"
    				minOccurs="0">
    			</xsd:element>
-   			<xsd:element ref="queue-settings" maxOccurs="unbounded"
+   			<xsd:element ref="address-settings" maxOccurs="unbounded"
    				minOccurs="0">
    			</xsd:element>
             <xsd:element ref="queue" maxOccurs="unbounded"
@@ -39,9 +39,9 @@
         </xsd:complexType>
    </xsd:element>
 
-   <xsd:element name="queue-settings" type="queue-settingsType"></xsd:element>
+   <xsd:element name="address-settings" type="address-settingsType"></xsd:element>
 
-   <xsd:complexType name="queue-settingsType">
+   <xsd:complexType name="address-settingsType">
    	<xsd:sequence>
         <xsd:element name="clustered" type="xsd:boolean"
             maxOccurs="1" minOccurs="0">
@@ -70,7 +70,10 @@
         <xsd:element name="message-counter-history-day-limit" type="xsd:int"
             maxOccurs="1" minOccurs="0">
         </xsd:element>
-   	</xsd:sequence>
+         <xsd:element name="solo-queue" type="xsd:boolean"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+      </xsd:sequence>
    	<xsd:attribute name="match" type="xsd:string" use="required"></xsd:attribute>
    </xsd:complexType>   
    

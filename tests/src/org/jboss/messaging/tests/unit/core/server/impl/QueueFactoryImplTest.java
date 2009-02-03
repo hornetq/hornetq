@@ -30,7 +30,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.QueueFactoryImpl;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributor;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
@@ -42,18 +42,18 @@ public class QueueFactoryImplTest extends UnitTestCase
    public void testCreateQueue()
    {
       ScheduledExecutorService scheduledExecutor = EasyMock.createStrictMock(ScheduledExecutorService.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      HierarchicalRepository<AddressSettings> queueSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       Filter filter = EasyMock.createStrictMock(Filter.class);
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setClustered(true);
-      queueSettings.setMaxSizeBytes(9999);
-      queueSettings.setDistributionPolicyClass("org.jboss.messaging.core.server.impl.RoundRobinDistributor");
-      EasyMock.expect(queueSettingsRepository.getMatch("testQ")).andReturn(queueSettings);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setClustered(true);
+      addressSettings.setMaxSizeBytes(9999);
+      addressSettings.setDistributionPolicyClass("org.jboss.messaging.core.server.impl.RoundRobinDistributor");
+      EasyMock.expect(queueSettingsRepository.getMatch("testQ")).andReturn(addressSettings);
       EasyMock.replay(scheduledExecutor, queueSettingsRepository);
       QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository, sm);
       SimpleString qName = new SimpleString("testQ");
-      Queue queue = queueFactory.createQueue(123, qName, filter, true, false);
+      Queue queue = queueFactory.createQueue(123, qName, qName, filter, true, false);
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributor.class);
       assertEquals(queue.getName(), qName);
@@ -66,17 +66,17 @@ public class QueueFactoryImplTest extends UnitTestCase
    public void testCreateQueue2()
    {
       ScheduledExecutorService scheduledExecutor = EasyMock.createStrictMock(ScheduledExecutorService.class);
-      HierarchicalRepository<QueueSettings> queueSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      HierarchicalRepository<AddressSettings> queueSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
-      QueueSettings queueSettings = new QueueSettings();
-      queueSettings.setClustered(false);
-      queueSettings.setMaxSizeBytes(8888);
-      queueSettings.setDistributionPolicyClass(null);
-      EasyMock.expect(queueSettingsRepository.getMatch("testQ2")).andReturn(queueSettings);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setClustered(false);
+      addressSettings.setMaxSizeBytes(8888);
+      addressSettings.setDistributionPolicyClass(null);
+      EasyMock.expect(queueSettingsRepository.getMatch("testQ2")).andReturn(addressSettings);
       EasyMock.replay(scheduledExecutor, queueSettingsRepository);
       QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository, sm);
       SimpleString qName = new SimpleString("testQ2");
-      Queue queue = queueFactory.createQueue(456, qName, null, false, false);
+      Queue queue = queueFactory.createQueue(456, qName, qName, null, false, false);
       EasyMock.verify(scheduledExecutor, queueSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributor.class);
       assertEquals(queue.getName(), qName);

@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -48,7 +48,7 @@ public class BasicXaTest extends ServiceTestBase
 {
       private static Logger log = Logger.getLogger(BasicXaTest.class);
 
-   private final Map<String, QueueSettings> queueSettings = new HashMap<String, QueueSettings>();
+   private final Map<String, AddressSettings> queueSettings = new HashMap<String, AddressSettings>();
 
    private MessagingService messagingService;
 

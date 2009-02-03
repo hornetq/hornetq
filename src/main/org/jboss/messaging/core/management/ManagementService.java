@@ -49,7 +49,7 @@ import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.SimpleString;
 
@@ -66,7 +66,7 @@ public interface ManagementService extends MessagingComponent
    MessagingServerControlMBean registerServer(PostOffice postOffice,
                                               StorageManager storageManager,
                                               Configuration configuration,                                            
-                                              HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                                              HierarchicalRepository<AddressSettings> queueSettingsRepository,
                                               HierarchicalRepository<Set<Role>> securityRepository,
                                               ResourceManager resourceManager,
                                               RemotingService remotingService,

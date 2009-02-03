@@ -186,7 +186,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      MessagingServerControlMBean managedServer = EasyMock.createMock(MessagingServerControlMBean.class);
 //      expect(ms.registerServer(isA(PostOffice.class), eq(sm), eq(server
 //            .getConfiguration()), isA(HierarchicalRepository.class), eq(server
-//            .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
+//            .getAddressSettingsRepository()), eq(server))).andReturn(managedServer);
 //
 //      EasyMock.replay(sm, rs, pd, ms);
 //      
@@ -200,7 +200,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      
 //      EasyMock.reset(sm, rs, pd);
 //      
-//      assertNotNull(server.getQueueSettingsRepository());
+//      assertNotNull(server.getAddressSettingsRepository());
 //      
 //      //Starting again should do nothing
 //      
@@ -290,7 +290,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      
 //      expect(ms.registerServer(isA(PostOffice.class), eq(sm), eq(server
 //            .getConfiguration()), isA(HierarchicalRepository.class), eq(server
-//            .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
+//            .getAddressSettingsRepository()), eq(server))).andReturn(managedServer);
 //
 //      EasyMock.replay(sm, rs, pd, ms);
 //                 
@@ -301,7 +301,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      
 //      assertTrue(server.isStarted());
 //      
-//      assertNotNull(server.getQueueSettingsRepository());
+//      assertNotNull(server.getAddressSettingsRepository());
 //      
 //      EasyMock.reset(sm, rs, pd);
 //      
@@ -363,7 +363,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      MessagingServerControlMBean managedServer = EasyMock.createMock(MessagingServerControlMBean.class);
 //      expect(mr.registerServer(isA(PostOffice.class), eq(sm), eq(server
 //            .getConfiguration()), isA(HierarchicalRepository.class), eq(server
-//            .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
+//            .getAddressSettingsRepository()), eq(server))).andReturn(managedServer);
 //      server.setManagementService(mr);
 //
 //      PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);
@@ -421,7 +421,7 @@ public class MessagingServerImplTest extends UnitTestCase
 //      MessagingServerControlMBean managedServer = EasyMock.createMock(MessagingServerControlMBean.class);
 //      expect(mr.registerServer(isA(PostOffice.class), eq(sm), eq(server
 //            .getConfiguration()), isA(HierarchicalRepository.class), eq(server
-//            .getQueueSettingsRepository()), eq(server))).andReturn(managedServer);
+//            .getAddressSettingsRepository()), eq(server))).andReturn(managedServer);
 //      server.setManagementService(mr);
 //
 //      PacketDispatcher pd = EasyMock.createMock(PacketDispatcher.class);

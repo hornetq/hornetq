@@ -35,7 +35,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -170,9 +170,9 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    public void testPagedMessageDeliveredMultipleConsumersCorrectly() throws Exception
    {
-      QueueSettings qs = new QueueSettings();
+      AddressSettings qs = new AddressSettings();
       qs.setRedeliveryDelay(5000l);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(atestq2.toString(), qs);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(atestq2.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
@@ -219,9 +219,9 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testPagedMessageDeliveredMultipleConsumersAfterRecoverCorrectly() throws Exception
    {
 
-      QueueSettings qs = new QueueSettings();
+      AddressSettings qs = new AddressSettings();
       qs.setRedeliveryDelay(5000l);
-      messagingService.getServer().getQueueSettingsRepository().addMatch(atestq2.toString(), qs);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(atestq2.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);

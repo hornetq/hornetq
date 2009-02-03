@@ -44,7 +44,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.QueueSettings;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -82,7 +82,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    private final StorageManager storageManager;
 
-   private final HierarchicalRepository<QueueSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
 
    private final JMSManagementService managementService;
 
@@ -101,14 +101,14 @@ public class JMSServerManagerImpl implements JMSServerManager
       return new JMSServerManagerImpl(control,
                                       server.getPostOffice(),
                                       server.getStorageManager(),
-                                      server.getQueueSettingsRepository(),
+                                      server.getAddressSettingsRepository(),
                                       jmsManagementService);
    }
 
    public JMSServerManagerImpl(final MessagingServerControlMBean server,
                                final PostOffice postOffice,
                                final StorageManager storageManager,
-                               final HierarchicalRepository<QueueSettings> queueSettingsRepository,
+                               final HierarchicalRepository<AddressSettings> queueSettingsRepository,
                                final JMSManagementService managementService)
    {
       messagingServer = server;

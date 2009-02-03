@@ -277,7 +277,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             }
             else
             {
-               queue = queueFactory.createQueue(-1, name, null, true, false);
+               queue = queueFactory.createQueue(-1, name, name, null, true, false);
 
                // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
                // actually routed to at that address though
