@@ -451,8 +451,8 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/sun-javacc/lib/javacc.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/trove/lib/trove.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/wutka-dtdparser/lib/dtdparser.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/api/lib/slf4j-api-1.4.3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/log4j/lib/slf4j-log4j12.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/api/lib/slf4j-api-1.5.2.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/log4j/lib/slf4j-log4j12-1.5.2.jar!/" />
         <root url="file://$PROJECT_DIR$/tests/config" />
         <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
         <root url="file://$PROJECT_DIR$/src/config" />
@@ -462,7 +462,7 @@
         <root url="jar://$PROJECT_DIR$/tools/lib/jbossbuild.jar!/" />
         <root url="jar://$ANT_HOME$/lib/ant-junit.jar!/" />
         <root url="jar://$ANT_HOME$/lib/ant.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M3-20080730.120633-1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M4.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/netty/lib/netty-3.0.0.CR4.jar!/" />
       </CLASSES>
       <JAVADOC />
