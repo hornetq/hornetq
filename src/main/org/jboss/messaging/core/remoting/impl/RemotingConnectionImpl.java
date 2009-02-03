@@ -306,7 +306,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                   final boolean active,
                                   final boolean client)
 
-   {
+   {      
       this.transportConnection = transportConnection;
 
       this.blockingCallTimeout = blockingCallTimeout;
@@ -441,7 +441,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          destroyed = true;
       }
 
-      log.warn(me.getMessage());
+      log.warn("Connection failed " + System.identityHashCode(this) + " " + me.getMessage());
 
       // Then call the listeners
       callListeners(me);

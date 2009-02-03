@@ -200,7 +200,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
-   {
+   {            
       failConnection(me);
    }
 
@@ -407,7 +407,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          // can't failover anyway
          return true;
       }
-
+      
       return !failover();
    }
 

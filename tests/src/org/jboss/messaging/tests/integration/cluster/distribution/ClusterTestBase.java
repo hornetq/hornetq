@@ -86,7 +86,22 @@ public class ClusterTestBase extends ServiceTestBase
 
    private static final int MAX_CONSUMERS = 100;
 
-   private ClientConsumer[] consumers = new ClientConsumer[MAX_CONSUMERS];
+   
+   private static class ConsumerHolder
+   {
+      final ClientConsumer consumer;
+      
+      final ClientSession session;
+      
+      ConsumerHolder(final ClientConsumer consumer, final ClientSession session)
+      {
+         this.consumer = consumer;
+         
+         this.session = session;
+      }
+   }
+   
+   private ConsumerHolder[] consumers = new ConsumerHolder[MAX_CONSUMERS];
 
    private static final SimpleString COUNT_PROP = new SimpleString("count_prop");
 
@@ -189,6 +204,8 @@ public class ClusterTestBase extends ServiceTestBase
 
       session.close();
    }
+   
+   
 
    protected void addConsumer(int consumerID, int node, String queueName, String filterVal) throws Exception
    {      
@@ -217,19 +234,53 @@ public class ClusterTestBase extends ServiceTestBase
 
       session.start();
 
-      consumers[consumerID] = consumer;
+      consumers[consumerID] = new ConsumerHolder(consumer, session);
    }
 
    protected void removeConsumer(int consumerID) throws Exception
    {
-      ClientConsumer consumer = consumers[consumerID];
+      ConsumerHolder holder = consumers[consumerID];
 
-      if (consumer == null)
+      if (holder == null)
       {
          throw new IllegalArgumentException("No consumer at " + consumerID);
       }
 
-      consumer.close();
+      holder.consumer.close();
+      holder.session.close();
+      
+      consumers[consumerID] = null;
+   }
+   
+   protected void closeAllConsumers() throws Exception
+   {
+      for (int i = 0; i < consumers.length; i++)
+      {
+         ConsumerHolder holder = consumers[i];
+         
+         if (holder != null)
+         {
+            holder.consumer.close();
+            holder.session.close();
+            
+            consumers[i] = null;
+         }
+      }
+   }
+   
+   protected void closeAllSessionFactories() throws Exception
+   {
+      for (int i = 0; i < sfs.length; i++)
+      {
+         ClientSessionFactory sf = sfs[i];
+         
+         if (sf != null)
+         {
+            sf.close();
+            
+            sfs[i] = null;
+         }
+      }
    }
 
    protected void send(int node, String address, int numMessages, boolean durable, String filterVal) throws Exception
@@ -266,16 +317,16 @@ public class ClusterTestBase extends ServiceTestBase
    {
       for (int i = 0; i < consumerIDs.length; i++)
       {
-         ClientConsumer consumer = consumers[consumerIDs[i]];
+         ConsumerHolder holder = consumers[consumerIDs[i]];
 
-         if (consumer == null)
+         if (holder == null)
          {
             throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
          }
 
          for (int j = 0; j < numMessages; j++)
          {
-            ClientMessage message = consumer.receive(500);
+            ClientMessage message = holder.consumer.receive(500);
 
             assertNotNull("consumer " + consumerIDs[i] + " did not receive message " + j, message);
 
@@ -290,14 +341,14 @@ public class ClusterTestBase extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientConsumer consumer = consumers[consumerIDs[count]];
+         ConsumerHolder holder = consumers[consumerIDs[count]];
 
-         if (consumer == null)
+         if (holder == null)
          {
             throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
          }
 
-         ClientMessage message = consumer.receive(500);
+         ClientMessage message = holder.consumer.receive(500);
 
          assertNotNull("consumer " + consumerIDs[count] + " did not receive message " + i, message);
 
@@ -316,14 +367,14 @@ public class ClusterTestBase extends ServiceTestBase
    {
       for (int i = 0; i < consumerIDs.length; i++)
       {
-         ClientConsumer consumer = consumers[consumerIDs[i]];
+         ConsumerHolder holder = consumers[consumerIDs[i]];
 
-         if (consumer == null)
+         if (holder == null)
          {
             throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
          }
 
-         assertNull("consumer " + i + " received message", consumer.receive(200));
+         assertNull("consumer " + i + " received message", holder.consumer.receive(200));
       }
    }
 

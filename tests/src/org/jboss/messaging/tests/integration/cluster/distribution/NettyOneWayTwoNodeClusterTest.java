@@ -41,7 +41,7 @@ public class NettyOneWayTwoNodeClusterTest extends OnewayTwoNodeClusterTest
    
    protected boolean isFileStorage()
    {
-      return true;
+      return false;
    }
 
 }

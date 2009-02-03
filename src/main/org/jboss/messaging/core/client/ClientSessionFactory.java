@@ -93,9 +93,5 @@ public interface ClientSessionFactory
 
    int getMaxConnections();
 
-   // TransportConfiguration getTransportConfiguration();
-   //   
-   // TransportConfiguration getBackupTransportConfiguration();
-
    void close();
 }

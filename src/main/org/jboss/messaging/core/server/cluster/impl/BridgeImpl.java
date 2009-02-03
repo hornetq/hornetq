@@ -361,6 +361,8 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          log.warn("Timed out waiting for batch to be sent");
       }
+      
+      session.close();
 
       csf.close();
    }
