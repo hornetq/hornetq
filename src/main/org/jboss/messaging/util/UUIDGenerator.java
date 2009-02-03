@@ -37,9 +37,10 @@ public final class UUIDGenerator
    private Random mRnd = null;
 
    private final Object mTimerLock = new Object();
+
    private UUIDTimer mTimer = null;
+
    private byte[] address;
-   
 
    /**
     * Constructor is private to enforce singleton access.
@@ -103,7 +104,7 @@ public final class UUIDGenerator
 
       return new UUID(UUID.TYPE_TIME_BASED, contents);
    }
-   
+
    public final byte[] generateDummyAddress()
    {
       Random rnd = getRandomNumberGenerator();
@@ -112,8 +113,8 @@ public final class UUIDGenerator
       /* Need to set the broadcast bit to indicate it's not a real
        * address.
        */
-      dummy[0] |= (byte) 0x01;
-      
+      dummy[0] |= (byte)0x01;
+
       if (log.isDebugEnabled())
       {
          log.debug("using dummy address " + asString(dummy));
@@ -137,8 +138,9 @@ public final class UUIDGenerator
          // not on Java 6 or not enough security permission
          return null;
       }
-      
-      try {
+
+      try
+      {
          Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
          while (networkInterfaces.hasMoreElements())
          {
@@ -154,13 +156,14 @@ public final class UUIDGenerator
                return address;
             }
          }
-      } catch (Throwable t)
+      }
+      catch (Throwable t)
       {
       }
 
       return null;
    }
-   
+
    /**
     * Browse all the network interfaces and their addresses until we find the 1st InetAddress which
     * is neither a loopback address nor a site local address.
@@ -168,62 +171,52 @@ public final class UUIDGenerator
     */
    public final static InetAddress getInetAddress()
    {
-         try
+      try
+      {
+         Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+         while (networkInterfaces.hasMoreElements())
          {
-            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-            while (networkInterfaces.hasMoreElements())
+            NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
+            Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+            while (inetAddresses.hasMoreElements())
             {
-               NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
-               Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-               while (inetAddresses.hasMoreElements())
+               InetAddress inetAddress = (InetAddress)inetAddresses.nextElement();
+               if (!inetAddress.isLoopbackAddress() && !inetAddress.isSiteLocalAddress())
                {
-                  InetAddress inetAddress = (InetAddress)inetAddresses.nextElement();
-                  if (!inetAddress.isLoopbackAddress()
-                      && !inetAddress.isSiteLocalAddress())
+                  if (log.isDebugEnabled())
                   {
-                     if (log.isDebugEnabled())
-                     {
-                        log.debug("using inet address " + inetAddress);
-                     }
-                     return inetAddress;
+                     log.debug("using inet address " + inetAddress);
                   }
+                  return inetAddress;
                }
             }
          }
-         catch (SocketException e)
-         {
-         }
-         return null;
+      }
+      catch (SocketException e)
+      {
+      }
+      return null;
    }
-   
+
    public final SimpleString generateSimpleStringUUID()
    {
-      byte[] address = getAddressBytes();
-      if (address == null)
-      {
-         return new SimpleString(java.util.UUID.randomUUID().toString());
-      }
-      else
-      {
-         UUIDGenerator gen = UUIDGenerator.getInstance();
-         return new SimpleString(gen.generateTimeBasedUUID(address).toString());
-      }    
+      return new SimpleString(generateStringUUID());
    }
-   
+
    public final UUID generateUUID()
    {
       byte[] address = getAddressBytes();
-      
+
       UUIDGenerator gen = UUIDGenerator.getInstance();
-      UUID uid = gen.generateTimeBasedUUID(address);         
-      
+      UUID uid = gen.generateTimeBasedUUID(address);
+
       return uid;
    }
-   
+
    public final String generateStringUUID()
    {
       byte[] address = getAddressBytes();
-      
+
       if (address == null)
       {
          return java.util.UUID.randomUUID().toString();
@@ -232,11 +225,11 @@ public final class UUIDGenerator
       {
          UUIDGenerator gen = UUIDGenerator.getInstance();
          return gen.generateTimeBasedUUID(address).toString();
-      }    
+      }
    }
-   
+
    // Private -------------------------------------------------------
-   
+
    private final byte[] getAddressBytes()
    {
       if (address == null)
@@ -255,17 +248,17 @@ public final class UUIDGenerator
             address = generateDummyAddress();
          }
       }
-      
+
       return address;
    }
-   
+
    private static final String asString(byte[] bytes)
    {
       if (bytes == null)
       {
          return null;
       }
-      
+
       String s = "";
       for (int i = 0; i < bytes.length - 1; i++)
       {
