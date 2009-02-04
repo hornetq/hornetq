@@ -51,11 +51,11 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
    /** The client id */
    private String clientID;
 
-   /** The type */
-   private int type;
-
    /** Use XA */
    private boolean useXA;
+
+   /** The type */
+   private int type;
 
    /** Use transactions */
    private boolean transacted;
@@ -65,9 +65,10 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
 
    /**
     * Constructor
-    * @param prop The managed connection factory properties
+    * @param prop The resource adapter properties
+    * @param type The connection type
     */
-   public JBMConnectionRequestInfo(JBMMCFProperties prop)
+   public JBMConnectionRequestInfo(JBMRAProperties prop, int type)
    {
       if (trace)
          log.trace("constructor(" + prop + ")");
@@ -75,8 +76,8 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
       this.userName = prop.getUserName();
       this.password = prop.getPassword();
       this.clientID = prop.getClientID();
-      this.type = prop.getType();
       this.useXA = prop.isUseXA();
+      this.type = type;
       this.transacted = true;
       this.acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
    }
@@ -113,9 +114,9 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
 
    /**
     * Fill in default values if they are missing
-    * @param prop The managed connection factory properties
+    * @param prop The resource adapter properties
     */
-   public void setDefaults(JBMMCFProperties prop)
+   public void setDefaults(JBMRAProperties prop)
    {
       if (trace)
          log.trace("setDefaults(" + prop + ")");

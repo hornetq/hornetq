@@ -21,100 +21,154 @@
  */
 package org.jboss.messaging.ra;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.resource.NotSupportedException;
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.xa.XAResource;
+import java.io.Serializable;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
- * The resource adapter for JBoss Messaging
- * 
- * @author <a href="adrian@jboss.com">Adrian Brock</a>
- * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * The RA default properties - these are set in the ra.xml file
+ *
+ * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class JBMResourceAdapter implements ResourceAdapter
+public class JBMRAProperties implements Serializable
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(JBMResourceAdapter.class);
+   /** Serial version UID */
+   static final long serialVersionUID = -2772367477755473248L;
 
+   /** The logger */
+   private static final Logger log = Logger.getLogger(JBMRAProperties.class);
+   
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
-   /** The bootstrap context */
-   private BootstrapContext ctx;
+   /** The discovery group name */
+   private String discoveryGroupName;
 
-   /** The resource adapter properties */
-   private JBMRAProperties raProperties;
+   /** The discovery group port */
+   private Integer discoveryGroupPort;
 
-   /** The JBoss connection factory */
-   private JBossConnectionFactory factory;
+   /** */
+   private Long discoveryRefreshTimeout;
    
-   /** Have the factory been configured */
-   private AtomicBoolean configured;
+   /** */
+   private Long discoveryInitialWaitTimeout;
+
+   /** */
+   private String loadBalancingPolicyClassName;
+
+   /** */
+   private Long pingPeriod;
+
+   /** */
+   private Long connectionTTL;
+
+   /** */
+   private Long callTimeout;
+
+   /** */
+   private Integer dupsOKBatchSize;
+
+   /** */
+   private Integer transactionBatchSize;
+
+   /** */
+   private Integer consumerWindowSize;
+
+   /** */
+   private Integer consumerMaxRate;
+
+   /** */
+   private Integer sendWindowSize;
+
+   /** */
+   private Integer producerMaxRate;
+
+   /** */
+   private Integer minLargeMessageSize;
+
+   /** */
+   private Boolean blockOnAcknowledge;
+
+   /** */
+   private Boolean blockOnNonPersistentSend;
+
+   /** */
+   private Boolean blockOnPersistentSend;
+
+   /** */
+   private Boolean autoGroup;
+
+   /** */
+   private Integer maxConnections;
+
+   /** */
+   private Boolean preAcknowledge;
+
+   /** */
+   private Long retryInterval;
+
+   /** */
+   private Double retryIntervalMultiplier;
+
+   /** */
+   private Integer maxRetriesBeforeFailover;
+
+   /** */
+   private Integer maxRetriesAfterFailover;
+
+   /** The user name */
+   private String userName;
+
+   /** The password */
+   private String password;
+
+   /** The client ID */
+   private String clientID;
+
+   /** Use XA */
+   private Boolean useXA;
 
    /**
     * Constructor
     */
-   public JBMResourceAdapter()
+   public JBMRAProperties()
    {
       if (trace)
          log.trace("constructor()");
 
-      raProperties = new JBMRAProperties();
-      factory = null;
-      configured = new AtomicBoolean(false);
-   }
-
-   public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException
-   {
-      if (trace)
-         log.trace("endpointActivation(" + endpointFactory + ", " + spec + ")");
-
-      throw new NotSupportedException("Unsupported");
-   }
-
-   public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec)
-   {
-      if (trace)
-         log.trace("endpointDeactivation(" + endpointFactory + ", " + spec + ")");
+      discoveryGroupName = null;
+      discoveryGroupPort = null;
+      discoveryRefreshTimeout = null;
+      discoveryInitialWaitTimeout = null;
+      loadBalancingPolicyClassName = null;
+      pingPeriod = null;
+      connectionTTL = null;
+      callTimeout = null;
+      dupsOKBatchSize = null;
+      transactionBatchSize = null;
+      consumerWindowSize = null;
+      consumerMaxRate = null;
+      sendWindowSize = null;
+      producerMaxRate = null;
+      minLargeMessageSize = null;
+      blockOnAcknowledge = null;
+      blockOnNonPersistentSend = null;
+      blockOnPersistentSend = null;
+      autoGroup = null;
+      maxConnections = null;
+      preAcknowledge = null;
+      retryInterval = null;
+      retryIntervalMultiplier = null;
+      maxRetriesBeforeFailover = null;
+      maxRetriesAfterFailover = null;
+      userName = null;
+      password = null;
+      clientID = null;
+      useXA = null;
    }
    
-   public XAResource[] getXAResources(ActivationSpec[] specs) throws ResourceException
-   {
-      if (trace)
-         log.trace("getXAResources(" + specs + ")");
-
-      throw new ResourceException("Unsupported");
-   }
-   
-   public void start(BootstrapContext ctx) throws ResourceAdapterInternalException
-   {
-      if (trace)
-         log.trace("start(" + ctx + ")");
-
-      this.ctx = ctx;
-
-      log.info("JBoss Messaging resource adapter started");
-   }
-
-   public void stop()
-   {
-      if (trace)
-         log.trace("stop()");
-
-      log.info("JBoss Messaging resource adapter stopped");
-   }
-
    /**
     * Get the discovery group name
     * @return The value
@@ -124,7 +178,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getDiscoveryGroupName()");
 
-      return raProperties.getDiscoveryGroupName();
+      return discoveryGroupName;
    }
 
    /**
@@ -136,7 +190,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setDiscoveryGroupName(" + dgn + ")");
 
-      raProperties.setDiscoveryGroupName(dgn);
+      discoveryGroupName = dgn;
    }
 
    /**
@@ -148,7 +202,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getDiscoveryGroupPort()");
 
-      return raProperties.getDiscoveryGroupPort();
+      return discoveryGroupPort;
    }
 
    /**
@@ -160,7 +214,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setDiscoveryGroupPort(" + dgp + ")");
 
-      raProperties.setDiscoveryGroupPort(dgp);
+      discoveryGroupPort = dgp;
    }
 
    /**
@@ -172,7 +226,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getDiscoveryRefreshTimeout()");
 
-      return raProperties.getDiscoveryRefreshTimeout();
+      return discoveryRefreshTimeout;
    }
 
    /**
@@ -184,7 +238,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setDiscoveryRefreshTimeout(" + discoveryRefreshTimeout + ")");
 
-      raProperties.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+      this.discoveryRefreshTimeout = discoveryRefreshTimeout;
    }
 
    /**
@@ -196,7 +250,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getDiscoveryInitialWaitTimeout()");
 
-      return raProperties.getDiscoveryInitialWaitTimeout();
+      return discoveryInitialWaitTimeout;
    }
 
    /**
@@ -208,7 +262,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setDiscoveryInitialWaitTimeout(" + discoveryInitialWaitTimeout + ")");
 
-      raProperties.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
+      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
    }
 
    /**
@@ -220,7 +274,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getLoadBalancingPolicyClassName()");
 
-      return raProperties.getLoadBalancingPolicyClassName();
+      return loadBalancingPolicyClassName;
    }
 
    /**
@@ -232,7 +286,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setLoadBalancingPolicyClassName(" + loadBalancingPolicyClassName + ")");
 
-      raProperties.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+      this.loadBalancingPolicyClassName = loadBalancingPolicyClassName;
    }
 
    /**
@@ -244,7 +298,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getPingPeriod()");
 
-      return raProperties.getPingPeriod();
+      return pingPeriod;
    }
 
    /**
@@ -256,7 +310,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setPingPeriod(" + pingPeriod + ")");
 
-      raProperties.setPingPeriod(pingPeriod);
+      this.pingPeriod = pingPeriod;
    }
 
    /**
@@ -268,7 +322,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getConnectionTTL()");
 
-      return raProperties.getConnectionTTL();
+      return connectionTTL;
    }
 
    /**
@@ -280,7 +334,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setConnectionTTL(" + connectionTTL + ")");
 
-      raProperties.setConnectionTTL(connectionTTL);
+      this.connectionTTL = connectionTTL;
    }
 
    /**
@@ -292,7 +346,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getCallTimeout()");
 
-      return raProperties.getCallTimeout();
+      return callTimeout;
    }
 
    /**
@@ -304,7 +358,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setCallTimeout(" + callTimeout + ")");
 
-      raProperties.setCallTimeout(callTimeout);
+      this.callTimeout = callTimeout;
    }
 
    /**
@@ -316,7 +370,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getDupsOKBatchSize()");
 
-      return raProperties.getDupsOKBatchSize();
+      return dupsOKBatchSize;
    }
 
    /**
@@ -328,7 +382,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setDupsOKBatchSize(" + dupsOKBatchSize + ")");
 
-      raProperties.setDupsOKBatchSize(dupsOKBatchSize);
+      this.dupsOKBatchSize = dupsOKBatchSize;
    }
 
    /**
@@ -340,7 +394,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getTransactionBatchSize()");
 
-      return raProperties.getTransactionBatchSize();
+      return transactionBatchSize;
    }
 
    /**
@@ -352,7 +406,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setTransactionBatchSize(" + transactionBatchSize + ")");
 
-      raProperties.setTransactionBatchSize(transactionBatchSize);
+      this.transactionBatchSize = transactionBatchSize;
    }
 
    /**
@@ -364,7 +418,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getConsumerWindowSize()");
 
-      return raProperties.getConsumerWindowSize();
+      return consumerWindowSize;
    }
 
    /**
@@ -376,7 +430,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setConsumerWindowSize(" + consumerWindowSize + ")");
 
-      raProperties.setConsumerWindowSize(consumerWindowSize);
+      this.consumerWindowSize = consumerWindowSize;
    }
 
    /**
@@ -388,7 +442,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getConsumerMaxRate()");
 
-      return raProperties.getConsumerMaxRate();
+      return consumerMaxRate;
    }
 
    /**
@@ -400,7 +454,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setConsumerMaxRate(" + consumerMaxRate + ")");
 
-      raProperties.setConsumerMaxRate(consumerMaxRate);
+      this.consumerMaxRate = consumerMaxRate;
    }
 
    /**
@@ -412,7 +466,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getSendWindowSize()");
 
-      return raProperties.getSendWindowSize();
+      return sendWindowSize;
    }
 
    /**
@@ -424,7 +478,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setSendWindowSize(" + sendWindowSize + ")");
 
-      raProperties.setSendWindowSize(sendWindowSize);
+      this.sendWindowSize = sendWindowSize;
    }
 
    /**
@@ -436,7 +490,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getProducerMaxRate()");
 
-      return raProperties.getProducerMaxRate();
+      return producerMaxRate;
    }
 
    /**
@@ -448,7 +502,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setProducerMaxRate(" + producerMaxRate + ")");
 
-      raProperties.setProducerMaxRate(producerMaxRate);
+      this.producerMaxRate = producerMaxRate;
    }
 
    /**
@@ -460,7 +514,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getMinLargeMessageSize()");
 
-      return raProperties.getMinLargeMessageSize();
+      return minLargeMessageSize;
    }
 
    /**
@@ -472,7 +526,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setMinLargeMessageSize(" + minLargeMessageSize + ")");
 
-      raProperties.setMinLargeMessageSize(minLargeMessageSize);
+      this.minLargeMessageSize = minLargeMessageSize;
    }
 
    /**
@@ -484,7 +538,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getBlockOnAcknowledge()");
 
-      return raProperties.getBlockOnAcknowledge();
+      return blockOnAcknowledge;
    }
 
    /**
@@ -496,7 +550,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setBlockOnAcknowledge(" + blockOnAcknowledge + ")");
 
-      raProperties.setBlockOnAcknowledge(blockOnAcknowledge);
+      this.blockOnAcknowledge = blockOnAcknowledge;
    }
 
    /**
@@ -508,7 +562,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getBlockOnNonPersistentSend()");
 
-      return raProperties.getBlockOnNonPersistentSend();
+      return blockOnNonPersistentSend;
    }
 
    /**
@@ -520,7 +574,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setBlockOnNonPersistentSend(" + blockOnNonPersistentSend + ")");
 
-      raProperties.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
    }
 
    /**
@@ -532,7 +586,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getBlockOnPersistentSend()");
 
-      return raProperties.getBlockOnPersistentSend();
+      return blockOnPersistentSend;
    }
 
    /**
@@ -544,7 +598,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setBlockOnPersistentSend(" + blockOnPersistentSend + ")");
 
-      raProperties.setBlockOnPersistentSend(blockOnPersistentSend);
+      this.blockOnPersistentSend = blockOnPersistentSend;
    }
 
    /**
@@ -556,7 +610,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getAutoGroup()");
 
-      return raProperties.getAutoGroup();
+      return autoGroup;
    }
 
    /**
@@ -568,7 +622,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setAutoGroup(" + autoGroup + ")");
 
-      raProperties.setAutoGroup(autoGroup);
+      this.autoGroup = autoGroup;
    }
 
    /**
@@ -580,7 +634,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getMaxConnections()");
 
-      return raProperties.getMaxConnections();
+      return maxConnections;
    }
 
    /**
@@ -592,7 +646,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setMaxConnections(" + maxConnections + ")");
 
-      raProperties.setMaxConnections(maxConnections);
+      this.maxConnections = maxConnections;
    }
 
    /**
@@ -604,7 +658,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getPreAcknowledge()");
 
-      return raProperties.getPreAcknowledge();
+      return preAcknowledge;
    }
 
    /**
@@ -616,7 +670,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setPreAcknowledge(" + preAcknowledge + ")");
 
-      raProperties.setPreAcknowledge(preAcknowledge);
+      this.preAcknowledge = preAcknowledge;
    }
 
    /**
@@ -628,7 +682,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getRetryInterval()");
 
-      return raProperties.getRetryInterval();
+      return retryInterval;
    }
 
    /**
@@ -640,7 +694,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setRetryInterval(" + retryInterval + ")");
 
-      raProperties.setRetryInterval(retryInterval);
+      this.retryInterval = retryInterval;
    }
 
    /**
@@ -652,7 +706,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getRetryIntervalMultiplier()");
 
-      return raProperties.getRetryIntervalMultiplier();
+      return retryIntervalMultiplier;
    }
 
    /**
@@ -664,7 +718,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setRetryIntervalMultiplier(" + retryIntervalMultiplier + ")");
 
-      raProperties.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
    }
 
    /**
@@ -676,7 +730,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getMaxRetriesBeforeFailover()");
 
-      return raProperties.getMaxRetriesBeforeFailover();
+      return maxRetriesBeforeFailover;
    }
 
    /**
@@ -688,7 +742,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setMaxRetriesBeforeFailover(" + maxRetriesBeforeFailover + ")");
 
-      raProperties.setMaxRetriesBeforeFailover(maxRetriesBeforeFailover);
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
    }
 
    /**
@@ -700,7 +754,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getMaxRetriesAfterFailover()");
 
-      return raProperties.getMaxRetriesAfterFailover();
+      return maxRetriesAfterFailover;
    }
 
    /**
@@ -712,7 +766,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setMaxRetriesAfterFailover(" + maxRetriesAfterFailover + ")");
 
-      raProperties.setMaxRetriesAfterFailover(maxRetriesAfterFailover);
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
    }
 
    /**
@@ -724,7 +778,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getUserName()");
 
-      return raProperties.getUserName();
+      return userName;
    }
 
    /**
@@ -736,9 +790,9 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setUserName(" + userName + ")");
 
-      raProperties.setUserName(userName);
+      this.userName = userName;
    }
-
+  
    /**
     * Get the password
     * @return The value
@@ -748,7 +802,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getPassword()");
 
-      return raProperties.getPassword();
+      return password;
    }
 
    /**
@@ -760,11 +814,11 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setPassword(****)");
 
-      raProperties.setPassword(password);
+      this.password = password;
    }
-   
+  
    /**
-    * Get the client ID
+    * Get the client id
     * @return The value
     */
    public String getClientID()
@@ -772,21 +826,21 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getClientID()");
 
-      return raProperties.getClientID();
+      return clientID;
    }
 
    /**
-    * Set the client ID
-    * @param clientId The client id
+    * Set the client id
+    * @param clientID The value
     */
    public void setClientID(String clientID)
    {
       if (trace)
          log.trace("setClientID(" + clientID + ")");
 
-      raProperties.setClientID(clientID);
+      this.clientID = clientID;
    }
-   
+  
    /**
     * Get the use XA flag
     * @return The value
@@ -796,7 +850,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("getUseXA()");
 
-      return raProperties.getUseXA();
+      return useXA;
    }
 
    /**
@@ -808,7 +862,22 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("setUseXA(" + xa + ")");
 
-      raProperties.setUseXA(xa);
+      this.useXA = xa;
+   }
+
+   /**
+    * Use XA for communication
+    * @return The value
+    */
+   public boolean isUseXA()
+   {
+      if (trace)
+         log.trace("isUseXA()");
+
+      if (useXA == null)
+         return false;
+
+      return useXA.booleanValue();
    }
 
    /**
@@ -821,19 +890,46 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("equals(" + obj + ")");
 
-      if (obj == null)
+      if (obj == null) 
          return false;
-
-      if (obj instanceof JBMResourceAdapter)
+    
+      if (obj instanceof JBMRAProperties)
       {
-         return raProperties.equals(((JBMResourceAdapter)obj).getProperties());
+         JBMRAProperties you = (JBMRAProperties) obj;
+         return (Util.compare(discoveryGroupName, you.getDiscoveryGroupName()) &&
+                 Util.compare(discoveryGroupPort, you.getDiscoveryGroupPort()) &&
+                 Util.compare(discoveryRefreshTimeout, you.getDiscoveryRefreshTimeout()) &&
+                 Util.compare(discoveryInitialWaitTimeout, you.getDiscoveryInitialWaitTimeout()) &&
+                 Util.compare(loadBalancingPolicyClassName, you.getLoadBalancingPolicyClassName()) &&
+                 Util.compare(pingPeriod, you.getPingPeriod()) &&
+                 Util.compare(connectionTTL, you.getConnectionTTL()) &&
+                 Util.compare(callTimeout, you.getCallTimeout()) &&
+                 Util.compare(dupsOKBatchSize, you.getDupsOKBatchSize()) &&
+                 Util.compare(transactionBatchSize, you.getTransactionBatchSize()) &&
+                 Util.compare(consumerWindowSize, you.getConsumerWindowSize()) &&
+                 Util.compare(consumerMaxRate, you.getConsumerMaxRate()) &&
+                 Util.compare(sendWindowSize, you.getSendWindowSize()) &&
+                 Util.compare(producerMaxRate, you.getProducerMaxRate()) &&
+                 Util.compare(minLargeMessageSize, you.getMinLargeMessageSize()) &&
+                 Util.compare(blockOnAcknowledge, you.getBlockOnAcknowledge()) &&
+                 Util.compare(blockOnNonPersistentSend, you.getBlockOnNonPersistentSend()) &&
+                 Util.compare(blockOnPersistentSend, you.getBlockOnPersistentSend()) &&
+                 Util.compare(autoGroup, you.getAutoGroup()) &&
+                 Util.compare(maxConnections, you.getMaxConnections()) &&
+                 Util.compare(preAcknowledge, you.getPreAcknowledge()) &&
+                 Util.compare(retryInterval, you.getRetryInterval()) &&
+                 Util.compare(retryIntervalMultiplier, you.getRetryIntervalMultiplier()) &&
+                 Util.compare(maxRetriesBeforeFailover, you.getMaxRetriesBeforeFailover()) &&
+                 Util.compare(maxRetriesAfterFailover, you.getMaxRetriesAfterFailover()) &&
+                 Util.compare(userName, you.getUserName()) &&
+                 Util.compare(password, you.getPassword()) &&
+                 Util.compare(clientID, you.getClientID()) &&
+                 Util.compare(useXA, you.getUseXA()));
       }
-      else
-      {
-         return false;
-      }
+    
+      return false;
    }
-
+  
    /**
     * Return the hash code for the object
     * @return The hash code
@@ -843,122 +939,38 @@ public class JBMResourceAdapter implements ResourceAdapter
       if (trace)
          log.trace("hashCode()");
 
-      return raProperties.hashCode();
-   }
+      int hash = 7;
 
-   /**
-    * Get the JBoss connection factory
-    * @return The factory
-    */
-   protected JBossConnectionFactory getJBossConnectionFactory()
-   {
-      if (!configured.get()) {
-         setup();
-      }
+      hash += 31 * hash + (discoveryGroupName != null ? discoveryGroupName.hashCode() : 0);
+      hash += 31 * hash + (discoveryGroupPort != null ? discoveryGroupPort.hashCode() : 0);
+      hash += 31 * hash + (discoveryRefreshTimeout != null ? discoveryRefreshTimeout.hashCode() : 0);
+      hash += 31 * hash + (discoveryInitialWaitTimeout != null ? discoveryInitialWaitTimeout.hashCode() : 0);
+      hash += 31 * hash + (loadBalancingPolicyClassName != null ? loadBalancingPolicyClassName.hashCode() : 0);
+      hash += 31 * hash + (pingPeriod != null ? pingPeriod.hashCode() : 0);
+      hash += 31 * hash + (connectionTTL != null ? connectionTTL.hashCode() : 0);
+      hash += 31 * hash + (callTimeout != null ? callTimeout.hashCode() : 0);
+      hash += 31 * hash + (dupsOKBatchSize != null ? dupsOKBatchSize.hashCode() : 0);
+      hash += 31 * hash + (transactionBatchSize != null ? transactionBatchSize.hashCode() : 0);
+      hash += 31 * hash + (consumerWindowSize != null ? consumerWindowSize.hashCode() : 0);
+      hash += 31 * hash + (consumerMaxRate != null ? consumerMaxRate.hashCode() : 0);
+      hash += 31 * hash + (sendWindowSize != null ? sendWindowSize.hashCode() : 0);
+      hash += 31 * hash + (producerMaxRate != null ? producerMaxRate.hashCode() : 0);
+      hash += 31 * hash + (minLargeMessageSize != null ? minLargeMessageSize.hashCode() : 0);
+      hash += 31 * hash + (blockOnAcknowledge != null ? blockOnAcknowledge.hashCode() : 0);
+      hash += 31 * hash + (blockOnNonPersistentSend != null ? blockOnNonPersistentSend.hashCode() : 0);
+      hash += 31 * hash + (blockOnPersistentSend != null ? blockOnPersistentSend.hashCode() : 0);
+      hash += 31 * hash + (autoGroup != null ? autoGroup.hashCode() : 0);
+      hash += 31 * hash + (maxConnections != null ? maxConnections.hashCode() : 0);
+      hash += 31 * hash + (preAcknowledge != null ? preAcknowledge.hashCode() : 0);
+      hash += 31 * hash + (retryInterval != null ? retryInterval.hashCode() : 0);
+      hash += 31 * hash + (retryIntervalMultiplier != null ? retryIntervalMultiplier.hashCode() : 0);
+      hash += 31 * hash + (maxRetriesBeforeFailover != null ? maxRetriesBeforeFailover.hashCode() : 0);
+      hash += 31 * hash + (maxRetriesAfterFailover != null ? maxRetriesAfterFailover.hashCode() : 0);
+      hash += 31 * hash + (userName != null ? userName.hashCode() : 0);
+      hash += 31 * hash + (password != null ? password.hashCode() : 0);
+      hash += 31 * hash + (clientID != null ? clientID.hashCode() : 0);
+      hash += 31 * hash + (useXA != null ? useXA.hashCode() : 0);
 
-      return factory;
-   }
-
-   /**
-    * Get the resource adapter properties
-    * @return The properties
-    */
-   protected JBMRAProperties getProperties()
-   {
-      if (trace)
-         log.trace("getProperties()");
-
-      return raProperties;
-   }
-
-   /**
-    * Setup the factory
-    */
-   protected void setup()
-   {
-      if (getDiscoveryGroupName() != null &&
-          !getDiscoveryGroupName().trim().equals("") &&
-          getDiscoveryGroupPort() != null &&
-          getDiscoveryRefreshTimeout() != null &&
-          getDiscoveryInitialWaitTimeout() != null &&
-          getLoadBalancingPolicyClassName() != null &&
-          getPingPeriod() != null &&
-          getConnectionTTL() != null &&
-          getCallTimeout() != null &&
-          getClientID() != null &&
-          getDupsOKBatchSize() != null &&
-          getTransactionBatchSize() != null &&
-          getConsumerWindowSize() != null &&
-          getConsumerMaxRate() != null &&
-          getSendWindowSize() != null &&
-          getProducerMaxRate() != null &&
-          getMinLargeMessageSize() != null &&
-          getBlockOnAcknowledge() != null &&
-          getBlockOnNonPersistentSend() != null &&
-          getBlockOnPersistentSend() != null &&
-          getAutoGroup() != null &&
-          getMaxConnections() != null &&
-          getPreAcknowledge() != null &&
-          getRetryInterval() != null &&
-          getRetryIntervalMultiplier() != null &&
-          getMaxRetriesBeforeFailover() != null &&
-          getMaxRetriesAfterFailover() != null)
-      {
-         factory = new JBossConnectionFactory(getDiscoveryGroupName(), 
-                                              getDiscoveryGroupPort().intValue(),
-                                              getDiscoveryRefreshTimeout().longValue(),
-                                              getDiscoveryInitialWaitTimeout().longValue(),
-                                              getLoadBalancingPolicyClassName(),
-                                              getPingPeriod().longValue(),
-                                              getConnectionTTL().longValue(),
-                                              getCallTimeout().longValue(),
-                                              getClientID(),
-                                              getDupsOKBatchSize().intValue(),
-                                              getTransactionBatchSize().intValue(),
-                                              getConsumerWindowSize().intValue(),
-                                              getConsumerMaxRate().intValue(),
-                                              getSendWindowSize().intValue(),
-                                              getProducerMaxRate().intValue(),
-                                              getMinLargeMessageSize().intValue(),
-                                              getBlockOnAcknowledge().booleanValue(),
-                                              getBlockOnNonPersistentSend().booleanValue(),
-                                              getBlockOnPersistentSend().booleanValue(),
-                                              getAutoGroup().booleanValue(),
-                                              getMaxConnections().intValue(),
-                                              getPreAcknowledge().booleanValue(),
-                                              getRetryInterval().longValue(),
-                                              getRetryIntervalMultiplier().doubleValue(),
-                                              getMaxRetriesBeforeFailover().intValue(),
-                                              getMaxRetriesAfterFailover().intValue());
-
-         configured.set(true);
-
-      } else if (getDiscoveryGroupName() != null &&
-                 !getDiscoveryGroupName().trim().equals("") &&
-                 getDiscoveryGroupPort() != null &&
-                 getDiscoveryRefreshTimeout() != null &&
-                 getDiscoveryInitialWaitTimeout() != null)
-      {
-         factory = new JBossConnectionFactory(getDiscoveryGroupName(), 
-                                              getDiscoveryGroupPort().intValue(),
-                                              getDiscoveryRefreshTimeout().longValue(),
-                                              getDiscoveryInitialWaitTimeout().longValue());
-
-         configured.set(true);
-
-      } 
-      else if (getDiscoveryGroupName() != null &&
-               !getDiscoveryGroupName().trim().equals("") &&
-               getDiscoveryGroupPort() != null)
-      {
-         factory = new JBossConnectionFactory(getDiscoveryGroupName(), 
-                                              getDiscoveryGroupPort().intValue());
-
-         configured.set(true);
-      }
-      else
-      {
-         log.fatal("Unable to configure phsyical connection factory");
-      }
+      return hash;
    }
 }

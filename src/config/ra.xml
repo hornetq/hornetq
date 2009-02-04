@@ -43,186 +43,187 @@
    <resourceadapter>
       <resourceadapter-class>org.jboss.messaging.ra.JBMResourceAdapter</resourceadapter-class>
 
+      <config-property>
+        <description>The discovery group name</description>
+        <config-property-name>DiscoveryGroupName</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value>default</config-property-value>
+      </config-property>
+      <config-property>
+        <description>The discovery group port</description>
+        <config-property-name>DiscoveryGroupPort</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value>0</config-property-value>
+      </config-property>
+<!--
+      <config-property>
+        <description>The discovery refresh timeout</description>
+        <config-property-name>DiscoveryRefreshTimeout</config-property-name>
+        <config-property-type>java.lang.Long</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The discovery initial wait timeout</description>
+        <config-property-name>DiscoveryInitialWaitTimeout</config-property-name>
+        <config-property-type>java.lang.Long</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The load balancing policy class name</description>
+        <config-property-name>LoadBalancingPolicyClassName</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The ping period</description>
+        <config-property-name>PingPeriod</config-property-name>
+        <config-property-type>java.lang.Long</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The connection TTL</description>
+        <config-property-name>ConnectionTTL</config-property-name>
+        <config-property-type>java.lang.Long</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The call timeout</description>
+        <config-property-name>CallTimeout</config-property-name>
+        <config-property-type>java.lang.Long</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The dups ok batch size</description>
+        <config-property-name>DupsOKBatchSize</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The transaction batch size</description>
+        <config-property-name>TransactionBatchSize</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The consumer window size</description>
+        <config-property-name>ConsumerWindowSize</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The consumer max rate</description>
+        <config-property-name>ConsumerMaxRate</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The send window size</description>
+        <config-property-name>SendWindowSize</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The producer max rate</description>
+        <config-property-name>ProducerMaxRate</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The min large message size</description>
+        <config-property-name>MinLargeMessageSize</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The block on acknowledge</description>
+        <config-property-name>BlockOnAcknowledge</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The block on non persistent send</description>
+        <config-property-name>BlockOnNonPersistentSend</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The block on persistent send</description>
+        <config-property-name>BlockOnPersistentSend</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The auto group</description>
+        <config-property-name>AutoGroup</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The max connections</description>
+        <config-property-name>MaxConnections</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The pre acknowledge</description>
+        <config-property-name>PreAcknowledge</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The retry interval</description>
+        <config-property-name>RetryInterval</config-property-name>
+        <config-property-type>java.lang.Long</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The retry interval multiplier</description>
+        <config-property-name>RetryIntervalMultiplier</config-property-name>
+        <config-property-type>java.lang.Double</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The max retries before failover</description>
+        <config-property-name>MaxRetriesBeforeFailover</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The max retries after failover</description>
+        <config-property-name>MaxRetriesAfterFailover</config-property-name>
+        <config-property-type>java.lang.Integer</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+-->
+      <config-property>
+        <description>Use XA methods to obtain connections</description>
+        <config-property-name>UseXA</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value>true</config-property-value>
+      </config-property>
+      <config-property>
+        <description>The user name used to login to the JMS server</description>
+        <config-property-name>UserName</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The password used to login to the JMS server</description>
+        <config-property-name>Password</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The client id</description>
+        <config-property-name>ClientID</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+
       <outbound-resourceadapter>
          <connection-definition>
             <managedconnectionfactory-class>org.jboss.messaging.ra.JBMManagedConnectionFactory</managedconnectionfactory-class>
 
-            <config-property>
-               <description>The discovery group name</description>
-               <config-property-name>DiscoveryGroupName</config-property-name>
-               <config-property-type>java.lang.String</config-property-type>
-               <config-property-value>default</config-property-value>
-            </config-property>
-            <config-property>
-               <description>The discovery group port</description>
-               <config-property-name>DiscoveryGroupPort</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value>0</config-property-value>
-            </config-property>
-<!--
-            <config-property>
-               <description>The discovery refresh timeout</description>
-               <config-property-name>DiscoveryRefreshTimeout</config-property-name>
-               <config-property-type>java.lang.Long</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The discovery initial wait timeout</description>
-               <config-property-name>DiscoveryInitialWaitTimeout</config-property-name>
-               <config-property-type>java.lang.Long</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The load balancing policy class name</description>
-               <config-property-name>LoadBalancingPolicyClassName</config-property-name>
-               <config-property-type>java.lang.String</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The ping period</description>
-               <config-property-name>PingPeriod</config-property-name>
-               <config-property-type>java.lang.Long</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The connection TTL</description>
-               <config-property-name>ConnectionTTL</config-property-name>
-               <config-property-type>java.lang.Long</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The call timeout</description>
-               <config-property-name>CallTimeout</config-property-name>
-               <config-property-type>java.lang.Long</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The dups ok batch size</description>
-               <config-property-name>DupsOKBatchSize</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The transaction batch size</description>
-               <config-property-name>TransactionBatchSize</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The consumer window size</description>
-               <config-property-name>ConsumerWindowSize</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The consumer max rate</description>
-               <config-property-name>ConsumerMaxRate</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The send window size</description>
-               <config-property-name>SendWindowSize</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The producer max rate</description>
-               <config-property-name>ProducerMaxRate</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The min large message size</description>
-               <config-property-name>MinLargeMessageSize</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The block on acknowledge</description>
-               <config-property-name>BlockOnAcknowledge</config-property-name>
-               <config-property-type>java.lang.Boolean</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The block on non persistent send</description>
-               <config-property-name>BlockOnNonPersistentSend</config-property-name>
-               <config-property-type>java.lang.Boolean</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The block on persistent send</description>
-               <config-property-name>BlockOnPersistentSend</config-property-name>
-               <config-property-type>java.lang.Boolean</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The auto group</description>
-               <config-property-name>AutoGroup</config-property-name>
-               <config-property-type>java.lang.Boolean</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The max connections</description>
-               <config-property-name>MaxConnections</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The pre acknowledge</description>
-               <config-property-name>PreAcknowledge</config-property-name>
-               <config-property-type>java.lang.Boolean</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The retry interval</description>
-               <config-property-name>RetryInterval</config-property-name>
-               <config-property-type>java.lang.Long</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The retry interval multiplier</description>
-               <config-property-name>RetryIntervalMultiplier</config-property-name>
-               <config-property-type>java.lang.Double</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The max retries before failover</description>
-               <config-property-name>MaxRetriesBeforeFailover</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The max retries after failover</description>
-               <config-property-name>MaxRetriesAfterFailover</config-property-name>
-               <config-property-type>java.lang.Integer</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
--->
-            <config-property>
-               <description>Use XA methods to obtain connections</description>
-               <config-property-name>UseXA</config-property-name>
-               <config-property-type>java.lang.Boolean</config-property-type>
-               <config-property-value>true</config-property-value>
-            </config-property>
-            <config-property>
-               <description>The user name used to login to the JMS server</description>
-               <config-property-name>UserName</config-property-name>
-               <config-property-type>java.lang.String</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The password used to login to the JMS server</description>
-               <config-property-name>Password</config-property-name>
-               <config-property-type>java.lang.String</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
-            <config-property>
-               <description>The client id</description>
-               <config-property-name>ClientID</config-property-name>
-               <config-property-type>java.lang.String</config-property-type>
-               <config-property-value></config-property-value>
-            </config-property>
             <config-property>
                <description>The default session type</description>
                <config-property-name>SessionDefaultType</config-property-name>
