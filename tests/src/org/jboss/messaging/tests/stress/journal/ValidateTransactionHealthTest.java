@@ -69,11 +69,6 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       internalTest("aio", getTestDir(), 1000, 100, true, true, 10);
    }
 
-   public void testAIONonTransactional() throws Exception
-   {
-      internalTest("aio", getTestDir(), 10000, 0, true, true, 1);
-   }
-
    public void testAIONonTransactionalNoExternalProcess() throws Exception
    {
       internalTest("aio", getTestDir(), 1000, 0, true, false, 10);
