@@ -665,32 +665,26 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
+      HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
+
+      AddressSettings set = new AddressSettings();
+      set.setDropMessagesWhenFull(true);
+
+      settings.put(ADDRESS.toString(), set);
+
       if (global)
       {
+         set.setMaxSizeBytes(-1);
          config.setPagingMaxGlobalSizeBytes(10 * 1024);
       }
       else
       {
          config.setPagingMaxGlobalSizeBytes(-1);
+         set.setMaxSizeBytes(10 * 1024);
       }
 
       config.setPagingDefaultSize(10 * 1024);
-
-      HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
-
-      AddressSettings set = new AddressSettings();
-      set.setDropMessagesWhenFull(true);
-      if (!global)
-      {
-         set.setMaxSizeBytes(10 * 1024);
-      }
-      else
-      {
-         set.setMaxSizeBytes(-1);
-         
-      }
-      settings.put(ADDRESS.toString(), set);
-
+ 
       MessagingService messagingService = createService(true, config, settings);
 
       messagingService.start();
