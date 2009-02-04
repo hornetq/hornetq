@@ -16,9 +16,7 @@
 package org.jboss.messaging.util;
 
 import java.lang.reflect.Method;
-import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.security.SecureRandom;
 import java.util.Enumeration;
 import java.util.Random;
@@ -86,8 +84,8 @@ public final class UUIDGenerator
    public final UUID generateTimeBasedUUID(byte[] byteAddr)
    {
       byte[] contents = new byte[16];
-      int pos = 12;
-      for (int i = 0; i < 4; ++i)
+      int pos = 10;
+      for (int i = 0; i < 6; ++i)
       {
          contents[pos + i] = byteAddr[i];
       }
@@ -146,14 +144,18 @@ public final class UUIDGenerator
          {
             NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
             Object res = getHardwareAddressMethod.invoke(networkInterface, null);
-            if (res instanceof byte[])
+            if (res != null && res instanceof byte[])
             {
                byte[] address = (byte[])res;
-               if (log.isDebugEnabled())
+               byte[] paddedAddress = getZeroPaddedSixBytes(address);
+               if (paddedAddress != null)
                {
-                  log.debug("using hardware address " + asString(address));
+                  if (log.isDebugEnabled())
+                  {
+                     log.debug("using hardware address " + asString(paddedAddress));
+                  }
+                  return paddedAddress;                  
                }
-               return address;
             }
          }
       }
@@ -161,40 +163,6 @@ public final class UUIDGenerator
       {
       }
 
-      return null;
-   }
-
-   /**
-    * Browse all the network interfaces and their addresses until we find the 1st InetAddress which
-    * is neither a loopback address nor a site local address.
-    * Returns <code>null</code> if no such address is found.
-    */
-   public final static InetAddress getInetAddress()
-   {
-      try
-      {
-         Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-         while (networkInterfaces.hasMoreElements())
-         {
-            NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
-            Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-            while (inetAddresses.hasMoreElements())
-            {
-               InetAddress inetAddress = (InetAddress)inetAddresses.nextElement();
-               if (!inetAddress.isLoopbackAddress() && !inetAddress.isSiteLocalAddress())
-               {
-                  if (log.isDebugEnabled())
-                  {
-                     log.debug("using inet address " + inetAddress);
-                  }
-                  return inetAddress;
-               }
-            }
-         }
-      }
-      catch (SocketException e)
-      {
-      }
       return null;
    }
 
@@ -207,8 +175,7 @@ public final class UUIDGenerator
    {
       byte[] address = getAddressBytes();
 
-      UUIDGenerator gen = UUIDGenerator.getInstance();
-      UUID uid = gen.generateTimeBasedUUID(address);
+      UUID uid = generateTimeBasedUUID(address);
 
       return uid;
    }
@@ -223,11 +190,37 @@ public final class UUIDGenerator
       }
       else
       {
-         UUIDGenerator gen = UUIDGenerator.getInstance();
-         return gen.generateTimeBasedUUID(address).toString();
+         return generateTimeBasedUUID(address).toString();
       }
    }
 
+   public final static byte[] getZeroPaddedSixBytes(byte[] bytes)
+   {
+      if (bytes == null)
+      {
+         return null;
+      }
+      if (bytes.length > 0 && bytes.length <= 6)
+      {
+         if (bytes.length == 6)
+         {
+            return bytes;
+         }
+         else
+         {
+            //pad with zeroes to have a 6-byte array
+            byte[] paddedAddress = new byte[6];
+            System.arraycopy(bytes, 0, paddedAddress, 0, bytes.length);
+            for(int i = bytes.length; i < 6; i++)
+            {
+               paddedAddress[i] = 0;
+            }
+            return paddedAddress;                     
+         }
+      }
+      return null;
+   }
+   
    // Private -------------------------------------------------------
 
    private final byte[] getAddressBytes()
@@ -235,14 +228,6 @@ public final class UUIDGenerator
       if (address == null)
       {
          address = getHardwareAddress();
-         if (address == null)
-         {
-            InetAddress addr = getInetAddress();
-            if (addr != null)
-            {
-               address = addr.getAddress();
-            }
-         }
          if (address == null)
          {
             address = generateDummyAddress();
@@ -266,5 +251,5 @@ public final class UUIDGenerator
       }
       s += bytes[bytes.length - 1];
       return s;
-   }
+   }  
 }

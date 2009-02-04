@@ -22,10 +22,9 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import java.net.InetAddress;
-
 import junit.framework.TestCase;
 
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.UUIDGenerator;
 
 /**
@@ -54,19 +53,31 @@ public class UUIDGeneratorTest extends TestCase
          assertNull(UUIDGenerator.getHardwareAddress());
       } else if (javaVersion.startsWith("1.6"))
       {
-         assertNotNull(UUIDGenerator.getHardwareAddress());
+         byte[] bytes = UUIDGenerator.getHardwareAddress();
+         assertNotNull(bytes);
+         assertTrue(bytes.length == 6);
       }
    }
    
-   public void testGetInetAddress() throws Exception
+   public void testZeroPaddedBytes() throws Exception
    {
-      InetAddress address = UUIDGenerator.getInetAddress();
-      if (address != null)
-      {
-         assertFalse(address.isLoopbackAddress());
-         assertFalse(address.isSiteLocalAddress());
-      }
+      assertNull(UUIDGenerator.getZeroPaddedSixBytes(null));
+      assertNull(UUIDGenerator.getZeroPaddedSixBytes(new byte[0]));
+      assertNull(UUIDGenerator.getZeroPaddedSixBytes(new byte[7]));
+
+      byte[] fiveBytes = new byte[] {1, 2, 3, 4, 5};
+      byte[] zeroPaddedFiveBytes = UUIDGenerator.getZeroPaddedSixBytes(fiveBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[] {1, 2, 3, 4, 5, 0}, zeroPaddedFiveBytes);
+
+      byte[] fourBytes = new byte[] {1, 2, 3, 4};
+      byte[] zeroPaddedFourBytes = UUIDGenerator.getZeroPaddedSixBytes(fourBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[] {1, 2, 3, 4, 0, 0}, zeroPaddedFourBytes);
+
+      byte[] threeBytes = new byte[] {1, 2, 3};
+      byte[] zeroPaddedThreeBytes = UUIDGenerator.getZeroPaddedSixBytes(threeBytes);
+      UnitTestCase.assertEqualsByteArrays(new byte[] {1, 2, 3, 0, 0, 0}, zeroPaddedThreeBytes);
    }
+   
    
    // Package protected ---------------------------------------------
 
