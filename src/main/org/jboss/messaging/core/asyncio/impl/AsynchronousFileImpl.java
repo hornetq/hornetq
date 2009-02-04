@@ -195,7 +195,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          closeInternal(handler);
          if (handler != 0)
          {
-            addMax(maxIO * -1);
+            addMax(-maxIO);
          }
          opened = false;
          handler = 0;
