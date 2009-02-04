@@ -1170,7 +1170,8 @@
              includeantruntime="${junit.includeantruntime}"
              haltonerror="${junit.haltonerror}"
              haltonfailure="${junit.haltonfailure}"
-             showoutput="${junit.showoutput}">
+             showoutput="${junit.showoutput}"
+             timeout="${stress.junit.timeout}">
 
           <sysproperty key="user.home" value="${user.home}"/>
           <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
