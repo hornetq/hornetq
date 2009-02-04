@@ -30,6 +30,8 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.paging.PagingStore;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.util.SimpleString;
 
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -46,6 +49,11 @@ import java.util.concurrent.ScheduledExecutorService;
 public class SoloQueueImpl extends QueueImpl
 {
    private final Map<SimpleString, ServerMessage> map = new HashMap<SimpleString, ServerMessage>();
+
+   private final PagingManager pagingManager;
+
+    private final StorageManager storageManager;
+
 
    public SoloQueueImpl(final long persistenceID,
                     final SimpleString name,
@@ -58,6 +66,8 @@ public class SoloQueueImpl extends QueueImpl
                     final HierarchicalRepository<AddressSettings> queueSettingsRepository)
    {
       super(persistenceID, name, filter, durable, temporary, scheduledExecutor, postOffice, storageManager, queueSettingsRepository);
+      this.pagingManager  = postOffice.getPagingManager();
+      this.storageManager = storageManager;
    }
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception
@@ -81,8 +91,7 @@ public class SoloQueueImpl extends QueueImpl
                   ref = removeReferenceWithID(msg.getMessageID());
                   if (ref != null)
                   {
-                     QueueImpl queue = (QueueImpl) ref.getQueue();
-                     queue.discardMessage(ref, tx);
+                     discardMessage(ref, tx);
                   }
                }
 
@@ -199,5 +208,75 @@ public class SoloQueueImpl extends QueueImpl
       super.postRollback(refs);
    }
 
+      final void discardMessage(MessageReference ref, Transaction tx) throws Exception
+   {
+      deliveringCount.decrementAndGet();
+      PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
+      store.addSize(-ref.getMemoryEstimate());
+      QueueImpl queue = (QueueImpl) ref.getQueue();
+      ServerMessage msg = ref.getMessage();
+      boolean durableRef = msg.isDurable() && queue.isDurable();
 
+      if (durableRef)
+      {
+         int count = msg.decrementDurableRefCount();
+
+         if (count == 0)
+         {
+            if (tx == null)
+            {
+               storageManager.deleteMessage(msg.getMessageID());
+            }
+            else
+            {
+               storageManager.deleteMessageTransactional(tx.getID(), getPersistenceID(), msg.getMessageID());
+            }
+         }
+      }
+   }
+
+   final void discardMessage(Long id, Transaction tx) throws Exception
+   {
+      RefsOperation oper = getRefsOperation(tx);
+      Iterator<MessageReference> iterator = oper.refsToAdd.iterator();
+
+      while (iterator.hasNext())
+      {
+         MessageReference ref = iterator.next();
+
+         if (ref.getMessage().getMessageID() == id)
+         {
+            iterator.remove();
+            discardMessage(ref, tx);
+            break;
+         }
+      }
+
+   }
+
+
+   final void rediscardMessage(long id, Transaction tx) throws Exception
+   {
+      RefsOperation oper = getRefsOperation(tx);
+      Iterator<MessageReference> iterator = oper.refsToAdd.iterator();
+
+      while (iterator.hasNext())
+      {
+         MessageReference ref = iterator.next();
+
+         if (ref.getMessage().getMessageID() == id)
+         {
+            iterator.remove();
+            rediscardMessage(ref);
+            break;
+         }
+      }
+   }
+
+   final void rediscardMessage(MessageReference ref) throws Exception
+   {
+      deliveringCount.decrementAndGet();
+      PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
+      store.addSize(-ref.getMemoryEstimate());
+   }
 }

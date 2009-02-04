@@ -97,7 +97,7 @@ public class QueueImpl implements Queue
 
    private final AtomicInteger messagesAdded = new AtomicInteger(0);
 
-   private final AtomicInteger deliveringCount = new AtomicInteger(0);
+   protected final AtomicInteger deliveringCount = new AtomicInteger(0);
 
    private final AtomicBoolean waitingToDeliver = new AtomicBoolean(false);
 
@@ -1310,78 +1310,6 @@ public class QueueImpl implements Queue
          deliver();
       }
    }
-
-   final void discardMessage(MessageReference ref, Transaction tx) throws Exception
-   {
-      deliveringCount.decrementAndGet();
-      PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
-      store.addSize(-ref.getMemoryEstimate());
-      QueueImpl queue = (QueueImpl) ref.getQueue();
-      ServerMessage msg = ref.getMessage();
-      boolean durableRef = msg.isDurable() && queue.isDurable();
-
-      if (durableRef)
-      {
-         int count = msg.decrementDurableRefCount();
-
-         if (count == 0)
-         {
-            if (tx == null)
-            {
-               storageManager.deleteMessage(msg.getMessageID());
-            }
-            else
-            {
-               storageManager.deleteMessageTransactional(tx.getID(), getPersistenceID(), msg.getMessageID());
-            }
-         }
-      }
-   }
-
-   final void discardMessage(Long id, Transaction tx) throws Exception
-   {
-      RefsOperation oper = getRefsOperation(tx);
-      Iterator<MessageReference> iterator = oper.refsToAdd.iterator();
-
-      while (iterator.hasNext())
-      {
-         MessageReference ref = iterator.next();
-
-         if (ref.getMessage().getMessageID() == id)
-         {
-            iterator.remove();
-            discardMessage(ref, tx);
-            break;
-         }
-      }
-
-   }
-
-
-   final void rediscardMessage(long id, Transaction tx) throws Exception
-   {
-      RefsOperation oper = getRefsOperation(tx);
-      Iterator<MessageReference> iterator = oper.refsToAdd.iterator();
-
-      while (iterator.hasNext())
-      {
-         MessageReference ref = iterator.next();
-
-         if (ref.getMessage().getMessageID() == id)
-         {
-            iterator.remove();
-            rediscardMessage(ref);
-            break;
-         }
-      }
-   }
-
-   final void rediscardMessage(MessageReference ref) throws Exception
-   {
-      deliveringCount.decrementAndGet();
-      PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
-      store.addSize(-ref.getMemoryEstimate());
-   }
    // Inner classes
    // --------------------------------------------------------------------------
 
@@ -1399,7 +1327,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private class RefsOperation implements TransactionOperation
+   final class RefsOperation implements TransactionOperation
    {
       List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
 
