@@ -129,7 +129,7 @@ public final class UUIDGenerator
       Method getHardwareAddressMethod;
       try
       {
-         getHardwareAddressMethod = NetworkInterface.class.getMethod("getHardwareAddress", null);
+         getHardwareAddressMethod = NetworkInterface.class.getMethod("getHardwareAddress");
       }
       catch (Throwable t)
       {
@@ -143,7 +143,7 @@ public final class UUIDGenerator
          while (networkInterfaces.hasMoreElements())
          {
             NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
-            Object res = getHardwareAddressMethod.invoke(networkInterface, null);
+            Object res = getHardwareAddressMethod.invoke(networkInterface);
             if (res != null && res instanceof byte[])
             {
                byte[] address = (byte[])res;
