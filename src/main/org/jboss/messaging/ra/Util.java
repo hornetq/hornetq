@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.ra;
 
+import javax.naming.Context;
+
 /**
  * Various utility functions
  *
@@ -135,5 +137,18 @@ public class Util {
       
       // me will not be null, test for equality
       return me.equals(you);
+   }
+
+   /**
+    * Lookup an object in the default initial context
+    * @param context The context to use
+    * @param name the name to lookup
+    * @param clazz the expected type
+    * @return the object
+    * @throws Exception for any error
+    */
+   public static Object lookup(Context context, String name, Class clazz) throws Exception
+   {
+      return context.lookup(name);
    }
 }

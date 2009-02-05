@@ -21,6 +21,14 @@
  */
 package org.jboss.messaging.ra;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.ra.inflow.JBMActivation;
+import org.jboss.messaging.ra.inflow.JBMActivationSpec;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.resource.NotSupportedException;
@@ -30,10 +38,8 @@ import javax.resource.spi.BootstrapContext;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
  * The resource adapter for JBoss Messaging
@@ -62,6 +68,9 @@ public class JBMResourceAdapter implements ResourceAdapter
    /** Have the factory been configured */
    private AtomicBoolean configured;
 
+   /** The activations by activation spec */
+   private Map activations;
+
    /**
     * Constructor
     */
@@ -73,22 +82,46 @@ public class JBMResourceAdapter implements ResourceAdapter
       raProperties = new JBMRAProperties();
       factory = null;
       configured = new AtomicBoolean(false);
+      activations = new ConcurrentHashMap();
    }
 
+   /**
+    * Endpoint activation
+    * @param endpointFactory The endpoint factory
+    * @param spec The activation spec
+    * @exception ResourceException Thrown if an error occurs
+    */
    public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException
    {
       if (trace)
          log.trace("endpointActivation(" + endpointFactory + ", " + spec + ")");
 
-      throw new NotSupportedException("Unsupported");
+      JBMActivation activation = new JBMActivation(this, endpointFactory, (JBMActivationSpec) spec);
+      activations.put(spec, activation);
+      activation.start();
    }
 
+   /**
+    * Endpoint deactivation
+    * @param endpointFactory The endpoint factory
+    * @param spec The activation spec
+    */
    public void endpointDeactivation(MessageEndpointFactory endpointFactory, ActivationSpec spec)
    {
       if (trace)
          log.trace("endpointDeactivation(" + endpointFactory + ", " + spec + ")");
+
+      JBMActivation activation = (JBMActivation) activations.remove(spec);
+      if (activation != null)
+         activation.stop();
    }
    
+   /**
+    * Get XA resources
+    * @param specs The activation specs
+    * @return The XA resources
+    * @exception ResourceException Thrown if an error occurs or unsupported
+    */
    public XAResource[] getXAResources(ActivationSpec[] specs) throws ResourceException
    {
       if (trace)
@@ -97,6 +130,11 @@ public class JBMResourceAdapter implements ResourceAdapter
       throw new ResourceException("Unsupported");
    }
    
+   /**
+    * Start
+    * @param ctx The bootstrap context
+    * @exception ResourceAdapterInternalException Thrown if an error occurs
+    */
    public void start(BootstrapContext ctx) throws ResourceAdapterInternalException
    {
       if (trace)
@@ -107,10 +145,29 @@ public class JBMResourceAdapter implements ResourceAdapter
       log.info("JBoss Messaging resource adapter started");
    }
 
+   /**
+    * Stop
+    */
    public void stop()
    {
       if (trace)
          log.trace("stop()");
+
+      for (Iterator i = activations.entrySet().iterator(); i.hasNext();)
+      {
+         Map.Entry entry = (Map.Entry) i.next();
+         try
+         {
+            JBMActivation activation = (JBMActivation) entry.getValue();
+            if (activation != null)
+               activation.stop();
+         }
+         catch (Exception ignored)
+         {
+            log.debug("Ignored", ignored);
+         }
+         i.remove();
+      }
 
       log.info("JBoss Messaging resource adapter stopped");
    }
@@ -847,10 +904,25 @@ public class JBMResourceAdapter implements ResourceAdapter
    }
 
    /**
+    * Get the work manager
+    * @return The manager
+    */
+   public WorkManager getWorkManager()
+   {
+      if (trace)
+         log.trace("getWorkManager()");
+
+      if (ctx == null)
+         return null;
+
+      return ctx.getWorkManager();
+   }
+
+   /**
     * Get the JBoss connection factory
     * @return The factory
     */
-   protected JBossConnectionFactory getJBossConnectionFactory()
+   public JBossConnectionFactory getJBossConnectionFactory()
    {
       if (!configured.get()) {
          setup();
