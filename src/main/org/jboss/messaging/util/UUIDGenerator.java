@@ -18,6 +18,7 @@ package org.jboss.messaging.util;
 import java.lang.reflect.Method;
 import java.net.NetworkInterface;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Random;
 
@@ -28,6 +29,9 @@ public final class UUIDGenerator
    private final static UUIDGenerator sSingleton = new UUIDGenerator();
 
    private static final Logger log = Logger.getLogger(UUIDGenerator.class);
+
+   // Windows has some fake adapters that will return the same HARDWARE ADDRESS on any computer. We need to ignore those
+   private static final byte[][] BLACK_LIST = new byte[][] { { 2, 0, 84, 85, 78, 1 } };
 
    /**
     * Random-generator, used by various UUID-generation methods:
@@ -81,7 +85,7 @@ public final class UUIDGenerator
       return mRnd;
    }
 
-   public final UUID generateTimeBasedUUID(byte[] byteAddr)
+   public final UUID generateTimeBasedUUID(final byte[] byteAddr)
    {
       byte[] contents = new byte[16];
       int pos = 10;
@@ -148,28 +152,34 @@ public final class UUIDGenerator
          Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
          while (networkInterfaces.hasMoreElements())
          {
-            NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
+            NetworkInterface networkInterface = networkInterfaces.nextElement();
             boolean up = (Boolean)isUpMethod.invoke(networkInterface);
             boolean loopback = (Boolean)isLoopbackMethod.invoke(networkInterface);
             boolean virtual = (Boolean)isVirtualMethod.invoke(networkInterface);
-            
+
             if (loopback || virtual || !up)
             {
                continue;
             }
-            
+
             Object res = getHardwareAddressMethod.invoke(networkInterface);
             if (res != null && res instanceof byte[])
             {
                byte[] address = (byte[])res;
                byte[] paddedAddress = getZeroPaddedSixBytes(address);
+
+               if (isBlackList(address))
+               {
+                  continue;
+               }
+
                if (paddedAddress != null)
                {
                   if (log.isDebugEnabled())
                   {
                      log.debug("using hardware address " + asString(paddedAddress));
                   }
-                  return paddedAddress;                  
+                  return paddedAddress;
                }
             }
          }
@@ -209,7 +219,7 @@ public final class UUIDGenerator
       }
    }
 
-   public final static byte[] getZeroPaddedSixBytes(byte[] bytes)
+   public final static byte[] getZeroPaddedSixBytes(final byte[] bytes)
    {
       if (bytes == null)
       {
@@ -223,20 +233,32 @@ public final class UUIDGenerator
          }
          else
          {
-            //pad with zeroes to have a 6-byte array
+            // pad with zeroes to have a 6-byte array
             byte[] paddedAddress = new byte[6];
             System.arraycopy(bytes, 0, paddedAddress, 0, bytes.length);
-            for(int i = bytes.length; i < 6; i++)
+            for (int i = bytes.length; i < 6; i++)
             {
                paddedAddress[i] = 0;
             }
-            return paddedAddress;                     
+            return paddedAddress;
          }
       }
       return null;
    }
-   
+
    // Private -------------------------------------------------------
+
+   private static final boolean isBlackList(final byte[] address)
+   {
+      for (byte[] blackList : BLACK_LIST)
+      {
+         if (Arrays.equals(address, blackList))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
 
    private final byte[] getAddressBytes()
    {
@@ -252,7 +274,7 @@ public final class UUIDGenerator
       return address;
    }
 
-   private static final String asString(byte[] bytes)
+   private static final String asString(final byte[] bytes)
    {
       if (bytes == null)
       {
@@ -266,5 +288,5 @@ public final class UUIDGenerator
       }
       s += bytes[bytes.length - 1];
       return s;
-   }  
+   }
 }
