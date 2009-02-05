@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.stress.failover;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,16 +30,10 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
-import org.jboss.messaging.tests.integration.cluster.failover.FailoverTestBase;
+import org.jboss.messaging.tests.integration.cluster.failover.PagingFailoverTest;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -52,141 +45,23 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public class PagingFailoverTest extends FailoverTestBase
+public class PagingFailoverStressTest extends PagingFailoverTest
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(PagingFailoverTest.class);
 
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
 
-   private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
+   protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testFailoverOnPaging() throws Exception
-   {
-      testPaging(true);
-   }
-
-   public void testReplicationOnPaging() throws Exception
-   {
-      testPaging(false);
-   }
-
-   private void testPaging(final boolean fail) throws Exception
-   {
-      setUpFileBased(100 * 1024);
-
-      ClientSession session = null;
-      try
-      {
-         ClientSessionFactory sf1 = createFailoverFactory();
-
-         session = sf1.createSession(null, null, false, true, true, false, 0);
-
-         session.createQueue(ADDRESS, ADDRESS, null, true, false);
-
-         ClientProducer producer = session.createProducer(ADDRESS);
-
-         final int numMessages = 50000;
-
-         PagingManager pmLive = liveService.getServer().getPostOffice().getPagingManager();
-         PagingStore storeLive = pmLive.getPageStore(ADDRESS);
-
-         PagingManager pmBackup = backupService.getServer().getPostOffice().getPagingManager();
-         PagingStore storeBackup = pmBackup.getPageStore(ADDRESS);
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = session.createClientMessage(true);
-            ByteBuffer buffer = ByteBuffer.allocate(1000);
-
-            buffer.putInt(i);
-
-            buffer.rewind();
-
-            message.setBody(new ByteBufferWrapper(buffer));
-
-            producer.send(message);
-
-            if (storeLive.isPaging())
-            {
-               assertTrue(storeBackup.isPaging());
-            }
-         }
-
-         session.close();
-         session = sf1.createSession(null, null, false, true, true, false, 0);
-         session.start();
-
-         final RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-
-         assertEquals("GloblSize", pmLive.getGlobalSize(), pmBackup.getGlobalSize());
-
-         assertEquals("PageSizeLive", storeLive.getAddressSize(), pmLive.getGlobalSize());
-
-         assertEquals("PageSizeBackup", storeBackup.getAddressSize(), pmBackup.getGlobalSize());
-
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
-
-         for (int i = 0; i < numMessages; i++)
-         {
-
-            if (fail && i == numMessages / 2)
-            {
-               conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-            }
-
-            ClientMessage message = consumer.receive(10000);
-
-
-            assertNotNull(message);
-
-            message.acknowledge();
-
-            message.getBody().rewind();
-
-            assertEquals(i, message.getBody().getInt());
-
-         }
-
-         session.close();
-         session = null;
-
-         if (!fail)
-         {
-            assertEquals(0, pmLive.getGlobalSize());
-            assertEquals(0, storeLive.getAddressSize());
-         }
-         assertEquals(0, pmBackup.getGlobalSize());
-         assertEquals(0, storeBackup.getAddressSize());
-
-      }
-      finally
-      {
-         if (session != null)
-         {
-            try
-            {
-               session.close();
-            }
-            catch (Exception ignored)
-            {
-               // eat it
-            }
-         }
-      }
-
-   }
-
    public void testMultithreadFailoverReplicationOnly() throws Throwable
    {
-      setUpFileBased(100 * 1024, 20 * 1024);
+      setUpFileBased(10 * 1024, 5 * 1024);
 
       int numberOfProducedMessages = multiThreadProducer(false);
 
@@ -200,7 +75,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
    public void testMultithreadFailoverOnProducing() throws Throwable
    {
-      setUpFileBased(100 * 1024, 20 * 1024);
+      setUpFileBased(10 * 1024, 5 * 1024);
 
       int numberOfProducedMessages = multiThreadProducer(true);
 
@@ -214,7 +89,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
    public void testMultithreadFailoverOnConsume() throws Throwable
    {
-      setUpFileBased(100 * 1024, 20 * 1024);
+      setUpFileBased(10 * 1024, 5 * 1024);
 
       int numberOfProducedMessages = multiThreadProducer(false);
 
@@ -322,7 +197,8 @@ public class PagingFailoverTest extends FailoverTestBase
                }
                catch (Throwable e)
                {
-                  log.error(e.getMessage(), e);
+                  // Using System.out, as it would appear on the test output
+                  e.printStackTrace(); 
                   if (!started)
                   {
                      alignSemaphore.countDown();
@@ -451,7 +327,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
                      flagPaging.countDown();
 
-                     for (int i = 0; i < 1000; i++)
+                     for (int i = 0; i < 100; i++)
                      {
 
                         ClientMessage msg = session.createClientMessage(true);
@@ -469,7 +345,8 @@ public class PagingFailoverTest extends FailoverTestBase
                }
                catch (Throwable e)
                {
-                  log.error(e.getMessage(), e);
+                  // Using System.out, as it would appear on the test output
+                  e.printStackTrace(); 
                   if (!started)
                   {
                      alignSemaphore.countDown();
@@ -530,29 +407,11 @@ public class PagingFailoverTest extends FailoverTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
+   protected int getNumberOfMessages()
    {
-      super.tearDown();
+      return 5000;
    }
-
-   protected void fail(final ClientSession session) throws Exception
-   {
-      RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
-
-      InVMConnector.numberOfFailures = 1;
-      InVMConnector.failOnCreateConnection = true;
-      System.out.println("Forcing a failure");
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
-
-   }
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
+   
 
    // Private -------------------------------------------------------
 
