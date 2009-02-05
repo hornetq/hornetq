@@ -127,9 +127,15 @@ public final class UUIDGenerator
    public final static byte[] getHardwareAddress()
    {
       Method getHardwareAddressMethod;
+      Method isUpMethod;
+      Method isLoopbackMethod;
+      Method isVirtualMethod;
       try
       {
          getHardwareAddressMethod = NetworkInterface.class.getMethod("getHardwareAddress");
+         isUpMethod = NetworkInterface.class.getMethod("isUp");
+         isLoopbackMethod = NetworkInterface.class.getMethod("isLoopback");
+         isVirtualMethod = NetworkInterface.class.getMethod("isVirtual");
       }
       catch (Throwable t)
       {
@@ -143,6 +149,15 @@ public final class UUIDGenerator
          while (networkInterfaces.hasMoreElements())
          {
             NetworkInterface networkInterface = (NetworkInterface)networkInterfaces.nextElement();
+            boolean up = (Boolean)isUpMethod.invoke(networkInterface);
+            boolean loopback = (Boolean)isLoopbackMethod.invoke(networkInterface);
+            boolean virtual = (Boolean)isVirtualMethod.invoke(networkInterface);
+            
+            if (loopback || virtual || !up)
+            {
+               continue;
+            }
+            
             Object res = getHardwareAddressMethod.invoke(networkInterface);
             if (res != null && res instanceof byte[])
             {
