@@ -3,9 +3,9 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using JSMClient.util;
+using JBoss.JBM.Client.util;
 
-namespace JMSClientTest.util
+namespace JBoss.JBM.Test.util
 {
     /// <summary>
     /// Summary description for SimpleStringTest

@@ -7,8 +7,8 @@
     <ProjectGuid>{D6A96159-0551-41C2-9E94-1F253F79AD39}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JMSClientTest</RootNamespace>
-    <AssemblyName>JMSClientTest</AssemblyName>
+    <RootNamespace>JBM.Client.Test</RootNamespace>
+    <AssemblyName>JBM.Client.Test</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -26,8 +26,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <OutputType>Library</OutputType>
-    <AssemblyName>JMSClientTest</AssemblyName>
-    <RootNamespace>JMSClientTest</RootNamespace>
+    <AssemblyName>JBMClientTest</AssemblyName>
+    <RootNamespace>JBMClientTest</RootNamespace>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
@@ -39,18 +39,18 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <OutputType>Library</OutputType>
-    <AssemblyName>JMSClientTest</AssemblyName>
+    <AssemblyName>JBMClientTest</AssemblyName>
     <DebugSymbols>true</DebugSymbols>
-    <RootNamespace>JMSClientTest</RootNamespace>
+    <RootNamespace>JBMClientTest</RootNamespace>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.4.7.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -61,9 +61,9 @@
     <Content Include="AuthoringTests.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JBMClient\JBMClient.csproj">
+    <ProjectReference Include="..\JBMClient\JBM.Client.csproj">
       <Project>{675AD929-BF42-4930-AC39-603D5EC52D58}</Project>
-      <Name>JBMClient</Name>
+      <Name>JBM.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

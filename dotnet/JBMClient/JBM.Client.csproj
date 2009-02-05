@@ -8,8 +8,8 @@
     <ProjectGuid>{675AD929-BF42-4930-AC39-603D5EC52D58}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JSMClient</RootNamespace>
-    <AssemblyName>JSMClient</AssemblyName>
+    <RootNamespace>JBM.Client</RootNamespace>
+    <AssemblyName>JBM.Client</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -22,8 +22,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <OutputType>Library</OutputType>
-    <AssemblyName>JSMClient</AssemblyName>
-    <RootNamespace>JSMClient</RootNamespace>
+    <AssemblyName>JBMClient</AssemblyName>
+    <RootNamespace>JBMClient</RootNamespace>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
@@ -35,9 +35,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <OutputType>Library</OutputType>
-    <AssemblyName>JSMClient</AssemblyName>
+    <AssemblyName>JBMClient</AssemblyName>
     <DebugSymbols>true</DebugSymbols>
-    <RootNamespace>JSMClient</RootNamespace>
+    <RootNamespace>JBMClient</RootNamespace>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
@@ -56,9 +56,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="exception\MessagingException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="remoting\Channel.cs" />
+    <Compile Include="remoting\ChannelHandler.cs" />
     <Compile Include="util\DataConstants.cs" />
     <Compile Include="util\SimpleString.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="remoting\FailureListener.cs" />
+    <Compile Include="remoting\Interceptor.cs" />
+    <Compile Include="remoting\Packet.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="remoting\RemotingConnection.cs" />
+    <Content Include="remoting\spi\Acceptor.java" />
+    <Content Include="remoting\spi\AcceptorFactory.java" />
+    <Compile Include="remoting\spi\BufferHandler.cs" />
+    <Content Include="remoting\spi\Connection.java" />
+    <Content Include="remoting\spi\ConnectionLifeCycleListener.java" />
+    <Content Include="remoting\spi\Connector.java" />
+    <Content Include="remoting\spi\ConnectorFactory.java" />
+    <Compile Include="remoting\spi\MessagingBuffer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

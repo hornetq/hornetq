@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
-namespace JMSClientTest.util
+namespace JBoss.JBM.Test.util
 {
     public class JBMTest
     {

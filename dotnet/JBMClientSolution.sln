@@ -4,13 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18364D7F-A814-4360-9BF1-FBD18737B399}"
 	ProjectSection(SolutionItems) = preProject
 		JBMClientSolution.vsmdi = JBMClientSolution.vsmdi
-		JSMClient.vsmdi = JSMClient.vsmdi
+		JBMClient.vsmdi = JBMClient.vsmdi
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JBMClient", "JBMClient\JBMClient.csproj", "{675AD929-BF42-4930-AC39-603D5EC52D58}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JBM.Client", "JBMClient\JBM.Client.csproj", "{675AD929-BF42-4930-AC39-603D5EC52D58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JBMClientTest", "JBMClientTest\JBMClientTest.csproj", "{D6A96159-0551-41C2-9E94-1F253F79AD39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JBM.Client.Test", "JBMClientTest\JBM.Client.Test.csproj", "{D6A96159-0551-41C2-9E94-1F253F79AD39}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution

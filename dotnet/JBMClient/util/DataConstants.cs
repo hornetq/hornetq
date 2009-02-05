@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace JSMClient.util
+namespace JBoss.JBM.Client.util
 {
     public class DataConstants
     {
