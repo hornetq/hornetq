@@ -28,6 +28,8 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -117,6 +120,8 @@ public class NettyConnector implements Connector
    private final int tcpSendBufferSize;
 
    private final int tcpReceiveBufferSize;
+   
+   private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    // Static --------------------------------------------------------
 
@@ -148,7 +153,7 @@ public class NettyConnector implements Connector
       this.httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
                                                                 TransportConstants.DEFAULT_HTTP_ENABLED,
                                                                 configuration);
-
+      
       if (httpEnabled)
       {
          this.httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
@@ -206,7 +211,7 @@ public class NettyConnector implements Connector
       {
          return;
       }
-
+      
       workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-worker-threads"));
       if (useNio)
       {
@@ -304,6 +309,13 @@ public class NettyConnector implements Connector
             }
          }
       }
+      
+      for (Connection connection : connections.values())
+      {
+         listener.connectionDestroyed(connection.getID());
+      }
+
+      connections.clear();
    }
    
    public boolean isStarted()
@@ -352,8 +364,10 @@ public class NettyConnector implements Connector
          {
             ch.getPipeline().get(MessagingChannelHandler.class).active = true;
          }
-
-         return new NettyConnection(ch);
+         
+         NettyConnection conn =  new NettyConnection(ch, new Listener());
+         
+         return conn;
       }
       else
       {
@@ -381,7 +395,7 @@ public class NettyConnector implements Connector
    }
 
    @ChannelPipelineCoverage("all")
-   class HttpHandler extends SimpleChannelHandler
+   private class HttpHandler extends SimpleChannelHandler
    {
       private Channel channel;
 
@@ -413,6 +427,7 @@ public class NettyConnector implements Connector
 
             idleClientTimer.cancel();
          }
+         
          super.channelClosed(ctx, e);
       }
 
@@ -464,6 +479,27 @@ public class NettyConnector implements Connector
          {
             return super.cancel();
          }
+      }
+   }
+   
+   private class Listener implements ConnectionLifeCycleListener
+   {
+      public void connectionCreated(final Connection connection)
+      {
+         if (connections.putIfAbsent(connection.getID(), connection) != null)
+         {
+            throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
+         }
+      }
+
+      public void connectionDestroyed(final Object connectionID)
+      {
+         connections.remove(connectionID);
+      }
+
+      public void connectionException(final Object connectionID, final MessagingException me)
+      {
+         listener.connectionException(connectionID, me);
       }
    }
 

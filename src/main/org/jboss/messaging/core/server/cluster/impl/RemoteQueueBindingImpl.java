@@ -75,7 +75,9 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    private final SimpleString idsHeaderName;
    
    private int id;
-   
+      
+   private final SimpleString originatingNodeID;
+      
    public RemoteQueueBindingImpl(final SimpleString address,
                                  final SimpleString uniqueName,
                                  final SimpleString routingName,
@@ -83,7 +85,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
                                  final SimpleString filterString,
                                  final Queue storeAndForwardQueue,
                                  final boolean duplicateDetection,                      
-                                 final SimpleString bridgeName) throws Exception
+                                 final SimpleString bridgeName,
+                                 final SimpleString origNodeID) throws Exception
    {
       this.address = address;
 
@@ -107,6 +110,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       }
       
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(bridgeName);
+      
+      this.originatingNodeID = origNodeID;
    }
    
    public int getID()
@@ -152,6 +157,11 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    public Filter getFilter()
    {
       return queueFilter;
+   }
+   
+   public SimpleString getOriginatingNodeID()
+   {
+      return originatingNodeID;
    }
 
    public boolean isHighAcceptPriority(final ServerMessage message)

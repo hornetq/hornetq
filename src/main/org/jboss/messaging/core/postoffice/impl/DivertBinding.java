@@ -54,8 +54,10 @@ public class DivertBinding implements Binding
    private final boolean exclusive;
    
    private int id;
+   
+   private final SimpleString origNodeID;
       
-   public DivertBinding(final SimpleString address, final Divert divert)
+   public DivertBinding(final SimpleString address, final Divert divert, final SimpleString origNodeID)
    {
       this.address = address;
       
@@ -68,6 +70,8 @@ public class DivertBinding implements Binding
       this.routingName = divert.getRoutingName();
       
       this.exclusive = divert.isExclusive();
+      
+      this.origNodeID = origNodeID;
    }
    
    public int getID()
@@ -122,6 +126,11 @@ public class DivertBinding implements Binding
    public boolean isQueueBinding()
    {
       return false;
+   }   
+   
+   public SimpleString getOriginatingNodeID()
+   {
+      return origNodeID;
    }
 
 }

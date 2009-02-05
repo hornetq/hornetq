@@ -84,7 +84,7 @@ public class BridgeStartTest extends ServiceTestBase
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
       final String bridgeName = "bridge1";
-      
+
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
@@ -96,7 +96,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         1d,
                                                                         0,
                                                                         0,
-                                                                        false,                                                                        
+                                                                        false,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -155,11 +155,11 @@ public class BridgeStartTest extends ServiceTestBase
       }
 
       assertNull(consumer1.receive(200));
-      
+
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      
+
       bridge.stop();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session0.createClientMessage(false);
@@ -168,14 +168,14 @@ public class BridgeStartTest extends ServiceTestBase
 
          producer0.send(message);
       }
-      
+
       assertNull(consumer1.receive(500));
-      
+
       bridge.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(1000);
 
          assertNotNull(message);
 
@@ -183,7 +183,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          message.acknowledge();
       }
-      
+
       assertNull(consumer1.receive(200));
 
       session0.close();
@@ -198,7 +198,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       service1.stop();
    }
-   
+
    public void testTargetServerUpAndDown() throws Exception
    {
       Map<String, Object> service0Params = new HashMap<String, Object>();
@@ -225,7 +225,7 @@ public class BridgeStartTest extends ServiceTestBase
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
       final String bridgeName = "bridge1";
-      
+
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
@@ -237,7 +237,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         1d,
                                                                         -1,
                                                                         -1,
-                                                                        false,                                                                        
+                                                                        false,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -254,12 +254,11 @@ public class BridgeStartTest extends ServiceTestBase
       queueConfigs1.add(queueConfig1);
       service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
 
-      try{
-         //Don't start service 1 yet
+      try
+      {
+         // Don't start service 1 yet
 
-         log.info("starting 0");
-         service0.start();      
-         log.info("started 0");
+         service0.start();
 
          ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
 
@@ -280,12 +279,10 @@ public class BridgeStartTest extends ServiceTestBase
             producer0.send(message);
          }
 
-         //Wait a bit
+         // Wait a bit
          Thread.sleep(1000);
 
-         log.info("starting 1");
          service1.start();
-         log.info("started server 1");
 
          ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
 
@@ -308,8 +305,6 @@ public class BridgeStartTest extends ServiceTestBase
 
          assertNull(consumer1.receive(200));
 
-         log.info("consumed messages");
-
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session0.createClientMessage(false);
@@ -336,9 +331,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          sf1.close();
 
-         log.info("stipping 1");
          service1.stop();
-         log.info("stopped 1");
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -349,11 +342,8 @@ public class BridgeStartTest extends ServiceTestBase
             producer0.send(message);
          }
 
-         log.info("Sent more messages");
 
          service1.start();
-
-         log.info("started service1");
 
          sf1 = new ClientSessionFactoryImpl(server1tc);
 
@@ -361,7 +351,7 @@ public class BridgeStartTest extends ServiceTestBase
 
          consumer1 = session1.createConsumer(queueName1);
 
-         log.info("**** started session");
+
          session1.start();
 
          for (int i = 0; i < numMessages; i++)
@@ -377,7 +367,6 @@ public class BridgeStartTest extends ServiceTestBase
 
          assertNull(consumer1.receive(200));
 
-         log.info("received all messages again");
 
          session1.close();
 
@@ -387,7 +376,6 @@ public class BridgeStartTest extends ServiceTestBase
 
          sf0.close();
 
-
       }
       finally
       {
@@ -396,7 +384,7 @@ public class BridgeStartTest extends ServiceTestBase
          service1.stop();
       }
    }
-   
+
    public void testTargetServerNotAvailableNoReconnectTries() throws Exception
    {
       Map<String, Object> service0Params = new HashMap<String, Object>();
@@ -423,7 +411,7 @@ public class BridgeStartTest extends ServiceTestBase
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
       final String bridgeName = "bridge1";
-      
+
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
@@ -435,7 +423,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         1d,
                                                                         0,
                                                                         0,
-                                                                        false,                                                                        
+                                                                        false,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -451,19 +439,17 @@ public class BridgeStartTest extends ServiceTestBase
       List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
-      
-      //Don't start service 1 yet
-      
-      log.info("starting 0");
-      service0.start();      
-      log.info("started 0");
+
+      // Don't start service 1 yet
+
+      service0.start();
 
       ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
-      
+
       ClientSession session0 = sf0.createSession(false, true, true);
-      
+
       ClientProducer producer0 = session0.createProducer(new SimpleString(testAddress));
-                 
+
       final int numMessages = 10;
 
       final SimpleString propKey = new SimpleString("testkey");
@@ -476,61 +462,59 @@ public class BridgeStartTest extends ServiceTestBase
 
          producer0.send(message);
       }
-      
-      //Wait a bit
+
+      // Wait a bit
       Thread.sleep(1000);
-      
-      //Bridge should be stopped since retries = 0
-      
-      log.info("starting 1");
+
+      // Bridge should be stopped since retries = 0
+;
       service1.start();
-      log.info("started server 1");
-      
+
       ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
-      
+
       ClientSession session1 = sf1.createSession(false, true, true);
-     
+
       ClientConsumer consumer1 = session1.createConsumer(queueName1);
 
       session1.start();
 
-      //Won't be received since the bridge was deactivated
+      // Won't be received since the bridge was deactivated
       assertNull(consumer1.receive(200));
-      
-      //Now start the bridge manually
-      
+
+      // Now start the bridge manually
+
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      
+
       bridge.start();
-      
-      //Messages should now be received
-      
+
+      // Messages should now be received
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer1.receive(1000);
-
+         
          assertNotNull(message);
 
          assertEquals((Integer)i, (Integer)message.getProperty(propKey));
 
          message.acknowledge();
       }
-      
+
       assertNull(consumer1.receive(200));
-                 
+
       session1.close();
-      
+
       sf1.close();
-      
+
       session0.close();
 
       sf0.close();
-      
+
       service0.stop();
 
       service1.stop();
    }
-   
+
    public void testManualStopStart() throws Exception
    {
       Map<String, Object> service0Params = new HashMap<String, Object>();
@@ -557,7 +541,7 @@ public class BridgeStartTest extends ServiceTestBase
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
       final String bridgeName = "bridge1";
-      
+
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
@@ -569,7 +553,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         1d,
                                                                         0,
                                                                         0,
-                                                                        false,                                                                        
+                                                                        false,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -585,17 +569,17 @@ public class BridgeStartTest extends ServiceTestBase
       List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
       queueConfigs1.add(queueConfig1);
       service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
-      
+
       service1.start();
-      
-      service0.start();      
+
+      service0.start();
 
       ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
-      
+
       ClientSession session0 = sf0.createSession(false, true, true);
-      
+
       ClientProducer producer0 = session0.createProducer(new SimpleString(testAddress));
-                 
+
       final int numMessages = 10;
 
       final SimpleString propKey = new SimpleString("testkey");
@@ -608,15 +592,15 @@ public class BridgeStartTest extends ServiceTestBase
 
          producer0.send(message);
       }
-      
+
       ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
-      
+
       ClientSession session1 = sf1.createSession(false, true, true);
-     
+
       ClientConsumer consumer1 = session1.createConsumer(queueName1);
 
       session1.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer1.receive(1000);
@@ -627,15 +611,15 @@ public class BridgeStartTest extends ServiceTestBase
 
          message.acknowledge();
       }
-      
+
       assertNull(consumer1.receive(200));
-      
-      //Now stop the bridge manually
-      
+
+      // Now stop the bridge manually
+
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      
+
       bridge.stop();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session0.createClientMessage(false);
@@ -644,11 +628,11 @@ public class BridgeStartTest extends ServiceTestBase
 
          producer0.send(message);
       }
-      
+
       assertNull(consumer1.receive(200));
-      
+
       bridge.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer1.receive(1000);
@@ -659,11 +643,11 @@ public class BridgeStartTest extends ServiceTestBase
 
          message.acknowledge();
       }
-                 
+
       assertNull(consumer1.receive(200));
-      
+
       bridge.stop();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session0.createClientMessage(false);
@@ -672,11 +656,11 @@ public class BridgeStartTest extends ServiceTestBase
 
          producer0.send(message);
       }
-      
+
       assertNull(consumer1.receive(200));
-      
+
       bridge.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer1.receive(1000);
@@ -687,21 +671,20 @@ public class BridgeStartTest extends ServiceTestBase
 
          message.acknowledge();
       }
-                 
+
       assertNull(consumer1.receive(200));
-                 
+
       session1.close();
-      
+
       sf1.close();
-      
+
       session0.close();
 
       sf0.close();
-      
+
       service0.stop();
 
       service1.stop();
    }
-
 
 }

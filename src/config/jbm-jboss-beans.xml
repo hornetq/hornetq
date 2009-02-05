@@ -57,7 +57,7 @@
       </constructor>
    </bean>
 
-   <bean name="RemotingService" class="org.jboss.messaging.core.remoting.impl.RemotingServiceImpl">
+   <bean name="RemotingService" class="org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>

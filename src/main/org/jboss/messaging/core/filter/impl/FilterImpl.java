@@ -156,7 +156,7 @@ public class FilterImpl implements Filter
             id.setValue(val);
 
          }
-
+         
          // Compute the result of this operator
          
          boolean res = (Boolean)operator.apply();

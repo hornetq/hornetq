@@ -42,7 +42,6 @@ import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
@@ -50,6 +49,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.remoting.server.DelayedResult;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.LargeServerMessage;
@@ -62,6 +62,7 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * Concrete implementation of a ClientConsumer.
@@ -134,6 +135,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private final boolean preAcknowledge;
    
    private final ManagementService managementService;
+   
+   private final SimpleString nodeID;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -149,7 +152,8 @@ public class ServerConsumerImpl implements ServerConsumer
                              final Channel channel,
                              final boolean preAcknowledge,
                              final Executor executor,
-                             final ManagementService managementService)
+                             final ManagementService managementService,
+                             final SimpleString nodeID)
    {
       this.id = id;
 
@@ -176,6 +180,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.pagingManager = pagingManager;
       
       this.managementService = managementService;
+      
+      this.nodeID = nodeID;
 
       messageQueue.addConsumer(this);
 
@@ -191,7 +197,7 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
-   {
+   {      
       return doHandle(ref);
    }
    
@@ -293,6 +299,7 @@ public class ServerConsumerImpl implements ServerConsumer
          TypedProperties props = new TypedProperties();
          
          props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, messageQueue.getName());
+         props.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, nodeID);
          
          Notification notification = new Notification(NotificationType.CONSUMER_CLOSED, props);
          

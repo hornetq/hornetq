@@ -40,7 +40,16 @@ public class InVMConnectorFactory implements ConnectorFactory
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener)
    {      
-      return new InVMConnector(configuration, handler, listener);
+      InVMConnector connector = new InVMConnector(configuration, handler, listener);
+      
+      if (connector.getAcceptor() == null)
+      {
+         return null;
+      }
+      else
+      {         
+         return connector;
+      }
    }
 
 }

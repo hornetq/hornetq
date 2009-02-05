@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -18,13 +18,29 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.core.client;
+
+package org.jboss.messaging.core.server.cluster;
+
+import org.jboss.messaging.core.client.MessageHandler;
 
 /**
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * A MessageFlowRecord
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 5 Feb 2009 11:39:36
+ *
+ *
  */
-public interface ServerPinger extends Runnable
+public interface MessageFlowRecord extends MessageHandler
 {
+   String getAddress();
+   
+   String getNodeID();
+   
+   void reset() throws Exception;
+   
+   void close() throws Exception;
 }

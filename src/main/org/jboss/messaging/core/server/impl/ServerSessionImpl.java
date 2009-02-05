@@ -41,7 +41,6 @@ import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.DelayedResult;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -78,6 +77,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.server.DelayedResult;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.SecurityStore;
@@ -1413,7 +1413,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           channel,
                                                           preAcknowledge,
                                                           executor,
-                                                          managementService);
+                                                          managementService,
+                                                          server.getNodeID());
 
          consumers.put(consumer.getID(), consumer);
          
@@ -1422,6 +1423,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             TypedProperties props = new TypedProperties();
             
             props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, name);
+            props.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, binding.getOriginatingNodeID());
             
             if (filterString != null)
             {
@@ -1492,7 +1494,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          final Queue queue = queueFactory.createQueue(-1, address, name, filter, durable, temporary);
 
-         binding = new LocalQueueBinding(address, queue);
+         binding = new LocalQueueBinding(address, queue, server.getNodeID());
 
          if (durable)
          {

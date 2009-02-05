@@ -67,7 +67,7 @@ public class ClusterTestBase extends ServiceTestBase
    private static final Logger log = Logger.getLogger(ClusterTestBase.class);
 
    private static final long WAIT_TIMEOUT = 10000;
-  
+
    @Override
    protected void setUp() throws Exception
    {
@@ -86,21 +86,20 @@ public class ClusterTestBase extends ServiceTestBase
 
    private static final int MAX_CONSUMERS = 100;
 
-   
    private static class ConsumerHolder
    {
       final ClientConsumer consumer;
-      
+
       final ClientSession session;
-      
+
       ConsumerHolder(final ClientConsumer consumer, final ClientSession session)
       {
          this.consumer = consumer;
-         
+
          this.session = session;
       }
    }
-   
+
    private ConsumerHolder[] consumers = new ConsumerHolder[MAX_CONSUMERS];
 
    private static final SimpleString COUNT_PROP = new SimpleString("count_prop");
@@ -112,14 +111,22 @@ public class ClusterTestBase extends ServiceTestBase
    private MessagingService[] services = new MessagingService[MAX_SERVERS];
 
    private ClientSessionFactory[] sfs = new ClientSessionFactory[MAX_SERVERS];
-   
+
    protected void waitForBindings(int node,
-                                final String address,
-                                final int count,
-                                final int consumerCount,
-                                final boolean local) throws Exception
+                                  final String address,
+                                  final int count,
+                                  final int consumerCount,
+                                  final boolean local) throws Exception
    {
-      //log.info("waiting for bindings on node " + node + " address " + address + " count " + count + " consumerCount " + consumerCount + " local " + local);
+//      log.info("waiting for bindings on node " + node +
+//               " address " +
+//               address +
+//               " count " +
+//               count +
+//               " consumerCount " +
+//               consumerCount +
+//               " local " +
+//               local);
       MessagingService service = this.services[node];
 
       if (service == null)
@@ -134,7 +141,7 @@ public class ClusterTestBase extends ServiceTestBase
       do
       {
          Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
-         
+
          int bindingCount = 0;
 
          int totConsumers = 0;
@@ -150,8 +157,8 @@ public class ClusterTestBase extends ServiceTestBase
                totConsumers += qBinding.consumerCount();
             }
          }
-         
-         log.info("binding count " + bindingCount + " consumer Count " + totConsumers);
+
+         //log.info("binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -204,11 +211,9 @@ public class ClusterTestBase extends ServiceTestBase
 
       session.close();
    }
-   
-   
 
    protected void addConsumer(int consumerID, int node, String queueName, String filterVal) throws Exception
-   {      
+   {
       if (consumers[consumerID] != null)
       {
          throw new IllegalArgumentException("Already a consumer at " + node);
@@ -248,39 +253,53 @@ public class ClusterTestBase extends ServiceTestBase
 
       holder.consumer.close();
       holder.session.close();
-      
+
       consumers[consumerID] = null;
    }
-   
+
    protected void closeAllConsumers() throws Exception
    {
       for (int i = 0; i < consumers.length; i++)
       {
          ConsumerHolder holder = consumers[i];
-         
+
          if (holder != null)
          {
             holder.consumer.close();
             holder.session.close();
-            
+
             consumers[i] = null;
          }
       }
    }
-   
+
    protected void closeAllSessionFactories() throws Exception
    {
       for (int i = 0; i < sfs.length; i++)
       {
          ClientSessionFactory sf = sfs[i];
-         
+
          if (sf != null)
          {
             sf.close();
-            
+
             sfs[i] = null;
          }
       }
+   }
+
+   protected void closeSessionFactory(int node)
+   {
+      ClientSessionFactory sf = this.sfs[node];
+
+      if (sf == null)
+      {
+         throw new IllegalArgumentException("No sf at " + node);
+      }
+
+      sf.close();
+
+      sfs[node] = null;
    }
 
    protected void send(int node, String address, int numMessages, boolean durable, String filterVal) throws Exception
@@ -399,7 +418,7 @@ public class ClusterTestBase extends ServiceTestBase
       }
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc);
-      
+
       sf.setBlockOnNonPersistentSend(true);
       sf.setBlockOnPersistentSend(true);
 
@@ -450,7 +469,7 @@ public class ClusterTestBase extends ServiceTestBase
       services[node] = service;
    }
 
-   private Map<String, Object> generateParams(int node, boolean netty)
+   protected Map<String, Object> generateParams(int node, boolean netty)
    {
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(SERVER_ID_PROP_NAME, node);
@@ -472,17 +491,17 @@ public class ClusterTestBase extends ServiceTestBase
          {
             throw new IllegalArgumentException("No service at node " + nodes[i]);
          }
-   
+
          services[nodes[i]] = null;
       }
    }
 
    protected void setupClusterConnection(String name,
-                                       int nodeFrom,
-                                       int nodeTo,
-                                       String address,
-                                       boolean forwardWhenNoConsumers,
-                                       boolean netty)
+                                         int nodeFrom,
+                                         int nodeTo,
+                                         String address,
+                                         boolean forwardWhenNoConsumers,
+                                         boolean netty)
    {
       MessagingService serviceFrom = services[nodeFrom];
 
@@ -519,7 +538,7 @@ public class ClusterTestBase extends ServiceTestBase
                                                                         1,
                                                                         -1,
                                                                         null,
-                                                                        10,
+                                                                        1000,
                                                                         1d,
                                                                         -1,
                                                                         -1,
@@ -553,7 +572,9 @@ public class ClusterTestBase extends ServiceTestBase
    {
       for (int i = 0; i < nodes.length; i++)
       {
+         log.info("stopping service " + nodes[i]);
          services[nodes[i]].stop();
+         log.info("stopped service");
       }
    }
 

@@ -360,11 +360,7 @@ public class FailureListenerOnFailoverTest extends TestCase
    {
       InVMConnector.resetFailures();
       
-      assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
-
       backupService.stop();
-
-      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
 
       liveService.stop();
 

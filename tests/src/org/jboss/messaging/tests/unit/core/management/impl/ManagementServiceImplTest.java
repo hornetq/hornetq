@@ -46,7 +46,7 @@ import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.QueueFactory;

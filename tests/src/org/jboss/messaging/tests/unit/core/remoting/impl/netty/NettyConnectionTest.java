@@ -24,6 +24,9 @@ package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 import java.util.UUID;
 
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.netty.NettyConnection;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -38,6 +41,29 @@ import org.jboss.netty.channel.Channel;
  */
 public class NettyConnectionTest extends UnitTestCase
 {
+   class MyListener implements ConnectionLifeCycleListener
+   {
+
+      public void connectionCreated(Connection connection)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void connectionDestroyed(Object connectionID)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public void connectionException(Object connectionID, MessagingException me)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+      
+   }
+   
    public void testGetID() throws Exception
    {
       Channel channel = EasyMock.createStrictMock(Channel.class);
@@ -46,7 +72,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       EasyMock.expect(channel.getId()).andReturn(id);
 
-      NettyConnection conn = new NettyConnection(channel);
+      NettyConnection conn = new NettyConnection(channel, new MyListener());
 
       EasyMock.replay(channel);
 
@@ -67,7 +93,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       EasyMock.expect(channel.write(underlying)).andReturn(null);
 
-      NettyConnection conn = new NettyConnection(channel);
+      NettyConnection conn = new NettyConnection(channel, new MyListener());
 
       EasyMock.replay(channel, buff);
 
@@ -80,7 +106,7 @@ public class NettyConnectionTest extends UnitTestCase
    {
       Channel channel = EasyMock.createStrictMock(Channel.class);
 
-      NettyConnection conn = new NettyConnection(channel);
+      NettyConnection conn = new NettyConnection(channel, new MyListener());
 
       EasyMock.replay(channel);
 

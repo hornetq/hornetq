@@ -114,6 +114,73 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       send(0, "queues.testaddress", 10, false, null);
       verifyNotReceive(0);
    }
+   
+   public void testStopAndStartTarget() throws Exception
+   {
+      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      startServers(0, 1);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      
+      String myFilter = "bison";
+
+      createQueue(1, "queues.testaddress", "queue0", myFilter, false);
+      addConsumer(0, 1, "queue0", null);
+          
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+
+      send(0, "queues.testaddress", 10, false, myFilter);
+      verifyReceiveAll(10, 0);
+      verifyNotReceive(0);
+      
+      send(0, "queues.testaddress", 10, false, null);
+      verifyNotReceive(0);
+      
+      removeConsumer(0);
+      closeSessionFactory(1);
+      
+      long start = System.currentTimeMillis();
+      
+      stopServers(1);
+      
+      log.info("*** stopped service 1");
+      
+      log.info("** starting server 1");
+      
+      startServers(1);
+      
+      log.info("*** started service 1");
+      
+      long end = System.currentTimeMillis();
+      
+      //We time how long it takes to restart, since it has been known to hang in the past and wait for a timeout
+      //Shutting down and restarting should be pretty quick
+      
+      assertTrue("Took too long to restart", end - start <= 5000);
+      
+      setupSessionFactory(1, isNetty());
+      
+      waitForBindings(0, "queues.testaddress", 0, 0, false);
+      
+      createQueue(1, "queues.testaddress", "queue0", myFilter, false);
+      
+      log.info("** adding consumer");
+      
+      addConsumer(0, 1, "queue0", null);
+      
+      log.info("** added consumer");
+          
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+
+      send(0, "queues.testaddress", 10, false, myFilter);
+      verifyReceiveAll(10, 0);
+      verifyNotReceive(0);
+      
+      send(0, "queues.testaddress", 10, false, null);
+      verifyNotReceive(0);
+   }
 
    public void testBasicLocalReceive() throws Exception
    {

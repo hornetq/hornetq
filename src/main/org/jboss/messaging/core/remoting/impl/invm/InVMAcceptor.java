@@ -39,60 +39,61 @@ import org.jboss.messaging.util.ConfigurationHelper;
  *
  */
 public class InVMAcceptor implements Acceptor
-{   
+{
    private final int id;
-   
+
    private final BufferHandler handler;
-   
+
    private final ConnectionLifeCycleListener listener;
-   
+
    private ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
-   
+
    private volatile boolean started;
-   
-   public InVMAcceptor(final Map<String, Object> configuration, final BufferHandler handler,
+
+   public InVMAcceptor(final Map<String, Object> configuration,
+                       final BufferHandler handler,
                        final ConnectionLifeCycleListener listener)
    {
       this.handler = handler;
-      
-      this.listener = listener;   
-      
+
+      this.listener = listener;
+
       this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
    }
-   
+
    public synchronized void start() throws Exception
-   {      
+   {
       if (started)
       {
          return;
       }
-      
+
       InVMRegistry registry = InVMRegistry.instance;
-      
+
       registry.registerAcceptor(id, this);
-      
+
       started = true;
    }
 
    public synchronized void stop()
-   {   
+   {
       if (!started)
       {
          return;
       }
-      
-      for (Connection connection: connections.values())
+
+      InVMRegistry.instance.unregisterAcceptor(id);
+
+      for (Connection connection : connections.values())
       {
          listener.connectionDestroyed(connection.getID());
       }
-      
+
       connections.clear();
-      
-      InVMRegistry.instance.unregisterAcceptor(id);
-      
+
       started = true;
    }
-   
+
    public boolean isStarted()
    {
       return started;
@@ -104,63 +105,68 @@ public class InVMAcceptor implements Acceptor
       {
          throw new IllegalStateException("Acceptor is not started");
       }
-      
+
       return handler;
    }
-   
-   public void connect(final String connectionID, final BufferHandler remoteHandler,
-                       final InVMConnector connector)
+
+   public void connect(final String connectionID, final BufferHandler remoteHandler, final InVMConnector connector)
    {
       if (!started)
       {
          throw new IllegalStateException("Acceptor is not started");
       }
-      
-      new InVMConnection(id, connectionID, remoteHandler, new Listener(connector));               
+
+      new InVMConnection(id, connectionID, remoteHandler, new Listener(connector));
    }
-   
+
    public void disconnect(final String connectionID)
    {
       if (!started)
       {
          throw new IllegalStateException("Acceptor is not started");
       }
-      
+
       Connection conn = connections.get(connectionID);
-      
+
       if (conn != null)
       {
          conn.close();
-      }            
+      }
    }
-   
+
    private class Listener implements ConnectionLifeCycleListener
    {
       private final InVMConnector connector;
-      
+
       Listener(final InVMConnector connector)
       {
          this.connector = connector;
       }
-      
+
       public void connectionCreated(final Connection connection)
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
-         
+
          listener.connectionCreated(connection);
       }
 
       public void connectionDestroyed(final Object connectionID)
       {
          if (connections.remove(connectionID) != null)
-         {                    
-            //Remove on the other side too
-            connector.disconnect((String)connectionID);
-            
+         {
             listener.connectionDestroyed(connectionID);
+
+            new Thread()
+            {
+               public void run()
+               {
+                  // Remove on the other side too
+                  connector.disconnect((String)connectionID);
+               }
+            }.start();
          }
       }
 
@@ -168,7 +174,7 @@ public class InVMAcceptor implements Acceptor
       {
          listener.connectionException(connectionID, me);
       }
-      
+
    }
-   
+
 }

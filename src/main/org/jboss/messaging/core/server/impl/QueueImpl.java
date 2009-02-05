@@ -12,6 +12,7 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
@@ -198,6 +199,14 @@ public class QueueImpl implements Queue
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
+//      SimpleString filterString = null;
+//      if (filter != null)
+//      {
+//         filterString = filter.getFilterString();
+//      }
+      
+      //log.info("Adding message to queue " + name + " with filter " + filterString + " message has orig node " + message.getProperty(ManagementHelper.HDR_ORIGINATING_NODE));
+      
       boolean durableRef = message.isDurable() && durable;
 
       // If durable, must be persisted before anything is routed

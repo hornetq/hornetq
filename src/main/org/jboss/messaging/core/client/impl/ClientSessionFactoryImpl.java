@@ -752,8 +752,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             log.error("Failed to stop discovery group", e);
          }
       }
+      
+      for (ConnectionManager connectionManager : connectionManagerMap.values())
+      {
+         connectionManager.close();
+      }
+      
+      connectionManagerMap.clear();
    }
-
+   
    // DiscoveryListener implementation --------------------------------------------------------
 
    public synchronized void connectorsChanged()

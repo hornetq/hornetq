@@ -35,11 +35,10 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
-import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -58,6 +57,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
+import org.jboss.messaging.core.server.cluster.MessageFlowRecord;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
@@ -115,7 +115,7 @@ public class BridgeImpl implements Bridge, FailureListener
 
    private volatile ClientSessionFactory csf;
 
-   private volatile ClientSession session;
+   private volatile ClientSessionInternal session;
 
    private volatile ClientProducer producer;
 
@@ -137,13 +137,9 @@ public class BridgeImpl implements Bridge, FailureListener
 
    private final int maxRetriesAfterFailover;
 
-   private final MessageHandler queueInfoMessageHandler;
-
-   private final String queueDataAddress;
-
    private final SimpleString idsHeaderName;
 
-   private final boolean forClusterConnector;
+   private MessageFlowRecord flowRecord;
 
    // Static --------------------------------------------------------
 
@@ -166,11 +162,45 @@ public class BridgeImpl implements Bridge, FailureListener
                      final double retryIntervalMultiplier,
                      final int maxRetriesBeforeFailover,
                      final int maxRetriesAfterFailover,
+                     final boolean useDuplicateDetection) throws Exception
+   {
+      this(name,
+           queue,
+           connectorPair,
+           executor,
+           maxBatchSize,
+           maxBatchTime,
+           filterString,
+           forwardingAddress,
+           storageManager,
+           scheduledExecutor,
+           transformer,
+           retryInterval,
+           retryIntervalMultiplier,
+           maxRetriesBeforeFailover,
+           maxRetriesAfterFailover,
+           useDuplicateDetection,
+           null);
+   }
+
+   public BridgeImpl(final SimpleString name,
+                     final Queue queue,
+                     final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                     final Executor executor,
+                     final int maxBatchSize,
+                     final long maxBatchTime,
+                     final SimpleString filterString,
+                     final SimpleString forwardingAddress,
+                     final StorageManager storageManager,
+                     final ScheduledExecutorService scheduledExecutor,
+                     final Transformer transformer,
+                     final long retryInterval,
+                     final double retryIntervalMultiplier,
+                     final int maxRetriesBeforeFailover,
+                     final int maxRetriesAfterFailover,
                      final boolean useDuplicateDetection,
-                     final MessageHandler queueInfoMessageHandler,
-                     final String queueDataAddress,
-                     final boolean forClusterConnector) throws Exception
-   {      
+                     final MessageFlowRecord flowRecord) throws Exception
+   {
       this.name = name;
 
       this.queue = queue;
@@ -210,13 +240,9 @@ public class BridgeImpl implements Bridge, FailureListener
 
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
 
-      this.queueInfoMessageHandler = queueInfoMessageHandler;
-
-      this.queueDataAddress = queueDataAddress;
-
-      this.forClusterConnector = forClusterConnector;
-
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
+
+      this.flowRecord = flowRecord;
 
       if (maxBatchTime != -1)
       {
@@ -238,100 +264,12 @@ public class BridgeImpl implements Bridge, FailureListener
          return;
       }
 
-      executor.execute(new CreateObjectsRunnable());
-
       started = true;
+            
+      executor.execute(new CreateObjectsRunnable());
    }
-
-   private class CreateObjectsRunnable implements Runnable
-   {
-      public synchronized void run()
-      {
-         try
-         {
-            createTx();
-
-            queue.addConsumer(BridgeImpl.this);
-
-            csf = new ClientSessionFactoryImpl(connectorPair.a,
-                                               connectorPair.b,
-                                               retryInterval,
-                                               retryIntervalMultiplier,
-                                               maxRetriesBeforeFailover,
-                                               maxRetriesAfterFailover);
-
-            session = csf.createSession(false, false, false);
-
-            producer = session.createProducer();
-
-            session.addFailureListener(BridgeImpl.this);
-
-            // TODO - we should move this code to the ClusterConnectorImpl - and just execute it when the bridge
-            // connection is opened and closed - we can use
-            // a callback to tell us that
-            if (queueInfoMessageHandler != null)
-            {
-               // Get the queue data
-
-               SimpleString notifQueueName = new SimpleString("notif-").concat(UUIDGenerator.getInstance()
-                                                                                            .generateSimpleStringUUID());
-
-               SimpleString filter = new SimpleString(ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
-                                                      "'" +
-                                                      NotificationType.BINDING_ADDED +
-                                                      "'," +
-                                                      "'" +
-                                                      NotificationType.BINDING_REMOVED +
-                                                      "'," +
-                                                      "'" +
-                                                      NotificationType.CONSUMER_CREATED +
-                                                      "'," +
-                                                      "'" +
-                                                      NotificationType.CONSUMER_CLOSED +
-                                                      "') AND " +
-                                                      "("+ ManagementHelper.HDR_ADDRESS + " IS NULL OR " +                                                      
-                                                      ManagementHelper.HDR_ADDRESS +
-                                                      " LIKE '" +
-                                                      queueDataAddress +
-                                                      "%')");
-
-               session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
-
-               ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
-
-               notifConsumer.setMessageHandler(queueInfoMessageHandler);
-
-               session.start();
-
-               ClientMessage message = session.createClientMessage(false);
-
-               ManagementHelper.putOperationInvocation(message,
-                                                       ManagementServiceImpl.getMessagingServerObjectName(),
-                                                       "sendQueueInfoToQueue",
-                                                       notifQueueName.toString(),
-                                                       queueDataAddress);
-
-               ClientProducer prod = session.createProducer(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
-
-               prod.send(message);
-            }
-
-            active = true;
-
-            queue.deliverAsync(executor);
-         }
-         catch (Exception e)
-         {
-            log.warn("Unable to connect. Bridge is now disabled.", e);
-
-            active = false;
-
-            started = false;
-         }
-      }
-   }
-
-   public synchronized void stop() throws Exception
+   
+   public void stop() throws Exception
    {
       if (!started)
       {
@@ -348,6 +286,9 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          future.cancel(false);
       }
+     
+      // We close the session factory here - this will cause any connection retries to stop
+      csf.close();
 
       // Wait until all batches are complete
 
@@ -361,16 +302,58 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          log.warn("Timed out waiting for batch to be sent");
       }
-      
-      session.close();
 
-      csf.close();
+      if (session != null)
+      {
+         session.close();
+      }
    }
 
    public boolean isStarted()
    {
       return started;
    }
+   
+   public SimpleString getName()
+   {
+      return name;
+   }
+
+   public Queue getQueue()
+   {
+      return queue;
+   }
+
+   public int getMaxBatchSize()
+   {
+      return maxBatchSize;
+   }
+
+   public long getMaxBatchTime()
+   {
+      return maxBatchTime;
+   }
+
+   public Filter getFilter()
+   {
+      return filter;
+   }
+
+   public SimpleString getForwardingAddress()
+   {
+      return forwardingAddress;
+   }
+
+   public Transformer getTransformer()
+   {
+      return transformer;
+   }
+
+   public boolean isUseDuplicateDetection()
+   {
+      return useDuplicateDetection;
+   }
+
 
    // For testing only
    public RemotingConnection getForwardingConnection()
@@ -430,27 +413,58 @@ public class BridgeImpl implements Bridge, FailureListener
 
    // FailureListener implementation --------------------------------
 
-   public synchronized boolean connectionFailed(final MessagingException me)
+   public boolean connectionFailed(final MessagingException me)
    {
+      if (flowRecord != null)
+      {
+         try
+         {
+            flowRecord.reset();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to reset", e);
+         }
+      }
+
       fail();
 
       return true;
    }
 
-   private void fail()
+   private synchronized void fail()
    {
       if (!started)
       {
          return;
       }
-
-      log.warn("Bridge connection to target failed. Will try to reconnect");
+      
+      log.warn(System.identityHashCode(this) + " Bridge connection to target failed. Will try to reconnect");
 
       try
       {
          tx.rollback();
+         
+         active = false;
 
-         stop();
+         queue.removeConsumer(this);
+
+         // Wait until all batches are complete
+
+         Future future = new Future();
+
+         executor.execute(future);
+
+         boolean ok = future.await(10000);
+
+         if (!ok)
+         {
+            log.warn("Timed out waiting for batch to be sent");
+         }
+
+         session.cleanUp();         
+         
+         csf.close();
       }
       catch (Exception e)
       {
@@ -493,7 +507,8 @@ public class BridgeImpl implements Bridge, FailureListener
             return;
          }
 
-         // TODO - if batch size = 1 then don't need tx - actually we should use asynch send acknowledgement stream - then we don't need a transaction at all
+         // TODO - if batch size = 1 then don't need tx - actually we should use asynch send acknowledgement stream -
+         // then we don't need a transaction at all
 
          while (true)
          {
@@ -507,30 +522,32 @@ public class BridgeImpl implements Bridge, FailureListener
             ref.getQueue().acknowledge(tx, ref);
 
             ServerMessage message = ref.getMessage();
-            
-            if (this.forClusterConnector)
+
+            if (flowRecord != null)
             {
-               //We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave only
-               //the one pertinent for the destination node - this is important since different queues on different nodes could have same queue ids
-               //Note we must copy since same message may get routed to other nodes which require different headers
+               // We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave
+               // only
+               // the one pertinent for the destination node - this is important since different queues on different
+               // nodes could have same queue ids
+               // Note we must copy since same message may get routed to other nodes which require different headers
                message = message.copy();
-               
-               //TODO - we can optimise this
-              
+
+               // TODO - we can optimise this
+
                Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
-               
+
                byte[] queueIds = (byte[])message.getProperty(idsHeaderName);
-               
-               for (SimpleString propName: propNames)
+
+               for (SimpleString propName : propNames)
                {
                   if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
                   {
                      message.removeProperty(propName);
                   }
                }
-               
+
                message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
-               
+
                message.putBooleanProperty(MessageImpl.HDR_FROM_CLUSTER, Boolean.TRUE);
             }
 
@@ -596,45 +613,116 @@ public class BridgeImpl implements Bridge, FailureListener
          timeoutBatch();
       }
    }
-
-   public SimpleString getName()
+   
+   private class CreateObjectsRunnable implements Runnable
    {
-      return name;
+      public synchronized void run()
+      {
+         if (!started)
+         {
+            return;
+         }
+
+         try
+         {
+            createTx();
+
+            queue.addConsumer(BridgeImpl.this);
+
+            csf = new ClientSessionFactoryImpl(connectorPair.a,
+                                               connectorPair.b,
+                                               retryInterval,
+                                               retryIntervalMultiplier,
+                                               maxRetriesBeforeFailover,
+                                               maxRetriesAfterFailover);
+
+            
+            session = (ClientSessionInternal)csf.createSession(false, false, false);
+            
+            if (session == null)
+            {
+               //This can happen if the bridge is shutdown 
+               return;
+            }
+            
+            producer = session.createProducer();
+
+            session.addFailureListener(BridgeImpl.this);
+
+            // TODO - we should move this code to the ClusterConnectorImpl - and just execute it when the bridge
+            // connection is opened and closed - we can use
+            // a callback to tell us that
+            if (flowRecord != null)
+            {
+               // Get the queue data
+
+               SimpleString notifQueueName = new SimpleString("notif-").concat(UUIDGenerator.getInstance()
+                                                                                            .generateSimpleStringUUID());
+
+               // TODO - simplify this
+               SimpleString filter = new SimpleString(ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
+                                                      "'" +
+                                                      NotificationType.BINDING_ADDED +
+                                                      "'," +
+                                                      "'" +
+                                                      NotificationType.BINDING_REMOVED +
+                                                      "'," +
+                                                      "'" +
+                                                      NotificationType.CONSUMER_CREATED +
+                                                      "'," +
+                                                      "'" +
+                                                      NotificationType.CONSUMER_CLOSED +
+                                                      "') AND " +
+                                                      "(" +
+                                                      ManagementHelper.HDR_ADDRESS +
+                                                      " IS NULL OR " +
+                                                      ManagementHelper.HDR_ADDRESS +
+                                                      " LIKE '" +
+                                                      flowRecord.getAddress() +
+                                                      "%') AND " +
+                                                      ManagementHelper.HDR_ORIGINATING_NODE +
+                                                      "<>'" +
+                                                      flowRecord.getNodeID() +
+                                                      "'");
+
+               session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
+
+               ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
+
+               notifConsumer.setMessageHandler(flowRecord);
+
+               session.start();
+
+               ClientMessage message = session.createClientMessage(false);
+
+               ManagementHelper.putOperationInvocation(message,
+                                                       ManagementServiceImpl.getMessagingServerObjectName(),
+                                                       "sendQueueInfoToQueue",
+                                                       notifQueueName.toString(),
+                                                       flowRecord.getAddress());
+
+               ClientProducer prod = session.createProducer(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
+
+               prod.send(message);
+            }
+
+            active = true;
+
+            queue.deliverAsync(executor);
+            
+         }
+         catch (Exception e)
+         {
+            log.warn("Unable to connect. Bridge is now disabled.", e);
+
+            active = false;
+
+            started = false;
+         }
+
+         log.info("Bridge " + name + " connected successfully");
+      }
    }
 
-   public Queue getQueue()
-   {
-      return queue;
-   }
-
-   public int getMaxBatchSize()
-   {
-      return maxBatchSize;
-   }
-
-   public long getMaxBatchTime()
-   {
-      return maxBatchTime;
-   }
-
-   public Filter getFilter()
-   {
-      return filter;
-   }
-
-   public SimpleString getForwardingAddress()
-   {
-      return forwardingAddress;
-   }
-
-   public Transformer getTransformer()
-   {
-      return transformer;
-   }
-
-   public boolean isUseDuplicateDetection()
-   {
-      return useDuplicateDetection;
-   }
-
+   
 }

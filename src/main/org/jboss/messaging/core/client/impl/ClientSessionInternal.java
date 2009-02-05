@@ -48,4 +48,6 @@ public interface ClientSessionInternal extends ClientSession
    void handleFailover(RemotingConnection backupConnection);
 
    RemotingConnection getConnection();
+   
+   void cleanUp() throws Exception;
 }

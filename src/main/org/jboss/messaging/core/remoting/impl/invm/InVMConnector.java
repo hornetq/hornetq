@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
@@ -42,17 +43,21 @@ import org.jboss.messaging.util.ConfigurationHelper;
 public class InVMConnector implements Connector
 {
    public static final Logger log = Logger.getLogger(InVMConnector.class);
-   
-   //Used for testing failure only
+
+   // Used for testing failure only
    public static volatile boolean failOnCreateConnection;
+
    public static volatile int numberOfFailures = -1;
+
    private static volatile int failures;
+
    public static synchronized void resetFailures()
    {
       failures = 0;
       failOnCreateConnection = false;
       numberOfFailures = -1;
    }
+
    private static synchronized void incFailures()
    {
       failures++;
@@ -63,54 +68,59 @@ public class InVMConnector implements Connector
    }
 
    protected final int id;
-   
+
    private final BufferHandler handler;
-   
+
    private final ConnectionLifeCycleListener listener;
-   
+
    private final InVMAcceptor acceptor;
-   
+
    private ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
-   
+
    private volatile boolean started;
-   
+
    public InVMConnector(final Map<String, Object> configuration,
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
       this.listener = listener;
-      
+
       this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
-      
+
       this.handler = handler;
-      
+
       InVMRegistry registry = InVMRegistry.instance;
-      
+
       acceptor = registry.getAcceptor(id);
-      
+
       if (acceptor == null)
       {
-         throw new IllegalStateException("Cannot connect to invm acceptor with id " + id + " has it been started?");
+         log.warn("Cannot connect to invm acceptor with id " + id + " has it been started?");
       }
    }
 
+   public Acceptor getAcceptor()
+   {
+      return acceptor;
+   }
+
    public synchronized void close()
-   {      
+   {
       if (!started)
       {
          return;
       }
-      
-      for (Connection connection: connections.values())
+
+      for (Connection connection : connections.values())
       {
          listener.connectionDestroyed(connection.getID());
       }
-      
+
       connections.clear();
-      
+
       started = false;
    }
-   
+
    public boolean isStarted()
    {
       return started;
@@ -121,35 +131,36 @@ public class InVMConnector implements Connector
       if (failOnCreateConnection)
       {
          incFailures();
-         //For testing only
+         // For testing only
          return null;
       }
-      
+
       Connection conn = internalCreateConnection(acceptor.getHandler(), new Listener());
-      
+
       acceptor.connect((String)conn.getID(), handler, this);
-           
+
       return conn;
    }
+
    public synchronized void start()
-   {          
+   {
       started = true;
    }
-   
+
    public BufferHandler getHandler()
    {
       return handler;
    }
-   
+
    public void disconnect(final String connectionID)
    {
       if (!started)
       {
-         throw new IllegalStateException("Acceptor is not started");
+         return;
       }
-      
+
       Connection conn = connections.get(connectionID);
-      
+
       if (conn != null)
       {
          conn.close();
@@ -161,27 +172,33 @@ public class InVMConnector implements Connector
    {
       return new InVMConnection(id, handler, listener);
    }
-      
+
    private class Listener implements ConnectionLifeCycleListener
    {
       public void connectionCreated(final Connection connection)
-      {         
+      {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
-           
+
          listener.connectionCreated(connection);
       }
 
       public void connectionDestroyed(final Object connectionID)
-      {         
+      {
          if (connections.remove(connectionID) != null)
-         {                     
-            //Close the correspond connection on the other side
-            acceptor.disconnect((String)connectionID);
-            
+         {
             listener.connectionDestroyed(connectionID);
+
+            new Thread()
+            {
+               public void run()
+               {
+                  // Close the corresponding connection on the other side
+                  acceptor.disconnect((String)connectionID);
+               }
+            }.start();
          }
       }
 
@@ -189,7 +206,7 @@ public class InVMConnector implements Connector
       {
          listener.connectionException(connectionID, me);
       }
-      
+
    }
 
 }

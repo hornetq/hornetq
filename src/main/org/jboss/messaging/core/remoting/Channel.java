@@ -14,6 +14,7 @@ package org.jboss.messaging.core.remoting;
 import java.util.concurrent.locks.Lock;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.server.DelayedResult;
 
 /**
  * A Channel A Channel *does not* support concurrent access by more than one thread!

@@ -36,6 +36,12 @@ import org.jboss.messaging.util.SimpleString;
 public class FakeBinding implements Binding
 {
    
+   public SimpleString getOriginatingNodeID()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
    public Filter getFilter()
    {
       // TODO Auto-generated method stub

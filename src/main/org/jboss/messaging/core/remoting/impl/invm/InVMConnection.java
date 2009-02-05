@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -140,4 +141,5 @@ public class InVMConnection implements Connection
    {
       return "invm:" + serverID;
    }
+      
 }

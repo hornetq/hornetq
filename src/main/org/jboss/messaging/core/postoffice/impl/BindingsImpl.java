@@ -181,7 +181,7 @@ public class BindingsImpl implements Bindings
       else
       {
          if (message.getProperty(MessageImpl.HDR_FROM_CLUSTER) != null)
-         {
+         {            
             routeFromCluster(message, tx);
          }
          else

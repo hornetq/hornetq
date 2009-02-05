@@ -38,6 +38,11 @@ import org.jboss.messaging.core.logging.Logger;
  * this minimises expensive copying between String objects
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * TODO - implement an intern() method like in java.lang.String, since many Strings e.g. addresses, queue names, remote node ids are duplicated heavily
+ * in bindings taking up more memory than they should
+ * Intern can be called when receiving a sent message at the server (destination)
+ * Also when receiving bindings remotely via bridge, the address, queue name and node id can be interned
  *
  */
 public class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>

@@ -90,6 +90,8 @@ public class ClusterManagerImpl implements ClusterManager
    private final Configuration configuration;
 
    private final QueueFactory queueFactory;
+   
+   private final SimpleString nodeID;
 
    private volatile boolean started;
 
@@ -99,7 +101,8 @@ public class ClusterManagerImpl implements ClusterManager
                              final ScheduledExecutorService scheduledExecutor,
                              final ManagementService managementService,
                              final Configuration configuration,
-                             final QueueFactory queueFactory)
+                             final QueueFactory queueFactory,
+                             final SimpleString nodeID)
    {
       this.executorFactory = executorFactory;
 
@@ -114,6 +117,8 @@ public class ClusterManagerImpl implements ClusterManager
       this.configuration = configuration;
 
       this.queueFactory = queueFactory;
+      
+      this.nodeID = nodeID;
    }
 
    public synchronized void start() throws Exception
@@ -396,10 +401,7 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getRetryIntervalMultiplier(),
                                  config.getMaxRetriesBeforeFailover(),
                                  config.getMaxRetriesAfterFailover(),
-                                 config.isUseDuplicateDetection(),
-                                 null,
-                                 null,
-                                 false);
+                                 config.isUseDuplicateDetection());
 
          bridges.put(config.getName(), bridge);
 
@@ -474,7 +476,8 @@ public class ClusterManagerImpl implements ClusterManager
                                                        postOffice,
                                                        scheduledExecutor,
                                                        queueFactory,
-                                                       connectors);
+                                                       connectors,
+                                                       nodeID);
       }
       else
       {
@@ -496,7 +499,8 @@ public class ClusterManagerImpl implements ClusterManager
                                                        postOffice,
                                                        scheduledExecutor,
                                                        queueFactory,
-                                                       dg);
+                                                       dg,
+                                                       nodeID);
       }
 
       managementService.registerCluster(clusterConnection, config);

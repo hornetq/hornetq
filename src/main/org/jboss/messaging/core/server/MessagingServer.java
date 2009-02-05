@@ -21,9 +21,9 @@ import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
@@ -31,6 +31,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed to other components of the server. The
@@ -115,4 +116,6 @@ public interface MessagingServer extends MessagingComponent
    ClusterManager getClusterManager();
    
    QueueFactory getQueueFactory();
+   
+   SimpleString getNodeID();
 }

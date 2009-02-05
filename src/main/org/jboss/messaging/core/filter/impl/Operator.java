@@ -607,6 +607,7 @@ public class Operator
    Object different() throws Exception
    {
       computeArgument1();
+      
       if (arg1 == null)
       {
          computeArgument2();
@@ -979,7 +980,7 @@ public class Operator
       computeArgument1();
       if (arg1 == null)
       {
-         return null;
+         return false;
       }
       if (class1 != SIMPLE_STRING)
       {
@@ -1001,7 +1002,7 @@ public class Operator
       computeArgument1();
       if (arg1 == null)
       {
-         return null;
+         return true;
       }
       if (class1 != SIMPLE_STRING)
       {

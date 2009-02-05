@@ -630,8 +630,6 @@ public class ReconnectTest extends TestCase
    {
       InVMConnector.resetFailures();
       
-      assertEquals(0, service.getServer().getRemotingService().getConnections().size());
-
       service.stop();
 
       assertEquals(0, InVMRegistry.instance.size());

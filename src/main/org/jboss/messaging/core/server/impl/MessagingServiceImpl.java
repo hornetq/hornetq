@@ -21,21 +21,9 @@
   */
 package org.jboss.messaging.core.server.impl;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.MBeanServer;
-
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
-import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
-import org.jboss.messaging.core.remoting.RemotingService;
-import org.jboss.messaging.core.remoting.impl.RemotingServiceImpl;
-import org.jboss.messaging.core.security.JBMSecurityManager;
-import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
+import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.MessagingService;
 
@@ -47,7 +35,9 @@ import org.jboss.messaging.core.server.MessagingService;
  */
 public class MessagingServiceImpl implements MessagingService
 {
-      private final MessagingServer server;
+   private static final Logger log = Logger.getLogger(MessagingServiceImpl.class);
+
+   private final MessagingServer server;
 
    private final StorageManager storageManager;
 
@@ -64,10 +54,11 @@ public class MessagingServiceImpl implements MessagingService
 
    public void start() throws Exception
    {
-      storageManager.start();      
+      storageManager.start();
       server.start();
-      //Remoting service should always be started last, otherwise create session packets can be received before the message server packet handler has been registered
-      //resulting in create session attempts to "hang" since response will never be sent back.
+      // Remoting service should always be started last, otherwise create session packets can be received before the
+      // message server packet handler has been registered
+      // resulting in create session attempts to "hang" since response will never be sent back.
       remotingService.start();
    }
 

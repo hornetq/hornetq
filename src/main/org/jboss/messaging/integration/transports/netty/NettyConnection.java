@@ -22,7 +22,9 @@
 
 package org.jboss.messaging.integration.transports.netty;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.Connection;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -38,20 +40,29 @@ import org.jboss.netty.handler.ssl.SslHandler;
 public class NettyConnection implements Connection
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(NettyConnection.class);
+
 
    // Attributes ----------------------------------------------------
 
    private final Channel channel;
 
    private boolean closed;
+   
+   private final ConnectionLifeCycleListener listener;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public NettyConnection(final Channel channel)
-   {
+   public NettyConnection(final Channel channel, final ConnectionLifeCycleListener listener)
+   {      
       this.channel = channel;
+      
+      this.listener = listener;
+      
+      listener.connectionCreated(this);
    }
 
    // Public --------------------------------------------------------
@@ -97,6 +108,8 @@ public class NettyConnection implements Connection
       // }
 
       closed = true;
+      
+      listener.connectionDestroyed(getID());
    }
 
    public MessagingBuffer createBuffer(int size)

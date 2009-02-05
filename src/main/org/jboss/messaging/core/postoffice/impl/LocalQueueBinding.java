@@ -56,8 +56,10 @@ public class LocalQueueBinding implements QueueBinding
    private final SimpleString name;
    
    private int id;
+   
+   private final SimpleString originatingNodeID;
       
-   public LocalQueueBinding(final SimpleString address, final Queue queue)
+   public LocalQueueBinding(final SimpleString address, final Queue queue, final SimpleString originatingNodeID)
    {
       this.address = address;
       
@@ -66,6 +68,8 @@ public class LocalQueueBinding implements QueueBinding
       this.filter = queue.getFilter();
       
       this.name = queue.getName();
+      
+      this.originatingNodeID = originatingNodeID;
    }
    
    public int getID()
@@ -106,6 +110,11 @@ public class LocalQueueBinding implements QueueBinding
    public boolean isExclusive()
    {
       return false;
+   }
+   
+   public SimpleString getOriginatingNodeID()
+   {
+      return originatingNodeID;
    }
 
    public boolean isHighAcceptPriority(final ServerMessage message)

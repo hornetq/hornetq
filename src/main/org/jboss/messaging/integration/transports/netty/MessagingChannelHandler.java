@@ -84,8 +84,6 @@ class MessagingChannelHandler extends SimpleChannelHandler
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
    {
-      log.error("caught exception " + e.getCause() + " for channel " + e.getChannel(), e.getCause());
-
       synchronized (this)
       {
          if (!active)

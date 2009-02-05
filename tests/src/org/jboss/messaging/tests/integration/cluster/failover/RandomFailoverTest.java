@@ -1502,11 +1502,7 @@ public class RandomFailoverTest extends TestCase
 
    private void stop() throws Exception
    {
-      assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
-
       backupService.stop();
-
-      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
 
       liveService.stop();
 

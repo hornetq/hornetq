@@ -56,7 +56,7 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingService;
+import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -296,7 +296,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       if (postOffice.getBinding(sName) == null)
       {
          Queue queue = queueFactory.createQueue(-1, sAddress, sName, null, true, false);
-         Binding binding = new LocalQueueBinding(sAddress, queue);
+         Binding binding = new LocalQueueBinding(sAddress, queue, server.getNodeID());
          storageManager.addQueueBinding(binding);
          postOffice.addBinding(binding);
       }
@@ -315,7 +315,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       if (postOffice.getBinding(sName) == null)
       {
          Queue queue = queueFactory.createQueue(-1, sAddress, sName, filter, durable, false);
-         Binding binding = new LocalQueueBinding(sAddress, queue);
+         Binding binding = new LocalQueueBinding(sAddress, queue, server.getNodeID());
          if (durable)
          {
             storageManager.addQueueBinding(binding);

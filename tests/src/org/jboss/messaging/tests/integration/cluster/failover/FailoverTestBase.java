@@ -157,8 +157,6 @@ public class FailoverTestBase extends ServiceTestBase
    {
       if (backupService != null && backupService.isStarted())
       {
-         assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
-   
          backupService.stop();
          
          backupService = null;
@@ -166,8 +164,6 @@ public class FailoverTestBase extends ServiceTestBase
       
       if (liveService != null && liveService.isStarted())
       {
-         assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
-   
          liveService.stop();
          
          liveService = null;

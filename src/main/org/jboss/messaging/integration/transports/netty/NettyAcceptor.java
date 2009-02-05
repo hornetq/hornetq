@@ -24,12 +24,11 @@ package org.jboss.messaging.integration.transports.netty;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +36,9 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -119,6 +120,8 @@ public class NettyAcceptor implements Acceptor
    private final Timer httpKeepAliveTimer;
 
    private final HttpKeepAliveTask httpKeepAliveTask;
+   
+   private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
@@ -315,6 +318,13 @@ public class NettyAcceptor implements Acceptor
          }
       }
       channelFactory = null;
+      
+      for (Connection connection : connections.values())
+      {
+         listener.connectionDestroyed(connection.getID());
+      }
+
+      connections.clear();
    }
    
    public boolean isStarted()
@@ -334,9 +344,9 @@ public class NettyAcceptor implements Acceptor
 
       @Override
       public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-      {
-         final Connection tc = new NettyConnection(e.getChannel());
-
+      {         
+         final Connection tc = new NettyConnection(e.getChannel(), new Listener());
+         
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
          {
@@ -361,6 +371,30 @@ public class NettyAcceptor implements Acceptor
             listener.connectionCreated(tc);
             active = true;
          }
+      }
+   }
+   
+   private class Listener implements ConnectionLifeCycleListener
+   {
+      public void connectionCreated(final Connection connection)
+      {
+         if (connections.putIfAbsent(connection.getID(), connection) != null)
+         {
+            throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
+         }
+      }
+
+      public void connectionDestroyed(final Object connectionID)
+      {
+         if (connections.remove(connectionID) != null)
+         {
+            listener.connectionDestroyed(connectionID);
+         }
+      }
+
+      public void connectionException(final Object connectionID, final MessagingException me)
+      {
+         listener.connectionException(connectionID, me);
       }
    }
 }

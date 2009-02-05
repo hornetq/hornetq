@@ -81,9 +81,9 @@ import org.jboss.messaging.util.TypedProperties;
 public class PostOfficeImpl implements PostOffice, NotificationListener
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
-   
+
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_JBM_RESET_QUEUE_DATA");
-   
+
    private static final List<MessageReference> emptyList = Collections.<MessageReference> emptyList();
 
    private final AddressManager addressManager;
@@ -115,19 +115,21 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    private final int idCacheSize;
 
    private final boolean persistIDCache;
-   
-   //Each queue has a transient ID which lasts the lifetime of its binding. This is used in clustering when routing messages to particular queues on nodes. We could
-   //use the queue name on the node to identify it. But sometimes we need to route to maybe 10s of thousands of queues on a particular node, and all would
-   //have to be specified in the message. Specify 10000 ints takes up a lot less space than 10000 arbitrary queue names
-   //The drawback of this approach is we only allow up to 2^32 queues in memory at any one time
+
+   // Each queue has a transient ID which lasts the lifetime of its binding. This is used in clustering when routing
+   // messages to particular queues on nodes. We could
+   // use the queue name on the node to identify it. But sometimes we need to route to maybe 10s of thousands of queues
+   // on a particular node, and all would
+   // have to be specified in the message. Specify 10000 ints takes up a lot less space than 10000 arbitrary queue names
+   // The drawback of this approach is we only allow up to 2^32 queues in memory at any one time
    private int transientIDSequence;
-   
+
    private Set<Integer> transientIDs = new HashSet<Integer>();
-   
-   private Map<SimpleString, QueueInfo> queueInfos = new HashMap<SimpleString, QueueInfo>();
-   
+
+   private Map<SimpleString, Map<SimpleString, QueueInfo>> queueInfos = new HashMap<SimpleString, Map<SimpleString, QueueInfo>>();
+
    private final Object notificationLock = new Object();
-      
+
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory bindableFactory,
@@ -167,7 +169,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       this.idCacheSize = idCacheSize;
 
-      this.persistIDCache = persistIDCache;            
+      this.persistIDCache = persistIDCache;
    }
 
    // MessagingComponent implementation ---------------------------------------
@@ -175,7 +177,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public void start() throws Exception
    {
       managementService.addNotificationListener(this);
-      
+
       if (pagingManager != null)
       {
          pagingManager.setPostOffice(this);
@@ -201,7 +203,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public void stop() throws Exception
    {
       managementService.removeNotificationListener(this);
-      
+
       if (messageExpiryExecutor != null)
       {
          messageExpiryExecutor.shutdown();
@@ -224,82 +226,139 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {
       return started;
    }
-   
+
    // NotificationListener implementation -------------------------------------
-   
-   
+
    public void onNotification(final Notification notification)
-   {      
+   {
       synchronized (notificationLock)
       {
          NotificationType type = notification.getType();
-         
+
          if (type == NotificationType.BINDING_ADDED)
          {
             TypedProperties props = notification.getProperties();
-            
+
             SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-               
+
             SimpleString address = (SimpleString)props.getProperty(ManagementHelper.HDR_ADDRESS);
-            
+
             Integer transientID = (Integer)props.getProperty(ManagementHelper.HDR_BINDING_ID);
-            
+
             SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
-            
-            QueueInfo info = new QueueInfo(queueName, address, filterString, transientID);
-            
-            queueInfos.put(queueName, info);
+
+            SimpleString origNode = (SimpleString)props.getProperty(ManagementHelper.HDR_ORIGINATING_NODE);
+
+            QueueInfo info = new QueueInfo(queueName, address, filterString, transientID, origNode);
+
+            Map<SimpleString, QueueInfo> queueInfoMap = queueInfos.get(origNode);
+
+            if (queueInfoMap == null)
+            {
+               queueInfoMap = new HashMap<SimpleString, QueueInfo>();
+
+               queueInfos.put(origNode, queueInfoMap);
+            }
+
+            queueInfoMap.put(queueName, info);
          }
          else if (type == NotificationType.BINDING_REMOVED)
          {
             TypedProperties props = notification.getProperties();
-            
+
             SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-                     
-            queueInfos.remove(queueName);  
+
+            SimpleString origNode = (SimpleString)props.getProperty(ManagementHelper.HDR_ORIGINATING_NODE);
+
+            Map<SimpleString, QueueInfo> queueInfoMap = queueInfos.get(origNode);
+
+            if (queueInfoMap == null)
+            {
+               throw new IllegalStateException("Cannot find map for node " + origNode);
+            }
+
+            QueueInfo info = queueInfoMap.remove(queueName);
+
+            if (info == null)
+            {
+               throw new IllegalStateException("Cannot find queue info for queue " + queueName);
+            }
+
+            if (queueInfoMap.isEmpty())
+            {
+               queueInfos.remove(origNode);
+            }
          }
          else if (type == NotificationType.CONSUMER_CREATED)
          {
             TypedProperties props = notification.getProperties();
-            
-            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME); 
-            
+
+            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
+
             SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
-            
-            QueueInfo info = queueInfos.get(queueName);
-            
+
+            SimpleString origNode = (SimpleString)props.getProperty(ManagementHelper.HDR_ORIGINATING_NODE);
+
+            Map<SimpleString, QueueInfo> queueInfoMap = queueInfos.get(origNode);
+
+            if (queueInfoMap == null)
+            {
+               throw new IllegalStateException("Cannot find map for node " + origNode);
+            }
+
+            QueueInfo info = queueInfoMap.get(queueName);
+
+            if (info == null)
+            {
+               throw new IllegalStateException("Cannot find queue info for queue " + queueName);
+            }
+
             info.incrementConsumers();
-            
+
             if (filterString != null)
             {
                List<SimpleString> filterStrings = info.getFilterStrings();
-               
+
                if (filterStrings == null)
                {
                   filterStrings = new ArrayList<SimpleString>();
-                  
+
                   info.setFilterStrings(filterStrings);
                }
-            }         
+            }
          }
          else if (type == NotificationType.CONSUMER_CLOSED)
          {
             TypedProperties props = notification.getProperties();
-            
-            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME); 
-            
+
+            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
+
             SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
-            
-            QueueInfo info = queueInfos.get(queueName);
-            
+
+            SimpleString origNode = (SimpleString)props.getProperty(ManagementHelper.HDR_ORIGINATING_NODE);
+
+            Map<SimpleString, QueueInfo> queueInfoMap = queueInfos.get(origNode);
+
+            if (queueInfoMap == null)
+            {
+               throw new IllegalStateException("Cannot find map for node " + origNode);
+            }
+
+            QueueInfo info = queueInfoMap.get(queueName);
+
+            if (info == null)
+            {
+               throw new IllegalStateException("Cannot find queue info for queue " + queueName);
+            }
+
             info.decrementConsumers();
-            
+
             if (filterString != null)
             {
                List<SimpleString> filterStrings = info.getFilterStrings();
-               
+
                filterStrings.remove(filterString);
-            }             
+            }
          }
          else
          {
@@ -307,7 +366,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          }
       }
    }
-
 
    // PostOffice implementation -----------------------------------------------
 
@@ -362,46 +420,52 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    // and post office is activated but queue remains unactivated after failover so delivery never occurs
    // even though failover is complete
    public synchronized void addBinding(final Binding binding) throws Exception
-   {      
+   {
       binding.setID(generateTransientID());
-      
+
       addBindingInMemory(binding);
-           
+
       TypedProperties props = new TypedProperties();
-      
+
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
       props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, binding.getRoutingName());
       props.putIntProperty(ManagementHelper.HDR_BINDING_ID, binding.getID());
+      if (binding.getOriginatingNodeID() == null)
+      {
+         throw new IllegalStateException("null originating node");
+      }
+      props.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, binding.getOriginatingNodeID());
       Filter filter = binding.getFilter();
       if (filter != null)
       {
          props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filter.getFilterString());
       }
-      
+
       managementService.sendNotification(new Notification(NotificationType.BINDING_ADDED, props));
    }
 
    public synchronized Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
       Binding binding = removeBindingInMemory(uniqueName);
-      
+
       if (binding.isQueueBinding())
       {
          managementService.unregisterQueue(uniqueName, binding.getAddress());
       }
-                        
+
       TypedProperties props = new TypedProperties();
-      
+
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
       props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, binding.getRoutingName());
+      props.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, binding.getOriginatingNodeID());
 
       managementService.sendNotification(new Notification(NotificationType.BINDING_REMOVED, props));
-      
+
       releaseTransientID(binding.getID());
 
       return binding;
    }
-   
+
    public Bindings getBindingsForAddress(final SimpleString address)
    {
       Bindings bindings = addressManager.getBindings(address);
@@ -420,7 +484,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    }
 
    public void route(final ServerMessage message, Transaction tx) throws Exception
-   {            
+   {
       SimpleString address = message.getDestination();
 
       if (checkAllowable)
@@ -472,7 +536,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             startedTx = true;
          }
       }
-      
+
       if (tx == null)
       {
          if (pagingManager.page(message, true))
@@ -483,19 +547,19 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       else
       {
          SimpleString destination = message.getDestination();
-         
+
          boolean depage = tx.getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
-         
+
          if (!depage && pagingManager.isPaging(destination))
          {
             getPageOperation(tx).addMessageToPage(message);
-            
+
             return;
          }
       }
 
       Bindings bindings = addressManager.getBindings(address);
-      
+
       if (bindings != null)
       {
          bindings.route(message, tx);
@@ -520,7 +584,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public List<Queue> activate()
    {
       backup = false;
-      
+
       pagingManager.activate();
 
       Map<SimpleString, Binding> nameMap = addressManager.getBindings();
@@ -577,131 +641,147 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       return cache;
    }
-     
+
    public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
    {
-      //We send direct to the queue so we can send it to the same queue that is bound to the notifications adress - this is crucial for ensuring
-      //that queue infos and notifications are received in a contiguous consistent stream
+      // We send direct to the queue so we can send it to the same queue that is bound to the notifications adress -
+      // this is crucial for ensuring
+      // that queue infos and notifications are received in a contiguous consistent stream
       Binding binding = addressManager.getBinding(queueName);
-      
+
       if (binding == null)
       {
          throw new IllegalStateException("Cannot find queue " + queueName);
       }
-      
+
       Queue queue = (Queue)binding.getBindable();
-      
-      //Need to lock to make sure all queue info and notifications are in the correct order with no gaps
+
+      // Need to lock to make sure all queue info and notifications are in the correct order with no gaps
       synchronized (notificationLock)
       {
-         //First send a reset message
-         
-         ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID()); 
+         // First send a reset message
+
+         ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID());
          message.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
          message.setDestination(queueName);
          message.putBooleanProperty(HDR_RESET_QUEUE_DATA, true);
-         
-         queue.preroute(message, null);            
+         queue.preroute(message, null);
          queue.route(message, null);
-                  
-         for (QueueInfo info: queueInfos.values())
-         {            
-            if (info.getAddress().startsWith(address))
+
+         for (Map<SimpleString, QueueInfo> queueInfoMap : queueInfos.values())
+         {
+            for (QueueInfo info : queueInfoMap.values())
             {
-               message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
-               
-               message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
-               message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
-               message.putIntProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
-               message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, info.getFilterString());
-               
-               queue.preroute(message, null);            
-               queue.route(message, null);
-               
-               int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
-               
-               for (int i = 0; i < info.getNumberOfConsumers() - consumersWithFilters; i++)
+               if (info.getAddress().startsWith(address))
                {
-                  message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+                  message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
                   
-                  message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName()); 
-                  
-                  queue.preroute(message, null);            
-                  queue.route(message, null);
-               }
-               
-               if (info.getFilterStrings() != null)
-               {
-                  for (SimpleString filterString: info.getFilterStrings())
+                  message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
+                  message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
+                  message.putIntProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
+                  message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, info.getFilterString());
+
+                  if (info.getOriginatingNode() == null)
+                  {
+                     throw new IllegalStateException("orig node is null");
+                  }
+
+                  message.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, info.getOriginatingNode());
+
+                  routeDirect(queue, message);
+
+                  int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
+
+                  for (int i = 0; i < info.getNumberOfConsumers() - consumersWithFilters; i++)
                   {
                      message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
-                     
-                     message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
-                     message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString); 
-                     
 
-                     queue.preroute(message, null);            
-                     queue.route(message, null);
+                     message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
+                     message.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, info.getOriginatingNode());
+
+                     routeDirect(queue, message);
                   }
-               }     
+
+                  if (info.getFilterStrings() != null)
+                  {
+                     for (SimpleString filterString : info.getFilterStrings())
+                     {
+                        message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+
+                        message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
+                        message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
+                        message.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, info.getOriginatingNode());
+
+                        routeDirect(queue, message);
+                     }
+                  }
+               }
             }
          }
       }
    }
-   
+
    // Private -----------------------------------------------------------------
-   
+
+   private void routeDirect(final Queue queue, final ServerMessage message) throws Exception
+   {
+      if (queue.getFilter() == null || queue.getFilter().match(message))
+      {
+         queue.preroute(message, null);
+         queue.route(message, null);
+      }
+   }
+
    private ServerMessage createQueueInfoMessage(final NotificationType type, final SimpleString queueName)
    {
       ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID());
       message.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
-      
+
       message.setDestination(queueName);
-      
-      message.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(type.toString()));        
+
+      message.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(type.toString()));
       message.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
-      
+
       return message;
    }
-   
-   
+
    private int generateTransientID()
    {
       int start = transientIDSequence;
       do
       {
          int id = transientIDSequence++;
-         
+
          if (!transientIDs.contains(id))
          {
             transientIDs.add(id);
-            
+
             return id;
          }
       }
       while (transientIDSequence != start);
-      
+
       throw new IllegalStateException("Run out of queue ids!");
    }
-   
+
    private void releaseTransientID(final int id)
    {
       transientIDs.remove(id);
    }
-   
+
    private final PageMessageOperation getPageOperation(final Transaction tx)
    {
       PageMessageOperation oper = (PageMessageOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION);
-      
+
       if (oper == null)
-      {         
+      {
          oper = new PageMessageOperation();
-         
+
          tx.putProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION, oper);
-         
+
          tx.addOperation(oper);
       }
-      
+
       return oper;
    }
 
@@ -724,7 +804,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          }
 
          managementService.registerQueue(queue, binding.getAddress(), storageManager);
-      }            
+      }
    }
 
    private Binding removeBindingInMemory(final SimpleString bindingName) throws Exception
@@ -774,7 +854,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    private class PageMessageOperation implements TransactionOperation
    {
       private final List<ServerMessage> messagesToPage = new ArrayList<ServerMessage>();
-      
+
       void addMessageToPage(final ServerMessage message)
       {
          messagesToPage.add(message);
@@ -785,9 +865,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
          // transaction until all the messages were added to the queue
          // or else we could deliver the messages out of order
-         
+
          PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-         
+
          if (pageTransaction != null)
          {
             pageTransaction.commit();
@@ -813,7 +893,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          if (tx.getState() != Transaction.State.PREPARED)
          {
             pageMessages(tx);
-         }                
+         }
       }
 
       public void beforePrepare(final Transaction tx) throws Exception

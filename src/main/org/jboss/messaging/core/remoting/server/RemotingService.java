@@ -20,51 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
+package org.jboss.messaging.core.remoting.server;
 
-package org.jboss.messaging.core.remoting;
+import java.util.Set;
 
+import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.core.server.MessagingServer;
 
 /**
- * A DelayedResult
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Created 16 Oct 2008 10:39:10
- *
- *
+ * @version <tt>$Revision$</tt>
  */
-public class DelayedResult
+public interface RemotingService extends MessagingComponent
 {
-   private boolean replicated;
-   
-   private Runnable resultRunner;
-   
-   public synchronized void setResultRunner(final Runnable resultRunner)
-   {
-      if (replicated)
-      {
-         resultRunner.run();
-         
-         replicated = false;
-      }
-      else
-      {
-         this.resultRunner = resultRunner;
-      }
-   }
-   
-   public synchronized void replicated()
-   {
-      if (resultRunner != null)
-      {
-         resultRunner.run();                  
-      }
-      else
-      {
-         replicated = true;
-      }
-   }
-   
-   
+   RemotingConnection getConnection(Object remotingConnectionID);
 
+   Set<RemotingConnection> getConnections();
+   
+   void setMessagingServer(MessagingServer server);
+   
+   void addInterceptor(Interceptor interceptor);
+   
+   boolean removeInterceptor(Interceptor interceptor);
+   
+   void setBackup(boolean backup);
+
+   void setManagementService(ManagementService managementService);
 }

@@ -71,6 +71,8 @@ public class ManagementHelper
    public static final SimpleString HDR_BINDING_ID = new SimpleString("_JBM_Binding_ID");
    
    public static final SimpleString HDR_FILTERSTRING = new SimpleString("_JBM_FilterString");
+   
+   public static final SimpleString HDR_ORIGINATING_NODE = new SimpleString("_JBM_OrigNode");
 
    // Attributes ----------------------------------------------------
 

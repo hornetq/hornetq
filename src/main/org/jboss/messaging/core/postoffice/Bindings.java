@@ -46,5 +46,5 @@ public interface Bindings
    
    void removeBinding(Binding binding);
    
-   void setRouteWhenNoConsumers(boolean routeWhenNoConsumers);
+   void setRouteWhenNoConsumers(boolean takePriorityIntoAccount);
 }

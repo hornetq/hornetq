@@ -51,10 +51,10 @@ import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.RemotingService;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
@@ -81,6 +81,7 @@ import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUIDGenerator;
 import org.jboss.messaging.util.VersionLoader;
 
 /**
@@ -103,6 +104,8 @@ public class MessagingServerImpl implements MessagingServer
    // Attributes
    // -----------------------------------------------------------------------------------
 
+   private SimpleString nodeID;
+   
    private final Version version;
 
    private volatile boolean started;
@@ -171,6 +174,10 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
+      nodeID = UUIDGenerator.getInstance().generateSimpleStringUUID();
+      
+      log.info("*** Starting " + this.nodeID);
+      
       asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
 
       executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
@@ -290,7 +297,7 @@ public class MessagingServerImpl implements MessagingServer
                                                 true,
                                                 false);
 
-         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue);
+         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeID);
 
          queues.put(queueBindingInfo.getPersistenceID(), queue);
 
@@ -373,7 +380,8 @@ public class MessagingServerImpl implements MessagingServer
                                                  scheduledExecutor,
                                                  managementService,
                                                  configuration,
-                                                 queueFactory);
+                                                 queueFactory,
+                                                 nodeID);
 
          clusterManager.start();
       }
@@ -427,6 +435,8 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       serverManagement = null;
+      
+      sessions.clear();
 
       managementService.stop();
       started = false;
@@ -598,6 +608,8 @@ public class MessagingServerImpl implements MessagingServer
       // will never get back
 
       checkActivate(connection);
+      
+      log.info("Got reattach session " + this.nodeID + " session is " + session);
 
       if (session == null)
       {
@@ -740,6 +752,11 @@ public class MessagingServerImpl implements MessagingServer
    {
       return queueFactory;
    }
+   
+   public SimpleString getNodeID()
+   {
+      return nodeID;
+   }
 
    // Public
    // ---------------------------------------------------------------------------------------
@@ -803,7 +820,7 @@ public class MessagingServerImpl implements MessagingServer
 
             Queue queue = queueFactory.createQueue(-1, address, name, filter, config.isDurable(), false);
 
-            Binding queueBinding = new LocalQueueBinding(new SimpleString(config.getAddress()), queue);
+            Binding queueBinding = new LocalQueueBinding(new SimpleString(config.getAddress()), queue, nodeID);
             
             binding = queueBinding;
 
@@ -872,7 +889,7 @@ public class MessagingServerImpl implements MessagingServer
                                         pagingManager,
                                         storageManager);
 
-         Binding binding = new DivertBinding(sAddress, divert);
+         Binding binding = new DivertBinding(sAddress, divert, nodeID);
 
          postOffice.addBinding(binding);
       }

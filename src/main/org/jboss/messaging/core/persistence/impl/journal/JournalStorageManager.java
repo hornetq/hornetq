@@ -140,7 +140,7 @@ public class JournalStorageManager implements StorageManager
    private volatile boolean started;
 
    private final ExecutorService executor;
-    
+
    public JournalStorageManager(final Configuration config)
    {
       this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-journal-storage-manager"));
@@ -215,6 +215,8 @@ public class JournalStorageManager implements StorageManager
       largeMessagesFactory = new NIOSequentialFileFactory(config.getLargeMessagesDirectory());
    }
 
+  
+
    /* This constructor is only used for testing */
    public JournalStorageManager(final Journal messageJournal,
                                 final Journal bindingsJournal,
@@ -230,7 +232,7 @@ public class JournalStorageManager implements StorageManager
    {
       return idGenerator.generateID();
    }
-   
+
    public LargeServerMessage createLargeMessage()
    {
       return new JournalLargeServerMessage(this);
@@ -558,7 +560,7 @@ public class JournalStorageManager implements StorageManager
                {
                   throw new IllegalStateException("Cannot find message " + messageID);
                }
-               
+
                rec.deliveryCount = encoding.count;
 
                break;
@@ -572,7 +574,7 @@ public class JournalStorageManager implements StorageManager
                pageTransactionInfo.setRecordID(record.id);
 
                PagingManager pagingManager = postOffice.getPagingManager();
-               
+
                pagingManager.addTransaction(pageTransactionInfo);
 
                break;
@@ -598,7 +600,7 @@ public class JournalStorageManager implements StorageManager
                {
                   throw new IllegalStateException("Cannot find message " + messageID);
                }
-               
+
                rec.scheduledDeliveryTime = encoding.scheduledDeliveryTime;
 
                break;
@@ -628,28 +630,28 @@ public class JournalStorageManager implements StorageManager
             }
          }
       }
-      
-      for (Map.Entry<Long, Map<Long, AddMessageRecord>> entry: queueMap.entrySet())
+
+      for (Map.Entry<Long, Map<Long, AddMessageRecord>> entry : queueMap.entrySet())
       {
          long queueID = entry.getKey();
-         
+
          Map<Long, AddMessageRecord> queueRecords = entry.getValue();
-         
+
          Queue queue = queues.get(queueID);
-         
-         for (AddMessageRecord record: queueRecords.values())
+
+         for (AddMessageRecord record : queueRecords.values())
          {
             long scheduledDeliveryTime = record.scheduledDeliveryTime;
-            
+
             if (scheduledDeliveryTime != 0)
             {
                record.message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, scheduledDeliveryTime);
             }
-            
+
             MessageReference ref = queue.reroute(record.message, null);
-            
+
             ref.setDeliveryCount(record.deliveryCount);
-            
+
             if (scheduledDeliveryTime != 0)
             {
                record.message.removeProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
@@ -665,7 +667,7 @@ public class JournalStorageManager implements StorageManager
                                preparedTransactions,
                                duplicateIDMap);
    }
-   
+
    private void loadPreparedTransactions(final PostOffice postOffice,
                                          final StorageManager storageManager,
                                          final HierarchicalRepository<AddressSettings> queueSettingsRepository,
@@ -688,9 +690,9 @@ public class JournalStorageManager implements StorageManager
          List<MessageReference> referencesToAck = new ArrayList<MessageReference>();
 
          Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
-           
-         //Use same method as load message journal to prune out acks, so they don't get added.
-         //Then have reacknowledge(tx) methods on queue, which needs to add the page size
+
+         // Use same method as load message journal to prune out acks, so they don't get added.
+         // Then have reacknowledge(tx) methods on queue, which needs to add the page size
 
          // first get any sent messages for this tx and recreate
          for (RecordInfo record : preparedTransaction.records)
@@ -756,7 +758,7 @@ public class JournalStorageManager implements StorageManager
                      throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
                   }
 
-                  //TODO - this involves a scan - we should find a quicker qay of doing it
+                  // TODO - this involves a scan - we should find a quicker qay of doing it
                   MessageReference removed = queue.removeReferenceWithID(messageID);
 
                   referencesToAck.add(removed);
@@ -779,7 +781,7 @@ public class JournalStorageManager implements StorageManager
                   tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
 
                   pagingManager.addTransaction(pageTransactionInfo);
-                  
+
                   tx.addOperation(new FinishPageMessageOperation());
 
                   break;
@@ -973,9 +975,9 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
-
+           
       cleanupIncompleteFiles();
-
+      
       bindingsJournal.start();
 
       messageJournal.start();
@@ -1058,8 +1060,6 @@ public class JournalStorageManager implements StorageManager
    }
 
    // Private ----------------------------------------------------------------------------------
-
-  
 
    private void checkAndCreateDir(final String dir, final boolean create)
    {
@@ -1239,7 +1239,7 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-   
+
    private static class LargeMessageEncoding implements EncodingSupport
    {
       private final LargeServerMessage message;
@@ -1423,9 +1423,9 @@ public class JournalStorageManager implements StorageManager
          address = buffer.getSimpleString();
 
          int size = buffer.getInt();
-         
+
          duplID = new byte[size];
-         
+
          buffer.getBytes(duplID);
       }
 
@@ -1434,7 +1434,7 @@ public class JournalStorageManager implements StorageManager
          buffer.putSimpleString(address);
 
          buffer.putInt(duplID.length);
-         
+
          buffer.putBytes(duplID);
       }
 
@@ -1443,7 +1443,7 @@ public class JournalStorageManager implements StorageManager
          return SimpleString.sizeofString(address) + DataConstants.SIZE_INT + duplID.length;
       }
    }
-   
+
    private class FinishPageMessageOperation implements TransactionOperation
    {
 
@@ -1452,9 +1452,9 @@ public class JournalStorageManager implements StorageManager
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
          // transaction until all the messages were added to the queue
          // or else we could deliver the messages out of order
-         
+
          PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-         
+
          if (pageTransaction != null)
          {
             pageTransaction.commit();
@@ -1492,6 +1492,5 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-   
 
 }

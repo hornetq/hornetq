@@ -52,13 +52,16 @@ public class QueueInfo implements Serializable
    private List<SimpleString> filterStrings;
    
    private int numberOfConsumers;
+   
+   private final SimpleString origNode;
 
-   public QueueInfo(final SimpleString queueName, final SimpleString address, final SimpleString filterString, final int id)
+   public QueueInfo(final SimpleString queueName, final SimpleString address, final SimpleString filterString, final int id, final SimpleString origNode)
    {
       this.queueName = queueName;
       this.address = address;      
       this.filterString = filterString;
       this.id = id;
+      this.origNode = origNode;
    }
 
    public SimpleString getQueueName()
@@ -74,6 +77,11 @@ public class QueueInfo implements Serializable
    public SimpleString getFilterString()
    {
       return filterString;
+   }
+   
+   public SimpleString getOriginatingNode()
+   {
+      return origNode;
    }
    
    public int getID()

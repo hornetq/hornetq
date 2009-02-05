@@ -46,8 +46,6 @@ public interface Binding
 
    SimpleString getRoutingName();
 
-   //boolean filterMatches(ServerMessage message) throws Exception;
-   
    Filter getFilter();
    
    boolean isHighAcceptPriority(ServerMessage message);
@@ -60,4 +58,6 @@ public interface Binding
    int getID();
    
    void setID(int id);
+   
+   SimpleString getOriginatingNodeID();
 }

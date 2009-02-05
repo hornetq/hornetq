@@ -58,4 +58,6 @@ public interface ConnectionManager
    int numConnections();
 
    int numSessions();
+   
+   void close();
 }

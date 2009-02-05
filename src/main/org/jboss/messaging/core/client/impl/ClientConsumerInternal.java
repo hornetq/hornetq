@@ -53,7 +53,7 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    int getCreditsToSend();
 
-   void cleanUp() throws Exception;
+   void cleanUp() throws MessagingException;
    
    void acknowledge(ClientMessage message) throws MessagingException;
    

@@ -91,7 +91,7 @@ public class ReplicateConnectionFailureTest extends TestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
+   
    public void testFailConnection() throws Exception
    {
       final long pingPeriod = 500;
@@ -139,15 +139,7 @@ public class ReplicateConnectionFailureTest extends TestCase
 
       log.info("recreating");
 
-      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
-
-      assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
-
       session1 = sf1.createSession(false, true, true);
-
-      assertEquals(1, liveService.getServer().getRemotingService().getConnections().size());
-
-      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
 
       final RemotingConnectionImpl conn1 = (RemotingConnectionImpl)((ClientSessionImpl)session1).getConnection();
 

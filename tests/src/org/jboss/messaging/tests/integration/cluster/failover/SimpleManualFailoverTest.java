@@ -198,11 +198,7 @@ public class SimpleManualFailoverTest extends TestCase
 
    protected void tearDown() throws Exception
    {
-      assertEquals(0, server1Service.getServer().getRemotingService().getConnections().size());
-
       server1Service.stop();
-
-      assertEquals(0, server0Service.getServer().getRemotingService().getConnections().size());
 
       server0Service.stop();
 
