@@ -115,7 +115,10 @@ public class QueueImpl implements Queue
 
    private int consumersToFailover = -1;
 
+   private SimpleString address;
+
    public QueueImpl(final long persistenceID,
+                    final SimpleString address,
                     final SimpleString name,
                     final Filter filter,
                     final boolean durable,
@@ -126,6 +129,8 @@ public class QueueImpl implements Queue
                     final HierarchicalRepository<AddressSettings> queueSettingsRepository)
    {
       this.persistenceID = persistenceID;
+
+      this.address =  address;
 
       this.name = name;
 
@@ -545,7 +550,7 @@ public class QueueImpl implements Queue
 
    public void expire(final MessageReference ref) throws Exception
    {
-      SimpleString expiryAddress = queueSettingsRepository.getMatch(name.toString()).getExpiryAddress();
+      SimpleString expiryAddress = queueSettingsRepository.getMatch(address.toString()).getExpiryAddress();
 
       if (expiryAddress != null)
       {
@@ -946,7 +951,7 @@ public class QueueImpl implements Queue
 
    private void expire(final Transaction tx, final MessageReference ref) throws Exception
    {
-      SimpleString expiryAddress = queueSettingsRepository.getMatch(name.toString()).getExpiryAddress();
+      SimpleString expiryAddress = queueSettingsRepository.getMatch(address.toString()).getExpiryAddress();
 
       if (expiryAddress != null)
       {
@@ -971,7 +976,7 @@ public class QueueImpl implements Queue
 
    private void sendToDeadLetterAddress(final MessageReference ref) throws Exception
    {
-      SimpleString deadLetterAddress = queueSettingsRepository.getMatch(name.toString()).getDeadLetterAddress();
+      SimpleString deadLetterAddress = queueSettingsRepository.getMatch(address.toString()).getDeadLetterAddress();
       if (deadLetterAddress != null)
       {
          Bindings bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
@@ -1020,7 +1025,7 @@ public class QueueImpl implements Queue
          storageManager.updateDeliveryCount(reference);
       }
 
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(name.toString());
+      AddressSettings addressSettings = queueSettingsRepository.getMatch(address.toString());
 
       int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
 

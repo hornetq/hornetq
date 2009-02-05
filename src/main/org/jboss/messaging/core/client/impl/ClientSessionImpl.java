@@ -124,6 +124,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final boolean xa;
 
+   private ClientXAState state = null;
+
    private final Executor executor;
 
    private volatile RemotingConnection remotingConnection;
@@ -1062,6 +1064,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void start(final Xid xid, final int flags) throws XAException
    {
       checkXA();
+      if(state != null)
+      {
+         log.error("XA operation failed Cannot start, session is already doing work in a transaction " + state.xid + "code:" + XAException.XAER_PROTO);
+         throw new XAException(XAException.XAER_PROTO);
+      }
       try
       {
          Packet packet;
@@ -1296,6 +1303,17 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       for (ClientConsumerInternal consumer : consumers.values())
       {
          consumer.flushAcks();
+      }
+   }
+
+   class ClientXAState
+   {
+      final Xid xid;
+      int state;
+
+      public ClientXAState(Xid xid)
+      {
+         this.xid = xid;
       }
    }
 }

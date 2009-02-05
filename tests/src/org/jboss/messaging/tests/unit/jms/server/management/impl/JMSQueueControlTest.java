@@ -223,7 +223,7 @@ public class JMSQueueControlTest extends TestCase
             return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + deadLetterAddress);
          }
       };
-      expect(queueSettingsRepository.getMatch(name)).andReturn(settings);
+      expect(queueSettingsRepository.getMatch(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + name)).andReturn(settings);
 
       replayMockedAttributes();
 
@@ -245,7 +245,7 @@ public class JMSQueueControlTest extends TestCase
             return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + expiryQueue);
          }
       };
-      expect(queueSettingsRepository.getMatch(name)).andReturn(settings);
+      expect(queueSettingsRepository.getMatch(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + name)).andReturn(settings);
 
       replayMockedAttributes();
 

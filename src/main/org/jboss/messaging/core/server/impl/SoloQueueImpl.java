@@ -56,6 +56,7 @@ public class SoloQueueImpl extends QueueImpl
 
 
    public SoloQueueImpl(final long persistenceID,
+                        final SimpleString address,
                     final SimpleString name,
                     final Filter filter,
                     final boolean durable,
@@ -65,7 +66,7 @@ public class SoloQueueImpl extends QueueImpl
                     final StorageManager storageManager,
                     final HierarchicalRepository<AddressSettings> queueSettingsRepository)
    {
-      super(persistenceID, name, filter, durable, temporary, scheduledExecutor, postOffice, storageManager, queueSettingsRepository);
+      super(persistenceID, address, name, filter, durable, temporary, scheduledExecutor, postOffice, storageManager, queueSettingsRepository);
       this.pagingManager  = postOffice.getPagingManager();
       this.storageManager = storageManager;
    }

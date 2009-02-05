@@ -80,7 +80,7 @@ public class QueueFactoryImpl implements QueueFactory
       Queue queue;
       if(addressSettings.isSoloQueue())
       {
-         queue = new SoloQueueImpl(persistenceID,name,
+         queue = new SoloQueueImpl(persistenceID,address, name,
                                   filter,
                                   durable,
                                   temporary,
@@ -91,7 +91,7 @@ public class QueueFactoryImpl implements QueueFactory
       }
       else
       {
-         queue = new QueueImpl(persistenceID,name,
+         queue = new QueueImpl(persistenceID, address,name,
                                   filter,
                                   durable,
                                   temporary,

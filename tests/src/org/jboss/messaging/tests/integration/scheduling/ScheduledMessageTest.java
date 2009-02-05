@@ -172,7 +172,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    {
       AddressSettings qs = new AddressSettings();
       qs.setRedeliveryDelay(5000l);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(atestq2.toString(), qs);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(atestq.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
@@ -198,8 +198,8 @@ public class ScheduledMessageTest extends ServiceTestBase
       consumer2.close();
       consumer = session.createConsumer(atestq);
       consumer2 = session.createConsumer(atestq2);
-      message3 = consumer.receive(1000);
-      message2 = consumer2.receive(5250);
+      message3 = consumer.receive(5250);
+      message2 = consumer2.receive(1000);
       time += 5000;
       assertTrue(System.currentTimeMillis() >= time);
       assertEquals("m1", message3.getBody().getString());
@@ -221,7 +221,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       AddressSettings qs = new AddressSettings();
       qs.setRedeliveryDelay(5000l);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(atestq2.toString(), qs);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(atestq.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
@@ -258,9 +258,9 @@ public class ScheduledMessageTest extends ServiceTestBase
       consumer = session.createConsumer(atestq);
       consumer2 = session.createConsumer(atestq2);
       session.start();
-      message3 = consumer.receive(1000);
+      message3 = consumer.receive(5250);
       assertNotNull(message3);
-      message2 = consumer2.receive(5250);
+      message2 = consumer2.receive(1000);
       assertNotNull(message2);
       time += 5000;
       assertTrue(System.currentTimeMillis() >= time);
@@ -268,13 +268,13 @@ public class ScheduledMessageTest extends ServiceTestBase
       assertEquals("m1", message2.getBody().getString());
       message2.acknowledge();
       message3.acknowledge();
-      
+
       // Make sure no more messages
       consumer.close();
       consumer2.close();
       consumer = session.createConsumer(atestq);
       assertNull(consumer.receive(1000));
-      
+
       session.close();
    }
 
