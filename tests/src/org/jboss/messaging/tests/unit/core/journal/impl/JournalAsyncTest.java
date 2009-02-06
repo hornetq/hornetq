@@ -34,6 +34,15 @@ import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFile
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
+/**
+ * 
+ * A JournalAsyncTest
+ *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * 
+ *
+ *
+ */
 public class JournalAsyncTest extends UnitTestCase
 {
 
