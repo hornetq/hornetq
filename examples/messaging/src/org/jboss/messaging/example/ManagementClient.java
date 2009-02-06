@@ -37,7 +37,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.util.SimpleString;
 
 /*
@@ -100,7 +100,7 @@ public class ManagementClient
       // method
       ClientMessage mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(mngmntMessage,
-                                              ManagementServiceImpl.getMessagingServerObjectName(),
+                                              ObjectNames.getMessagingServerObjectName(),
                                               "setMessageCounterSamplePeriod",
                                               (long)30000);
       ClientMessage reply = requestor.request(mngmntMessage);
@@ -120,7 +120,7 @@ public class ManagementClient
       // create a message to retrieve one or many attributes
       mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putAttributes(mngmntMessage,
-                                     ManagementServiceImpl.getQueueObjectName(queue, queue),
+                                     ObjectNames.getQueueObjectName(queue, queue),
                                      "MessageCount",
                                      "Durable");
       reply = requestor.request(mngmntMessage);
@@ -136,7 +136,7 @@ public class ManagementClient
       // queue
       mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(mngmntMessage,
-                                              ManagementServiceImpl.getQueueObjectName(queue, queue),
+                                              ObjectNames.getQueueObjectName(queue, queue),
                                               "sendMessageToDLQ",
                                               (long)6161);
       reply = requestor.request(mngmntMessage);

@@ -41,6 +41,7 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossDestination;
@@ -48,7 +49,6 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 
 /**
  * An RMI wrapper to access the ServiceContainer from a different address space.
@@ -465,7 +465,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      ObjectName objectName = JMSManagementServiceImpl.getJMSQueueObjectName(queueName);
+      ObjectName objectName = ObjectNames.getJMSQueueObjectName(queueName);
       JMSQueueControlMBean queue = (JMSQueueControlMBean) MBeanServerInvocationHandler.newProxyInstance(
             ManagementFactory.getPlatformMBeanServer(), objectName, JMSQueueControlMBean.class, false);
       return queue.getMessageCount();
@@ -474,7 +474,7 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    public List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception
    {
-      ObjectName objectName = JMSManagementServiceImpl.getJMSTopicObjectName(s);
+      ObjectName objectName = ObjectNames.getJMSTopicObjectName(s);
       TopicControlMBean topic = (TopicControlMBean) MBeanServerInvocationHandler.newProxyInstance(
             ManagementFactory.getPlatformMBeanServer(), objectName, TopicControlMBean.class, false);
       return Arrays.asList(topic.listAllSubscriptionInfos());

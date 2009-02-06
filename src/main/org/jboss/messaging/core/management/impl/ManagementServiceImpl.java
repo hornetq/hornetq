@@ -24,7 +24,6 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import static javax.management.ObjectName.quote;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -59,6 +58,7 @@ import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationListener;
 import org.jboss.messaging.core.management.NotificationType;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
@@ -98,10 +98,6 @@ public class ManagementServiceImpl implements ManagementService
 
    private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
 
-   public static final String DOMAIN = "org.jboss.messaging";
-
-   // Attributes ----------------------------------------------------
-
    private final MBeanServer mbeanServer;
 
    private final boolean jmxManagementEnabled;
@@ -131,53 +127,6 @@ public class ManagementServiceImpl implements ManagementService
    private final Set<NotificationListener> listeners = new ConcurrentHashSet<NotificationListener>();
 
    // Static --------------------------------------------------------
-
-   public static ObjectName getMessagingServerObjectName() throws Exception
-   {
-      return ObjectName.getInstance(DOMAIN + ":module=Core,type=Server");
-   }
-
-   public static ObjectName getResourceManagerObjectName() throws Exception
-   {
-      return ObjectName.getInstance(DOMAIN + ":module=Core,type=ResourceManager");
-   }
-
-   public static ObjectName getAddressObjectName(final SimpleString address) throws Exception
-   {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=Address,name=%s",
-                                                  DOMAIN,
-                                                  quote(address.toString())));
-   }
-
-   public static ObjectName getQueueObjectName(final SimpleString address, final SimpleString name) throws Exception
-   {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=Queue,address=%s,name=%s",
-                                                  DOMAIN,
-                                                  quote(address.toString()),
-                                                  quote(name.toString())));
-   }
-
-   public static ObjectName getAcceptorObjectName(final String name) throws Exception
-   {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=Acceptor,name=%s", DOMAIN, quote(name)));
-   }
-
-   public static ObjectName getBroadcastGroupObjectName(final String name) throws Exception
-   {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=BroadcastGroup,name=%s", DOMAIN, quote(name)));
-   }
-
-   public static ObjectName getBridgeObjectName(final String name) throws Exception
-   {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=Bridge,name=%s", DOMAIN, quote(name)));
-   }
-
-   public static ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
-   {
-      return ObjectName.getInstance(String.format("%s:module=Core,type=DiscoveryGroup,name=%s", DOMAIN, quote(name)));
-   }
-
-   // Constructors --------------------------------------------------
 
    public ManagementServiceImpl(final MBeanServer mbeanServer, final boolean jmxManagementEnabled)
    {
@@ -221,7 +170,7 @@ public class ManagementServiceImpl implements ManagementService
                                                  messageCounterManager,
                                                  broadcaster,
                                                  queueFactory);
-      ObjectName objectName = getMessagingServerObjectName();
+      ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName, managedServer));
       registerInRegistry(objectName, managedServer);
 
@@ -230,13 +179,13 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterServer() throws Exception
    {
-      ObjectName objectName = getMessagingServerObjectName();
+      ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       unregisterResource(objectName);
    }
 
    public void registerAddress(final SimpleString address) throws Exception
    {
-      ObjectName objectName = getAddressObjectName(address);
+      ObjectName objectName = ObjectNames.getAddressObjectName(address);
       AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
 
       registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName, addressControl));
@@ -256,7 +205,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterAddress(final SimpleString address) throws Exception
    {
-      ObjectName objectName = getAddressObjectName(address);
+      ObjectName objectName = ObjectNames.getAddressObjectName(address);
 
       unregisterResource(objectName);
 
@@ -276,7 +225,7 @@ public class ManagementServiceImpl implements ManagementService
                                                   queue.isDurable(),
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
-      ObjectName objectName = getQueueObjectName(address, queue.getName());
+      ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
       QueueControl queueControl = new QueueControl(queue, storageManager, postOffice, queueSettingsRepository, counter);
       registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName, queueControl));
       registerInRegistry(objectName, queueControl);
@@ -289,14 +238,14 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterQueue(final SimpleString name, final SimpleString address) throws Exception
    {
-      ObjectName objectName = getQueueObjectName(address, name);
+      ObjectName objectName = ObjectNames.getQueueObjectName(address, name);
       unregisterResource(objectName);
       messageCounterManager.unregisterMessageCounter(name.toString());
    }
 
    public void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
    {
-      ObjectName objectName = getAcceptorObjectName(configuration.getName());
+      ObjectName objectName = ObjectNames.getAcceptorObjectName(configuration.getName());
       AcceptorControlMBean control = new AcceptorControl(acceptor, configuration);
       registerInJMX(objectName, new StandardMBean(control, AcceptorControlMBean.class));
       registerInRegistry(objectName, control);
@@ -304,13 +253,13 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterAcceptor(final String name) throws Exception
    {
-      ObjectName objectName = getAcceptorObjectName(name);
+      ObjectName objectName = ObjectNames.getAcceptorObjectName(name);
       unregisterResource(objectName);
    }
 
    public void registerBroadcastGroup(BroadcastGroup broadcastGroup, BroadcastGroupConfiguration configuration) throws Exception
    {
-      ObjectName objectName = getBroadcastGroupObjectName(configuration.getName());
+      ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(configuration.getName());
       BroadcastGroupControlMBean control = new BroadcastGroupControl(broadcastGroup, configuration);
       registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControlMBean.class));
       registerInRegistry(objectName, control);
@@ -318,13 +267,13 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterBroadcastGroup(String name) throws Exception
    {
-      ObjectName objectName = getBroadcastGroupObjectName(name);
+      ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(name);
       unregisterResource(objectName);
    }
 
    public void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception
    {
-      ObjectName objectName = getDiscoveryGroupObjectName(configuration.getName());
+      ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(configuration.getName());
       DiscoveryGroupControlMBean control = new DiscoveryGroupControl(discoveryGroup, configuration);
       registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControlMBean.class));
       registerInRegistry(objectName, control);
@@ -332,13 +281,13 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterDiscoveryGroup(String name) throws Exception
    {
-      ObjectName objectName = getDiscoveryGroupObjectName(name);
+      ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(name);
       unregisterResource(objectName);
    }
 
    public void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception
    {
-      ObjectName objectName = getBridgeObjectName(configuration.getName());
+      ObjectName objectName = ObjectNames.getBridgeObjectName(configuration.getName());
       BridgeControlMBean control = new BridgeControl(bridge, configuration);
       registerInJMX(objectName, new StandardMBean(control, BridgeControlMBean.class));
       registerInRegistry(objectName, control);
@@ -346,7 +295,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void unregisterBridge(String name) throws Exception
    {
-      ObjectName objectName = getBridgeObjectName(name);
+      ObjectName objectName = ObjectNames.getBridgeObjectName(name);
       unregisterResource(objectName);
    }
 

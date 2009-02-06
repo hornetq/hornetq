@@ -34,13 +34,12 @@ import org.jboss.messaging.core.management.BridgeControlMBean;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -60,49 +59,49 @@ public class ManagementControlHelper
 
    public static AcceptorControlMBean createAcceptorControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (AcceptorControlMBean)createProxy(ManagementServiceImpl.getAcceptorObjectName(name),
+      return (AcceptorControlMBean)createProxy(ObjectNames.getAcceptorObjectName(name),
                                                AcceptorControlMBean.class,
                                                mbeanServer);
    }
 
    public static BroadcastGroupControlMBean createBroadcastGroupControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (BroadcastGroupControlMBean)createProxy(ManagementServiceImpl.getBroadcastGroupObjectName(name),
+      return (BroadcastGroupControlMBean)createProxy(ObjectNames.getBroadcastGroupObjectName(name),
                                                      BroadcastGroupControlMBean.class,
                                                      mbeanServer);
    }
 
    public static DiscoveryGroupControlMBean createDiscoveryGroupControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (DiscoveryGroupControlMBean)createProxy(ManagementServiceImpl.getDiscoveryGroupObjectName(name),
+      return (DiscoveryGroupControlMBean)createProxy(ObjectNames.getDiscoveryGroupObjectName(name),
                                                      DiscoveryGroupControlMBean.class,
                                                      mbeanServer);
    }
 
    public static BridgeControlMBean createBridgeControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (BridgeControlMBean)createProxy(ManagementServiceImpl.getBridgeObjectName(name),
+      return (BridgeControlMBean)createProxy(ObjectNames.getBridgeObjectName(name),
                                                   BridgeControlMBean.class,
                                                   mbeanServer);
    }
 
    public static MessagingServerControlMBean createMessagingServerControl(MBeanServer mbeanServer) throws Exception
    {
-      return (MessagingServerControlMBean)createProxy(ManagementServiceImpl.getMessagingServerObjectName(),
+      return (MessagingServerControlMBean)createProxy(ObjectNames.getMessagingServerObjectName(),
                                                       MessagingServerControlMBean.class,
                                                       mbeanServer);
    }
 
    public static QueueControlMBean createQueueControl(SimpleString address, SimpleString name, MBeanServer mbeanServer) throws Exception
    {
-      return (QueueControlMBean)createProxy(ManagementServiceImpl.getQueueObjectName(address, name),
+      return (QueueControlMBean)createProxy(ObjectNames.getQueueObjectName(address, name),
                                             QueueControlMBean.class,
                                             mbeanServer);
    }
 
    public static AddressControlMBean createAddressControl(SimpleString address, MBeanServer mbeanServer) throws Exception
    {
-      return (AddressControlMBean)createProxy(ManagementServiceImpl.getAddressObjectName(address),
+      return (AddressControlMBean)createProxy(ObjectNames.getAddressObjectName(address),
                                               AddressControlMBean.class,
                                               mbeanServer);
    }
@@ -114,28 +113,28 @@ public class ManagementControlHelper
 
    public static JMSQueueControlMBean createJMSQueueControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (JMSQueueControlMBean)createProxy(JMSManagementServiceImpl.getJMSQueueObjectName(name),
+      return (JMSQueueControlMBean)createProxy(ObjectNames.getJMSQueueObjectName(name),
                                                JMSQueueControlMBean.class,
                                                mbeanServer);
    }
 
    public static JMSServerControlMBean createJMSServerControl(MBeanServer mbeanServer) throws Exception
    {
-      return (JMSServerControlMBean)createProxy(JMSManagementServiceImpl.getJMSServerObjectName(),
+      return (JMSServerControlMBean)createProxy(ObjectNames.getJMSServerObjectName(),
                                                 JMSServerControlMBean.class,
                                                 mbeanServer);
    }
 
    public static ConnectionFactoryControlMBean createConnectionFactoryControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (ConnectionFactoryControlMBean)createProxy(JMSManagementServiceImpl.getConnectionFactoryObjectName(name),
+      return (ConnectionFactoryControlMBean)createProxy(ObjectNames.getConnectionFactoryObjectName(name),
                                                         ConnectionFactoryControlMBean.class,
                                                         mbeanServer);
    }
 
    public static TopicControlMBean createTopicControl(Topic topic, MBeanServer mbeanServer) throws Exception
    {
-      return (TopicControlMBean)createProxy(JMSManagementServiceImpl.getJMSTopicObjectName(topic.getTopicName()),
+      return (TopicControlMBean)createProxy(ObjectNames.getJMSTopicObjectName(topic.getTopicName()),
                                             TopicControlMBean.class,
                                             mbeanServer);
    }

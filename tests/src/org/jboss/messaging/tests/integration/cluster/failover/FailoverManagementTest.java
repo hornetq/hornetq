@@ -43,7 +43,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
@@ -117,7 +117,7 @@ public class FailoverManagementTest extends TestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttributes(managementMessage,
-                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          managementMessage.getBody().flip();
@@ -137,7 +137,7 @@ public class FailoverManagementTest extends TestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttributes(managementMessage,
-                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
 
@@ -211,7 +211,7 @@ public class FailoverManagementTest extends TestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttributes(managementMessage,
-                                        ManagementServiceImpl.getQueueObjectName(ADDRESS, ADDRESS),
+                                        ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          managementMessage.getBody().flip();

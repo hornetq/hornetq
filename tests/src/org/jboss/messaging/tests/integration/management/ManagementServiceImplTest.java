@@ -47,6 +47,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -86,7 +87,7 @@ public class ManagementServiceImplTest extends TestCase
       ServerMessage message = new ServerMessageImpl();
       MessagingBuffer body = new ByteBufferWrapper(ByteBuffer.allocate(2048));
       message.setBody(body);
-      ManagementHelper.putAttributes(message, ManagementServiceImpl.getAddressObjectName(address), "Address");
+      ManagementHelper.putAttributes(message, ObjectNames.getAddressObjectName(address), "Address");
 
       managementService.handleMessage(message);
 
@@ -110,7 +111,7 @@ public class ManagementServiceImplTest extends TestCase
       replay(resource);
 
       SimpleString address = RandomUtil.randomSimpleString();
-      ObjectName on = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectName on = ObjectNames.getAddressObjectName(address);
       managementService.registerResource(on, resource);
 
       // invoke attribute and operation on the server
@@ -150,7 +151,7 @@ public class ManagementServiceImplTest extends TestCase
       replay(resource);
 
       SimpleString address = RandomUtil.randomSimpleString();
-      ObjectName on = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectName on = ObjectNames.getAddressObjectName(address);
       managementService.registerResource(on, resource);
 
       // invoke attribute and operation on the server
@@ -187,11 +188,11 @@ public class ManagementServiceImplTest extends TestCase
 
       managementService.registerAddress(randomSimpleString());
       
-      assertEquals(1, mbeanServer.queryMBeans(ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":*"), null).size());
+      assertEquals(1, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
       
       managementService.stop();
 
-      assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":*"), null).size());
+      assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
    }
 
    // Package protected ---------------------------------------------
@@ -200,7 +201,7 @@ public class ManagementServiceImplTest extends TestCase
    protected void tearDown() throws Exception
    {
       MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-      assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":*"), null).size());
+      assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
 
       super.tearDown();
    }

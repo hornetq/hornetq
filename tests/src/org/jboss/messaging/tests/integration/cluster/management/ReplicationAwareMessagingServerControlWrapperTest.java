@@ -38,8 +38,8 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.util.SimpleString;
@@ -69,7 +69,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       SimpleString address = randomSimpleString();
 
       MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      ObjectName addressON = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectName addressON = ObjectNames.getAddressObjectName(address);
 
       assertResourceNotExists(liveMBeanServer, addressON);
       assertResourceNotExists(backupMBeanServer, addressON);
@@ -85,7 +85,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       SimpleString address = randomSimpleString();
 
       MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      ObjectName addressON = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectName addressON = ObjectNames.getAddressObjectName(address);
 
       assertResourceNotExists(liveMBeanServer, addressON);
       assertResourceNotExists(backupMBeanServer, addressON);
@@ -109,7 +109,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       SimpleString name = randomSimpleString();
 
       MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      ObjectName queueON = ManagementServiceImpl.getQueueObjectName(address, name);
+      ObjectName queueON = ObjectNames.getQueueObjectName(address, name);
 
       assertResourceNotExists(liveMBeanServer, queueON);
       assertResourceNotExists(backupMBeanServer, queueON);
@@ -126,7 +126,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       SimpleString name = randomSimpleString();
 
       MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      ObjectName queueON = ManagementServiceImpl.getQueueObjectName(address, name);
+      ObjectName queueON = ObjectNames.getQueueObjectName(address, name);
 
       assertResourceNotExists(liveMBeanServer, queueON);
       assertResourceNotExists(backupMBeanServer, queueON);

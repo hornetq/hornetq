@@ -22,14 +22,13 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import static javax.management.ObjectName.quote;
 
 import java.util.List;
 
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -63,31 +62,6 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    // Static --------------------------------------------------------
 
-   public static ObjectName getJMSServerObjectName() throws Exception
-   {
-      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":module=JMS,type=Server");
-   }
-
-   public static ObjectName getJMSQueueObjectName(final String name) throws Exception
-   {
-      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":module=JMS,type=Queue,name=" +
-                                    quote(name.toString()));
-   }
-
-   public static ObjectName getJMSTopicObjectName(final String name) throws Exception
-   {
-      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":module=JMS,type=Topic,name=" +
-                                    quote(name.toString()));
-   }
-
-   public static ObjectName getConnectionFactoryObjectName(final String name) throws Exception
-   {
-      return ObjectName.getInstance(ManagementServiceImpl.DOMAIN + ":module=JMS,type=ConnectionFactory,name=" +
-                                    quote(name));
-   }
-
-   // Constructors --------------------------------------------------
-
    public JMSManagementServiceImpl(final ManagementService managementService)
    {
       this.managementService = managementService;
@@ -99,7 +73,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public void registerJMSServer(final JMSServerManager server) throws Exception
    {
-      ObjectName objectName = getJMSServerObjectName();
+      ObjectName objectName = ObjectNames.getJMSServerObjectName();
       JMSServerControl control = new JMSServerControl(server);
       managementService.registerInJMX(objectName,
                                       new ReplicationAwareJMSServerControlWrapper(objectName, control));
@@ -108,7 +82,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public void unregisterJMSServer() throws Exception
    {
-      ObjectName objectName = getJMSServerObjectName();
+      ObjectName objectName = ObjectNames.getJMSServerObjectName();
       managementService.unregisterResource(objectName);
    }
 
@@ -127,7 +101,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                                   coreQueue.isDurable(),
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName(), counter);
-      ObjectName objectName = getJMSQueueObjectName(queue.getQueueName());
+      ObjectName objectName = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
       JMSQueueControl control = new JMSQueueControl(queue,
                                                     coreQueue,
                                                     jndiBinding,
@@ -141,7 +115,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public void unregisterQueue(final String name) throws Exception
    {
-      ObjectName objectName = getJMSQueueObjectName(name);
+      ObjectName objectName = ObjectNames.getJMSQueueObjectName(name);
       managementService.unregisterResource(objectName);
    }
 
@@ -151,7 +125,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                              final StorageManager storageManager,
                              final HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception
    {
-      ObjectName objectName = getJMSTopicObjectName(topic.getTopicName());
+      ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
       managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(objectName, control));
       managementService.registerInRegistry(objectName, control);
@@ -159,7 +133,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public void unregisterTopic(final String name) throws Exception
    {
-      ObjectName objectName = getJMSTopicObjectName(name);
+      ObjectName objectName = ObjectNames.getJMSTopicObjectName(name);
       managementService.unregisterResource(objectName);
    }
 
@@ -167,7 +141,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                          final JBossConnectionFactory connectionFactory,
                                          final List<String> bindings) throws Exception
    {
-      ObjectName objectName = getConnectionFactoryObjectName(name);
+      ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
       ConnectionFactoryControl control = new ConnectionFactoryControl(connectionFactory, name, bindings);
       managementService.registerInJMX(objectName,
                                       new ReplicationAwareConnectionFactoryControlWrapper(objectName, control));
@@ -176,7 +150,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public void unregisterConnectionFactory(final String name) throws Exception
    {
-      ObjectName objectName = getConnectionFactoryObjectName(name);
+      ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
       managementService.unregisterResource(objectName);
    }
 

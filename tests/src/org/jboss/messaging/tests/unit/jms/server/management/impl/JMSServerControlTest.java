@@ -41,8 +41,8 @@ import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
 
 /**
@@ -367,7 +367,7 @@ public class JMSServerControlTest extends TestCase
 
       mbeanServer = MBeanServerFactory.createMBeanServer();
       
-      serverON = JMSManagementServiceImpl.getJMSServerObjectName();
+      serverON = ObjectNames.getJMSServerObjectName();
    }
 
    @Override

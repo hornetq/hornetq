@@ -47,7 +47,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.NotificationType;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.remoting.FailureListener;
@@ -696,7 +696,7 @@ public class BridgeImpl implements Bridge, FailureListener
                ClientMessage message = session.createClientMessage(false);
 
                ManagementHelper.putOperationInvocation(message,
-                                                       ManagementServiceImpl.getMessagingServerObjectName(),
+                                                       ObjectNames.getMessagingServerObjectName(),
                                                        "sendQueueInfoToQueue",
                                                        notifQueueName.toString(),
                                                        flowRecord.getAddress());

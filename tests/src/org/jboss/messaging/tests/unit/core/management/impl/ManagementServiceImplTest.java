@@ -41,6 +41,7 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
@@ -75,7 +76,7 @@ public class ManagementServiceImplTest extends TestCase
 
    public void testRegisterMessagingServer() throws Exception
    {
-      ObjectName objectName = ManagementServiceImpl.getMessagingServerObjectName();
+      ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       ObjectInstance objectInstance = new ObjectInstance(objectName, MessagingServerControl.class.getName());
 
       PostOffice postOffice = createMock(PostOffice.class);
@@ -127,7 +128,7 @@ public class ManagementServiceImplTest extends TestCase
 
    public void testRegisterAlreadyRegisteredMessagingServer() throws Exception
    {
-      ObjectName objectName = ManagementServiceImpl.getMessagingServerObjectName();
+      ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       ObjectInstance objectInstance = new ObjectInstance(objectName, MessagingServerControl.class.getName());
 
       PostOffice postOffice = createMock(PostOffice.class);
@@ -180,7 +181,7 @@ public class ManagementServiceImplTest extends TestCase
 
    public void testUnregisterMessagingServer() throws Exception
    {
-      ObjectName objectName = ManagementServiceImpl.getMessagingServerObjectName();
+      ObjectName objectName = ObjectNames.getMessagingServerObjectName();
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
@@ -197,7 +198,7 @@ public class ManagementServiceImplTest extends TestCase
    public void testRegisterAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectName objectName = ObjectNames.getAddressObjectName(address);
       ObjectInstance objectInstance = new ObjectInstance(objectName, AddressControl.class.getName());
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
@@ -215,7 +216,7 @@ public class ManagementServiceImplTest extends TestCase
    public void testRegisterAlreadyRegisteredAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectName objectName = ObjectNames.getAddressObjectName(address);
       ObjectInstance objectInstance = new ObjectInstance(objectName, AddressControl.class.getName());
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
@@ -234,7 +235,7 @@ public class ManagementServiceImplTest extends TestCase
    public void testUnregisterAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getAddressObjectName(address);
+      ObjectName objectName = ObjectNames.getAddressObjectName(address);
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);
@@ -299,7 +300,7 @@ public class ManagementServiceImplTest extends TestCase
    {
       SimpleString address = randomSimpleString();
       SimpleString name = randomSimpleString();
-      ObjectName objectName = ManagementServiceImpl.getQueueObjectName(address, name);
+      ObjectName objectName = ObjectNames.getQueueObjectName(address, name);
 
       MBeanServer mbeanServer = createMock(MBeanServer.class);
       expect(mbeanServer.isRegistered(objectName)).andReturn(true);

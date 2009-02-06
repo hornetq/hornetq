@@ -39,6 +39,7 @@ import javax.management.StandardMBean;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -76,7 +77,7 @@ public class JMSManagementServiceImplTest extends TestCase
 
    public void testRegisterJMSServer() throws Exception
    {
-      ObjectName objectName = JMSManagementServiceImpl.getJMSServerObjectName();
+      ObjectName objectName = ObjectNames.getJMSServerObjectName();
 
       JMSServerManager server = createMock(JMSServerManager.class);
 
@@ -95,7 +96,7 @@ public class JMSManagementServiceImplTest extends TestCase
    {
       String name = randomString();
       String jndiBinding = randomString();
-      ObjectName objectName = JMSManagementServiceImpl.getJMSQueueObjectName(name);
+      ObjectName objectName = ObjectNames.getJMSQueueObjectName(name);
 
       JBossQueue queue = new JBossQueue(name);
       Queue coreQueue = createMock(Queue.class);
@@ -124,7 +125,7 @@ public class JMSManagementServiceImplTest extends TestCase
    {
       String name = randomString();
       String jndiBinding = randomString();
-      ObjectName objectName = JMSManagementServiceImpl.getJMSTopicObjectName(name);
+      ObjectName objectName = ObjectNames.getJMSTopicObjectName(name);
 
       JBossTopic topic = new JBossTopic(name);
       PostOffice postOffice = createMock(PostOffice.class);
@@ -150,7 +151,7 @@ public class JMSManagementServiceImplTest extends TestCase
       List<String> bindings = new ArrayList<String>();
       bindings.add(jndiBinding);
 
-      ObjectName objectName = JMSManagementServiceImpl.getConnectionFactoryObjectName(name);
+      ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
 
       JBossConnectionFactory connectionFactory = createMock(JBossConnectionFactory.class);
       ManagementService managementService = createMock(ManagementService.class);

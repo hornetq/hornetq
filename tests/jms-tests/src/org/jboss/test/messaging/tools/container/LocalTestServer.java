@@ -52,6 +52,7 @@ import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -63,7 +64,6 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
@@ -698,7 +698,7 @@ public class LocalTestServer implements Server, Runnable
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      ObjectName objectName = JMSManagementServiceImpl.getJMSQueueObjectName(queueName);
+      ObjectName objectName = ObjectNames.getJMSQueueObjectName(queueName);
       JMSQueueControlMBean queue = (JMSQueueControlMBean)getMessagingServer().getManagementService()
                                                                              .getResource(objectName);
       if (queue != null)
@@ -722,7 +722,7 @@ public class LocalTestServer implements Server, Runnable
 
    public List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception
    {
-      ObjectName objectName = JMSManagementServiceImpl.getJMSTopicObjectName(s);
+      ObjectName objectName = ObjectNames.getJMSTopicObjectName(s);
       TopicControlMBean topic = (TopicControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
                                                                                                  objectName,
                                                                                                  TopicControlMBean.class,

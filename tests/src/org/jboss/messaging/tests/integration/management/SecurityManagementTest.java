@@ -38,7 +38,7 @@ import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.security.Role;
@@ -150,7 +150,7 @@ public class SecurityManagementTest extends TestCase
       ClientRequestor requestor = new ClientRequestor(session, DEFAULT_MANAGEMENT_ADDRESS);
 
       ClientMessage mngmntMessage = session.createClientMessage(false);
-      ManagementHelper.putAttributes(mngmntMessage, ManagementServiceImpl.getMessagingServerObjectName(), "Started");
+      ManagementHelper.putAttributes(mngmntMessage, ObjectNames.getMessagingServerObjectName(), "Started");
       ClientMessage reply = requestor.request(mngmntMessage, 500);
       if (expectReply)
       {
