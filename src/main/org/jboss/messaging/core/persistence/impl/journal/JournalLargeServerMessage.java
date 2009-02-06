@@ -59,7 +59,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    private SequentialFile file;
 
    private boolean complete = false;
-   
+
    private long bodySize = -1;
 
    // Static --------------------------------------------------------
@@ -76,14 +76,16 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
     * @param copy
     * @param fileCopy
     */
-   private JournalLargeServerMessage(final JournalLargeServerMessage copy, final SequentialFile fileCopy, final long newID)
+   private JournalLargeServerMessage(final JournalLargeServerMessage copy,
+                                     final SequentialFile fileCopy,
+                                     final long newID)
    {
       super(copy);
-      this.storageManager = copy.storageManager;
-      this.file = fileCopy;
-      this.complete = true;
-      this.bodySize = copy.bodySize;
-      this.setMessageID(newID);
+      storageManager = copy.storageManager;
+      file = fileCopy;
+      complete = true;
+      bodySize = copy.bodySize;
+      setMessageID(newID);
    }
 
    // Public --------------------------------------------------------
@@ -103,7 +105,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       file.position(file.size());
 
       file.write(ByteBuffer.wrap(bytes), false);
-      
+
       bodySize += bytes.length;
    }
 
@@ -177,9 +179,9 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
    @Override
    public int decrementRefCount()
-   {      
+   {
       int currentRefCount = super.decrementRefCount();
-      
+
       if (currentRefCount == 0)
       {
          if (isTrace)
@@ -200,6 +202,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       return currentRefCount;
    }
 
+   @Override
    public boolean isLargeMessage()
    {
       return true;
@@ -212,8 +215,8 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          storageManager.deleteFile(file);
       }
    }
-   
-   //We cache this
+
+   // We cache this
    private volatile int memoryEstimate = -1;
 
    @Override
@@ -224,7 +227,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          // The body won't be on memory (aways on-file), so we don't consider this for paging
          memoryEstimate = getPropertiesEncodeSize() + SIZE_INT + getEncodeSize() + (16 + 4) * 2 + 1;
       }
-      
+
       return memoryEstimate;
    }
 
@@ -253,48 +256,48 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          }
       }
    }
-   
+
    // TODO: Optimize this per https://jira.jboss.org/jira/browse/JBMESSAGING-1468
+   @Override
    public synchronized ServerMessage copy(final long newID) throws Exception
    {
       SequentialFile newfile = storageManager.createFileForLargeMessage(newID, complete);
-      
+
       file.open();
       newfile.open();
-      
+
       file.position(0);
       newfile.position(0);
-      
+
       ByteBuffer buffer = ByteBuffer.allocate(100 * 1024);
-      
-      for (long i = 0;i<file.size();)
+
+      for (long i = 0; i < file.size();)
       {
          buffer.rewind();
          file.read(buffer);
          newfile.write(buffer, false);
-         i+=buffer.limit();
+         i += buffer.limit();
       }
-      
-      
+
       file.close();
       newfile.close();
-      
+
       JournalLargeServerMessage newMessage = new JournalLargeServerMessage(this, newfile, newID);
-      
+
       return newMessage;
    }
-      
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void finalize() throws Throwable
    {
       releaseResources();
       super.finalize();
    }
-   
+
    // Private -------------------------------------------------------
 
    private synchronized void validateFile() throws Exception
@@ -307,9 +310,9 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          }
 
          file = storageManager.createFileForLargeMessage(getMessageID(), complete);
-         
+
          file.open();
-         
+
          bodySize = file.size();
 
       }

@@ -68,21 +68,21 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
     */
    public synchronized void addBytes(final byte[] bytes)
    {
-      MessagingBuffer buffer = this.getBody();
-      
+      MessagingBuffer buffer = getBody();
+
       if (buffer != null)
       {
          ByteBuffer newBuffer = ByteBuffer.allocate(buffer.limit() + bytes.length);
          newBuffer.put(buffer.array());
          buffer = new ByteBufferWrapper(newBuffer);
-         this.setBody(buffer);
+         setBody(buffer);
       }
       else
       {
          buffer = new ByteBufferWrapper(ByteBuffer.allocate(bytes.length));
-         this.setBody(buffer);
+         setBody(buffer);
       }
-      
+
       buffer.putBytes(bytes);
    }
 
@@ -100,9 +100,10 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    public void complete() throws Exception
    {
       // nothing to be done here.. we don really have a file on this Storage
-      
+
    }
 
+   @Override
    public boolean isLargeMessage()
    {
       return true;
