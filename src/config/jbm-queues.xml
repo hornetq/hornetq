@@ -2,6 +2,13 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
 
+   <!--  manangement address -->
+   <security match="admin.management">
+      <!--  only the admin role can interact with the admin.management address  -->
+      <permission type="read" roles="admin"/>
+      <permission type="write" roles="admin"/>
+   </security>
+   
    <security match="topicjms.testTopic">
       <permission type="create" roles="durpublisher"/>
       <permission type="read" roles="guest,publisher,durpublisher"/>
