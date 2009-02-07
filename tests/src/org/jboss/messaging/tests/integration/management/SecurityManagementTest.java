@@ -53,7 +53,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @author jmesnil
  * 
- * Created 6 févr. 2009 11:04:21
+ * Created 6 feb 2009 11:04:21
  *
  *
  */

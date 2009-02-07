@@ -64,15 +64,19 @@ public class ManagementHelper
 
    public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("_JBM_NotifTimestamp");
    
-   public static final SimpleString HDR_QUEUE_NAME = new SimpleString("_JBM_QueueName");
+   public static final SimpleString HDR_ROUTING_NAME = new SimpleString("_JBM_RoutingName");
+   
+   public static final SimpleString HDR_CLUSTER_NAME = new SimpleString("_JBM_ClusterName");
    
    public static final SimpleString HDR_ADDRESS = new SimpleString("_JBM_Address");
    
    public static final SimpleString HDR_BINDING_ID = new SimpleString("_JBM_Binding_ID");
    
+   public static final SimpleString HDR_BINDING_TYPE = new SimpleString("_JBM_Binding_Type");
+   
    public static final SimpleString HDR_FILTERSTRING = new SimpleString("_JBM_FilterString");
    
-   public static final SimpleString HDR_ORIGINATING_NODE = new SimpleString("_JBM_OrigNode");
+   public static final SimpleString HDR_DISTANCE = new SimpleString("_JBM_Distance");
 
    // Attributes ----------------------------------------------------
 

@@ -71,7 +71,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testStartTargetServerBeforeSourceServer() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -94,7 +94,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testStartSourceServerBeforeTargetServer() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(0, 1);
 
       setupSessionFactory(0, isNetty());
@@ -117,7 +117,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testStopAndStartTarget() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(0, 1);
 
       setupSessionFactory(0, isNetty());
@@ -184,7 +184,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
    public void testBasicLocalReceive() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -203,7 +203,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
    public void testBasicRoundRobin() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -227,7 +227,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRoundRobinMultipleQueues() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -267,7 +267,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
          
    public void testMultipleNonLoadBalancedQueues() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -311,7 +311,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testMixtureLoadBalancedAndNonLoadBalancedQueues() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -377,7 +377,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesAddQueuesOnTargetBeforeStartSource() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1);
      
       setupSessionFactory(1, isNetty());
@@ -443,7 +443,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesAddQueuesOnSourceBeforeStartTarget() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(0);
      
       setupSessionFactory(0, isNetty());
@@ -509,7 +509,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testNotRouteToNonMatchingAddress() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -545,7 +545,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testNonLoadBalancedQueuesWithFilters() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -605,7 +605,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRoundRobinMultipleQueuesWithFilters() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -667,7 +667,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
    public void testRouteWhenNoConsumersFalseNonBalancedQueues() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "queues2", false, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", false, 1, isNetty());
       
       startServers(1, 0);
 
@@ -702,7 +702,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRouteWhenNoConsumersTrueNonBalancedQueues() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "queues2", true, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", true, 1, isNetty());
       
       startServers(1, 0);
 
@@ -737,7 +737,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRouteWhenNoConsumersFalseLoadBalancedQueues() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "queues2", false, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", false, 1, isNetty());
       
       startServers(1, 0);
 
@@ -777,7 +777,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRouteWhenNoConsumersFalseLoadBalancedQueuesLocalConsumer() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "queues2", false, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", false, 1, isNetty());
       
       startServers(1, 0);
 
@@ -814,7 +814,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRouteWhenNoConsumersFalseLoadBalancedQueuesNoLocalQueue() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "queues2", false, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", false, 1, isNetty());
       
       startServers(1, 0);
 
@@ -846,7 +846,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRouteWhenNoConsumersTrueLoadBalancedQueues() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "queues2", true, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", true, 1, isNetty());
       
       startServers(1, 0);
 
@@ -883,7 +883,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRouteWhenNoConsumersTrueLoadBalancedQueuesLocalConsumer() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "queues2", true, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", true, 1, isNetty());
       
       startServers(1, 0);
 
@@ -920,7 +920,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRouteWhenNoConsumersTrueLoadBalancedQueuesNoLocalQueue() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "queues2", true, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", true, 1, isNetty());
       
       startServers(1, 0);
 
@@ -952,7 +952,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testNonLoadBalancedQueuesWithConsumersWithFilters() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -1012,7 +1012,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testRoundRobinMultipleQueuesWithConsumersWithFilters() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());
@@ -1074,9 +1074,9 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    
    public void testMultipleClusterConnections() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues1", false, isNetty());
-      setupClusterConnection("cluster2", 0, 1, "queues2", false, isNetty());
-      setupClusterConnection("cluster3", 0, 1, "queues3", false, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues1", false, 1, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "queues2", false, 1, isNetty());
+      setupClusterConnection("cluster3", 0, 1, "queues3", false, 1, isNetty());
       
       startServers(1, 0);
 

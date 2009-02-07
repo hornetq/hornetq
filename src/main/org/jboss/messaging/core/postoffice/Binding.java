@@ -40,11 +40,13 @@ public interface Binding
 
    Bindable getBindable();
 
-   boolean isQueueBinding();
+   BindingType getType();
 
    SimpleString getUniqueName();
 
    SimpleString getRoutingName();
+   
+   SimpleString getClusterName();
 
    Filter getFilter();
    
@@ -58,6 +60,6 @@ public interface Binding
    int getID();
    
    void setID(int id);
-   
-   SimpleString getOriginatingNodeID();
+
+   int getDistance();
 }

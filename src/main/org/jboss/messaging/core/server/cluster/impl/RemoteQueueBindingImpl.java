@@ -32,6 +32,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -76,8 +77,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    
    private int id;
       
-   private final SimpleString originatingNodeID;
-      
+   private final int distance;
+   
    public RemoteQueueBindingImpl(final SimpleString address,
                                  final SimpleString uniqueName,
                                  final SimpleString routingName,
@@ -86,7 +87,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
                                  final Queue storeAndForwardQueue,
                                  final boolean duplicateDetection,                      
                                  final SimpleString bridgeName,
-                                 final SimpleString origNodeID) throws Exception
+                                 final int distance) throws Exception
    {
       this.address = address;
 
@@ -111,7 +112,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(bridgeName);
       
-      this.originatingNodeID = origNodeID;
+      this.distance = distance;
    }
    
    public int getID()
@@ -133,6 +134,11 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    {
       return storeAndForwardQueue;
    }
+   
+   public Queue getQueue()
+   {
+      return storeAndForwardQueue;
+   }
 
    public SimpleString getRoutingName()
    {
@@ -143,25 +149,30 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    {
       return uniqueName;
    }
+   
+   public SimpleString getClusterName()
+   {
+      return uniqueName;
+   }
 
    public boolean isExclusive()
    {
       return false;
    }
-
-   public boolean isQueueBinding()
+   
+   public BindingType getType()
    {
-      return false;
+      return BindingType.REMOTE_QUEUE;
    }
-
+   
    public Filter getFilter()
    {
       return queueFilter;
    }
    
-   public SimpleString getOriginatingNodeID()
+   public int getDistance()
    {
-      return originatingNodeID;
+      return distance;
    }
 
    public boolean isHighAcceptPriority(final ServerMessage message)

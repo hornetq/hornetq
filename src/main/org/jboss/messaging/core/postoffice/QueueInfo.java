@@ -41,7 +41,9 @@ public class QueueInfo implements Serializable
 {
    private static final long serialVersionUID = 3451892849198803182L;
 
-   private final SimpleString queueName;
+   private final SimpleString routingName;
+   
+   private final SimpleString clusterName;
    
    private final SimpleString address;
    
@@ -53,20 +55,43 @@ public class QueueInfo implements Serializable
    
    private int numberOfConsumers;
    
-   private final SimpleString origNode;
-
-   public QueueInfo(final SimpleString queueName, final SimpleString address, final SimpleString filterString, final int id, final SimpleString origNode)
+   private final int distance;
+   
+   public QueueInfo(final SimpleString routingName, final SimpleString clusterName, final SimpleString address, final SimpleString filterString, final int id,
+                    final Integer distance)
    {
-      this.queueName = queueName;
+      if (routingName == null)
+      {
+         throw new IllegalArgumentException("Routing name is null");
+      }
+      if (clusterName == null)
+      {
+         throw new IllegalArgumentException("Cluster name is null");
+      }
+      if (address == null)
+      {
+         throw new IllegalArgumentException("Address is null");
+      }
+      if (distance == null)
+      {
+         throw new IllegalArgumentException("Distance is null");
+      }
+      this.routingName = routingName;
+      this.clusterName = clusterName;
       this.address = address;      
       this.filterString = filterString;
       this.id = id;
-      this.origNode = origNode;
+      this.distance = distance;
    }
 
-   public SimpleString getQueueName()
+   public SimpleString getRoutingName()
    {
-      return queueName;
+      return routingName;
+   }
+   
+   public SimpleString getClusterName()
+   {
+      return clusterName;
    }
 
    public SimpleString getAddress()
@@ -79,9 +104,9 @@ public class QueueInfo implements Serializable
       return filterString;
    }
    
-   public SimpleString getOriginatingNode()
+   public int getDistance()
    {
-      return origNode;
+      return distance;
    }
    
    public int getID()

@@ -105,7 +105,7 @@ public class MessagingServerImpl implements MessagingServer
    // -----------------------------------------------------------------------------------
 
    private SimpleString nodeID;
-   
+
    private final Version version;
 
    private volatile boolean started;
@@ -175,9 +175,9 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       nodeID = UUIDGenerator.getInstance().generateSimpleStringUUID();
-      
+
       log.info("*** Starting " + this.nodeID);
-      
+
       asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
 
       executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
@@ -239,7 +239,7 @@ public class MessagingServerImpl implements MessagingServer
       postOffice = new PostOfficeImpl(storageManager,
                                       pagingManager,
                                       queueFactory,
-                                      managementService,                               
+                                      managementService,
                                       configuration.getMessageExpiryScanPeriod(),
                                       configuration.getMessageExpiryThreadPriority(),
                                       configuration.isRequireDestinations(),
@@ -254,7 +254,7 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.setSecurityManager(securityManager);
 
       postOffice.start();
-      
+
       pagingManager.start();
 
       serverManagement = managementService.registerServer(postOffice,
@@ -301,11 +301,10 @@ public class MessagingServerImpl implements MessagingServer
 
          queues.put(queueBindingInfo.getPersistenceID(), queue);
 
-         postOffice.addBinding(binding);         
+         postOffice.addBinding(binding);
       }
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
-
 
       storageManager.loadMessageJournal(postOffice,
                                         storageManager,
@@ -340,7 +339,7 @@ public class MessagingServerImpl implements MessagingServer
 
       // Deply and pre-defined diverts
       deployDiverts();
-      
+
       String backupConnectorName = configuration.getBackupConnectorName();
 
       if (backupConnectorName != null)
@@ -376,7 +375,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          clusterManager = new ClusterManagerImpl(executorFactory,
                                                  storageManager,
-                                                 postOffice,                                        
+                                                 postOffice,
                                                  scheduledExecutor,
                                                  managementService,
                                                  configuration,
@@ -385,8 +384,9 @@ public class MessagingServerImpl implements MessagingServer
 
          clusterManager.start();
       }
-      
-      // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode during last stop
+
+      // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode
+      // during last stop
       // This is the last thing done at the start, after everything else is up and running
       pagingManager.startGlobalDepage();
 
@@ -435,7 +435,7 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       serverManagement = null;
-      
+
       sessions.clear();
 
       managementService.stop();
@@ -608,7 +608,7 @@ public class MessagingServerImpl implements MessagingServer
       // will never get back
 
       checkActivate(connection);
-      
+
       log.info("Got reattach session " + this.nodeID + " session is " + session);
 
       if (session == null)
@@ -664,8 +664,8 @@ public class MessagingServerImpl implements MessagingServer
                                                      final boolean xa,
                                                      final int sendWindowSize) throws Exception
    {
-      checkActivate(connection);     
-      
+      checkActivate(connection);
+
       return doCreateSession(name,
                              channelID,
                              username,
@@ -752,7 +752,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       return queueFactory;
    }
-   
+
    public SimpleString getNodeID()
    {
       return nodeID;
@@ -821,7 +821,7 @@ public class MessagingServerImpl implements MessagingServer
             Queue queue = queueFactory.createQueue(-1, address, name, filter, config.isDurable(), false);
 
             Binding queueBinding = new LocalQueueBinding(new SimpleString(config.getAddress()), queue, nodeID);
-            
+
             binding = queueBinding;
 
             postOffice.addBinding(binding);
@@ -858,13 +858,13 @@ public class MessagingServerImpl implements MessagingServer
 
             return;
          }
-         
+
          SimpleString sName = new SimpleString(config.getName());
-     
+
          if (postOffice.getBinding(sName) != null)
          {
             log.warn("Binding already exists with name " + sName + ", divert will not be deployed");
-            
+
             continue;
          }
 
@@ -889,7 +889,7 @@ public class MessagingServerImpl implements MessagingServer
                                         pagingManager,
                                         storageManager);
 
-         Binding binding = new DivertBinding(sAddress, divert, nodeID);
+         Binding binding = new DivertBinding(sAddress, divert);
 
          postOffice.addBinding(binding);
       }

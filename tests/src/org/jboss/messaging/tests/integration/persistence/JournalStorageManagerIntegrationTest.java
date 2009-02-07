@@ -22,15 +22,12 @@
 
 package org.jboss.messaging.tests.integration.persistence;
 
-import java.io.File;
-
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A JournalStorageManagerIntegrationTest

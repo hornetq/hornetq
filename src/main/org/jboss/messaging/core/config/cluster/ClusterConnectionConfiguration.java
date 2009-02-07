@@ -44,7 +44,13 @@ public class ClusterConnectionConfiguration implements Serializable
 
    private final String address;
 
-   private final BridgeConfiguration bridgeConfig;
+   private final long retryInterval;
+
+   private final double retryIntervalMultiplier;
+
+   private final int maxRetriesBeforeFailover;
+
+   private final int maxRetriesAfterFailover;
 
    private final boolean duplicateDetection;
    
@@ -53,37 +59,55 @@ public class ClusterConnectionConfiguration implements Serializable
    private final List<Pair<String, String>> staticConnectorNamePairs;
 
    private final String discoveryGroupName;
+   
+   private final int maxHops;
 
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
-                                         final BridgeConfiguration bridgeConfig,
+                                         final long retryInterval,
+                                         final double retryIntervalMultiplier,
+                                         final int maxRetriesBeforeFailover,
+                                         final int maxRetriesAfterFailover,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
+                                         final int maxHops,
                                          final List<Pair<String, String>> staticConnectorNamePairs)
    {
       this.name = name;
       this.address = address;
-      this.bridgeConfig = bridgeConfig;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
       this.staticConnectorNamePairs = staticConnectorNamePairs;
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = null;
+      this.maxHops = maxHops;
    }
 
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
-                                         final BridgeConfiguration bridgeConfig,
+                                         final long retryInterval,
+                                         final double retryIntervalMultiplier,
+                                         final int maxRetriesBeforeFailover,
+                                         final int maxRetriesAfterFailover,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
+                                         final int maxHops,
                                          final String discoveryGroupName)
    {
       this.name = name;
       this.address = address;
-      this.bridgeConfig = bridgeConfig;
+      this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
       this.staticConnectorNamePairs = null;
+      this.maxHops = maxHops;
    }
 
    public String getName()
@@ -96,11 +120,6 @@ public class ClusterConnectionConfiguration implements Serializable
       return address;
    }
 
-   public BridgeConfiguration getBridgeConfig()
-   {
-      return bridgeConfig;
-   }
-
    public boolean isDuplicateDetection()
    {
       return duplicateDetection;
@@ -109,6 +128,11 @@ public class ClusterConnectionConfiguration implements Serializable
    public boolean isForwardWhenNoConsumers()
    {
       return forwardWhenNoConsumers;
+   }
+   
+   public int getMaxHops()
+   {
+      return maxHops;
    }
 
    public List<Pair<String, String>> getStaticConnectorNamePairs()
@@ -119,6 +143,26 @@ public class ClusterConnectionConfiguration implements Serializable
    public String getDiscoveryGroupName()
    {
       return discoveryGroupName;
+   }
+
+   public long getRetryInterval()
+   {
+      return retryInterval;
+   }
+
+   public double getRetryIntervalMultiplier()
+   {
+      return retryIntervalMultiplier;
+   }
+
+   public int getMaxRetriesBeforeFailover()
+   {
+      return maxRetriesBeforeFailover;
+   }
+
+   public int getMaxRetriesAfterFailover()
+   {
+      return maxRetriesAfterFailover;
    }
 
 }

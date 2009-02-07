@@ -38,6 +38,7 @@ import java.util.Map;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.logging.Logger;
@@ -217,6 +218,15 @@ public class FileConfiguration extends ConfigurationImpl
          Element mfNode = (Element)brNodes.item(i);
 
          parseBridgeConfiguration(mfNode);
+      }
+      
+      NodeList ccNodes = e.getElementsByTagName("cluster-connection");
+
+      for (int i = 0; i < ccNodes.getLength(); i++)
+      {
+         Element ccNode = (Element)ccNodes.item(i);
+
+         parseClusterConnectionConfiguration(ccNode);
       }
       
       NodeList dvNodes = e.getElementsByTagName("divert");
@@ -517,162 +527,98 @@ public class FileConfiguration extends ConfigurationImpl
          discoveryGroupConfigurations.put(name, config);
       }
    }
-
-//   private void parseMessageFlowConfiguration(final Element bgNode)
-//   {
-//      String name = bgNode.getAttribute("name");
-//
-//      String address = null;
-//      
-//      String forwardingAddress = null;
-//
-//      String filterString = null;
-//
-//      int maxBatchSize = DEFAULT_MAX_FORWARD_BATCH_SIZE;
-//
-//      long maxBatchTime = DEFAULT_MAX_FORWARD_BATCH_TIME;
-//
-//      List<Pair<String, String>> staticConnectorNames = new ArrayList<Pair<String, String>>();
-//
-//      String discoveryGroupName = null;
-//
-//      String transformerClassName = null;
-//      
-//      long retryInterval = DEFAULT_RETRY_INTERVAL;
-//      
-//      double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-//      
-//      int maxRetriesBeforeFailover = DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
-//      
-//      int maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
-//      
-//      boolean useDuplicateDetection = DEFAULT_USE_DUPLICATE_DETECTION;
-//      
-//      int maxHops = DEFAULT_MAX_HOPS;
-//      
-//      boolean useRemoteQueueInformation = DEFAULT_USE_REMOTE_QUEUE_INFORMATION;
-//
-//      NodeList children = bgNode.getChildNodes();
-//
-//      for (int j = 0; j < children.getLength(); j++)
-//      {
-//         Node child = children.item(j);
-//
-//         if (child.getNodeName().equals("address"))
-//         {
-//            address = child.getTextContent().trim();
-//         }
-//         else if (child.getNodeName().equals("forwarding-address"))
-//         {
-//            forwardingAddress = child.getTextContent().trim();
-//         }
-//         else if (child.getNodeName().equals("filter-string"))
-//         {
-//            filterString = child.getTextContent().trim();
-//         }
-//         else if (child.getNodeName().equals("max-batch-size"))
-//         {
-//            maxBatchSize = XMLUtil.parseInt(child);
-//         }
-//         else if (child.getNodeName().equals("max-batch-time"))
-//         {
-//            maxBatchTime = XMLUtil.parseLong(child);
-//         }
-//         else if (child.getNodeName().equals("discovery-group-ref"))
-//         {
-//            discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
-//         }
-//         else if (child.getNodeName().equals("transformer-class-name"))
-//         {
-//            transformerClassName = child.getTextContent().trim();
-//         }
-//         else if (child.getNodeName().equals("retry-interval"))
-//         {
-//            retryInterval = XMLUtil.parseLong(child);
-//         }
-//         else if (child.getNodeName().equals("retry-interval-multiplier"))
-//         {
-//            retryIntervalMultiplier = XMLUtil.parseDouble(child);
-//         }
-//         else if (child.getNodeName().equals("max-retries-before-failover"))
-//         {
-//            maxRetriesBeforeFailover = XMLUtil.parseInt(child);
-//         }
-//         else if (child.getNodeName().equals("max-retries-after-failover"))
-//         {
-//            maxRetriesAfterFailover = XMLUtil.parseInt(child);
-//         }
-//         else if (child.getNodeName().equals("use-duplicate-detection"))
-//         {
-//            useDuplicateDetection = XMLUtil.parseBoolean(child);
-//         }
-//         else if (child.getNodeName().equals("max-hops"))
-//         {
-//            maxHops = XMLUtil.parseInt(child);
-//         }
-//         else if (child.getNodeName().equals("use-remote-queue-information"))
-//         {
-//            useRemoteQueueInformation = XMLUtil.parseBoolean(child);
-//         }
-//         else if (child.getNodeName().equals("connector-ref"))
-//         {
-//            String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
-//
-//            Node backupNode = child.getAttributes().getNamedItem("backup-connector-name");
-//
-//            String backupConnectorName = null;
-//
-//            if (backupNode != null)
-//            {
-//               backupConnectorName = backupNode.getNodeValue();
-//            }
-//
-//            staticConnectorNames.add(new Pair<String, String>(connectorName, backupConnectorName));
-//         }
-//      }
-//
-//      MessageFlowConfiguration config;
-//
-//      if (!staticConnectorNames.isEmpty())
-//      {
-//         config = new MessageFlowConfiguration(name,
-//                                               address,
-//                                               forwardingAddress,
-//                                               filterString,                                              
-//                                               maxBatchSize,
-//                                               maxBatchTime,
-//                                               transformerClassName,
-//                                               retryInterval,
-//                                               retryIntervalMultiplier,
-//                                               maxRetriesBeforeFailover,
-//                                               maxRetriesAfterFailover,
-//                                               useDuplicateDetection,
-//                                               maxHops,
-//                                               useRemoteQueueInformation,
-//                                               staticConnectorNames);
-//      }
-//      else
-//      {
-//         config = new MessageFlowConfiguration(name,
-//                                               address,
-//                                               forwardingAddress,
-//                                               filterString,                                            
-//                                               maxBatchSize,
-//                                               maxBatchTime,
-//                                               transformerClassName,
-//                                               retryInterval,
-//                                               retryIntervalMultiplier,
-//                                               maxRetriesBeforeFailover,
-//                                               maxRetriesAfterFailover,       
-//                                               useDuplicateDetection,
-//                                               maxHops,
-//                                               useRemoteQueueInformation,
-//                                               discoveryGroupName);
-//      }
-//
-//      messageFlowConfigurations.add(config);
-//   }
    
+   private void parseClusterConnectionConfiguration(final Element brNode)
+   {
+      String name = null;
+      
+      String address = null;
+      
+      boolean duplicateDetection = DEFAULT_CLUSTER_DUPLICATE_DETECTION;
+      
+      boolean forwardWhenNoConsumers = DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS;
+      
+      String discoveryGroupName = null;
+      
+      int maxHops = DEFAULT_CLUSTER_MAX_HOPS;
+      
+      long retryInterval = DEFAULT_RETRY_INTERVAL;
+      
+      double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      
+      int maxRetriesBeforeFailover = DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+      
+      int maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+      
+      List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
+      
+      name = brNode.getAttribute("name");
+      
+      NodeList children = brNode.getChildNodes();
+
+      for (int j = 0; j < children.getLength(); j++)
+      {
+         Node child = children.item(j);
+         
+         if (child.getNodeName().equals("retry-interval"))
+         {
+            retryInterval = XMLUtil.parseLong(child);
+         }
+         else if (child.getNodeName().equals("retry-interval-multiplier"))
+         {
+            retryIntervalMultiplier = XMLUtil.parseDouble(child);
+         }
+         else if (child.getNodeName().equals("max-retries-before-failover"))
+         {
+            maxRetriesBeforeFailover = XMLUtil.parseInt(child);
+         }
+         else if (child.getNodeName().equals("max-retries-after-failover"))
+         {
+            maxRetriesAfterFailover = XMLUtil.parseInt(child);
+         }
+         else if (child.getNodeName().equals("use-duplicate-detection"))
+         {
+            duplicateDetection = XMLUtil.parseBoolean(child);
+         }
+         else if (child.getNodeName().equals("discovery-group-ref"))
+         {
+            discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
+         }
+         else if (child.getNodeName().equals("connector-ref"))
+         {
+            String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
+
+            Node backupNode = child.getAttributes().getNamedItem("backup-connector-name");
+
+            String backupConnectorName = null;
+
+            if (backupNode != null)
+            {
+               backupConnectorName = backupNode.getNodeValue();
+            }
+
+            Pair<String, String> connectorPair = new Pair<String, String>(connectorName, backupConnectorName);
+            
+            connectorPairs.add(connectorPair);
+         }
+      }
+      
+      ClusterConnectionConfiguration config;
+      
+      if (discoveryGroupName == null)
+      {
+         config = new ClusterConnectionConfiguration(name, address, retryInterval, retryIntervalMultiplier, maxRetriesBeforeFailover, maxRetriesAfterFailover,
+                                                     duplicateDetection, forwardWhenNoConsumers, maxHops, connectorPairs);
+      }
+      else
+      {
+         config = new ClusterConnectionConfiguration(name, address, retryInterval, retryIntervalMultiplier, maxRetriesBeforeFailover, maxRetriesAfterFailover,
+                                                     duplicateDetection, forwardWhenNoConsumers, maxHops, discoveryGroupName);
+      }
+      
+      clusterConfigurations.add(config);      
+   }
+
    private void parseBridgeConfiguration(final Element brNode)
    {
       String name = null;
@@ -701,7 +647,7 @@ public class FileConfiguration extends ConfigurationImpl
       
       int maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
       
-      boolean useDuplicateDetection = DEFAULT_USE_DUPLICATE_DETECTION;
+      boolean useDuplicateDetection = DEFAULT_BRIDGE_DUPLICATE_DETECTION;
       
       name = brNode.getAttribute("name");
       

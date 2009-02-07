@@ -26,8 +26,10 @@ import static org.jboss.messaging.core.remoting.impl.invm.TransportConstants.SER
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -118,15 +120,15 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-//      log.info("waiting for bindings on node " + node +
-//               " address " +
-//               address +
-//               " count " +
-//               count +
-//               " consumerCount " +
-//               consumerCount +
-//               " local " +
-//               local);
+      // log.info("waiting for bindings on node " + node +
+      // " address " +
+      // address +
+      // " count " +
+      // count +
+      // " consumerCount " +
+      // consumerCount +
+      // " local " +
+      // local);
       MessagingService service = this.services[node];
 
       if (service == null)
@@ -158,7 +160,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         //log.info("binding count " + bindingCount + " consumer Count " + totConsumers);
+         // log.info("binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -354,6 +356,32 @@ public class ClusterTestBase extends ServiceTestBase
       }
    }
 
+   protected void checkReceive(int... consumerIDs) throws Exception
+   {
+      for (int i = 0; i < consumerIDs.length; i++)
+      {
+         ConsumerHolder holder = consumers[consumerIDs[i]];
+
+         if (holder == null)
+         {
+            throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
+         }
+
+         ClientMessage message;
+         do
+         {
+            message = holder.consumer.receive(500);
+
+            if (message != null)
+            {
+               log.info("Consumer " + consumerIDs[i] + " received message " + message.getProperty(COUNT_PROP));
+            }
+         }
+         while (message != null);
+
+      }
+   }
+
    protected void verifyReceiveRoundRobin(int numMessages, int... consumerIDs) throws Exception
    {
       int count = 0;
@@ -371,13 +399,58 @@ public class ClusterTestBase extends ServiceTestBase
 
          assertNotNull("consumer " + consumerIDs[count] + " did not receive message " + i, message);
 
-         assertEquals(i, message.getProperty(COUNT_PROP));
+         assertEquals("consumer " + consumerIDs[count] + " message " + i, i, message.getProperty(COUNT_PROP));
 
          count++;
 
          if (count == consumerIDs.length)
          {
             count = 0;
+         }
+      }
+   }
+
+   /*
+    * With some tests we cannot guarantee the order in which the bridges in the cluster startup so the round robin order is not predefined.
+    * In which case we test the messages are round robin'd in any specific order that contains all the consumers
+    */
+   protected void verifyReceiveRoundRobinInSomeOrder(int numMessages, int... consumerIDs) throws Exception
+   {
+      Map<Integer, Integer> countMap = new HashMap<Integer, Integer>();
+      
+      Set<Integer> counts = new HashSet<Integer>();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         for (int j = 0; j < consumerIDs.length; j++)
+         {
+            ConsumerHolder holder = consumers[consumerIDs[j]];
+
+            if (holder == null)
+            {
+               throw new IllegalArgumentException("No consumer at " + consumerIDs[j]);
+            }
+
+            ClientMessage message = holder.consumer.receive(500);
+
+            assertNotNull("consumer " + consumerIDs[j] + " did not receive message", message);
+
+            int count = (Integer)message.getProperty(COUNT_PROP);
+
+            Integer prevCount = countMap.get(j);
+
+            if (prevCount != null)
+            {
+               assertTrue(count == prevCount + consumerIDs.length);
+            }
+            
+            assertFalse(counts.contains(count));
+            
+            counts.add(count);
+
+            countMap.put(j, count);
+
+            i++;
          }
       }
    }
@@ -501,9 +574,15 @@ public class ClusterTestBase extends ServiceTestBase
                                          int nodeTo,
                                          String address,
                                          boolean forwardWhenNoConsumers,
+                                         int maxHops,
                                          boolean netty)
    {
       MessagingService serviceFrom = services[nodeFrom];
+
+      if (serviceFrom == null)
+      {
+         throw new IllegalStateException("No service at node " + nodeFrom);
+      }
 
       Map<String, TransportConfiguration> connectors = serviceFrom.getServer()
                                                                   .getConfiguration()
@@ -531,25 +610,15 @@ public class ClusterTestBase extends ServiceTestBase
       List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
       pairs.add(connectorPair);
 
-      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(null,
-                                                                        null,
-                                                                        null,
-                                                                        null,
-                                                                        1,
-                                                                        -1,
-                                                                        null,
-                                                                        1000,
-                                                                        1d,
-                                                                        -1,
-                                                                        -1,
-                                                                        false,
-                                                                        connectorPair);
-
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
                                                                                       address,
-                                                                                      bridgeConfiguration,
+                                                                                      10,
+                                                                                      1d,
+                                                                                      -1,
+                                                                                      -1,
                                                                                       true,
                                                                                       forwardWhenNoConsumers,
+                                                                                      maxHops,
                                                                                       pairs);
       List<ClusterConnectionConfiguration> clusterConfs = serviceFrom.getServer()
                                                                      .getConfiguration()

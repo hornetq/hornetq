@@ -23,37 +23,7 @@
 
 package org.jboss.messaging.tests.integration.cluster.distribution;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
-
-import java.util.Map;
-
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
 
 /**
  * A SymmetricClusterTest
@@ -74,7 +44,10 @@ public class SymmetricClusterTest extends ClusterTestBase
       super.setUp();
       
       setupServer(0, isFileStorage(), isNetty());
-      setupServer(1, isFileStorage(), isNetty());            
+      setupServer(1, isFileStorage(), isNetty()); 
+      setupServer(2, isFileStorage(), isNetty());
+      setupServer(3, isFileStorage(), isNetty()); 
+      setupServer(4, isFileStorage(), isNetty());      
    }
 
    @Override
@@ -84,7 +57,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       
       closeAllSessionFactories();
       
-      stopServers(0, 1);
+      stopServers(0, 1, 2, 3, 4);
       
       super.tearDown();
    }
@@ -99,129 +72,72 @@ public class SymmetricClusterTest extends ClusterTestBase
       return false;
    }
    
-   public void testStartOneBeforeOther() throws Exception
+   public void testRoundRobin() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
-      setupClusterConnection("cluster2", 1, 0, "queues", false, isNetty());
+      setupClusterConnection("cluster0-1", 0, 1, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster0-2", 0, 2, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster0-3", 0, 3, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster0-4", 0, 4, "queues", false, 1, isNetty());
       
-      startServers(0);
+      setupClusterConnection("cluster1-0", 1, 0, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster1-2", 1, 2, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster1-3", 1, 3, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster1-4", 1, 4, "queues", false, 1, isNetty());
       
-      setupSessionFactory(0, isNetty());
-     
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-     
-      addConsumer(0, 0, "queue0", null);
+      setupClusterConnection("cluster2-0", 2, 0, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster2-1", 2, 1, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster2-3", 2, 3, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster2-4", 2, 4, "queues", false, 1, isNetty());
       
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-            
-      setupSessionFactory(1, isNetty());
+      setupClusterConnection("cluster3-0", 3, 0, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster3-1", 3, 1, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster3-2", 3, 2, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster3-4", 3, 4, "queues", false, 1, isNetty());
       
-      startServers(1);
-      
-      createQueue(1, "queues.testaddress", "queue0", null, false);
-
-      addConsumer(1, 1, "queue0", null);
-            
-      waitForBindings(0, "queues.testaddress", 1, 1, false);
-      
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, false);
-      
-      send(0, "queues.testaddress", 10, false, null);
-      
-      verifyReceiveRoundRobin(10, 0, 1);
-      verifyNotReceive(0, 1);      
-   }
-   
-   public void testStopAndStart() throws Exception
-   {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
-      setupClusterConnection("cluster2", 1, 0, "queues", false, isNetty());
-      
-      startServers(0, 1);
-      
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
-
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-
-      createQueue(1, "queues.testaddress", "queue0", null, false);
-
-      addConsumer(0, 0, "queue0", null);
-
-      addConsumer(1, 1, "queue0", null);
-      
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(0, "queues.testaddress", 1, 1, false);
-      
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, false);
-      
-      send(0, "queues.testaddress", 10, false, null);
-      
-      verifyReceiveRoundRobin(10, 0, 1);
-      verifyNotReceive(0, 1);      
-      
-      removeConsumer(0);
-      closeSessionFactory(0);
+      setupClusterConnection("cluster4-0", 4, 0, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster4-1", 4, 1, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster4-2", 4, 2, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster4-3", 4, 3, "queues", false, 1, isNetty());
                   
-      long start = System.currentTimeMillis();
-      
-      stopServers(0);
+      startServers(0, 1, 2, 3, 4);
                  
-      startServers(0);
-        
-      long end = System.currentTimeMillis();
-      
-      //We time how long it takes to restart, since it has been known to hang in the past and wait for a timeout
-      //Shutting down and restarting should be pretty quick
-      
-      assertTrue("Took too long to restart", end - start <= 5000);
-      
-      setupSessionFactory(0, isNetty());
-      
-      waitForBindings(0, "queues.testaddress", 1, 1, false);
-      
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-                  
-      addConsumer(0, 0, "queue0", null);
-      
-      send(0, "queues.testaddress", 10, false, null);
-      
-      verifyReceiveRoundRobin(10, 1, 0);
-      verifyNotReceive(0, 1);      
-   }
-   
-   
-   
-   public void testBasicRoundRobin() throws Exception
-   {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, isNetty());
-      setupClusterConnection("cluster2", 1, 0, "queues", false, isNetty());
-      
-      startServers(0, 1);
-      
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
-
+      setupSessionFactory(2, isNetty());
+      setupSessionFactory(3, isNetty());
+      setupSessionFactory(4, isNetty());
+      
       createQueue(0, "queues.testaddress", "queue0", null, false);
-
       createQueue(1, "queues.testaddress", "queue0", null, false);
-
+      createQueue(2, "queues.testaddress", "queue0", null, false);
+      createQueue(3, "queues.testaddress", "queue0", null, false);
+      createQueue(4, "queues.testaddress", "queue0", null, false);
+      
       addConsumer(0, 0, "queue0", null);
-
       addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
+      addConsumer(3, 3, "queue0", null);
+      addConsumer(4, 4, "queue0", null);
+       
       
       waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(0, "queues.testaddress", 1, 1, false);
-      
       waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, false);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(3, "queues.testaddress", 1, 1, true);
+      waitForBindings(4, "queues.testaddress", 1, 1, true);
       
+      waitForBindings(0, "queues.testaddress", 4, 4, false);
+      waitForBindings(1, "queues.testaddress", 4, 4, false);
+      waitForBindings(2, "queues.testaddress", 4, 4, false);
+      waitForBindings(3, "queues.testaddress", 4, 4, false);
+      waitForBindings(4, "queues.testaddress", 4, 4, false);
+                  
       send(0, "queues.testaddress", 10, false, null);
       
-      verifyReceiveRoundRobin(10, 0, 1);
-      verifyNotReceive(0, 1);      
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
+      
+      verifyNotReceive(0, 1, 2, 3, 4);   
    }
+   
    
 }

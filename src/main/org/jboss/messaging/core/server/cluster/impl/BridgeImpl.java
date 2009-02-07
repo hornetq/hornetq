@@ -50,6 +50,7 @@ import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -265,10 +266,10 @@ public class BridgeImpl implements Bridge, FailureListener
       }
 
       started = true;
-            
+
       executor.execute(new CreateObjectsRunnable());
    }
-   
+
    public void stop() throws Exception
    {
       if (!started)
@@ -286,7 +287,7 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          future.cancel(false);
       }
-     
+
       // We close the session factory here - this will cause any connection retries to stop
       csf.close();
 
@@ -313,7 +314,7 @@ public class BridgeImpl implements Bridge, FailureListener
    {
       return started;
    }
-   
+
    public SimpleString getName()
    {
       return name;
@@ -353,7 +354,6 @@ public class BridgeImpl implements Bridge, FailureListener
    {
       return useDuplicateDetection;
    }
-
 
    // For testing only
    public RemotingConnection getForwardingConnection()
@@ -438,13 +438,13 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          return;
       }
-      
+
       log.warn(System.identityHashCode(this) + " Bridge connection to target failed. Will try to reconnect");
 
       try
       {
          tx.rollback();
-         
+
          active = false;
 
          queue.removeConsumer(this);
@@ -462,8 +462,8 @@ public class BridgeImpl implements Bridge, FailureListener
             log.warn("Timed out waiting for batch to be sent");
          }
 
-         session.cleanUp();         
-         
+         session.cleanUp();
+
          csf.close();
       }
       catch (Exception e)
@@ -613,7 +613,7 @@ public class BridgeImpl implements Bridge, FailureListener
          timeoutBatch();
       }
    }
-   
+
    private class CreateObjectsRunnable implements Runnable
    {
       public synchronized void run()
@@ -636,15 +636,14 @@ public class BridgeImpl implements Bridge, FailureListener
                                                maxRetriesBeforeFailover,
                                                maxRetriesAfterFailover);
 
-            
             session = (ClientSessionInternal)csf.createSession(false, false, false);
-            
+
             if (session == null)
             {
-               //This can happen if the bridge is shutdown 
+               // This can happen if the bridge is shutdown
                return;
             }
-            
+
             producer = session.createProducer();
 
             session.addFailureListener(BridgeImpl.this);
@@ -660,31 +659,28 @@ public class BridgeImpl implements Bridge, FailureListener
                                                                                             .generateSimpleStringUUID());
 
                // TODO - simplify this
-               SimpleString filter = new SimpleString(ManagementHelper.HDR_NOTIFICATION_TYPE + " IN (" +
-                                                      "'" +
+               SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
+                                                      BindingType.DIVERT.toInt() +
+                                                      " AND " +
+                                                      ManagementHelper.HDR_NOTIFICATION_TYPE +
+                                                      " IN ('" +
                                                       NotificationType.BINDING_ADDED +
-                                                      "'," +
-                                                      "'" +
+                                                      "','" +
                                                       NotificationType.BINDING_REMOVED +
-                                                      "'," +
-                                                      "'" +
+                                                      "','" +
                                                       NotificationType.CONSUMER_CREATED +
-                                                      "'," +
-                                                      "'" +
+                                                      "','" +
                                                       NotificationType.CONSUMER_CLOSED +
                                                       "') AND " +
-                                                      "(" +
-                                                      ManagementHelper.HDR_ADDRESS +
-                                                      " IS NULL OR " +
+                                                      ManagementHelper.HDR_DISTANCE +
+                                                      "<" +
+                                                      flowRecord.getMaxHops() +
+                                                      " AND (" +                                                     
                                                       ManagementHelper.HDR_ADDRESS +
                                                       " LIKE '" +
                                                       flowRecord.getAddress() +
-                                                      "%') AND " +
-                                                      ManagementHelper.HDR_ORIGINATING_NODE +
-                                                      "<>'" +
-                                                      flowRecord.getNodeID() +
-                                                      "'");
-
+                                                      "%')");
+               
                session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
 
                ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
@@ -709,7 +705,7 @@ public class BridgeImpl implements Bridge, FailureListener
             active = true;
 
             queue.deliverAsync(executor);
-            
+
          }
          catch (Exception e)
          {
@@ -724,5 +720,4 @@ public class BridgeImpl implements Bridge, FailureListener
       }
    }
 
-   
 }

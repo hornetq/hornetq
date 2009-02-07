@@ -53,6 +53,7 @@ import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -99,6 +100,8 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    private final QueueFactory queueFactory;
 
    private boolean messageCounterEnabled;
+   
+   private final SimpleString nodeID;
 
    // Static --------------------------------------------------------
 
@@ -129,6 +132,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       {
          messageCounterManager.start();
       }
+      this.nodeID = server.getNodeID();
    }
 
    // Public --------------------------------------------------------
@@ -147,7 +151,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    {
       SimpleString sName = new SimpleString(name);
       Binding binding = postOffice.getBinding(sName);
-      if (binding == null || !binding.isQueueBinding())
+      if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
       {
          throw new IllegalArgumentException("No queue with name " + sName);
       }
@@ -296,7 +300,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       if (postOffice.getBinding(sName) == null)
       {
          Queue queue = queueFactory.createQueue(-1, sAddress, sName, null, true, false);
-         Binding binding = new LocalQueueBinding(sAddress, queue, server.getNodeID());
+         Binding binding = new LocalQueueBinding(sAddress, queue, nodeID);
          storageManager.addQueueBinding(binding);
          postOffice.addBinding(binding);
       }
@@ -315,7 +319,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       if (postOffice.getBinding(sName) == null)
       {
          Queue queue = queueFactory.createQueue(-1, sAddress, sName, filter, durable, false);
-         Binding binding = new LocalQueueBinding(sAddress, queue, server.getNodeID());
+         Binding binding = new LocalQueueBinding(sAddress, queue, nodeID);
          if (durable)
          {
             storageManager.addQueueBinding(binding);
@@ -331,7 +335,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
       if (binding != null)
       {
-         if (binding.isQueueBinding())
+         if (binding.getType() == BindingType.LOCAL_QUEUE)
          {
             Queue queue = (Queue)binding.getBindable();
 

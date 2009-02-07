@@ -32,6 +32,7 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -163,7 +164,7 @@ public class TopicControl implements TopicControlMBean
    {
       SimpleString sAddress = new SimpleString(queueName);
       Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null || !binding.isQueueBinding())
+      if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
       {
          throw new IllegalArgumentException("No queue with name " + sAddress);
       }
@@ -185,7 +186,7 @@ public class TopicControl implements TopicControlMBean
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
       SimpleString sAddress = new SimpleString(queueName);
       Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null || !binding.isQueueBinding())
+      if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
       {
          throw new IllegalArgumentException("No queue with name " + sAddress);
       }
@@ -202,7 +203,7 @@ public class TopicControl implements TopicControlMBean
 
       for (Binding binding : bindings.getBindings())
       {
-         if (binding.isQueueBinding())
+         if (binding.getType() == BindingType.LOCAL_QUEUE)
          {
             Queue queue = (Queue)binding.getBindable();
             count += queue.deleteAllReferences();
@@ -217,7 +218,7 @@ public class TopicControl implements TopicControlMBean
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
       Binding binding = postOffice.getBinding(new SimpleString(queueName));
 
-      if (binding == null || !binding.isQueueBinding())
+      if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
       {
          throw new IllegalArgumentException("No durable subscription for clientID=" + clientID +
                                             ", subcription=" +
@@ -237,7 +238,7 @@ public class TopicControl implements TopicControlMBean
 
       for (Binding binding : bindings.getBindings())
       {
-         if (binding.isQueueBinding())
+         if (binding.getType() == BindingType.LOCAL_QUEUE)
          {
             Queue queue = (Queue)binding.getBindable();
             queue.deleteAllReferences();
@@ -301,7 +302,7 @@ public class TopicControl implements TopicControlMBean
 
          for (Binding binding : bindings.getBindings())
          {
-            if (binding.isQueueBinding())
+            if (binding.getType() == BindingType.LOCAL_QUEUE)
             {
                Queue queue = (Queue)binding.getBindable();
                if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||

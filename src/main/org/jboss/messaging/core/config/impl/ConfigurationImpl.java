@@ -119,9 +119,15 @@ public class ConfigurationImpl implements Configuration
    
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
    
-   public static final boolean DEFAULT_USE_DUPLICATE_DETECTION = true;
+   public static final boolean DEFAULT_CLUSTER_DUPLICATE_DETECTION = true;
+   
+   public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
+   
+   public static final int DEFAULT_CLUSTER_MAX_HOPS = 1;
    
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
+   
+   public static final boolean DEFAULT_BRIDGE_DUPLICATE_DETECTION = true;
    
    // Attributes -----------------------------------------------------------------------------
 

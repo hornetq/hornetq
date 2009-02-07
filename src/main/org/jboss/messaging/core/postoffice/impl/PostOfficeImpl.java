@@ -50,6 +50,7 @@ import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -126,7 +127,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private Set<Integer> transientIDs = new HashSet<Integer>();
 
-   private Map<SimpleString, Map<SimpleString, QueueInfo>> queueInfos = new HashMap<SimpleString, Map<SimpleString, QueueInfo>>();
+   private Map<SimpleString, QueueInfo> queueInfos = new HashMap<SimpleString, QueueInfo>();
 
    private final Object notificationLock = new Object();
 
@@ -234,135 +235,131 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       synchronized (notificationLock)
       {
          NotificationType type = notification.getType();
-
-         if (type == NotificationType.BINDING_ADDED)
+         
+         switch (type.toInt())
          {
-            TypedProperties props = notification.getProperties();
-
-            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-
-            SimpleString address = (SimpleString)props.getProperty(ManagementHelper.HDR_ADDRESS);
-
-            Integer transientID = (Integer)props.getProperty(ManagementHelper.HDR_BINDING_ID);
-
-            SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
-
-            SimpleString origNode = (SimpleString)props.getProperty(ManagementHelper.HDR_ORIGINATING_NODE);
-
-            QueueInfo info = new QueueInfo(queueName, address, filterString, transientID, origNode);
-
-            Map<SimpleString, QueueInfo> queueInfoMap = queueInfos.get(origNode);
-
-            if (queueInfoMap == null)
+            case NotificationType.BINDING_ADDED_INDEX:
             {
-               queueInfoMap = new HashMap<SimpleString, QueueInfo>();
-
-               queueInfos.put(origNode, queueInfoMap);
-            }
-
-            queueInfoMap.put(queueName, info);
-         }
-         else if (type == NotificationType.BINDING_REMOVED)
-         {
-            TypedProperties props = notification.getProperties();
-
-            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-
-            SimpleString origNode = (SimpleString)props.getProperty(ManagementHelper.HDR_ORIGINATING_NODE);
-
-            Map<SimpleString, QueueInfo> queueInfoMap = queueInfos.get(origNode);
-
-            if (queueInfoMap == null)
-            {
-               throw new IllegalStateException("Cannot find map for node " + origNode);
-            }
-
-            QueueInfo info = queueInfoMap.remove(queueName);
-
-            if (info == null)
-            {
-               throw new IllegalStateException("Cannot find queue info for queue " + queueName);
-            }
-
-            if (queueInfoMap.isEmpty())
-            {
-               queueInfos.remove(origNode);
-            }
-         }
-         else if (type == NotificationType.CONSUMER_CREATED)
-         {
-            TypedProperties props = notification.getProperties();
-
-            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-
-            SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
-
-            SimpleString origNode = (SimpleString)props.getProperty(ManagementHelper.HDR_ORIGINATING_NODE);
-
-            Map<SimpleString, QueueInfo> queueInfoMap = queueInfos.get(origNode);
-
-            if (queueInfoMap == null)
-            {
-               throw new IllegalStateException("Cannot find map for node " + origNode);
-            }
-
-            QueueInfo info = queueInfoMap.get(queueName);
-
-            if (info == null)
-            {
-               throw new IllegalStateException("Cannot find queue info for queue " + queueName);
-            }
-
-            info.incrementConsumers();
-
-            if (filterString != null)
-            {
-               List<SimpleString> filterStrings = info.getFilterStrings();
-
-               if (filterStrings == null)
+               TypedProperties props = notification.getProperties();
+   
+               Integer bindingType = (Integer)props.getProperty(ManagementHelper.HDR_BINDING_TYPE);
+   
+               if (bindingType == null)
                {
-                  filterStrings = new ArrayList<SimpleString>();
-
-                  info.setFilterStrings(filterStrings);
+                  throw new IllegalArgumentException("Binding type not specified");
                }
-            }
-         }
-         else if (type == NotificationType.CONSUMER_CLOSED)
-         {
-            TypedProperties props = notification.getProperties();
-
-            SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_QUEUE_NAME);
-
-            SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
-
-            SimpleString origNode = (SimpleString)props.getProperty(ManagementHelper.HDR_ORIGINATING_NODE);
-
-            Map<SimpleString, QueueInfo> queueInfoMap = queueInfos.get(origNode);
-
-            if (queueInfoMap == null)
+               
+               if (bindingType == BindingType.DIVERT_INDEX)
+               {
+                  // We don't propagate diverts
+                  return;
+               }
+   
+               SimpleString routingName = (SimpleString)props.getProperty(ManagementHelper.HDR_ROUTING_NAME);
+   
+               SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+   
+               SimpleString address = (SimpleString)props.getProperty(ManagementHelper.HDR_ADDRESS);
+   
+               Integer transientID = (Integer)props.getProperty(ManagementHelper.HDR_BINDING_ID);
+   
+               SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+               
+               Integer distance = (Integer)props.getProperty(ManagementHelper.HDR_DISTANCE);
+   
+               QueueInfo info = new QueueInfo(routingName, clusterName, address, filterString, transientID, distance);
+   
+               queueInfos.put(clusterName, info);
+               
+               break;
+            }            
+            case NotificationType.BINDING_REMOVED_INDEX:
             {
-               throw new IllegalStateException("Cannot find map for node " + origNode);
+               TypedProperties props = notification.getProperties();
+   
+               SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+   
+               if (clusterName == null)
+               {
+                  throw new IllegalStateException("No cluster name");
+               }
+   
+               QueueInfo info = queueInfos.remove(clusterName);
+   
+               if (info == null)
+               {
+                  throw new IllegalStateException("Cannot find queue info for queue " + clusterName);
+               }
+               
+               break;
             }
-
-            QueueInfo info = queueInfoMap.get(queueName);
-
-            if (info == null)
-            {
-               throw new IllegalStateException("Cannot find queue info for queue " + queueName);
+            case NotificationType.CONSUMER_CREATED_INDEX:
+            { 
+               TypedProperties props = notification.getProperties();
+   
+               SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+   
+               if (clusterName == null)
+               {
+                  throw new IllegalStateException("No cluster name");
+               }
+                                 
+               SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+   
+               QueueInfo info = queueInfos.get(clusterName);
+   
+               if (info == null)
+               {
+                  throw new IllegalStateException("Cannot find queue info for queue " + clusterName);
+               }
+      
+               info.incrementConsumers();
+   
+               if (filterString != null)
+               {
+                  List<SimpleString> filterStrings = info.getFilterStrings();
+   
+                  if (filterStrings == null)
+                  {
+                     filterStrings = new ArrayList<SimpleString>();
+   
+                     info.setFilterStrings(filterStrings);
+                  }
+               }
+               
+               break;
             }
+            case NotificationType.CONSUMER_CLOSED_INDEX:
+            {   
+               TypedProperties props = notification.getProperties();
+   
+               SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+   
+               if (clusterName == null)
+               {
+                  throw new IllegalStateException("No cluster name");
+               }
+   
+               SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+   
+               QueueInfo info = queueInfos.get(clusterName);
+   
+               if (info == null)
+               {
+                  throw new IllegalStateException("Cannot find queue info for queue " + clusterName);
+               }
 
-            info.decrementConsumers();
-
-            if (filterString != null)
-            {
-               List<SimpleString> filterStrings = info.getFilterStrings();
-
-               filterStrings.remove(filterString);
+               info.decrementConsumers();
+   
+               if (filterString != null)
+               {
+                  List<SimpleString> filterStrings = info.getFilterStrings();
+                     
+                  filterStrings.remove(filterString);
+               }
+               
+               break;
             }
-         }
-         else
-         {
-            return;
          }
       }
    }
@@ -427,15 +424,20 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       TypedProperties props = new TypedProperties();
 
+      props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, binding.getType().toInt());
+
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
-      props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, binding.getRoutingName());
+
+      props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+
+      props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
+
       props.putIntProperty(ManagementHelper.HDR_BINDING_ID, binding.getID());
-      if (binding.getOriginatingNodeID() == null)
-      {
-         throw new IllegalStateException("null originating node");
-      }
-      props.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, binding.getOriginatingNodeID());
+
+      props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
+
       Filter filter = binding.getFilter();
+      
       if (filter != null)
       {
          props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filter.getFilterString());
@@ -448,7 +450,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {
       Binding binding = removeBindingInMemory(uniqueName);
 
-      if (binding.isQueueBinding())
+      if (binding.getType() == BindingType.LOCAL_QUEUE)
       {
          managementService.unregisterQueue(uniqueName, binding.getAddress());
       }
@@ -456,8 +458,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       TypedProperties props = new TypedProperties();
 
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
-      props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, binding.getRoutingName());
-      props.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, binding.getOriginatingNodeID());
+
+      props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+
+      props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
       managementService.sendNotification(new Notification(NotificationType.BINDING_REMOVED, props));
 
@@ -593,7 +597,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       for (Binding binding : nameMap.values())
       {
-         if (binding.isQueueBinding())
+         if (binding.getType() == BindingType.LOCAL_QUEUE)
          {
             Queue queue = (Queue)binding.getBindable();
 
@@ -668,57 +672,52 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          queue.preroute(message, null);
          queue.route(message, null);
 
-         for (Map<SimpleString, QueueInfo> queueInfoMap : queueInfos.values())
+         for (QueueInfo info : queueInfos.values())
          {
-            for (QueueInfo info : queueInfoMap.values())
+            if (info.getAddress().startsWith(address))
             {
-               if (info.getAddress().startsWith(address))
+               message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
+
+               message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
+               message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
+               message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
+               message.putIntProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
+               message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, info.getFilterString());
+               message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
+
+               routeDirect(queue, message);
+
+               int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
+
+               for (int i = 0; i < info.getNumberOfConsumers() - consumersWithFilters; i++)
                {
-                  message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
-                  
+                  message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
+
                   message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
-                  message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
-                  message.putIntProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
-                  message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, info.getFilterString());
-
-                  if (info.getOriginatingNode() == null)
-                  {
-                     throw new IllegalStateException("orig node is null");
-                  }
-
-                  message.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, info.getOriginatingNode());
+                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
+                  message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
                   routeDirect(queue, message);
+               }
 
-                  int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
-
-                  for (int i = 0; i < info.getNumberOfConsumers() - consumersWithFilters; i++)
+               if (info.getFilterStrings() != null)
+               {
+                  for (SimpleString filterString : info.getFilterStrings())
                   {
                      message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
 
-                     message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
-                     message.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, info.getOriginatingNode());
+                     message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
+                     message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
+                     message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
+                     message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
                      routeDirect(queue, message);
-                  }
-
-                  if (info.getFilterStrings() != null)
-                  {
-                     for (SimpleString filterString : info.getFilterStrings())
-                     {
-                        message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
-
-                        message.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, info.getQueueName());
-                        message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
-                        message.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, info.getOriginatingNode());
-
-                        routeDirect(queue, message);
-                     }
                   }
                }
             }
          }
       }
+
    }
 
    // Private -----------------------------------------------------------------
@@ -794,7 +793,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          managementService.registerAddress(binding.getAddress());
       }
 
-      if (binding.isQueueBinding())
+      if (binding.getType() == BindingType.LOCAL_QUEUE)
       {
          Queue queue = (Queue)binding.getBindable();
 
@@ -829,7 +828,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
          for (Binding binding : nameMap.values())
          {
-            if (binding.isQueueBinding())
+            if (binding.getType() == BindingType.LOCAL_QUEUE)
             {
                Queue queue = (Queue)binding.getBindable();
 

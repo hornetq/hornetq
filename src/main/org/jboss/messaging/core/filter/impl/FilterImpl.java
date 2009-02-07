@@ -121,6 +121,8 @@ public class FilterImpl implements Filter
       }
       catch (Throwable e)
       {
+         log.error("Invalid filter", e);
+         
          throw new MessagingException(MessagingException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString);
       }
    }

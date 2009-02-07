@@ -32,6 +32,20 @@
          <param key="d_mykey3" value="60" type="Integer"/>
          <param key="d_mykey4" value="d_foovalue4" type="String"/>      
       </connector>
+      <connector name="connector1">
+         <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory2</factory-class>
+         <param key="d_mykey1" value="d_foovalue1" type="String"/>
+         <param key="d_mykey2" value="6000" type="Long"/>
+         <param key="d_mykey3" value="60" type="Integer"/>
+         <param key="d_mykey4" value="d_foovalue4" type="String"/>      
+      </connector>
+      <connector name="connector2">
+         <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory3</factory-class>
+         <param key="d_mykey1" value="d_foovalue1" type="String"/>
+         <param key="d_mykey2" value="6000" type="Long"/>
+         <param key="d_mykey3" value="60" type="Integer"/>
+         <param key="d_mykey4" value="d_foovalue4" type="String"/>      
+      </connector>
       <connector name="backup-connector">
          <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
          <param key="c_mykey1" value="c_foovalue1" type="String"/>
@@ -79,8 +93,7 @@
          <group-port>11999</group-port>
          <refresh-timeout>12345</refresh-timeout>
       </discovery-group>
-      <divert name="divert1">
-         <unique-name>unique-name1</unique-name>
+      <divert name="divert1">         
          <routing-name>routing-name1</routing-name>
          <address>address1</address>
          <forwarding-address>forwarding-addres1</forwarding-address>
@@ -88,8 +101,7 @@
          <transformer-class-name>org.foo.Transformer</transformer-class-name>
          <exclusive>true</exclusive>
       </divert>
-      <divert name="divert2">
-         <unique-name>unique-name2</unique-name>
+      <divert name="divert2">        
          <routing-name>routing-name2</routing-name>
          <address>address2</address>
          <forwarding-address>forwarding-addres2</forwarding-address>
@@ -119,7 +131,30 @@
           <filter string="sku > 1"/>
           <disccovery-group-ref discovery-group-name="dg1"/>
       </bridge>
-
+      <cluster-connection name="cluster-connection1">
+          <address>queues</address>
+          <retry-interval>3</retry-interval>
+          <retry-interval-multiplier>0.2</retry-interval-multiplier>
+          <max-retries-before-failover>2</max-retries-before-failover>
+          <max-retries-after-failover>5</max-retries-after-failover>
+          <use-duplicate-detection>true</use-duplicate-detection>
+          <forward-when-no-consumers>true</forward-when-no-consumers>
+          <max-hops>1</max-hops>
+          <connector-ref connector-name="connector"/>
+          <connector-ref connector-name="connector1"/>
+          <connector-ref connector-name="connector2"/>
+      </cluster-connection>
+      <cluster-connection name="cluster-connection2">
+          <address>queues2</address>
+          <retry-interval>3</retry-interval>
+          <retry-interval-multiplier>0.2</retry-interval-multiplier>
+          <max-retries-before-failover>2</max-retries-before-failover>
+          <max-retries-after-failover>5</max-retries-after-failover>
+          <use-duplicate-detection>true</use-duplicate-detection>
+          <forward-when-no-consumers>true</forward-when-no-consumers>
+          <max-hops>1</max-hops>
+          <discovery-group-ref discovery-group-name="dg1"/>
+      </cluster-connection>
       <paging-max-threads>2</paging-max-threads>
       <paging-directory>pagingdir</paging-directory>
       <paging-default-size>123</paging-default-size>

@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.performance.persistence;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.util.SimpleString;
@@ -36,6 +37,24 @@ import org.jboss.messaging.util.SimpleString;
 public class FakeBinding implements Binding
 {
    
+   public SimpleString getClusterName()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   public BindingType getType()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   public int getDistance()
+   {
+      // TODO Auto-generated method stub
+      return 0;
+   }
+
    public SimpleString getOriginatingNodeID()
    {
       // TODO Auto-generated method stub

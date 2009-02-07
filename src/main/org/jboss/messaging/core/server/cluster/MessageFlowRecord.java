@@ -38,7 +38,7 @@ public interface MessageFlowRecord extends MessageHandler
 {
    String getAddress();
    
-   String getNodeID();
+   int getMaxHops();
    
    void reset() throws Exception;
    

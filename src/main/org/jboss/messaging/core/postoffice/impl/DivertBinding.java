@@ -25,6 +25,7 @@ package org.jboss.messaging.core.postoffice.impl;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -55,9 +56,7 @@ public class DivertBinding implements Binding
    
    private int id;
    
-   private final SimpleString origNodeID;
-      
-   public DivertBinding(final SimpleString address, final Divert divert, final SimpleString origNodeID)
+   public DivertBinding(final SimpleString address, final Divert divert)
    {
       this.address = address;
       
@@ -70,8 +69,6 @@ public class DivertBinding implements Binding
       this.routingName = divert.getRoutingName();
       
       this.exclusive = divert.isExclusive();
-      
-      this.origNodeID = origNodeID;
    }
    
    public int getID()
@@ -108,6 +105,11 @@ public class DivertBinding implements Binding
    {
       return uniqueName;
    }
+   
+   public SimpleString getClusterName()
+   {
+      return uniqueName;
+   }
 
    public boolean isExclusive()
    {
@@ -123,14 +125,14 @@ public class DivertBinding implements Binding
    {      
    }
 
-   public boolean isQueueBinding()
+   public int getDistance()
    {
-      return false;
-   }   
+      return 0;
+   }
    
-   public SimpleString getOriginatingNodeID()
+   public BindingType getType()
    {
-      return origNodeID;
+      return BindingType.DIVERT;
    }
 
 }

@@ -37,8 +37,10 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
@@ -174,6 +176,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final SimpleString managementAddress;
 
    private final QueueFactory queueFactory;
+   
+   private final SimpleString nodeID;
 
    // The current currentLargeMessage being processed
    // In case of replication, currentLargeMessage should only be accessed within the replication callbacks 
@@ -253,6 +257,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.managementAddress = managementAddress;
 
       this.queueFactory = queueFactory;
+      
+      this.nodeID = server.getNodeID();
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
@@ -1366,7 +1372,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          Binding binding = postOffice.getBinding(name);
 
-         if (binding == null || !binding.isQueueBinding())
+         if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
          {
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
@@ -1381,13 +1387,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
 
          Queue theQueue;
+         
          if (browseOnly)
          {
             // We consume a copy of the queue - TODO - this is a temporary measure
             // and will disappear once we can provide a proper iterator on the queue
 
             theQueue = queueFactory.createQueue(-1, binding.getAddress(), name, filter, false, true);
-
+                        
             // There's no need for any special locking since the list method is synchronized
             List<MessageReference> refs = ((Queue)binding.getBindable()).list(filter);
 
@@ -1395,6 +1402,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             {
                theQueue.addLast(ref);
             }
+            
+            binding = new LocalQueueBinding(binding.getAddress(), theQueue, nodeID);
          }
          else
          {            
@@ -1402,9 +1411,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
 
          ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
-                                                          this,
-                                                          binding.getAddress(),
-                                                          theQueue,
+                                                          this,                                                          
+                                                          (QueueBinding)binding,
                                                           filter,
                                                           started,
                                                           browseOnly,
@@ -1413,8 +1421,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           channel,
                                                           preAcknowledge,
                                                           executor,
-                                                          managementService,
-                                                          server.getNodeID());
+                                                          managementService);
 
          consumers.put(consumer.getID(), consumer);
          
@@ -1422,9 +1429,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             TypedProperties props = new TypedProperties();
             
-            props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, name);
-            props.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, binding.getOriginatingNodeID());
+            props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
             
+            props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+            
+            props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
+                        
             if (filterString != null)
             {
                props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
@@ -1494,7 +1504,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          final Queue queue = queueFactory.createQueue(-1, address, name, filter, durable, temporary);
 
-         binding = new LocalQueueBinding(address, queue, server.getNodeID());
+         //The unique name is given by the concatenation of the node id and the queue name - this is because it must be unique *across the entire cluster*
+         binding = new LocalQueueBinding(address, queue, nodeID);
 
          if (durable)
          {
@@ -1558,7 +1569,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          Binding binding = postOffice.removeBinding(name);
 
-         if (binding == null || !binding.isQueueBinding())
+         if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
          {
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
@@ -1613,7 +1624,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          Binding binding = postOffice.getBinding(name);
 
-         if (binding != null && binding.isQueueBinding())
+         if (binding != null && binding.getType() == BindingType.LOCAL_QUEUE)
          {
             Queue queue = (Queue)binding.getBindable();
 
@@ -1674,7 +1685,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
             for (Binding binding : bindings.getBindings())
             {
-               if (binding.isQueueBinding())
+               if (binding.getType() == BindingType.LOCAL_QUEUE)
                {
                   names.add(binding.getUniqueName());
                }

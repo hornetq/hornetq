@@ -114,7 +114,7 @@
 				<xsd:element name="bridge" type="bridgeType"
 					maxOccurs="unbounded" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="cluster" type="clusterType"
+				<xsd:element name="cluster-connection" type="clusterConnectionType"
 					maxOccurs="unbounded" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="paging-max-threads" type="xsd:int"
@@ -171,8 +171,6 @@
 	</xsd:element>
 
 	<xsd:element name="clustered" type="xsd:boolean"></xsd:element>
-
-
 
 	<xsd:element name="local-bind-address" type="xsd:string"></xsd:element>
 
@@ -300,7 +298,7 @@
 		<xsd:attribute name="name" type="xsd:string" use="optional"></xsd:attribute>
 	</xsd:complexType>
 
-	<xsd:complexType name="bridgeType">
+	<xsd:complexType name="bridgeType">	   
 		<xsd:sequence>
 			<xsd:element name="queue-name" type="xsd:string"
 				maxOccurs="1" minOccurs="1">
@@ -348,15 +346,56 @@
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:choice>
+		</xsd:sequence>	
+		<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>	
+	</xsd:complexType>
+	
+   <xsd:complexType name="clusterConnectionType">      
+		<xsd:sequence>
+			<xsd:element name="address" type="xsd:string"
+				maxOccurs="1" minOccurs="1">
+			</xsd:element>
+			<xsd:element name="retry-interval" type="xsd:long"
+				maxOccurs="1" minOccurs="0">
+			</xsd:element>
+			<xsd:element name="retry-interval-multiplier"
+				type="xsd:double" maxOccurs="1" minOccurs="0">
+			</xsd:element>
+			<xsd:element name="max-retries-before-failover"
+				type="xsd:int" maxOccurs="1" minOccurs="0">
+			</xsd:element>
+			<xsd:element name="max-retries-after-failover"
+				type="xsd:int" maxOccurs="1" minOccurs="0">
+			</xsd:element>
+			<xsd:element name="use-duplicate-detection"
+				type="xsd:boolean" maxOccurs="1" minOccurs="0">
+			</xsd:element>
+			<xsd:element name="forward-when-no-consumers"
+				type="xsd:boolean" maxOccurs="1" minOccurs="0">
+			</xsd:element>
+			<xsd:element name="max-hops"
+				type="xsd:int" maxOccurs="1" minOccurs="0">
+			</xsd:element>
+			
+			<xsd:choice>
+				<xsd:element name="connector-ref"
+					type="connector-refType" minOccurs="1" maxOccurs="unbounded">
+				</xsd:element>
+				<xsd:element name="discovery-group-ref" minOccurs="1"
+					maxOccurs="1">
+					<xsd:complexType>
+						<xsd:attribute name="discovery-group-name"
+							type="xsd:IDREF" use="required">
+						</xsd:attribute>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:choice>
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
 	</xsd:complexType>
 
-	<xsd:complexType name="divertType">
+	<xsd:complexType name="divertType">	   
 		<xsd:sequence>
-			<xsd:element name="unique-name" type="xsd:string"
-				maxOccurs="1" minOccurs="1">
-			</xsd:element>
 			<xsd:element name="routing-name" type="xsd:string"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
@@ -375,8 +414,8 @@
 			<xsd:element name="exclusive" type="xsd:boolean"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
-		</xsd:sequence>
-		<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+		</xsd:sequence>	
+		<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>	
 	</xsd:complexType>
 
 	<xsd:simpleType name="journalType">
@@ -395,12 +434,5 @@
 	<xsd:complexType name="filterType">
 		<xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
 	</xsd:complexType>
-
-	<xsd:complexType name="clusterType">
-		<xsd:sequence>
-			<xsd:any></xsd:any>
-		</xsd:sequence>
-	</xsd:complexType>
-
 
 </xsd:schema>

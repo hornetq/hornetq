@@ -33,6 +33,57 @@ package org.jboss.messaging.core.postoffice;
  *
  */
 public enum BindingType
-{
-   QUEUE, LINK;
+{   
+   LOCAL_QUEUE, REMOTE_QUEUE, DIVERT;
+     
+   public static final int LOCAL_QUEUE_INDEX = 0;
+   
+   public static final int REMOTE_QUEUE_INDEX = 1;
+   
+   public static final int DIVERT_INDEX = 2;
+   
+   public static BindingType fromOrdinal(final int index)
+   {
+      switch (index)
+      {
+         case LOCAL_QUEUE_INDEX:
+         {
+            return BindingType.LOCAL_QUEUE;
+         }
+         case REMOTE_QUEUE_INDEX:
+         {
+            return BindingType.REMOTE_QUEUE;
+         }
+         case DIVERT_INDEX:
+         {
+            return BindingType.DIVERT;
+         }
+         default:
+         {
+            throw new IllegalArgumentException("Invalid index " + index);
+         }
+      }
+   }
+   
+   public int toInt()
+   {
+      if (this.equals(BindingType.LOCAL_QUEUE))
+      {
+         return LOCAL_QUEUE_INDEX;
+      }
+      else if (this.equals(BindingType.REMOTE_QUEUE))
+      {
+         return REMOTE_QUEUE_INDEX;
+      }
+      else if (this.equals(BindingType.DIVERT))
+      {
+         return DIVERT_INDEX;
+      }
+      else
+      {
+         throw new IllegalArgumentException("Cannot convert");
+      }
+   }
+   
+  
 }

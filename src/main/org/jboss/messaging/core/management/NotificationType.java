@@ -23,8 +23,10 @@
 
 package org.jboss.messaging.core.management;
 
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:fox@redhat.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
@@ -32,4 +34,83 @@ package org.jboss.messaging.core.management;
 public enum NotificationType
 {
    BINDING_ADDED, BINDING_REMOVED, ADDRESS_ADDED, ADDRESS_REMOVED, CONSUMER_CREATED, CONSUMER_CLOSED;
+   
+   public static final int BINDING_ADDED_INDEX = 0;
+   
+   public static final int BINDING_REMOVED_INDEX = 1;
+   
+   public static final int ADDRESS_ADDED_INDEX = 2;
+   
+   public static final int ADDRESS_REMOVED_INDEX = 3;
+   
+   public static final int CONSUMER_CREATED_INDEX = 4;
+   
+   public static final int CONSUMER_CLOSED_INDEX = 5;
+      
+   public static NotificationType fromInt(final int index)
+   {
+      switch (index)
+      {
+         case BINDING_ADDED_INDEX:
+         {
+            return NotificationType.BINDING_ADDED;
+         }
+         case BINDING_REMOVED_INDEX:
+         {
+            return NotificationType.BINDING_REMOVED;
+         }
+         case ADDRESS_ADDED_INDEX:
+         {
+            return NotificationType.ADDRESS_ADDED;
+         }
+         case ADDRESS_REMOVED_INDEX:
+         {
+            return NotificationType.ADDRESS_REMOVED;
+         }
+         case CONSUMER_CREATED_INDEX:
+         {
+            return NotificationType.CONSUMER_CREATED;
+         }
+         case CONSUMER_CLOSED_INDEX:
+         {
+            return NotificationType.CONSUMER_CLOSED;
+         }
+         default:
+         {
+            throw new IllegalArgumentException("Invalid index " + index);
+         }
+      }
+   }
+   
+   public int toInt()
+   {
+      if (this.equals(NotificationType.BINDING_ADDED))
+      {
+         return BINDING_ADDED_INDEX;
+      }
+      else if (this.equals(NotificationType.BINDING_REMOVED))
+      {
+         return BINDING_REMOVED_INDEX;
+      }
+      else if (this.equals(NotificationType.ADDRESS_ADDED))
+      {
+         return ADDRESS_ADDED_INDEX;
+      }
+      else if (this.equals(NotificationType.ADDRESS_REMOVED))
+      {
+         return ADDRESS_REMOVED_INDEX;
+      }
+      else if (this.equals(NotificationType.CONSUMER_CREATED))
+      {
+         return CONSUMER_CREATED_INDEX;
+      }
+      else if (this.equals(NotificationType.CONSUMER_CLOSED))
+      {
+         return CONSUMER_CLOSED_INDEX;
+      }
+      else
+      {
+         throw new IllegalArgumentException("Cannot convert");
+      }
+   }
 }

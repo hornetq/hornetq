@@ -41,6 +41,8 @@ import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
@@ -62,7 +64,6 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TypedProperties;
-import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * Concrete implementation of a ClientConsumer.
@@ -94,8 +95,6 @@ public class ServerConsumerImpl implements ServerConsumer
    private final long id;
 
    private final Queue messageQueue;
-   
-   private final SimpleString bindingAddress;
 
    private final Filter filter;
 
@@ -133,17 +132,16 @@ public class ServerConsumerImpl implements ServerConsumer
    private volatile boolean closed;
 
    private final boolean preAcknowledge;
-   
+
    private final ManagementService managementService;
-   
-   private final SimpleString nodeID;
+
+   private final Binding binding;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerConsumerImpl(final long id,
                              final ServerSession session,
-                             final SimpleString bindingAddress,
-                             final Queue messageQueue,
+                             final QueueBinding binding,
                              final Filter filter,
                              final boolean started,
                              final boolean browseOnly,
@@ -152,18 +150,17 @@ public class ServerConsumerImpl implements ServerConsumer
                              final Channel channel,
                              final boolean preAcknowledge,
                              final Executor executor,
-                             final ManagementService managementService,
-                             final SimpleString nodeID)
+                             final ManagementService managementService)
    {
       this.id = id;
-
-      this.messageQueue = messageQueue;
-      
-      this.bindingAddress = bindingAddress;
 
       this.filter = filter;
 
       this.session = session;
+
+      this.binding = binding;
+
+      this.messageQueue = binding.getQueue();
 
       this.executor = executor;
 
@@ -178,12 +175,10 @@ public class ServerConsumerImpl implements ServerConsumer
       this.preAcknowledge = preAcknowledge;
 
       this.pagingManager = pagingManager;
-      
-      this.managementService = managementService;
-      
-      this.nodeID = nodeID;
 
-      messageQueue.addConsumer(this);
+      this.managementService = managementService;
+
+      binding.getQueue().addConsumer(this);
 
       minLargeMessageSize = session.getMinLargeMessageSize();
    }
@@ -197,10 +192,10 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
-   {      
+   {
       return doHandle(ref);
    }
-   
+
    public Filter getFilter()
    {
       return filter;
@@ -293,16 +288,22 @@ public class ServerConsumerImpl implements ServerConsumer
       }
 
       tx.rollback();
-      
+
       if (!browseOnly)
       {
          TypedProperties props = new TypedProperties();
-         
-         props.putStringProperty(ManagementHelper.HDR_QUEUE_NAME, messageQueue.getName());
-         props.putStringProperty(ManagementHelper.HDR_ORIGINATING_NODE, nodeID);
-         
+
+         props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
+
+         props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+
+         props.putStringProperty(ManagementHelper.HDR_FILTERSTRING,
+                                 filter == null ? null : filter.getFilterString());
+
+         props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
+
          Notification notification = new Notification(NotificationType.CONSUMER_CLOSED, props);
-         
+
          managementService.sendNotification(notification);
       }
    }
@@ -497,15 +498,14 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Private --------------------------------------------------------------------------------------
 
-   private MessageReference removeReferenceOnBackup(long id) throws Exception
+   private MessageReference removeReferenceOnBackup(final long id) throws Exception
    {
-
       // most of the times, the remove will work ok, so we first try it without any locks
       MessageReference ref = messageQueue.removeReferenceWithID(id);
 
       if (ref == null)
       {
-         PagingStore store = pagingManager.getPageStore(bindingAddress);
+         PagingStore store = pagingManager.getPageStore(binding.getAddress());
 
          while (true)
          {
@@ -584,7 +584,7 @@ public class ServerConsumerImpl implements ServerConsumer
       }
 
       lock.lock();
-
+      
       try
       {
 
@@ -636,7 +636,7 @@ public class ServerConsumerImpl implements ServerConsumer
                // we must hold one reference, or the file will be deleted before it could be delivered
                message.incrementRefCount();
             }
-            
+
             // With pre-ack, we ack *before* sending to the client
             ref.getQueue().acknowledge(ref);
          }
@@ -797,7 +797,7 @@ public class ServerConsumerImpl implements ServerConsumer
                return false;
             }
             SessionReceiveMessage initialMessage;
-            
+
             if (sentFirstMessage)
             {
                initialMessage = null;
@@ -810,9 +810,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
                pendingLargeMessage.encodeProperties(headerBuffer);
 
-               initialMessage = new SessionReceiveMessage(id,
-                                                                                headerBuffer.array(),
-                                                                                ref.getDeliveryCount() + 1);
+               initialMessage = new SessionReceiveMessage(id, headerBuffer.array(), ref.getDeliveryCount() + 1);
             }
 
             int precalculateAvailableCredits;
@@ -827,17 +825,16 @@ public class ServerConsumerImpl implements ServerConsumer
                precalculateAvailableCredits = 0;
             }
 
-
             if (initialMessage != null)
             {
                channel.send(initialMessage);
-   
+
                if (availableCredits != null)
                {
                   precalculateAvailableCredits -= initialMessage.getRequiredBufferSize();
                }
             }
-            
+
             while (positionPendingLargeMessage < sizePendingLargeMessage)
             {
                if (precalculateAvailableCredits <= 0)
@@ -890,11 +887,11 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                if (pendingLargeMessage.decrementRefCount() == 0)
                {
-                  // On pre-acks for Large messages, the decrement was deferred to large-message, hence we need to 
+                  // On pre-acks for Large messages, the decrement was deferred to large-message, hence we need to
                   // subtract the size inside largeMessage
                   try
                   {
-                     PagingStore store = pagingManager.getPageStore(bindingAddress);
+                     PagingStore store = pagingManager.getPageStore(binding.getAddress());
                      store.addSize(-pendingLargeMessage.getMemoryEstimate());
                   }
                   catch (Exception e)

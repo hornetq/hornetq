@@ -77,8 +77,9 @@ public class ConsumerTest extends UnitTestCase
 
    public void testSimpleConsumerBrowser() throws Exception
    {
-
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setBlockOnNonPersistentSend(true);
 
       ClientSession session = sf.createSession(false, true, true);
 

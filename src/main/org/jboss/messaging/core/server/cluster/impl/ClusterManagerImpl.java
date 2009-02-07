@@ -468,7 +468,10 @@ public class ClusterManagerImpl implements ClusterManager
 
          clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
-                                                       config.getBridgeConfig(),
+                                                       config.getRetryInterval(),
+                                                       config.getRetryIntervalMultiplier(),
+                                                       config.getMaxRetriesBeforeFailover(),
+                                                       config.getMaxRetriesAfterFailover(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        executorFactory,
@@ -476,7 +479,8 @@ public class ClusterManagerImpl implements ClusterManager
                                                        postOffice,
                                                        scheduledExecutor,
                                                        queueFactory,
-                                                       connectors,
+                                                       connectors,                                                  
+                                                       config.getMaxHops(),
                                                        nodeID);
       }
       else
@@ -491,7 +495,10 @@ public class ClusterManagerImpl implements ClusterManager
 
          clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
-                                                       config.getBridgeConfig(),
+                                                       config.getRetryInterval(),
+                                                       config.getRetryIntervalMultiplier(),
+                                                       config.getMaxRetriesBeforeFailover(),
+                                                       config.getMaxRetriesAfterFailover(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        executorFactory,
@@ -499,7 +506,8 @@ public class ClusterManagerImpl implements ClusterManager
                                                        postOffice,
                                                        scheduledExecutor,
                                                        queueFactory,
-                                                       dg,
+                                                       dg,                                                  
+                                                       config.getMaxHops(),
                                                        nodeID);
       }
 

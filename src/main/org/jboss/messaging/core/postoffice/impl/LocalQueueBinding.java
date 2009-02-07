@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Consumer;
@@ -57,9 +58,9 @@ public class LocalQueueBinding implements QueueBinding
    
    private int id;
    
-   private final SimpleString originatingNodeID;
-      
-   public LocalQueueBinding(final SimpleString address, final Queue queue, final SimpleString originatingNodeID)
+   private SimpleString clusterName;
+   
+   public LocalQueueBinding(final SimpleString address, final Queue queue, final SimpleString nodeID)
    {
       this.address = address;
       
@@ -69,7 +70,7 @@ public class LocalQueueBinding implements QueueBinding
       
       this.name = queue.getName();
       
-      this.originatingNodeID = originatingNodeID;
+      this.clusterName = name.concat(nodeID);
    }
    
    public int getID()
@@ -96,6 +97,11 @@ public class LocalQueueBinding implements QueueBinding
    {
       return queue;
    }
+   
+   public Queue getQueue()
+   {
+      return queue;
+   }
 
    public SimpleString getRoutingName()
    {
@@ -106,15 +112,20 @@ public class LocalQueueBinding implements QueueBinding
    {
       return name;
    }
+   
+   public SimpleString getClusterName()
+   {
+      return clusterName;
+   }
 
    public boolean isExclusive()
    {
       return false;
    }
    
-   public SimpleString getOriginatingNodeID()
+   public int getDistance()
    {
-      return originatingNodeID;
+      return 0;
    }
 
    public boolean isHighAcceptPriority(final ServerMessage message)
@@ -155,6 +166,11 @@ public class LocalQueueBinding implements QueueBinding
    public int consumerCount()
    {
       return queue.getConsumerCount();
+   }
+   
+   public BindingType getType()
+   {
+      return BindingType.LOCAL_QUEUE;
    }
 
 }

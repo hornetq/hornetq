@@ -23,6 +23,8 @@
 
 package org.jboss.messaging.core.postoffice;
 
+import org.jboss.messaging.core.server.Queue;
+
 /**
  * A QueueBinding
  *
@@ -35,4 +37,6 @@ package org.jboss.messaging.core.postoffice;
 public interface QueueBinding extends Binding
 {
    int consumerCount();
+   
+   Queue getQueue();
 }
