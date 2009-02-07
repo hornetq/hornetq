@@ -95,6 +95,8 @@ public interface Message
    // Properties
    // ------------------------------------------------------------------
    
+   TypedProperties getProperties();
+   
    void putBooleanProperty(SimpleString key, boolean value);
    
    void putByteProperty(SimpleString key, byte value);

@@ -160,7 +160,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         // log.info("binding count " + bindingCount + " consumer Count " + totConsumers);
+         // log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -417,41 +417,47 @@ public class ClusterTestBase extends ServiceTestBase
    protected void verifyReceiveRoundRobinInSomeOrder(int numMessages, int... consumerIDs) throws Exception
    {
       Map<Integer, Integer> countMap = new HashMap<Integer, Integer>();
-      
+
       Set<Integer> counts = new HashSet<Integer>();
+
+      for (int i = 0; i < consumerIDs.length; i++)
+      {
+         ConsumerHolder holder = consumers[consumerIDs[i]];
+
+         if (holder == null)
+         {
+            throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
+         }
+
+         ClientMessage message;
+         do
+         {
+            message = holder.consumer.receive(200);
+
+            if (message != null)
+            {
+               int count = (Integer)message.getProperty(COUNT_PROP);
+
+               Integer prevCount = countMap.get(i);
+
+               if (prevCount != null)
+               {
+                  assertTrue(count == prevCount + consumerIDs.length);
+               }
+
+               assertFalse(counts.contains(count));
+
+               counts.add(count);
+
+               countMap.put(i, count);
+            }
+         }
+         while (message != null);
+      }
 
       for (int i = 0; i < numMessages; i++)
       {
-         for (int j = 0; j < consumerIDs.length; j++)
-         {
-            ConsumerHolder holder = consumers[consumerIDs[j]];
-
-            if (holder == null)
-            {
-               throw new IllegalArgumentException("No consumer at " + consumerIDs[j]);
-            }
-
-            ClientMessage message = holder.consumer.receive(500);
-
-            assertNotNull("consumer " + consumerIDs[j] + " did not receive message", message);
-
-            int count = (Integer)message.getProperty(COUNT_PROP);
-
-            Integer prevCount = countMap.get(j);
-
-            if (prevCount != null)
-            {
-               assertTrue(count == prevCount + consumerIDs.length);
-            }
-            
-            assertFalse(counts.contains(count));
-            
-            counts.add(count);
-
-            countMap.put(j, count);
-
-            i++;
-         }
+         assertTrue(counts.contains(i));
       }
    }
 

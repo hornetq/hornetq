@@ -379,6 +379,11 @@ public abstract class MessageImpl implements Message
       return properties.getPropertyNames();
    }
 
+   public TypedProperties getProperties()
+   {
+      return this.properties;
+   }
+      
    // Body
    // -------------------------------------------------------------------------------------
 
@@ -398,11 +403,6 @@ public abstract class MessageImpl implements Message
 
    // Protected -----------------------------------------------------
 
-   protected TypedProperties getProperties()
-   {
-      return this.properties;
-   }
-   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

@@ -37,8 +37,9 @@ import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -74,6 +75,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
+   
+   private final ManagementService managementService;
 
    private final SimpleString name;
 
@@ -119,6 +122,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final ExecutorFactory executorFactory,
                                 final StorageManager storageManager,
                                 final PostOffice postOffice,
+                                final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final QueueFactory queueFactory,
                                 final List<Pair<TransportConfiguration, TransportConfiguration>> connectors,            
@@ -146,6 +150,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.storageManager = storageManager;
 
       this.postOffice = postOffice;
+      
+      this.managementService = managementService;
 
       this.discoveryGroup = null;
 
@@ -174,6 +180,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final ExecutorFactory executorFactory,
                                 final StorageManager storageManager,
                                 final PostOffice postOffice,
+                                final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final QueueFactory queueFactory,
                                 final DiscoveryGroup discoveryGroup,                               
@@ -197,6 +204,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.storageManager = storageManager;
 
       this.postOffice = postOffice;
+      
+      this.managementService = managementService;
 
       this.scheduledExecutor = scheduledExecutor;
 
@@ -526,6 +535,18 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    
                   bindings.put(clusterName, binding);
    
+                  if (postOffice.getBinding(clusterName) != null)
+                  {
+                     //Sanity check - this means the binding has already been added via another bridge, probably max hops is too high
+                     //or there are multiple cluster connections for the same address
+                     
+                     log.warn("Remoting queue binding " + clusterName + " has already been bound in the post office. Most likely cause for this is you have a loop " +
+                              "in your cluster due to cluster max-hops being too large or you have multiple cluster connections to the same nodes using overlapping addresses");
+                     
+                     return;
+                  }
+                  
+                  
                   postOffice.addBinding(binding);
    
                   Bindings theBindings = postOffice.getBindingsForAddress(queueAddress);
@@ -574,6 +595,11 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    
                   binding.addConsumer(filterString);
                   
+                  //Need to propagate the consumer add
+                  Notification notification = new Notification(ntype, message.getProperties());
+                  
+                  managementService.sendNotification(notification);
+                  
                   break;
                }
                case NotificationType.CONSUMER_CLOSED_INDEX:
@@ -595,6 +621,11 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                   }
    
                   binding.removeConsumer(filterString);
+                  
+                  //Need to propagate the consumer close
+                  Notification notification = new Notification(ntype, message.getProperties());
+                  
+                  managementService.sendNotification(notification);
                   
                   break;
                }
