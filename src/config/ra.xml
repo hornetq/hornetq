@@ -250,5 +250,19 @@
          <reauthentication-support>false</reauthentication-support>
       </outbound-resourceadapter>
 
+      <inbound-resourceadapter>
+         <messageadapter>
+            <messagelistener>
+               <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
+               <activationspec>
+                  <activationspec-class>org.jboss.messaging.ra.inflow.JBMActivationSpec</activationspec-class>
+                  <required-config-property>
+                      <config-property-name>destination</config-property-name>
+                  </required-config-property>
+               </activationspec>
+            </messagelistener>
+         </messageadapter>
+      </inbound-resourceadapter>
+
    </resourceadapter>
 </connector>

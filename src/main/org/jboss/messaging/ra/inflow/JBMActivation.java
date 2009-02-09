@@ -94,6 +94,9 @@ public class JBMActivation implements ExceptionListener
    /** Is the delivery transacted */
    protected boolean isDeliveryTransacted;
    
+   /** The message handler pool */
+   protected JBMMessageHandlerPool pool;
+
    /** The TransactionManager */
    protected TransactionManager tm;
    
@@ -342,7 +345,7 @@ public class JBMActivation implements ExceptionListener
          if (ctx != null)
             ctx.close();
       }
-      setupSessionPool();
+      setupPool();
       
       log.debug("Setup complete " + this);
    }
@@ -354,7 +357,7 @@ public class JBMActivation implements ExceptionListener
    {
       log.debug("Tearing down " + spec);
 
-      teardownSessionPool();
+      teardownPool();
       teardownConnection();
       teardownDestination();
 
@@ -583,20 +586,27 @@ public class JBMActivation implements ExceptionListener
    }
    
    /**
-    * Setup the server session pool
+    * Setup the pool
     * @throws Exception for any error
     */
-   protected void setupSessionPool() throws Exception
+   protected void setupPool() throws Exception
    {
+      pool = new JBMMessageHandlerPool(this);
+      log.debug("Created pool " + pool);
+
+      log.debug("Starting pool " + pool);
+      pool.start();
+      log.debug("Started pool " + pool);
+
       log.debug("Starting delivery " + connection);
       connection.start();
       log.debug("Started delivery " + connection);
    }
    
    /**
-    * Teardown the server session pool
+    * Teardown the pool
     */
-   protected void teardownSessionPool()
+   protected void teardownPool()
    {
       try
       {
@@ -610,6 +620,20 @@ public class JBMActivation implements ExceptionListener
       {
          log.debug("Error stopping delivery " + connection, t);
       }
+
+      try
+      {
+         if (pool != null)
+         {
+            log.debug("Stopping the pool " + pool);
+            pool.stop();
+         }
+      }
+      catch (Throwable t)
+      {
+         log.debug("Error clearing the pool " + pool, t);
+      }
+      pool = null;
    }
 
    /**
@@ -649,6 +673,8 @@ public class JBMActivation implements ExceptionListener
          buffer.append(" destination=").append(destination);
       if (connection != null)
          buffer.append(" connection=").append(connection);
+      if (pool != null)
+         buffer.append(" pool=").append(pool.getClass().getName());
       buffer.append(" transacted=").append(isDeliveryTransacted);
       buffer.append(')');
       return buffer.toString();
