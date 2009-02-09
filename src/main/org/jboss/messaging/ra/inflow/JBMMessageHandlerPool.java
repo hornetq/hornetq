@@ -114,6 +114,7 @@ public class JBMMessageHandlerPool
 
       synchronized (activeSessions)
       {
+         handler.teardown();
          activeSessions.remove(handler);
          
          if (!stopped.get())

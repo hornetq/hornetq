@@ -153,6 +153,9 @@ public class JBMMessageHandler implements MessageListener
       
       endpoint = endpointFactory.createEndpoint(xaResource);
 
+      // Create the transaction demarcation strategy
+      txnStrategy = createTransactionDemarcation();
+
       // Set the message listener
       messageConsumer.setMessageListener(this);
    }
@@ -205,16 +208,6 @@ public class JBMMessageHandler implements MessageListener
       if (trace)
          log.trace("onMessage(" + message + ")");
       
-      try
-      {
-         txnStrategy = createTransactionDemarcation();
-      } 
-      catch (Throwable t)
-      {
-         log.error("Error creating transaction demarcation. Cannot continue.");
-         return;
-      }
-
       try
       {
          endpoint.beforeDelivery(JBMActivation.ONMESSAGE);
