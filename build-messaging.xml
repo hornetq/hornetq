@@ -46,7 +46,7 @@
    <property name="messaging.version.major" value="2"/>
    <property name="messaging.version.minor" value="0"/>
    <property name="messaging.version.micro" value="0"/>
-   <property name="messaging.version.suffix" value="beta1"/>
+   <property name="messaging.version.suffix" value="BETA1-SNAPSHOT"/>
    <property name="messaging.version.tag" value="beta1"/>
    <property name="messaging.version.revision" value="0"/>
    <property name="messaging.version.incrementing" value="101"/>
@@ -109,6 +109,7 @@
    <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
    <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
    <property name="build.distro.licenses.dir" value="${build.distro.dir}/licenses"/>
+   <property name="artifacts.dir" value="${build.dir}/artifacts"/>
 
    <!--default clustering server settings-->   
    <property name="jbm.remoting.netty.port" value="5445"/>
@@ -983,6 +984,79 @@
          <group title="JMS Facade" packages="org.jboss.jms.*"/>
          <group title="Messaging Core" packages="org.jboss.messaging.*"/>
       </javadoc>
+   </target>
+
+   <target name="artifacts" depends="jar">
+      <delete dir="${artifacts.dir}"/>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-core"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-core-client"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-transports"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-jms"/>
+      </antcall>
+
+       <antcall target="artifact">
+         <param name="artifact.name" value="jbm-jbossas-security"/>     
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-logging"/>     
+      </antcall>
+
+      <property name="build.resources.dir" value="${build.dir}/resources"/>
+      <mkdir dir="${build.resources.dir}"/>
+      <copy todir="${build.resources.dir}">
+         <fileset dir="${src.config.dir}">
+            <exclude name="*cluster*"/>
+            <exclude name="*standalone*"/>
+            <exclude name="*.properties"/>
+            <exclude name="*multiplexer*"/>
+            <exclude name="ra.xml"/>
+         </fileset>
+      </copy>
+      <jar jarfile="${build.jars.dir}/jbm-resources.jar">
+         <fileset dir="${build.core.classes.dir}" includes="**"/>
+      </jar>
+
+       <antcall target="artifact">
+         <param name="artifact.name" value="jbm-resources"/>     
+      </antcall>
+
+   </target>
+
+   <target name="artifact">
+      <echo message="${artifact.name}"/>
+      <property name="artifacts.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
+      <property name="artifact.dir" value="${artifacts.dir}/${artifact.name}/${artifacts.version}"/>
+      <mkdir dir="${artifact.dir}"/>
+      <copy tofile="${artifact.dir}/${artifact.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.jar"
+            file="${build.jars.dir}/${artifact.name}.jar">
+        <!-- <globmapper from="jbm-core" to="jbm-core-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}*"/>-->
+      </copy>
+      <copy file="pom.xml" tofile="${artifact.dir}/${artifact.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.pom">
+         <filterset>
+            <filter token="artifactid" value="${artifact.name}"/>
+            <filter token="version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
+         </filterset>
+      </copy>
+      <checksum algorithm="MD5">
+         <fileset dir="${artifact.dir}"/>
+      </checksum>
+       <checksum algorithm="SHA1">
+         <fileset dir="${artifact.dir}">
+            <exclude name="*.MD5"/>
+         </fileset>
+      </checksum>
    </target>
 
    <!-- test targets -->

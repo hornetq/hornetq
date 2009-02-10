@@ -172,6 +172,10 @@
       <ant antfile="build-messaging.xml" target="distro"/>
    </target>
 
+    <target name="artifacts" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="artifacts"/>
+   </target>
+
 
    <!-- test targets -->
 
