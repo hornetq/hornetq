@@ -176,8 +176,6 @@ public class MessagingServerImpl implements MessagingServer
 
       nodeID = UUIDGenerator.getInstance().generateSimpleStringUUID();
 
-      log.info("*** Starting " + this.nodeID);
-
       asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
 
       executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
@@ -609,8 +607,6 @@ public class MessagingServerImpl implements MessagingServer
 
       checkActivate(connection);
 
-      log.info("Got reattach session " + this.nodeID + " session is " + session);
-
       if (session == null)
       {
          return new ReattachSessionResponseMessage(-1, true);
@@ -721,7 +717,7 @@ public class MessagingServerImpl implements MessagingServer
                                                                                                                         listener);
 
          listener.conn = replicatingConnection;
-
+    
          replicatingConnection.startPinger();
 
          return replicatingConnection;
@@ -950,7 +946,6 @@ public class MessagingServerImpl implements MessagingServer
                                                               connection,
                                                               storageManager,
                                                               postOffice,
-                                                              addressSettingsRepository,
                                                               resourceManager,
                                                               securityStore,
                                                               executorFactory.getExecutor(),
@@ -1009,30 +1004,32 @@ public class MessagingServerImpl implements MessagingServer
          queue.activateNow(asyncDeliveryPool);
       }
    }
-
-   private static class NoCacheConnectionLifeCycleListener implements ConnectionLifeCycleListener
+   
+   private class NoCacheConnectionLifeCycleListener implements ConnectionLifeCycleListener
    {
       private RemotingConnection conn;
-
+      
       public void connectionCreated(final Connection connection)
-      {
+      {         
       }
 
       public void connectionDestroyed(final Object connectionID)
-      {
+      {   
          if (conn != null)
          {
             conn.destroy();
-         }
+         }                 
       }
 
       public void connectionException(final Object connectionID, final MessagingException me)
-      {
+      {                   
+         backupConnectorFactory = null;
+         
          if (conn != null)
          {
             conn.fail(me);
          }
-      }
+      }      
    }
 
 }

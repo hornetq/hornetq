@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.config.cluster;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.jboss.messaging.util.Pair;
 
@@ -41,16 +40,12 @@ public class BridgeConfiguration implements Serializable
    private static final long serialVersionUID = -1057244274380572226L;
 
    private final String name;
-   
+
    private final String queueName;
 
    private final String forwardingAddress;
 
    private final String filterString;
-
-   private final int maxBatchSize;
-
-   private final long maxBatchTime;
 
    private final Pair<String, String> connectorPair;
 
@@ -72,22 +67,18 @@ public class BridgeConfiguration implements Serializable
                               final String queueName,
                               final String forwardingAddress,
                               final String filterString,
-                              final int maxBatchSize,
-                              final long maxBatchTime,
                               final String transformerClassName,
                               final long retryInterval,
                               final double retryIntervalMultiplier,
                               final int maxRetriesBeforeFailover,
                               final int maxRetriesAfterFailover,
-                              final boolean useDuplicateDetection,                             
+                              final boolean useDuplicateDetection,
                               final Pair<String, String> connectorPair)
    {
       this.name = name;
       this.queueName = queueName;
       this.forwardingAddress = forwardingAddress;
       this.filterString = filterString;
-      this.maxBatchSize = maxBatchSize;
-      this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
@@ -102,22 +93,18 @@ public class BridgeConfiguration implements Serializable
                               final String queueName,
                               final String forwardingAddress,
                               final String filterString,
-                              final int maxBatchSize,
-                              final long maxBatchTime,
                               final String transformerClassName,
                               final long retryInterval,
                               final double retryIntervalMultiplier,
                               final int maxRetriesBeforeFailover,
                               final int maxRetriesAfterFailover,
-                              final boolean useDuplicateDetection,                             
+                              final boolean useDuplicateDetection,
                               final String discoveryGroupName)
    {
       this.name = name;
       this.queueName = queueName;
       this.forwardingAddress = forwardingAddress;
       this.filterString = filterString;
-      this.maxBatchSize = maxBatchSize;
-      this.maxBatchTime = maxBatchTime;
       this.transformerClassName = transformerClassName;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
@@ -127,7 +114,7 @@ public class BridgeConfiguration implements Serializable
       this.connectorPair = null;
       this.discoveryGroupName = discoveryGroupName;
    }
-   
+
    public String getName()
    {
       return name;
@@ -146,16 +133,6 @@ public class BridgeConfiguration implements Serializable
    public String getFilterString()
    {
       return filterString;
-   }
-
-   public int getMaxBatchSize()
-   {
-      return maxBatchSize;
-   }
-
-   public long getMaxBatchTime()
-   {
-      return maxBatchTime;
    }
 
    public String getTransformerClassName()

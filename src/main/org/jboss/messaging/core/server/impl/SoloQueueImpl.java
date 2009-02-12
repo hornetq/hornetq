@@ -64,9 +64,9 @@ public class SoloQueueImpl extends QueueImpl
                     final ScheduledExecutorService scheduledExecutor,
                     final PostOffice postOffice,
                     final StorageManager storageManager,
-                    final HierarchicalRepository<AddressSettings> queueSettingsRepository)
+                    final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
-      super(persistenceID, address, name, filter, durable, temporary, scheduledExecutor, postOffice, storageManager, queueSettingsRepository);
+      super(persistenceID, address, name, filter, durable, temporary, scheduledExecutor, postOffice, storageManager, addressSettingsRepository);
       this.pagingManager  = postOffice.getPagingManager();
       this.storageManager = storageManager;
    }

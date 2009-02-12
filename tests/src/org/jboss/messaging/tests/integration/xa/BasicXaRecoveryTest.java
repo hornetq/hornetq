@@ -53,7 +53,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 {
    private static Logger log = Logger.getLogger(BasicXaRecoveryTest.class);
 
-   private final Map<String, AddressSettings> queueSettings = new HashMap<String, AddressSettings>();
+   private final Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
    private MessagingService messagingService;
 
@@ -73,13 +73,13 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       clearData();
-      queueSettings.clear();
+      addressSettings.clear();
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
 
-      messagingService = createService(true, configuration, queueSettings);
+      messagingService = createService(true, configuration, addressSettings);
 
       // start the server
       messagingService.start();
@@ -250,7 +250,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       pageAddressSettings.setMaxSizeBytes(100 * 1024);
       pageAddressSettings.setPageSizeBytes(10 * 1024);
 
-      queueSettings.put(pageQueue.toString(), pageAddressSettings);
+      addressSettings.put(pageQueue.toString(), pageAddressSettings);
 
       addSettings();
 
@@ -333,7 +333,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       pageAddressSettings.setMaxSizeBytes(100 * 1024);
       pageAddressSettings.setPageSizeBytes(10 * 1024);
 
-      queueSettings.put(pageQueue.toString(), pageAddressSettings);
+      addressSettings.put(pageQueue.toString(), pageAddressSettings);
 
       addSettings();
 
@@ -1213,7 +1213,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession = null;
       messagingService.stop();
       messagingService = null;
-      messagingService = createService(true, configuration, queueSettings);
+      messagingService = createService(true, configuration, addressSettings);
 
       messagingService.start();
       createClients();
@@ -1221,7 +1221,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    private void addSettings()
    {
-      for (Map.Entry<String, AddressSettings> setting : queueSettings.entrySet())
+      for (Map.Entry<String, AddressSettings> setting : addressSettings.entrySet())
       {
          messagingService.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }

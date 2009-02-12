@@ -67,7 +67,7 @@ public class PagingManagerImpl implements PagingManager
 
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
 
-   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final PagingStoreFactory pagingStoreFactory;
 
@@ -89,14 +89,14 @@ public class PagingManagerImpl implements PagingManager
 
    public PagingManagerImpl(final PagingStoreFactory pagingSPI,
                             final StorageManager storageManager,
-                            final HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                            final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                             final long maxGlobalSize,
                             final long defaultPageSize,
                             final boolean syncNonTransactional,
                             final boolean backup)
    {
       pagingStoreFactory = pagingSPI;
-      this.queueSettingsRepository = queueSettingsRepository;
+      this.addressSettingsRepository = addressSettingsRepository;
       this.storageManager = storageManager;
       this.defaultPageSize = defaultPageSize;
       this.maxGlobalSize = maxGlobalSize;
@@ -137,7 +137,7 @@ public class PagingManagerImpl implements PagingManager
     */
    public synchronized void reloadStores() throws Exception
    {
-      List<PagingStore> destinations = pagingStoreFactory.reloadStores(queueSettingsRepository);
+      List<PagingStore> destinations = pagingStoreFactory.reloadStores(addressSettingsRepository);
 
       for (PagingStore store : destinations)
       {
@@ -338,7 +338,7 @@ public class PagingManagerImpl implements PagingManager
 
    private PagingStore newStore(final SimpleString destinationName) throws Exception
    {
-      return pagingStoreFactory.newStore(destinationName, queueSettingsRepository.getMatch(destinationName.toString()));
+      return pagingStoreFactory.newStore(destinationName, addressSettingsRepository.getMatch(destinationName.toString()));
    }
 
    // Inner classes -------------------------------------------------

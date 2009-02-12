@@ -23,6 +23,8 @@
 
 package org.jboss.messaging.tests.integration.cluster.distribution;
 
+import org.jboss.messaging.core.logging.Logger;
+
 /**
  * A NettyOneWayTwoNodeClusterTest
  *
@@ -34,6 +36,8 @@ package org.jboss.messaging.tests.integration.cluster.distribution;
  */
 public class NettyOneWayTwoNodeClusterTest extends OnewayTwoNodeClusterTest
 {
+   private static final Logger log = Logger.getLogger(NettyOneWayTwoNodeClusterTest.class);
+
    protected boolean isNetty()
    {
       return true;
@@ -43,5 +47,7 @@ public class NettyOneWayTwoNodeClusterTest extends OnewayTwoNodeClusterTest
    {
       return false;
    }
+   
+   
 
 }

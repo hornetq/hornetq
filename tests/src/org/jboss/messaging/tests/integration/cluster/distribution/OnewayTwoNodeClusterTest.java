@@ -176,6 +176,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       send(0, "queues.testaddress", 10, false, myFilter);
       verifyReceiveAll(10, 0);
+      this.checkReceive(0);
       verifyNotReceive(0);
       
       send(0, "queues.testaddress", 10, false, null);

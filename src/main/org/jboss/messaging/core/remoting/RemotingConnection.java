@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
+import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
@@ -63,4 +64,6 @@ public interface RemotingConnection extends BufferHandler
    RemotingConnection getReplicatingConnection();
    
    void setReplicatingConnection(RemotingConnection connection);
+   
+   Connection getTransportConnection();
 }

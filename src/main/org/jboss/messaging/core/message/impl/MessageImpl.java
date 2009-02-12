@@ -29,6 +29,7 @@ import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
 
 import java.util.Set;
 
+import org.jboss.messaging.core.client.SendAcknowledgementHandler;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -94,6 +95,7 @@ public abstract class MessageImpl implements Message
 
    private MessagingBuffer body;
    
+  
    // Constructors --------------------------------------------------
 
    protected MessageImpl()
@@ -305,7 +307,7 @@ public abstract class MessageImpl implements Message
 
       return System.currentTimeMillis() - expiration >= 0;
    }
-
+   
    // Properties
    // ---------------------------------------------------------------------------------------
 

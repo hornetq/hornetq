@@ -84,6 +84,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.CommandConfirmationHandler;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
@@ -173,7 +174,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       if (tc == null)
       {
-         throw new IllegalStateException("Failed to connect");
+         return null;
       }
 
       RemotingConnection connection = new RemotingConnectionImpl(tc,
@@ -313,12 +314,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       this.interceptors = interceptors;
 
-      this.replicatingConnection = replicatingConnection;
-
-      if (replicatingConnection != null)
-      {
-         replicatingConnection.addFailureListener(new ReplicatingConnectionFailureListener());
-      }
+      setReplicatingConnection(replicatingConnection);
 
       this.active = active;
 
@@ -355,6 +351,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // RemotingConnection implementation
    // ------------------------------------------------------------
 
+   public Connection getTransportConnection()
+   {
+      return this.transportConnection;
+   }
+   
    public List<FailureListener> getFailureListeners()
    {
       return new ArrayList<FailureListener>(failureListeners);
@@ -424,6 +425,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public void setReplicatingConnection(final RemotingConnection connection)
    {
       this.replicatingConnection = connection;
+      
+      if (replicatingConnection != null)
+      {
+         replicatingConnection.addFailureListener(new ReplicatingConnectionFailureListener());
+      }
    }
 
    /*
@@ -535,6 +541,18 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          frozen = true;
       }
    }
+   
+//   public void resetAllReplicatingChannels()
+//   {      
+//      replicatingConnection = null;
+//      
+//      for (ChannelImpl channel: channels.values())
+//      {
+//         channel.replicatingChannelDead();
+//         
+//         //channel.replicatingChannel = null;
+//      }
+//   }
 
    // Package protected
    // ----------------------------------------------------------------------------
@@ -885,7 +903,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private volatile int lastReceivedCommandID = -1;
 
-      private Channel replicatingChannel;
+      private volatile Channel replicatingChannel;
 
       private volatile RemotingConnectionImpl connection;
 
@@ -914,6 +932,13 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private final Semaphore sendSemaphore;
 
       private int receivedBytes;
+      
+      private CommandConfirmationHandler commandConfirmationHandler;
+      
+      public void setCommandConfirmationHandler(final CommandConfirmationHandler handler)
+      {
+         this.commandConfirmationHandler = handler;
+      }
 
       private ChannelImpl(final RemotingConnectionImpl connection,
                           final long id,
@@ -932,6 +957,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
             replicatingChannel.setHandler(new ReplicatedPacketsConfirmedChannelHandler());
          }
+         
          this.windowSize = windowSize;
 
          this.confWindowSize = (int)(0.75 * windowSize);
@@ -1179,9 +1205,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       public void replicatingChannelDead()
       {
          synchronized (replicationLock)
-         {
+         {   
             replicatingChannel = null;
-
+            
             // Execute all the response actions now
 
             while (true)
@@ -1198,7 +1224,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
             }
 
-            responseActionCount = 0;
+            responseActionCount = 0;                        
          }
       }
 
@@ -1303,19 +1329,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             return;
          }
-
+         
          if (!connection.destroyed && connection.channels.remove(id) == null)
          {
             throw new IllegalArgumentException("Cannot find channel with id " + id + " to close");
          }
-
+         
          if (replicatingChannel != null)
          {
             replicatingChannel.close();
          }
-
+         
          closed = true;
-      }
+      }           
 
       public Channel getReplicatingChannel()
       {
@@ -1461,8 +1487,22 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          final MessagingBuffer buffer = connection.transportConnection.createBuffer(packet.getRequiredBufferSize());
 
          packet.encode(buffer);
-
+         
          connection.transportConnection.write(buffer);
+      }
+      
+      public void flushConfirmations()
+      {
+         if (receivedBytes != 0 && connection.active)
+         {
+            receivedBytes = 0;
+
+            final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
+
+            confirmed.setChannelID(id);
+
+            doWrite(confirmed);            
+         }
       }
 
       public void confirm(final Packet packet)
@@ -1525,6 +1565,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             {
                sizeToFree += packet.getPacketSize();
             }
+            
+            if (commandConfirmationHandler != null)
+            {
+               commandConfirmationHandler.commandConfirmed(packet);
+            }
          }
 
          firstStoredCommandID += numberToClear;
@@ -1532,7 +1577,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          if (sendSemaphore != null)
          {
             sendSemaphore.release(sizeToFree);
-         }
+         }                  
       }
 
       private class ReplicatedPacketsConfirmedChannelHandler implements ChannelHandler
@@ -1623,6 +1668,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       {
          synchronized (RemotingConnectionImpl.this)
          {
+            replicatingConnection = null;
+            
             for (Channel channel : channels.values())
             {
                channel.replicatingChannelDead();

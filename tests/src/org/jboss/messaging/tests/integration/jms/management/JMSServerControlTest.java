@@ -387,7 +387,7 @@ public class JMSServerControlTest extends TestCase
          });
 
          assertTrue(control.closeConnectionsForAddress(remoteAddress));
-
+         
          boolean gotException = exceptionLatch.await(1, TimeUnit.SECONDS);
          assertTrue("did not received the expected JMSException", gotException);
          assertEquals(0, control.listRemoteAddresses().length);

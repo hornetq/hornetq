@@ -114,9 +114,10 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
 
       verifyNotReceive(0, 1, 2, 3, 4);
+      
+      log.info("got here");
    }
    
-
    public void testRoundRobinMultipleQueues() throws Exception
    {
       setupCluster();
@@ -1455,9 +1456,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27);
    }
-   
-   
-   
+         
    private void setupCluster() throws Exception
    {
       setupCluster(false);
@@ -1465,30 +1464,30 @@ public class SymmetricClusterTest extends ClusterTestBase
    
    private void setupCluster(final boolean forwardWhenNoConsumers) throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster0-2", 0, 2, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster0-3", 0, 3, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster0-4", 0, 4, "queues", forwardWhenNoConsumers, 2, isNetty());
+      setupClusterConnection("cluster0-1", 0, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster0-2", 0, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster0-3", 0, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster0-4", 0, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
 
-      setupClusterConnection("cluster1-0", 1, 0, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster1-2", 1, 2, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster1-3", 1, 3, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster1-4", 1, 4, "queues", forwardWhenNoConsumers, 2, isNetty());
+      setupClusterConnection("cluster1-0", 1, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster1-2", 1, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster1-3", 1, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster1-4", 1, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
 
-      setupClusterConnection("cluster2-0", 2, 0, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster2-1", 2, 1, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster2-3", 2, 3, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster2-4", 2, 4, "queues", forwardWhenNoConsumers, 2, isNetty());
+      setupClusterConnection("cluster2-0", 2, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster2-1", 2, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster2-3", 2, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster2-4", 2, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
 
-      setupClusterConnection("cluster3-0", 3, 0, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster3-1", 3, 1, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster3-2", 3, 2, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster3-4", 3, 4, "queues", forwardWhenNoConsumers, 2, isNetty());
+      setupClusterConnection("cluster3-0", 3, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster3-1", 3, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster3-2", 3, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster3-4", 3, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
 
-      setupClusterConnection("cluster4-0", 4, 0, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster4-1", 4, 1, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster4-2", 4, 2, "queues", forwardWhenNoConsumers, 2, isNetty());
-      setupClusterConnection("cluster4-3", 4, 3, "queues", forwardWhenNoConsumers, 2, isNetty());
+      setupClusterConnection("cluster4-0", 4, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster4-1", 4, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster4-2", 4, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster4-3", 4, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
    }
    
 }

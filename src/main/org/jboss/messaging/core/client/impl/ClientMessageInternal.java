@@ -45,5 +45,5 @@ public interface ClientMessageInternal extends ClientMessage
 
    boolean isLargeMessage();
    
-   boolean isFileMessage();
+   boolean isFileMessage();    
 }

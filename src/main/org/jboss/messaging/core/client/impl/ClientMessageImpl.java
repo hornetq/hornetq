@@ -48,6 +48,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
 
    private int flowControlSize = -1;
 
+
    /*
     * Constructor for when reading from network
     */
@@ -129,7 +130,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       return largeMessage;
    }
-   
+
    /**
     * @param largeMessage the largeMessage to set
     */

@@ -51,7 +51,7 @@ public interface JMSManagementService
                       String jndiBinding,
                       PostOffice postOffice,
                       StorageManager storageManager,
-                      HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception;
+                      HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception;
 
    void unregisterQueue(String name) throws Exception;
 
@@ -59,7 +59,7 @@ public interface JMSManagementService
                       String jndiBinding,
                       PostOffice postOffice,
                       StorageManager storageManager,
-                      HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception;
+                      HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception;
 
    void unregisterTopic(String name) throws Exception;
 

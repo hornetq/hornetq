@@ -271,7 +271,7 @@ public interface Server extends Remote
    //void setDefaultRedeliveryDelay(long delay) throws Exception;
    JMSServerManager getJMSServerManager() throws Exception;
 
-   void addQueueSettings(String name, long redeliveryDelay);
+   void addAddressSettings(String name, long redeliveryDelay);
 
-   void removeQueueSettings(String name);
+   void removeAddressSettings(String name);
 }

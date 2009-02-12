@@ -40,10 +40,6 @@ public interface ClientProducer
    
    void send(String address, Message message) throws MessagingException;
 
-   void registerAcknowledgementHandler(AcknowledgementHandler handler);
-   
-   void unregisterAcknowledgementHandler(AcknowledgementHandler handler);
-      
    void close() throws MessagingException;
    
    boolean isClosed();   

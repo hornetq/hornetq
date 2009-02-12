@@ -40,9 +40,11 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.SendAcknowledgementHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.CommandConfirmationHandler;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -65,6 +67,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryRespon
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAForgetMessage;
@@ -104,7 +107,7 @@ import org.jboss.messaging.util.TokenBucketLimiterImpl;
  * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
  *
  */
-public class ClientSessionImpl implements ClientSessionInternal, FailureListener
+public class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
 {
    // Constants ----------------------------------------------------------------------------
 
@@ -171,6 +174,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private volatile boolean started;
 
+   private SendAcknowledgementHandler sendAckHandler;
+
    // Constructors ----------------------------------------------------------------------------
 
    public ClientSessionImpl(final ConnectionManager connectionManager,
@@ -234,32 +239,25 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    // ClientSession implementation
    // -----------------------------------------------------------------
 
-   public void createQueue(final SimpleString address, 
-                           final SimpleString queueName, 
-                           final boolean durable) throws MessagingException
+   public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws MessagingException
    {
       createQueue(address, queueName, durable, false);
    }
 
-   public void createQueue(final String address,
-                           final String queueName,
-                           final boolean durable) throws MessagingException
+   public void createQueue(final String address, final String queueName, final boolean durable) throws MessagingException
    {
       createQueue(toSimpleString(address), toSimpleString(queueName), durable);
    }
-   
-   public void createQueue(final SimpleString address, 
-                           final SimpleString queueName, 
-                           final boolean durable, 
+
+   public void createQueue(final SimpleString address,
+                           final SimpleString queueName,
+                           final boolean durable,
                            final boolean temporary) throws MessagingException
    {
       createQueue(address, queueName, null, durable, temporary);
    }
 
-   public void createQueue(final String address,
-                           final String queueName,
-                           final boolean durable,
-                           final boolean temporary) throws MessagingException
+   public void createQueue(final String address, final String queueName, final boolean durable, final boolean temporary) throws MessagingException
    {
       createQueue(toSimpleString(address), toSimpleString(queueName), durable, temporary);
    }
@@ -276,11 +274,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       channel.sendBlocking(request);
    }
-   
-   public void createQueue(final String address, 
-                           final String queueName, 
-                           final String filterString, 
-                           final boolean durable, 
+
+   public void createQueue(final String address,
+                           final String queueName,
+                           final String filterString,
+                           final boolean durable,
                            final boolean temporary) throws MessagingException
    {
       createQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filterString), durable, temporary);
@@ -292,7 +290,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       channel.sendBlocking(new SessionDeleteQueueMessage(queueName));
    }
-   
+
    public void deleteQueue(final String queueName) throws MessagingException
    {
       deleteQueue(toSimpleString(queueName));
@@ -308,7 +306,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return response;
    }
-   
+
    public SessionBindingQueryResponseMessage bindingQuery(final SimpleString address) throws MessagingException
    {
       checkClosed();
@@ -328,7 +326,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       channel.sendBlocking(request);
    }
-   
+
    public void addDestination(final String address, final boolean durable, final boolean temporary) throws MessagingException
    {
       addDestination(toSimpleString(address), durable, temporary);
@@ -342,7 +340,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       channel.sendBlocking(request);
    }
-   
+
    public void removeDestination(final String address, final boolean durable) throws MessagingException
    {
       removeDestination(toSimpleString(address), durable);
@@ -362,7 +360,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, false);
    }
-   
+
    public ClientConsumer createConsumer(final String queueName, final String filterString) throws MessagingException
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString));
@@ -374,10 +372,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
    }
-   
-   public ClientConsumer createConsumer(final String queueName, 
-                                        final String filterString,
-                                        final boolean browseOnly) throws MessagingException
+
+   public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean browseOnly) throws MessagingException
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString), browseOnly);
    }
@@ -398,7 +394,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return internalCreateConsumer(queueName, filterString, windowSize, browseOnly, null);
    }
-   
+
    public ClientConsumer createConsumer(final String queueName,
                                         final String filterString,
                                         final int windowSize,
@@ -412,7 +408,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createFileConsumer(directory, queueName, null, false);
    }
-   
+
    public ClientConsumer createFileConsumer(final File directory, final String queueName) throws MessagingException
    {
       return createFileConsumer(directory, toSimpleString(queueName));
@@ -424,10 +420,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createFileConsumer(directory, queueName, filterString, consumerWindowSize, consumerMaxRate, false);
    }
-   
-   public ClientConsumer createFileConsumer(final File directory, 
-                                            final String queueName, 
-                                            final String filterString) throws MessagingException
+
+   public ClientConsumer createFileConsumer(final File directory, final String queueName, final String filterString) throws MessagingException
    {
       return createFileConsumer(directory, toSimpleString(queueName), toSimpleString(filterString));
    }
@@ -440,14 +434,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return createFileConsumer(directory, queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
    }
 
-   public ClientConsumer createFileConsumer(final File directory, 
-                                            final String queueName, 
-                                            final String filterString, 
+   public ClientConsumer createFileConsumer(final File directory,
+                                            final String queueName,
+                                            final String filterString,
                                             final boolean browseOnly) throws MessagingException
    {
       return createFileConsumer(directory, toSimpleString(queueName), toSimpleString(filterString), browseOnly);
    }
-   
+
    /*
     * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on the remoting thread.
     * Direct consumers have issues with blocking and failover.
@@ -465,7 +459,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return internalCreateConsumer(queueName, filterString, windowSize, browseOnly, directory);
    }
-   
+
    public ClientConsumer createFileConsumer(final File directory,
                                             final String queueName,
                                             final String filterString,
@@ -473,19 +467,24 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                             final int maxRate,
                                             final boolean browseOnly) throws MessagingException
    {
-      return createFileConsumer(directory, toSimpleString(queueName), toSimpleString(filterString), windowSize, maxRate, browseOnly);
+      return createFileConsumer(directory,
+                                toSimpleString(queueName),
+                                toSimpleString(filterString),
+                                windowSize,
+                                maxRate,
+                                browseOnly);
    }
 
    public ClientProducer createProducer() throws MessagingException
    {
       return createProducer((SimpleString)null);
    }
-   
+
    public ClientProducer createProducer(final SimpleString address) throws MessagingException
    {
       return createProducer(address, producerMaxRate);
    }
-   
+
    public ClientProducer createProducer(final String address) throws MessagingException
    {
       return createProducer(toSimpleString(address));
@@ -495,7 +494,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createProducer(address, maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
    }
-   
+
    public ClientProducer createProducer(final String address, final int rate) throws MessagingException
    {
       return createProducer(toSimpleString(address), rate);
@@ -760,13 +759,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          closeChildren();
 
-         channel.sendBlocking(new SessionCloseMessage());
+         channel.sendBlocking(new SessionCloseMessage());                  
       }
       catch (Throwable ignore)
       {
          // Session close should always return without exception
       }
-
+      
       doCleanup();
    }
 
@@ -776,24 +775,33 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-
+      
       cleanUpChildren();
 
       doCleanup();
    }
 
+   public void setSendAcknowledgementHandler(final SendAcknowledgementHandler handler)
+   {
+      this.channel.setCommandConfirmationHandler(this);
+
+      this.sendAckHandler = handler;
+   }
+
    // Needs to be synchronized to prevent issues with occurring concurrently with close()
-   public synchronized void handleFailover(final RemotingConnection backupConnection)
+   public synchronized boolean handleFailover(final RemotingConnection backupConnection)
    {
       if (closed)
       {
-         return;
+         return true;
       }
+
+      boolean ok = false;
 
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
       channel.lock();
-      
+
       try
       {
          channel.transferConnection(backupConnection);
@@ -811,6 +819,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          if (!response.isRemoved())
          {
             channel.replayCommands(response.getLastReceivedCommandID());
+
+            ok = true;
          }
          else
          {
@@ -829,6 +839,25 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
       channel.send(new SessionFailoverCompleteMessage(name));
+
+      return ok;
+   }
+   
+   public void returnBlocking()
+   {
+      channel.returnBlocking();
+   }
+
+   // CommandConfirmationHandler implementation ------------------------------------
+
+   public void commandConfirmed(final Packet packet)
+   {
+      if (packet.getType() == PacketImpl.SESS_SEND)
+      {
+         SessionSendMessage ssm = (SessionSendMessage)packet;
+
+         sendAckHandler.sendAcknowledged(ssm.getClientMessage());
+      }
    }
 
    // XAResource implementation
@@ -1064,9 +1093,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void start(final Xid xid, final int flags) throws XAException
    {
       checkXA();
-      if(state != null)
+      if (state != null)
       {
-         log.error("XA operation failed Cannot start, session is already doing work in a transaction " + state.xid + "code:" + XAException.XAER_PROTO);
+         log.error("XA operation failed Cannot start, session is already doing work in a transaction " + state.xid +
+                   "code:" +
+                   XAException.XAER_PROTO);
          throw new XAException(XAException.XAER_PROTO);
       }
       try
@@ -1232,7 +1263,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return producer;
    }
-   
+
    private void checkXA() throws XAException
    {
       if (!xa)
@@ -1309,6 +1340,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    class ClientXAState
    {
       final Xid xid;
+
       int state;
 
       public ClientXAState(Xid xid)

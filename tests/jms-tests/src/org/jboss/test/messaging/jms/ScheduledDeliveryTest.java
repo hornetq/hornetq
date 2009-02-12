@@ -232,7 +232,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
    	try
    	{
          long delay = 3000;
-         addQueueSettings(qName, delay);
+         addAddressSettings(qName, delay);
          createQueue(qName);
          queue1 = (Queue) getInitialContext().lookup("/queue/" + qName);
 
@@ -243,7 +243,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
    	}
    	finally
    	{
-         removeQueueSettings(qName);
+         removeAddressSettings(qName);
          this.destroyQueue(qName);
       }
    }

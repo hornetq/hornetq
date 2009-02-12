@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.integration.transports.netty;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
@@ -130,6 +131,11 @@ public class NettyConnection implements Connection
    public String getRemoteAddress()
    {
       return channel.getRemoteAddress().toString();
+   }
+   
+   public void fail(final MessagingException me)
+   {
+      listener.connectionException(channel.getId(), me);
    }
 
    // Public --------------------------------------------------------

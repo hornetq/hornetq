@@ -169,7 +169,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       this.postOffice = postOffice;
    }
 
-   public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception
+   public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
       File pageDirectory = new File(directory);
 
@@ -213,7 +213,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
             SequentialFileFactory factory = newFileFactory(guid);
 
-            AddressSettings settings = queueSettingsRepository.getMatch(destinationName.toString());
+            AddressSettings settings = addressSettingsRepository.getMatch(destinationName.toString());
 
             PagingStore store = new PagingStoreImpl(pagingManager,
                                                     storageManager,

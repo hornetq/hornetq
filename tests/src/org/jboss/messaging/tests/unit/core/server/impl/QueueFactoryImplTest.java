@@ -42,19 +42,19 @@ public class QueueFactoryImplTest extends UnitTestCase
    public void testCreateQueue()
    {
       ScheduledExecutorService scheduledExecutor = EasyMock.createStrictMock(ScheduledExecutorService.class);
-      HierarchicalRepository<AddressSettings> queueSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      HierarchicalRepository<AddressSettings> addressSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       Filter filter = EasyMock.createStrictMock(Filter.class);
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setClustered(true);
       addressSettings.setMaxSizeBytes(9999);
       addressSettings.setDistributionPolicyClass("org.jboss.messaging.core.server.impl.RoundRobinDistributor");
-      EasyMock.expect(queueSettingsRepository.getMatch("testQ")).andReturn(addressSettings);
-      EasyMock.replay(scheduledExecutor, queueSettingsRepository);
-      QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository, sm);
+      EasyMock.expect(addressSettingsRepository.getMatch("testQ")).andReturn(addressSettings);
+      EasyMock.replay(scheduledExecutor, addressSettingsRepository);
+      QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, addressSettingsRepository, sm);
       SimpleString qName = new SimpleString("testQ");
       Queue queue = queueFactory.createQueue(123, qName, qName, filter, true, false);
-      EasyMock.verify(scheduledExecutor, queueSettingsRepository);
+      EasyMock.verify(scheduledExecutor, addressSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributor.class);
       assertEquals(queue.getName(), qName);
       assertEquals(queue.getPersistenceID(), 123);
@@ -66,18 +66,18 @@ public class QueueFactoryImplTest extends UnitTestCase
    public void testCreateQueue2()
    {
       ScheduledExecutorService scheduledExecutor = EasyMock.createStrictMock(ScheduledExecutorService.class);
-      HierarchicalRepository<AddressSettings> queueSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
+      HierarchicalRepository<AddressSettings> addressSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setClustered(false);
       addressSettings.setMaxSizeBytes(8888);
       addressSettings.setDistributionPolicyClass(null);
-      EasyMock.expect(queueSettingsRepository.getMatch("testQ2")).andReturn(addressSettings);
-      EasyMock.replay(scheduledExecutor, queueSettingsRepository);
-      QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, queueSettingsRepository, sm);
+      EasyMock.expect(addressSettingsRepository.getMatch("testQ2")).andReturn(addressSettings);
+      EasyMock.replay(scheduledExecutor, addressSettingsRepository);
+      QueueFactoryImpl queueFactory = new QueueFactoryImpl(scheduledExecutor, addressSettingsRepository, sm);
       SimpleString qName = new SimpleString("testQ2");
       Queue queue = queueFactory.createQueue(456, qName, qName, null, false, false);
-      EasyMock.verify(scheduledExecutor, queueSettingsRepository);
+      EasyMock.verify(scheduledExecutor, addressSettingsRepository);
       assertEquals(queue.getDistributionPolicy().getClass(), RoundRobinDistributor.class);
       assertEquals(queue.getName(), qName);
       assertEquals(queue.getPersistenceID(), 456);

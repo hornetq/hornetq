@@ -47,6 +47,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.TransportConfigurationInfo;
@@ -77,6 +78,8 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(MessagingServerControl.class);
+   
    private static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
    // Attributes ----------------------------------------------------
@@ -476,6 +479,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    public String[] listRemoteAddresses()
    {
       Set<RemotingConnection> connections = remotingService.getConnections();
+      
       String[] remoteAddresses = new String[connections.size()];
       int i = 0;
       for (RemotingConnection connection : connections)

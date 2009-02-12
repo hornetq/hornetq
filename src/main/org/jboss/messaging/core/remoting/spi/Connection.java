@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.remoting.spi;
 
+import org.jboss.messaging.core.exception.MessagingException;
+
 
 
 /**
@@ -42,4 +44,6 @@ public interface Connection
    void close();
 
    String getRemoteAddress();
+   
+   void fail(MessagingException me);
 }

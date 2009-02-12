@@ -120,15 +120,15 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-      // log.info("waiting for bindings on node " + node +
-      // " address " +
-      // address +
-      // " count " +
-      // count +
-      // " consumerCount " +
-      // consumerCount +
-      // " local " +
-      // local);
+//       log.info("waiting for bindings on node " + node +
+//       " address " +
+//       address +
+//       " count " +
+//       count +
+//       " consumerCount " +
+//       consumerCount +
+//       " local " +
+//       local);
       MessagingService service = this.services[node];
 
       if (service == null)
@@ -160,11 +160,11 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         // log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
+      //    log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
-            log.info("Waited " + (System.currentTimeMillis() - start));
+            //log.info("Waited " + (System.currentTimeMillis() - start));
             return;
          }
 
@@ -416,6 +416,11 @@ public class ClusterTestBase extends ServiceTestBase
     */
    protected void verifyReceiveRoundRobinInSomeOrder(int numMessages, int... consumerIDs) throws Exception
    {
+      verifyReceiveRoundRobinInSomeOrder(true, numMessages, consumerIDs);
+   }
+      
+   protected void verifyReceiveRoundRobinInSomeOrder(boolean ack, int numMessages, int... consumerIDs) throws Exception
+   {
       Map<Integer, Integer> countMap = new HashMap<Integer, Integer>();
 
       Set<Integer> counts = new HashSet<Integer>();
@@ -450,6 +455,11 @@ public class ClusterTestBase extends ServiceTestBase
                counts.add(count);
 
                countMap.put(i, count);
+               
+               if (ack)
+               {
+                  message.acknowledge();
+               }
             }
          }
          while (message != null);
@@ -460,7 +470,12 @@ public class ClusterTestBase extends ServiceTestBase
          assertTrue(counts.contains(i));
       }
    }
-
+   
+   protected void verifyReceiveRoundRobinInSomeOrderNoAck(int numMessages, int... consumerIDs) throws Exception
+   {
+      verifyReceiveRoundRobinInSomeOrder(false, numMessages, consumerIDs);
+   }
+   
    protected void verifyNotReceive(int... consumerIDs) throws Exception
    {
       for (int i = 0; i < consumerIDs.length; i++)
@@ -618,7 +633,7 @@ public class ClusterTestBase extends ServiceTestBase
 
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
                                                                                       address,
-                                                                                      10,
+                                                                                      100,
                                                                                       1d,
                                                                                       -1,
                                                                                       -1,
@@ -647,9 +662,9 @@ public class ClusterTestBase extends ServiceTestBase
    {
       for (int i = 0; i < nodes.length; i++)
       {
-         log.info("stopping service " + nodes[i]);
+         log.info("*** stopping server " + i);
          services[nodes[i]].stop();
-         log.info("stopped service");
+         log.info("*** stopped server " + i);
       }
    }
 

@@ -133,6 +133,8 @@ public class BindingsImpl implements Bindings
 
    private void routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception
    {
+     // log.info(System.identityHashCode(this) + " routing from cluster");
+
       byte[] ids = (byte[])message.getProperty(MessageImpl.HDR_ROUTE_TO_IDS);
       
       ByteBuffer buff = ByteBuffer.wrap(ids);
@@ -156,6 +158,8 @@ public class BindingsImpl implements Bindings
          binding.willRoute(message);
          
          chosen.add(binding.getBindable());
+         
+        // log.info("routing to " + binding.getType() + " : " + binding.getRoutingName());
       }
       
       for (Bindable bindable : chosen)
@@ -171,6 +175,8 @@ public class BindingsImpl implements Bindings
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
+      //log.info(System.identityHashCode(this) + " routing " + message.getDestination());
+
       if (!exclusiveBindings.isEmpty())
       {
          for (Binding binding : exclusiveBindings)
@@ -296,6 +302,8 @@ public class BindingsImpl implements Bindings
                if (theBinding != null)
                {
                   theBinding.willRoute(message);
+                  
+                  //log.info("routing to " + theBinding.getType() + " : " + theBinding.getRoutingName());
                   
                   chosen.add(theBinding.getBindable());
                }

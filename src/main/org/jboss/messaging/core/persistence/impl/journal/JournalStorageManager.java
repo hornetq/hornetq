@@ -438,7 +438,7 @@ public class JournalStorageManager implements StorageManager
 
    public void loadMessageJournal(final PostOffice postOffice,
                                   final StorageManager storageManager,
-                                  final HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                                  final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                   final Map<Long, Queue> queues,
                                   final ResourceManager resourceManager,
                                   final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
@@ -661,7 +661,7 @@ public class JournalStorageManager implements StorageManager
 
       loadPreparedTransactions(postOffice,
                                storageManager,
-                               queueSettingsRepository,
+                               addressSettingsRepository,
                                queues,
                                resourceManager,
                                preparedTransactions,
@@ -670,7 +670,7 @@ public class JournalStorageManager implements StorageManager
 
    private void loadPreparedTransactions(final PostOffice postOffice,
                                          final StorageManager storageManager,
-                                         final HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                                         final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                          final Map<Long, Queue> queues,
                                          final ResourceManager resourceManager,
                                          final List<PreparedTransactionInfo> preparedTransactions,

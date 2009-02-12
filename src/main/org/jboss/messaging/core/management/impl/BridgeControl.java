@@ -84,15 +84,6 @@ public class BridgeControl implements BridgeControlMBean
       return configuration.getFilterString();
    }
 
-   public int getMaxBatchSize()
-   {
-      return configuration.getMaxBatchSize();
-   }
-
-   public long getMaxBatchTime()
-   {
-      return configuration.getMaxBatchTime();
-   }
 
    public int getMaxRetriesAfterFailover()
    {

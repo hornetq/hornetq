@@ -24,6 +24,7 @@ package org.jboss.messaging.core.postoffice.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +62,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -326,7 +328,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                      info.setFilterStrings(filterStrings);
                   }
                }
-               
+                              
                break;
             }
             case NotificationType.CONSUMER_CLOSED_INDEX:
@@ -358,12 +360,35 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   filterStrings.remove(filterString);
                }
                
+//               if (redistributeMessages)
+//               {                  
+//                  int distance = (Integer)props.getProperty(ManagementHelper.HDR_DISTANCE);
+//                  
+//                  if (distance == 0)
+//                  {
+//                     if (info.getNumberOfConsumers() == 0)
+//                     {
+//                        Bindings bindings = getBindingsForAddress(info.getAddress());
+//                        
+//                        Collection<Binding> theBindings = bindings.getBindings();
+//                        
+//                        for (Binding binding: theBindings)
+//                        {
+//                           if (binding.getFilter() != null && !binding.getFilter().match(message) ?????????????
+//                        }
+//                     }
+//                  }
+//               }
+               
+               
                break;
             }
          }
       }
    }
 
+   private boolean redistributeMessages;
+   
    // PostOffice implementation -----------------------------------------------
 
    public synchronized boolean addDestination(final SimpleString address, final boolean durable) throws Exception
@@ -490,7 +515,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public void route(final ServerMessage message, Transaction tx) throws Exception
    {
       SimpleString address = message.getDestination();
-
+            
       if (checkAllowable)
       {
          if (!addressManager.containsDestination(address))
@@ -501,7 +526,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       }
 
       byte[] duplicateID = (byte[])message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
-
+      
       DuplicateIDCache cache = null;
 
       if (duplicateID != null)

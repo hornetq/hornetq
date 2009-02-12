@@ -50,14 +50,14 @@ public class TransactionImplTest extends UnitTestCase
 {
 	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
-   private final HierarchicalRepository<AddressSettings> queueSettings =
+   private final HierarchicalRepository<AddressSettings> addressSettings =
    	new HierarchicalObjectRepository<AddressSettings>();
 	
    protected void setUp() throws Exception
    {
    	super.setUp();
    	
-   	queueSettings.setDefault(new AddressSettings());
+   	addressSettings.setDefault(new AddressSettings());
    }
    
    public void testFoo()

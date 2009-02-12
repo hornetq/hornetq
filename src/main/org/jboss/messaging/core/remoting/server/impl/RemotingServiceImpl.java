@@ -132,7 +132,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          return;
       }
       
-
       // when JMX is enabled, it requires a INVM acceptor to send the core messages
       // corresponding to the JMX management operations (@see ReplicationAwareStandardMBeanWrapper)
       if (jmxEnabled)
@@ -255,12 +254,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
       
       RemotingConnection replicatingConnection = server.getReplicatingConnection();
-
+            
       RemotingConnection rc = new RemotingConnectionImpl(connection,                                                                                             
-                                                         interceptors,
+                                                         interceptors,  
                                                          replicatingConnection,
                                                          !backup,
                                                          connectionTTL);
+      
+  
+      rc.setReplicatingConnection(replicatingConnection);
 
       Channel channel1 = rc.getChannel(1,  -1, false);
 
@@ -276,7 +278,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public void connectionDestroyed(final Object connectionID)
    {
       RemotingConnection conn = connections.remove(connectionID);
-      
+            
       if (conn != null)
       {
          conn.destroy();
@@ -302,7 +304,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       return interceptors.remove(interceptor);
    }
-
+   
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

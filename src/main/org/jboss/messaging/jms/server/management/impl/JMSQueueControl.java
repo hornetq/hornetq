@@ -75,7 +75,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    private final PostOffice postOffice;
 
-   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final MessageCounter counter;
 
@@ -98,14 +98,14 @@ public class JMSQueueControl implements JMSQueueControlMBean
                           final Queue coreQueue,
                           final String jndiBinding,
                           final PostOffice postOffice,                          
-                          final HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                          final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                           final MessageCounter counter)
    {
       this.managedQueue = queue;
       this.coreQueue = coreQueue;
       this.binding = jndiBinding;
       this.postOffice = postOffice;
-      this.queueSettingsRepository = queueSettingsRepository;
+      this.addressSettingsRepository = addressSettingsRepository;
       this.counter = counter;
    }
 
@@ -165,7 +165,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public String getDeadLetterAddress()
    {
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(getAddress());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(getAddress());
       if (addressSettings != null && addressSettings.getDeadLetterAddress() != null)
       {
          return addressSettings.getDeadLetterAddress().toString();
@@ -178,7 +178,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public void setDeadLetterAddress(String deadLetterAddress) throws Exception
    {
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(getAddress());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(getAddress());
 
       if (deadLetterAddress != null)
       {
@@ -188,7 +188,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public String getExpiryAddress()
    {
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(getAddress());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(getAddress());
       if (addressSettings != null && addressSettings.getExpiryAddress() != null)
       {
          return addressSettings.getExpiryAddress().toString();
@@ -201,7 +201,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public void setExpiryAddress(String expiryQueueName)
    {
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(getAddress());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(getAddress());
 
       if (expiryQueueName != null)
       {

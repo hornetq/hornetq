@@ -173,6 +173,54 @@ public class FailBackupServerTest extends TestCase
       assertNull(message);
 
       session1.close();
+      
+      //Send some more on different session factory
+      
+      sf1.close();
+      
+      sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      sf1.setSendWindowSize(32 * 1024);
+
+      session1 = sf1.createSession(false, true, true);
+
+      producer = session1.createProducer(ADDRESS);
+      
+      consumer1 = session1.createConsumer(ADDRESS);
+
+      session1.start();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         message = session1.createClientMessage(JBossTextMessage.TYPE,
+                                                              false,
+                                                              0,
+                                                              System.currentTimeMillis(),
+                                                              (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().putString("aardvarks");
+         message.getBody().flip();
+         producer.send(message);
+      }
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         message = consumer1.receive(1000);
+
+         assertNotNull(message);
+
+         assertEquals("aardvarks", message.getBody().getString());
+
+         assertEquals(i, message.getProperty(new SimpleString("count")));
+
+         message.acknowledge();
+      }
+
+      message = consumer1.receive(1000);
+
+      assertNull(message);
+
+      session1.close();
    }
 
    // Package protected ---------------------------------------------

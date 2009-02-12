@@ -491,14 +491,14 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.setSecurityConfig(defConfig);
    }
 
-   public void addQueueSettings(String name, long redeliveryDelay)
+   public void addAddressSettings(String name, long redeliveryDelay)
    {
-      server.addQueueSettings(name, redeliveryDelay);
+      server.addAddressSettings(name, redeliveryDelay);
    }
 
-   public void removeQueueSettings(String name)
+   public void removeAddressSettings(String name)
    {
-      server.removeQueueSettings(name);
+      server.removeAddressSettings(name);
    }
 
    public InitialContext getInitialContext() throws Exception

@@ -52,7 +52,7 @@ public interface PagingStoreFactory
 
    void setPostOffice(PostOffice office);
 
-   List<PagingStore> reloadStores(HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception;
+   List<PagingStore> reloadStores(HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception;
 
    /**
     * @param storeName

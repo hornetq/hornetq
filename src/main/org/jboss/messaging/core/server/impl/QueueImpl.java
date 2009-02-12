@@ -12,15 +12,28 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -42,19 +55,6 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
 import org.jboss.messaging.util.SimpleString;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -110,7 +110,7 @@ public class QueueImpl implements Queue
 
    private final StorageManager storageManager;
 
-   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private volatile boolean backup;
 
@@ -127,7 +127,7 @@ public class QueueImpl implements Queue
                     final ScheduledExecutorService scheduledExecutor,
                     final PostOffice postOffice,
                     final StorageManager storageManager,
-                    final HierarchicalRepository<AddressSettings> queueSettingsRepository)
+                    final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
       this.persistenceID = persistenceID;
 
@@ -145,7 +145,7 @@ public class QueueImpl implements Queue
 
       this.storageManager = storageManager;
 
-      this.queueSettingsRepository = queueSettingsRepository;
+      this.addressSettingsRepository = addressSettingsRepository;
 
       if (postOffice == null)
       {
@@ -199,14 +199,6 @@ public class QueueImpl implements Queue
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
-//      SimpleString filterString = null;
-//      if (filter != null)
-//      {
-//         filterString = filter.getFilterString();
-//      }
-      
-      //log.info("Adding message to queue " + name + " with filter " + filterString + " message has orig node " + message.getProperty(ManagementHelper.HDR_ORIGINATING_NODE));
-      
       boolean durableRef = message.isDurable() && durable;
 
       // If durable, must be persisted before anything is routed
@@ -473,8 +465,7 @@ public class QueueImpl implements Queue
    {
       int count = messageReferences.size() + getScheduledCount() + getDeliveringCount();
 
-      // log.info(System.identityHashCode(this) + " message count is " + count + " ( mr:" + messageReferences.size() + "
-      // sc:" + getScheduledCount() + " dc:" + getDeliveringCount() + ")");
+      // log.info(System.identityHashCode(this) + " message count is " + count + " ( mr:" + messageReferences.size() + " sc:" + getScheduledCount() + " dc:" + getDeliveringCount() + ")");
 
       return count;
    }
@@ -556,10 +547,21 @@ public class QueueImpl implements Queue
    {
       getRefsOperation(tx).addAck(reference);
    }
-
+   
+   public void cancel(final MessageReference reference) throws Exception
+   {
+      if (checkDLQ(reference))
+      {
+         if (!scheduledDeliveryHandler.checkAndSchedule(reference, backup))
+         {
+            messageReferences.addFirst(reference, reference.getMessage().getPriority());
+         }
+      }
+   }
+     
    public void expire(final MessageReference ref) throws Exception
    {
-      SimpleString expiryAddress = queueSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+      SimpleString expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
 
       if (expiryAddress != null)
       {
@@ -785,7 +787,7 @@ public class QueueImpl implements Queue
          {
             deliveringCount.incrementAndGet();
             move(toAddress, tx, ref, false);
-            // ref.acknowledge(tx, storageManager, postOffice, queueSettingsRepository);
+            // ref.acknowledge(tx, storageManager, postOffice, addressSettingsRepository);
             acknowledge(tx, ref);
             count++;
          }
@@ -906,6 +908,44 @@ public class QueueImpl implements Queue
    // Private
    // ------------------------------------------------------------------------------
 
+   private boolean checkDLQ(final MessageReference reference) throws Exception
+   {
+      ServerMessage message = reference.getMessage();
+
+      if (message.isDurable() && durable)
+      {
+         storageManager.updateDeliveryCount(reference);
+      }
+
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
+
+      int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
+
+      if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
+      {
+         log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address");
+
+         sendToDeadLetterAddress(reference);
+
+         return false;
+      }
+      else
+      {
+         long redeliveryDelay = addressSettings.getRedeliveryDelay();
+
+         if (redeliveryDelay > 0)
+         {
+            reference.setScheduledDeliveryTime(System.currentTimeMillis() + redeliveryDelay);
+
+            storageManager.updateScheduledDeliveryTime(reference);
+         }
+
+         deliveringCount.decrementAndGet();
+
+         return true;
+      }
+   }
+   
    private void move(final SimpleString toAddress, final MessageReference ref) throws Exception
    {
       move(toAddress, ref, false);
@@ -960,7 +1000,7 @@ public class QueueImpl implements Queue
 
    private void expire(final Transaction tx, final MessageReference ref) throws Exception
    {
-      SimpleString expiryAddress = queueSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+      SimpleString expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
 
       if (expiryAddress != null)
       {
@@ -985,7 +1025,7 @@ public class QueueImpl implements Queue
 
    private void sendToDeadLetterAddress(final MessageReference ref) throws Exception
    {
-      SimpleString deadLetterAddress = queueSettingsRepository.getMatch(address.toString()).getDeadLetterAddress();
+      SimpleString deadLetterAddress = addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress();
       if (deadLetterAddress != null)
       {
          Bindings bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
@@ -1025,43 +1065,7 @@ public class QueueImpl implements Queue
       tx.commit();
    }
 
-   private boolean cancel(final MessageReference reference) throws Exception
-   {
-      ServerMessage message = reference.getMessage();
 
-      if (message.isDurable() && durable)
-      {
-         storageManager.updateDeliveryCount(reference);
-      }
-
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(address.toString());
-
-      int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
-
-      if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
-      {
-         log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address");
-
-         sendToDeadLetterAddress(reference);
-
-         return false;
-      }
-      else
-      {
-         long redeliveryDelay = addressSettings.getRedeliveryDelay();
-
-         if (redeliveryDelay > 0)
-         {
-            reference.setScheduledDeliveryTime(System.currentTimeMillis() + redeliveryDelay);
-
-            storageManager.updateScheduledDeliveryTime(reference);
-         }
-
-         deliveringCount.decrementAndGet();
-
-         return true;
-      }
-   }
 
    /*
     * Attempt to deliver all the messages in the queue
@@ -1072,7 +1076,7 @@ public class QueueImpl implements Queue
       // because it's async and could get out of step
       // with the live node. Instead, when we replicate the delivery we remove
       // the ref from the queue
-
+      
       if (backup)
       {
          return;
@@ -1081,7 +1085,7 @@ public class QueueImpl implements Queue
       MessageReference reference;
 
       Iterator<MessageReference> iterator = null;
-
+      
       while (true)
       {
          if (iterator == null)
@@ -1182,7 +1186,7 @@ public class QueueImpl implements Queue
       if (direct && !backup)
       {
          // Deliver directly
-
+     
          HandleStatus status = deliver(ref);
 
          if (status == HandleStatus.HANDLED)
@@ -1308,7 +1312,7 @@ public class QueueImpl implements Queue
    }
 
    void postRollback(LinkedList<MessageReference> refs) throws Exception
-   {
+   {      
       synchronized (this)
       {
          for (MessageReference ref : refs)
@@ -1371,7 +1375,7 @@ public class QueueImpl implements Queue
 
          for (MessageReference ref : refsToAck)
          {
-            if (cancel(ref))
+            if (checkDLQ(ref))
             {
                LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
 

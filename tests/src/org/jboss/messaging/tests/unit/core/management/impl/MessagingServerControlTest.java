@@ -81,7 +81,7 @@ public class MessagingServerControlTest extends TestCase
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
-   private HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private ResourceManager resourceManager;
 
@@ -626,7 +626,7 @@ public class MessagingServerControlTest extends TestCase
       configuration = createMock(Configuration.class);
       expect(configuration.isMessageCounterEnabled()).andReturn(false);
       securityRepository = createMock(HierarchicalRepository.class);
-      queueSettingsRepository = createMock(HierarchicalRepository.class);
+      addressSettingsRepository = createMock(HierarchicalRepository.class);
       queueFactory = createMock(QueueFactory.class);
       remotingService = createMock(RemotingService.class);
       resourceManager = createMock(ResourceManager.class);
@@ -641,7 +641,7 @@ public class MessagingServerControlTest extends TestCase
       storageManager = null;
       configuration = null;
       securityRepository = null;
-      queueSettingsRepository = null;
+      addressSettingsRepository = null;
       resourceManager = null;
       remotingService = null;
       server = null;
@@ -672,7 +672,7 @@ public class MessagingServerControlTest extends TestCase
              storageManager,
              configuration,
              securityRepository,
-             queueSettingsRepository,
+             addressSettingsRepository,
              resourceManager,
              remotingService,
              server,
@@ -685,7 +685,7 @@ public class MessagingServerControlTest extends TestCase
              storageManager,
              configuration,
              securityRepository,
-             queueSettingsRepository,
+             addressSettingsRepository,
              resourceManager,
              remotingService,
              server,

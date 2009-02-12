@@ -58,4 +58,8 @@ public interface Channel
    void replicatingChannelDead();
    
    void confirm(Packet packet);
+   
+   void setCommandConfirmationHandler(CommandConfirmationHandler handler);
+   
+   void flushConfirmations();
 }

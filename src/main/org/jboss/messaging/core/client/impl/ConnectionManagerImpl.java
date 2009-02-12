@@ -191,7 +191,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       // being returned from the client side so we need to fail the conn and
       // call it's listeners
       if (connections.containsKey(connectionID))
-      {        
+      {
          MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED,
                                                         "The conn has been closed by the server");
 
@@ -243,10 +243,10 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                synchronized (failoverLock)
                {
                   connection = getConnectionForCreateSession();
-                  
+
                   if (connection == null)
                   {
-                     //This can happen if the connection manager gets closed - e.g. the server gets shut down
+                     // This can happen if the connection manager gets closed - e.g. the server gets shut down
                      return null;
                   }
 
@@ -409,16 +409,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    public boolean connectionFailed(final MessagingException me)
    {
-      if (me.getCode() == MessagingException.OBJECT_CLOSED)
-      {
-         log.info("The server closed the connection");
-         // The server has closed the connection. We don't want failover to occur in this case -
-         // either the server has booted off the connection, or it didn't receive a ping in time
-         // in either case server side resources on both live and backup will be removed so the client
-         // can't failover automatically anyway
-         return true;
-      }
-
       return !failover();
    }
 
@@ -436,14 +426,10 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    private RemotingConnection getConnectionForCreateSession() throws MessagingException
    {
-      boolean retried = false;
-
       while (true)
       {
          if (closed)
          {
-            log.warn("ConnectionManager is now closed");
-
             return null;
          }
 
@@ -468,15 +454,9 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
             catch (Exception ignore)
             {
             }
-
-            retried = true;
          }
          else
          {
-            if (retried)
-            {
-               log.info("Reconnected successfully");
-            }
             return connection;
          }
       }
@@ -590,15 +570,9 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                   transportParams = backupTransportParams;
 
                   if (maxRetriesAfterFailover == 0)
-                  {
+                  {                     
                      retries = 1;
                   }
-
-                  log.info("Failing over to backup");
-               }
-               else
-               {
-                  log.info("Attempting reconnection");
                }
 
                backupConnectorFactory = null;
@@ -606,24 +580,16 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                backupTransportParams = null;
 
                done = reconnect(retries);
-
-               if (done)
-               {
-                  log.info("Successfully reconnected");
-               }
-               else
-               {
-                  log.info("Unable to failover/reconnect");
-               }
-            }
-            else
-            {
-               log.info("succeeded in reconnecting to node");
             }
 
             for (RemotingConnection connection : oldConnections)
             {
                connection.destroy();
+            }
+            
+            if (done)
+            {
+               log.info("Automatic failover / reconnection successful");
             }
 
             return done;
@@ -639,7 +605,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
    {
       // We fail over sessions per connection to ensure there is the same mapping of channel id
       // on live and backup connections
-
+      
       Map<RemotingConnection, List<ClientSessionInternal>> sessionsPerConnection = new HashMap<RemotingConnection, List<ClientSessionInternal>>();
 
       for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
@@ -670,7 +636,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
          if (backupConnection == null)
          {
-            log.warn("Failed to reconnect to server.");
+            log.warn("Failed to connect to server.");
 
             ok = false;
 
@@ -708,7 +674,12 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          // If all connections got ok, then handle failover
          for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
          {
-            entry.getKey().handleFailover(entry.getValue());
+            ok = entry.getKey().handleFailover(entry.getValue());
+
+            if (!ok)
+            {
+               break;
+            }
          }
       }
 
@@ -729,9 +700,9 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
             return null;
          }
-
+         
          RemotingConnection connection = getConnection(sessions.size());
-
+         
          if (connection == null)
          {
             // Failed to get backup connection
@@ -746,8 +717,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
                   return null;
                }
-
-               log.warn("Now waiting " + interval + " ms before attempting reconnection.");
 
                try
                {
@@ -806,7 +775,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       if (connections.size() < maxConnections)
       {
          // Create a new one
-
+         
          DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
          Connector connector = null;

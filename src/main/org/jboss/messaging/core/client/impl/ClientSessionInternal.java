@@ -45,9 +45,11 @@ public interface ClientSessionInternal extends ClientSession
 
    void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
 
-   void handleFailover(RemotingConnection backupConnection);
+   boolean handleFailover(RemotingConnection backupConnection);
 
    RemotingConnection getConnection();
    
    void cleanUp() throws Exception;
+   
+   void returnBlocking();
 }

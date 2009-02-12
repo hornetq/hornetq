@@ -115,8 +115,6 @@
           <queue-name>foo</queue-name>
           <forwarding-address>bridge-forwarding-address</forwarding-address>
           <filter string="sku > 1"/>
-          <max-batch-size>124</max-batch-size>
-          <max-batch-time>123456</max-batch-time>
           <transformer-class-name>org.foo.BridgeTransformer</transformer-class-name>
           <retry-interval>3</retry-interval>
           <retry-interval-multiplier>0.2</retry-interval-multiplier>

@@ -85,7 +85,7 @@ public class ManagementServiceImplTest extends TestCase
 //      expect(configuration.getManagementNotificationAddress()).andReturn(randomSimpleString());
 //      expect(configuration.isMessageCounterEnabled()).andReturn(false);
 //      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
-//      HierarchicalRepository<AddressSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+//      HierarchicalRepository<AddressSettings> addressSettingsRepository = createMock(HierarchicalRepository.class);
 //      QueueFactory queueFactory = createMock(QueueFactory.class);
 //      ResourceManager resourceManager = createMock(ResourceManager.class);
 //      RemotingService remotingService = createMock(RemotingService.class);
@@ -99,7 +99,7 @@ public class ManagementServiceImplTest extends TestCase
 //             storageManager,
 //             configuration,
 //             securityRepository,
-//             queueSettingsRepository,
+//             addressSettingsRepository,
 //             resourceManager,
 //             remotingService,
 //             messagingServer);
@@ -108,7 +108,7 @@ public class ManagementServiceImplTest extends TestCase
 //      service.registerServer(postOffice,
 //                             storageManager,
 //                             configuration,
-//                             queueSettingsRepository,
+//                             addressSettingsRepository,
 //                             securityRepository,
 //                             resourceManager,
 //                             remotingService,
@@ -120,7 +120,7 @@ public class ManagementServiceImplTest extends TestCase
 //             storageManager,
 //             configuration,
 //             securityRepository,
-//             queueSettingsRepository,
+//             addressSettingsRepository,
 //             resourceManager,
 //             remotingService,
 //             messagingServer);
@@ -137,7 +137,7 @@ public class ManagementServiceImplTest extends TestCase
 //      expect(configuration.getManagementNotificationAddress()).andReturn(randomSimpleString());
 //      expect(configuration.isMessageCounterEnabled()).andReturn(false);
 //      HierarchicalRepository<Set<Role>> securityRepository = createMock(HierarchicalRepository.class);
-//      HierarchicalRepository<AddressSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
+//      HierarchicalRepository<AddressSettings> addressSettingsRepository = createMock(HierarchicalRepository.class);
 //      QueueFactory queueFactory = createMock(QueueFactory.class);
 //      ResourceManager resourceManager = createMock(ResourceManager.class);
 //      RemotingService remotingService = createMock(RemotingService.class);
@@ -152,7 +152,7 @@ public class ManagementServiceImplTest extends TestCase
 //             storageManager,
 //             configuration,
 //             securityRepository,
-//             queueSettingsRepository,
+//             addressSettingsRepository,
 //             resourceManager,
 //             remotingService,
 //             messagingServer);
@@ -161,7 +161,7 @@ public class ManagementServiceImplTest extends TestCase
 //      service.registerServer(postOffice,
 //                             storageManager,
 //                             configuration,
-//                             queueSettingsRepository,
+//                             addressSettingsRepository,
 //                             securityRepository,
 //                             resourceManager,
 //                             remotingService,
@@ -173,7 +173,7 @@ public class ManagementServiceImplTest extends TestCase
 //             storageManager,
 //             configuration,
 //             securityRepository,
-//             queueSettingsRepository,
+//             addressSettingsRepository,
 //             resourceManager,
 //             remotingService,
 //             messagingServer);

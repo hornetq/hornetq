@@ -151,8 +151,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final StorageManager storageManager;
 
-   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
-
    private final ResourceManager resourceManager;
 
    private final PostOffice postOffice;
@@ -203,7 +201,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final RemotingConnection remotingConnection,
                             final StorageManager storageManager,
                             final PostOffice postOffice,
-                            final HierarchicalRepository<AddressSettings> queueSettingsRepository,
                             final ResourceManager resourceManager,
                             final SecurityStore securityStore,
                             final Executor executor,
@@ -232,8 +229,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.storageManager = storageManager;
 
       this.postOffice = postOffice;
-
-      this.queueSettingsRepository = queueSettingsRepository;
 
       this.resourceManager = resourceManager;
 
@@ -332,7 +327,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             log.error("Failed to delete large message file", error);
          }
       }
-
    }
 
    public void promptDelivery(final Queue queue)
@@ -1271,7 +1265,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          this.setStarted(false);
       }
-
+      
       remotingConnection.removeFailureListener(this);
 
       channel.transferConnection(newConnection);
@@ -1289,7 +1283,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
-      // Destroy the old connection
+      // Destroy the old connection     
       remotingConnection.destroy();
 
       remotingConnection = newConnection;
@@ -1304,7 +1298,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          this.setStarted(true);
       }
-
+      
       return serverLastReceivedCommandID;
    }
 
@@ -2475,6 +2469,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       channel.confirm(packet);
+      
+      channel.flushConfirmations();
 
       channel.send(response);
 

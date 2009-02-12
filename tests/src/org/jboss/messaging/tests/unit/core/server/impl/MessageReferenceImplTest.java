@@ -62,17 +62,17 @@ public class MessageReferenceImplTest extends UnitTestCase
 //
 //   public void testCancelDurable() throws Exception
 //   {
-//      QueueSettings queueSettings = new QueueSettings();
+//      AddressSettings addressSettings = new AddressSettings();
 //      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
 //      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-//      HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
+//      HierarchicalRepository<AddressSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
 //      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
 //      SimpleString queueName = new SimpleString("queueName");
 //      queue.referenceCancelled();
 //      EasyMock.expect(queue.getName()).andStubReturn(queueName);
-//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
+//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(addressSettings);
 //      EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
 //      EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
 //      EasyMock.expect(queue.isDurable()).andStubReturn(true);
@@ -84,17 +84,17 @@ public class MessageReferenceImplTest extends UnitTestCase
 //
 //   public void testCancelNonDurable() throws Exception
 //   {
-//      QueueSettings queueSettings = new QueueSettings();
+//      AddressSettings addressSettings = new AddressSettings();
 //      StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
 //      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
-//      HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
+//      HierarchicalRepository<AddressSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
 //      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      MessageReferenceImpl messageReference = new DummyMessageReference(serverMessage, queue);
 //      SimpleString queueName = new SimpleString("queueName");
 //      queue.referenceCancelled();
 //      EasyMock.expect(queue.getName()).andStubReturn(queueName);
-//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
+//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(addressSettings);
 //      EasyMock.expect(serverMessage.isDurable()).andStubReturn(false);
 //      EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
 //      EasyMock.expect(queue.isDurable()).andStubReturn(false);
@@ -105,10 +105,10 @@ public class MessageReferenceImplTest extends UnitTestCase
 //
 //   public void testCancelToDLQExists() throws Exception
 //   {
-//      QueueSettings queueSettings = new QueueSettings();
-//      queueSettings.setMaxDeliveryAttempts(1);
+//      AddressSettings addressSettings = new AddressSettings();
+//      addressSettings.setMaxDeliveryAttempts(1);
 //      SimpleString dlqName = new SimpleString("testDLQ");
-//      queueSettings.setDeadLetterAddress(dlqName);
+//      addressSettings.setDeadLetterAddress(dlqName);
 //      
 //      Binding dlqBinding = EasyMock.createStrictMock(Binding.class);
 //      //EasyMock.expect(dlqBinding.getAddress()).andReturn(dlqName);
@@ -121,7 +121,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      EasyMock.expect(po.getPagingManager()).andStubReturn(pm);
 //      
 //      
-//      HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
+//      HierarchicalRepository<AddressSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
 //      
 //      ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
 //      
@@ -138,7 +138,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      
 //      EasyMock.expect(queue.getName()).andStubReturn(queueName);
 //      
-//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
+//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(addressSettings);
 //      
 //      EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
 //      
@@ -180,10 +180,10 @@ public class MessageReferenceImplTest extends UnitTestCase
 //  
 //   public void testExpire() throws Exception
 //   {
-//      QueueSettings queueSettings = new QueueSettings();
-//      queueSettings.setMaxDeliveryAttempts(1);
+//      AddressSettings addressSettings = new AddressSettings();
+//      addressSettings.setMaxDeliveryAttempts(1);
 //      SimpleString dlqName = new SimpleString("testDLQ");
-//      queueSettings.setDeadLetterAddress(dlqName);
+//      addressSettings.setDeadLetterAddress(dlqName);
 //      StorageManager sm = EasyMock.createNiceMock(StorageManager.class);
 //      
 //      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
@@ -194,7 +194,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      pm.messageDone(EasyMock.isA(ServerMessage.class));
 //      EasyMock.expectLastCall().anyTimes();
 //
-//      HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
+//      HierarchicalRepository<AddressSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
 //      ServerMessage serverMessage = EasyMock.createStrictMock(ServerMessage.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
 //      
@@ -205,7 +205,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      SimpleString queueName = new SimpleString("queueName");
 //      queue.referenceAcknowledged(messageReference);
 //      EasyMock.expect(queue.getName()).andStubReturn(queueName);
-//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
+//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(addressSettings);
 //      EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
 //      EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
 //      EasyMock.expect(queue.isDurable()).andStubReturn(true);
@@ -219,11 +219,11 @@ public class MessageReferenceImplTest extends UnitTestCase
 //
 //   public void testExpireToQExists() throws Exception
 //   {
-//      QueueSettings queueSettings = new QueueSettings();
-//      queueSettings.setMaxDeliveryAttempts(1);
+//      AddressSettings addressSettings = new AddressSettings();
+//      addressSettings.setMaxDeliveryAttempts(1);
 //      SimpleString expQName = new SimpleString("testexpQ");
 //      Binding expQBinding = EasyMock.createStrictMock(Binding.class);
-//      queueSettings.setExpiryAddress(expQName);
+//      addressSettings.setExpiryAddress(expQName);
 //      StorageManager sm = EasyMock.createNiceMock(StorageManager.class);
 //
 //      PostOffice po = EasyMock.createStrictMock(PostOffice.class);
@@ -234,7 +234,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      pm.messageDone(EasyMock.isA(ServerMessage.class));
 //      EasyMock.expectLastCall().anyTimes();
 //      
-//      HierarchicalRepository<QueueSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
+//      HierarchicalRepository<AddressSettings> repos = EasyMock.createStrictMock(HierarchicalRepository.class);
 //      
 //      ServerMessage serverMessage = EasyMock.createNiceMock(ServerMessage.class);
 //      Queue queue = EasyMock.createStrictMock(Queue.class);
@@ -246,7 +246,7 @@ public class MessageReferenceImplTest extends UnitTestCase
 //      SimpleString queueName = new SimpleString("queueName");
 //      queue.referenceAcknowledged(messageReference);
 //      EasyMock.expect(queue.getName()).andStubReturn(queueName);
-//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(queueSettings);
+//      EasyMock.expect(repos.getMatch(queueName.toString())).andStubReturn(addressSettings);
 //      EasyMock.expect(serverMessage.isDurable()).andStubReturn(true);
 //      EasyMock.expect(serverMessage.getMessageID()).andStubReturn(999l);
 //      EasyMock.expect(queue.isDurable()).andStubReturn(true);

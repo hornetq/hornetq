@@ -67,6 +67,7 @@ public class FileConfiguration extends ConfigurationImpl
    // Constants ------------------------------------------------------------------------
 
    private static final String DEFAULT_CONFIGURATION_URL = "jbm-configuration.xml";
+
    private static final String CONFIGURATION_SCHEMA_URL = "jbm-configuration.xsd";
 
    // Attributes ----------------------------------------------------------------------
@@ -103,7 +104,7 @@ public class FileConfiguration extends ConfigurationImpl
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
 
       connectionScanPeriod = getLong(e, "connection-scan-period", connectionScanPeriod);
-      
+
       connectionTTLOverride = getLong(e, "connection-ttl-override", connectionTTLOverride);
 
       transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout);
@@ -113,9 +114,9 @@ public class FileConfiguration extends ConfigurationImpl
       messageExpiryScanPeriod = getLong(e, "message-expiry-scan-period", messageExpiryScanPeriod);
 
       messageExpiryThreadPriority = getInteger(e, "message-expiry-thread-priority", messageExpiryThreadPriority);
-      
+
       idCacheSize = getInteger(e, "id-cache-size", idCacheSize);
-      
+
       persistIDCache = getBoolean(e, "persist-id-cache", persistIDCache);
 
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
@@ -219,7 +220,7 @@ public class FileConfiguration extends ConfigurationImpl
 
          parseBridgeConfiguration(mfNode);
       }
-      
+
       NodeList ccNodes = e.getElementsByTagName("cluster-connection");
 
       for (int i = 0; i < ccNodes.getLength(); i++)
@@ -228,7 +229,7 @@ public class FileConfiguration extends ConfigurationImpl
 
          parseClusterConnectionConfiguration(ccNode);
       }
-      
+
       NodeList dvNodes = e.getElementsByTagName("divert");
 
       for (int i = 0; i < dvNodes.getLength(); i++)
@@ -237,7 +238,7 @@ public class FileConfiguration extends ConfigurationImpl
 
          parseDivertConfiguration(dvNode);
       }
-      
+
       // Persistence config
 
       largeMessagesDirectory = getString(e, "large-messages-directory", largeMessagesDirectory);
@@ -249,7 +250,7 @@ public class FileConfiguration extends ConfigurationImpl
       journalDirectory = getString(e, "journal-directory", journalDirectory);
 
       pagingMaxThreads = getInteger(e, "paging-max-threads", pagingMaxThreads);
-      
+
       pagingDirectory = getString(e, "paging-directory", pagingDirectory);
 
       pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);
@@ -346,7 +347,7 @@ public class FileConfiguration extends ConfigurationImpl
    private TransportConfiguration parseTransportConfiguration(final Node node)
    {
       Node nameNode = node.getAttributes().getNamedItem("name");
-      
+
       String name = nameNode != null ? nameNode.getNodeValue() : null;
 
       NodeList children = node.getChildNodes();
@@ -527,39 +528,39 @@ public class FileConfiguration extends ConfigurationImpl
          discoveryGroupConfigurations.put(name, config);
       }
    }
-   
+
    private void parseClusterConnectionConfiguration(final Element brNode)
    {
       String name = null;
-      
+
       String address = null;
-      
+
       boolean duplicateDetection = DEFAULT_CLUSTER_DUPLICATE_DETECTION;
-      
+
       boolean forwardWhenNoConsumers = DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS;
-      
+
       String discoveryGroupName = null;
-      
+
       int maxHops = DEFAULT_CLUSTER_MAX_HOPS;
-      
+
       long retryInterval = DEFAULT_RETRY_INTERVAL;
-      
+
       double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      
+
       int maxRetriesBeforeFailover = DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
-      
+
       int maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
-      
+
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
-      
+
       name = brNode.getAttribute("name");
-      
+
       NodeList children = brNode.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
       {
          Node child = children.item(j);
-         
+
          if (child.getNodeName().equals("retry-interval"))
          {
             retryInterval = XMLUtil.parseLong(child);
@@ -598,59 +599,71 @@ public class FileConfiguration extends ConfigurationImpl
             }
 
             Pair<String, String> connectorPair = new Pair<String, String>(connectorName, backupConnectorName);
-            
+
             connectorPairs.add(connectorPair);
          }
       }
-      
+
       ClusterConnectionConfiguration config;
-      
+
       if (discoveryGroupName == null)
       {
-         config = new ClusterConnectionConfiguration(name, address, retryInterval, retryIntervalMultiplier, maxRetriesBeforeFailover, maxRetriesAfterFailover,
-                                                     duplicateDetection, forwardWhenNoConsumers, maxHops, connectorPairs);
+         config = new ClusterConnectionConfiguration(name,
+                                                     address,
+                                                     retryInterval,
+                                                     retryIntervalMultiplier,
+                                                     maxRetriesBeforeFailover,
+                                                     maxRetriesAfterFailover,
+                                                     duplicateDetection,
+                                                     forwardWhenNoConsumers,
+                                                     maxHops,
+                                                     connectorPairs);
       }
       else
       {
-         config = new ClusterConnectionConfiguration(name, address, retryInterval, retryIntervalMultiplier, maxRetriesBeforeFailover, maxRetriesAfterFailover,
-                                                     duplicateDetection, forwardWhenNoConsumers, maxHops, discoveryGroupName);
+         config = new ClusterConnectionConfiguration(name,
+                                                     address,
+                                                     retryInterval,
+                                                     retryIntervalMultiplier,
+                                                     maxRetriesBeforeFailover,
+                                                     maxRetriesAfterFailover,
+                                                     duplicateDetection,
+                                                     forwardWhenNoConsumers,
+                                                     maxHops,
+                                                     discoveryGroupName);
       }
-      
-      clusterConfigurations.add(config);      
+
+      clusterConfigurations.add(config);
    }
 
    private void parseBridgeConfiguration(final Element brNode)
    {
       String name = null;
-      
+
       String queueName = null;
-            
+
       String forwardingAddress = null;
 
       String filterString = null;
-
-      int maxBatchSize = DEFAULT_MAX_FORWARD_BATCH_SIZE;
-
-      long maxBatchTime = DEFAULT_MAX_FORWARD_BATCH_TIME;
 
       Pair<String, String> connectorPair = null;
 
       String discoveryGroupName = null;
 
       String transformerClassName = null;
-      
+
       long retryInterval = DEFAULT_RETRY_INTERVAL;
-      
+
       double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      
+
       int maxRetriesBeforeFailover = DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
-      
+
       int maxRetriesAfterFailover = DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
-      
+
       boolean useDuplicateDetection = DEFAULT_BRIDGE_DUPLICATE_DETECTION;
-      
+
       name = brNode.getAttribute("name");
-      
+
       NodeList children = brNode.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
@@ -668,14 +681,6 @@ public class FileConfiguration extends ConfigurationImpl
          else if (child.getNodeName().equals("filter"))
          {
             filterString = child.getAttributes().getNamedItem("string").getNodeValue();
-         }
-         else if (child.getNodeName().equals("max-batch-size"))
-         {
-            maxBatchSize = XMLUtil.parseInt(child);
-         }
-         else if (child.getNodeName().equals("max-batch-time"))
-         {
-            maxBatchTime = XMLUtil.parseLong(child);
          }
          else if (child.getNodeName().equals("transformer-class-name"))
          {
@@ -724,42 +729,38 @@ public class FileConfiguration extends ConfigurationImpl
 
       BridgeConfiguration config;
 
-      if (connectorPair != null)               
+      if (connectorPair != null)
       {
          config = new BridgeConfiguration(name,
-                                               queueName,
-                                               forwardingAddress,
-                                               filterString,                                              
-                                               maxBatchSize,
-                                               maxBatchTime,
-                                               transformerClassName,
-                                               retryInterval,
-                                               retryIntervalMultiplier,
-                                               maxRetriesBeforeFailover,
-                                               maxRetriesAfterFailover,
-                                               useDuplicateDetection,                                                                                       
-                                               connectorPair);
+                                          queueName,
+                                          forwardingAddress,
+                                          filterString,
+                                          transformerClassName,
+                                          retryInterval,
+                                          retryIntervalMultiplier,
+                                          maxRetriesBeforeFailover,
+                                          maxRetriesAfterFailover,
+                                          useDuplicateDetection,
+                                          connectorPair);
       }
       else
       {
          config = new BridgeConfiguration(name,
-                                               queueName,
-                                               forwardingAddress,
-                                               filterString,                                            
-                                               maxBatchSize,
-                                               maxBatchTime,
-                                               transformerClassName,
-                                               retryInterval,
-                                               retryIntervalMultiplier,
-                                               maxRetriesBeforeFailover,
-                                               maxRetriesAfterFailover,       
-                                               useDuplicateDetection,                                                                                         
-                                               discoveryGroupName);
+                                          queueName,
+                                          forwardingAddress,
+                                          filterString,
+                                          transformerClassName,
+                                          retryInterval,
+                                          retryIntervalMultiplier,
+                                          maxRetriesBeforeFailover,
+                                          maxRetriesAfterFailover,
+                                          useDuplicateDetection,
+                                          discoveryGroupName);
       }
 
       bridgeConfigurations.add(config);
    }
-   
+
    private void parseDivertConfiguration(final Element dvNode)
    {
       String name = null;
@@ -775,7 +776,7 @@ public class FileConfiguration extends ConfigurationImpl
       String filterString = null;
 
       String transformerClassName = null;
-            
+
       NodeList children = dvNode.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
@@ -793,7 +794,7 @@ public class FileConfiguration extends ConfigurationImpl
          else if (child.getNodeName().equals("address"))
          {
             address = child.getTextContent().trim();
-         }         
+         }
          else if (child.getNodeName().equals("forwarding-address"))
          {
             forwardingAddress = child.getTextContent().trim();
@@ -809,11 +810,17 @@ public class FileConfiguration extends ConfigurationImpl
          else if (child.getNodeName().equals("transformer-class-name"))
          {
             transformerClassName = child.getTextContent().trim();
-         }        
+         }
       }
 
-      DivertConfiguration config = new DivertConfiguration(name, routingName, address, forwardingAddress, exclusive, filterString, transformerClassName);
-      
+      DivertConfiguration config = new DivertConfiguration(name,
+                                                           routingName,
+                                                           address,
+                                                           forwardingAddress,
+                                                           exclusive,
+                                                           filterString,
+                                                           transformerClassName);
+
       divertConfigurations.add(config);
    }
 }

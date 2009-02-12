@@ -36,7 +36,7 @@ import org.jboss.messaging.util.XMLUtil;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class QueueSettingsDeployerTest extends TestCase
+public class AddressSettingsDeployerTest extends TestCase
 {
    private String conf = "<address-settings match=\"queues.*\">\n" +
            "      <manageConfirmations>false</manageConfirmations>\n" +

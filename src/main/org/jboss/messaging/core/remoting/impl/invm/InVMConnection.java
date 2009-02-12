@@ -141,5 +141,10 @@ public class InVMConnection implements Connection
    {
       return "invm:" + serverID;
    }
+   
+   public void fail(final MessagingException me)
+   {
+      listener.connectionException(id, me);
+   }
       
 }

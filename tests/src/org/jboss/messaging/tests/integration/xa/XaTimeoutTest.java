@@ -51,7 +51,7 @@ import org.jboss.messaging.util.UUIDGenerator;
 public class XaTimeoutTest extends UnitTestCase
 {
 
-   private Map<String, AddressSettings> queueSettings = new HashMap<String, AddressSettings>();
+   private Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
    private MessagingService messagingService;
    
@@ -69,7 +69,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
-      queueSettings.clear();
+      addressSettings.clear();
       configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setTransactionTimeoutScanPeriod(500);

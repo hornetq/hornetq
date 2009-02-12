@@ -326,20 +326,6 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
-      if (config.getMaxBatchTime() == 0 || config.getMaxBatchTime() < -1)
-      {
-         log.warn("Invalid value for max-batch-time. Valid values are -1 or > 0");
-
-         return;
-      }
-
-      if (config.getMaxBatchSize() < 1)
-      {
-         log.warn("Invalid value for max-batch-size. Valid values are > 0");
-
-         return;
-      }
-
       Transformer transformer = instantiateTransformer(config.getTransformerClassName());
 
       Pair<String, String> connectorNamePair = config.getConnectorPair();
@@ -389,12 +375,9 @@ public class ClusterManagerImpl implements ClusterManager
          bridge = new BridgeImpl(new SimpleString(config.getName()),
                                  queue,
                                  pair,
-                                 executorFactory.getExecutor(),
-                                 config.getMaxBatchSize(),
-                                 config.getMaxBatchTime(),
+                                 executorFactory.getExecutor(),                             
                                  config.getFilterString() == null ? null : new SimpleString(config.getFilterString()),
-                                 new SimpleString(config.getForwardingAddress()),
-                                 storageManager,
+                                 new SimpleString(config.getForwardingAddress()),                               
                                  scheduledExecutor,
                                  transformer,
                                  config.getRetryInterval(),

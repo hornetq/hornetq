@@ -283,7 +283,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          MessageReference ref = iter.next();
 
-         // ref.cancel(tx, storageManager, postOffice, queueSettingsRepository);
+         // ref.cancel(tx, storageManager, postOffice, addressSettingsRepository);
          ref.getQueue().cancel(tx, ref);
       }
 

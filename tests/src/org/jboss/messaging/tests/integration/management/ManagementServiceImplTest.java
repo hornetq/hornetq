@@ -37,6 +37,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
+import java.util.Set;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -45,6 +46,7 @@ import javax.management.ObjectName;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.ObjectNames;
@@ -65,6 +67,8 @@ import org.jboss.messaging.util.SimpleString;
 public class ManagementServiceImplTest extends TestCase
 {
    // Constants -----------------------------------------------------
+
+   private final Logger log = Logger.getLogger(ManagementServiceImplTest.class);
 
    // Attributes ----------------------------------------------------
 
@@ -178,34 +182,42 @@ public class ManagementServiceImplTest extends TestCase
 
       managementService.stop();
    }
-   
+
    public void testStop() throws Exception
    {
       MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-      
+
       ManagementService managementService = new ManagementServiceImpl(mbeanServer, true);
       assertNotNull(managementService);
 
       managementService.registerAddress(randomSimpleString());
-      
+
       assertEquals(1, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
-      
+
       managementService.stop();
 
       assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
    }
 
    // Package protected ---------------------------------------------
-   
+
    @Override
    protected void tearDown() throws Exception
    {
       MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+
+      Set set = mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
+
+      for (Object obj : set)
+      {
+         log.info("mbean:" + set);
+      }
+
       assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
 
       super.tearDown();
    }
-   
+
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------

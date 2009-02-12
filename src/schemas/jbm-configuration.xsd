@@ -309,12 +309,6 @@
 			<xsd:element name="filter" type="filterType" maxOccurs="1"
 				minOccurs="0">
 			</xsd:element>
-			<xsd:element name="max-batch-size" type="xsd:int"
-				maxOccurs="1" minOccurs="0">
-			</xsd:element>
-			<xsd:element name="max-batch-time" type="xsd:long"
-				maxOccurs="1" minOccurs="0">
-			</xsd:element>
 			<xsd:element name="transformer-class-name" type="xsd:string"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>

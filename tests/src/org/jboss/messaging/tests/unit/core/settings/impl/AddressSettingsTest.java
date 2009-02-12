@@ -30,7 +30,7 @@ import org.jboss.messaging.util.SimpleString;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class QueueSettingsTest extends TestCase
+public class AddressSettingsTest extends TestCase
 {
    public void testDefaults()
    {

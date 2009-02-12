@@ -26,7 +26,6 @@ import static org.jboss.messaging.util.SimpleString.toSimpleString;
 
 import java.nio.ByteBuffer;
 
-import org.jboss.messaging.core.client.AcknowledgementHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -139,16 +138,6 @@ public class ClientProducerImpl implements ClientProducerInternal
    public void send(String address, Message message) throws MessagingException
    {
       send(toSimpleString(address), message);
-   }
-
-   public void registerAcknowledgementHandler(final AcknowledgementHandler handler)
-   {
-      // TODO
-   }
-
-   public void unregisterAcknowledgementHandler(final AcknowledgementHandler handler)
-   {
-      // TODO
    }
 
    public synchronized void close() throws MessagingException

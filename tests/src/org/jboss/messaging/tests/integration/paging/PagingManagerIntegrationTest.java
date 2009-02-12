@@ -64,12 +64,12 @@ public class PagingManagerIntegrationTest extends UnitTestCase
    public void testPagingManager() throws Exception
    {
       
-      HierarchicalRepository<AddressSettings> queueSettings = new HierarchicalObjectRepository<AddressSettings>();
-      queueSettings.setDefault(new AddressSettings());
+      HierarchicalRepository<AddressSettings> addressSettings = new HierarchicalObjectRepository<AddressSettings>();
+      addressSettings.setDefault(new AddressSettings());
       
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), 10),
                                                             new NullStorageManager(),
-                                                            queueSettings,
+                                                            addressSettings,
                                                             -1,
                                                             1024 * 1024,
                                                             true,

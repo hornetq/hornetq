@@ -79,7 +79,7 @@ public class JMSQueueControlTest extends TestCase
 
    private StorageManager storageManager;
 
-   private HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private MessageCounter counter;
 
@@ -223,7 +223,7 @@ public class JMSQueueControlTest extends TestCase
             return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + deadLetterAddress);
          }
       };
-      expect(queueSettingsRepository.getMatch(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + name)).andReturn(settings);
+      expect(addressSettingsRepository.getMatch(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + name)).andReturn(settings);
 
       replayMockedAttributes();
 
@@ -245,7 +245,7 @@ public class JMSQueueControlTest extends TestCase
             return new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + expiryQueue);
          }
       };
-      expect(queueSettingsRepository.getMatch(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + name)).andReturn(settings);
+      expect(addressSettingsRepository.getMatch(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + name)).andReturn(settings);
 
       replayMockedAttributes();
 
@@ -539,7 +539,7 @@ public class JMSQueueControlTest extends TestCase
       coreQueue = createMock(Queue.class);
       postOffice = createMock(PostOffice.class);
       storageManager = createMock(StorageManager.class);
-      queueSettingsRepository = createMock(HierarchicalRepository.class);
+      addressSettingsRepository = createMock(HierarchicalRepository.class);
       counter = new MessageCounter(name, null, coreQueue, false, true, 10);
    }
 
@@ -552,7 +552,7 @@ public class JMSQueueControlTest extends TestCase
       coreQueue = null;
       postOffice = null;
       storageManager = null;
-      queueSettingsRepository = null;
+      addressSettingsRepository = null;
       counter = null;
 
       super.tearDown();
@@ -566,18 +566,18 @@ public class JMSQueueControlTest extends TestCase
                                  coreQueue,
                                  jndiBinding,
                                  postOffice,                               
-                                 queueSettingsRepository,
+                                 addressSettingsRepository,
                                  counter);
    }
 
    private void replayMockedAttributes()
    {
-      replay(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      replay(coreQueue, postOffice, storageManager, addressSettingsRepository);
    }
 
    private void verifyMockedAttributes()
    {
-      verify(coreQueue, postOffice, storageManager, queueSettingsRepository);
+      verify(coreQueue, postOffice, storageManager, addressSettingsRepository);
    }
 
    // Inner classes -------------------------------------------------

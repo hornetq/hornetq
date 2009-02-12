@@ -73,6 +73,8 @@ public interface Queue extends Bindable
    void reacknowledge(Transaction tx, MessageReference ref) throws Exception;
 
    void cancel(Transaction tx, MessageReference ref) throws Exception;
+   
+   void cancel(MessageReference reference) throws Exception;
 
    void deliverAsync(Executor executor);
 

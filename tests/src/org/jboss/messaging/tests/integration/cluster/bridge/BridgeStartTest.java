@@ -61,11 +61,11 @@ public class BridgeStartTest extends ServiceTestBase
    public void testStartStop() throws Exception
    {
       Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createClusteredServiceWithParams(0, false, service0Params);
+      MessagingService service0 = createClusteredServiceWithParams(0, true, service0Params);
 
       Map<String, Object> service1Params = new HashMap<String, Object>();
       service1Params.put(SERVER_ID_PROP_NAME, 1);
-      MessagingService service1 = createClusteredServiceWithParams(1, false, service1Params);
+      MessagingService service1 = createClusteredServiceWithParams(1, true, service1Params);
 
       final String testAddress = "testAddress";
       final String queueName0 = "queue0";
@@ -88,15 +88,13 @@ public class BridgeStartTest extends ServiceTestBase
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
-                                                                        null,
-                                                                        1,
-                                                                        -1,
+                                                                        null,                                                                
                                                                         null,
                                                                         1000,
                                                                         1d,
                                                                         0,
                                                                         0,
-                                                                        false,
+                                                                        true,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -201,12 +199,15 @@ public class BridgeStartTest extends ServiceTestBase
 
    public void testTargetServerUpAndDown() throws Exception
    {
+      //This test needs to use real files, since it requires duplicate detection, since when the target server is shutdown, messages will get resent when it is started, so the dup id cache needs
+      //to be persisted
+      
       Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createClusteredServiceWithParams(0, false, service0Params);
+      MessagingService service0 = createClusteredServiceWithParams(0, true, service0Params);
 
       Map<String, Object> service1Params = new HashMap<String, Object>();
       service1Params.put(SERVER_ID_PROP_NAME, 1);
-      MessagingService service1 = createClusteredServiceWithParams(1, false, service1Params);
+      MessagingService service1 = createClusteredServiceWithParams(1, true, service1Params);
 
       final String testAddress = "testAddress";
       final String queueName0 = "queue0";
@@ -229,15 +230,13 @@ public class BridgeStartTest extends ServiceTestBase
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
-                                                                        null,
-                                                                        1,
-                                                                        -1,
+                                                                        null,                                                                   
                                                                         null,
                                                                         1000,
                                                                         1d,
                                                                         -1,
                                                                         -1,
-                                                                        false,
+                                                                        true,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -415,9 +414,7 @@ public class BridgeStartTest extends ServiceTestBase
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
-                                                                        null,
-                                                                        1,
-                                                                        -1,
+                                                                        null,                                                                
                                                                         null,
                                                                         1000,
                                                                         1d,
@@ -467,7 +464,7 @@ public class BridgeStartTest extends ServiceTestBase
       Thread.sleep(1000);
 
       // Bridge should be stopped since retries = 0
-;
+
       service1.start();
 
       ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
@@ -545,9 +542,7 @@ public class BridgeStartTest extends ServiceTestBase
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
-                                                                        null,
-                                                                        1,
-                                                                        -1,
+                                                                        null,                                                               
                                                                         null,
                                                                         1000,
                                                                         1d,
@@ -638,7 +633,7 @@ public class BridgeStartTest extends ServiceTestBase
          ClientMessage message = consumer1.receive(1000);
 
          assertNotNull(message);
-
+         
          assertEquals((Integer)i, (Integer)message.getProperty(propKey));
 
          message.acknowledge();

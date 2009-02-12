@@ -56,12 +56,12 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    private static final String SOLO_MESSAGE_NODE_NAME = "solo-queue";
 
-   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   public AddressSettingsDeployer(final DeploymentManager deploymentManager, final HierarchicalRepository<AddressSettings> queueSettingsRepository)
+   public AddressSettingsDeployer(final DeploymentManager deploymentManager, final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
    	super(deploymentManager);
-      this.queueSettingsRepository = queueSettingsRepository;
+      this.addressSettingsRepository = addressSettingsRepository;
    }
    
    /**
@@ -146,7 +146,7 @@ public class AddressSettingsDeployer extends XmlDeployer
          }
       }
       
-      queueSettingsRepository.addMatch(match, addressSettings);
+      addressSettingsRepository.addMatch(match, addressSettings);
    }
 
    public String[] getConfigFileNames()
@@ -163,7 +163,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
       
-      queueSettingsRepository.removeMatch(match);
+      addressSettingsRepository.removeMatch(match);
    }
 
    /**

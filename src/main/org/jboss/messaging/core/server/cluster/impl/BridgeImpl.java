@@ -22,20 +22,35 @@
 
 package org.jboss.messaging.core.server.cluster.impl;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 
+import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.SendAcknowledgementHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
@@ -48,8 +63,8 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -60,8 +75,6 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.MessageFlowRecord;
 import org.jboss.messaging.core.server.cluster.Transformer;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
@@ -76,7 +89,7 @@ import org.jboss.messaging.util.UUIDGenerator;
  *
  *
  */
-public class BridgeImpl implements Bridge, FailureListener
+public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementHandler
 {
    // Constants -----------------------------------------------------
 
@@ -90,27 +103,13 @@ public class BridgeImpl implements Bridge, FailureListener
 
    private final Executor executor;
 
-   private volatile boolean busy;
-
-   private final int maxBatchSize;
-
-   private final long maxBatchTime;
-
    private final SimpleString filterString;
 
    private final Filter filter;
 
    private final SimpleString forwardingAddress;
 
-   private int count;
-
    private final java.util.Queue<MessageReference> refs = new LinkedList<MessageReference>();
-
-   private Transaction tx;
-
-   private long lastReceivedTime = -1;
-
-   private final StorageManager storageManager;
 
    private final Transformer transformer;
 
@@ -121,8 +120,6 @@ public class BridgeImpl implements Bridge, FailureListener
    private volatile ClientProducer producer;
 
    private volatile boolean started;
-
-   private final ScheduledFuture<?> future;
 
    private final boolean useDuplicateDetection;
 
@@ -152,11 +149,8 @@ public class BridgeImpl implements Bridge, FailureListener
                      final Queue queue,
                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      final Executor executor,
-                     final int maxBatchSize,
-                     final long maxBatchTime,
                      final SimpleString filterString,
                      final SimpleString forwardingAddress,
-                     final StorageManager storageManager,
                      final ScheduledExecutorService scheduledExecutor,
                      final Transformer transformer,
                      final long retryInterval,
@@ -169,11 +163,8 @@ public class BridgeImpl implements Bridge, FailureListener
            queue,
            connectorPair,
            executor,
-           maxBatchSize,
-           maxBatchTime,
            filterString,
            forwardingAddress,
-           storageManager,
            scheduledExecutor,
            transformer,
            retryInterval,
@@ -188,11 +179,8 @@ public class BridgeImpl implements Bridge, FailureListener
                      final Queue queue,
                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      final Executor executor,
-                     final int maxBatchSize,
-                     final long maxBatchTime,
                      final SimpleString filterString,
                      final SimpleString forwardingAddress,
-                     final StorageManager storageManager,
                      final ScheduledExecutorService scheduledExecutor,
                      final Transformer transformer,
                      final long retryInterval,
@@ -208,10 +196,6 @@ public class BridgeImpl implements Bridge, FailureListener
 
       this.executor = executor;
 
-      this.maxBatchSize = maxBatchSize;
-
-      this.maxBatchTime = maxBatchTime;
-
       this.filterString = filterString;
 
       if (this.filterString != null)
@@ -224,8 +208,6 @@ public class BridgeImpl implements Bridge, FailureListener
       }
 
       this.forwardingAddress = forwardingAddress;
-
-      this.storageManager = storageManager;
 
       this.transformer = transformer;
 
@@ -244,18 +226,6 @@ public class BridgeImpl implements Bridge, FailureListener
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
 
       this.flowRecord = flowRecord;
-
-      if (maxBatchTime != -1)
-      {
-         future = scheduledExecutor.scheduleAtFixedRate(new BatchTimeout(),
-                                                        maxBatchTime,
-                                                        maxBatchTime,
-                                                        TimeUnit.MILLISECONDS);
-      }
-      else
-      {
-         future = null;
-      }
    }
 
    public synchronized void start() throws Exception
@@ -270,29 +240,121 @@ public class BridgeImpl implements Bridge, FailureListener
       executor.execute(new CreateObjectsRunnable());
    }
 
+   private void cancelRefs() throws Exception
+   {
+      MessageReference ref;
+
+      LinkedList<MessageReference> list = new LinkedList<MessageReference>();
+
+      while ((ref = refs.poll()) != null)
+      {
+         // ref.getQueue().cancel(ref);
+         list.addFirst(ref);
+      }
+
+      for (MessageReference ref2 : list)
+      {
+         ref2.getQueue().cancel(ref2);
+      }
+   }
+
    public void stop() throws Exception
    {
-      if (!started)
+      executor.execute(new StopRunnable());
+      
+      this.waitForRunnablesToComplete();
+   }
+
+   private class StopRunnable implements Runnable
+   {
+      public void run()
       {
-         return;
+         try
+         {
+            synchronized (BridgeImpl.this)
+            {
+               if (!started)
+               {
+                  return;
+               }
+
+               // We close the session factory here - this will cause any connection retries to stop
+
+               csf.close();
+
+               if (session != null)
+               {    
+                  session.close();               
+               }
+
+               started = false;
+
+               active = false;
+
+            }
+
+            queue.removeConsumer(BridgeImpl.this);
+
+            cancelRefs();            
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to stop bridge", e);
+         }
       }
+   }
 
-      started = false;
-
-      active = false;
-
-      queue.removeConsumer(this);
-
-      if (future != null)
+   private class FailRunnable implements Runnable
+   {
+      public void run()
       {
-         future.cancel(false);
+         synchronized (BridgeImpl.this)
+         {
+            if (!started)
+            {
+               return;
+            }
+
+            if (flowRecord != null)
+            {
+               try
+               {
+                  flowRecord.reset();
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to reset", e);
+               }
+            }
+            
+            active = false;
+         }
+
+         try
+         {
+            queue.removeConsumer(BridgeImpl.this);
+
+            session.cleanUp();
+
+            cancelRefs();
+
+            csf.close();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to stop", e);
+         }
+
+         if (!createObjects())
+         {
+            started = false;
+         }         
       }
+   }
 
-      // We close the session factory here - this will cause any connection retries to stop
-      csf.close();
-
-      // Wait until all batches are complete
-
+   private void waitForRunnablesToComplete()
+   {
+      // Wait for any create objects runnable to complete
       Future future = new Future();
 
       executor.execute(future);
@@ -303,10 +365,131 @@ public class BridgeImpl implements Bridge, FailureListener
       {
          log.warn("Timed out waiting for batch to be sent");
       }
+   }
 
-      if (session != null)
+   private void fail()
+   {
+      if (started)
       {
-         session.close();
+         executor.execute(new FailRunnable());
+      }
+   }
+
+   private synchronized boolean createObjects()
+   {
+      if (!started)
+      {
+         return false;
+      }
+
+      try
+      {
+         queue.addConsumer(BridgeImpl.this);
+
+         csf = new ClientSessionFactoryImpl(connectorPair.a,
+                                            connectorPair.b,
+                                            DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                            DEFAULT_PING_PERIOD,
+                                            DEFAULT_CONNECTION_TTL,
+                                            2000,
+                                            DEFAULT_CONSUMER_WINDOW_SIZE,
+                                            DEFAULT_CONSUMER_MAX_RATE,
+                                            DEFAULT_SEND_WINDOW_SIZE,
+                                            DEFAULT_PRODUCER_MAX_RATE,
+                                            DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                            DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                            DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                            DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                            DEFAULT_AUTO_GROUP,
+                                            DEFAULT_MAX_CONNECTIONS,
+                                            DEFAULT_PRE_ACKNOWLEDGE,
+                                            DEFAULT_ACK_BATCH_SIZE,
+                                            retryInterval,
+                                            retryIntervalMultiplier,
+                                            maxRetriesBeforeFailover,
+                                            maxRetriesAfterFailover);
+
+         session = (ClientSessionInternal)csf.createSession(null, null, false, true, true, false, 1);
+
+         if (session == null)
+         {
+            // This can happen if the bridge is shutdown
+            return false;
+         }
+
+         producer = session.createProducer();
+
+         session.addFailureListener(BridgeImpl.this);
+
+         session.setSendAcknowledgementHandler(BridgeImpl.this);
+
+         // TODO - we should move this code to the ClusterConnectorImpl - and just execute it when the bridge
+         // connection is opened and closed - we can use
+         // a callback to tell us that
+         if (flowRecord != null)
+         {
+            // Get the queue data
+
+            SimpleString notifQueueName = new SimpleString("notif-").concat(UUIDGenerator.getInstance()
+                                                                                         .generateSimpleStringUUID());
+
+            // TODO - simplify this
+            SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
+                                                   BindingType.DIVERT.toInt() +
+                                                   " AND " +
+                                                   ManagementHelper.HDR_NOTIFICATION_TYPE +
+                                                   " IN ('" +
+                                                   NotificationType.BINDING_ADDED +
+                                                   "','" +
+                                                   NotificationType.BINDING_REMOVED +
+                                                   "','" +
+                                                   NotificationType.CONSUMER_CREATED +
+                                                   "','" +
+                                                   NotificationType.CONSUMER_CLOSED +
+                                                   "') AND " +
+                                                   ManagementHelper.HDR_DISTANCE +
+                                                   "<" +
+                                                   flowRecord.getMaxHops() +
+                                                   " AND (" +
+                                                   ManagementHelper.HDR_ADDRESS +
+                                                   " LIKE '" +
+                                                   flowRecord.getAddress() +
+                                                   "%')");
+
+            session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
+
+            ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
+
+            notifConsumer.setMessageHandler(flowRecord);
+
+            session.start();
+
+            ClientMessage message = session.createClientMessage(false);
+
+            ManagementHelper.putOperationInvocation(message,
+                                                    ObjectNames.getMessagingServerObjectName(),
+                                                    "sendQueueInfoToQueue",
+                                                    notifQueueName.toString(),
+                                                    flowRecord.getAddress());
+
+            ClientProducer prod = session.createProducer(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
+
+            prod.send(message);
+         }
+
+         active = true;
+
+         queue.deliverAsync(executor);
+
+         log.info("Bridge " + name + " connected successfully");
+
+         return true;
+      }
+      catch (Exception e)
+      {
+         log.warn("Unable to connect. Bridge is now disabled.", e);
+
+         return false;
       }
    }
 
@@ -323,16 +506,6 @@ public class BridgeImpl implements Bridge, FailureListener
    public Queue getQueue()
    {
       return queue;
-   }
-
-   public int getMaxBatchSize()
-   {
-      return maxBatchSize;
-   }
-
-   public long getMaxBatchTime()
-   {
-      return maxBatchTime;
    }
 
    public Filter getFilter()
@@ -368,44 +541,107 @@ public class BridgeImpl implements Bridge, FailureListener
       }
    }
 
+   // SendAcknowledgementHandler implementation ---------------------
+
+   public void sendAcknowledged(final Message message)
+   {
+      try
+      {
+         MessageReference ref = refs.poll();
+
+         if (ref != null)
+         {
+            // Acknowledge when we know send has been processed on the server
+            ref.getQueue().acknowledge(ref);
+         }
+      }
+      catch (Exception e)
+      {
+         log.info("Failed to ack", e);
+      }
+   }
+
    // Consumer implementation ---------------------------------------
 
-   public HandleStatus handle(final MessageReference reference) throws Exception
+   public HandleStatus handle(final MessageReference ref) throws Exception
    {
-      if (busy)
-      {
-         return HandleStatus.BUSY;
-      }
-
-      if (filter != null && !filter.match(reference.getMessage()))
+      if (filter != null && !filter.match(ref.getMessage()))
       {
          return HandleStatus.NO_MATCH;
       }
 
+      if (!active)
+      {
+         return HandleStatus.BUSY;
+      }
+
       synchronized (this)
       {
-         if (!active)
+         ref.getQueue().referenceHandled();
+
+         ServerMessage message = ref.getMessage();
+
+         refs.add(ref);
+
+         if (flowRecord != null)
          {
-            return HandleStatus.BUSY;
+            // We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave
+            // only
+            // the one pertinent for the destination node - this is important since different queues on different
+            // nodes could have same queue ids
+            // Note we must copy since same message may get routed to other nodes which require different headers
+            message = message.copy();
+
+            // TODO - we can optimise this
+
+            Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
+
+            byte[] queueIds = (byte[])message.getProperty(idsHeaderName);
+
+            for (SimpleString propName : propNames)
+            {
+               if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
+               {
+                  message.removeProperty(propName);
+               }
+            }
+
+            message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
+
+            message.putBooleanProperty(MessageImpl.HDR_FROM_CLUSTER, Boolean.TRUE);
          }
 
-         reference.getQueue().referenceHandled();
-
-         refs.add(reference);
-
-         if (maxBatchTime != -1)
+         if (useDuplicateDetection && !message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
          {
-            lastReceivedTime = System.currentTimeMillis();
+            byte[] bytes = new byte[8];
+
+            ByteBuffer bb = ByteBuffer.wrap(bytes);
+
+            // TODO NEEDS to incluse server id
+
+            bb.putLong(message.getMessageID());
+
+            message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
          }
 
-         count++;
-
-         if (count == maxBatchSize)
+         if (transformer != null)
          {
-            busy = true;
-
-            executor.execute(new BatchSender());
+            message = transformer.transform(message);
          }
+
+         SimpleString dest;
+
+         if (forwardingAddress != null)
+         {
+            dest = forwardingAddress;
+         }
+         else
+         {
+            // Preserve the original address
+            dest = message.getDestination();
+         }
+
+         producer.send(dest, message);
 
          return HandleStatus.HANDLED;
       }
@@ -415,63 +651,9 @@ public class BridgeImpl implements Bridge, FailureListener
 
    public boolean connectionFailed(final MessagingException me)
    {
-      if (flowRecord != null)
-      {
-         try
-         {
-            flowRecord.reset();
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to reset", e);
-         }
-      }
-
       fail();
 
       return true;
-   }
-
-   private synchronized void fail()
-   {
-      if (!started)
-      {
-         return;
-      }
-
-      log.warn(System.identityHashCode(this) + " Bridge connection to target failed. Will try to reconnect");
-
-      try
-      {
-         tx.rollback();
-
-         active = false;
-
-         queue.removeConsumer(this);
-
-         // Wait until all batches are complete
-
-         Future future = new Future();
-
-         executor.execute(future);
-
-         boolean ok = future.await(10000);
-
-         if (!ok)
-         {
-            log.warn("Timed out waiting for batch to be sent");
-         }
-
-         session.cleanUp();
-
-         csf.close();
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to stop", e);
-      }
-
-      executor.execute(new CreateObjectsRunnable());
    }
 
    // Package protected ---------------------------------------------
@@ -480,243 +662,18 @@ public class BridgeImpl implements Bridge, FailureListener
 
    // Private -------------------------------------------------------
 
-   private synchronized void timeoutBatch()
-   {
-      if (!active)
-      {
-         return;
-      }
-
-      if (lastReceivedTime != -1 && count > 0)
-      {
-         long now = System.currentTimeMillis();
-
-         if (now - lastReceivedTime >= maxBatchTime)
-         {
-            sendBatch();
-         }
-      }
-   }
-
-   private synchronized void sendBatch()
-   {
-      try
-      {
-         if (count == 0)
-         {
-            return;
-         }
-
-         // TODO - if batch size = 1 then don't need tx - actually we should use asynch send acknowledgement stream -
-         // then we don't need a transaction at all
-
-         while (true)
-         {
-            MessageReference ref = refs.poll();
-
-            if (ref == null)
-            {
-               break;
-            }
-
-            ref.getQueue().acknowledge(tx, ref);
-
-            ServerMessage message = ref.getMessage();
-
-            if (flowRecord != null)
-            {
-               // We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave
-               // only
-               // the one pertinent for the destination node - this is important since different queues on different
-               // nodes could have same queue ids
-               // Note we must copy since same message may get routed to other nodes which require different headers
-               message = message.copy();
-
-               // TODO - we can optimise this
-
-               Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
-
-               byte[] queueIds = (byte[])message.getProperty(idsHeaderName);
-
-               for (SimpleString propName : propNames)
-               {
-                  if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
-                  {
-                     message.removeProperty(propName);
-                  }
-               }
-
-               message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
-
-               message.putBooleanProperty(MessageImpl.HDR_FROM_CLUSTER, Boolean.TRUE);
-            }
-
-            if (transformer != null)
-            {
-               message = transformer.transform(message);
-            }
-
-            SimpleString dest;
-
-            if (forwardingAddress != null)
-            {
-               dest = forwardingAddress;
-            }
-            else
-            {
-               // Preserve the original address
-               dest = message.getDestination();
-            }
-
-            producer.send(dest, message);
-         }
-
-         session.commit();
-
-         tx.commit();
-
-         createTx();
-
-         busy = false;
-
-         count = 0;
-
-         queue.deliverAsync(executor);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to forward batch", e);
-
-         fail();
-      }
-   }
-
-   private void createTx()
-   {
-      tx = new TransactionImpl(storageManager);
-   }
-
    // Inner classes -------------------------------------------------
-
-   private class BatchSender implements Runnable
-   {
-      public void run()
-      {
-         sendBatch();
-      }
-   }
-
-   private class BatchTimeout implements Runnable
-   {
-      public void run()
-      {
-         timeoutBatch();
-      }
-   }
 
    private class CreateObjectsRunnable implements Runnable
    {
       public synchronized void run()
       {
-         if (!started)
+         if (!createObjects())
          {
-            return;
-         }
-
-         try
-         {
-            createTx();
-
-            queue.addConsumer(BridgeImpl.this);
-
-            csf = new ClientSessionFactoryImpl(connectorPair.a,
-                                               connectorPair.b,
-                                               retryInterval,
-                                               retryIntervalMultiplier,
-                                               maxRetriesBeforeFailover,
-                                               maxRetriesAfterFailover);
-
-            session = (ClientSessionInternal)csf.createSession(false, false, false);
-
-            if (session == null)
-            {
-               // This can happen if the bridge is shutdown
-               return;
-            }
-
-            producer = session.createProducer();
-
-            session.addFailureListener(BridgeImpl.this);
-
-            // TODO - we should move this code to the ClusterConnectorImpl - and just execute it when the bridge
-            // connection is opened and closed - we can use
-            // a callback to tell us that
-            if (flowRecord != null)
-            {
-               // Get the queue data
-
-               SimpleString notifQueueName = new SimpleString("notif-").concat(UUIDGenerator.getInstance()
-                                                                                            .generateSimpleStringUUID());
-
-               // TODO - simplify this
-               SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
-                                                      BindingType.DIVERT.toInt() +
-                                                      " AND " +
-                                                      ManagementHelper.HDR_NOTIFICATION_TYPE +
-                                                      " IN ('" +
-                                                      NotificationType.BINDING_ADDED +
-                                                      "','" +
-                                                      NotificationType.BINDING_REMOVED +
-                                                      "','" +
-                                                      NotificationType.CONSUMER_CREATED +
-                                                      "','" +
-                                                      NotificationType.CONSUMER_CLOSED +
-                                                      "') AND " +
-                                                      ManagementHelper.HDR_DISTANCE +
-                                                      "<" +
-                                                      flowRecord.getMaxHops() +
-                                                      " AND (" +                                                     
-                                                      ManagementHelper.HDR_ADDRESS +
-                                                      " LIKE '" +
-                                                      flowRecord.getAddress() +
-                                                      "%')");
-               
-               session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
-
-               ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
-
-               notifConsumer.setMessageHandler(flowRecord);
-
-               session.start();
-
-               ClientMessage message = session.createClientMessage(false);
-
-               ManagementHelper.putOperationInvocation(message,
-                                                       ObjectNames.getMessagingServerObjectName(),
-                                                       "sendQueueInfoToQueue",
-                                                       notifQueueName.toString(),
-                                                       flowRecord.getAddress());
-
-               ClientProducer prod = session.createProducer(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
-
-               prod.send(message);
-            }
-
-            active = true;
-
-            queue.deliverAsync(executor);
-
-         }
-         catch (Exception e)
-         {
-            log.warn("Unable to connect. Bridge is now disabled.", e);
-
             active = false;
-
+            
             started = false;
          }
-
-         log.info("Bridge " + name + " connected successfully");
       }
    }
 

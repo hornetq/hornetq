@@ -231,7 +231,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          {
             doTestL(sf);
          }
-      }, NUM_THREADS, false);
+      }, 1, false, true);
    }
 
    // public void testM() throws Exception
@@ -1063,20 +1063,26 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       s.close();
    }
 
+   /*
+    * This test tests failure during create connection
+    */
    protected void doTestL(final ClientSessionFactory sf) throws Exception
-   {
-      ClientSession s = sf.createSession(false, false, false);
-
-      final int numSessions = 100;
+   {     
+      ClientSessionFactoryInternal sf2 = createSessionFactory();
+      
+      final int numSessions = 10;
 
       for (int i = 0; i < numSessions; i++)
       {
-         ClientSession session = sf.createSession(false, false, false);
+         log.info("i " + i);
+         ClientSession session = sf2.createSession(false, false, false);
 
          session.close();
+         
+         Thread.sleep(10);
       }
-
-      s.close();
+ 
+      sf2.close();     
    }
 
    // Browsers
@@ -1243,7 +1249,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    protected int getNumIterations()
    {
-      return 1;
+      return 2;
    }
 
    @Override
@@ -1278,6 +1284,11 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    private void runTestMultipleThreads(final RunnableT runnable, final int numThreads, final boolean fileBased) throws Exception
    {
+      runTestMultipleThreads(runnable, numThreads, fileBased, false);
+   }
+   
+   private void runTestMultipleThreads(final RunnableT runnable, final int numThreads, final boolean fileBased, final boolean failOnCreateConnection) throws Exception
+   {
       final int numIts = getNumIterations();
 
       for (int its = 0; its < numIts; its++)
@@ -1290,7 +1301,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
          ClientSession session = sf.createSession(false, false, false);
 
-         Failer failer = startFailer(1000, session);
+         Failer failer = startFailer(1000, session, failOnCreateConnection);
 
          class Runner extends Thread
          {
@@ -1345,26 +1356,34 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
                   throw new Exception("Exception on thread " + thread, thread.throwable);
                }
             }
+            
+            log.info("completed*******");
 
             runnable.checkFail();
+            
+            log.info("super completed");
          }
          while (!failer.isExecuted());
 
          InVMConnector.resetFailures();
 
+         log.info("closing session");
          session.close();
+         log.info("closed session");
 
          assertEquals(0, sf.numSessions());
 
          assertEquals(0, sf.numConnections());
 
+         log.info("stopping");
          stop();
+         log.info("stopped");
       }
    }
 
-   private Failer startFailer(final long time, final ClientSession session)
+   private Failer startFailer(final long time, final ClientSession session, final boolean failOnCreateConnection)
    {
-      Failer failer = new Failer(session);
+      Failer failer = new Failer(session, failOnCreateConnection);
 
       timer.schedule(failer, (long)(time * Math.random()), 100);
 
@@ -1475,10 +1494,14 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       private final ClientSession session;
 
       private boolean executed;
-
-      public Failer(final ClientSession session)
+      
+      private final boolean failOnCreateConnection;
+      
+      public Failer(final ClientSession session, final boolean failOnCreateConnection)
       {
          this.session = session;
+         
+         this.failOnCreateConnection = failOnCreateConnection;
       }
 
       @Override
@@ -1487,10 +1510,16 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          log.info("** Failing connection");
 
          RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
-
-         InVMConnector.numberOfFailures = 1;
-         InVMConnector.failOnCreateConnection = true;
-         conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+         
+         if (failOnCreateConnection)
+         {
+            InVMConnector.numberOfFailures = 1;
+            InVMConnector.failOnCreateConnection = true;            
+         }
+         else
+         {
+            conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+         }
 
          log.info("** Fail complete");
 
@@ -1501,6 +1530,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
       public synchronized boolean isExecuted()
       {
+         log.info("executed??" + executed);
          return executed;
       }
    }

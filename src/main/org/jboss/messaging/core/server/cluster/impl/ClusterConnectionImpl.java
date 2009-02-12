@@ -325,7 +325,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             }
             else
             {
-               queue = queueFactory.createQueue(-1, name, name, null, true, false);
+               queue = queueFactory.createQueue(-1, queueName, queueName, null, true, false);
 
                // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
                // actually routed to at that address though
@@ -340,12 +340,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             Bridge bridge = new BridgeImpl(queueName,
                                            queue,
                                            connectorPair,
-                                           executorFactory.getExecutor(),
-                                           1,
-                                           -1,
+                                           executorFactory.getExecutor(),                                    
                                            null,
-                                           null,
-                                           storageManager,
+                                           null,                                           
                                            scheduledExecutor,
                                            null,
                                            retryInterval,
@@ -486,8 +483,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                throw new IllegalStateException("distance is null");
             }
 
-            //log.info(System.identityHashCode(ClusterConnectionImpl.this) + " Got notification " + ntype);
-            
             switch (ntype.toInt())
             {
                case NotificationType.BINDING_ADDED_INDEX:
@@ -594,6 +589,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                   }
    
                   binding.addConsumer(filterString);
+                                    
+                  message.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
                   
                   //Need to propagate the consumer add
                   Notification notification = new Notification(ntype, message.getProperties());
@@ -622,6 +619,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    
                   binding.removeConsumer(filterString);
                   
+                  message.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
+                  
                   //Need to propagate the consumer close
                   Notification notification = new Notification(ntype, message.getProperties());
                   
@@ -638,7 +637,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
 
       private void clearBindings() throws Exception
-      {
+      {         
          for (RemoteQueueBinding binding : bindings.values())
          {
             postOffice.removeBinding(binding.getUniqueName());

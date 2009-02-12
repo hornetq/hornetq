@@ -112,7 +112,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
-   private HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private MessagingServerControl managedServer;
 
@@ -149,7 +149,7 @@ public class ManagementServiceImpl implements ManagementService
    public MessagingServerControlMBean registerServer(final PostOffice postOffice,
                                                      final StorageManager storageManager,
                                                      final Configuration configuration,
-                                                     final HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                                                     final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                                      final HierarchicalRepository<Set<Role>> securityRepository,
                                                      final ResourceManager resourceManager,
                                                      final RemotingService remotingService,
@@ -157,7 +157,7 @@ public class ManagementServiceImpl implements ManagementService
                                                      final QueueFactory queueFactory) throws Exception
    {
       this.postOffice = postOffice;
-      this.queueSettingsRepository = queueSettingsRepository;
+      this.addressSettingsRepository = addressSettingsRepository;
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
       this.managementNotificationAddress = configuration.getManagementNotificationAddress();
@@ -226,7 +226,7 @@ public class ManagementServiceImpl implements ManagementService
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
-      QueueControl queueControl = new QueueControl(queue, storageManager, postOffice, queueSettingsRepository, counter);
+      QueueControl queueControl = new QueueControl(queue, storageManager, postOffice, addressSettingsRepository, counter);
       registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName, queueControl));
       registerInRegistry(objectName, queueControl);
 
@@ -501,7 +501,7 @@ public class ManagementServiceImpl implements ManagementService
             {
                notifProps = new TypedProperties();
             }
-
+            
             notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(notification.getType().toString()));
             
             notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());

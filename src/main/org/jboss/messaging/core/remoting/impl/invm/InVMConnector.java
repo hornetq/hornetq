@@ -92,11 +92,6 @@ public class InVMConnector implements Connector
       InVMRegistry registry = InVMRegistry.instance;
 
       acceptor = registry.getAcceptor(id);
-
-      if (acceptor == null)
-      {
-         log.warn("Cannot connect to invm acceptor with id " + id + " has it been started?");
-      }
    }
 
    public Acceptor getAcceptor()

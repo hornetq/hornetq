@@ -652,7 +652,7 @@ public class LocalTestServer implements Server, Runnable
       return (JMSServerManager)bootstrap.getKernel().getRegistry().getEntry("JMSServerManager").getTarget();
    }
 
-   public void addQueueSettings(String name, long redeliveryDelay)
+   public void addAddressSettings(String name, long redeliveryDelay)
    {
       AddressSettings qs = getMessagingServer().getAddressSettingsRepository().getMatch("*");
       AddressSettings newSets = new AddressSettings();
@@ -661,7 +661,7 @@ public class LocalTestServer implements Server, Runnable
       getMessagingServer().getAddressSettingsRepository().addMatch(name, newSets);
    }
 
-   public void removeQueueSettings(String name)
+   public void removeAddressSettings(String name)
    {
       getMessagingServer().getAddressSettingsRepository().removeMatch(name);
    }
@@ -748,7 +748,7 @@ public class LocalTestServer implements Server, Runnable
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setRedeliveryDelay(delay);
       // FIXME we need to expose queue attributes in another way
-      // getMessagingServer().getServerManagement().setQueueAttributes(condition, queueSettings);
+      // getMessagingServer().getServerManagement().setQueueAttributes(condition, addressSettings);
    }
 
    // Inner classes --------------------------------------------------------------------------------

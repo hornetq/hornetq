@@ -68,7 +68,7 @@ public class QueueControl implements QueueControlMBean
 
    private final PostOffice postOffice;
 
-   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final MessageCounter counter;
 
@@ -79,13 +79,13 @@ public class QueueControl implements QueueControlMBean
    public QueueControl(final Queue queue,
                        final StorageManager storageManager,
                        final PostOffice postOffice,
-                       final HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                       final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                        final MessageCounter counter)
    {
       this.queue = queue;
       this.storageManager = storageManager;
       this.postOffice = postOffice;
-      this.queueSettingsRepository = queueSettingsRepository;
+      this.addressSettingsRepository = addressSettingsRepository;
       this.counter = counter;
    }
 
@@ -152,7 +152,7 @@ public class QueueControl implements QueueControlMBean
 
    public String getDeadLetterAddress()
    {
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(getName());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(getName());
       if (addressSettings != null && addressSettings.getDeadLetterAddress() != null)
       {
          return addressSettings.getDeadLetterAddress().toString();
@@ -165,7 +165,7 @@ public class QueueControl implements QueueControlMBean
 
    public void setDeadLetterAddress(String deadLetterAddress) throws Exception
    {
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(getName());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(getName());
 
       if (deadLetterAddress != null)
       {
@@ -175,7 +175,7 @@ public class QueueControl implements QueueControlMBean
 
    public String getExpiryAddress()
    {
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(getName());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(getName());
       if (addressSettings != null && addressSettings.getExpiryAddress() != null)
       {
          return addressSettings.getExpiryAddress().toString();
@@ -188,7 +188,7 @@ public class QueueControl implements QueueControlMBean
 
    public void setExpiryAddress(String expiryAddres) throws Exception
    {
-      AddressSettings addressSettings = queueSettingsRepository.getMatch(getName());
+      AddressSettings addressSettings = addressSettingsRepository.getMatch(getName());
 
       if (expiryAddres != null)
       {

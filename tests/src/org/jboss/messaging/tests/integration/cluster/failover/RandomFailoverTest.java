@@ -247,8 +247,6 @@ public class RandomFailoverTest extends TestCase
          }
          while (!failer.isExecuted());
          
-         InVMConnector.resetFailures();
-
          session.close();
 
          assertEquals(0, sf.numSessions());
@@ -1526,8 +1524,6 @@ public class RandomFailoverTest extends TestCase
       {
          log.info("** Failing connection");
 
-         InVMConnector.numberOfFailures = 1;
-         InVMConnector.failOnCreateConnection = true;
          session.getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "oops"));
 
          log.info("** Fail complete");

@@ -44,10 +44,6 @@ public interface Bridge extends Consumer, MessagingComponent
 
    Queue getQueue();
 
-   int getMaxBatchSize();
-
-   long getMaxBatchTime();
-
    SimpleString getForwardingAddress();
 
    Transformer getTransformer();

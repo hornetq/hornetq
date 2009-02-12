@@ -90,8 +90,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final int DEFAULT_MAX_RETRIES_BEFORE_FAILOVER = 0;
 
-   public static final int DEFAULT_MAX_RETRIES_AFTER_FAILOVER = 10;
-   
+   public static final int DEFAULT_MAX_RETRIES_AFTER_FAILOVER = 0;
+
    // Attributes
    // -----------------------------------------------------------------------------------
 
@@ -171,7 +171,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
 
-      discoveryGroup = new DiscoveryGroupImpl(discoveryGroupAddress, groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
+      discoveryGroup = new DiscoveryGroupImpl(discoveryGroupAddress,
+                                              groupAddress,
+                                              discoveryGroupPort,
+                                              discoveryRefreshTimeout);
 
       discoveryGroup.registerListener(this);
 
@@ -228,16 +231,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       try
       {
          InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
-   
-         discoveryGroup = new DiscoveryGroupImpl(discoveryGroupAddress, groupAddress, discoveryGroupPort, discoveryRefreshTimeout);
-   
+
+         discoveryGroup = new DiscoveryGroupImpl(discoveryGroupAddress,
+                                                 groupAddress,
+                                                 discoveryGroupPort,
+                                                 discoveryRefreshTimeout);
+
          discoveryGroup.registerListener(this);
-   
+
          discoveryGroup.start();
       }
       catch (Exception e)
       {
-         //TODO - handle exceptions better
+         // TODO - handle exceptions better
          throw new MessagingException(MessagingException.NOT_CONNECTED, e.toString());
       }
 
@@ -357,7 +363,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
       this.maxRetriesAfterFailover = maxRetriesAfterFailover;
-      
+
       this.initialWaitTimeout = -1;
 
       Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
@@ -752,15 +758,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             log.error("Failed to stop discovery group", e);
          }
       }
-      
+
       for (ConnectionManager connectionManager : connectionManagerMap.values())
       {
          connectionManager.close();
       }
-      
+
       connectionManagerMap.clear();
    }
-   
+
    // DiscoveryListener implementation --------------------------------------------------------
 
    public synchronized void connectorsChanged()
@@ -833,8 +839,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                final int ackBatchSize) throws MessagingException
    {
       if (discoveryGroup != null && !receivedBroadcast)
-      {         
-         boolean ok = discoveryGroup.waitForBroadcast(initialWaitTimeout);         
+      {
+         boolean ok = discoveryGroup.waitForBroadcast(initialWaitTimeout);
 
          if (!ok)
          {

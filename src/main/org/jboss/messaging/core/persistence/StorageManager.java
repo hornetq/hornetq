@@ -103,7 +103,7 @@ public interface StorageManager extends MessagingComponent
 
    void loadMessageJournal(PostOffice postOffice,
                            StorageManager storageManager,
-                           HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                           HierarchicalRepository<AddressSettings> addressSettingsRepository,
                            Map<Long, Queue> queues,
                            ResourceManager resourceManager,
                            Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;

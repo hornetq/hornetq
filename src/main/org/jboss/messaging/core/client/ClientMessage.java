@@ -40,5 +40,5 @@ public interface ClientMessage extends Message
    
    void setDeliveryCount(int deliveryCount);
 
-   void acknowledge() throws MessagingException;
+   void acknowledge() throws MessagingException;   
 }

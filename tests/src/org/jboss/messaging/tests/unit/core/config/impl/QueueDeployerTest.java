@@ -52,7 +52,7 @@ public class QueueDeployerTest extends TestCase
 
    // Public --------------------------------------------------------
 
-   public void testParseQueueConfigurationFromQueueSettings() throws Exception
+   public void testParseQueueConfigurationFromAddressSettings() throws Exception
    {
       Configuration configuration = new ConfigurationImpl();
       QueueDeployer deployer = new QueueDeployer(new FileDeploymentManager(500), configuration);

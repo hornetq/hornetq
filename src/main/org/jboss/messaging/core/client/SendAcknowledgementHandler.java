@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -18,18 +18,22 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.client;
 
+import org.jboss.messaging.core.message.Message;
+
 /**
- * 
- * A AcknowledgementHandler
- * 
+ * A SendAcknowledgementHandler
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 9 Feb 2009 12:49:34
+ *
  *
  */
-public interface AcknowledgementHandler
+public interface SendAcknowledgementHandler
 {
-   void onAcknowledgement(long id);
+   void sendAcknowledged(Message message);
 }

@@ -82,7 +82,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    private final StorageManager storageManager;
 
-   private final HierarchicalRepository<AddressSettings> queueSettingsRepository;
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final JMSManagementService managementService;
 
@@ -108,13 +108,13 @@ public class JMSServerManagerImpl implements JMSServerManager
    public JMSServerManagerImpl(final MessagingServerControlMBean server,
                                final PostOffice postOffice,
                                final StorageManager storageManager,
-                               final HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                               final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                final JMSManagementService managementService)
    {
       messagingServer = server;
       this.postOffice = postOffice;
       this.storageManager = storageManager;
-      this.queueSettingsRepository = queueSettingsRepository;
+      this.addressSettingsRepository = addressSettingsRepository;
       this.managementService = managementService;
    }
 
@@ -159,7 +159,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                       jndiBinding,
                                       postOffice,
                                       storageManager,
-                                      queueSettingsRepository);
+                                      addressSettingsRepository);
       return added;
    }
 
@@ -172,7 +172,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          addToDestinationBindings(topicName, jndiBinding);
       }
-      managementService.registerTopic(jBossTopic, jndiBinding, postOffice, storageManager, queueSettingsRepository);
+      managementService.registerTopic(jBossTopic, jndiBinding, postOffice, storageManager, addressSettingsRepository);
       return added;
    }
 

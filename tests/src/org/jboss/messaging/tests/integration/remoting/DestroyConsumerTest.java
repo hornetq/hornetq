@@ -44,7 +44,7 @@ public class DestroyConsumerTest extends ServiceTestBase
    
 //   public void testDestroyConsumer() throws Exception
 //   {
-//      MessagingService service = createService(false, false, createDefaultConfig(), new HashMap<String, QueueSettings>());
+//      MessagingService service = createService(false, false, createDefaultConfig(), new HashMap<String, AddressSettings>());
 //      service.start();
 //      
 //      SimpleString queue = new SimpleString("add1");

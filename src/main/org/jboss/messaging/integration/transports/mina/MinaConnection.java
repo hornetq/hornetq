@@ -27,6 +27,7 @@ import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.service.IoConnector;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.ssl.SslFilter;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -70,9 +71,10 @@ public class MinaConnection implements Connection
          return;
       }
 
-      SslFilter sslFilter = (SslFilter) session.getFilterChain().get("ssl");
+      SslFilter sslFilter = (SslFilter)session.getFilterChain().get("ssl");
 
-      if (session.getService() instanceof IoConnector) {
+      if (session.getService() instanceof IoConnector)
+      {
          if (sslFilter != null)
          {
             try
@@ -85,7 +87,9 @@ public class MinaConnection implements Connection
             }
          }
          session.close().awaitUninterruptibly();
-      } else {
+      }
+      else
+      {
          if (sslFilter != null)
          {
             try
@@ -96,7 +100,9 @@ public class MinaConnection implements Connection
             {
                // ignore
             }
-         } else {
+         }
+         else
+         {
             session.close();
          }
       }
@@ -124,6 +130,10 @@ public class MinaConnection implements Connection
    public String getRemoteAddress()
    {
       return session.getRemoteAddress().toString();
+   }
+
+   public void fail(final MessagingException me)
+   {     
    }
 
    // Public --------------------------------------------------------

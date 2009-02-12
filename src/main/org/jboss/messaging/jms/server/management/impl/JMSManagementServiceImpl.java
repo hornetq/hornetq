@@ -91,7 +91,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                              final String jndiBinding,
                              final PostOffice postOffice,
                              final StorageManager storageManager,
-                             HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception
+                             HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
       MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
       MessageCounter counter = new MessageCounter(queue.getName(),
@@ -106,7 +106,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                                     coreQueue,
                                                     jndiBinding,
                                                     postOffice,                                                
-                                                    queueSettingsRepository,
+                                                    addressSettingsRepository,
                                                     counter);
       managementService.registerInJMX(objectName,
                                       new ReplicationAwareJMSQueueControlWrapper(objectName, control));
@@ -123,7 +123,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                              final String jndiBinding,
                              final PostOffice postOffice,
                              final StorageManager storageManager,
-                             final HierarchicalRepository<AddressSettings> queueSettingsRepository) throws Exception
+                             final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice);

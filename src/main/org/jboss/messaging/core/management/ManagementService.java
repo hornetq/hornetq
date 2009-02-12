@@ -66,7 +66,7 @@ public interface ManagementService extends MessagingComponent
    MessagingServerControlMBean registerServer(PostOffice postOffice,
                                               StorageManager storageManager,
                                               Configuration configuration,                                            
-                                              HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                                              HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                               HierarchicalRepository<Set<Role>> securityRepository,
                                               ResourceManager resourceManager,
                                               RemotingService remotingService,

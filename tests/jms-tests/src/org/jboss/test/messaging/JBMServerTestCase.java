@@ -827,14 +827,14 @@ public class JBMServerTestCase extends JBMBaseTestCase
       servers.get(0).configureSecurityForDestination(s, b, lockedConf);
    }
 
-   protected void addQueueSettings(String name, long scheduledDeliveryTime)
+   protected void addAddressSettings(String name, long scheduledDeliveryTime)
    {
-      servers.get(0).addQueueSettings("queuejms." + name, scheduledDeliveryTime);
+      servers.get(0).addAddressSettings("queuejms." + name, scheduledDeliveryTime);
    }
 
-   protected void removeQueueSettings(String name)
+   protected void removeAddressSettings(String name)
    {
-      servers.get(0).removeQueueSettings(name);   
+      servers.get(0).removeAddressSettings(name);   
    }
 
    protected void kill(int i) throws Exception

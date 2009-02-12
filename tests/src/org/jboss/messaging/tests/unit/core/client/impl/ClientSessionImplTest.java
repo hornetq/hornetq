@@ -428,7 +428,7 @@ public class ClientSessionImplTest extends UnitTestCase
       testAcknowledge(true);
       testAcknowledge(false);
    }
-   
+
    public void testCommit() throws Exception
    {
       expect(channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT))).andReturn(new NullResponseMessage());
@@ -1484,16 +1484,16 @@ public class ClientSessionImplTest extends UnitTestCase
 
       super.tearDown();
    }
-   
+
    // Private -----------------------------------------------------
 
    private void testAcknowledge(boolean blockOnAck) throws Exception
    {
       resetMocks();
-      
+
       long messageID = randomPositiveLong();
       long consumerID = randomPositiveLong();
-      
+
       boolean preack = false;
       session = new ClientSessionImpl(cm,
                                       randomString(),
@@ -1513,22 +1513,23 @@ public class ClientSessionImplTest extends UnitTestCase
                                       rc,
                                       1,
                                       channel);
-      
+
       if (blockOnAck)
       {
          expect(channel.sendBlocking(new SessionAcknowledgeMessage(consumerID, messageID, true))).andReturn(new NullResponseMessage());
-      } else
+      }
+      else
       {
          channel.send(new SessionAcknowledgeMessage(consumerID, messageID, false));
       }
 
       replayMocks();
-      
+
       session.acknowledge(consumerID, messageID);
-      
+
       verifyMocks();
    }
-   
+
    private void replayMocks(Object... additionalMocks)
    {
       replay(cm, rc, channel);
@@ -1574,7 +1575,7 @@ public class ClientSessionImplTest extends UnitTestCase
    }
 
    // Inner classes -------------------------------------------------
-   
+
    public interface SessionCaller
    {
       void call(ClientSessionImpl session) throws Exception;

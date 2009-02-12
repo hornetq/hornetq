@@ -1221,8 +1221,8 @@ public class QueueImplTest extends UnitTestCase
 //      bindings.addBinding(expiryBinding);
 //      EasyMock.expect(postOffice.getBindingsForAddress(expiryQueue)).andReturn(bindings);
 //      EasyMock.expect(postOffice.route(EasyMock.isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
-//      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
-//      QueueSettings queueSettings = new QueueSettings() 
+//      HierarchicalRepository<QueueSettings> addressSettingsRepository = createMock(HierarchicalRepository.class);
+//      QueueSettings QueueSettings = new QueueSettings() 
 //      {
 //         @Override
 //         public SimpleString getExpiryAddress()
@@ -1230,9 +1230,9 @@ public class QueueImplTest extends UnitTestCase
 //            return expiryQueue;
 //         } 
 //      };
-//      EasyMock.expect(queueSettingsRepository.getMatch(queue1.toString())).andStubReturn(queueSettings);
+//      EasyMock.expect(addressSettingsRepository.getMatch(queue1.toString())).andStubReturn(QueueSettings);
 //
-//      EasyMock.replay(storageManager, postOffice, queueSettingsRepository, expiryBinding, pm);
+//      EasyMock.replay(storageManager, postOffice, addressSettingsRepository, expiryBinding, pm);
 //
 //      assertEquals(0, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
@@ -1242,12 +1242,12 @@ public class QueueImplTest extends UnitTestCase
 //      assertEquals(1, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
 //
-//      queue.expireMessage(messageID, storageManager , postOffice, queueSettingsRepository);
+//      queue.expireMessage(messageID, storageManager , postOffice, addressSettingsRepository);
 //      
 //      assertEquals(0, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
 // 
-//      EasyMock.verify(storageManager, postOffice, queueSettingsRepository, expiryBinding, pm);
+//      EasyMock.verify(storageManager, postOffice, addressSettingsRepository, expiryBinding, pm);
 //   }
 //
 //   public void testSendMessageToDLQ() throws Exception
@@ -1277,8 +1277,8 @@ public class QueueImplTest extends UnitTestCase
 //      bindings.addBinding(dlqBinding);
 //      expect(postOffice.getBindingsForAddress(dlqName)).andReturn(bindings);
 //      expect(postOffice.route(isA(ServerMessage.class))).andReturn(new ArrayList<MessageReference>());
-//      HierarchicalRepository<QueueSettings> queueSettingsRepository = createMock(HierarchicalRepository.class);
-//      QueueSettings queueSettings = new QueueSettings() 
+//      HierarchicalRepository<QueueSettings> addressSettingsRepository = createMock(HierarchicalRepository.class);
+//      QueueSettings QueueSettings = new QueueSettings() 
 //      {
 //         @Override
 //         public SimpleString getDeadLetterAddress()
@@ -1286,9 +1286,9 @@ public class QueueImplTest extends UnitTestCase
 //            return dlqName;
 //         } 
 //      };
-//      EasyMock.expect(queueSettingsRepository.getMatch(queue1.toString())).andStubReturn(queueSettings);
+//      EasyMock.expect(addressSettingsRepository.getMatch(queue1.toString())).andStubReturn(QueueSettings);
 //
-//      EasyMock.replay(storageManager, postOffice, queueSettingsRepository, dlqBinding, pm);
+//      EasyMock.replay(storageManager, postOffice, addressSettingsRepository, dlqBinding, pm);
 //
 //      assertEquals(0, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
@@ -1298,12 +1298,12 @@ public class QueueImplTest extends UnitTestCase
 //      assertEquals(1, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
 //
-//      queue.sendMessageToDeadLetterAddress(messageID, storageManager , postOffice, queueSettingsRepository);
+//      queue.sendMessageToDeadLetterAddress(messageID, storageManager , postOffice, addressSettingsRepository);
 //      
 //      assertEquals(0, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
 //
-//      EasyMock.verify(storageManager, postOffice, queueSettingsRepository, dlqBinding, pm);
+//      EasyMock.verify(storageManager, postOffice, addressSettingsRepository, dlqBinding, pm);
 //   }
    
 //   public void testMoveMessage() throws Exception
@@ -1336,9 +1336,9 @@ public class QueueImplTest extends UnitTestCase
 //      EasyMock.expect(toBinding.getAddress()).andStubReturn(toQueueName);
 //      EasyMock.expect(toBinding.getBindable()).andStubReturn(toQueue);
 //      postOffice.route(EasyMock.isA(ServerMessage.class), EasyMock.isA(Transaction.class));
-//      HierarchicalRepository<QueueSettings> queueSettingsRepository = EasyMock.createMock(HierarchicalRepository.class);
+//      HierarchicalRepository<QueueSettings> addressSettingsRepository = EasyMock.createMock(HierarchicalRepository.class);
 //
-//      EasyMock.replay(storageManager, postOffice, queueSettingsRepository, toBinding, pm);
+//      EasyMock.replay(storageManager, postOffice, addressSettingsRepository, toBinding, pm);
 //
 //      assertEquals(0, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
@@ -1353,7 +1353,7 @@ public class QueueImplTest extends UnitTestCase
 //      assertEquals(0, queue.getMessageCount());
 //      assertEquals(0, queue.getDeliveringCount());
 // 
-//      EasyMock.verify(storageManager, postOffice, queueSettingsRepository, toBinding, pm);
+//      EasyMock.verify(storageManager, postOffice, addressSettingsRepository, toBinding, pm);
 //   }
 
    /**

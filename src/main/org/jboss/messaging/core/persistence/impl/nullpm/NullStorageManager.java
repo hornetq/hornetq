@@ -215,7 +215,7 @@ public class NullStorageManager implements StorageManager
 
    public void loadMessageJournal(PostOffice postOffice,
                                   StorageManager storageManager,
-                                  HierarchicalRepository<AddressSettings> queueSettingsRepository,
+                                  HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                   Map<Long, Queue> queues,
                                   ResourceManager resourceManager,
                                   Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,43 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.TabularData;
+package org.jboss.messaging.tests.integration.cluster.distribution;
+
+import org.jboss.messaging.core.logging.Logger;
 
 /**
- * A AcceptorMBean
+ * A NettyOneWayChainClusterTest
  *
- * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 8 Feb 2009 10:45:50
+ *
  *
  */
-public interface BridgeControlMBean
+public class NettyOneWayChainClusterTest extends OneWayChainClusterTest
 {
-   boolean isStarted();
+   private static final Logger log = Logger.getLogger(NettyOneWayChainClusterTest.class);
 
-   void start() throws Exception;
-
-   void stop() throws Exception;
+   protected boolean isNetty()
+   {
+      return true;
+   }
    
-   String getName();
-   
-   String getQueueName();
-   
-   String getForwardingAddress();
-
-   String getFilterString();
-
-   String getTransformerClassName();
-
-   TabularData getConnectorPair();
-
-   String getDiscoveryGroupName();
-
-   long getRetryInterval();
-
-   double getRetryIntervalMultiplier();
-
-   int getMaxRetriesBeforeFailover();
-
-   int getMaxRetriesAfterFailover();
+   protected boolean isFileStorage()
+   {
+      return false;
+   }
 }

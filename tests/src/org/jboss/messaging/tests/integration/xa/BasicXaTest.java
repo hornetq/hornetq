@@ -48,7 +48,7 @@ public class BasicXaTest extends ServiceTestBase
 {
       private static Logger log = Logger.getLogger(BasicXaTest.class);
 
-   private final Map<String, AddressSettings> queueSettings = new HashMap<String, AddressSettings>();
+   private final Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
    private MessagingService messagingService;
 
@@ -64,13 +64,13 @@ public class BasicXaTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       clearData();
-      queueSettings.clear();
+      addressSettings.clear();
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
 
-      messagingService = createService(true, configuration, queueSettings);
+      messagingService = createService(true, configuration, addressSettings);
 
       // start the server
       messagingService.start();
