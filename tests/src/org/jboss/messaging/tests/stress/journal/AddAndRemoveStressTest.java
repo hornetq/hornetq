@@ -132,6 +132,74 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       assertEquals(0, info.size());
       assertEquals(0, trans.size());
+      
+      assertEquals(0, impl.getDataFilesCount());
+
+   }
+
+   public void testInsertUpdateAndLoad() throws Exception
+   {
+
+      SequentialFileFactory factory = new AIOSequentialFileFactory(getTestDir());
+      JournalImpl impl = new JournalImpl(10 * 1024 * 1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
+
+      impl.start();
+
+      impl.load(dummyLoader);
+
+      for (long i = 1; i <= NUMBER_OF_MESSAGES; i++)
+      {
+         if (i % 10000 == 0)
+         {
+            System.out.println("Append " + i);
+         }
+         impl.appendAddRecord(i, (byte)21, new SimpleEncoding(40, (byte)'f'));
+         impl.appendUpdateRecord(i, (byte)22, new SimpleEncoding(40, (byte)'g'));
+      }
+
+      impl.stop();
+
+      factory = new AIOSequentialFileFactory(getTestDir());
+      impl = new JournalImpl(10 * 1024 * 1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
+
+      impl.start();
+
+      impl.load(dummyLoader);
+
+      for (long i = 1; i <= NUMBER_OF_MESSAGES; i++)
+      {
+         if (i % 10000 == 0)
+         {
+            System.out.println("Delete " + i);
+         }
+
+         impl.appendDeleteRecord(i);
+      }
+
+      impl.stop();
+
+      factory = new AIOSequentialFileFactory(getTestDir());
+      impl = new JournalImpl(10 * 1024 * 1024, 60, true, false, factory, "jbm", "jbm", 1000, 0);
+
+      impl.start();
+
+      ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
+      ArrayList<PreparedTransactionInfo> trans = new ArrayList<PreparedTransactionInfo>();
+
+      impl.load(info, trans);
+
+      if (info.size() > 0)
+      {
+         System.out.println("Info ID: " + info.get(0).id);
+      }
+      
+      impl.checkAndReclaimFiles();
+
+      assertEquals(0, info.size());
+      assertEquals(0, trans.size());
+      //assertEquals(0, impl.getDataFilesCount()); -- re-enable this assertion
+
+      System.out.println("Size = " + impl.getDataFilesCount());
 
    }
 
