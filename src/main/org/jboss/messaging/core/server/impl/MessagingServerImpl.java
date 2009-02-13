@@ -276,6 +276,13 @@ public class MessagingServerImpl implements MessagingServer
 
       storageManager.loadBindingJournal(queueBindingInfos, destinations);
 
+      // FIXME the destination corresponding to the notification address is always created
+      // so that queues can be created wether the address is allowable or not (to revisit later)
+      if (!postOffice.containsDestination(configuration.getManagementNotificationAddress()))
+      {
+         postOffice.addDestination(configuration.getManagementNotificationAddress(), true);
+      }
+
       // Destinations must be added first to ensure flow controllers exist
       // before queues are created
       for (SimpleString destination : destinations)
@@ -330,13 +337,6 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       resourceManager.start();
-
-      // FIXME the destination corresponding to the notification address is always created
-      // so that queues can be created wether the address is allowable or not (to revisit later)
-      if (!postOffice.containsDestination(configuration.getManagementNotificationAddress()))
-      {
-         postOffice.addDestination(configuration.getManagementNotificationAddress(), true);
-      }
 
       // Deploy any pre-defined queues
       deployQueues();
