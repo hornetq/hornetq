@@ -31,6 +31,7 @@ import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBea
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ReplicationAwareTopicControlWrapper
@@ -51,9 +52,13 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareTopicControlWrapper(final ObjectName objectName, final TopicControl localControl) throws Exception
+   public ReplicationAwareTopicControlWrapper(final ObjectName objectName,
+                                              final TopicControl localControl,
+                                              final String clusterPassword,
+                                              final SimpleString managementAddress,
+                                              final long managementRequestTimeout) throws Exception
    {
-      super(objectName, TopicControlMBean.class);
+      super(objectName, TopicControlMBean.class, clusterPassword, managementAddress, managementRequestTimeout);
       this.localControl = localControl;
    }
 

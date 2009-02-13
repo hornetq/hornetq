@@ -384,7 +384,10 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getRetryIntervalMultiplier(),
                                  config.getMaxRetriesBeforeFailover(),
                                  config.getMaxRetriesAfterFailover(),
-                                 config.isUseDuplicateDetection());
+                                 config.isUseDuplicateDetection(),
+                                 managementService.getManagementAddress(),
+                                 managementService.getManagementNotificationAddress(),
+                                 managementService.getClusterPassword());
 
          bridges.put(config.getName(), bridge);
 

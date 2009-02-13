@@ -76,7 +76,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
       ObjectName objectName = ObjectNames.getJMSServerObjectName();
       JMSServerControl control = new JMSServerControl(server);
       managementService.registerInJMX(objectName,
-                                      new ReplicationAwareJMSServerControlWrapper(objectName, control));
+                                      new ReplicationAwareJMSServerControlWrapper(objectName, 
+                                                                                  control, 
+                                                                                  managementService.getClusterPassword(),
+                                                                                  managementService.getManagementAddress(),
+                                                                                  managementService.getManagementRequestTimeout()));
       managementService.registerInRegistry(objectName, control);
    }
 
@@ -109,7 +113,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                                     addressSettingsRepository,
                                                     counter);
       managementService.registerInJMX(objectName,
-                                      new ReplicationAwareJMSQueueControlWrapper(objectName, control));
+                                      new ReplicationAwareJMSQueueControlWrapper(objectName, 
+                                                                                 control, 
+                                                                                 managementService.getClusterPassword(),
+                                                                                 managementService.getManagementAddress(),
+                                                                                 managementService.getManagementRequestTimeout()));
       managementService.registerInRegistry(objectName, control);
    }
 
@@ -127,7 +135,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
-      managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(objectName, control));
+      managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(objectName,
+                                                                                          control,
+                                                                                          managementService.getClusterPassword(),
+                                                                                          managementService.getManagementAddress(),
+                                                                                          managementService.getManagementRequestTimeout()));
       managementService.registerInRegistry(objectName, control);
    }
 
@@ -144,7 +156,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
       ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
       ConnectionFactoryControl control = new ConnectionFactoryControl(connectionFactory, name, bindings);
       managementService.registerInJMX(objectName,
-                                      new ReplicationAwareConnectionFactoryControlWrapper(objectName, control));
+                                      new ReplicationAwareConnectionFactoryControlWrapper(objectName,
+                                                                                          control,
+                                                                                          managementService.getClusterPassword(),
+                                                                                          managementService.getManagementAddress(),
+                                                                                          managementService.getManagementRequestTimeout()));
       managementService.registerInRegistry(objectName, control);
    }
 

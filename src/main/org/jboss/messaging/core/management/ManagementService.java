@@ -61,8 +61,28 @@ import org.jboss.messaging.util.SimpleString;
  */
 public interface ManagementService extends MessagingComponent
 {
+   // Configuration
+   
    MessageCounterManager getMessageCounterManager();
 
+   String getClusterPassword();
+
+   void setClusterPassword(String clusterPassword);
+   
+   SimpleString getManagementAddress();
+
+   void setManagementAddress(SimpleString managementAddress);
+
+   SimpleString getManagementNotificationAddress();
+
+   void setManagementNotificationAddress(SimpleString managementNotificationAddress);
+
+   long getManagementRequestTimeout();
+   
+   void setManagementRequestTimeout(long timeout);
+
+   // Resource Registration
+   
    MessagingServerControlMBean registerServer(PostOffice postOffice,
                                               StorageManager storageManager,
                                               Configuration configuration,                                            
@@ -111,10 +131,12 @@ public interface ManagementService extends MessagingComponent
 
    void unregisterResource(ObjectName objectName) throws Exception;
 
-   public Object getResource(ObjectName objectName);
+   Object getResource(ObjectName objectName);
 
    void handleMessage(ServerMessage message);  
 
+   // Notfication
+   
    /** 
     * the message corresponding to a notification will always contain the properties:
     * <ul>
@@ -134,4 +156,5 @@ public interface ManagementService extends MessagingComponent
    void addNotificationListener(NotificationListener listener);
    
    void removeNotificationListener(NotificationListener listener);
+
 }

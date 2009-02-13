@@ -33,6 +33,7 @@ import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBea
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
 import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ReplicationAwareJMSServerControlWrapper
@@ -53,9 +54,13 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareJMSServerControlWrapper(final ObjectName objectName, final JMSServerControl localControl) throws Exception
+   public ReplicationAwareJMSServerControlWrapper(final ObjectName objectName,
+                                                  final JMSServerControl localControl,
+                                                  final String clusterPassword,
+                                                  final SimpleString managementAddress,
+                                                  final long managementRequestTimeout) throws Exception
    {
-      super(objectName, JMSServerControlMBean.class);
+      super(objectName, JMSServerControlMBean.class, clusterPassword, managementAddress, managementRequestTimeout);
       this.localControl = localControl;
    }
 

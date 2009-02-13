@@ -349,7 +349,10 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                            retryIntervalMultiplier,
                                            maxRetriesBeforeFailover,
                                            maxRetriesAfterFailover,
-                                           false, // Duplicate detection is handled in the RemoteQueueBindingImpl
+                                           false, // Duplicate detection is handled in the RemoteQueueBindingImpl,
+                                           managementService.getManagementAddress(),
+                                           managementService.getManagementNotificationAddress(),
+                                           managementService.getClusterPassword(),
                                            record);
 
             record.setBridge(bridge);

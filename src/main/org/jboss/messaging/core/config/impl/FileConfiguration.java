@@ -121,10 +121,12 @@ public class FileConfiguration extends ConfigurationImpl
 
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
 
-      managementNotificationAddress = new SimpleString(getString(e,
-                                                                 "management-notification-address",
-                                                                 managementNotificationAddress.toString()));
+      managementNotificationAddress = new SimpleString(getString(e, "management-notification-address", managementNotificationAddress.toString()));
 
+      managementClusterPassword = getString(e, "management-cluster-password", managementClusterPassword.toString());
+
+      managementRequestTimeout = getLong(e, "management-request-timeout", managementRequestTimeout);
+      
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
       ArrayList<String> interceptorList = new ArrayList<String>();

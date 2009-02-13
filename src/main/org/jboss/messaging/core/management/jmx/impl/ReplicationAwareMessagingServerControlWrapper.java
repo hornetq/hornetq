@@ -55,9 +55,12 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    // Constructors --------------------------------------------------
 
    public ReplicationAwareMessagingServerControlWrapper(final ObjectName objectName,
-                                                        final MessagingServerControl localControl) throws Exception
+                                                        final MessagingServerControl localControl, 
+                                                        final String clusterPassword,
+                                                        final SimpleString managementAddress,
+                                                        final long managementRequestTimeout) throws Exception
    {
-      super(objectName, MessagingServerControlMBean.class);
+      super(objectName, MessagingServerControlMBean.class, clusterPassword, managementAddress, managementRequestTimeout);
 
       this.localControl = localControl;
    }

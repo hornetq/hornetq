@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.management.jmx.impl;
 
+import static org.jboss.messaging.core.security.impl.SecurityStoreImpl.CLUSTER_ADMIN_USER;
+
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
@@ -32,7 +34,6 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.util.SimpleString;
 
@@ -56,19 +57,29 @@ public class ReplicationAwareStandardMBeanWrapper extends StandardMBean
 
    private final ClientSessionFactoryImpl sessionFactory;
 
-   // FIXME moved to configuration
-   private final long timeout = 500;
+   private final long timeout;
+   
+   private final SimpleString managementAddress;
+
+   private final String clusterPassword;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   protected ReplicationAwareStandardMBeanWrapper(final ObjectName objectName, final Class mbeanInterface) throws NotCompliantMBeanException
+   protected ReplicationAwareStandardMBeanWrapper(final ObjectName objectName, 
+                                                  final Class mbeanInterface, 
+                                                  final String clusterPassword,
+                                                  final SimpleString managementAddress, 
+                                                  final long managementRequestTimeout) throws NotCompliantMBeanException
    {
       super(mbeanInterface);
 
       this.objectName = objectName;
       this.sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      this.clusterPassword = clusterPassword;
+      this.managementAddress = managementAddress;
+      this.timeout = managementRequestTimeout;
    }
 
    // Public --------------------------------------------------------
@@ -79,8 +90,8 @@ public class ReplicationAwareStandardMBeanWrapper extends StandardMBean
 
    protected Object replicationAwareInvoke(final String operationName, final Object... parameters) throws Exception
    {
-      ClientSession clientSession = sessionFactory.createSession(false, true, true);
-      ClientRequestor requestor = new ClientRequestor(clientSession, ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
+      ClientSession clientSession = sessionFactory.createSession(CLUSTER_ADMIN_USER, clusterPassword, false, true, true, false, 1);
+      ClientRequestor requestor = new ClientRequestor(clientSession, managementAddress);
       clientSession.start();
 
       ClientMessage mngmntMessage = clientSession.createClientMessage(false);

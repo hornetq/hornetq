@@ -27,44 +27,29 @@ import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAN
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientRequestor;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
+import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A SecurityManagementTest
  *
- * @author jmesnil
- * 
- * Created 6 feb 2009 11:04:21
- *
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class SecurityManagementTest extends TestCase
+public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManagementTestBase
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   private MessagingService service;
 
    private final String validAdminUser = "validAdminUser";
 
@@ -79,6 +64,16 @@ public class SecurityManagementTest extends TestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+
+   /**
+    *  default CLUSTER_ADMIN_USER must work even when there are other
+    *  configured admin users
+    */
+   public void testSendManagementMessageWithClusterAdminUser() throws Exception
+   {
+      doSendManagementMessage(SecurityStoreImpl.CLUSTER_ADMIN_USER, 
+                              ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, true);
+   }
 
    public void testSendManagementMessageWithAdminRole() throws Exception
    {
@@ -99,13 +94,12 @@ public class SecurityManagementTest extends TestCase
 
    // Protected -----------------------------------------------------
 
-   @Override
-   protected void setUp() throws Exception
+   protected MessagingService setupAndStartMessagingService() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingService(conf);
+      MessagingService service = Messaging.newNullStorageMessagingService(conf);
       service.start();
       HierarchicalRepository<Set<Role>> securityRepository = service.getServer().getSecurityRepository();
       JBMSecurityManagerImpl securityManager = (JBMSecurityManagerImpl)service.getServer().getSecurityManager();
@@ -121,47 +115,11 @@ public class SecurityManagementTest extends TestCase
       Set<Role> guestRole = new HashSet<Role>();
       guestRole.add(new Role("guest", true, true, true));
       securityRepository.addMatch("*", guestRole);
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      service.stop();
-
-      super.tearDown();
+      
+      return service;
    }
 
    // Private -------------------------------------------------------
-
-   public void doSendManagementMessage(String user, String password, boolean expectReply) throws Exception
-   {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      ClientSession session = null;
-      if (user == null)
-      {
-         session = sf.createSession(false, true, true);
-      }
-      else
-      {
-         session = sf.createSession(user, password, false, true, true, false, 1);
-      }
-      session.start();
-
-      ClientRequestor requestor = new ClientRequestor(session, DEFAULT_MANAGEMENT_ADDRESS);
-
-      ClientMessage mngmntMessage = session.createClientMessage(false);
-      ManagementHelper.putAttributes(mngmntMessage, ObjectNames.getMessagingServerObjectName(), "Started");
-      ClientMessage reply = requestor.request(mngmntMessage, 500);
-      if (expectReply)
-      {
-         assertNotNull(reply);
-         assertTrue((Boolean)reply.getProperty(new SimpleString("Started")));
-      }
-      else
-      {
-         assertNull(reply);
-      }
-   }
 
    // Inner classes -------------------------------------------------
 

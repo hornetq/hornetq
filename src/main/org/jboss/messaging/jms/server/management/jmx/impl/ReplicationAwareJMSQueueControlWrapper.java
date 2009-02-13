@@ -31,6 +31,7 @@ import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ReplicationAwareJMSQueueControlWrapper
@@ -51,9 +52,13 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareJMSQueueControlWrapper(final ObjectName objectName, final JMSQueueControl localControl) throws Exception
+   public ReplicationAwareJMSQueueControlWrapper(final ObjectName objectName, 
+                                                 final JMSQueueControl localControl,
+                                                 final String clusterPassword,
+                                                 final SimpleString managementAddress,
+                                                 final long managementRequestTimeout) throws Exception
    {
-      super(objectName, JMSQueueControlMBean.class);
+      super(objectName, JMSQueueControlMBean.class, clusterPassword, managementAddress, managementRequestTimeout);
       this.localControl = localControl;
    }
 

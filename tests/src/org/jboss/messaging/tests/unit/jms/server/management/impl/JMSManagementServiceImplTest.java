@@ -28,6 +28,8 @@ import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
@@ -57,6 +59,7 @@ import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
+import org.jboss.messaging.tests.util.RandomUtil;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -82,6 +85,9 @@ public class JMSManagementServiceImplTest extends TestCase
       JMSServerManager server = createMock(JMSServerManager.class);
 
       ManagementService managementService = createMock(ManagementService.class);
+      expect(managementService.getClusterPassword()).andReturn(randomString());
+      expect(managementService.getManagementAddress()).andReturn(randomSimpleString());
+      expect(managementService.getManagementRequestTimeout()).andReturn(randomPositiveLong());
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
       managementService.registerInRegistry(eq(objectName), isA(JMSServerControlMBean.class));
       replay(managementService, server);
@@ -109,6 +115,9 @@ public class JMSManagementServiceImplTest extends TestCase
       MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
       expect(managementService.getMessageCounterManager()).andReturn(messageCounterManager );
       expect(messageCounterManager.getMaxDayCount()).andReturn(randomPositiveInt());
+      expect(managementService.getClusterPassword()).andReturn(randomString());
+      expect(managementService.getManagementAddress()).andReturn(randomSimpleString());
+      expect(managementService.getManagementRequestTimeout()).andReturn(randomPositiveLong());
       messageCounterManager.registerMessageCounter(eq(name), isA(MessageCounter.class));
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
       managementService.registerInRegistry(eq(objectName), isA(JMSQueueControl.class));
@@ -133,6 +142,9 @@ public class JMSManagementServiceImplTest extends TestCase
       HierarchicalRepository<AddressSettings> addressSettingsRepository = createMock(HierarchicalRepository.class);
 
       ManagementService managementService = createMock(ManagementService.class);
+      expect(managementService.getClusterPassword()).andReturn(randomString());
+      expect(managementService.getManagementAddress()).andReturn(randomSimpleString());
+      expect(managementService.getManagementRequestTimeout()).andReturn(randomPositiveLong());
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
       managementService.registerInRegistry(eq(objectName), isA(TopicControl.class));
 
@@ -155,6 +167,9 @@ public class JMSManagementServiceImplTest extends TestCase
 
       JBossConnectionFactory connectionFactory = createMock(JBossConnectionFactory.class);
       ManagementService managementService = createMock(ManagementService.class);
+      expect(managementService.getClusterPassword()).andReturn(randomString());
+      expect(managementService.getManagementAddress()).andReturn(randomSimpleString());
+      expect(managementService.getManagementRequestTimeout()).andReturn(randomPositiveLong());
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
       managementService.registerInRegistry(eq(objectName), isA(ConnectionFactoryControl.class));
 

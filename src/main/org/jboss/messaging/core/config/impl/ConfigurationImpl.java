@@ -73,6 +73,8 @@ public class ConfigurationImpl implements Configuration
    
    public static final long DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
    
+   public static final long DEFAULT_PAGE_MAX_GLOBAL_SIZE = -1;
+   
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
@@ -99,10 +101,14 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
    
-   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("admin.management");
+   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("jbm.admin.management");
    
-   public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("admin.notification");
+   public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("jbm.admin.notification");
 
+   public static final String DEFAULT_MANAGEMENT_CLUSTER_PASSWORD = "CHANGE ME!!";
+
+   public static final  long DEFAULT_MANAGEMENT_REQUEST_TIMEOUT = 500;
+   
    public static final long DEFAULT_BROADCAST_PERIOD = 5000;
    
    public static final long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
@@ -128,7 +134,7 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
    
    public static final boolean DEFAULT_BRIDGE_DUPLICATE_DETECTION = true;
-   
+
    // Attributes -----------------------------------------------------------------------------
 
    protected boolean clustered = DEFAULT_CLUSTERED;
@@ -158,7 +164,7 @@ public class ConfigurationImpl implements Configuration
    protected int idCacheSize = DEFAULT_ID_CACHE_SIZE;
    
    protected boolean persistIDCache = DEFAULT_PERSIST_ID_CACHE;
-
+   
    protected List<String> interceptorClassNames = new ArrayList<String>();
    
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
@@ -182,7 +188,7 @@ public class ConfigurationImpl implements Configuration
    
    // Paging related attributes ------------------------------------------------------------
 
-   protected long pagingMaxGlobalSize = -1;
+   protected long pagingMaxGlobalSize = DEFAULT_PAGE_MAX_GLOBAL_SIZE;
    
    protected long pagingDefaultSize = DEFAULT_PAGE_SIZE;
 
@@ -228,7 +234,11 @@ public class ConfigurationImpl implements Configuration
    protected SimpleString managementAddress = DEFAULT_MANAGEMENT_ADDRESS;
 
    protected SimpleString managementNotificationAddress = DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
+   
+   protected String managementClusterPassword = DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
 
+   protected long managementRequestTimeout = DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
+   
    public boolean isClustered()
    {
       return clustered;
@@ -692,6 +702,25 @@ public class ConfigurationImpl implements Configuration
       this.managementNotificationAddress = address;
    }
       
+   public String getManagementClusterPassword()
+   {
+      return managementClusterPassword;
+   }
+   
+   public void setManagementClusterPassword(String clusterPassword)
+   {
+      this.managementClusterPassword = clusterPassword;
+   }
+   
+   public long getManagementRequestTimeout()
+   {
+      return managementRequestTimeout;
+   }
+   
+   public void setManagementRequestTimeout(long managementRequestTimeout)
+   {
+      this.managementRequestTimeout = managementRequestTimeout;
+   }
 
    @Override
    public boolean equals(final Object other)

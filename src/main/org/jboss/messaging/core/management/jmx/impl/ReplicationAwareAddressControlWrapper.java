@@ -30,6 +30,7 @@ import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ReplicationAwareAddressControlWrapper
@@ -50,9 +51,13 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareAddressControlWrapper(final ObjectName objectName, final AddressControl localAddressControl) throws Exception
+   public ReplicationAwareAddressControlWrapper(final ObjectName objectName, 
+                                                final AddressControl localAddressControl,
+                                                final String clusterPassword,
+                                                final SimpleString managementAddress,
+                                                final long managementRequestTimeout) throws Exception
    {
-      super(objectName, AddressControlMBean.class);
+      super(objectName, AddressControlMBean.class, clusterPassword, managementAddress, managementRequestTimeout);
 
       this.localAddressControl = localAddressControl;
    }

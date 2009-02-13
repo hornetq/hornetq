@@ -36,8 +36,10 @@ import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.util.SimpleString;
 
 /*
@@ -52,7 +54,7 @@ public class ManagementClient
       SimpleString replytoQueue = new SimpleString("replyto.adminQueue");
 
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
-      final ClientSession clientSession = sessionFactory.createSession(false, true, true);
+      final ClientSession clientSession = sessionFactory.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER, ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, false, true, true, false, 1);
       SimpleString queue = new SimpleString("queuejms.testQueue");
 
       sendMessages(clientSession, queue);

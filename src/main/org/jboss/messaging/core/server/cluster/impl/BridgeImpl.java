@@ -37,7 +37,6 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 
 import java.nio.ByteBuffer;
 import java.util.HashSet;
@@ -56,7 +55,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
@@ -68,6 +66,7 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -139,6 +138,12 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private MessageFlowRecord flowRecord;
 
+   private final SimpleString managementAddress;
+
+   private final SimpleString managementNotificationAddres;
+
+   private final String clusterPassword;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -157,7 +162,10 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final double retryIntervalMultiplier,
                      final int maxRetriesBeforeFailover,
                      final int maxRetriesAfterFailover,
-                     final boolean useDuplicateDetection) throws Exception
+                     final boolean useDuplicateDetection, 
+                     final SimpleString managementAddress, 
+                     final SimpleString managementNotificationAddress,
+                     final String clusterPassword) throws Exception
    {
       this(name,
            queue,
@@ -172,6 +180,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
            maxRetriesBeforeFailover,
            maxRetriesAfterFailover,
            useDuplicateDetection,
+           managementAddress,
+           managementNotificationAddress,
+           clusterPassword,
            null);
    }
 
@@ -188,6 +199,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final int maxRetriesBeforeFailover,
                      final int maxRetriesAfterFailover,
                      final boolean useDuplicateDetection,
+                     final SimpleString managementAddress, 
+                     final SimpleString managementNotificationAddress,
+                     final String clusterPassword,
                      final MessageFlowRecord flowRecord) throws Exception
    {
       this.name = name;
@@ -225,6 +239,12 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
 
+      this.managementAddress = managementAddress;
+      
+      this.managementNotificationAddres = managementNotificationAddress;
+      
+      this.clusterPassword = clusterPassword;
+      
       this.flowRecord = flowRecord;
    }
 
@@ -409,7 +429,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                             maxRetriesBeforeFailover,
                                             maxRetriesAfterFailover);
 
-         session = (ClientSessionInternal)csf.createSession(null, null, false, true, true, false, 1);
+         session = (ClientSessionInternal)csf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER, clusterPassword, false, true, true, false, 1);
 
          if (session == null)
          {
@@ -456,7 +476,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                                    flowRecord.getAddress() +
                                                    "%')");
 
-            session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueueName, filter, false, true);
+            session.createQueue(managementNotificationAddres, notifQueueName, filter, false, true);
 
             ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
 
@@ -472,7 +492,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                                     notifQueueName.toString(),
                                                     flowRecord.getAddress());
 
-            ClientProducer prod = session.createProducer(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
+            ClientProducer prod = session.createProducer(managementAddress);
 
             prod.send(message);
          }

@@ -59,6 +59,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(10111213, conf.getMessageExpiryScanPeriod());
       assertEquals(8, conf.getMessageExpiryThreadPriority());
       assertEquals(new SimpleString("Giraffe"), conf.getManagementAddress());
+      assertEquals(91, conf.getManagementRequestTimeout());
       assertEquals(2, conf.getInterceptorClassNames().size());
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1"));
       assertTrue(conf.getInterceptorClassNames().contains("org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2"));

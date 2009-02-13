@@ -225,6 +225,7 @@ public class MessagingServerImpl implements MessagingServer
 
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(),
                                             configuration.isSecurityEnabled());
+      securityStore.setManagementClusterPassword(configuration.getManagementClusterPassword());
       addressSettingsRepository.setDefault(new AddressSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
                                                           new JBMThreadFactory("JBM-scheduled-threads"));
@@ -255,6 +256,11 @@ public class MessagingServerImpl implements MessagingServer
 
       pagingManager.start();
 
+      managementService.setManagementAddress(configuration.getManagementAddress());
+      managementService.setManagementNotificationAddress(configuration.getManagementNotificationAddress());
+      managementService.setClusterPassword(configuration.getManagementClusterPassword());
+      managementService.setManagementRequestTimeout(configuration.getManagementRequestTimeout());
+      
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
                                                           configuration,

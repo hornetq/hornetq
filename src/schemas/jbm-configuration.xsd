@@ -51,6 +51,12 @@
 				<xsd:element name="management-notification-address"
 					type="xsd:string" maxOccurs="1" minOccurs="0">
 				</xsd:element>
+                <xsd:element name="management-cluster-password"
+                    type="xsd:string" maxOccurs="1" minOccurs="0">
+                </xsd:element>				
+                <xsd:element name="management-request-timeout"
+                    type="xsd:long" maxOccurs="1" minOccurs="0">
+                </xsd:element>              
 				<xsd:element name="jmx-management-enabled"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
 				</xsd:element>

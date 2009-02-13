@@ -18,8 +18,8 @@
 
       <wild-card-routing-enabled>true</wild-card-routing-enabled>
 
-      <management-address>admin.management</management-address>
-      <management-notification-address>admin.notification</management-notification-address>      
+      <management-address>jbm.admin.management</management-address>
+      <management-notification-address>jbm.admin.notification</management-notification-address>      
 
       <!-- true to expose JBoss Messaging resources through JMX -->
       <jmx-management-enabled>true</jmx-management-enabled>

@@ -45,4 +45,6 @@ public interface SecurityStore
    void setSecurityRepository(HierarchicalRepository<Set<Role>> securityRepository);
    
    void setSecurityManager(JBMSecurityManager securityManager);
+
+   void setManagementClusterPassword(String clusterAdminPassword);
 }

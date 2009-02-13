@@ -133,8 +133,10 @@ public interface Configuration extends Serializable
 
    SimpleString getManagementNotificationAddress();
    
-   void setManagementNotificationAddress(SimpleString address);
-   
+   String getManagementClusterPassword();
+
+   long getManagementRequestTimeout();
+
    int getIDCacheSize();
    
    void setIDCacheSize(int idCacheSize);
@@ -236,4 +238,5 @@ public interface Configuration extends Serializable
    int getMessageExpiryThreadPriority();
 
    void setMessageExpiryThreadPriority(int messageExpiryThreadPriority);
+
 }

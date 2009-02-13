@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.security.impl;
 
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
+
 import java.util.Set;
 
 import org.jboss.messaging.core.exception.MessagingException;
@@ -58,6 +60,8 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private static final Logger log = Logger.getLogger(SecurityStoreImpl.class);
 
+   public static final String CLUSTER_ADMIN_USER = "JBM.MANAGEMENT.ADMIN.USER";
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -80,6 +84,8 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    
    private final boolean securityEnabled;
    
+   private String managementClusterPassword;
+   
    // Constructors --------------------------------------------------
 
    public SecurityStoreImpl(final long invalidationInterval, final boolean securityEnabled)
@@ -93,9 +99,27 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    public void authenticate(final String user, final String password) throws Exception
    {
-      if (securityEnabled && !securityManager.validateUser(user, password))
+      if (securityEnabled)
       {
-         throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
+         if (CLUSTER_ADMIN_USER.equals(user))
+         {
+            if (trace) { log.trace("Authenticating cluster admin user"); }
+            
+            checkDefaultManagementClusterPassword(password);
+            
+            // The special user CLUSTER_ADMIN_USER is used for creating sessions that replicate management operation between nodes
+            if (!managementClusterPassword.equals(password))
+            {
+               throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);                 
+            }
+         }
+         else
+         {
+            if (!securityManager.validateUser(user, password))
+            {
+               throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
+            }
+         }
       }
    }
 
@@ -115,7 +139,15 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          
          Set<Role> roles = securityRepository.getMatch(saddress);
          
-         if (!securityManager.validateUserAndRole(session.getUsername(), session.getPassword(), roles, checkType))
+         String user = session.getUsername();
+         
+         if (CLUSTER_ADMIN_USER.equals(user))
+         {
+            // The special user CLUSTER_ADMIN_USER is used for creating sessions that replicate management operation between nodes
+            //It has automatic read/write access to all destinations
+            return;
+         } 
+         else if (!securityManager.validateUserAndRole(user, session.getPassword(), roles, checkType))
          {
              throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + session.getUsername());
          }
@@ -162,6 +194,13 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    public void setSecurityManager(JBMSecurityManager securityManager)
    {
       this.securityManager = securityManager;
+   }
+
+   public void setManagementClusterPassword(String password)
+   {           
+      this.managementClusterPassword = password;
+      
+      checkDefaultManagementClusterPassword(password);      
    }
 
    // Protected -----------------------------------------------------
@@ -217,6 +256,17 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       lastCheck = now;
 
       return granted;
+   }
+   
+   private void checkDefaultManagementClusterPassword(String password)
+   {
+      // Sanity check
+      if (DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
+      {
+         log.warn("WARNING! POTENTIAL SECURITY RISK. It has been detected that the cluster admin password which is used to " +
+                  "replicate management operation from one node to the other has not had its password changed from the installation default. " +
+                  "Please see the JBoss Messaging user guide for instructions on how to do this.");
+      }
    }
 
    // Inner class ---------------------------------------------------

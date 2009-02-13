@@ -48,6 +48,7 @@ import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.management.BridgeControlMBean;
@@ -118,7 +119,13 @@ public class ManagementServiceImpl implements ManagementService
 
    private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
 
-   private SimpleString managementNotificationAddress;
+   private SimpleString managementNotificationAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
+
+   private SimpleString managementAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
+
+   private String managementClusterPassword = ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
+
+   private long managementRequestTimeout = ConfigurationImpl.DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
 
    private boolean started = false;
 
@@ -126,7 +133,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private final Set<NotificationListener> listeners = new ConcurrentHashSet<NotificationListener>();
 
-   // Static --------------------------------------------------------
+   // Constructor ----------------------------------------------------
 
    public ManagementServiceImpl(final MBeanServer mbeanServer, final boolean jmxManagementEnabled)
    {
@@ -160,7 +167,6 @@ public class ManagementServiceImpl implements ManagementService
       this.addressSettingsRepository = addressSettingsRepository;
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
-      this.managementNotificationAddress = configuration.getManagementNotificationAddress();
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
                                                  configuration,
@@ -171,7 +177,11 @@ public class ManagementServiceImpl implements ManagementService
                                                  broadcaster,
                                                  queueFactory);
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
-      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName, managedServer));
+      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName, 
+                                                                                  managedServer,
+                                                                                  managementClusterPassword,
+                                                                                  managementAddress,
+                                                                                  managementRequestTimeout));
       registerInRegistry(objectName, managedServer);
 
       return managedServer;
@@ -188,7 +198,11 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = ObjectNames.getAddressObjectName(address);
       AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
 
-      registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName, addressControl));
+      registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName,
+                                                                          addressControl,
+                                                                          managementClusterPassword,
+                                                                          managementAddress,
+                                                                          managementRequestTimeout));
 
       registerInRegistry(objectName, addressControl);
 
@@ -227,7 +241,11 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
       QueueControl queueControl = new QueueControl(queue, storageManager, postOffice, addressSettingsRepository, counter);
-      registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName, queueControl));
+      registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName,
+                                                                        queueControl,
+                                                                        managementClusterPassword,
+                                                                        managementAddress,
+                                                                        managementRequestTimeout));
       registerInRegistry(objectName, queueControl);
 
       if (log.isDebugEnabled())
@@ -409,6 +427,47 @@ public class ManagementServiceImpl implements ManagementService
    {
       listeners.remove(listener);
    }
+   
+   public SimpleString getManagementAddress()
+   {
+      return managementAddress;
+   }
+   
+   public void setManagementAddress(SimpleString managementAddress)
+   {
+      this.managementAddress = managementAddress;
+   }
+   
+   public SimpleString getManagementNotificationAddress()
+   {
+      return managementNotificationAddress;
+   }
+   
+   public void setManagementNotificationAddress(SimpleString managementNotificationAddress)
+   {
+      this.managementNotificationAddress = managementNotificationAddress;  
+   }
+
+   public String getClusterPassword()
+   {
+      return managementClusterPassword;
+   }
+   
+   public void setClusterPassword(String clusterPassword)
+   {
+      this.managementClusterPassword = clusterPassword;
+   }
+   
+   public long getManagementRequestTimeout()
+   {
+      return managementRequestTimeout;
+   }
+   
+   public void setManagementRequestTimeout(long timeout)
+   {
+      this.managementRequestTimeout = timeout;
+   }
+   
 
    // MessagingComponent implementation -----------------------------
 
