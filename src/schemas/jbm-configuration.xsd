@@ -40,7 +40,7 @@
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="security-invalidation-interval"
-					type="xsd:int" maxOccurs="1" minOccurs="0">
+					type="period" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="wild-card-routing-enabled"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -55,7 +55,7 @@
                     type="xsd:string" maxOccurs="1" minOccurs="0">
                 </xsd:element>				
                 <xsd:element name="management-request-timeout"
-                    type="xsd:long" maxOccurs="1" minOccurs="0">
+                    type="period" maxOccurs="1" minOccurs="0">
                 </xsd:element>              
 				<xsd:element name="jmx-management-enabled"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -64,24 +64,24 @@
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="connection-scan-period"
-					type="xsd:long" maxOccurs="1" minOccurs="0">
+					type="period" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="connection-ttl-override"
 					type="xsd:long" maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="transaction-timeout" type="xsd:long"
+				<xsd:element name="transaction-timeout" type="period"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="transaction-timeout-scan-period"
-					type="xsd:long" maxOccurs="1" minOccurs="0">
+					type="period" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="message-expiry-scan-period"
-					type="xsd:long" maxOccurs="1" minOccurs="0">
+					type="period" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="message-expiry-thread-priority"
-					type="xsd:int" maxOccurs="1" minOccurs="0">
+					type="xsd:positiveInteger" maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="id-cache-size" type="xsd:int"
+				<xsd:element name="id-cache-size" type="xsd:positiveInteger"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="persist-id-cache" type="xsd:boolean"
@@ -91,7 +91,7 @@
 					minOccurs="0">
 				</xsd:element>
 				<xsd:element name="queue-activation-timeout"
-					type="xsd:long" maxOccurs="1" minOccurs="0">
+					type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="backup" type="xsd:boolean"
 					maxOccurs="1" minOccurs="0">
@@ -123,17 +123,17 @@
 				<xsd:element name="cluster-connection" type="clusterConnectionType"
 					maxOccurs="unbounded" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="paging-max-threads" type="xsd:int"
+				<xsd:element name="paging-max-threads" type="xsd:positiveInteger"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="paging-directory" type="xsd:string"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="paging-default-size" type="xsd:long"
+				<xsd:element name="paging-default-size" type="xsd:unsignedLong"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="paging-max-global-size-bytes"
-					type="xsd:long" maxOccurs="1" minOccurs="0">
+					type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="bindings-directory" type="xsd:string"
 					maxOccurs="1" minOccurs="0">
@@ -151,7 +151,7 @@
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="journal-buffer-reuse-size"
-					type="xsd:int" maxOccurs="1" minOccurs="0">
+					type="xsd:long" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="journal-sync-transactional"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -159,13 +159,13 @@
 				<xsd:element name="journal-sync-non-transactional"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="journal-file-size" type="xsd:long"
+				<xsd:element name="journal-file-size" type="xsd:unsignedLong"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="journal-min-files" type="xsd:int"
+				<xsd:element name="journal-min-files" type="xsd:positiveInteger"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="journal-max-aio" type="xsd:int"
+				<xsd:element name="journal-max-aio" type="xsd:positiveInteger"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="large-messages-directory"
@@ -180,13 +180,13 @@
 
 	<xsd:element name="local-bind-address" type="xsd:string"></xsd:element>
 
-	<xsd:element name="local-bind-port" type="xsd:int"></xsd:element>
+	<xsd:element name="local-bind-port" type="portRange"></xsd:element>
 
 	<xsd:element name="group-address" type="xsd:string"></xsd:element>
 
-	<xsd:element name="group-port" type="xsd:int"></xsd:element>
+	<xsd:element name="group-port" type="portRange"></xsd:element>
 
-	<xsd:element name="broadcast-period" type="xsd:int"></xsd:element>
+	<xsd:element name="broadcast-period" type="period"></xsd:element>
 
 	<xsd:element name="connector-ref" type="connector-refType">
 	</xsd:element>
@@ -217,7 +217,7 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="refresh-timeout" type="xsd:long"></xsd:element>
+	<xsd:element name="refresh-timeout" type="period"></xsd:element>
 
 	<xsd:element name="discovery-group">
 		<xsd:complexType>
@@ -318,17 +318,17 @@
 			<xsd:element name="transformer-class-name" type="xsd:string"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
-			<xsd:element name="retry-interval" type="xsd:long"
+			<xsd:element name="retry-interval" type="period"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="retry-interval-multiplier"
 				type="xsd:double" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="max-retries-before-failover"
-				type="xsd:int" maxOccurs="1" minOccurs="0">
+				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="max-retries-after-failover"
-				type="xsd:int" maxOccurs="1" minOccurs="0">
+				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="use-duplicate-detection"
 				type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -355,17 +355,17 @@
 			<xsd:element name="address" type="xsd:string"
 				maxOccurs="1" minOccurs="1">
 			</xsd:element>
-			<xsd:element name="retry-interval" type="xsd:long"
+			<xsd:element name="retry-interval" type="period"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="retry-interval-multiplier"
 				type="xsd:double" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="max-retries-before-failover"
-				type="xsd:int" maxOccurs="1" minOccurs="0">
+				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="max-retries-after-failover"
-				type="xsd:int" maxOccurs="1" minOccurs="0">
+				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="use-duplicate-detection"
 				type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -374,7 +374,7 @@
 				type="xsd:boolean" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="max-hops"
-				type="xsd:int" maxOccurs="1" minOccurs="0">
+				type="xsd:positiveInteger" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			
 			<xsd:choice>
@@ -435,4 +435,14 @@
 		<xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
 	</xsd:complexType>
 
+
+	<xsd:simpleType name="portRange">
+		<xsd:restriction base="xsd:int">
+		      <xsd:minExclusive value="1024"></xsd:minExclusive>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+    <xsd:simpleType name="period">
+        <xsd:restriction base="xsd:unsignedLong"></xsd:restriction>
+    </xsd:simpleType>
 </xsd:schema>

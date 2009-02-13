@@ -35,28 +35,28 @@
             <xsd:element name="entry" type="entryType"
    				maxOccurs="unbounded" minOccurs="1">
    			</xsd:element>
-   			<xsd:element name="ping-period" type="xsd:long"
+   			<xsd:element name="ping-period" type="period"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>
-            <xsd:element name="call-timeout" type="xsd:long"
+            <xsd:element name="call-timeout" type="period"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="client-id" type="xsd:string"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="dups-ok-batch-size" type="xsd:long"
+            <xsd:element name="dups-ok-batch-size" type="xsd:unsignedLong"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="transaction-batch-size" type="xsd:long"
+            <xsd:element name="transaction-batch-size" type="xsd:unsignedLong"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="producer-window-size" type="xsd:long"
+            <xsd:element name="producer-window-size" type="xsd:positiveInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="producer-max-rate" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="consumer-window-size" type="xsd:long"
+            <xsd:element name="consumer-window-size" type="xsd:positiveInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="consumer-max-rate" type="xsd:int"
@@ -109,4 +109,9 @@
     </xsd:complexType>
 
     <xsd:element name="topic" type="destinationType"></xsd:element>
+    
+    <xsd:simpleType name="period">
+        <xsd:restriction base="xsd:unsignedLong"></xsd:restriction>
+    </xsd:simpleType>
+    
 </xsd:schema>
