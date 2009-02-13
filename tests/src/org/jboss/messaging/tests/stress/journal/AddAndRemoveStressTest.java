@@ -197,7 +197,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       assertEquals(0, info.size());
       assertEquals(0, trans.size());
-      //assertEquals(0, impl.getDataFilesCount()); -- re-enable this assertion
+      assertEquals(0, impl.getDataFilesCount());
 
       System.out.println("Size = " + impl.getDataFilesCount());
 

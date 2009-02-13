@@ -1085,8 +1085,6 @@ public class JournalImpl implements TestableJournal
 
                   hasData = true;
 
-                  file.incPosCount();
-
                   PosFiles posFiles = posFilesMap.get(recordID);
 
                   if (posFiles != null)

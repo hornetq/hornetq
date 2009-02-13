@@ -2935,6 +2935,70 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       loadAndCheck();
    }
 
+   public void testReclaimAfterUpdate() throws Exception
+   {
+      setup(2, 40 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      for (int i = 0; i < 100; i++)
+      {
+         if (i % 10  == 0 && i>0) 
+         {
+            System.out.println("new file at " + i);
+            journal.forceMoveNextFile();
+         }
+
+         add(i);
+         update(i);
+         
+      }
+      
+      System.out.println("Before stop ****************************");
+      System.out.println(journal.debug());
+      System.out.println("*****************************************");
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      System.out.println("After start ****************************");
+      System.out.println(journal.debug());
+      System.out.println("*****************************************");
+
+      journal.forceMoveNextFile();
+
+      for (int i = 0; i < 100; i++)
+      {
+         delete(i);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("Before reclaim ****************************");
+      System.out.println(journal.debug());
+      System.out.println("*****************************************");
+
+      
+      journal.checkAndReclaimFiles();
+
+      System.out.println("After reclaim ****************************");
+      System.out.println(journal.debug());
+      System.out.println("*****************************************");
+
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      assertEquals(0, journal.getDataFilesCount());
+   }
+
+   
    protected abstract int getAlignment();
 
 }
