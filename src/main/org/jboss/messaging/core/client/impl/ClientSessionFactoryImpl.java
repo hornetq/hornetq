@@ -29,6 +29,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -171,7 +172,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
 
-      discoveryGroup = new DiscoveryGroupImpl(discoveryGroupAddress,
+      discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
+                                              discoveryGroupAddress,
                                               groupAddress,
                                               discoveryGroupPort,
                                               discoveryRefreshTimeout);
@@ -232,7 +234,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
 
-         discoveryGroup = new DiscoveryGroupImpl(discoveryGroupAddress,
+         discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
+                                                 discoveryGroupAddress,
                                                  groupAddress,
                                                  discoveryGroupPort,
                                                  discoveryRefreshTimeout);

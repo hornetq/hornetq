@@ -42,23 +42,15 @@ public class SymmetricClusterTest extends ClusterTestBase
    @Override
    protected void setUp() throws Exception
    {
-      super.setUp();
-
-      setupServer(0, isFileStorage(), isNetty());
-      setupServer(1, isFileStorage(), isNetty());
-      setupServer(2, isFileStorage(), isNetty());
-      setupServer(3, isFileStorage(), isNetty());
-      setupServer(4, isFileStorage(), isNetty());
+      super.setUp();     
+      
+      setupServers();
    }
-
+   
    @Override
    protected void tearDown() throws Exception
    {
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      stopServers(0, 1, 2, 3, 4);
+      stopServers();
 
       super.tearDown();
    }
@@ -1457,37 +1449,68 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27);
    }
          
-   private void setupCluster() throws Exception
+   protected void setupCluster() throws Exception
    {
       setupCluster(false);
    }
    
-   private void setupCluster(final boolean forwardWhenNoConsumers) throws Exception
+   protected void setupCluster(final boolean forwardWhenNoConsumers) throws Exception
    {
-      setupClusterConnection("cluster0-1", 0, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster0-2", 0, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster0-3", 0, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster0-4", 0, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster0", "queues", forwardWhenNoConsumers, 1, isNetty(), 0, 1, 2, 3, 4);
 
-      setupClusterConnection("cluster1-0", 1, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster1-2", 1, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster1-3", 1, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster1-4", 1, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster1", "queues", forwardWhenNoConsumers, 1, isNetty(), 1, 0, 2, 3, 4);
 
-      setupClusterConnection("cluster2-0", 2, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster2-1", 2, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster2-3", 2, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster2-4", 2, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster2", "queues", forwardWhenNoConsumers, 1, isNetty(), 2, 0, 1, 3, 4);
 
-      setupClusterConnection("cluster3-0", 3, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster3-1", 3, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster3-2", 3, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster3-4", 3, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster3", "queues", forwardWhenNoConsumers, 1, isNetty(), 3, 0, 1, 2, 4);
 
-      setupClusterConnection("cluster4-0", 4, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster4-1", 4, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster4-2", 4, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
-      setupClusterConnection("cluster4-3", 4, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
+      setupClusterConnection("cluster4", "queues", forwardWhenNoConsumers, 1, isNetty(), 4, 0, 1, 2, 3);
    }
+   
+   protected void setupServers() throws Exception
+   {
+      setupServer(0, isFileStorage(), isNetty());
+      setupServer(1, isFileStorage(), isNetty());
+      setupServer(2, isFileStorage(), isNetty());
+      setupServer(3, isFileStorage(), isNetty());
+      setupServer(4, isFileStorage(), isNetty());  
+   }
+   
+   protected void stopServers() throws Exception
+   {
+      closeAllConsumers();
+
+      closeAllSessionFactories();
+
+      stopServers(0, 1, 2, 3, 4);
+   }
+   
+//   private void setupCluster(final boolean forwardWhenNoConsumers) throws Exception
+//   {
+//      setupClusterConnection("cluster0-1", 0, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster0-2", 0, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster0-3", 0, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster0-4", 0, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
+//
+//      setupClusterConnection("cluster1-0", 1, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster1-2", 1, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster1-3", 1, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster1-4", 1, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
+//
+//      setupClusterConnection("cluster2-0", 2, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster2-1", 2, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster2-3", 2, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster2-4", 2, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
+//
+//      setupClusterConnection("cluster3-0", 3, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster3-1", 3, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster3-2", 3, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster3-4", 3, 4, "queues", forwardWhenNoConsumers, 1, isNetty());
+//
+//      setupClusterConnection("cluster4-0", 4, 0, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster4-1", 4, 1, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster4-2", 4, 2, "queues", forwardWhenNoConsumers, 1, isNetty());
+//      setupClusterConnection("cluster4-3", 4, 3, "queues", forwardWhenNoConsumers, 1, isNetty());
+//   }
    
 }

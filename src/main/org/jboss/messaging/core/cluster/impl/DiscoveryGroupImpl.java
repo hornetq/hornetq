@@ -39,6 +39,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A DiscoveryGroupImpl
@@ -51,44 +52,52 @@ import org.jboss.messaging.util.Pair;
 public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 {
    private static final Logger log = Logger.getLogger(DiscoveryGroupImpl.class);
-   
+
    private static final int SOCKET_TIMEOUT = 500;
-   
+
    private MulticastSocket socket;
 
    private final List<DiscoveryListener> listeners = new ArrayList<DiscoveryListener>();
-        
+
    private final String name;
 
    private final Thread thread;
-   
+
    private boolean received;
-   
+
    private final Object waitLock = new Object();
-   
+
    private final Map<Pair<TransportConfiguration, TransportConfiguration>, Long> connectors = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, Long>();
-   
+
    private final long timeout;
-   
+
    private volatile boolean started;
-   
-   public DiscoveryGroupImpl(final String name, final InetAddress groupAddress, final int groupPort, final long timeout) throws Exception
+
+   private final String nodeID;
+
+   public DiscoveryGroupImpl(final String nodeID,
+                             final String name,
+                             final InetAddress groupAddress,
+                             final int groupPort,
+                             final long timeout) throws Exception
    {
+      this.nodeID = nodeID;
+
       this.name = name;
 
       socket = new MulticastSocket(groupPort);
 
       socket.joinGroup(groupAddress);
-      
+
       socket.setSoTimeout(SOCKET_TIMEOUT);
-      
+
       this.timeout = timeout;
-      
+
       thread = new Thread(this);
-      
+
       thread.setDaemon(true);
    }
-   
+
    public synchronized void start() throws Exception
    {
       if (started)
@@ -96,11 +105,11 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          return;
       }
       
-      thread.start();
-      
       started = true;
+      
+      thread.start();
    }
-   
+
    public void stop()
    {
       synchronized (this)
@@ -109,85 +118,85 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          {
             return;
          }
-         
+
          started = false;
       }
-      
+
       try
       {
          thread.join();
       }
       catch (InterruptedException e)
-      {        
+      {
       }
-      
-      socket.close();           
+
+      socket.close();
    }
-   
+
    public boolean isStarted()
    {
       return started;
    }
-   
+
    public String getName()
    {
       return name;
    }
-        
+
    public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getConnectors()
    {
       return new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>(connectors.keySet());
    }
-   
+
    public boolean waitForBroadcast(final long timeout)
-   {      
+   {
       synchronized (waitLock)
-      { 
+      {
          long start = System.currentTimeMillis();
-         
+
          long toWait = timeout;
-         
+
          while (!received && toWait > 0)
-         {      
+         {
             try
             {
-               waitLock.wait(toWait);        
+               waitLock.wait(toWait);
             }
             catch (InterruptedException e)
-            {               
+            {
             }
-            
+
             long now = System.currentTimeMillis();
-            
+
             toWait -= now - start;
 
-            start = now;                       
+            start = now;
          }
-         
+
          boolean ret = received;
-         
+
          received = false;
-         
+
          return ret;
-      }      
+      }
    }
 
    public void run()
    {
-      //TODO - can we use a smaller buffer size?
-      final byte[] data = new byte[65535];
-      
-      final DatagramPacket packet = new DatagramPacket(data, data.length);
-      
       try
-      {      
+      {
+         // TODO - can we use a smaller buffer size?
+         final byte[] data = new byte[65535];
+
          while (true)
          {
             if (!started)
             {
                return;
             }
-            
+  
+            final DatagramPacket packet = new DatagramPacket(data, data.length);
+
             try
             {
                socket.receive(packet);
@@ -203,74 +212,79 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   continue;
                }
             }
-            
+
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
-            
+
             ObjectInputStream ois = new ObjectInputStream(bis);
-            
+
+            String originatingNodeID = ois.readUTF();
+
+            if (nodeID.equals(originatingNodeID))
+            {
+               //Ignore traffic from own node
+               continue;
+            }
+
             int size = ois.readInt();
-            
+
             boolean changed = false;
-            
+
             synchronized (this)
-            {            
+            {
                for (int i = 0; i < size; i++)
                {
                   TransportConfiguration connector = (TransportConfiguration)ois.readObject();
-                  
+
                   boolean existsBackup = ois.readBoolean();
-                  
+
                   TransportConfiguration backupConnector = null;
-                  
+
                   if (existsBackup)
                   {
                      backupConnector = (TransportConfiguration)ois.readObject();
                   }
-                  
-                  Pair<TransportConfiguration, TransportConfiguration> connectorPair =
-                     new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector);
-                  
+
+                  Pair<TransportConfiguration, TransportConfiguration> connectorPair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
+                                                                                                                                                backupConnector);
+
                   Long oldVal = connectors.put(connectorPair, System.currentTimeMillis());
-                  
+
                   if (oldVal == null)
                   {
                      changed = true;
                   }
                }
-               
+
                long now = System.currentTimeMillis();
-               
-               Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Long>> iter = connectors.entrySet().iterator();
-               
-               //Weed out any expired connectors
-               
+
+               Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Long>> iter = connectors.entrySet()
+                                                                                                                .iterator();
+               // Weed out any expired connectors
+
                while (iter.hasNext())
                {
                   Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Long> entry = iter.next();
-                  
+
                   if (entry.getValue() + timeout <= now)
                   {
                      iter.remove();
-                     
+
                      changed = true;
                   }
                }
             }
-            
-            packet.setLength(data.length);
-            
+
             if (changed)
             {
                callListeners();
             }
-            
+
             synchronized (waitLock)
             {
                received = true;
-               
+
                waitLock.notify();
             }
-                        
          }
       }
       catch (Exception e)
@@ -278,20 +292,25 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          log.error("Failed to receive datagram", e);
       }
    }
-   
+
    public synchronized void registerListener(final DiscoveryListener listener)
    {
-      this.listeners.add(listener);
+      listeners.add(listener);
+
+      if (!connectors.isEmpty())
+      {
+         listener.connectorsChanged();
+      }
    }
-   
+
    public synchronized void unregisterListener(final DiscoveryListener listener)
    {
-      this.listeners.remove(listener);
+      listeners.remove(listener);
    }
-   
+
    private void callListeners()
-   {      
-      for (DiscoveryListener listener: listeners)
+   {
+      for (DiscoveryListener listener : listeners)
       {
          try
          {
@@ -299,9 +318,46 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          }
          catch (Throwable t)
          {
-            //Catch it so exception doesn't prevent other listeners from running
+            // Catch it so exception doesn't prevent other listeners from running
             log.error("Failed to call discovery listener", t);
          }
       }
+   }
+
+   private String replaceWildcardChars(final String str)
+   {
+      return str.replace('.', '-');
+   }
+
+   private SimpleString generateConnectorString(final TransportConfiguration config) throws Exception
+   {
+      StringBuilder str = new StringBuilder(replaceWildcardChars(config.getFactoryClassName()));
+
+      if (config.getParams() != null)
+      {
+         if (!config.getParams().isEmpty())
+         {
+            str.append("?");
+         }
+
+         boolean first = true;
+         for (Map.Entry<String, Object> entry : config.getParams().entrySet())
+         {
+            if (!first)
+            {
+               str.append("&");
+            }
+            String encodedKey = replaceWildcardChars(entry.getKey());
+
+            String val = entry.getValue().toString();
+            String encodedVal = replaceWildcardChars(val);
+
+            str.append(encodedKey).append('=').append(encodedVal);
+
+            first = false;
+         }
+      }
+
+      return new SimpleString(str.toString());
    }
 }

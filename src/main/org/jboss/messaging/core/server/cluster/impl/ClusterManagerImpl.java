@@ -90,7 +90,7 @@ public class ClusterManagerImpl implements ClusterManager
    private final Configuration configuration;
 
    private final QueueFactory queueFactory;
-   
+
    private final SimpleString nodeID;
 
    private volatile boolean started;
@@ -117,7 +117,7 @@ public class ClusterManagerImpl implements ClusterManager
       this.configuration = configuration;
 
       this.queueFactory = queueFactory;
-      
+
       this.nodeID = nodeID;
    }
 
@@ -215,7 +215,8 @@ public class ClusterManagerImpl implements ClusterManager
 
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
 
-      BroadcastGroupImpl group = new BroadcastGroupImpl(config.getName(),
+      BroadcastGroupImpl group = new BroadcastGroupImpl(nodeID.toString(),
+                                                        config.getName(),
                                                         localBindAddress,
                                                         config.getLocalBindPort(),
                                                         groupAddress,
@@ -283,7 +284,8 @@ public class ClusterManagerImpl implements ClusterManager
 
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
 
-      DiscoveryGroup group = new DiscoveryGroupImpl(config.getName(),
+      DiscoveryGroup group = new DiscoveryGroupImpl(nodeID.toString(),
+                                                    config.getName(),
                                                     groupAddress,
                                                     config.getGroupPort(),
                                                     config.getRefreshTimeout());
@@ -375,9 +377,9 @@ public class ClusterManagerImpl implements ClusterManager
          bridge = new BridgeImpl(new SimpleString(config.getName()),
                                  queue,
                                  pair,
-                                 executorFactory.getExecutor(),                             
+                                 executorFactory.getExecutor(),
                                  config.getFilterString() == null ? null : new SimpleString(config.getFilterString()),
-                                 new SimpleString(config.getForwardingAddress()),                               
+                                 new SimpleString(config.getForwardingAddress()),
                                  scheduledExecutor,
                                  transformer,
                                  config.getRetryInterval(),
@@ -466,7 +468,7 @@ public class ClusterManagerImpl implements ClusterManager
                                                        managementService,
                                                        scheduledExecutor,
                                                        queueFactory,
-                                                       connectors,                                                  
+                                                       connectors,
                                                        config.getMaxHops(),
                                                        nodeID);
       }
@@ -494,7 +496,7 @@ public class ClusterManagerImpl implements ClusterManager
                                                        managementService,
                                                        scheduledExecutor,
                                                        queueFactory,
-                                                       dg,                                                  
+                                                       dg,
                                                        config.getMaxHops(),
                                                        nodeID);
       }

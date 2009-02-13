@@ -39,8 +39,9 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -160,15 +161,15 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-      //    log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
+         //log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
-            //log.info("Waited " + (System.currentTimeMillis() - start));
+            // log.info("Waited " + (System.currentTimeMillis() - start));
             return;
          }
 
-         Thread.sleep(10);
+         Thread.sleep(100);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
 
@@ -418,7 +419,7 @@ public class ClusterTestBase extends ServiceTestBase
    {
       verifyReceiveRoundRobinInSomeOrder(true, numMessages, consumerIDs);
    }
-      
+
    protected void verifyReceiveRoundRobinInSomeOrder(boolean ack, int numMessages, int... consumerIDs) throws Exception
    {
       Map<Integer, Integer> countMap = new HashMap<Integer, Integer>();
@@ -455,7 +456,7 @@ public class ClusterTestBase extends ServiceTestBase
                counts.add(count);
 
                countMap.put(i, count);
-               
+
                if (ack)
                {
                   message.acknowledge();
@@ -470,12 +471,12 @@ public class ClusterTestBase extends ServiceTestBase
          assertTrue(counts.contains(i));
       }
    }
-   
+
    protected void verifyReceiveRoundRobinInSomeOrderNoAck(int numMessages, int... consumerIDs) throws Exception
    {
       verifyReceiveRoundRobinInSomeOrder(false, numMessages, consumerIDs);
    }
-   
+
    protected void verifyNotReceive(int... consumerIDs) throws Exception
    {
       for (int i = 0; i < consumerIDs.length; i++)
@@ -563,6 +564,81 @@ public class ClusterTestBase extends ServiceTestBase
       services[node] = service;
    }
 
+   protected void setupServerWithDiscovery(int node, String groupAddress, int port, boolean fileStorage, boolean netty)
+   {
+      if (services[node] != null)
+      {
+         throw new IllegalArgumentException("Already a service at node " + node);
+      }
+
+      Configuration configuration = new ConfigurationImpl();
+
+      configuration.setSecurityEnabled(false);
+      configuration.setBindingsDirectory(getBindingsDir(node));
+      configuration.setJournalMinFiles(2);
+      configuration.setJournalDirectory(getJournalDir(node));
+      configuration.setJournalFileSize(100 * 1024);
+      configuration.setPagingDirectory(getPageDir(node));
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir(node));
+      configuration.setClustered(true);
+
+      configuration.getAcceptorConfigurations().clear();
+
+      Map<String, Object> params = generateParams(node, netty);
+
+      TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
+      configuration.getAcceptorConfigurations().add(invmtc);
+
+      if (netty)
+      {
+         TransportConfiguration nettytc = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
+         configuration.getAcceptorConfigurations().add(nettytc);
+      }
+
+      TransportConfiguration invmtc_c = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
+      configuration.getConnectorConfigurations().put(invmtc_c.getName(), invmtc_c);
+
+      List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
+
+      if (netty)
+      {
+         TransportConfiguration nettytc_c = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
+         configuration.getConnectorConfigurations().put(nettytc_c.getName(), nettytc_c);
+
+         connectorPairs.add(new Pair<String, String>(nettytc_c.getName(), null));
+      }
+      else
+      {
+         connectorPairs.add(new Pair<String, String>(invmtc_c.getName(), null));
+      }
+
+      BroadcastGroupConfiguration bcConfig = new BroadcastGroupConfiguration("bg1",
+                                                                             null,
+                                                                             -1,
+                                                                             groupAddress,
+                                                                             port,
+                                                                             250,
+                                                                             connectorPairs);
+
+      configuration.getBroadcastGroupConfigurations().add(bcConfig);
+
+      DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1", groupAddress, port, 500);
+
+      configuration.getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
+
+      MessagingService service;
+
+      if (fileStorage)
+      {
+         service = Messaging.newMessagingService(configuration);
+      }
+      else
+      {
+         service = Messaging.newNullStorageMessagingService(configuration);
+      }
+      services[node] = service;
+   }
+
    protected Map<String, Object> generateParams(int node, boolean netty)
    {
       Map<String, Object> params = new HashMap<String, Object>();
@@ -605,9 +681,9 @@ public class ClusterTestBase extends ServiceTestBase
          throw new IllegalStateException("No service at node " + nodeFrom);
       }
 
-      Map<String, TransportConfiguration> connectors = serviceFrom.getServer()
-                                                                  .getConfiguration()
-                                                                  .getConnectorConfigurations();
+      // Map<String, TransportConfiguration> connectors = serviceFrom.getServer()
+      // .getConfiguration()
+      // .getConnectorConfigurations();
 
       Map<String, Object> params = generateParams(nodeTo, netty);
 
@@ -622,9 +698,9 @@ public class ClusterTestBase extends ServiceTestBase
          serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
       }
 
-      connectors.put(serverTotc.getName(), serverTotc);
+      serviceFrom.getServer().getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
 
-      serviceFrom.getServer().getConfiguration().setConnectorConfigurations(connectors);
+      // serviceFrom.getServer().getConfiguration().setConnectorConfigurations(connectors);
 
       Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), null);
 
@@ -641,13 +717,160 @@ public class ClusterTestBase extends ServiceTestBase
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
                                                                                       pairs);
-      List<ClusterConnectionConfiguration> clusterConfs = serviceFrom.getServer()
-                                                                     .getConfiguration()
-                                                                     .getClusterConfigurations();
+      serviceFrom.getServer().getConfiguration().getClusterConfigurations().add(clusterConf);
+
+      // clusterConfs.add(clusterConf);
+
+      // serviceFrom.getServer().getConfiguration().setClusterConfigurations(clusterConfs);
+   }
+
+   // protected void setupClusterConnection(String name,
+   // int nodeFrom,
+   // int nodeTo,
+   // String address,
+   // boolean forwardWhenNoConsumers,
+   // int maxHops,
+   // boolean netty)
+   // {
+   // MessagingService serviceFrom = services[nodeFrom];
+   //
+   // if (serviceFrom == null)
+   // {
+   // throw new IllegalStateException("No service at node " + nodeFrom);
+   // }
+   //
+   // Map<String, TransportConfiguration> connectors = serviceFrom.getServer()
+   // .getConfiguration()
+   // .getConnectorConfigurations();
+   //
+   // Map<String, Object> params = generateParams(nodeTo, netty);
+   //
+   // TransportConfiguration serverTotc;
+   //
+   // if (netty)
+   // {
+   // serverTotc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
+   // }
+   // else
+   // {
+   // serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
+   // }
+   //
+   // connectors.put(serverTotc.getName(), serverTotc);
+   //
+   // serviceFrom.getServer().getConfiguration().setConnectorConfigurations(connectors);
+   //
+   // Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), null);
+   //
+   // List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
+   // pairs.add(connectorPair);
+   //
+   // ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
+   // address,
+   // 100,
+   // 1d,
+   // -1,
+   // -1,
+   // true,
+   // forwardWhenNoConsumers,
+   // maxHops,
+   // pairs);
+   // List<ClusterConnectionConfiguration> clusterConfs = serviceFrom.getServer()
+   // .getConfiguration()
+   // .getClusterConfigurations();
+   //
+   // clusterConfs.add(clusterConf);
+   //
+   // serviceFrom.getServer().getConfiguration().setClusterConfigurations(clusterConfs);
+   // }
+
+   protected void setupClusterConnection(String name,
+                                         String address,
+                                         boolean forwardWhenNoConsumers,
+                                         int maxHops,
+                                         boolean netty,
+                                         int nodeFrom,
+                                         int... nodesTo)
+   {
+      MessagingService serviceFrom = services[nodeFrom];
+
+      if (serviceFrom == null)
+      {
+         throw new IllegalStateException("No service at node " + nodeFrom);
+      }
+
+      Map<String, TransportConfiguration> connectors = serviceFrom.getServer()
+                                                                  .getConfiguration()
+                                                                  .getConnectorConfigurations();
+
+      List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
+
+      for (int i = 0; i < nodesTo.length; i++)
+      {
+         Map<String, Object> params = generateParams(nodesTo[i], netty);
+
+         TransportConfiguration serverTotc;
+
+         if (netty)
+         {
+            serverTotc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
+         }
+         else
+         {
+            serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
+         }
+
+         connectors.put(serverTotc.getName(), serverTotc);
+
+         Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), null);
+
+         pairs.add(connectorPair);
+      }
+
+      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
+                                                                                      address,
+                                                                                      100,
+                                                                                      1d,
+                                                                                      -1,
+                                                                                      -1,
+                                                                                      true,
+                                                                                      forwardWhenNoConsumers,
+                                                                                      maxHops,
+                                                                                      pairs);
+
+      serviceFrom.getServer().getConfiguration().getClusterConfigurations().add(clusterConf);
+   }
+
+   protected void setupDiscoveryClusterConnection(String name,
+                                                  int node,
+                                                  String discoveryGroupName,
+                                                  String address,
+                                                  boolean forwardWhenNoConsumers,
+                                                  int maxHops,
+                                                  boolean netty)
+   {
+      MessagingService service = services[node];
+
+      if (service == null)
+      {
+         throw new IllegalStateException("No service at node " + node);
+      }
+
+      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
+                                                                                      address,
+                                                                                      100,
+                                                                                      1d,
+                                                                                      -1,
+                                                                                      -1,
+                                                                                      true,
+                                                                                      forwardWhenNoConsumers,
+                                                                                      maxHops,
+                                                                                      discoveryGroupName);
+      List<ClusterConnectionConfiguration> clusterConfs = service.getServer()
+                                                                 .getConfiguration()
+                                                                 .getClusterConfigurations();
 
       clusterConfs.add(clusterConf);
-
-      serviceFrom.getServer().getConfiguration().setClusterConfigurations(clusterConfs);
    }
 
    protected void startServers(int... nodes) throws Exception
@@ -661,10 +884,11 @@ public class ClusterTestBase extends ServiceTestBase
    protected void stopServers(int... nodes) throws Exception
    {
       for (int i = 0; i < nodes.length; i++)
-      {
-         log.info("*** stopping server " + i);
-         services[nodes[i]].stop();
-         log.info("*** stopped server " + i);
+      {        
+         if (services[nodes[i]].isStarted())
+         {
+            services[nodes[i]].stop();
+         }  
       }
    }
 

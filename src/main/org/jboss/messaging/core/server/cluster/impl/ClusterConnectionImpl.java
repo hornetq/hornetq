@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
@@ -183,7 +184,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
                                 final QueueFactory queueFactory,
-                                final DiscoveryGroup discoveryGroup,                               
+                                final DiscoveryGroup discoveryGroup,                                
                                 final int maxHops,
                                 final SimpleString nodeID) throws Exception
    {
@@ -231,8 +232,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       if (discoveryGroup != null)
       {
-         updateConnectors(discoveryGroup.getConnectors());
-
          discoveryGroup.registerListener(this);
       }
 
@@ -245,7 +244,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       {
          return;
       }
-
+      
       if (discoveryGroup != null)
       {
          discoveryGroup.unregisterListener(this);
@@ -271,7 +270,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    // DiscoveryListener implementation ------------------------------------------------------------------
 
-   public void connectorsChanged()
+   public synchronized void connectorsChanged()
    {
       try
       {
@@ -284,7 +283,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          log.error("Failed to update connectors", e);
       }
    }
-
+   
    private void updateConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
    {
       Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
@@ -314,7 +313,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          if (!records.containsKey(connectorPair))
          {
             SimpleString queueName = generateQueueName(name, connectorPair);
-
+            
             Binding queueBinding = postOffice.getBinding(queueName);
 
             Queue queue;

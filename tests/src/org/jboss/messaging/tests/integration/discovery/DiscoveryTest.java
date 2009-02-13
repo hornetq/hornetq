@@ -69,7 +69,7 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
 
       bg.start();
 
@@ -82,7 +82,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnectorPair(connectorPair);
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), groupAddress, groupPort, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
 
       dg.start();
 
@@ -107,6 +107,49 @@ public class DiscoveryTest extends UnitTestCase
       dg.stop();
 
    }
+   
+   public void testIgnoreTrafficFromOwnNode() throws Exception
+   {
+      final InetAddress groupAddress = InetAddress.getByName(address1);
+      final int groupPort = 6745;
+      final int timeout = 500;
+      
+      String nodeID = randomString();
+
+      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), null, -1, groupAddress, groupPort);
+
+      bg.start();
+
+      TransportConfiguration live1 = generateTC();
+
+      TransportConfiguration backup1 = generateTC();
+
+      Pair<TransportConfiguration, TransportConfiguration> connectorPair = new Pair<TransportConfiguration, TransportConfiguration>(live1,
+                                                                                                                                    backup1);
+
+      bg.addConnectorPair(connectorPair);
+
+      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID, randomString(), groupAddress, groupPort, timeout);
+
+      dg.start();
+
+      bg.broadcastConnectors();
+
+      boolean ok = dg.waitForBroadcast(1000);
+
+      assertFalse(ok);
+
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectors = dg.getConnectors();
+
+      assertNotNull(connectors);
+
+      assertEquals(0, connectors.size());
+
+      bg.stop();
+
+      dg.stop();
+
+   }
 
 // There is a bug in some OSes where different addresses but *Same port* will receive the traffic - hence this test won't pass
 //   See http://www.jboss.org/community/docs/DOC-11710 (jboss wiki promiscuous traffic)
@@ -118,7 +161,7 @@ public class DiscoveryTest extends UnitTestCase
 //      final int groupPort = 6745;
 //      final int timeout = 500;
 //
-//      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+//      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
 //
 //      bg.start();
 //
@@ -133,7 +176,7 @@ public class DiscoveryTest extends UnitTestCase
 //
 //      final InetAddress groupAddress2 = InetAddress.getByName(address2);
 //
-//      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), groupAddress2, groupPort, timeout);
+//      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress2, groupPort, timeout);
 //
 //      dg.start();
 //
@@ -155,7 +198,7 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
 
       bg.start();
 
@@ -170,7 +213,7 @@ public class DiscoveryTest extends UnitTestCase
 
       final int port2 = 6746;
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), groupAddress, port2, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, port2, timeout);
 
       dg.start();
 
@@ -191,7 +234,7 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
 
       bg.start();
 
@@ -207,7 +250,7 @@ public class DiscoveryTest extends UnitTestCase
       final InetAddress groupAddress2 = InetAddress.getByName(address2);
       final int port2 = 6746;
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), groupAddress2, port2, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress2, port2, timeout);
 
       dg.start();
 
@@ -235,13 +278,13 @@ public class DiscoveryTest extends UnitTestCase
 
       final int timeout = 500;
 
-      BroadcastGroup bg1 = new BroadcastGroupImpl(randomString(), null, -1, groupAddress1, groupPort1);
+      BroadcastGroup bg1 = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress1, groupPort1);
       bg1.start();
 
-      BroadcastGroup bg2 = new BroadcastGroupImpl(randomString(), null, -1, groupAddress2, groupPort2);
+      BroadcastGroup bg2 = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress2, groupPort2);
       bg2.start();
 
-      BroadcastGroup bg3 = new BroadcastGroupImpl(randomString(), null, -1, groupAddress3, groupPort3);
+      BroadcastGroup bg3 = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress3, groupPort3);
       bg3.start();
 
       TransportConfiguration live1 = generateTC();
@@ -266,13 +309,13 @@ public class DiscoveryTest extends UnitTestCase
       bg2.addConnectorPair(connectorPair2);
       bg3.addConnectorPair(connectorPair3);
 
-      DiscoveryGroup dg1 = new DiscoveryGroupImpl(randomString(), groupAddress1, groupPort1, timeout);
+      DiscoveryGroup dg1 = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress1, groupPort1, timeout);
       dg1.start();
 
-      DiscoveryGroup dg2 = new DiscoveryGroupImpl(randomString(), groupAddress2, groupPort2, timeout);
+      DiscoveryGroup dg2 = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress2, groupPort2, timeout);
       dg2.start();
 
-      DiscoveryGroup dg3 = new DiscoveryGroupImpl(randomString(), groupAddress3, groupPort3, timeout);
+      DiscoveryGroup dg3 = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress3, groupPort3, timeout);
       dg3.start();
 
       bg1.broadcastConnectors();
@@ -320,7 +363,7 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
 
       bg.start();
 
@@ -331,7 +374,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnectorPair(connectorPair);
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), groupAddress, groupPort, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
 
       dg.start();
 
@@ -363,7 +406,7 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
 
       bg.start();
 
@@ -374,7 +417,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnectorPair(connectorPair);
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), groupAddress, groupPort, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
 
       MyListener listener1 = new MyListener();
       MyListener listener2 = new MyListener();
@@ -475,13 +518,13 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg1 = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg1 = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
       bg1.start();
 
-      BroadcastGroup bg2 = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg2 = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
       bg2.start();
 
-      BroadcastGroup bg3 = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg3 = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
       bg3.start();
 
       TransportConfiguration live1 = generateTC();
@@ -502,7 +545,7 @@ public class DiscoveryTest extends UnitTestCase
                                                                                                                                      backup3);
       bg3.addConnectorPair(connectorPair3);
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), groupAddress, groupPort, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
 
       MyListener listener1 = new MyListener();
       dg.registerListener(listener1);
@@ -715,7 +758,7 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), null, -1, groupAddress, groupPort);
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
 
       bg.start();
 
@@ -727,11 +770,11 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnectorPair(connectorPair1);
 
-      DiscoveryGroup dg1 = new DiscoveryGroupImpl(randomString(), groupAddress, groupPort, timeout);
+      DiscoveryGroup dg1 = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
 
-      DiscoveryGroup dg2 = new DiscoveryGroupImpl(randomString(), groupAddress, groupPort, timeout);
+      DiscoveryGroup dg2 = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
 
-      DiscoveryGroup dg3 = new DiscoveryGroupImpl(randomString(), groupAddress, groupPort, timeout);
+      DiscoveryGroup dg3 = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
 
       dg1.start();
       dg2.start();

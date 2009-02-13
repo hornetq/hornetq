@@ -280,6 +280,16 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    public void stop() throws Exception
    {
+      if (started)
+      {
+         //We need to stop the csf here otherwise the stop runnable never runs since the createobjectsrunnable is trying to connect to the target
+         //server which isn't up in an infinite loop
+         if (csf != null)
+         {
+            csf.close();
+         }
+      }
+      
       executor.execute(new StopRunnable());
       
       this.waitForRunnablesToComplete();
@@ -297,10 +307,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                {
                   return;
                }
-
-               // We close the session factory here - this will cause any connection retries to stop
-
-               csf.close();
 
                if (session != null)
                {    
@@ -401,7 +407,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       {
          return false;
       }
-
+      
       try
       {
          queue.addConsumer(BridgeImpl.this);

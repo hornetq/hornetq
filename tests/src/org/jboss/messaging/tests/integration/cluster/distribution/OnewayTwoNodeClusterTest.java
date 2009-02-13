@@ -69,6 +69,21 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       return false;
    }
    
+   /*
+    * make sure source can shutdown if target is never started
+    */
+   public void testNeverStartTargetStartSourceThenStopSource() throws Exception
+   {
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
+      startServers(0);
+
+      //Give it a little time for the bridge to try to start
+      Thread.sleep(2000);
+      
+      log.info("Stopping server 0");
+      stopServers(0);            
+   }
+   
    public void testStartTargetServerBeforeSourceServer() throws Exception
    {
       setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());

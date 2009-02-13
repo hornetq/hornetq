@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.deployers.impl;
 
@@ -37,23 +37,22 @@ import org.w3c.dom.Node;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class QueueDeployer extends XmlDeployer
-{   
+{
    private final Configuration serverConfiguration;
 
-   public QueueDeployer(final DeploymentManager deploymentManager,
-                                final Configuration configuration)
+   public QueueDeployer(final DeploymentManager deploymentManager, final Configuration configuration)
    {
       super(deploymentManager);
       this.serverConfiguration = configuration;
    }
-   
+
    /**
     * the names of the elements to deploy
     * @return the names of the elements todeploy
     */
    public String[] getElementTagName()
    {
-      return new String[]{"queue"};
+      return new String[] { "queue" };
    }
 
    @Override
@@ -62,9 +61,10 @@ public class QueueDeployer extends XmlDeployer
       if ("deployment".equals(rootNode.getNodeName()))
       {
          XMLUtil.validate(rootNode, "jbm-configuration.xsd");
-      } else 
+      }
+      else
       {
-         XMLUtil.validate(rootNode, "jbm-queues.xsd");         
+         XMLUtil.validate(rootNode, "jbm-queues.xsd");
       }
    }
 
@@ -80,7 +80,7 @@ public class QueueDeployer extends XmlDeployer
       configurations.add(queueConfig);
       serverConfiguration.setQueueConfigurations(configurations);
    }
-   
+
    @Override
    public void undeploy(Node node) throws Exception
    {
@@ -93,19 +93,19 @@ public class QueueDeployer extends XmlDeployer
     */
    public String[] getConfigFileNames()
    {
-      return new String[] {"jbm-configuration.xml", "jbm-queues.xml"};
+      return new String[] { "jbm-configuration.xml", "jbm-queues.xml" };
    }
 
    private QueueConfiguration parseQueueConfiguration(final Node node)
    {
       String name = node.getAttributes().getNamedItem("name").getNodeValue();
-      
+
       String address = node.getAttributes().getNamedItem("address").getNodeValue();
 
       String filterString = null;
 
       Node filterNode = node.getAttributes().getNamedItem("filter");
-      if (filterNode !=null)
+      if (filterNode != null)
       {
          String filterValue = filterNode.getNodeValue();
          if (!"".equals(filterValue.trim()))
@@ -120,7 +120,7 @@ public class QueueDeployer extends XmlDeployer
       {
          durable = Boolean.parseBoolean(durableNode.getNodeValue());
       }
-      
+
       return new QueueConfiguration(address, name, filterString, durable);
    }
 

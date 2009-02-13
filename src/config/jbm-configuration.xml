@@ -4,9 +4,7 @@
    <configuration>
 
       <clustered>false</clustered>
-      
-      
-      
+                  
       <!-- Maximum number of threads to use for scheduled deliveries -->
       <scheduled-max-pool-size>30</scheduled-max-pool-size>
 
