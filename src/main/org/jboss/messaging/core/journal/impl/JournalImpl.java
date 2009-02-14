@@ -83,17 +83,15 @@ import org.jboss.messaging.util.VariableLatch;
 public class JournalImpl implements TestableJournal
 {
 
-   /**
-    * 
-    */
-   private static final int MAX_LINKED_JOURNAL_FILES = 10;
-
    // Constants -----------------------------------------------------
    private static final int STATE_STOPPED = 0;
 
    private static final int STATE_STARTED = 1;
 
    private static final int STATE_LOADED = 2;
+
+   // TODO: Should we make this configurable?
+   private static final int MAX_LINKED_JOURNAL_FILES = 10;
 
    // Static --------------------------------------------------------
 
