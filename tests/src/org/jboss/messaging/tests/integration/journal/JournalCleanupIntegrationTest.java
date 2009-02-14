@@ -162,13 +162,13 @@ public class JournalCleanupIntegrationTest extends ServiceTestBase
             // Wait the current task to finish before we test the condition again
             journal.debugWait();
 
-            if (journal.getDataFilesCount() <= 3)
+            if (journal.getDataFilesCount() <= 5)
             {
                break;
             }
          }
 
-         assertTrue("DataFilesCount supposed to be less than 3, but it was "  + journal.getDataFilesCount(), journal.getDataFilesCount() <= 3);
+         assertTrue("DataFilesCount supposed to be less than 5, but it was "  + journal.getDataFilesCount(), journal.getDataFilesCount() <= 5);
 
          
          cons.close();
