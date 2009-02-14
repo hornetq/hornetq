@@ -168,8 +168,13 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       journal.stop();
    }
-
+   
    protected void loadAndCheck() throws Exception
+   {
+      loadAndCheck(false);
+   }
+
+   protected void loadAndCheck(boolean printDebugJournal) throws Exception
    {
       List<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
 
@@ -178,6 +183,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
       journal.load(committedRecords, preparedTransactions);
 
       checkRecordsEquivalent(records, committedRecords);
+      
+      if (printDebugJournal)
+      {
+         printJournalLists(records, committedRecords);
+      }
 
       // check prepared transactions
 
@@ -430,6 +440,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
    protected void checkRecordsEquivalent(final List<RecordInfo> expected, final List<RecordInfo> actual)
    {
+      if (expected.size() != actual.size())
+      {
+         printJournalLists(expected, actual);
+      }
+
       assertEquals("Lists not same length", expected.size(), actual.size());
 
       Iterator<RecordInfo> iterExpected = expected.iterator();
@@ -442,12 +457,37 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
          RecordInfo ractual = iterActual.next();
 
+         if (rexpected.id != ractual.id || rexpected.isUpdate != ractual.isUpdate)
+         {
+            printJournalLists(expected, actual);
+         }
+
          assertEquals("ids not same", rexpected.id, ractual.id);
 
          assertEquals("type not same", rexpected.isUpdate, ractual.isUpdate);
 
          assertEqualsByteArrays(rexpected.data, ractual.data);
       }
+   }
+
+   /**
+    * @param expected
+    * @param actual
+    */
+   private void printJournalLists(final List<RecordInfo> expected, final List<RecordInfo> actual)
+   {
+      System.out.println("***********************************************");
+      System.out.println("Expected list:");
+      for (RecordInfo info : expected)
+      {
+         System.out.println("Record " + info.id + " isUpdate = " + info.isUpdate);
+      }
+      System.out.println("Actual list:");
+      for (RecordInfo info : actual)
+      {
+         System.out.println("Record " + info.id + " isUpdate = " + info.isUpdate);
+      }
+      System.out.println("***********************************************");
    }
 
    protected byte[] generateRecord(final int length)

@@ -44,6 +44,7 @@ import org.jboss.messaging.core.logging.Logger;
  * <p>WIKI Page: <a href="http://wiki.jboss.org/wiki/JBossMessaging2Reclaiming">http://wiki.jboss.org/wiki/JBossMessaging2Reclaiming</a></p>
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class Reclaimer
@@ -57,13 +58,18 @@ public class Reclaimer
       log.trace(message);
    }
 
-   public void scan(final JournalFile[] files)
+   /** Returns the number of files holding second criterion (linked-list effect) */
+   public int scan(final JournalFile[] files)
    {
+      int secondCriterionCount = 0;
+
       for (int i = 0; i < files.length; i++)
       {
-         // First we evaluate criterion 1)
+         // First we evaluate criterion 1) (Which is simple reference counting)
 
          JournalFile currentFile = files[i];
+
+         currentFile.setLinkedDependency(false);
 
          int posCount = currentFile.getPosCount();
 
@@ -88,10 +94,14 @@ public class Reclaimer
          }
 
          currentFile.setCanReclaim(true);
+         
+         // This attribute would be helpful on calculating % usage of a file..
+         // And it is also useful for debugging
+         currentFile.setTotalNegCount(totNeg);
 
          if (posCount <= totNeg)
          {
-            // Now we evaluate criterion 2)
+            // Now we evaluate criterion 2) (This file shouldn't have delete records on non reclaimable files)
 
             for (int j = 0; j <= i; j++)
             {
@@ -114,6 +124,11 @@ public class Reclaimer
 
                      currentFile.setCanReclaim(false);
 
+                     // This file is holding currentFile from being reclaimed, hence we set it as a linked dependency
+                     file.setLinkedDependency(true);
+
+                     secondCriterionCount++;
+
                      break;
                   }
                }
@@ -124,5 +139,7 @@ public class Reclaimer
             currentFile.setCanReclaim(false);
          }
       }
+
+      return secondCriterionCount;
    }
 }

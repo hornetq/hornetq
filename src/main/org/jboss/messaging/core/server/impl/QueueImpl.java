@@ -1127,7 +1127,8 @@ public class QueueImpl implements Queue
             return;
          }
 
-         if (pagingStore == null)
+         // PagingManager would be null only on testcases
+         if (pagingStore == null && pagingManager != null)
          {
             // TODO: It would be better if we could initialize the pagingStore during the construction
             try
@@ -1137,7 +1138,6 @@ public class QueueImpl implements Queue
             catch (Exception e)
             {
                // This shouldn't happen, and if it happens, this shouldn't abort the route
-               log.warn("Error getting the page-store Destination", e);
             }
          }
 

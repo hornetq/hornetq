@@ -31,6 +31,7 @@ import org.jboss.messaging.core.journal.SequentialFile;
  * TODO combine this with JournalFileImpl
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public interface JournalFile
@@ -39,6 +40,30 @@ public interface JournalFile
 
    void incNegCount(JournalFile file);
 
+   void decNegCount(JournalFile file);
+
+   /** Total Negative from other files to this file */
+   int getTotalNegCount();
+
+   /** Set by the Reclaimer */
+   void setTotalNegCount(int total);
+
+   /** 
+    * 
+    * A list of problematic records that would cause a linked-list effect between two files
+    * Information we will need in order to cleanup necessary delete records.
+    * 
+    * To avoid a linked-list effect, we physically remove deleted records from other files, when cleaning up
+    * */
+   void addCleanupInfo(long id, JournalFile deleteFile);
+
+   /**
+    * A list of problematic records that would cause a linked-list effect between two files
+    * @param id
+    * @return The list
+    */
+   JournalFile getCleanupInfo(long id);
+
    int getPosCount();
 
    void incPosCount();
@@ -46,6 +71,17 @@ public interface JournalFile
    void decPosCount();
 
    void setCanReclaim(boolean canDelete);
+   
+
+   /**
+    * Property marking if this file is holding another file from reclaiming because of pending deletes.
+    *  */
+   void setLinkedDependency(boolean hasDependencies);
+   
+   /**
+    * @see JournalFile#setLinkedDependency(boolean) 
+    *  */
+   boolean isLinkedDependency();
 
    boolean isCanReclaim();
 

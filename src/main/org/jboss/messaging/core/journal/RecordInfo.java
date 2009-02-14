@@ -69,5 +69,10 @@ public class RecordInfo
 
       return r.id == id;
    }
+   
+   public String toString()
+   {
+      return ("RecordInfo (id=" + id + ", userRecordType = " + userRecordType + ", data.length = " + data.length + ", isUpdate = " + this.isUpdate);
+   }
 
 }

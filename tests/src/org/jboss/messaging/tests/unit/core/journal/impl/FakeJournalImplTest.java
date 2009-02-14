@@ -30,6 +30,7 @@ import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFile
  * A FakeJournalImplTest
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class FakeJournalImplTest extends JournalImplTestUnit

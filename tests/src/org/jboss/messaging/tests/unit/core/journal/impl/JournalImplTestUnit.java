@@ -668,15 +668,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    public void testReclaimAddUpdateDeleteDifferentFiles1() throws Exception
    {
+      // Make sure there is one record per file
       setup(2, calculateRecordSize(8, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + recordLength,
-                                                                            getAlignment()), true); // Make
-      // sure
-      // there
-      // is
-      // one
-      // record
-      // per
-      // file
+                                                                            getAlignment()), true);
       createJournal();
       startJournal();
       load();
@@ -713,15 +707,10 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    public void testReclaimAddUpdateDeleteDifferentFiles2() throws Exception
    {
+      // Make sure there is one record per file
       setup(2, calculateRecordSize(8, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + recordLength,
-                                                                            getAlignment()), true); // Make
-      // sure
-      // there
-      // is
-      // one
-      // record
-      // per
-      // file
+                                                                            getAlignment()), true);
+
       createJournal();
       startJournal();
       load();
@@ -2172,6 +2161,24 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       loadAndCheck();
    }
 
+   public void testSimpleAddUpdateDeleteTransactional() throws Exception
+   {
+      setup(10, 10 * 1024, true);
+      createJournal();
+      startJournal();
+      load();
+      addTx(1, 1);
+      commit(1);
+      updateTx(2, 1);
+      commit(2);
+      deleteTx(3, 1);
+      commit(3);
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+   }
+
    public void testMultipleAddUpdateDelete() throws Exception
    {
       setup(10, 10 * 1024, true);
@@ -2937,7 +2944,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    public void testReclaimAfterUpdate() throws Exception
    {
-      setup(2, 40 * 1024, true);
+      setup(2, 60 * 1024, true);
 
       createJournal();
       startJournal();
@@ -2945,17 +2952,30 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       for (int i = 0; i < 100; i++)
       {
-         if (i % 10  == 0 && i>0) 
+         add(i);
+         if (i % 10 == 0 && i > 0)
          {
             System.out.println("new file at " + i);
             journal.forceMoveNextFile();
          }
-
-         add(i);
          update(i);
-         
+
       }
-      
+
+      for (int i = 0; i < 100; i++)
+      {
+
+         addTx(i, i + 100);
+         updateTx(i + 100);
+         if (i % 10 == 0 && i > 0)
+         {
+            System.out.println("new file at " + i);
+            journal.forceMoveNextFile();
+         }
+         commit(i);
+         update(i);
+      }
+
       System.out.println("Before stop ****************************");
       System.out.println(journal.debug());
       System.out.println("*****************************************");
@@ -2971,7 +2991,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      for (int i = 0; i < 100; i++)
+      for (int i = 0; i < 200; i++)
       {
          delete(i);
       }
@@ -2982,14 +3002,14 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       System.out.println(journal.debug());
       System.out.println("*****************************************");
 
-      
       journal.checkAndReclaimFiles();
 
       System.out.println("After reclaim ****************************");
       System.out.println(journal.debug());
       System.out.println("*****************************************");
 
-      
+      assertEquals(0, journal.getDataFilesCount());
+
       stopJournal();
       createJournal();
       startJournal();
@@ -2998,7 +3018,552 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       assertEquals(0, journal.getDataFilesCount());
    }
 
-   
+   public void testCleanupNonTransactional() throws Exception
+   {
+      setup(2, 20 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      add(1, 2, 3, 4, 5, 6, 7, 8, 9);
+      add(50);
+      delete(50);
+      System.out.println("Data = " + journal.getDataFilesCount());
+
+      journal.forceMoveNextFile();
+
+      update(1, 2, 3, 4, 5, 6, 7, 8);
+
+      journal.forceMoveNextFile();
+
+      System.out.println("Data = " + journal.getDataFilesCount());
+
+      delete(1, 2, 3, 4, 5, 6, 7, 8);
+
+      add(10, 11, 12, 13, 14, 15);
+      System.out.println("Data = " + journal.getDataFilesCount());
+
+      journal.forceMoveNextFile();
+
+      System.out.println("Data = " + journal.getDataFilesCount());
+      delete(10, 11, 12, 13, 14, 15);
+
+      System.out.println("Data = " + journal.getDataFilesCount());
+      journal.checkAndReclaimFiles();
+      System.out.println("Data = " + journal.getDataFilesCount());
+
+      System.out.println("Before ********************************************");
+      System.out.println(journal.debug());
+
+      journal.forceMoveNextFile();
+
+      System.out.println("After  ********************************************");
+
+      System.out.println("Journal: " + journal.debug());
+
+      journal.checkAndReclaimFiles();
+      System.out.println("Data = " + journal.getDataFilesCount());
+
+      log.debug("Debug on Journal before stopJournal - \n" + debugJournal());
+
+      journal.cleanup(1);
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      assertEquals(0, journal.getDataFilesCount());
+
+      add(99);
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      assertEquals(0, journal.getDataFilesCount());
+
+      delete(99);
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      assertEquals(0, journal.getDataFilesCount());
+
+   }
+
+   public void testCleanupTransactional() throws Exception
+   {
+      setup(2, 20 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      // File 1
+      {
+         addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+         System.out.println("Data = " + journal.getDataFilesCount());
+
+         // 9 positives
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // File 2
+      {
+         addTx(1, 10, 11, 12, 13, 14, 15);
+         commit(1);
+         add(16);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 2: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // File 3
+      {
+         delete(16);
+         update(1, 2, 3, 4, 5, 6, 7, 8);
+         delete(10, 11, 12, 13, 14, 15);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 3: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // file 4
+      {
+         delete(1, 2, 3, 4, 5, 6, 7, 8);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 4: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      journal.cleanup(1);
+
+      System.out.println("After Cleanup 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+       journal.cleanup(2);
+      
+
+      journal.checkAndReclaimFiles();
+      System.out.println("After Reclaim on Cleanup 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      System.out.println("After reload ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // assertEquals(2, journal.getDataFilesCount());
+
+      delete(9);
+
+      journal.forceMoveNextFile();
+
+      journal.checkAndReclaimFiles();
+
+      System.out.println("journal = " + journal.getDataFilesCount());
+
+      add(100);
+      update(100);
+      delete(100);
+
+      journal.forceMoveNextFile();
+
+      System.out.println("After add-update-delete on same file ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      journal.checkAndReclaimFiles();
+
+      System.out.println("Final ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+   }
+
+   public void testCleanupWithDeleteUpdatesDifferentFiles() throws Exception
+   {
+      setup(2, 20 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      // File 1
+      {
+         addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+         commit(1);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // File 2
+      {
+         updateTx(2, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+         commit(2);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 2: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // File 3
+      {
+         delete(1, 2, 3, 4, 5, 6, 7, 8);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("Holding for secondLevel = " + journal.checkAndReclaimFiles());
+
+      assertTrue(journal.getJournalFile(1).isLinkedDependency());
+      assertFalse(journal.getJournalFile(2).isLinkedDependency());
+      assertFalse(journal.getJournalFile(3).isLinkedDependency());
+
+      System.out.println("File 3: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      journal.cleanup(1);
+
+      System.out.println("After Cleanup 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      journal.checkAndReclaimFiles();
+
+      delete(9);
+
+      journal.forceMoveNextFile();
+
+      journal.checkAndReclaimFiles();
+
+      System.out.println("Final ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+   public void testCleanupWithoutDeleteUpdatesDifferentFiles() throws Exception
+   {
+      setup(2, 20 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      // File 1
+      {
+         addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+         commit(1);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // File 2
+      {
+         updateTx(2, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+         commit(2);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 2: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // File 3
+      {
+         delete(1, 2, 3, 4, 5, 6, 7, 8);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 3: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      journal.cleanup(1);
+
+      System.out.println("After Cleanup 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      journal.cleanup(2);
+
+      journal.forceMoveNextFile();
+
+      journal.checkAndReclaimFiles();
+
+      System.out.println("Final ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      assertEquals(1, journal.getDataFilesCount());
+
+      delete(9);
+
+      journal.forceMoveNextFile();
+
+      journal.checkAndReclaimFiles();
+
+      assertEquals(0, journal.getDataFilesCount());
+
+      System.out.println("data:" + journal.getDataFilesCount());
+
+      System.out.println("After Delete ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+   public void testCleanupWithUpdatesSameFiles() throws Exception
+   {
+      setup(2, 20 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      // File 1
+      {
+         addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+         commit(1);
+         update(1, 2, 3, 4, 5, 6, 7, 8);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      // File 2
+      {
+         delete(1, 2, 3, 4, 5, 6, 7, 8);
+      }
+
+      journal.forceMoveNextFile();
+
+      System.out.println("File 2: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      journal.cleanup(1);
+
+      System.out.println("After Cleanup 1: ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+      journal.forceMoveNextFile();
+      add(20);
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      System.out.println("Final ********************************************");
+      System.out.println(journal.debug());
+      System.out.println("***************************************************");
+
+   }
+
+   public void testCleanupWholeFile() throws Exception
+   {
+      setup(2, 20 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      add(50);
+      delete(50);
+
+      addTx(1, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+      System.out.println("Data = " + journal.getDataFilesCount());
+
+      journal.forceMoveNextFile();
+
+      addTx(1, 10, 11, 12, 13, 14, 15);
+
+      commit(1);
+
+      journal.forceMoveNextFile();
+
+      delete(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+      journal.forceMoveNextFile();
+
+      journal.checkAndReclaimFiles();
+
+      assertEquals(1, journal.getDataFilesCount());
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      delete(10, 11, 12, 13, 14, 15);
+      journal.checkAndReclaimFiles();
+      assertEquals(0, journal.getDataFilesCount());
+
+      System.out.println("Second one **********************************");
+      System.out.println(journal.debug());
+
+      assertEquals(0, journal.getDataFilesCount());
+
+   }
+
+   public void testAutomaticCleanup() throws Exception
+   {
+      setup(2, 3 * 1024, true);
+
+      createJournal();
+      startJournal();
+      load();
+
+      add(50);
+      delete(50);
+
+      addTx(1, 1, 2);
+      journal.forceMoveNextFile();
+      updateTx(1, 1, 2);
+      journal.forceMoveNextFile();
+      commit(1);
+      System.out.println("Data = " + journal.getDataFilesCount());
+
+      journal.forceMoveNextFile();
+
+      delete(1);
+
+      for (int i = 10; i < 20; i++)
+      {
+         add(i);
+         journal.forceMoveNextFile();
+         update(i);
+         journal.forceMoveNextFile();
+         delete(i);
+      }
+
+      journal.forceMoveNextFile();
+
+      add(100);
+      update(100);
+
+      for (int i = 101; i < 120; i++)
+      {
+         add(i);
+         journal.forceMoveNextFile();
+         update(i);
+         journal.forceMoveNextFile();
+         delete(i);
+      }
+
+      journal.checkAndReclaimFiles();
+
+      journal.setAutoReclaim(true);
+      journal.forceMoveNextFile();
+
+      
+      // The cleanup is asynchronous, we keep trying the condition until a timeout of 5 seconds
+      for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis();)
+      {
+         // Wait the current task to finish before we test the condition again
+         journal.debugWait();
+
+         if (journal.getDataFilesCount() == 4)
+         {
+            break;
+         }
+      }
+
+      assertEquals(4, journal.getDataFilesCount());
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      delete(2, 100);
+      
+      // moving to the next file, so any deletes will already make way on reclaiming
+      journal.forceMoveNextFile();
+
+      journal.checkAndReclaimFiles();
+
+      assertEquals(0, journal.getDataFilesCount());
+
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      assertEquals(0, journal.getDataFilesCount());
+
+   }
+
    protected abstract int getAlignment();
 
 }

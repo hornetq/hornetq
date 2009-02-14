@@ -705,12 +705,6 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
-         // if (realFiles)
-         // {
-         // consumer.setLargeMessagesAsFiles(true);
-         // consumer.setLargeMessagesDir(new File(clientLargeMessagesDir));
-         // }
-
          session.start();
 
          for (int i = 0; i < 100; i++)

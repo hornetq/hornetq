@@ -93,13 +93,14 @@ public class ListJournal
          
          System.out.println("Total of " + records.size() + " committed records");
 
-// remove this comment this if you need to verify the content         
-//         for (RecordInfo record: records)
-//         {
-//            System.out.println("user record: " + record.userRecordType + " id: " + record.id + " isUpdated: " + record.isUpdate);
-//         }
+         for (RecordInfo record: records)
+         {
+            System.out.println("user record: " + record);
+         }
          
          journal.checkAndReclaimFiles();
+         
+         System.out.println("Data = " + journal.debug());
          
          journal.stop();
          
