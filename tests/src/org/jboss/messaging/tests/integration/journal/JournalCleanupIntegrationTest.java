@@ -121,7 +121,7 @@ public class JournalCleanupIntegrationTest extends ServiceTestBase
 
       ClientSession sessionConsumer = sessionFactory.createSession(null, null, false, true, true, false, 0);
 
-      int NUMBER_OF_MESSAGES = 1000;
+      int NUMBER_OF_MESSAGES = 3000;
 
       CountDownLatch latch = new CountDownLatch(NUMBER_OF_MESSAGES);
 
@@ -168,7 +168,7 @@ public class JournalCleanupIntegrationTest extends ServiceTestBase
             }
          }
 
-         assertTrue(journal.getDataFilesCount() <= 3);
+         assertTrue("DataFilesCount supposed to be less than 3, but it was "  + journal.getDataFilesCount(), journal.getDataFilesCount() <= 3);
 
          
          cons.close();
