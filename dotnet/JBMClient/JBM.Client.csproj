@@ -8,7 +8,7 @@
     <ProjectGuid>{675AD929-BF42-4930-AC39-603D5EC52D58}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JBM.Client</RootNamespace>
+    <RootNamespace>JBoss.JBM.Client</RootNamespace>
     <AssemblyName>JBM.Client</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -69,14 +69,14 @@
     <Compile Include="remoting\Packet.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="integration\transports\dotnet\DotNetConnector.cs" />
+    <Compile Include="integration\transports\dotnet\DotNetConnectorFactory.cs" />
     <Compile Include="remoting\RemotingConnection.cs" />
-    <Content Include="remoting\spi\Acceptor.java" />
-    <Content Include="remoting\spi\AcceptorFactory.java" />
     <Compile Include="remoting\spi\BufferHandler.cs" />
-    <Content Include="remoting\spi\Connection.java" />
-    <Content Include="remoting\spi\ConnectionLifeCycleListener.java" />
-    <Content Include="remoting\spi\Connector.java" />
-    <Content Include="remoting\spi\ConnectorFactory.java" />
+    <Compile Include="remoting\spi\Connection.cs" />
+    <Compile Include="remoting\spi\ConnectionLifeCycleListener.cs" />
+    <Compile Include="remoting\spi\Connector.cs" />
+    <Compile Include="remoting\spi\ConnectorFactory.cs" />
     <Compile Include="remoting\spi\MessagingBuffer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

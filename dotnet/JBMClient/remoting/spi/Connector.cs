@@ -18,19 +18,33 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-
-package org.jboss.messaging.core.remoting.spi;
-
-import java.util.Map;
-
-/**
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
- * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public interface AcceptorFactory
+namespace JBoss.JBM.Client.remoting.spi
 {
-   Acceptor createAcceptor(final Map<String, Object> configuration,
-                           BufferHandler handler,                        
-                           ConnectionLifeCycleListener listener);
+
+    /**
+     * 
+     * A Connector
+     * 
+     * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+     *
+     */
+    public interface Connector
+    {
+        void Start();
+
+        void Close();
+
+        bool IsStarted();
+
+        /**
+         * Create and return a connection from this connector.
+         * 
+         * This method must NOT throw an exception if it fails to create the connection
+         * (e.g. network is not available), in this case it MUST return null
+         * 
+         * @return The connection, or null if unable to create a connection (e.g. network is unavailable)
+         */
+        Connection CreateConnection();
+    }
 }

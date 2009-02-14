@@ -19,30 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.core.remoting.spi;
 
-/**
- * 
- * A Connector
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- */
-public interface Connector
+namespace JBoss.JBM.Client.remoting.spi
 {
-   void start();
-   
-   void close();
-   
-   boolean isStarted();
-   
-   /**
-    * Create and return a connection from this connector.
-    * 
-    * This method must NOT throw an exception if it fails to create the connection
-    * (e.g. network is not available), in this case it MUST return null
-    * 
-    * @return The connection, or null if unable to create a connection (e.g. network is unavailable)
-    */
-   Connection createConnection();   
+
+
+    /**
+     *
+     * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+     *
+     * @version <tt>$Revision$</tt>
+     *
+     */
+    public interface Connection
+    {
+        MessagingBuffer CreateBuffer(int size);
+
+        object GetID();
+
+        void Write(MessagingBuffer buffer);
+
+        void Close();
+
+        string GetRemoteAddress();
+    }
 }

@@ -18,20 +18,24 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-
-package org.jboss.messaging.core.remoting.spi;
-
-import org.jboss.messaging.core.server.MessagingComponent;
-
-/**
- * An Acceptor is used tby the Remoting Service to allow clients to connect. It should take care of dispatchin client requests
- * to the Remoting Service's Dispatcher.
- *
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
- * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public interface Acceptor extends MessagingComponent
+namespace JBoss.JBM.Client.remoting.spi
 {
-   void stop();
+    using JBoss.JBM.Client.exception;
+
+    /**
+     *
+     * A ConnectionLifeCycleListener
+     *
+     * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+     *
+     */
+    public interface ConnectionLifeCycleListener
+    {
+        void ConnectionCreated(Connection connection);
+
+        void ConnectionDestroyed(object connectionID);
+
+        void ConnectionException(object connectionID, MessagingException me);
+    }
 }
