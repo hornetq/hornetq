@@ -121,7 +121,7 @@ public class JournalCleanupIntegrationTest extends ServiceTestBase
 
       ClientSession sessionConsumer = sessionFactory.createSession(null, null, false, true, true, false, 0);
 
-      int NUMBER_OF_MESSAGES = 3000;
+      int NUMBER_OF_MESSAGES = 6000;
 
       CountDownLatch latch = new CountDownLatch(NUMBER_OF_MESSAGES);
 
