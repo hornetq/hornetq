@@ -272,7 +272,7 @@ public class MessagePropertyTest extends PTPTestCase
 
    /**
     * Test that the <code>Message.getPropertyNames()</code> method does not return
-    * the name of the JMS standard header fields (e.g. <code>JMSCorrelationID</code>.
+    * the name of the JMS standard header fields (e.g. <code>JMSCorrelationID</code>).
     */
    public void testGetPropertyNames()
    {
@@ -281,8 +281,14 @@ public class MessagePropertyTest extends PTPTestCase
          Message message = senderSession.createMessage();
          message.setJMSCorrelationID("foo");
          Enumeration enumeration = message.getPropertyNames();
-         assertTrue("sec. 3.5.6 The getPropertyNames method does not return the names of "
-               + "the JMS standard header field [e.g. JMSCorrelationID].\n", !enumeration.hasMoreElements());
+         while (enumeration.hasMoreElements())
+         {
+            String propName = (String)enumeration.nextElement();
+            boolean valid = !propName.startsWith("JMS")|| propName.startsWith("JMSX");            
+            assertTrue("sec. 3.5.6 The getPropertyNames method does not return the names of "
+               + "the JMS standard header field [e.g. JMSCorrelationID]: " + propName,
+               valid);
+         }
       }
       catch (JMSException e)
       {
@@ -291,10 +297,7 @@ public class MessagePropertyTest extends PTPTestCase
    }
 
    /**
-    * Test that the <code>Message.getPropertyNames()</code> method returns an empty
-    * <code>java.util.Enumeration</code> if there is no properties.
-    * <br />
-    * If there are some, test that it properly return their names.
+    * Test that the <code>Message.getPropertyNames()</code> methods.
     */
    public void testPropertyIteration()
    {
@@ -302,10 +305,28 @@ public class MessagePropertyTest extends PTPTestCase
       {
          Message message = senderSession.createMessage();
          Enumeration enumeration = message.getPropertyNames();
-         assertTrue("No property yet defined.\n", !enumeration.hasMoreElements());
+         // there can be some properties already defined (e.g. JMSXDeliveryCount)
+         int originalCount = 0;
+         while (enumeration.hasMoreElements())
+         {
+            enumeration.nextElement();
+            originalCount ++;
+         }
          message.setDoubleProperty("pi", 3.14159);
          enumeration = message.getPropertyNames();
-         assertEquals("One property defined of name 'pi'.\n", "pi", (String) enumeration.nextElement());
+         boolean foundPiProperty = false;
+         int newCount = 0;
+         while (enumeration.hasMoreElements())
+         {
+            String propName = (String)enumeration.nextElement();
+            newCount++;
+            if ("pi".equals(propName))
+            {
+               foundPiProperty = true;
+            }
+         }
+         assertEquals(originalCount + 1, newCount);
+         assertTrue(foundPiProperty);
       }
       catch (JMSException e)
       {
