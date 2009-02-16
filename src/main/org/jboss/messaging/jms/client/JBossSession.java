@@ -63,6 +63,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -635,6 +636,14 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          filterString = null;
       }
 
+      // eager test of the filter syntax as required by JMS spec
+      try {
+         FilterImpl.createFilter(filterString);
+      } catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);
+      }
+      
       JBossQueue jbq = (JBossQueue) queue;
 
       try
@@ -647,7 +656,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       }
       catch (MessagingException e)
       {
-         JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromMessagingException(e);
       }
 
       return new JBossQueueBrowser(jbq, filterString, session);

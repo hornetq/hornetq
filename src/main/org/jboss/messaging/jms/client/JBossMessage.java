@@ -890,11 +890,7 @@ public class JBossMessage implements javax.jms.Message
       }
       catch (MessagingException e)
       {
-         JMSException je = new JMSException(e.toString());
-
-         je.initCause(e);
-
-         throw je;
+         throw JMSExceptionHelper.convertFromMessagingException(e);
       }
    }
 
