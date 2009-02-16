@@ -158,6 +158,11 @@
    <property name="test.jms.build.dir" value="${test.jms.dir}/build"/>
    <property name="test.jms.src.dir" value="${test.jms.dir}/src"/>
    <property name="test.jms.classes.dir" value="${test.jms.dir}/build/classes"/>
+   <property name="test.joram.dir" value="${test.dir}/joram-tests"/>
+   <property name="test.joram.src.dir" value="${test.joram.dir}/src"/>
+   <property name="test.joram.config.dir" value="${test.joram.dir}/config"/>
+   <property name="test.joram.build.dir" value="${test.joram.dir}/build"/>
+   <property name="test.joram.classes.dir" value="${test.joram.build.dir}/classes"/>
    <property name="disable.invm" value="false"/>
 
    <!--
@@ -271,6 +276,11 @@
       <path location="${build.jars.dir}/${logging.jar.name}"/>
    </path>
 
+   <path id="joram.test.compilation.classpath">
+      <path refid="jms.test.compilation.classpath"/>
+      <path refid="jboss.jnpserver.classpath"/>
+   </path>
+   
    <path id="findbugs.classpath">
       <path refid="jms.compilation.classpath"/>
       <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
@@ -337,6 +347,13 @@
       <!--<path refid="jboss.common.classpath"/>-->
       <!--<path refid="jboss.jnpserver.classpath"/>-->
    </path>
+    
+   <path id="joram.test.execution.classpath">
+      <pathelement location="${test.joram.classes.dir}"/>
+      <pathelement location="${test.joram.config.dir}"/>
+      <path refid="joram.test.compilation.classpath"/>
+      <path refid="jms.test.execution.classpath"/>
+   </path>
 
    <path id="jms.standalone.server.classpath">
       <pathelement location="${test.dir}/config"/>
@@ -390,6 +407,7 @@
       <delete dir="${test.build.dir}"/>
       <delete dir="${test.output.dir}"/>
       <delete dir="${test.jms.build.dir}"/>
+      <delete dir="${test.joram.build.dir}"/>
    </target>
 
    <target name="init" depends="createthirdparty">
@@ -1096,6 +1114,24 @@
          <classpath refid="jms.test.compilation.classpath"/>
       </javac>
    </target>
+    
+   <target name="compile-joram-tests">
+      <mkdir dir="${test.joram.classes.dir}"/>
+      <javac target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="true"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}"
+             srcdir="${test.joram.src.dir}"
+             destdir="${test.joram.classes.dir}">
+          <classpath refid="joram.test.compilation.classpath"/>
+      </javac>
+   </target>
 
    <target name="performance-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
@@ -1231,6 +1267,44 @@
          </batchtest>
       </junit>
    </target>
+    
+   <target name="joram-tests" depends="jar, compile-joram-tests">
+      <echo message=""/>
+      <echo message="Running JORAM tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
+         <jvmarg
+               value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}"/>
+        <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <classpath refid="joram.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${junit.batchtest.todir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.joram.classes.dir}">
+               <include name="**/${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>  
 
    <target name="stress-tests" depends="jar, compile-unit-tests">
       <echo message=""/>
@@ -1302,6 +1376,12 @@
 
    <target name="get-jms-test-execution-classpath" depends="init">
       <pathconvert refid="jms.test.execution.classpath"
+                   property="test.execution.classpath.unix"/>
+      <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
+   </target>
+
+   <target name="get-joram-test-execution-classpath" depends="init">
+      <pathconvert refid="joram.test.execution.classpath"
                    property="test.execution.classpath.unix"/>
       <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
    </target>

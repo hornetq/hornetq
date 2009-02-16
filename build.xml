@@ -188,6 +188,10 @@
       <ant antfile="build-messaging.xml" target="compile"/>
    </target>
 
+   <target name="compile-joram-tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="compile"/>
+   </target>
+
    <target name="unit-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="unit-tests"/>
       <ant antfile="build-messaging.xml" target="compile-reports"/>
@@ -218,9 +222,13 @@
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
    
-
    <target name="jms-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jms-tests"/>
+      <ant antfile="build-messaging.xml" target="compile-reports"/>
+   </target>
+    
+   <target name="joram-tests" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="joram-tests"/>
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 

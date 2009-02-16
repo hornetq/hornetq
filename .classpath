@@ -13,6 +13,8 @@
 	</classpathentry>
 	<classpathentry kind="src" path="tests/jms-tests/src"/>
 	<classpathentry kind="src" path="src/schemas"/>
+	<classpathentry kind="src" path="tests/joram-tests/src"/>
+	<classpathentry kind="src" path="tests/joram-tests/config"/>
 	<classpathentry kind="lib" path="thirdparty/oswego-concurrent/lib/concurrent.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
@@ -50,6 +52,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/integration/lib/jboss-transaction-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jnpserver/lib/jnpserver.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossjta-integration.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar"/>
@@ -59,7 +62,7 @@
 	<classpathentry kind="lib" path="thirdparty/easymock-classextension/lib/easymockclassextension.jar"/>
 	<classpathentry kind="lib" path="thirdparty/cglib/lib/cglib.jar"/>
 	<classpathentry kind="lib" path="tests/tmpfiles"/>
-	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.1.0.ALPHA2.jar"/>
+	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.1.0.ALPHA2.jar" sourcepath="thirdparty/netty/lib/netty-3.1.0.ALPHA2-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M4.jar"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12-1.5.2.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
