@@ -70,7 +70,7 @@ public class ConnectionTest extends PTPTestCase
          Message m = receiver.receive(TestConfig.TIMEOUT);
          receiverConnection.close();
          m.acknowledge();
-         fail("�4.3.5 Invoking the acknowledge method of a received message from a closed "
+         fail("sec. 4.3.5 Invoking the acknowledge method of a received message from a closed "
                + "connection's session must throw a [javax.jms.]IllegalStateException.\n");
       }
       catch (javax.jms.IllegalStateException e)
@@ -78,12 +78,12 @@ public class ConnectionTest extends PTPTestCase
       }
       catch (JMSException e)
       {
-         fail("�4.3.5 Invoking the acknowledge method of a received message from a closed "
+         fail("sec. 4.3.5 Invoking the acknowledge method of a received message from a closed "
                + "connection's session must throw a [javax.jms.]IllegalStateException, not a " + e);
       }
       catch (java.lang.IllegalStateException e)
       {
-         fail("�4.3.5 Invoking the acknowledge method of a received message from a closed "
+         fail("sec. 4.3.5 Invoking the acknowledge method of a received message from a closed "
                + "connection's session must throw an [javax.jms.]IllegalStateException "
                + "[not a java.lang.IllegalStateException]");
       }
@@ -149,7 +149,7 @@ public class ConnectionTest extends PTPTestCase
       }
       catch (Exception e)
       {
-         fail("�4.3.5 Closing a closed connection must not throw an exception.\n");
+         fail("sec. 4.3.5 Closing a closed connection must not throw an exception.\n");
       }
    }
 

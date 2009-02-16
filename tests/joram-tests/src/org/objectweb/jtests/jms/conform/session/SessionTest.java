@@ -239,7 +239,7 @@ public class SessionTest extends PTPTestCase
          Message m = receiver.receive(TestConfig.TIMEOUT);
          receiverSession.close();
          m.acknowledge();
-         fail("�4.4.1 Invoking the acknowledge method of a received message from a closed "
+         fail("sec. 4.4.1 Invoking the acknowledge method of a received message from a closed "
                + " session must throw an [javax.jms.]IllegalStateException.\n");
       }
       catch (javax.jms.IllegalStateException e)
@@ -251,7 +251,7 @@ public class SessionTest extends PTPTestCase
       }
       catch (java.lang.IllegalStateException e)
       {
-         fail("�4.4.1 Invoking the acknowledge method of a received message from a closed "
+         fail("sec. 4.4.1 Invoking the acknowledge method of a received message from a closed "
                + "session must throw an [javax.jms.]IllegalStateException, "
                + "[not a java.lang.IllegalStateException]");
       }
@@ -275,7 +275,7 @@ public class SessionTest extends PTPTestCase
       }
       catch (Exception e)
       {
-         fail("�4.4.1 It is valid to continue to use message objects created or received via "
+         fail("sec. 4.4.1 It is valid to continue to use message objects created or received via "
                + "the [closed] session.\n");
       }
    }
@@ -290,7 +290,7 @@ public class SessionTest extends PTPTestCase
       {
          senderSession.close();
          senderSession.createMessage();
-         fail("�4.4.1 An attempt to use [a closed session] must throw a [javax.jms.]IllegalStateException.\n");
+         fail("sec. 4.4.1 An attempt to use [a closed session] must throw a [javax.jms.]IllegalStateException.\n");
       }
       catch (javax.jms.IllegalStateException e)
       {
@@ -321,7 +321,7 @@ public class SessionTest extends PTPTestCase
       }
       catch (Exception e)
       {
-         fail("�4.4.1 Closing a closed session must NOT throw an exception.\n");
+         fail("sec. 4.4.1 Closing a closed session must NOT throw an exception.\n");
       }
    }
 
