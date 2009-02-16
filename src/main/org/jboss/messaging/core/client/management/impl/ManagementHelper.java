@@ -136,6 +136,10 @@ public class ManagementHelper
                {
                   value = value.toString();
                }
+               if ("null".equals(value))
+               {
+                  value = null;
+               }
                params.add(index, value);
             }
             catch (NumberFormatException e)
