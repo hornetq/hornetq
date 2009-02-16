@@ -198,4 +198,30 @@ public interface JMSServerControlMBean
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID);
 
+ void createSimpleConnectionFactory(String name,
+                                String connectorFactoryClassName,
+                                String connectionLoadBalancingPolicyClassName,
+                                long pingPeriod,
+                                long connectionTTL,
+                                long callTimeout,
+                                String clientID,
+                                int dupsOKBatchSize,
+                                int transactionBatchSize,
+                                int consumerWindowSize,
+                                int consumerMaxRate,
+                                int producerWindowSize,
+                                int producerMaxRate,
+                                int minLargeMessageSize,
+                                boolean blockOnAcknowledge,
+                                boolean blockOnNonPersistentSend,
+                                boolean blockOnPersistentSend,
+                                boolean autoGroup,
+                                int maxConnections,
+                                boolean preAcknowledge,
+                                long retryInterval,
+                                double retryIntervalMultiplier,
+                                int maxRetriesBeforeFailover,
+                                int maxRetriesAfterFailover,
+                                String jndiBinding) throws Exception;
+
 }

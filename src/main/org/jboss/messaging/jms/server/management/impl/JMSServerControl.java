@@ -78,6 +78,69 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
 
    // JMSServerControlMBean implementation --------------------------
 
+   public void createSimpleConnectionFactory(String name,
+                                       String connectorFactoryClassName,
+                                       String connectionLoadBalancingPolicyClassName,
+                                       long pingPeriod,   
+                                       long connectionTTL,
+                                       long callTimeout,
+                                       String clientID,
+                                       int dupsOKBatchSize,
+                                       int transactionBatchSize,
+                                       int consumerWindowSize,
+                                       int consumerMaxRate,
+                                       int producerWindowSize,
+                                       int producerMaxRate,
+                                       int minLargeMessageSize, 
+                                       boolean blockOnAcknowledge,
+                                       boolean blockOnNonPersistentSend,
+                                       boolean blockOnPersistentSend,
+                                       boolean autoGroup,
+                                       int maxConnections,
+                                       boolean preAcknowledge,                                   
+                                       long retryInterval,
+                                       double retryIntervalMultiplier,                                       
+                                       int maxRetriesBeforeFailover,
+                                       int maxRetriesAfterFailover,
+                                       String jndiBinding) throws Exception
+   {
+      List<String> bindings = new ArrayList<String>();
+      bindings.add(jndiBinding);
+
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
+      
+      boolean created = server.createConnectionFactory(name,
+                                                       connectorConfigs,
+                                                       connectionLoadBalancingPolicyClassName,
+                                                       pingPeriod,                
+                                                       connectionTTL,
+                                                       callTimeout,
+                                                       clientID,
+                                                       dupsOKBatchSize,
+                                                       transactionBatchSize,
+                                                       consumerWindowSize,
+                                                       consumerMaxRate,
+                                                       producerWindowSize,
+                                                       producerMaxRate,
+                                                       minLargeMessageSize,
+                                                       blockOnAcknowledge,
+                                                       blockOnNonPersistentSend,
+                                                       blockOnPersistentSend,
+                                                       autoGroup,
+                                                       maxConnections,
+                                                       preAcknowledge,                                                 
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,                                                       
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover,
+                                                       bindings);
+      if (created)
+      {
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+   }
+   
    public void createConnectionFactory(String name,
                                        List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                        String connectionLoadBalancingPolicyClassName,
