@@ -99,63 +99,17 @@ public class JMSXPropertyTest extends PTPTestCase
       }
    }
 
-   /**
-    * Test that the JMSX property <code>JMSXGroupSeq</code> is supported.
-    */
-   public void testSupportsJMSXGroupSeq()
-   {
-      try
-      {
-         boolean found = false;
-         ConnectionMetaData metaData = senderConnection.getMetaData();
-         Enumeration enumeration = metaData.getJMSXPropertyNames();
-         while (enumeration.hasMoreElements())
-         {
-            String jmsxPropertyName = (String) enumeration.nextElement();
-            if (jmsxPropertyName.equals("JMSXGroupSeq"))
-            {
-               found = true;
-            }
-         }
-         assertTrue("JMSXGroupSeq property is not supported", found);
-      }
-      catch (JMSException e)
-      {
-         fail(e);
-      }
-   }
-
-   /**
-    * Test that the JMSX property <code>JMSXDeliveryCount</code> is supported.
-    */
-   public void testSupportsJMSXDeliveryCount()
-   {
-      try
-      {
-         boolean found = false;
-         ConnectionMetaData metaData = senderConnection.getMetaData();
-         Enumeration enumeration = metaData.getJMSXPropertyNames();
-         while (enumeration.hasMoreElements())
-         {
-            String jmsxPropertyName = (String) enumeration.nextElement();
-            if (jmsxPropertyName.equals("JMSXDeliveryCount"))
-            {
-               found = true;
-            }
-         }
-         assertTrue("JMSXDeliveryCount property is not supported", found);
-      }
-      catch (JMSException e)
-      {
-         fail(e);
-      }
-   }
 
    /**
     * Test that the JMSX property <code>JMSXDeliveryCount</code> works.
     */
-   public void testJMSXDeliveryCount()
+   public void testJMSXDeliveryCount() throws Exception
    {
+      if (!supportsJMSXDeliveryCount())
+      {
+         return;
+      }
+      
       try
       {
          senderConnection.stop();
@@ -225,6 +179,25 @@ public class JMSXPropertyTest extends PTPTestCase
       }
    }
 
+
+   /**
+    * checks if the JMSX property <code>JMSXDeliveryCount</code> is supported.
+    */
+   private boolean supportsJMSXDeliveryCount() throws Exception
+   {
+      ConnectionMetaData metaData = senderConnection.getMetaData();
+      Enumeration enumeration = metaData.getJMSXPropertyNames();
+      while (enumeration.hasMoreElements())
+      {
+         String jmsxPropertyName = (String) enumeration.nextElement();
+         if (jmsxPropertyName.equals("JMSXDeliveryCount"))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+   
    /** 
     * Method to use this class in a Test suite
     */
