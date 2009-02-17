@@ -133,8 +133,6 @@ public class BindingsImpl implements Bindings
 
    private void routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception
    {
-     // log.info(System.identityHashCode(this) + " routing from cluster");
-
       byte[] ids = (byte[])message.getProperty(MessageImpl.HDR_ROUTE_TO_IDS);
       
       ByteBuffer buff = ByteBuffer.wrap(ids);
@@ -158,8 +156,6 @@ public class BindingsImpl implements Bindings
          binding.willRoute(message);
          
          chosen.add(binding.getBindable());
-         
-        // log.info("routing to " + binding.getType() + " : " + binding.getRoutingName());
       }
       
       for (Bindable bindable : chosen)
@@ -172,11 +168,95 @@ public class BindingsImpl implements Bindings
          bindable.route(message, tx);
       }
    }
+   
+   public boolean redistribute(final ServerMessage message, final SimpleString routingName, final Transaction tx) throws Exception
+   {
+      if (routeWhenNoConsumers)
+      {
+         return false;
+      }
+      
+      List<Binding> bindings = routingNameBindingMap.get(routingName);
+
+      if (bindings == null)
+      {
+         // The value can become null if it's concurrently removed while we're iterating - this is expected
+         // ConcurrentHashMap behaviour!
+         return false;
+      }
+
+      Integer ipos = routingNamePositions.get(routingName);
+
+      int pos = ipos != null ? ipos.intValue() : 0;
+
+      int length = bindings.size();
+
+      int startPos = pos;
+
+      Binding theBinding = null;
+
+      //TODO - combine this with similar logic in route()
+      while (true)
+      {
+         Binding binding;
+         try
+         {
+            binding = bindings.get(pos);
+         }
+         catch (IndexOutOfBoundsException e)
+         {
+            // This can occur if binding is removed while in route
+            if (!bindings.isEmpty())
+            {
+               pos = 0;
+
+               continue;
+            }
+            else
+            {
+               break;
+            }
+         }
+         
+         pos = incrementPos(pos, length);
+
+         Filter filter = binding.getFilter();
+                                            
+         boolean highPrior = binding.isHighAcceptPriority(message);
+         
+         if (highPrior && (filter == null || filter.match(message)))
+         {                     
+            theBinding = binding;
+
+            break;            
+         }
+         
+         if (pos == startPos)
+         {            
+            break;
+         }
+      }
+      
+      routingNamePositions.put(routingName, pos);
+
+      if (theBinding != null)
+      {         
+         theBinding.willRoute(message);
+         
+         theBinding.getBindable().preroute(message, tx);
+         
+         theBinding.getBindable().route(message, tx);         
+         
+         return true;
+      }
+      else
+      {        
+         return false;
+      }
+   }
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
-      //log.info(System.identityHashCode(this) + " routing " + message.getDestination());
-
       if (!exclusiveBindings.isEmpty())
       {
          for (Binding binding : exclusiveBindings)
@@ -302,8 +382,6 @@ public class BindingsImpl implements Bindings
                if (theBinding != null)
                {
                   theBinding.willRoute(message);
-                  
-                  //log.info("routing to " + theBinding.getType() + " : " + theBinding.getRoutingName());
                   
                   chosen.add(theBinding.getBindable());
                }

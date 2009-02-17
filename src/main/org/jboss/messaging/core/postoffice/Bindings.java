@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.util.SimpleString;
 
 /**
  * A Bindings
@@ -39,12 +40,14 @@ import org.jboss.messaging.core.transaction.Transaction;
 public interface Bindings
 {
    Collection<Binding> getBindings();
-   
+
    void route(ServerMessage message, Transaction tx) throws Exception;
-   
+
    void addBinding(Binding binding);
-   
+
    void removeBinding(Binding binding);
-   
+
    void setRouteWhenNoConsumers(boolean takePriorityIntoAccount);
+
+   boolean redistribute(ServerMessage message, SimpleString routingName, Transaction tx) throws Exception;
 }

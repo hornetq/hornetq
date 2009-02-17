@@ -245,7 +245,10 @@ public class MessagingServerImpl implements MessagingServer
                                       configuration.isWildcardRoutingEnabled(),
                                       configuration.isBackup(),
                                       configuration.getIDCacheSize(),
-                                      configuration.isPersistIDCache());
+                                      configuration.isPersistIDCache(),
+                                      executorFactory,                                                           
+                                      addressSettingsRepository,
+                                      nodeID.toString());
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
@@ -260,7 +263,7 @@ public class MessagingServerImpl implements MessagingServer
       managementService.setManagementNotificationAddress(configuration.getManagementNotificationAddress());
       managementService.setClusterPassword(configuration.getManagementClusterPassword());
       managementService.setManagementRequestTimeout(configuration.getManagementRequestTimeout());
-      
+
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
                                                           configuration,
@@ -723,7 +726,7 @@ public class MessagingServerImpl implements MessagingServer
                                                                                                                         listener);
 
          listener.conn = replicatingConnection;
-    
+
          replicatingConnection.startPinger();
 
          return replicatingConnection;
@@ -1010,32 +1013,32 @@ public class MessagingServerImpl implements MessagingServer
          queue.activateNow(asyncDeliveryPool);
       }
    }
-   
+
    private class NoCacheConnectionLifeCycleListener implements ConnectionLifeCycleListener
    {
       private RemotingConnection conn;
-      
+
       public void connectionCreated(final Connection connection)
-      {         
+      {
       }
 
       public void connectionDestroyed(final Object connectionID)
-      {   
+      {
          if (conn != null)
          {
             conn.destroy();
-         }                 
+         }
       }
 
       public void connectionException(final Object connectionID, final MessagingException me)
-      {                   
+      {
          backupConnectorFactory = null;
-         
+
          if (conn != null)
          {
             conn.fail(me);
          }
-      }      
+      }
    }
 
 }

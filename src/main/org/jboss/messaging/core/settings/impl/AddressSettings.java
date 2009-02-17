@@ -43,8 +43,6 @@ public class AddressSettings implements Mergeable<AddressSettings>
     */
    public static final Class<?> DEFAULT_DISTRIBUTION_POLICY_CLASS = new RoundRobinDistributor().getClass();
 
-   public static final Boolean DEFAULT_CLUSTERED = false;
-
    public static final Integer DEFAULT_MAX_SIZE_BYTES = -1;
 
    public static final Boolean DEFAULT_DROP_MESSAGES_WHEN_FULL = Boolean.FALSE;
@@ -56,8 +54,8 @@ public class AddressSettings implements Mergeable<AddressSettings>
    public static final Long DEFAULT_REDELIVER_DELAY = 0L;
 
    public static final Boolean DEFAULT_SOLOQUEUE = false;
-
-   private Boolean clustered = null;
+   
+   public static final Long DEFAULT_REDISTRIBUTION_DELAY = -1L;
 
    private Integer maxSizeBytes = null;
 
@@ -75,9 +73,11 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    private SimpleString deadLetterAddress = null;
 
-   private SimpleString ExpiryAddress = null;
+   private SimpleString expiryAddress = null;
 
    private Boolean soloQueue = null;
+   
+   private Long redistributionDelay = null;
 
    public Boolean isSoloQueue()
    {
@@ -87,16 +87,6 @@ public class AddressSettings implements Mergeable<AddressSettings>
    public void setSoloQueue(Boolean soloQueue)
    {
       this.soloQueue = soloQueue;
-   }
-
-   public Boolean isClustered()
-   {
-      return clustered != null ? clustered : DEFAULT_CLUSTERED;
-   }
-
-   public void setClustered(Boolean clustered)
-   {
-      this.clustered = clustered;
    }
 
    public Integer getPageSizeBytes()
@@ -182,12 +172,12 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public SimpleString getExpiryAddress()
    {
-      return ExpiryAddress;
+      return expiryAddress;
    }
 
    public void setExpiryAddress(SimpleString expiryAddress)
    {
-      ExpiryAddress = expiryAddress;
+      this.expiryAddress = expiryAddress;
    }
 
    public Distributor getDistributionPolicy()
@@ -208,6 +198,16 @@ public class AddressSettings implements Mergeable<AddressSettings>
          throw new IllegalArgumentException("Error instantiating distribution policy '" + e + " '");
       }
    }
+   
+   public Long getRedistributionDelay()
+   {
+      return redistributionDelay != null ? redistributionDelay : DEFAULT_REDISTRIBUTION_DELAY;
+   }
+   
+   public void setRedistributionDelay(final Long redistributionDelay)
+   {
+      this.redistributionDelay = redistributionDelay;
+   }
 
    /**
     * merge 2 objects in to 1
@@ -215,10 +215,6 @@ public class AddressSettings implements Mergeable<AddressSettings>
     */
    public void merge(AddressSettings merged)
    {
-      if (clustered == null)
-      {
-         clustered = merged.clustered;
-      }
       if (maxDeliveryAttempts == null)
       {
          maxDeliveryAttempts = merged.maxDeliveryAttempts;
@@ -251,9 +247,13 @@ public class AddressSettings implements Mergeable<AddressSettings>
       {
          deadLetterAddress = merged.deadLetterAddress;
       }
-      if (ExpiryAddress == null)
+      if (expiryAddress == null)
       {
-         ExpiryAddress = merged.ExpiryAddress;
+         expiryAddress = merged.expiryAddress;
+      }
+      if (redistributionDelay == null)
+      {
+         this.redistributionDelay = merged.redistributionDelay;
       }
    }
 

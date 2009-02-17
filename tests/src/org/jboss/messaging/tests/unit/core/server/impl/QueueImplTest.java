@@ -199,7 +199,7 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
-   public void testSimpleDirectDelivery()
+   public void testSimpleDirectDelivery()  throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
@@ -227,7 +227,7 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
 
-   public void testSimpleNonDirectDelivery()
+   public void testSimpleNonDirectDelivery()  throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
@@ -265,7 +265,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(numMessages, queue.getDeliveringCount());
    }
 
-   public void testBusyConsumer()
+   public void testBusyConsumer()  throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
@@ -309,7 +309,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(10, queue.getDeliveringCount());
    }
 
-   public void testBusyConsumerThenAddMoreMessages()
+   public void testBusyConsumerThenAddMoreMessages() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
@@ -376,7 +376,7 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(30, queue.getDeliveringCount());
    }
 
-   public void testAddFirstadd()
+   public void testAddFirstadd() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
@@ -585,7 +585,7 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
-   public void testConsumerReturningNull()
+   public void testConsumerReturningNull() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
@@ -618,7 +618,7 @@ public class QueueImplTest extends UnitTestCase
       }
    }
 
-   public void testRoundRobinWithQueueing()
+   public void testRoundRobinWithQueueing() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
@@ -663,7 +663,7 @@ public class QueueImplTest extends UnitTestCase
       }
    }
 
-   public void testRoundRobinDirect()
+   public void testRoundRobinDirect() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
@@ -790,7 +790,7 @@ public class QueueImplTest extends UnitTestCase
 //      assertTrue(consumer.getReferences().isEmpty());
 //   }
 
-   public void testWithPriorities()
+   public void testWithPriorities() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 

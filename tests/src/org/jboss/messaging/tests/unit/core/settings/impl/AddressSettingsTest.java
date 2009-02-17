@@ -38,7 +38,6 @@ public class AddressSettingsTest extends TestCase
       assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(addressSettings.getDistributionPolicyClass(), null);
       assertEquals(addressSettings.getDeadLetterAddress(), null);
-      assertEquals(addressSettings.isClustered(), Boolean.valueOf(false));
       assertEquals(addressSettings.getExpiryAddress(), null);
       assertEquals(addressSettings.getMaxDeliveryAttempts(), AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS);
       assertEquals(addressSettings.getMaxSizeBytes(), AddressSettings.DEFAULT_MAX_SIZE_BYTES);
@@ -52,7 +51,6 @@ public class AddressSettingsTest extends TestCase
    {
       AddressSettings addressSettings = new AddressSettings();
       AddressSettings addressSettingsToMerge = new AddressSettings();
-      addressSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
       addressSettingsToMerge.setDeadLetterAddress(DLQ);
@@ -66,7 +64,6 @@ public class AddressSettingsTest extends TestCase
       addressSettings.merge(addressSettingsToMerge);
       assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(addressSettings.getDistributionPolicyClass(), null);
-      assertEquals(addressSettings.isClustered(), Boolean.valueOf(true));
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
       assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
@@ -81,7 +78,6 @@ public class AddressSettingsTest extends TestCase
    {
       AddressSettings addressSettings = new AddressSettings();
       AddressSettings addressSettingsToMerge = new AddressSettings();
-      addressSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
       addressSettingsToMerge.setDeadLetterAddress(DLQ);
@@ -92,7 +88,6 @@ public class AddressSettingsTest extends TestCase
       addressSettings.merge(addressSettingsToMerge);
 
       AddressSettings addressSettingsToMerge2 = new AddressSettings();
-      addressSettingsToMerge2.setClustered(true);
       SimpleString exp2 = new SimpleString("testExpiryQueue2");
       addressSettingsToMerge2.setExpiryAddress(exp2);
       addressSettingsToMerge2.setMaxSizeBytes(2001);
@@ -101,7 +96,6 @@ public class AddressSettingsTest extends TestCase
 
       assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(addressSettings.getDistributionPolicyClass(), null);
-      assertEquals(addressSettings.isClustered(), Boolean.valueOf(true));
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
       assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
@@ -114,7 +108,6 @@ public class AddressSettingsTest extends TestCase
    {
       AddressSettings addressSettings = new AddressSettings();
       AddressSettings addressSettingsToMerge = new AddressSettings();
-      addressSettingsToMerge.setClustered(true);
       SimpleString DLQ = new SimpleString("testDLQ");
       SimpleString exp = new SimpleString("testExpiryQueue");
       addressSettingsToMerge.setDeadLetterAddress(DLQ);
@@ -124,7 +117,6 @@ public class AddressSettingsTest extends TestCase
       addressSettings.merge(addressSettingsToMerge);
 
       AddressSettings addressSettingsToMerge2 = new AddressSettings();
-      addressSettingsToMerge2.setClustered(false);
       SimpleString exp2 = new SimpleString("testExpiryQueue2");
       SimpleString DLQ2 = new SimpleString("testDlq2");
       addressSettingsToMerge2.setExpiryAddress(exp2);
@@ -137,7 +129,6 @@ public class AddressSettingsTest extends TestCase
 
       assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
       assertEquals(addressSettings.getDistributionPolicyClass(), null);
-      assertEquals(addressSettings.isClustered(), Boolean.valueOf(true));
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
       assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(2000));

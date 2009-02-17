@@ -1130,7 +1130,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
 
                connection.transportConnection.write(buffer);
-
+               
                long toWait = connection.blockingCallTimeout;
 
                long start = System.currentTimeMillis();

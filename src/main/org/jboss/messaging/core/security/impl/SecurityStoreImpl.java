@@ -263,7 +263,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       // Sanity check
       if (DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
       {
-         log.warn("WARNING! POTENTIAL SECURITY RISK. It has been detected that the cluster admin password which is used to " +
+         log.warn("It has been detected that the cluster admin password which is used to " +
                   "replicate management operation from one node to the other has not had its password changed from the installation default. " +
                   "Please see the JBoss Messaging user guide for instructions on how to do this.");
       }

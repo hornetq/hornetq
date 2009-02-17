@@ -62,7 +62,6 @@ public class AddressSettingsDeployerTest extends TestCase
    public void testDeploy() throws Exception
    {
       final AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setClustered(false);
       addressSettings.setRedeliveryDelay((long) 100);
       addressSettings.setMaxSizeBytes(-100);
       addressSettings.setDistributionPolicyClass("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy");
@@ -76,7 +75,6 @@ public class AddressSettingsDeployerTest extends TestCase
          public Object answer() throws Throwable
          {
             AddressSettings q = (AddressSettings) EasyMock.getCurrentArguments()[1];
-            assertFalse(q.isClustered());
             assertEquals(q.getRedeliveryDelay(), addressSettings.getRedeliveryDelay());
             assertEquals(q.getMaxSizeBytes(), addressSettings.getMaxSizeBytes());
             assertEquals(q.getDistributionPolicyClass(), addressSettings.getDistributionPolicyClass());

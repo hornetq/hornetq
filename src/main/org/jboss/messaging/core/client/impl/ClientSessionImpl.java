@@ -175,6 +175,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private volatile boolean started;
 
    private SendAcknowledgementHandler sendAckHandler;
+   
+   private volatile boolean inClose;
 
    // Constructors ----------------------------------------------------------------------------
 
@@ -747,7 +749,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          consumer.handleLargeMessageContinuation(continuation);
       }
    }
-
+   
    public void close() throws MessagingException
    {
       if (closed)
@@ -759,11 +761,17 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          closeChildren();
 
-         channel.sendBlocking(new SessionCloseMessage());                  
+         inClose = true;
+         
+         channel.sendBlocking(new SessionCloseMessage());   
       }
       catch (Throwable ignore)
       {
          // Session close should always return without exception
+      }
+      finally
+      {
+         inClose = false;
       }
       
       doCleanup();
@@ -823,10 +831,24 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             ok = true;
          }
          else
-         {
-            // There may be a close session call blocking - the response will never come because the session has been
-            // closed on the server so we need to interrupt it
-            channel.returnBlocking();
+         {                        
+            if (inClose)
+            {            
+               // a session re-attach may fail, if the session close was sent before failover started, hit the server,
+               // processed, then before the response was received back, failover occurred, re-attach was attempted. in
+               // this case it's ok - we don't want to call any failure listeners and we don't want to halt the rest of
+               // the failover process.
+               //
+               // however if session re-attach fails and the session was not in a call to close, then we DO want to call
+               // the session listeners so we return false
+               ok = true;
+            }
+            else
+            {
+               log.warn("Session not found on server when attempting to re-attach");
+            }
+            
+            channel.returnBlocking();            
          }
       }
       catch (Throwable t)

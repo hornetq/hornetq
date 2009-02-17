@@ -150,7 +150,7 @@ public class ServerConsumerImpl implements ServerConsumer
                              final Channel channel,
                              final boolean preAcknowledge,
                              final Executor executor,
-                             final ManagementService managementService)
+                             final ManagementService managementService) throws Exception
    {
       this.id = id;
 
@@ -283,7 +283,6 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          MessageReference ref = iter.next();
 
-         // ref.cancel(tx, storageManager, postOffice, addressSettingsRepository);
          ref.getQueue().cancel(tx, ref);
       }
 
@@ -296,6 +295,8 @@ public class ServerConsumerImpl implements ServerConsumer
          props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
 
          props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+         
+         props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
          props.putStringProperty(ManagementHelper.HDR_FILTERSTRING,
                                  filter == null ? null : filter.getFilterString());

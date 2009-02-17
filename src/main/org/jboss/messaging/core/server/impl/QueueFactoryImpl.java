@@ -51,7 +51,7 @@ public class QueueFactoryImpl implements QueueFactory
    private PostOffice postOffice;
 
    private final StorageManager storageManager;
-      
+
    public QueueFactoryImpl(final ScheduledExecutorService scheduledExecutor,
                            final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                            final StorageManager storageManager)
@@ -76,31 +76,34 @@ public class QueueFactoryImpl implements QueueFactory
                             final boolean temporary)
    {
       AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
-      
+
       Queue queue;
-      if(addressSettings.isSoloQueue())
+      if (addressSettings.isSoloQueue())
       {
-         queue = new SoloQueueImpl(persistenceID,address, name,
-                                  filter,
-                                  durable,
-                                  temporary,
-                                  scheduledExecutor,
-                                  postOffice,
-                                  storageManager,
-                                  addressSettingsRepository);
+         queue = new SoloQueueImpl(persistenceID,
+                                   address,
+                                   name,
+                                   filter,
+                                   durable,
+                                   temporary,
+                                   scheduledExecutor,
+                                   postOffice,
+                                   storageManager,
+                                   addressSettingsRepository);
       }
       else
       {
-         queue = new QueueImpl(persistenceID, address,name,
-                                  filter,
-                                  durable,
-                                  temporary,
-                                  scheduledExecutor,
-                                  postOffice,
-                                  storageManager,
-                                  addressSettingsRepository);
+         queue = new QueueImpl(persistenceID,
+                               address,
+                               name,
+                               filter,
+                               durable,
+                               temporary,
+                               scheduledExecutor,
+                               postOffice,
+                               storageManager,
+                               addressSettingsRepository);
       }
-
 
       queue.setDistributionPolicy(addressSettings.getDistributionPolicy());
 

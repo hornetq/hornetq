@@ -53,7 +53,7 @@ public class RandomFailoverStressTest extends RandomFailoverTest
    
    protected int getNumIterations()
    {
-      return 20;
+      return 50;
    }
 
    // Private -------------------------------------------------------

@@ -92,8 +92,6 @@ import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
@@ -1426,6 +1424,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
             
             props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+            
+            props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
             
             props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
                         

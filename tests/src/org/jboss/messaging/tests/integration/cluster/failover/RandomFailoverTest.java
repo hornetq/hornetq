@@ -36,7 +36,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
@@ -1369,19 +1368,17 @@ public class RandomFailoverTest extends TestCase
    }
 
    protected void doTestL(final ClientSessionFactory sf) throws Exception
-   {
-      ClientSession s = sf.createSession(false, false, false);
-
-      final int numSessions = 100;
+   {     
+      final int numSessions = 10;
 
       for (int i = 0; i < numSessions; i++)
       {
+         log.info("i " + i);
+         
          ClientSession session = sf.createSession(false, false, false);
 
          session.close();
-      }
-
-      s.close();
+      }   
    }
 
    protected void doTestN(final ClientSessionFactory sf) throws Exception
@@ -1432,7 +1429,7 @@ public class RandomFailoverTest extends TestCase
 
    protected int getNumIterations()
    {
-      return 1;
+      return 2;
    }
 
    protected void setUp() throws Exception

@@ -27,6 +27,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
@@ -162,8 +163,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final double retryIntervalMultiplier,
                      final int maxRetriesBeforeFailover,
                      final int maxRetriesAfterFailover,
-                     final boolean useDuplicateDetection, 
-                     final SimpleString managementAddress, 
+                     final boolean useDuplicateDetection,
+                     final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
                      final String clusterPassword) throws Exception
    {
@@ -199,7 +200,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final int maxRetriesBeforeFailover,
                      final int maxRetriesAfterFailover,
                      final boolean useDuplicateDetection,
-                     final SimpleString managementAddress, 
+                     final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
                      final String clusterPassword,
                      final MessageFlowRecord flowRecord) throws Exception
@@ -240,11 +241,11 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
 
       this.managementAddress = managementAddress;
-      
+
       this.managementNotificationAddres = managementNotificationAddress;
-      
+
       this.clusterPassword = clusterPassword;
-      
+
       this.flowRecord = flowRecord;
    }
 
@@ -282,16 +283,17 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    {
       if (started)
       {
-         //We need to stop the csf here otherwise the stop runnable never runs since the createobjectsrunnable is trying to connect to the target
-         //server which isn't up in an infinite loop
+         // We need to stop the csf here otherwise the stop runnable never runs since the createobjectsrunnable is
+         // trying to connect to the target
+         // server which isn't up in an infinite loop
          if (csf != null)
          {
             csf.close();
          }
       }
-      
+
       executor.execute(new StopRunnable());
-      
+
       this.waitForRunnablesToComplete();
    }
 
@@ -309,8 +311,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                }
 
                if (session != null)
-               {    
-                  session.close();               
+               {
+                  session.close();
                }
 
                started = false;
@@ -321,7 +323,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
             queue.removeConsumer(BridgeImpl.this);
 
-            cancelRefs();            
+            cancelRefs();
          }
          catch (Exception e)
          {
@@ -352,7 +354,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                   log.error("Failed to reset", e);
                }
             }
-            
+
             active = false;
          }
 
@@ -374,7 +376,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          if (!createObjects())
          {
             started = false;
-         }         
+         }
       }
    }
 
@@ -407,7 +409,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       {
          return false;
       }
-      
+
       try
       {
          queue.addConsumer(BridgeImpl.this);
@@ -417,7 +419,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                             DEFAULT_PING_PERIOD,
                                             DEFAULT_CONNECTION_TTL,
-                                            2000,
+                                            5000,
                                             DEFAULT_CONSUMER_WINDOW_SIZE,
                                             DEFAULT_CONSUMER_MAX_RATE,
                                             DEFAULT_SEND_WINDOW_SIZE,
@@ -435,7 +437,13 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                             maxRetriesBeforeFailover,
                                             maxRetriesAfterFailover);
 
-         session = (ClientSessionInternal)csf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER, clusterPassword, false, true, true, false, 1);
+         session = (ClientSessionInternal)csf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER,
+                                                            clusterPassword,
+                                                            false,
+                                                            true,
+                                                            true,
+                                                            false,
+                                                            1);
 
          if (session == null)
          {
@@ -506,8 +514,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          active = true;
 
          queue.deliverAsync(executor);
-
-         log.info("Bridge " + name + " connected successfully");
 
          return true;
       }
@@ -697,7 +703,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          if (!createObjects())
          {
             active = false;
-            
+
             started = false;
          }
       }

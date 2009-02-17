@@ -54,6 +54,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       
       closeAllSessionFactories();
       
+      stopClusterConnections(0, 1);
+      
       stopServers(0, 1);
       
       super.tearDown();

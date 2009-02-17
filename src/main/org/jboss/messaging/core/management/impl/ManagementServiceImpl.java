@@ -240,7 +240,7 @@ public class ManagementServiceImpl implements ManagementService
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
-      QueueControl queueControl = new QueueControl(queue, storageManager, postOffice, addressSettingsRepository, counter);
+      QueueControl queueControl = new QueueControl(queue, postOffice, addressSettingsRepository, counter);
       registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName,
                                                                         queueControl,
                                                                         managementClusterPassword,

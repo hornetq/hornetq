@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.server;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.filter.Filter;
@@ -47,20 +48,20 @@ public interface Queue extends Bindable
    long getPersistenceID();
 
    void setPersistenceID(long id);
-   
+
    Filter getFilter();
 
    boolean isDurable();
 
    boolean isTemporary();
 
-   void addConsumer(Consumer consumer);
+   void addConsumer(Consumer consumer) throws Exception;
 
    boolean removeConsumer(Consumer consumer) throws Exception;
 
    int getConsumerCount();
-   
-   List<Consumer> getConsumers();
+
+   Set<Consumer> getConsumers();
 
    void addLast(MessageReference ref);
 
@@ -69,11 +70,11 @@ public interface Queue extends Bindable
    void acknowledge(MessageReference ref) throws Exception;
 
    void acknowledge(Transaction tx, MessageReference ref) throws Exception;
-   
+
    void reacknowledge(Transaction tx, MessageReference ref) throws Exception;
 
    void cancel(Transaction tx, MessageReference ref) throws Exception;
-   
+
    void cancel(MessageReference reference) throws Exception;
 
    void deliverAsync(Executor executor);
@@ -97,9 +98,6 @@ public interface Queue extends Bindable
    int getMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
-
-   /** Remove message from queue, add it to the scheduled delivery list without affect reference counting */
-   //void rescheduleDelivery(long id, long scheduledDeliveryTime);
 
    MessageReference getReference(long id);
 
@@ -137,6 +135,10 @@ public interface Queue extends Bindable
    boolean isBackup();
 
    boolean consumerFailedOver();
+
+   void addRedistributor(long delay, Executor executor);
+
+   void cancelRedistributor() throws Exception;
 
    // Only used in testing
    void deliverNow();

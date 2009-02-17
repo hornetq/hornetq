@@ -3018,6 +3018,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       assertEquals(0, journal.getDataFilesCount());
    }
 
+
    protected abstract int getAlignment();
 
 }

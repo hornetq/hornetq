@@ -46,7 +46,6 @@ public class QueueFactoryImplTest extends UnitTestCase
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       Filter filter = EasyMock.createStrictMock(Filter.class);
       AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setClustered(true);
       addressSettings.setMaxSizeBytes(9999);
       addressSettings.setDistributionPolicyClass("org.jboss.messaging.core.server.impl.RoundRobinDistributor");
       EasyMock.expect(addressSettingsRepository.getMatch("testQ")).andReturn(addressSettings);
@@ -69,7 +68,6 @@ public class QueueFactoryImplTest extends UnitTestCase
       HierarchicalRepository<AddressSettings> addressSettingsRepository = EasyMock.createStrictMock(HierarchicalRepository.class);
       StorageManager sm = EasyMock.createStrictMock(StorageManager.class);
       AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setClustered(false);
       addressSettings.setMaxSizeBytes(8888);
       addressSettings.setDistributionPolicyClass(null);
       EasyMock.expect(addressSettingsRepository.getMatch("testQ2")).andReturn(addressSettings);

@@ -636,7 +636,7 @@ public class QueueControlTest extends TestCase
 
    private QueueControl createControl() throws Exception
    {
-      return new QueueControl(queue, storageManager, postOffice, repository, messageCounter);
+      return new QueueControl(queue, postOffice, repository, messageCounter);
    }
 
    // Inner classes -------------------------------------------------

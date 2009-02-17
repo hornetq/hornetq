@@ -511,7 +511,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
                // Forcing return all channels won't guarantee that any blocked thread will return immediately
                // So we need to wait for it
                forceReturnAllChannel1s();
-
+               
                // Now we need to make sure that the thread has actually exited and returned it's connections
                // before failover occurs
 
@@ -608,6 +608,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       
       Map<RemotingConnection, List<ClientSessionInternal>> sessionsPerConnection = new HashMap<RemotingConnection, List<ClientSessionInternal>>();
 
+      
       for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
       {
          ClientSessionInternal session = entry.getKey();
@@ -674,11 +675,13 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          // If all connections got ok, then handle failover
          for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
          {
-            ok = entry.getKey().handleFailover(entry.getValue());
-
-            if (!ok)
+            boolean b = entry.getKey().handleFailover(entry.getValue());
+            
+            if (!b)
             {
-               break;
+               //If a session fails to re-attach we doom the lot, but we make sure we try all sessions and don't exit early
+               //or connections might be left lying around
+               ok = false;
             }
          }
       }

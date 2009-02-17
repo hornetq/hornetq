@@ -24,7 +24,7 @@ public class MultiThreadRandomFailoverStressTest extends MultiThreadRandomFailov
 {
    protected int getNumIterations()
    {
-      return 20;
+      return 50;
    }
 
 }

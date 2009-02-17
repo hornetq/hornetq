@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.deployers.impl;
 
@@ -35,42 +35,41 @@ import org.w3c.dom.NodeList;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class AddressSettingsDeployer extends XmlDeployer
-{   
-   private static final String CLUSTERED_NODE_NAME = "clustered";
-   
+{
    private static final String DEAD_LETTER_ADDRESS_NODE_NAME = "dead-letter-address";
-   
+
    private static final String EXPIRY_ADDRESS_NODE_NAME = "expiry-address";
-   
+
    private static final String REDELIVERY_DELAY_NODE_NAME = "redelivery-delay";
-   
+
    private static final String MAX_SIZE_BYTES_NODE_NAME = "max-size-bytes";
-   
+
    private static final String DROP_MESSAGES_WHEN_FULL_NODE_NAME = "drop-messages-when-full";
-   
+
    private static final String PAGE_SIZE_BYTES_NODE_NAME = "page-size-bytes";
-   
+
    private static final String DISTRIBUTION_POLICY_CLASS_NODE_NAME = "distribution-policy-class";
-   
+
    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME = "message-counter-history-day-limit";
 
    private static final String SOLO_MESSAGE_NODE_NAME = "solo-queue";
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   public AddressSettingsDeployer(final DeploymentManager deploymentManager, final HierarchicalRepository<AddressSettings> addressSettingsRepository)
+   public AddressSettingsDeployer(final DeploymentManager deploymentManager,
+                                  final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
-   	super(deploymentManager);
+      super(deploymentManager);
       this.addressSettingsRepository = addressSettingsRepository;
    }
-   
+
    /**
     * the names of the elements to deploy
     * @return the names of the elements todeploy
     */
    public String[] getElementTagName()
    {
-      return new String[]{"address-settings"};
+      return new String[] { "address-settings" };
    }
 
    @Override
@@ -79,9 +78,10 @@ public class AddressSettingsDeployer extends XmlDeployer
       if ("deployment".equals(rootNode.getNodeName()))
       {
          XMLUtil.validate(rootNode, "jbm-configuration.xsd");
-      } else 
+      }
+      else
       {
-         XMLUtil.validate(rootNode, "jbm-queues.xsd");         
+         XMLUtil.validate(rootNode, "jbm-queues.xsd");
       }
    }
 
@@ -93,27 +93,23 @@ public class AddressSettingsDeployer extends XmlDeployer
    public void deploy(Node node) throws Exception
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-      
+
       NodeList children = node.getChildNodes();
-      
+
       AddressSettings addressSettings = new AddressSettings();
-      
+
       for (int i = 0; i < children.getLength(); i++)
       {
          Node child = children.item(i);
-         
-         if (CLUSTERED_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
-         {
-            addressSettings.setClustered(Boolean.valueOf(child.getTextContent()));
-         }
-         else if (DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+
+         if (DEAD_LETTER_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             SimpleString queueName = new SimpleString(child.getTextContent());
             addressSettings.setDeadLetterAddress(queueName);
          }
          else if (EXPIRY_ADDRESS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-         	SimpleString queueName = new SimpleString(child.getTextContent());
+            SimpleString queueName = new SimpleString(child.getTextContent());
             addressSettings.setExpiryAddress(queueName);
          }
          else if (REDELIVERY_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
@@ -145,13 +141,13 @@ public class AddressSettingsDeployer extends XmlDeployer
             addressSettings.setSoloQueue(Boolean.valueOf(child.getTextContent().trim()));
          }
       }
-      
+
       addressSettingsRepository.addMatch(match, addressSettings);
    }
 
    public String[] getConfigFileNames()
    {
-      return new String[] {"jbm-configuration", "jbm-queues.xml"};
+      return new String[] { "jbm-configuration", "jbm-queues.xml" };
    }
 
    /**
@@ -162,7 +158,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    public void undeploy(Node node) throws Exception
    {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-      
+
       addressSettingsRepository.removeMatch(match);
    }
 

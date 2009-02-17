@@ -27,6 +27,7 @@ import static org.jboss.messaging.core.remoting.impl.invm.TransportConstants.SER
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,7 @@ import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.Pair;
@@ -121,15 +123,15 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-//       log.info("waiting for bindings on node " + node +
-//       " address " +
-//       address +
-//       " count " +
-//       count +
-//       " consumerCount " +
-//       consumerCount +
-//       " local " +
-//       local);
+//      log.info("waiting for bindings on node " + node +
+//               " address " +
+//               address +
+//               " count " +
+//               count +
+//               " consumerCount " +
+//               consumerCount +
+//               " local " +
+//               local);
       MessagingService service = this.services[node];
 
       if (service == null)
@@ -305,7 +307,7 @@ public class ClusterTestBase extends ServiceTestBase
       sfs[node] = null;
    }
 
-   protected void send(int node, String address, int numMessages, boolean durable, String filterVal) throws Exception
+   protected void sendInRange(int node, String address, int msgStart, int msgEnd, boolean durable, String filterVal) throws Exception
    {
       ClientSessionFactory sf = this.sfs[node];
 
@@ -318,7 +320,7 @@ public class ClusterTestBase extends ServiceTestBase
 
       ClientProducer producer = session.createProducer(address);
 
-      for (int i = 0; i < numMessages; i++)
+      for (int i = msgStart; i < msgEnd; i++)
       {
          ClientMessage message = session.createClientMessage(durable);
 
@@ -335,7 +337,17 @@ public class ClusterTestBase extends ServiceTestBase
       session.close();
    }
 
-   protected void verifyReceiveAll(int numMessages, int... consumerIDs) throws Exception
+   protected void send(int node, String address, int numMessages, boolean durable, String filterVal) throws Exception
+   {
+      sendInRange(node, address, 0, numMessages, durable, filterVal);
+   }
+
+   protected void verifyReceiveAllInRange(int msgStart, int msgEnd, int... consumerIDs) throws Exception
+   {
+      verifyReceiveAllInRangeNotBefore(-1, msgStart, msgEnd, consumerIDs);
+   }
+   
+   protected void verifyReceiveAllInRangeNotBefore(long firstReceiveTime, int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
       for (int i = 0; i < consumerIDs.length; i++)
       {
@@ -346,15 +358,30 @@ public class ClusterTestBase extends ServiceTestBase
             throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
          }
 
-         for (int j = 0; j < numMessages; j++)
+         for (int j = msgStart; j < msgEnd; j++)
          {
-            ClientMessage message = holder.consumer.receive(500);
-
+            ClientMessage message = holder.consumer.receive(2000);
+            
             assertNotNull("consumer " + consumerIDs[i] + " did not receive message " + j, message);
+            
+            if (firstReceiveTime != -1)
+            {
+               assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
+            }
 
             assertEquals(j, message.getProperty(COUNT_PROP));
          }
       }
+   }
+
+   protected void verifyReceiveAll(int numMessages, int... consumerIDs) throws Exception
+   {
+      verifyReceiveAllInRange(0, numMessages, consumerIDs);
+   }
+   
+   protected void verifyReceiveAllNotBefore(long firstReceiveTime, int numMessages, int... consumerIDs) throws Exception
+   {
+      verifyReceiveAllInRangeNotBefore(firstReceiveTime, 0, numMessages, consumerIDs);
    }
 
    protected void checkReceive(int... consumerIDs) throws Exception
@@ -472,9 +499,139 @@ public class ClusterTestBase extends ServiceTestBase
       }
    }
 
+   protected void verifyReceiveRoundRobinInSomeOrderWithCounts(boolean ack, int[] messageCounts, int... consumerIDs) throws Exception
+   {
+      List<LinkedList<Integer>> receivedCounts = new ArrayList<LinkedList<Integer>>();
+
+      Set<Integer> counts = new HashSet<Integer>();
+
+      for (int i = 0; i < consumerIDs.length; i++)
+      {
+         ConsumerHolder holder = consumers[consumerIDs[i]];
+
+         if (holder == null)
+         {
+            throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
+         }
+
+         LinkedList<Integer> list = new LinkedList<Integer>();
+
+         receivedCounts.add(list);
+
+         ClientMessage message;
+         do
+         {
+            message = holder.consumer.receive(200);
+
+            if (message != null)
+            {
+               int count = (Integer)message.getProperty(COUNT_PROP);
+
+               //log.info("consumer " + consumerIDs[i] + " received message " + count);
+
+               assertFalse(counts.contains(count));
+
+               counts.add(count);
+
+               list.add(count);
+
+               if (ack)
+               {
+                  message.acknowledge();
+               }
+            }
+         }
+         while (message != null);
+      }
+
+      for (int i = 0; i < messageCounts.length; i++)
+      {
+         assertTrue(counts.contains(messageCounts[i]));
+      }
+
+      LinkedList[] lists = new LinkedList[consumerIDs.length];
+
+      for (int i = 0; i < messageCounts.length; i++)
+      {
+         for (LinkedList<Integer> list : receivedCounts)
+         {
+            int elem = list.get(0);
+
+            if (elem == messageCounts[i])
+            {
+               lists[i] = list;
+
+               break;
+            }
+         }
+      }
+      int index = 0;
+
+      for (int i = 0; i < messageCounts.length; i++)
+      {
+         LinkedList list = lists[index];
+
+         assertNotNull(list);
+
+         int elem = (Integer)list.poll();
+
+         assertEquals(messageCounts[i], elem);
+
+         //log.info("got elem " + messageCounts[i] + " at pos " + index);
+
+         index++;
+
+         if (index == lists.length)
+         {
+            index = 0;
+         }
+      }
+
+   }
+
    protected void verifyReceiveRoundRobinInSomeOrderNoAck(int numMessages, int... consumerIDs) throws Exception
    {
       verifyReceiveRoundRobinInSomeOrder(false, numMessages, consumerIDs);
+   }
+
+   protected int[] getReceivedOrder(int consumerID) throws Exception
+   {
+      ConsumerHolder consumer = this.consumers[consumerID];
+
+      if (consumer == null)
+      {
+         throw new IllegalArgumentException("No consumer at " + consumerID);
+      }
+
+      List<Integer> ints = new ArrayList<Integer>();
+
+      ClientMessage message = null;
+
+      do
+      {
+         message = consumer.consumer.receive(500);
+
+         if (message != null)
+         {
+            int count = (Integer)message.getProperty(COUNT_PROP);
+
+            //log.info("consumer " + consumerID + " received message " + count);
+
+            ints.add(count);
+         }
+      }
+      while (message != null);
+
+      int[] res = new int[ints.size()];
+
+      int j = 0;
+
+      for (Integer i : ints)
+      {
+         res[j++] = i;
+      }
+
+      return res;
    }
 
    protected void verifyNotReceive(int... consumerIDs) throws Exception
@@ -518,6 +675,16 @@ public class ClusterTestBase extends ServiceTestBase
       sf.setBlockOnPersistentSend(true);
 
       sfs[node] = sf;
+   }
+
+   protected MessagingService getService(int node)
+   {
+      if (services[node] == null)
+      {
+         throw new IllegalArgumentException("No service at node " + node);
+      }
+
+      return services[node];
    }
 
    protected void setupServer(int node, boolean fileStorage, boolean netty)
@@ -829,7 +996,7 @@ public class ClusterTestBase extends ServiceTestBase
 
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
                                                                                       address,
-                                                                                      100,
+                                                                                      250,
                                                                                       1d,
                                                                                       -1,
                                                                                       -1,
@@ -840,6 +1007,7 @@ public class ClusterTestBase extends ServiceTestBase
 
       serviceFrom.getServer().getConfiguration().getClusterConfigurations().add(clusterConf);
    }
+      
 
    protected void setupDiscoveryClusterConnection(String name,
                                                   int node,
@@ -880,15 +1048,29 @@ public class ClusterTestBase extends ServiceTestBase
          services[nodes[i]].start();
       }
    }
+   
+   protected void stopClusterConnections(int... nodes) throws Exception
+   {
+      for (int i = 0; i < nodes.length; i++)
+      {
+         if (services[nodes[i]].isStarted())
+         {
+            for (ClusterConnection cc: services[nodes[i]].getServer().getClusterManager().getClusterConnections())
+            {
+               cc.stop();
+            }
+         }
+      }
+   }
 
    protected void stopServers(int... nodes) throws Exception
    {
       for (int i = 0; i < nodes.length; i++)
-      {        
+      {
          if (services[nodes[i]].isStarted())
          {
             services[nodes[i]].stop();
-         }  
+         }
       }
    }
 

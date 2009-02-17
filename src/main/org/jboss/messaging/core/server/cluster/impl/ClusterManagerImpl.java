@@ -27,8 +27,10 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
@@ -199,6 +201,11 @@ public class ClusterManagerImpl implements ClusterManager
    public Map<String, Bridge> getBridges()
    {
       return new HashMap<String, Bridge>(bridges);
+   }
+   
+   public Set<ClusterConnection> getClusterConnections()
+   {
+      return new HashSet<ClusterConnection>(clusters.values());
    }
 
    private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception

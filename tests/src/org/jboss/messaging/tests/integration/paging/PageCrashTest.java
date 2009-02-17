@@ -88,7 +88,6 @@ public class PageCrashTest extends ServiceTestBase
 
    public void testCrashDuringDeleteFile() throws Exception
    {
-
       pageAndFail();
 
       File pageDir = new File(getPageDir());

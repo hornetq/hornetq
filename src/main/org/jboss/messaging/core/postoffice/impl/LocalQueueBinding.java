@@ -23,7 +23,7 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.util.List;
+import java.util.Set;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
@@ -33,6 +33,7 @@ import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.cluster.impl.Redistributor;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -132,10 +133,15 @@ public class LocalQueueBinding implements QueueBinding
    {
       //It's a high accept priority if the queue has at least one matching consumer
       
-      List<Consumer> consumers = queue.getConsumers();
+      Set<Consumer> consumers = queue.getConsumers();
       
       for (Consumer consumer: consumers)
       {
+         if (consumer instanceof Redistributor)
+         {
+            continue;
+         }
+         
          Filter filter = consumer.getFilter();
          
          if (filter == null)

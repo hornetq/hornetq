@@ -39,7 +39,6 @@ import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -64,8 +63,6 @@ public class QueueControl implements QueueControlMBean
 
    private final Queue queue;
 
-   private final StorageManager storageManager;
-
    private final PostOffice postOffice;
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
@@ -77,13 +74,11 @@ public class QueueControl implements QueueControlMBean
    // Constructors --------------------------------------------------
 
    public QueueControl(final Queue queue,
-                       final StorageManager storageManager,
                        final PostOffice postOffice,
                        final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                        final MessageCounter counter)
    {
       this.queue = queue;
-      this.storageManager = storageManager;
       this.postOffice = postOffice;
       this.addressSettingsRepository = addressSettingsRepository;
       this.counter = counter;

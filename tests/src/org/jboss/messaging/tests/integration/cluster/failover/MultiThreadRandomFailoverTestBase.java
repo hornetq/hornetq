@@ -231,7 +231,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          {
             doTestL(sf);
          }
-      }, 1, false, true);
+      }, NUM_THREADS, false, true, 10);
    }
 
    // public void testM() throws Exception
@@ -1036,7 +1036,9 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
       message2.acknowledge();
 
+      log.info("** closing session");
       sess.close();
+      log.info("** closed session");
 
       sessCreate.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
 
@@ -1068,21 +1070,16 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
     */
    protected void doTestL(final ClientSessionFactory sf) throws Exception
    {     
-      ClientSessionFactoryInternal sf2 = createSessionFactory();
-      
       final int numSessions = 10;
 
       for (int i = 0; i < numSessions; i++)
       {
          log.info("i " + i);
-         ClientSession session = sf2.createSession(false, false, false);
+         
+         ClientSession session = sf.createSession(false, false, false);
 
          session.close();
-         
-         Thread.sleep(10);
-      }
- 
-      sf2.close();     
+      }   
    }
 
    // Browsers
@@ -1289,6 +1286,11 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
    
    private void runTestMultipleThreads(final RunnableT runnable, final int numThreads, final boolean fileBased, final boolean failOnCreateConnection) throws Exception
    {
+      this.runTestMultipleThreads(runnable, numThreads, fileBased, failOnCreateConnection, 1000);
+   }
+   
+   private void runTestMultipleThreads(final RunnableT runnable, final int numThreads, final boolean fileBased, final boolean failOnCreateConnection, final long failDelay) throws Exception
+   {
       final int numIts = getNumIterations();
 
       for (int its = 0; its < numIts; its++)
@@ -1301,7 +1303,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
          ClientSession session = sf.createSession(false, false, false);
 
-         Failer failer = startFailer(1000, session, failOnCreateConnection);
+         Failer failer = startFailer(failDelay, session, failOnCreateConnection);
 
          class Runner extends Thread
          {

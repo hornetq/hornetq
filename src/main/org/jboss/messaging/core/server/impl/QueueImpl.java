@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -46,6 +48,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ScheduledDeliveryHandler;
 import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.cluster.impl.Redistributor;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -67,6 +70,8 @@ import org.jboss.messaging.util.SimpleString;
 public class QueueImpl implements Queue
 {
    private static final Logger log = Logger.getLogger(QueueImpl.class);
+
+   public static final int REDISTRIBUTOR_BATCH_SIZE = 100;
 
    private static final boolean trace = log.isTraceEnabled();
 
@@ -111,13 +116,25 @@ public class QueueImpl implements Queue
    private final StorageManager storageManager;
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
+   
+   private final ScheduledExecutorService scheduledExecutor;
 
    private volatile boolean backup;
 
    private int consumersToFailover = -1;
 
    private SimpleString address;
+   
+   private Redistributor redistributor;
 
+   private final Set<ScheduledFuture<?>> futures = new ConcurrentHashSet<ScheduledFuture<?>>();
+  
+   private ScheduledFuture<?> future;
+   
+   //We cache the consumers here since we don't want to include the redistributor
+   
+   private final Set<Consumer> consumers = new HashSet<Consumer>();
+   
    public QueueImpl(final long persistenceID,
                     final SimpleString address,
                     final SimpleString name,
@@ -131,7 +148,7 @@ public class QueueImpl implements Queue
    {
       this.persistenceID = persistenceID;
 
-      this.address =  address;
+      this.address = address;
 
       this.name = name;
 
@@ -146,6 +163,8 @@ public class QueueImpl implements Queue
       this.storageManager = storageManager;
 
       this.addressSettingsRepository = addressSettingsRepository;
+      
+      this.scheduledExecutor = scheduledExecutor;
 
       if (postOffice == null)
       {
@@ -208,7 +227,7 @@ public class QueueImpl implements Queue
 
       store.addSize(ref.getMemoryEstimate());
 
-      Long scheduledDeliveryTime = (Long) message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
 
       if (scheduledDeliveryTime != null)
       {
@@ -233,7 +252,7 @@ public class QueueImpl implements Queue
          {
             storageManager.updateScheduledDeliveryTime(ref);
          }
-
+ 
          addLast(ref);
       }
       else
@@ -285,7 +304,7 @@ public class QueueImpl implements Queue
          message.incrementDurableRefCount();
       }
 
-      Long scheduledDeliveryTime = (Long) message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
 
       if (scheduledDeliveryTime != null)
       {
@@ -364,9 +383,13 @@ public class QueueImpl implements Queue
       deliver();
    }
 
-   public void addConsumer(final Consumer consumer)
+   public synchronized void addConsumer(final Consumer consumer) throws Exception
    {
+      cancelRedistributor();
+
       distributionPolicy.addConsumer(consumer);
+      
+      consumers.add(consumer);
    }
 
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
@@ -377,18 +400,66 @@ public class QueueImpl implements Queue
       {
          promptDelivery = false;
       }
+      
+      consumers.remove(consumer);
 
       return removed;
    }
 
+   public synchronized void addRedistributor(final long delay, final Executor executor)
+   {
+      if (future != null)
+      {
+         future.cancel(false);
+         
+         futures.remove(future);
+      }
+      
+      if (redistributor != null)
+      {
+         //Just prompt delivery
+         deliverAsync(executor);
+      }
+            
+      if (delay > 0)
+      {
+         DelayedAddRedistributor dar = new DelayedAddRedistributor(executor);
+         
+         future = scheduledExecutor.schedule(dar, delay, TimeUnit.MILLISECONDS);
+         
+         futures.add(future);
+      }
+      else
+      {
+         internalAddRedistributor(executor);
+      }
+   }
+   
+   public synchronized void cancelRedistributor() throws Exception
+   {            
+      if (redistributor != null)
+      {
+         redistributor.stop();
+
+         redistributor = null;
+      }
+      
+      if (future != null)
+      {
+         future.cancel(false);
+         
+         future = null;
+      }
+   }
+   
    public synchronized int getConsumerCount()
    {
-      return distributionPolicy.getConsumerCount();
+      return consumers.size();
    }
 
-   public synchronized List<Consumer> getConsumers()
+   public synchronized Set<Consumer> getConsumers()
    {
-      return new ArrayList<Consumer>(distributionPolicy.getConsumers());
+      return consumers;
    }
 
    public synchronized List<MessageReference> list(final Filter filter)
@@ -465,7 +536,15 @@ public class QueueImpl implements Queue
    {
       int count = messageReferences.size() + getScheduledCount() + getDeliveringCount();
 
-      // log.info(System.identityHashCode(this) + " message count is " + count + " ( mr:" + messageReferences.size() + " sc:" + getScheduledCount() + " dc:" + getDeliveringCount() + ")");
+//      log.info(System.identityHashCode(this) + " message count is " +
+//               count +
+//               " ( mr:" +
+//               messageReferences.size() +
+//               " sc:" +
+//               getScheduledCount() +
+//               " dc:" +
+//               getDeliveringCount() +
+//               ")");
 
       return count;
    }
@@ -529,7 +608,7 @@ public class QueueImpl implements Queue
 
    final RefsOperation getRefsOperation(final Transaction tx)
    {
-      RefsOperation oper = (RefsOperation) tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+      RefsOperation oper = (RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
 
       if (oper == null)
       {
@@ -547,7 +626,7 @@ public class QueueImpl implements Queue
    {
       getRefsOperation(tx).addAck(reference);
    }
-   
+
    public void cancel(final MessageReference reference) throws Exception
    {
       if (checkDLQ(reference))
@@ -558,7 +637,7 @@ public class QueueImpl implements Queue
          }
       }
    }
-     
+
    public void expire(final MessageReference ref) throws Exception
    {
       SimpleString expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
@@ -834,7 +913,7 @@ public class QueueImpl implements Queue
 
    public synchronized boolean activate()
    {
-      consumersToFailover = distributionPolicy.getConsumerCount();
+      consumersToFailover = consumers.size();
 
       if (consumersToFailover == 0)
       {
@@ -908,6 +987,21 @@ public class QueueImpl implements Queue
    // Private
    // ------------------------------------------------------------------------------
 
+   private void internalAddRedistributor(final Executor executor)
+   {     
+      if (consumers.size() == 0 && messageReferences.size() > 0)
+      {
+         redistributor = new Redistributor(this, storageManager, postOffice, executor, REDISTRIBUTOR_BATCH_SIZE);
+
+         distributionPolicy.addConsumer(redistributor);
+
+         redistributor.start();
+
+         deliverAsync(executor);
+      }
+   }
+
+   
    private boolean checkDLQ(final MessageReference reference) throws Exception
    {
       ServerMessage message = reference.getMessage();
@@ -945,7 +1039,7 @@ public class QueueImpl implements Queue
          return true;
       }
    }
-   
+
    private void move(final SimpleString toAddress, final MessageReference ref) throws Exception
    {
       move(toAddress, ref, false);
@@ -1065,8 +1159,6 @@ public class QueueImpl implements Queue
       tx.commit();
    }
 
-
-
    /*
     * Attempt to deliver all the messages in the queue
     */
@@ -1076,7 +1168,7 @@ public class QueueImpl implements Queue
       // because it's async and could get out of step
       // with the live node. Instead, when we replicate the delivery we remove
       // the ref from the queue
-      
+
       if (backup)
       {
          return;
@@ -1085,7 +1177,7 @@ public class QueueImpl implements Queue
       MessageReference reference;
 
       Iterator<MessageReference> iterator = null;
-      
+
       while (true)
       {
          if (iterator == null)
@@ -1186,7 +1278,7 @@ public class QueueImpl implements Queue
       if (direct && !backup)
       {
          // Deliver directly
-     
+
          HandleStatus status = deliver(ref);
 
          if (status == HandleStatus.HANDLED)
@@ -1265,7 +1357,7 @@ public class QueueImpl implements Queue
    {
       ServerMessage message = ref.getMessage();
 
-      QueueImpl queue = (QueueImpl) ref.getQueue();
+      QueueImpl queue = (QueueImpl)ref.getQueue();
 
       boolean durableRef = message.isDurable() && queue.durable;
 
@@ -1312,7 +1404,7 @@ public class QueueImpl implements Queue
    }
 
    void postRollback(LinkedList<MessageReference> refs) throws Exception
-   {      
+   {
       synchronized (this)
       {
          for (MessageReference ref : refs)
@@ -1328,6 +1420,7 @@ public class QueueImpl implements Queue
          deliver();
       }
    }
+
    // Inner classes
    // --------------------------------------------------------------------------
 
@@ -1383,7 +1476,7 @@ public class QueueImpl implements Queue
                {
                   toCancel = new LinkedList<MessageReference>();
 
-                  queueMap.put((QueueImpl) ref.getQueue(), toCancel);
+                  queueMap.put((QueueImpl)ref.getQueue(), toCancel);
                }
 
                toCancel.addFirst(ref);
@@ -1439,6 +1532,26 @@ public class QueueImpl implements Queue
             }
 
             msgs.add(msg);
+         }
+      }
+   }
+   
+   private class DelayedAddRedistributor implements Runnable
+   {
+      private final Executor executor;
+
+      DelayedAddRedistributor(final Executor executor)
+      {
+         this.executor = executor;
+      }
+
+      public void run()
+      {
+         synchronized (QueueImpl.this)
+         {
+            internalAddRedistributor(executor);
+   
+            futures.remove(this);
          }
       }
    }

@@ -69,12 +69,12 @@ public class QueueImplTest extends UnitTestCase
 
    // The tests ----------------------------------------------------------------
 
-   public void testScheduledDirect()
+   public void testScheduledDirect()  throws Exception
    {
       testScheduled(true);
    }
 
-   public void testScheduledQueueing()
+   public void testScheduledQueueing()  throws Exception
    {
       testScheduled(false);
    }
@@ -145,7 +145,7 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
 
-   private void testScheduled(boolean direct)
+   private void testScheduled(boolean direct) throws Exception
    {
       Queue queue = new QueueImpl(1,new SimpleString("address1"), new SimpleString("queue1"), null, false, true, scheduledExecutor, null, null, null);
 

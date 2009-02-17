@@ -70,6 +70,8 @@ public interface PostOffice extends MessagingComponent
    void route(ServerMessage message) throws Exception;
    
    void route(ServerMessage message, Transaction tx) throws Exception;
+   
+   boolean redistribute(ServerMessage message, SimpleString routingName, Transaction tx) throws Exception;
 
    Set<SimpleString> listAllDestinations();
 

@@ -547,7 +547,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                   postOffice.addBinding(binding);
    
                   Bindings theBindings = postOffice.getBindingsForAddress(queueAddress);
-   
+                  
                   theBindings.setRouteWhenNoConsumers(routeWhenNoConsumers);
                   
                   break;
@@ -627,7 +627,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                   Notification notification = new Notification(ntype, message.getProperties());
                   
                   managementService.sendNotification(notification);
-                  
+
                   break;
                }
             }
