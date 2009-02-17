@@ -56,11 +56,11 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
+import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
@@ -100,7 +100,7 @@ public class JBossMessagingAdmin implements Admin
    
    public void start() throws Exception
    {
-      ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       clientSession = sf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER,
                                        ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD,
                                        false,
@@ -124,7 +124,7 @@ public class JBossMessagingAdmin implements Admin
          invokeSyncOperation(ObjectNames.getJMSServerObjectName(),
                              "createSimpleConnectionFactory",
                              name,
-                             InVMConnectorFactory.class.getName(),
+                             NettyConnectorFactory.class.getName(),
                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                              DEFAULT_PING_PERIOD,
                              DEFAULT_CONNECTION_TTL,
@@ -257,7 +257,7 @@ public class JBossMessagingAdmin implements Admin
    public void startEmbeddedServer() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
       conf.setSecurityEnabled(false);
       embeddedServer = Messaging.newNullStorageMessagingService(conf);
       
