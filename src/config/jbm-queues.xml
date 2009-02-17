@@ -66,7 +66,7 @@
    </security>-->
 
    <!--default security to catch all-->
-   <security match="*">
+   <security match="#">
       <permission type="create" roles="guest,def"/>
       <permission type="read" roles="guest,def"/>
       <permission type="write" roles="guest,def"/>
@@ -120,7 +120,7 @@
    </address-settings>
 
    <!--default for catch all-->
-   <address-settings match="*">
+   <address-settings match="#">
       <clustered>false</clustered>
       <dead-letter-address>queuejms.DLQ</dead-letter-address>
       <expiry-address>queuejms.ExpiryQueue</expiry-address>

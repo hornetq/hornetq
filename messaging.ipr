@@ -84,6 +84,7 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
     <option name="MAXIMUM_HEAP_SIZE" value="128" />
   </component>
+  <component name="Encoding" useUTFGuessing="true" native2AsciiForPropertiesFiles="false" />
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
   </component>
@@ -340,6 +341,9 @@
       </item>
     </group>
   </component>
+  <component name="ProjectDetails">
+    <option name="projectName" value="messaging" />
+  </component>
   <component name="ProjectFileVersion" converted="true" />
   <component name="ProjectModuleManager">
     <modules>
@@ -362,6 +366,25 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="" />
   </component>
   <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://svn.jboss.org/repos/messaging/admin" />
+                  <option value="https://svn.jboss.org/repos/messaging/branches" />
+                  <option value="https://svn.jboss.org/repos/messaging/projects" />
+                  <option value="https://svn.jboss.org/repos/messaging/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://svn.jboss.org/repos/messaging/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="myVersion" value="123" />
   </component>
   <component name="VcsDirectoryMappings">
@@ -395,7 +418,6 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-standalone-aspect-library-jdk50.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jrockit-pluggable-instrumentor.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/pluggable-instrumentor.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/backport-concurrent/lib/jboss-backport-concurrent.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common/lib/jboss-common-client.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common/lib/jboss-common.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common/lib/namespace.jar!/" />
@@ -409,9 +431,6 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-retro/lib/jboss-retro-retrocheck.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-retro/lib/jboss-retro-rt.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-retro/lib/jboss-retro.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-security-spi/lib/jboss-security-spi.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts14/lib/jbossjta-integration.jar!/" />
@@ -440,13 +459,8 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-managed.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-metatype.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/test14/lib/jboss-test14.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jgroups/lib/jgroups.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/junit/lib/junit.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/oswego-concurrent/lib/concurrent.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/retrotranslator/lib/backport-util-concurrent.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/retrotranslator/lib/retrotranslator-runtime.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/retrotranslator/lib/retrotranslator-transformer.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/snmptrapappender/lib/snmpTrapAppender.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/sun-javacc/lib/javacc.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/trove/lib/trove.jar!/" />
@@ -457,19 +471,20 @@
         <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
         <root url="file://$PROJECT_DIR$/src/config" />
         <root url="jar://$PROJECT_DIR$/thirdparty/easymock/lib/easymock.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/easymock-classextension/lib/easymockclassextension.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/cglib/lib/cglib.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/lib/jbossbuild.jar!/" />
         <root url="jar://$ANT_HOME$/lib/ant-junit.jar!/" />
         <root url="jar://$ANT_HOME$/lib/ant.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/netty/lib/netty-3.0.0.CR4.jar!/" />
+        <root url="file:///home/andy/etc" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/netty/lib/netty-3.1.0.ALPHA2.jar!/" />
+        <root url="file://$PROJECT_DIR$/src/schemas" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jnpserver/lib/jnpserver-sources.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M2-20080520.004618-19-sources.jar!/" />
       </SOURCES>
+      <jarDirectory url="file:///home/andy/etc" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/src/etc" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tests/etc" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tests/jms-tests/etc" recursive="false" />

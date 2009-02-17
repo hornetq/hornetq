@@ -29,9 +29,9 @@ import java.util.regex.Pattern;
  */
 public class Match<T>
 {	
-   public static String WORD_WILDCARD = "^";
+   public static String WORD_WILDCARD = "*";
    private static String WORD_WILDCARD_REPLACEMENT = "[^.]+";
-   public static String WILDCARD = "*";
+   public static String WILDCARD = "#";
    private static String WILDCARD_REPLACEMENT = ".+";
    private static final String DOT = ".";
    private static final String DOT_REPLACEMENT = "\\.";
@@ -115,7 +115,7 @@ public class Match<T>
       {
          throw new IllegalArgumentException("match can not be null");
       }
-      if(match.contains("*") && match.indexOf("*") < match.length() - 1)
+      if(match.contains("#") && match.indexOf("#") < match.length() - 1)
       {
          throw new IllegalArgumentException("* can only be at end of match");
       }

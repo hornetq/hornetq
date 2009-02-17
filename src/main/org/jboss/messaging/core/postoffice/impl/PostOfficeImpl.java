@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -192,10 +193,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       if (messageExpiryScanPeriod > 0)
       {
          MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner();
-
          messageExpiryExecutor = new ScheduledThreadPoolExecutor(1, new JBMThreadFactory("JBM-scheduled-threads",
                                                                                          messageExpiryThreadPriority));
-         messageExpiryExecutor.scheduleAtFixedRate(messageExpiryRunner,
+         messageExpiryExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+         messageExpiryExecutor.scheduleWithFixedDelay(messageExpiryRunner,
                                                    messageExpiryScanPeriod,
                                                    messageExpiryScanPeriod,
                                                    TimeUnit.MILLISECONDS);
@@ -210,6 +211,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       if (messageExpiryExecutor != null)
       {
          messageExpiryExecutor.shutdown();
+         messageExpiryExecutor.awaitTermination(60, TimeUnit.SECONDS);
       }
 
       addressManager.clear();
@@ -845,7 +847,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private class MessageExpiryRunner implements Runnable
    {
-      public void run()
+      public synchronized void run()
       {
          Map<SimpleString, Binding> nameMap = addressManager.getBindings();
 
@@ -873,6 +875,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             }
          }
       }
+
    }
 
    private class PageMessageOperation implements TransactionOperation

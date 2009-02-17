@@ -91,58 +91,58 @@ public class RepositoryTest extends TestCase
    public void testMultipleWildcards()
    {
       HierarchicalRepository<String> repository = new HierarchicalObjectRepository<String>();
-      repository.addMatch("*", "*");
+      repository.addMatch("#", "#");
       repository.addMatch("a", "a");
+      repository.addMatch("a.#", "a.#");
       repository.addMatch("a.*", "a.*");
-      repository.addMatch("a.^", "a.^");
       repository.addMatch("a.b.c", "a.b.c");
-      repository.addMatch("a.^.c", "a.^.c");
+      repository.addMatch("a.*.c", "a.*.c");
       repository.addMatch("a.d.c", "a.d.c");
-      repository.addMatch("a.b.*", "a.b.*");
+      repository.addMatch("a.b.#", "a.b.#");
       repository.addMatch("a.b", "a.b");
-      repository.addMatch("a.b.c.*", "a.b.c.*");
+      repository.addMatch("a.b.c.#", "a.b.c.#");
       repository.addMatch("a.b.c.d", "a.b.c.d");
-      repository.addMatch("a.^.^.d", "a.^.^.d");
-      repository.addMatch("a.^.d.*", "a.^.d.*");
+      repository.addMatch("a.*.*.d", "a.*.*.d");
+      repository.addMatch("a.*.d.#", "a.*.d.#");
       String val = repository.getMatch("a");
       assertEquals("a", val);
       val = repository.getMatch("a.b");
       assertEquals("a.b", val);
       val = repository.getMatch("a.x");
-      assertEquals("a.^", val);
+      assertEquals("a.*", val);
       val = repository.getMatch("a.b.x");
-      assertEquals("a.b.*", val);
+      assertEquals("a.b.#", val);
       val = repository.getMatch("a.b.c");
       assertEquals("a.b.c", val);
       val = repository.getMatch("a.d.c");
       assertEquals("a.d.c", val);
       val = repository.getMatch("a.x.c");
-      assertEquals("a.^.c", val);
+      assertEquals("a.*.c", val);
       val = repository.getMatch("a.b.c.d");
       assertEquals("a.b.c.d", val);
       val = repository.getMatch("a.x.c.d");
-      assertEquals("a.^.^.d", val);
+      assertEquals("a.*.*.d", val);
       val = repository.getMatch("a.b.x.d");
-      assertEquals("a.^.^.d", val);
+      assertEquals("a.*.*.d", val);
       val = repository.getMatch("a.d.x.d");
-      assertEquals("a.^.^.d", val);
+      assertEquals("a.*.*.d", val);
       val = repository.getMatch("a.d.d.g");
-      assertEquals("a.^.d.*", val);
+      assertEquals("a.*.d.#", val);
       val = repository.getMatch("zzzz.z.z.z.d.r.g.f.sd.s.fsdfd.fsdfs");
-      assertEquals("*", val);
+      assertEquals("#", val);
    }
 
    public void testRepositoryMerge()
    {
       HierarchicalRepository<DummyMergeable> repository = new HierarchicalObjectRepository<DummyMergeable>();
-      repository.addMatch("*", new DummyMergeable(1));
-      repository.addMatch("a.*", new DummyMergeable(2));
-      repository.addMatch("b.*", new DummyMergeable(3));
-      repository.addMatch("a.b.*", new DummyMergeable(4));
-      repository.addMatch("b.c.*", new DummyMergeable(5));
-      repository.addMatch("a.b.c.*", new DummyMergeable(6));
-      repository.addMatch("a.b.^.d", new DummyMergeable(7));
-      repository.addMatch("a.b.c.^", new DummyMergeable(8));
+      repository.addMatch("#", new DummyMergeable(1));
+      repository.addMatch("a.#", new DummyMergeable(2));
+      repository.addMatch("b.#", new DummyMergeable(3));
+      repository.addMatch("a.b.#", new DummyMergeable(4));
+      repository.addMatch("b.c.#", new DummyMergeable(5));
+      repository.addMatch("a.b.c.#", new DummyMergeable(6));
+      repository.addMatch("a.b.*.d", new DummyMergeable(7));
+      repository.addMatch("a.b.c.*", new DummyMergeable(8));
       repository.getMatch("a.b.c.d");
       assertEquals(5, DummyMergeable.timesMerged);
       assertTrue(DummyMergeable.contains(1));
@@ -167,7 +167,7 @@ public class RepositoryTest extends TestCase
       HierarchicalRepository<String> repository = new HierarchicalObjectRepository<String>();
       try
       {
-         repository.addMatch("hjhjhjhjh.*.hhh", "test");
+         repository.addMatch("hjhjhjhjh.#.hhh", "test");
       }
       catch (IllegalArgumentException e)
       {

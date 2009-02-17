@@ -738,8 +738,8 @@ public class LocalTestServer implements Server, Runnable
 
    public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
-      getMessagingServer().getSecurityRepository().removeMatch("*");
-      getMessagingServer().getSecurityRepository().addMatch("*", defConfig);
+      getMessagingServer().getSecurityRepository().removeMatch("#");
+      getMessagingServer().getSecurityRepository().addMatch("#", defConfig);
    }
 
    public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
