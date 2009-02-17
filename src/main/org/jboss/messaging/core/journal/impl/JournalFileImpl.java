@@ -22,16 +22,13 @@
 
 package org.jboss.messaging.core.journal.impl;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.Pair;
 
 /**
  * 
@@ -45,7 +42,7 @@ public class JournalFileImpl implements JournalFile
 {
    private static final Logger log = Logger.getLogger(JournalFileImpl.class);
 
-   private SequentialFile file;
+   private final SequentialFile file;
 
    private final int orderingID;
 
@@ -53,52 +50,15 @@ public class JournalFileImpl implements JournalFile
 
    private final AtomicInteger posCount = new AtomicInteger(0);
 
-   private int totalNegCount;
-
    private boolean canReclaim;
-   
-   private boolean linkedDependency;
-
 
    private final Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
-
-   // When removing an ID on cleanup, we need to know where the delete is coming from
-   private final ConcurrentMap<Long, JournalFile> cleanupIDs = new ConcurrentHashMap<Long, JournalFile>();
 
    public JournalFileImpl(final SequentialFile file, final int orderingID)
    {
       this.file = file;
 
       this.orderingID = orderingID;
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.journal.impl.JournalFile#addCleanupInfo(long, org.jboss.messaging.core.journal.impl.JournalFile)
-    */
-   public void addCleanupInfo(final long id, final JournalFile deleteFile)
-   {
-      cleanupIDs.put(id, deleteFile);
-   }
-
-   public JournalFile getCleanupInfo(final long id)
-   {
-      return cleanupIDs.get(id);
-   }
-
-   /**
-    * @return the totalNegCount
-    */
-   public int getTotalNegCount()
-   {
-      return totalNegCount;
-   }
-
-   /**
-    * @param totalNegCount the totalNegCount to set
-    */
-   public void setTotalNegCount(final int totalNegCount)
-   {
-      this.totalNegCount = totalNegCount;
    }
 
    public int getPosCount()
@@ -119,11 +79,6 @@ public class JournalFileImpl implements JournalFile
    public void incNegCount(final JournalFile file)
    {
       getOrCreateNegCount(file).incrementAndGet();
-   }
-
-   public void decNegCount(final JournalFile file)
-   {
-      getOrCreateNegCount(file).decrementAndGet();
    }
 
    public int getNegCount(final JournalFile file)
@@ -175,23 +130,6 @@ public class JournalFileImpl implements JournalFile
       return file;
    }
 
-   
-   /**
-    * @return the linkedDependency
-    */
-   public boolean isLinkedDependency()
-   {
-      return linkedDependency;
-   }
-
-   /**
-    * @param linkedDependency the linkedDependency to set
-    */
-   public void setLinkedDependency(boolean linkedDependency)
-   {
-      this.linkedDependency = linkedDependency;
-   }
-   
    @Override
    public String toString()
    {
@@ -231,6 +169,5 @@ public class JournalFileImpl implements JournalFile
 
       return count;
    }
-
 
 }

@@ -83,7 +83,7 @@ public interface Journal extends MessagingComponent
 
    // Load
 
-   void load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions) throws Exception;
+   long load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions) throws Exception;
 
    int getAlignment() throws Exception;
 

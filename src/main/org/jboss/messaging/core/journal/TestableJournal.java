@@ -22,9 +22,6 @@
 
 package org.jboss.messaging.core.journal;
 
-import org.jboss.messaging.core.journal.impl.JournalFile;
-
-
 /**
  * 
  * A TestableJournal
@@ -35,17 +32,13 @@ import org.jboss.messaging.core.journal.impl.JournalFile;
  */
 public interface TestableJournal extends Journal
 {
-   int checkAndReclaimFiles() throws Exception;
+   void checkAndReclaimFiles() throws Exception;
 
    int getDataFilesCount();
 
    int getFreeFilesCount();
 
    int getOpenedFilesCount();
-   
-   void cleanup(int fileID) throws Exception;
-   
-   JournalFile getJournalFile(int fileID);
 
    int getIDMapSize();
 
@@ -70,7 +63,7 @@ public interface TestableJournal extends Journal
    /** This method could be promoted to {@link Journal} interface when we decide to use the loadManager 
     *  instead of load(List,List)
     */
-   void load(LoadManager reloadManager) throws Exception;
+   long load(LoadManager reloadManager) throws Exception;
 
    void forceMoveNextFile() throws Exception;
 

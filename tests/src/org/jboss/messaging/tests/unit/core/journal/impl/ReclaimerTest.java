@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.unit.core.journal.impl;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +32,6 @@ import org.jboss.messaging.core.journal.impl.JournalFile;
 import org.jboss.messaging.core.journal.impl.Reclaimer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.Pair;
 
 /**
  * 
@@ -750,8 +748,6 @@ public class ReclaimerTest extends UnitTestCase
 
       private boolean canDelete;
 
-      private boolean linkedDependency;
-
       public void extendOffset(final int delta)
       {
       }
@@ -794,18 +790,6 @@ public class ReclaimerTest extends UnitTestCase
          Integer count = negCounts.get(file);
 
          int c = count == null ? 1 : count.intValue() + 1;
-
-         negCounts.put(file, c);
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.journal.impl.JournalFile#decNegCount(org.jboss.messaging.core.journal.impl.JournalFile)
-       */
-      public void decNegCount(JournalFile file)
-      {
-         Integer count = negCounts.get(file);
-
-         int c = count == null ? 1 : count.intValue() - 1;
 
          negCounts.put(file, c);
       }
@@ -879,54 +863,5 @@ public class ReclaimerTest extends UnitTestCase
       {
          return transactionIDs;
       }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.journal.impl.JournalFile#getTotalNegCount()
-       */
-      public int getTotalNegCount()
-      {
-         return 0;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.journal.impl.JournalFile#setTotalNegCount(int)
-       */
-      public void setTotalNegCount(int total)
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.journal.impl.JournalFile#addCleanupInfo(long, org.jboss.messaging.core.journal.impl.JournalFile)
-       */
-      public void addCleanupInfo(long id, JournalFile deleteFile)
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.journal.impl.JournalFile#getCleanupInfo(long)
-       */
-      public JournalFile getCleanupInfo(long id)
-      {
-         return null;
-      }
-      
-      /**
-       * @return the linkedDependency
-       */
-      public boolean isLinkedDependency()
-      {
-         return linkedDependency;
-      }
-
-      /**
-       * @param linkedDependency the linkedDependency to set
-       */
-      public void setLinkedDependency(boolean linkedDependency)
-      {
-         this.linkedDependency = linkedDependency;
-      }
-
-      
-
    }
 }
