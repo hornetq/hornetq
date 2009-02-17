@@ -41,10 +41,8 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 
-import java.util.Hashtable;
-
 import javax.management.ObjectName;
-import javax.naming.InitialContext;
+import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.Assert;
@@ -65,8 +63,7 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.util.SimpleString;
-import org.jnp.server.Main;
-import org.jnp.server.NamingBeanImpl;
+import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
 import org.objectweb.jtests.jms.admin.Admin;
 
 /**
@@ -87,12 +84,18 @@ public class JBossMessagingAdmin implements Admin
 
    private MessagingServiceImpl embeddedServer;
 
-   private NamingBeanImpl namingInfo;
-
-   private Main jndiServer;
+   private Context context;
 
    public JBossMessagingAdmin()
    {
+      try
+      {
+         context = new InVMInitialContextFactory().getInitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+      }
+      catch (NamingException e)
+      {
+         e.printStackTrace();
+      }
    }
    
    public void start() throws Exception
@@ -153,14 +156,9 @@ public class JBossMessagingAdmin implements Admin
 
    }
 
-   public InitialContext createInitialContext() throws NamingException
+   public Context createContext() throws NamingException
    {
-      Hashtable<String, String> env = new Hashtable<String, String>();
-      env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-      env.put("java.naming.provider.url", "jnp://localhost:1099");
-      env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-
-      return new InitialContext(env);
+      return context;
    }
 
    public void createQueue(String name)
@@ -266,27 +264,12 @@ public class JBossMessagingAdmin implements Admin
       embeddedServer.start();
       JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(embeddedServer.getServer());
       serverManager.start();
-      serverManager.setInitialContext(createInitialContext());
-      
-      System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-      System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-
-      namingInfo = new NamingBeanImpl();
-      namingInfo.start();
-      jndiServer = new Main();
-      jndiServer.setNamingInfo(namingInfo);
-      jndiServer.setPort(1099);
-      jndiServer.setBindAddress("localhost");
-      jndiServer.setRmiPort(1098);
-      jndiServer.setRmiBindAddress("localhost");
-      jndiServer.start();
+      serverManager.setContext(context);
    }
    
    public void stopEmbeddedServer() throws Exception
    {
       embeddedServer.stop();
-      jndiServer.stop();
-      namingInfo.stop();
    }
    
    // Constants -----------------------------------------------------

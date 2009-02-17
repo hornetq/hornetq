@@ -320,7 +320,7 @@ public class JMSQueueControlTest extends TestCase
 
       serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
       serverManager.start();
-      serverManager.setInitialContext(new NullInitialContext());
+      serverManager.setContext(new NullInitialContext());
 
       String queueName = randomString();
       serverManager.createQueue(queueName, queueName);

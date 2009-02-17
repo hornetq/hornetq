@@ -34,7 +34,7 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicConnectionFactory;
-import javax.naming.InitialContext;
+import javax.naming.Context;
 
 import org.jboss.util.NestedRuntimeException;
 
@@ -55,7 +55,7 @@ import org.jboss.util.NestedRuntimeException;
 public abstract class UnifiedTestCase extends JMSTestCase
 {
 
-   protected InitialContext ctx;
+   protected Context ctx;
 
    private static final String CF_NAME = "testCF";
 
@@ -172,7 +172,7 @@ public abstract class UnifiedTestCase extends JMSTestCase
          admin.createTopic(TOPIC_NAME);
 
          // end of admin step, start of JMS client step
-         ctx = admin.createInitialContext();
+         ctx = admin.createContext();
 
          producerCF = (ConnectionFactory) ctx.lookup(CF_NAME);
          // we see destination of the unified domain as a javax.jms.Destination

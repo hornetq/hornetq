@@ -24,7 +24,7 @@
 
 package org.objectweb.jtests.jms.admin;
 
-import javax.naming.InitialContext;
+import javax.naming.Context;
 import javax.naming.NamingException;
 
 /**
@@ -44,12 +44,11 @@ public interface Admin
    public String getName();
 
    /** 
-    * Returns an <code>InitialContext</code> with correct properties from
-    * the JMS Provider.
+    * Returns an <code>Context</code> for the JMS Provider.
     *
-    * @return an <code>InitialContext</code> with correct properties from the JMS Provider.
+    * @return an <code>Context</code> for the JMS Provider.
     */
-   public InitialContext createInitialContext() throws NamingException;
+   public Context createContext() throws NamingException;
 
    /** 
     * Creates a <code>ConnectionFactory</code> and makes it available 

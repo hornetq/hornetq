@@ -66,9 +66,9 @@ public class JMSServerManagerImpl implements JMSServerManager
    private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
    /**
-    * the initial context to bind to
+    * the context to bind to
     */
-   private InitialContext initialContext;
+   private Context context;
 
    private final Map<String, List<String>> destinations = new HashMap<String, List<String>>();
 
@@ -122,7 +122,7 @@ public class JMSServerManagerImpl implements JMSServerManager
    {
       try
       {
-         initialContext = new InitialContext();
+         context = new InitialContext();
       }
       catch (NamingException e)
       {
@@ -185,7 +185,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
       for (String jndiBinding : jndiBindings)
       {
-         initialContext.unbind(jndiBinding);
+         context.unbind(jndiBinding);
       }
       return true;
    }
@@ -344,7 +344,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
       for (String jndiBinding : jndiBindings)
       {
-         initialContext.unbind(jndiBinding);
+         context.unbind(jndiBinding);
       }
       connectionFactoryBindings.remove(name);
       connectionFactories.remove(name);
@@ -381,9 +381,9 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    // Public --------------------------------------------------------
 
-   public void setInitialContext(final InitialContext initialContext)
+   public void setContext(final Context context)
    {
-      this.initialContext = initialContext;
+      this.context = context;
    }
 
    // Private -------------------------------------------------------
@@ -422,7 +422,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       jndiNameInContext = jndiName.substring(sepIndex + 1);
       try
       {
-         initialContext.lookup(jndiName);
+         context.lookup(jndiName);
 
          log.warn("Binding for " + jndiName + " already exists");
          return false;
@@ -432,7 +432,7 @@ public class JMSServerManagerImpl implements JMSServerManager
          // OK
       }
 
-      Context c = JNDIUtil.createContext(initialContext, parentContext);
+      Context c = JNDIUtil.createContext(context, parentContext);
 
       c.rebind(jndiNameInContext, objectToBind);
       return true;

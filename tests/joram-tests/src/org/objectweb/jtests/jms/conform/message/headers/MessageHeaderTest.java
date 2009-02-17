@@ -201,7 +201,7 @@ public class MessageHeaderTest extends PTPTestCase
       try
       {
          admin.createQueue("anotherQueue");
-         Context ctx = admin.createInitialContext();
+         Context ctx = admin.createContext();
          Queue anotherQueue = (Queue) ctx.lookup("anotherQueue");
          assertTrue(anotherQueue != senderQueue);
 

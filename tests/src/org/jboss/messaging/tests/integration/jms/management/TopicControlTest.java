@@ -218,7 +218,7 @@ public class TopicControlTest extends TestCase
 
       serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
       serverManager.start();
-      serverManager.setInitialContext(new NullInitialContext());
+      serverManager.setContext(new NullInitialContext());
 
       clientID = randomString();
       subscriptionName = randomString();

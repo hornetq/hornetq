@@ -31,7 +31,7 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
-import javax.naming.InitialContext;
+import javax.naming.Context;
 
 import org.jboss.util.NestedRuntimeException;
 
@@ -51,7 +51,7 @@ import org.jboss.util.NestedRuntimeException;
 public abstract class PTPTestCase extends JMSTestCase
 {
 
-   protected InitialContext ctx;
+   protected Context ctx;
 
    private static final String QCF_NAME = "testQCF";
 
@@ -123,7 +123,7 @@ public abstract class PTPTestCase extends JMSTestCase
          admin.createQueue(QUEUE_NAME);
 
          // end of admin step, start of JMS client step
-         ctx = admin.createInitialContext();
+         ctx = admin.createContext();
 
          senderQCF = (QueueConnectionFactory) ctx.lookup(QCF_NAME);
          senderQueue = (Queue) ctx.lookup(QUEUE_NAME);

@@ -50,7 +50,7 @@ public class AbstractAdmin implements Admin
       
    }
    
-   public InitialContext createInitialContext() throws NamingException
+   public InitialContext createContext() throws NamingException
    {
       return new InitialContext();
    }

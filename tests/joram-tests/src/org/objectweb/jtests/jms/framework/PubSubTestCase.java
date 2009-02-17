@@ -31,7 +31,7 @@ import javax.jms.TopicConnectionFactory;
 import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
-import javax.naming.InitialContext;
+import javax.naming.Context;
 
 import org.jboss.util.NestedRuntimeException;
 
@@ -51,7 +51,7 @@ import org.jboss.util.NestedRuntimeException;
 public abstract class PubSubTestCase extends JMSTestCase
 {
 
-   private InitialContext ctx;
+   private Context ctx;
 
    private static final String TCF_NAME = "testTCF";
 
@@ -123,7 +123,7 @@ public abstract class PubSubTestCase extends JMSTestCase
          admin.createTopic(TOPIC_NAME);
 
          // end of admin step, start of JMS client step
-         ctx = admin.createInitialContext();
+         ctx = admin.createContext();
 
          publisherTCF = (TopicConnectionFactory) ctx.lookup(TCF_NAME);
          publisherTopic = (Topic) ctx.lookup(TOPIC_NAME);

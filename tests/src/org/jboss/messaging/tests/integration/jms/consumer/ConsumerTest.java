@@ -88,7 +88,7 @@ public class ConsumerTest extends TestCase
       service.start();
       serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
       serverManager.start();
-      serverManager.setInitialContext(new NullInitialContext());
+      serverManager.setContext(new NullInitialContext());
       serverManager.createQueue(Q_NAME, Q_NAME);
       cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                       null,

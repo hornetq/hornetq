@@ -21,6 +21,7 @@
 */
 package org.jboss.test.jms;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -55,9 +56,9 @@ public class GenericAdmin implements Admin
    {
    }
    
-   public InitialContext createInitialContext() throws NamingException
+   public Context createContext() throws NamingException
    {
-      InitialContext ctx = delegate.createInitialContext();
+      Context ctx = delegate.createContext();
       log.debug("Using initial context: " + ctx.getEnvironment());
       return ctx;
    }

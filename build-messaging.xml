@@ -278,7 +278,7 @@
 
    <path id="joram.test.compilation.classpath">
       <path refid="jms.test.compilation.classpath"/>
-      <path refid="jboss.jnpserver.classpath"/>
+      <path location="${test.jms.classes.dir}" />
    </path>
    
    <path id="findbugs.classpath">
@@ -1115,7 +1115,7 @@
       </javac>
    </target>
     
-   <target name="compile-joram-tests">
+   <target name="compile-joram-tests" depends="compile-jms-tests">
       <mkdir dir="${test.joram.classes.dir}"/>
       <javac target="${javac.target}"
              source="${javac.source}"

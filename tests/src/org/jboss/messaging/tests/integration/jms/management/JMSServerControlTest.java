@@ -85,7 +85,7 @@ public class JMSServerControlTest extends TestCase
 
       JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
       serverManager.start();
-      serverManager.setInitialContext(new NullInitialContext());
+      serverManager.setContext(new NullInitialContext());
 
       return service;
    }
