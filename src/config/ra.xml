@@ -52,7 +52,7 @@
          <description>The transport configuration. These values must be in the form of key:val:type;key:val:type; where type is Integer, String, Long or boolean</description>
          <config-property-name>TransportConfiguration</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
-         <config-property-value>jbm.remoting.invm.serverid=0</config-property-value>
+         <config-property-value>jbm.remoting.invm.serverid:0:Integer</config-property-value>
       </config-property>
        <config-property>
         <description>Use XA methods to obtain connections</description>
