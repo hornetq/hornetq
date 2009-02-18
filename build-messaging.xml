@@ -697,7 +697,7 @@
 
    </target>
 
-   <target name="jar-ra" depends="compile-ra, jar-client, jar-jms">
+   <target name="jar-ra" depends="jar-client, jar-jms, compile-ra">
       <jar jarfile="${build.jars.dir}/${ra.jar.name}">
          <fileset dir="${build.ra.classes.dir}">
            <include name="org/jboss/messaging/ra/**/*.class"/>
