@@ -252,7 +252,7 @@
                <config-property-value>javax.jms.Queue</config-property-value>
             </config-property>
             <config-property>
-               <description>Try to obtain a lock within specified number of seconds; less than 0 disable this functionality</description>
+               <description>Try to obtain a lock within specified number of seconds; less than or equal to 0 disable this functionality</description>
                <config-property-name>UseTryLock</config-property-name>
                <config-property-type>java.lang.Integer</config-property-type>
                <config-property-value>0</config-property-value>
