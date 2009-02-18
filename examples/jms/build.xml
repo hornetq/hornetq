@@ -55,6 +55,7 @@
    <property name="cf.lookup" value="ConnectionFactory"/>
    <property name="throttle.rate" value="-1"/>
    <property name="throughput.queue" value="NONE"/>
+   <property name="example.queue.name" value="testQueue"/>
 
    <path id="other.system.client.classpath">
        <fileset dir="${other.system.client.dir}">
@@ -248,4 +249,19 @@
          <param name="sess.trans" value="true"/>
       </antcall>
    </target>
+
+   <target name="jar" depends="compile">
+      <jar destfile="${build.dir}/mdb-example.jar"
+           basedir="${build.dir}"
+           includes="**/*MDBExample.class">
+      </jar>
+   </target>
+
+   <target name="ear" depends="jar">
+      <jar destfile="${build.dir}/mdb-example.ear">
+         <zipfileset dir="${build.dir}" includes="mdb-example.jar"/>
+         <zipfileset dir="./config/META-INF"/>
+      </jar>
+   </target>
+
 </project>

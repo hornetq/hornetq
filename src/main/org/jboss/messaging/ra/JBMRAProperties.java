@@ -22,6 +22,8 @@
 package org.jboss.messaging.ra;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.jboss.messaging.core.logging.Logger;
 
@@ -30,6 +32,7 @@ import org.jboss.messaging.core.logging.Logger;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
 public class JBMRAProperties implements Serializable
@@ -44,7 +47,7 @@ public class JBMRAProperties implements Serializable
    private static boolean trace = log.isTraceEnabled();
 
    /** The discovery group name */
-   private String discoveryGroupName;
+   private String discoveryGroupAddress;
 
    /** The discovery group port */
    private Integer discoveryGroupPort;
@@ -130,6 +133,15 @@ public class JBMRAProperties implements Serializable
    /** Use XA */
    private Boolean useXA;
 
+   /* the transport type*/
+   private String transportType;
+
+   private Map<String, Object> transportConfiguration = new HashMap<String, Object>();
+
+   private Map<String, Object> backupTransportConfiguration = new HashMap<String, Object>();
+
+   private String backUpTransportType;
+
    /**
     * Constructor
     */
@@ -138,7 +150,7 @@ public class JBMRAProperties implements Serializable
       if (trace)
          log.trace("constructor()");
 
-      discoveryGroupName = null;
+      discoveryGroupAddress = null;
       discoveryGroupPort = null;
       discoveryRefreshTimeout = null;
       discoveryInitialWaitTimeout = null;
@@ -173,24 +185,24 @@ public class JBMRAProperties implements Serializable
     * Get the discovery group name
     * @return The value
     */
-   public String getDiscoveryGroupName()
+   public String getDiscoveryGroupAddress()
    {
       if (trace)
-         log.trace("getDiscoveryGroupName()");
+         log.trace("getDiscoveryGroupAddress()");
 
-      return discoveryGroupName;
+      return discoveryGroupAddress;
    }
 
    /**
     * Set the discovery group name
     * @param dgn The value
     */
-   public void setDiscoveryGroupName(String dgn)
+   public void setDiscoveryGroupAddress(String dgn)
    {
       if (trace)
-         log.trace("setDiscoveryGroupName(" + dgn + ")");
+         log.trace("setDiscoveryGroupAddress(" + dgn + ")");
 
-      discoveryGroupName = dgn;
+      discoveryGroupAddress = dgn;
    }
 
    /**
@@ -896,7 +908,7 @@ public class JBMRAProperties implements Serializable
       if (obj instanceof JBMRAProperties)
       {
          JBMRAProperties you = (JBMRAProperties) obj;
-         return (Util.compare(discoveryGroupName, you.getDiscoveryGroupName()) &&
+         return (Util.compare(discoveryGroupAddress, you.getDiscoveryGroupAddress()) &&
                  Util.compare(discoveryGroupPort, you.getDiscoveryGroupPort()) &&
                  Util.compare(discoveryRefreshTimeout, you.getDiscoveryRefreshTimeout()) &&
                  Util.compare(discoveryInitialWaitTimeout, you.getDiscoveryInitialWaitTimeout()) &&
@@ -941,7 +953,7 @@ public class JBMRAProperties implements Serializable
 
       int hash = 7;
 
-      hash += 31 * hash + (discoveryGroupName != null ? discoveryGroupName.hashCode() : 0);
+      hash += 31 * hash + (discoveryGroupAddress != null ? discoveryGroupAddress.hashCode() : 0);
       hash += 31 * hash + (discoveryGroupPort != null ? discoveryGroupPort.hashCode() : 0);
       hash += 31 * hash + (discoveryRefreshTimeout != null ? discoveryRefreshTimeout.hashCode() : 0);
       hash += 31 * hash + (discoveryInitialWaitTimeout != null ? discoveryInitialWaitTimeout.hashCode() : 0);
@@ -970,7 +982,37 @@ public class JBMRAProperties implements Serializable
       hash += 31 * hash + (password != null ? password.hashCode() : 0);
       hash += 31 * hash + (clientID != null ? clientID.hashCode() : 0);
       hash += 31 * hash + (useXA != null ? useXA.hashCode() : 0);
-
+      hash += 31 * hash + (transportType != null ? transportType.hashCode() : 0);
       return hash;
+   }
+
+   public void setTransportType(String transportType)
+   {
+      this.transportType = transportType;
+   }
+
+   public String getTransportType()
+   {
+      return transportType;
+   }
+
+   public Map<String, Object> getTransportConfiguration()
+   {
+      return transportConfiguration;
+   }
+
+   public Map<String, Object> getBackupTransportConfiguration()
+   {
+      return backupTransportConfiguration;
+   }
+
+   public String getBackUpTransportType()
+   {
+      return backUpTransportType;
+   }
+
+   public void setBackupTransportType(String backUpTransportType)
+   {
+      this.backUpTransportType = backUpTransportType;
    }
 }

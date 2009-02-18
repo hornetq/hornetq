@@ -36,6 +36,7 @@ import org.jboss.messaging.core.logging.Logger;
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
 public class JBMActivationSpec implements ActivationSpec
@@ -101,7 +102,7 @@ public class JBMActivationSpec implements ActivationSpec
    private Boolean redeliverUnspecified;
    
    /** Transaction timeout */
-   private Integer transactionTimeout;
+   private Integer transactionTimeout = 100000;
    
    /** Is same RM override */
    private Boolean isSameRMOverrideValue;
@@ -136,12 +137,12 @@ public class JBMActivationSpec implements ActivationSpec
       password = null;
       maxMessages = Integer.valueOf(1);
       minSession = Integer.valueOf(1);
-      maxSession = Integer.valueOf(15);
+      maxSession = Integer.valueOf(1);
       keepAlive = Long.valueOf(60000);
       sessionTransacted = Boolean.TRUE;
       reconnectAttempts = Integer.valueOf(5);
       redeliverUnspecified = Boolean.TRUE;
-      transactionTimeout = null;
+      transactionTimeout = 100000;
       isSameRMOverrideValue = null;
       forceClearOnShutdown = Boolean.FALSE;
       forceClearOnShutdownInterval = Long.valueOf(1000);
@@ -222,7 +223,7 @@ public class JBMActivationSpec implements ActivationSpec
       if (trace)
          log.trace("setDestinationType(" + value + ")");
 
-      this.destinationType = destinationType;
+      this.destinationType = value;
    }
 
    /**

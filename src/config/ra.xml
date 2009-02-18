@@ -42,20 +42,60 @@
 
    <resourceadapter>
       <resourceadapter-class>org.jboss.messaging.ra.JBMResourceAdapter</resourceadapter-class>
-
       <config-property>
-        <description>The discovery group name</description>
-        <config-property-name>DiscoveryGroupName</config-property-name>
+         <description>The transport type</description>
+         <config-property-name>TransportType</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</config-property-value>
+      </config-property>
+      <config-property>
+         <description>The transport configuration. These values must be in the form of key:val:type;key:val:type; where type is Integer, String, Long or boolean</description>
+         <config-property-name>TransportConfiguration</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value>jbm.remoting.invm.serverid=0</config-property-value>
+      </config-property>
+       <config-property>
+        <description>Use XA methods to obtain connections</description>
+        <config-property-name>UseXA</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value>true</config-property-value>
+      </config-property>
+      <config-property>
+        <description>The user name used to login to the JMS server</description>
+        <config-property-name>UserName</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
-        <config-property-value>default</config-property-value>
+        <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The password used to login to the JMS server</description>
+        <config-property-name>Password</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value></config-property-value>
+      </config-property>
+      <!--<config-property>
+         <description>The Backup transport type</description>
+         <config-property-name>BackUpTransportType</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+         <description>The Backup transport configuration. These values must be in the form of key=val;key=val;</description>
+         <config-property-name>TransportConfiguration</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The discovery group address</description>
+        <config-property-name>DiscoveryGroupAddress</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value></config-property-value>
       </config-property>
       <config-property>
         <description>The discovery group port</description>
         <config-property-name>DiscoveryGroupPort</config-property-name>
         <config-property-type>java.lang.Integer</config-property-type>
-        <config-property-value>0</config-property-value>
+        <config-property-value></config-property-value>
       </config-property>
-<!--
       <config-property>
         <description>The discovery refresh timeout</description>
         <config-property-name>DiscoveryRefreshTimeout</config-property-name>
@@ -194,31 +234,12 @@
         <config-property-type>java.lang.Integer</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
--->
-      <config-property>
-        <description>Use XA methods to obtain connections</description>
-        <config-property-name>UseXA</config-property-name>
-        <config-property-type>java.lang.Boolean</config-property-type>
-        <config-property-value>true</config-property-value>
-      </config-property>
-      <config-property>
-        <description>The user name used to login to the JMS server</description>
-        <config-property-name>UserName</config-property-name>
-        <config-property-type>java.lang.String</config-property-type>
-        <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
-        <description>The password used to login to the JMS server</description>
-        <config-property-name>Password</config-property-name>
-        <config-property-type>java.lang.String</config-property-type>
-        <config-property-value></config-property-value>
-      </config-property>
       <config-property>
         <description>The client id</description>
         <config-property-name>ClientID</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value></config-property-value>
-      </config-property>
+      </config-property>-->
 
       <outbound-resourceadapter>
          <connection-definition>
@@ -231,7 +252,7 @@
                <config-property-value>javax.jms.Queue</config-property-value>
             </config-property>
             <config-property>
-               <description>Try to obtain a lock within specified number of seconds; <= 0 disable this functionality</description>
+               <description>Try to obtain a lock within specified number of seconds; less than 0 disable this functionality</description>
                <config-property-name>UseTryLock</config-property-name>
                <config-property-type>java.lang.Integer</config-property-type>
                <config-property-value>0</config-property-value>
