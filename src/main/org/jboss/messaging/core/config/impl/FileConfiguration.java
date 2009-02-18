@@ -89,6 +89,8 @@ public class FileConfiguration extends ConfigurationImpl
 
       backup = getBoolean(e, "backup", backup);
 
+      strictUpdateDelivery = getBoolean(e, "strict-update-delivery", strictUpdateDelivery);
+
       queueActivationTimeout = getLong(e, "queue-activation-timeout", queueActivationTimeout);
 
       // NOTE! All the defaults come from the super class
@@ -121,12 +123,14 @@ public class FileConfiguration extends ConfigurationImpl
 
       managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
 
-      managementNotificationAddress = new SimpleString(getString(e, "management-notification-address", managementNotificationAddress.toString()));
+      managementNotificationAddress = new SimpleString(getString(e,
+                                                                 "management-notification-address",
+                                                                 managementNotificationAddress.toString()));
 
       managementClusterPassword = getString(e, "management-cluster-password", managementClusterPassword.toString());
 
       managementRequestTimeout = getLong(e, "management-request-timeout", managementRequestTimeout);
-      
+
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
       ArrayList<String> interceptorList = new ArrayList<String>();
@@ -263,7 +267,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       String s = getString(e, "journal-type", journalType.toString());
 
-      if (s == null || (!s.equals(JournalType.NIO.toString()) && !s.equals(JournalType.ASYNCIO.toString())))
+      if (s == null || !s.equals(JournalType.NIO.toString()) && !s.equals(JournalType.ASYNCIO.toString()))
       {
          throw new IllegalArgumentException("Invalid journal type " + s);
       }
@@ -299,14 +303,14 @@ public class FileConfiguration extends ConfigurationImpl
       return configurationUrl;
    }
 
-   public void setConfigurationUrl(String configurationUrl)
+   public void setConfigurationUrl(final String configurationUrl)
    {
       this.configurationUrl = configurationUrl;
    }
 
    // Private -------------------------------------------------------------------------
 
-   private Boolean getBoolean(Element e, String name, Boolean def)
+   private Boolean getBoolean(final Element e, final String name, final Boolean def)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
@@ -316,7 +320,7 @@ public class FileConfiguration extends ConfigurationImpl
       return def;
    }
 
-   private Integer getInteger(Element e, String name, Integer def)
+   private Integer getInteger(final Element e, final String name, final Integer def)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
@@ -326,7 +330,7 @@ public class FileConfiguration extends ConfigurationImpl
       return def;
    }
 
-   private Long getLong(Element e, String name, Long def)
+   private Long getLong(final Element e, final String name, final Long def)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
@@ -336,7 +340,7 @@ public class FileConfiguration extends ConfigurationImpl
       return def;
    }
 
-   private String getString(Element e, String name, String def)
+   private String getString(final Element e, final String name, final String def)
    {
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)

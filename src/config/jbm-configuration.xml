@@ -48,6 +48,8 @@
 
       <backup>false</backup>
       
+      <strict-update-delivery>false</strict-update-delivery>
+
       <!--
       <backup-connector-ref connector-name="netty-backup"/>
       -->

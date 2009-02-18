@@ -43,8 +43,10 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_CLUSTERED = false;
 
+   public static final boolean DEFAULT_STRICT_UPDATE_DELIVERY = false;
+
    public static final boolean DEFAULT_BACKUP = false;
-   
+
    public static final long DEFAULT_QUEUE_ACTIVATION_TIMEOUT = 30000;
 
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 30;
@@ -58,7 +60,7 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
 
    public static final long DEFAULT_CONNECTION_SCAN_PERIOD = 1000;
-   
+
    public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
@@ -68,13 +70,13 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_JOURNAL_DIR = "data/journal";
 
    public static final String DEFAULT_PAGING_DIR = "data/paging";
-   
+
    public static final int DEFAULT_PAGE_MAX_THREADS = 10;
-   
+
    public static final long DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
-   
+
    public static final long DEFAULT_PAGE_MAX_GLOBAL_SIZE = -1;
-   
+
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
@@ -100,19 +102,19 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_TRANSACTION_TIMEOUT = 60000;
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
-   
+
    public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("jbm.admin.management");
-   
+
    public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("jbm.admin.notification");
 
    public static final String DEFAULT_MANAGEMENT_CLUSTER_PASSWORD = "CHANGE ME!!";
 
-   public static final  long DEFAULT_MANAGEMENT_REQUEST_TIMEOUT = 500;
-   
+   public static final long DEFAULT_MANAGEMENT_REQUEST_TIMEOUT = 500;
+
    public static final long DEFAULT_BROADCAST_PERIOD = 5000;
-   
+
    public static final long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
-   
+
    public static final int DEFAULT_MAX_FORWARD_BATCH_SIZE = 1;
 
    public static final long DEFAULT_MAX_FORWARD_BATCH_TIME = -1;
@@ -120,19 +122,19 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD = 30000;
 
    public static final int DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY = 3;
-   
+
    public static final int DEFAULT_ID_CACHE_SIZE = 2000;
-   
+
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
-   
+
    public static final boolean DEFAULT_CLUSTER_DUPLICATE_DETECTION = true;
-   
+
    public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
-   
+
    public static final int DEFAULT_CLUSTER_MAX_HOPS = 1;
-   
+
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
-   
+
    public static final boolean DEFAULT_BRIDGE_DUPLICATE_DETECTION = true;
 
    // Attributes -----------------------------------------------------------------------------
@@ -140,6 +142,8 @@ public class ConfigurationImpl implements Configuration
    protected boolean clustered = DEFAULT_CLUSTERED;
 
    protected boolean backup = DEFAULT_BACKUP;
+
+   protected boolean strictUpdateDelivery = DEFAULT_STRICT_UPDATE_DELIVERY;
 
    protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
 
@@ -154,53 +158,51 @@ public class ConfigurationImpl implements Configuration
    protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
 
    protected long connectionScanPeriod = DEFAULT_CONNECTION_SCAN_PERIOD;
-   
+
    protected long connectionTTLOverride = DEFAULT_CONNECTION_TTL_OVERRIDE;
 
    protected long messageExpiryScanPeriod = DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD;
 
    protected int messageExpiryThreadPriority = DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY;
-   
+
    protected int idCacheSize = DEFAULT_ID_CACHE_SIZE;
-   
+
    protected boolean persistIDCache = DEFAULT_PERSIST_ID_CACHE;
-   
+
    protected List<String> interceptorClassNames = new ArrayList<String>();
-   
+
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
    protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
 
    protected String backupConnectorName;
-   
+
    protected List<BridgeConfiguration> bridgeConfigurations = new ArrayList<BridgeConfiguration>();
-   
+
    protected List<DivertConfiguration> divertConfigurations = new ArrayList<DivertConfiguration>();
-   
+
    protected List<ClusterConnectionConfiguration> clusterConfigurations = new ArrayList<ClusterConnectionConfiguration>();
-   
+
    protected List<QueueConfiguration> queueConfigurations = new ArrayList<QueueConfiguration>();
-   
+
    protected List<BroadcastGroupConfiguration> broadcastGroupConfigurations = new ArrayList<BroadcastGroupConfiguration>();
-   
+
    protected Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = new LinkedHashMap<String, DiscoveryGroupConfiguration>();
-   
-   
+
    // Paging related attributes ------------------------------------------------------------
 
    protected long pagingMaxGlobalSize = DEFAULT_PAGE_MAX_GLOBAL_SIZE;
-   
+
    protected long pagingDefaultSize = DEFAULT_PAGE_SIZE;
 
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
-   
+
    protected int pagingMaxThreads = DEFAULT_PAGE_MAX_THREADS;
-   
 
    // File related attributes -----------------------------------------------------------
 
    protected String largeMessagesDirectory = DEFAULT_LARGE_MESSAGES_DIR;
-   
+
    protected String bindingsDirectory = DEFAULT_BINDINGS_DIRECTORY;
 
    protected boolean createBindingsDir = DEFAULT_CREATE_BINDINGS_DIR;
@@ -230,15 +232,15 @@ public class ConfigurationImpl implements Configuration
    protected long transactionTimeout = DEFAULT_TRANSACTION_TIMEOUT;
 
    protected long transactionTimeoutScanPeriod = DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
-   
+
    protected SimpleString managementAddress = DEFAULT_MANAGEMENT_ADDRESS;
 
    protected SimpleString managementNotificationAddress = DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
-   
+
    protected String managementClusterPassword = DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
 
    protected long managementRequestTimeout = DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
-   
+
    public boolean isClustered()
    {
       return clustered;
@@ -254,6 +256,22 @@ public class ConfigurationImpl implements Configuration
       return backup;
    }
 
+   /**
+    * @return the strictUpdateDelivery
+    */
+   public boolean isStrictUpdateDelivery()
+   {
+      return strictUpdateDelivery;
+   }
+
+   /**
+    * @param strictJMS the strictJMS to set
+    */
+   public void setStrictUpdateDelivery(final boolean strictUpdateDelivery)
+   {
+      this.strictUpdateDelivery = strictUpdateDelivery;
+   }
+
    public void setBackup(final boolean backup)
    {
       this.backup = backup;
@@ -264,9 +282,9 @@ public class ConfigurationImpl implements Configuration
       return queueActivationTimeout;
    }
 
-   public void setQueueActivationTimeout(long timeout)
+   public void setQueueActivationTimeout(final long timeout)
    {
-      this.queueActivationTimeout = timeout;
+      queueActivationTimeout = timeout;
    }
 
    public int getScheduledThreadPoolMaxSize()
@@ -308,7 +326,7 @@ public class ConfigurationImpl implements Configuration
    {
       connectionScanPeriod = scanPeriod;
    }
-   
+
    public long getConnectionTTLOverride()
    {
       return connectionTTLOverride;
@@ -316,7 +334,7 @@ public class ConfigurationImpl implements Configuration
 
    public void setConnectionTTLOverride(final long ttl)
    {
-      this.connectionTTLOverride = ttl;
+      connectionTTLOverride = ttl;
    }
 
    public List<String> getInterceptorClassNames()
@@ -338,7 +356,7 @@ public class ConfigurationImpl implements Configuration
    {
       acceptorConfigs = infos;
    }
-   
+
    public Map<String, TransportConfiguration> getConnectorConfigurations()
    {
       return connectorConfigs;
@@ -346,7 +364,7 @@ public class ConfigurationImpl implements Configuration
 
    public void setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
    {
-      this.connectorConfigs = infos;
+      connectorConfigs = infos;
    }
 
    public String getBackupConnectorName()
@@ -358,55 +376,55 @@ public class ConfigurationImpl implements Configuration
    {
       this.backupConnectorName = backupConnectorName;
    }
-   
+
    public List<BridgeConfiguration> getBridgeConfigurations()
    {
       return bridgeConfigurations;
    }
-   
+
    public void setBridgeConfigurations(final List<BridgeConfiguration> configs)
    {
-      this.bridgeConfigurations = configs;
+      bridgeConfigurations = configs;
    }
 
    public List<BroadcastGroupConfiguration> getBroadcastGroupConfigurations()
    {
-      return this.broadcastGroupConfigurations;
+      return broadcastGroupConfigurations;
    }
-   
+
    public void setBroadcastGroupConfigurations(final List<BroadcastGroupConfiguration> configs)
    {
-      this.broadcastGroupConfigurations = configs;
+      broadcastGroupConfigurations = configs;
    }
 
    public List<ClusterConnectionConfiguration> getClusterConfigurations()
    {
-      return this.clusterConfigurations;
+      return clusterConfigurations;
    }
-   
+
    public void setClusterConfigurations(final List<ClusterConnectionConfiguration> configs)
    {
-      this.clusterConfigurations = configs;
+      clusterConfigurations = configs;
    }
 
    public List<DivertConfiguration> getDivertConfigurations()
    {
-      return this.divertConfigurations;
+      return divertConfigurations;
    }
-   
+
    public void setDivertConfigurations(final List<DivertConfiguration> configs)
    {
-      this.divertConfigurations = configs;
+      divertConfigurations = configs;
    }
 
    public List<QueueConfiguration> getQueueConfigurations()
    {
-      return this.queueConfigurations;
+      return queueConfigurations;
    }
 
    public void setQueueConfigurations(final List<QueueConfiguration> configs)
    {
-      this.queueConfigurations = configs;
+      queueConfigurations = configs;
    }
 
    public Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations()
@@ -418,25 +436,25 @@ public class ConfigurationImpl implements Configuration
    {
       this.discoveryGroupConfigurations = discoveryGroupConfigurations;
    }
-   
+
    public int getIDCacheSize()
    {
       return idCacheSize;
    }
-   
+
    public void setIDCacheSize(final int idCacheSize)
    {
       this.idCacheSize = idCacheSize;
    }
-   
+
    public boolean isPersistIDCache()
    {
       return persistIDCache;
    }
-   
+
    public void setPersistIDCache(final boolean persist)
    {
-      this.persistIDCache = persist;
+      persistIDCache = persist;
    }
 
    public String getBindingsDirectory()
@@ -463,17 +481,17 @@ public class ConfigurationImpl implements Configuration
    {
       return journalType;
    }
-   
+
    public int getPagingMaxThreads()
    {
       return pagingMaxThreads;
    }
-   
+
    public void setPagingMaxThread(final int pagingMaxThreads)
    {
       this.pagingMaxThreads = pagingMaxThreads;
    }
-   
+
    public void setPagingDirectory(final String dir)
    {
       pagingDirectory = dir;
@@ -564,9 +582,9 @@ public class ConfigurationImpl implements Configuration
       return wildcardRoutingEnabled;
    }
 
-   public void setWildcardRoutingEnabled(boolean enabled)
+   public void setWildcardRoutingEnabled(final boolean enabled)
    {
-      this.wildcardRoutingEnabled = enabled;
+      wildcardRoutingEnabled = enabled;
    }
 
    public long getTransactionTimeout()
@@ -574,7 +592,7 @@ public class ConfigurationImpl implements Configuration
       return transactionTimeout;
    }
 
-   public void setTransactionTimeout(long timeout)
+   public void setTransactionTimeout(final long timeout)
    {
       transactionTimeout = timeout;
    }
@@ -584,7 +602,7 @@ public class ConfigurationImpl implements Configuration
       return transactionTimeoutScanPeriod;
    }
 
-   public void setTransactionTimeoutScanPeriod(long period)
+   public void setTransactionTimeoutScanPeriod(final long period)
    {
       transactionTimeoutScanPeriod = period;
    }
@@ -594,7 +612,7 @@ public class ConfigurationImpl implements Configuration
       return messageExpiryScanPeriod;
    }
 
-   public void setMessageExpiryScanPeriod(long messageExpiryScanPeriod)
+   public void setMessageExpiryScanPeriod(final long messageExpiryScanPeriod)
    {
       this.messageExpiryScanPeriod = messageExpiryScanPeriod;
    }
@@ -604,7 +622,7 @@ public class ConfigurationImpl implements Configuration
       return messageExpiryThreadPriority;
    }
 
-   public void setMessageExpiryThreadPriority(int messageExpiryThreadPriority)
+   public void setMessageExpiryThreadPriority(final int messageExpiryThreadPriority)
    {
       this.messageExpiryThreadPriority = messageExpiryThreadPriority;
    }
@@ -648,7 +666,7 @@ public class ConfigurationImpl implements Configuration
    {
       pagingMaxGlobalSize = maxGlobalSize;
    }
-   
+
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.config.Configuration#getPagingDefaultSize()
     */
@@ -660,64 +678,62 @@ public class ConfigurationImpl implements Configuration
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.config.Configuration#setPagingDefaultSize(long)
     */
-   public void setPagingDefaultSize(long pageSize)
+   public void setPagingDefaultSize(final long pageSize)
    {
-      this.pagingDefaultSize = pageSize;
+      pagingDefaultSize = pageSize;
    }
-   
-   
+
    public String getLargeMessagesDirectory()
    {
       return largeMessagesDirectory;
    }
-   
+
    public void setLargeMessagesDirectory(final String directory)
    {
-      this.largeMessagesDirectory = directory;
+      largeMessagesDirectory = directory;
    }
-   
 
    public boolean isMessageCounterEnabled()
    {
       return messageCounterEnabled;
    }
-   
+
    public SimpleString getManagementAddress()
    {
       return managementAddress;
    }
-   
-   public void setManagementAddress(SimpleString address)
+
+   public void setManagementAddress(final SimpleString address)
    {
-      this.managementAddress = address;
+      managementAddress = address;
    }
-   
+
    public SimpleString getManagementNotificationAddress()
    {
-      return managementNotificationAddress ;
+      return managementNotificationAddress;
    }
-   
-   public void setManagementNotificationAddress(SimpleString address)
+
+   public void setManagementNotificationAddress(final SimpleString address)
    {
-      this.managementNotificationAddress = address;
+      managementNotificationAddress = address;
    }
-      
+
    public String getManagementClusterPassword()
    {
       return managementClusterPassword;
    }
-   
-   public void setManagementClusterPassword(String clusterPassword)
+
+   public void setManagementClusterPassword(final String clusterPassword)
    {
-      this.managementClusterPassword = clusterPassword;
+      managementClusterPassword = clusterPassword;
    }
-   
+
    public long getManagementRequestTimeout()
    {
       return managementRequestTimeout;
    }
-   
-   public void setManagementRequestTimeout(long managementRequestTimeout)
+
+   public void setManagementRequestTimeout(final long managementRequestTimeout)
    {
       this.managementRequestTimeout = managementRequestTimeout;
    }

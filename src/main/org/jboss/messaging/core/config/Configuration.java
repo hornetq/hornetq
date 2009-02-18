@@ -51,14 +51,18 @@ public interface Configuration extends Serializable
 
    void setClustered(boolean clustered);
 
+   boolean isStrictUpdateDelivery();
+
+   void setStrictUpdateDelivery(boolean strictUpdateDelivery);
+
    boolean isBackup();
 
    void setBackup(boolean backup);
-   
+
    long getQueueActivationTimeout();
-   
+
    void setQueueActivationTimeout(long timeout);
-   
+
    int getScheduledThreadPoolMaxSize();
 
    void setScheduledThreadPoolMaxSize(int maxSize);
@@ -84,9 +88,9 @@ public interface Configuration extends Serializable
    void setInterceptorClassNames(List<String> interceptors);
 
    long getConnectionScanPeriod();
-   
+
    void setConnectionScanPeriod(long scanPeriod);
-   
+
    long getConnectionTTLOverride();
 
    void setConnectionTTLOverride(long ttl);
@@ -94,58 +98,57 @@ public interface Configuration extends Serializable
    Set<TransportConfiguration> getAcceptorConfigurations();
 
    void setAcceptorConfigurations(Set<TransportConfiguration> infos);
-   
+
    Map<String, TransportConfiguration> getConnectorConfigurations();
 
-   void setConnectorConfigurations(Map<String, TransportConfiguration> infos);   
+   void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
 
    String getBackupConnectorName();
 
    void setBackupConnectorName(String name);
-   
+
    List<BroadcastGroupConfiguration> getBroadcastGroupConfigurations();
-   
+
    void setBroadcastGroupConfigurations(List<BroadcastGroupConfiguration> configs);
-   
+
    Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations();
-   
+
    void setDiscoveryGroupConfigurations(Map<String, DiscoveryGroupConfiguration> configs);
-   
+
    List<BridgeConfiguration> getBridgeConfigurations();
 
    void setBridgeConfigurations(final List<BridgeConfiguration> configs);
-   
+
    List<DivertConfiguration> getDivertConfigurations();
 
    void setDivertConfigurations(final List<DivertConfiguration> configs);
-   
+
    List<ClusterConnectionConfiguration> getClusterConfigurations();
 
    void setClusterConfigurations(final List<ClusterConnectionConfiguration> configs);
-   
+
    List<QueueConfiguration> getQueueConfigurations();
 
    void setQueueConfigurations(final List<QueueConfiguration> configs);
-   
+
    SimpleString getManagementAddress();
-   
+
    void setManagementAddress(SimpleString address);
 
    SimpleString getManagementNotificationAddress();
-   
+
    String getManagementClusterPassword();
 
    long getManagementRequestTimeout();
 
    int getIDCacheSize();
-   
+
    void setIDCacheSize(int idCacheSize);
-   
+
    boolean isPersistIDCache();
-   
+
    void setPersistIDCache(boolean persist);
 
-   
    // Journal related attributes ------------------------------------------------------------
 
    String getBindingsDirectory();
@@ -192,13 +195,12 @@ public interface Configuration extends Serializable
 
    void setCreateJournalDir(boolean create);
 
-   
    // Paging Properties --------------------------------------------------------------------
-   
+
    int getPagingMaxThreads();
-   
+
    void setPagingMaxThread(int pagingMaxThreads);
-   
+
    String getPagingDirectory();
 
    void setPagingDirectory(String dir);
@@ -206,15 +208,15 @@ public interface Configuration extends Serializable
    long getPagingMaxGlobalSizeBytes();
 
    void setPagingMaxGlobalSizeBytes(long maxGlobalSize);
-   
+
    long getPagingDefaultSize();
-   
+
    void setPagingDefaultSize(long pageSize);
-   
+
    // Large Messages Properties ------------------------------------------------------------
-   
+
    String getLargeMessagesDirectory();
-   
+
    void setLargeMessagesDirectory(String directory);
 
    boolean isWildcardRoutingEnabled();

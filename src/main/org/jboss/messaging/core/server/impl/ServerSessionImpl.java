@@ -138,6 +138,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final boolean autoCommitAcks;
 
    private final boolean preAcknowledge;
+   
+   private final boolean updateDeliveries;
 
    private volatile RemotingConnection remotingConnection;
 
@@ -195,6 +197,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
                             final boolean preAcknowledge,
+                            final boolean updateDeliveries,
                             final boolean xa,
                             final RemotingConnection remotingConnection,
                             final StorageManager storageManager,
@@ -238,6 +241,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          tx = new TransactionImpl(storageManager);
       }
+      
+      this.updateDeliveries = updateDeliveries;
 
       this.channel = channel;
 
@@ -1412,6 +1417,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           postOffice.getPagingManager(),
                                                           channel,
                                                           preAcknowledge,
+                                                          updateDeliveries,
                                                           executor,
                                                           managementService);
 

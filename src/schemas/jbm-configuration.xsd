@@ -96,6 +96,9 @@
 				<xsd:element name="backup" type="xsd:boolean"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
+				<xsd:element name="strict-update-delivery" type="xsd:boolean"
+					maxOccurs="1" minOccurs="0">
+				</xsd:element>
 				<xsd:element name="backup-connector-ref"
 					type="backup-connectorType" maxOccurs="1" minOccurs="0">
 				</xsd:element>

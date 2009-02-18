@@ -120,6 +120,8 @@ public class ServerConsumerImpl implements ServerConsumer
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
     */
    private final boolean browseOnly;
+   
+   private final boolean updateDeliveries;
 
    private final StorageManager storageManager;
 
@@ -149,6 +151,7 @@ public class ServerConsumerImpl implements ServerConsumer
                              final PagingManager pagingManager,
                              final Channel channel,
                              final boolean preAcknowledge,
+                             final boolean updateDeliveries,
                              final Executor executor,
                              final ManagementService managementService) throws Exception
    {
@@ -181,6 +184,8 @@ public class ServerConsumerImpl implements ServerConsumer
       binding.getQueue().addConsumer(this);
 
       minLargeMessageSize = session.getMinLargeMessageSize();
+      
+      this.updateDeliveries = updateDeliveries;
    }
 
    // ServerConsumer implementation
@@ -401,10 +406,6 @@ public class ServerConsumerImpl implements ServerConsumer
          else
          {
             ref.getQueue().acknowledge(tx, ref);
-
-            // Del count is not actually updated in storage unless it's
-            // cancelled
-            ref.incrementDeliveryCount();
          }
       }
       while (ref.getMessage().getMessageID() != messageID);
@@ -651,6 +652,18 @@ public class ServerConsumerImpl implements ServerConsumer
             deliverStandardMessage(ref, message);
          }
 
+         ref.incrementDeliveryCount();
+         
+         // If updateDeliveries = false (set by strict-update),
+         // the updateDeliveryCount would still be updated after cancel
+         if (updateDeliveries)
+         {
+            if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
+            {
+               storageManager.updateDeliveryCount(ref);
+            }
+         }
+         
          return HandleStatus.HANDLED;
       }
       finally

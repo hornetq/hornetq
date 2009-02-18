@@ -951,6 +951,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               autoCommitSends,
                                                               autoCommitAcks,
                                                               preAcknowledge,
+                                                              configuration.isStrictUpdateDelivery(),
                                                               xa,
                                                               connection,
                                                               storageManager,
