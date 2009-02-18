@@ -518,11 +518,14 @@ public class TransactedSessionTest extends JMSTestCase
          assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 
          log.info("rolling back");
+         conn.stop();
          sess.rollback();
          
          log.info("closing");
          sess.close();
          log.info("Closed");
+         
+         conn.start();
 
          Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 

@@ -164,26 +164,26 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
          tm = (TextMessage)c.receive(1000);
          
          assertEquals("message2", tm.getText());
-	      assertFalse(tm.getJMSRedelivered());
-         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+	      assertTrue(tm.getJMSRedelivered());
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
          
          tm = (TextMessage)c.receive(1000);
          
          assertEquals("message3", tm.getText());
-	      assertFalse(tm.getJMSRedelivered());
-         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+	      assertTrue(tm.getJMSRedelivered());
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
          
          tm = (TextMessage)c.receive(1000);
          
          assertEquals("message4", tm.getText());
-	      assertFalse(tm.getJMSRedelivered());
-         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+	      assertTrue(tm.getJMSRedelivered());
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
          
          tm = (TextMessage)c.receive(1000);
          
          assertEquals("message5", tm.getText());
-	      assertFalse(tm.getJMSRedelivered());
-         assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
+	      assertTrue(tm.getJMSRedelivered());
+         assertEquals(2, tm.getIntProperty("JMSXDeliveryCount"));
          
 	      tm.acknowledge();
       }
@@ -633,7 +633,7 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
          
          assertEquals(tm.getText(), rm.getText());
          
-         assertEquals(4, rm.getIntProperty("JMSXDeliveryCount"));
+         assertEquals(5, rm.getIntProperty("JMSXDeliveryCount"));
          
          assertTrue(rm.getJMSRedelivered());
          
