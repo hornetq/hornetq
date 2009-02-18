@@ -28,8 +28,6 @@ import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
@@ -42,6 +40,7 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -59,7 +58,6 @@ import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
-import org.jboss.messaging.tests.util.RandomUtil;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -83,19 +81,18 @@ public class JMSManagementServiceImplTest extends TestCase
       ObjectName objectName = ObjectNames.getJMSServerObjectName();
 
       JMSServerManager server = createMock(JMSServerManager.class);
-
+      
       ManagementService managementService = createMock(ManagementService.class);
-      expect(managementService.getClusterPassword()).andReturn(randomString());
-      expect(managementService.getManagementAddress()).andReturn(randomSimpleString());
-      expect(managementService.getManagementRequestTimeout()).andReturn(randomPositiveLong());
+      ReplicationOperationInvoker invoker = createMock(ReplicationOperationInvoker.class);
+      expect(managementService.getReplicationOperationInvoker()).andStubReturn(invoker);
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
       managementService.registerInRegistry(eq(objectName), isA(JMSServerControlMBean.class));
-      replay(managementService, server);
+      replay(managementService, server, invoker);
 
       JMSManagementService service = new JMSManagementServiceImpl(managementService);
       service.registerJMSServer(server);
 
-      verify(managementService, server);
+      verify(managementService, server, invoker);
    }
 
    public void testRegisterQueue() throws Exception
@@ -115,19 +112,18 @@ public class JMSManagementServiceImplTest extends TestCase
       MessageCounterManager messageCounterManager = createMock(MessageCounterManager.class);
       expect(managementService.getMessageCounterManager()).andReturn(messageCounterManager );
       expect(messageCounterManager.getMaxDayCount()).andReturn(randomPositiveInt());
-      expect(managementService.getClusterPassword()).andReturn(randomString());
-      expect(managementService.getManagementAddress()).andReturn(randomSimpleString());
-      expect(managementService.getManagementRequestTimeout()).andReturn(randomPositiveLong());
+      ReplicationOperationInvoker invoker = createMock(ReplicationOperationInvoker.class);
+      expect(managementService.getReplicationOperationInvoker()).andStubReturn(invoker);
       messageCounterManager.registerMessageCounter(eq(name), isA(MessageCounter.class));
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
       managementService.registerInRegistry(eq(objectName), isA(JMSQueueControl.class));
       
-      replay(managementService, messageCounterManager, coreQueue, postOffice, storageManager, addressSettingsRepository);
+      replay(managementService, invoker, messageCounterManager, coreQueue, postOffice, storageManager, addressSettingsRepository);
 
       JMSManagementService service = new JMSManagementServiceImpl(managementService);
       service.registerQueue(queue, coreQueue, jndiBinding, postOffice, storageManager, addressSettingsRepository);
 
-      verify(managementService, messageCounterManager, coreQueue, postOffice, storageManager, addressSettingsRepository);
+      verify(managementService, invoker, messageCounterManager, coreQueue, postOffice, storageManager, addressSettingsRepository);
    }
 
    public void testRegisterTopic() throws Exception
@@ -142,18 +138,17 @@ public class JMSManagementServiceImplTest extends TestCase
       HierarchicalRepository<AddressSettings> addressSettingsRepository = createMock(HierarchicalRepository.class);
 
       ManagementService managementService = createMock(ManagementService.class);
-      expect(managementService.getClusterPassword()).andReturn(randomString());
-      expect(managementService.getManagementAddress()).andReturn(randomSimpleString());
-      expect(managementService.getManagementRequestTimeout()).andReturn(randomPositiveLong());
+      ReplicationOperationInvoker invoker = createMock(ReplicationOperationInvoker.class);
+      expect(managementService.getReplicationOperationInvoker()).andStubReturn(invoker);
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
       managementService.registerInRegistry(eq(objectName), isA(TopicControl.class));
 
-      replay(managementService, postOffice, storageManager);
+      replay(managementService, invoker, postOffice, storageManager);
 
       JMSManagementService service = new JMSManagementServiceImpl(managementService);
       service.registerTopic(topic, jndiBinding, postOffice, storageManager, addressSettingsRepository);
       
-      verify(managementService, postOffice, storageManager);
+      verify(managementService, invoker, postOffice, storageManager);
    }
 
    public void testRegisterConnectionFactory() throws Exception
@@ -167,18 +162,17 @@ public class JMSManagementServiceImplTest extends TestCase
 
       JBossConnectionFactory connectionFactory = createMock(JBossConnectionFactory.class);
       ManagementService managementService = createMock(ManagementService.class);
-      expect(managementService.getClusterPassword()).andReturn(randomString());
-      expect(managementService.getManagementAddress()).andReturn(randomSimpleString());
-      expect(managementService.getManagementRequestTimeout()).andReturn(randomPositiveLong());
+      ReplicationOperationInvoker invoker = createMock(ReplicationOperationInvoker.class);
+      expect(managementService.getReplicationOperationInvoker()).andStubReturn(invoker);
       managementService.registerInJMX(eq(objectName), isA(StandardMBean.class));
       managementService.registerInRegistry(eq(objectName), isA(ConnectionFactoryControl.class));
 
-      replay(managementService, connectionFactory);
+      replay(managementService, invoker, connectionFactory);
 
       JMSManagementService service = new JMSManagementServiceImpl(managementService);
       service.registerConnectionFactory(name, connectionFactory, bindings);
 
-      verify(managementService, connectionFactory);
+      verify(managementService, invoker, connectionFactory);
    }
 
    // Package protected ---------------------------------------------

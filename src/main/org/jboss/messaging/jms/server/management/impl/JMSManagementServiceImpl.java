@@ -78,9 +78,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.registerInJMX(objectName,
                                       new ReplicationAwareJMSServerControlWrapper(objectName, 
                                                                                   control, 
-                                                                                  managementService.getClusterPassword(),
-                                                                                  managementService.getManagementAddress(),
-                                                                                  managementService.getManagementRequestTimeout()));
+                                                                                  managementService.getReplicationOperationInvoker()));
       managementService.registerInRegistry(objectName, control);
    }
 
@@ -115,9 +113,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.registerInJMX(objectName,
                                       new ReplicationAwareJMSQueueControlWrapper(objectName, 
                                                                                  control, 
-                                                                                 managementService.getClusterPassword(),
-                                                                                 managementService.getManagementAddress(),
-                                                                                 managementService.getManagementRequestTimeout()));
+                                                                                 managementService.getReplicationOperationInvoker()));
       managementService.registerInRegistry(objectName, control);
    }
 
@@ -137,9 +133,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
       managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(objectName,
                                                                                           control,
-                                                                                          managementService.getClusterPassword(),
-                                                                                          managementService.getManagementAddress(),
-                                                                                          managementService.getManagementRequestTimeout()));
+                                                                                          managementService.getReplicationOperationInvoker()));
       managementService.registerInRegistry(objectName, control);
    }
 
@@ -158,9 +152,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.registerInJMX(objectName,
                                       new ReplicationAwareConnectionFactoryControlWrapper(objectName,
                                                                                           control,
-                                                                                          managementService.getClusterPassword(),
-                                                                                          managementService.getManagementAddress(),
-                                                                                          managementService.getManagementRequestTimeout()));
+                                                                                          managementService.getReplicationOperationInvoker()));
       managementService.registerInRegistry(objectName, control);
    }
 

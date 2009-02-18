@@ -28,9 +28,9 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.impl.QueueControl;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ReplicationAwareQueueControlWrapper
@@ -53,11 +53,9 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
 
    public ReplicationAwareQueueControlWrapper(final ObjectName objectName, 
                                               final QueueControl localControl, 
-                                              final String clusterPassword,
-                                              final SimpleString managementAddress,
-                                              final long managementRequestTimeout) throws Exception
+                                              final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(objectName, QueueControlMBean.class, clusterPassword, managementAddress, managementRequestTimeout);
+      super(objectName, QueueControlMBean.class, replicationInvoker);
 
       this.localQueueControl = localControl;
    }

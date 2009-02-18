@@ -77,9 +77,9 @@ public interface ManagementService extends MessagingComponent
 
    void setManagementNotificationAddress(SimpleString managementNotificationAddress);
 
-   long getManagementRequestTimeout();
-   
    void setManagementRequestTimeout(long timeout);
+
+   ReplicationOperationInvoker getReplicationOperationInvoker();
 
    // Resource Registration
    

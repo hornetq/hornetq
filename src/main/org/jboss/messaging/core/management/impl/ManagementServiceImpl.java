@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
@@ -60,6 +62,7 @@ import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationListener;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
@@ -133,6 +136,8 @@ public class ManagementServiceImpl implements ManagementService
 
    private final Set<NotificationListener> listeners = new ConcurrentHashSet<NotificationListener>();
 
+   private ReplicationOperationInvokerImpl replicationInvoker;
+
    // Constructor ----------------------------------------------------
 
    public ManagementServiceImpl(final MBeanServer mbeanServer, final boolean jmxManagementEnabled)
@@ -179,9 +184,7 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName, 
                                                                                   managedServer,
-                                                                                  managementClusterPassword,
-                                                                                  managementAddress,
-                                                                                  managementRequestTimeout));
+                                                                                  replicationInvoker));
       registerInRegistry(objectName, managedServer);
 
       return managedServer;
@@ -200,9 +203,7 @@ public class ManagementServiceImpl implements ManagementService
 
       registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName,
                                                                           addressControl,
-                                                                          managementClusterPassword,
-                                                                          managementAddress,
-                                                                          managementRequestTimeout));
+                                                                          replicationInvoker));
 
       registerInRegistry(objectName, addressControl);
 
@@ -243,9 +244,7 @@ public class ManagementServiceImpl implements ManagementService
       QueueControl queueControl = new QueueControl(queue, postOffice, addressSettingsRepository, counter);
       registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName,
                                                                         queueControl,
-                                                                        managementClusterPassword,
-                                                                        managementAddress,
-                                                                        managementRequestTimeout));
+                                                                        replicationInvoker));
       registerInRegistry(objectName, queueControl);
 
       if (log.isDebugEnabled())
@@ -468,11 +467,16 @@ public class ManagementServiceImpl implements ManagementService
       this.managementRequestTimeout = timeout;
    }
    
+   public ReplicationOperationInvoker getReplicationOperationInvoker()
+   {
+      return replicationInvoker;
+   }
 
    // MessagingComponent implementation -----------------------------
 
    public void start() throws Exception
    {
+      replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterPassword, managementAddress, managementRequestTimeout);
       started = true;
    }
 
@@ -484,6 +488,12 @@ public class ManagementServiceImpl implements ManagementService
       {
          unregisterResource(objectName);
       }
+
+      //FIXME the replicationInvoker should be properly stopped.
+      // the code is commented since stopping the invoker will interact
+      // with the remoting service which is stopped first when stopping the server
+      // replicationInvoker.stop();
+      
       started = false;
    }
 

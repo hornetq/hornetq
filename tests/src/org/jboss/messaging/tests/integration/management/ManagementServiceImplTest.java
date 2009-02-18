@@ -83,6 +83,7 @@ public class ManagementServiceImplTest extends TestCase
       MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
       assertNotNull(managementService);
+      managementService.start();
 
       SimpleString address = RandomUtil.randomSimpleString();
       managementService.registerAddress(address);
@@ -107,6 +108,7 @@ public class ManagementServiceImplTest extends TestCase
       MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
       assertNotNull(managementService);
+      managementService.start();
 
       Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
 
@@ -145,6 +147,7 @@ public class ManagementServiceImplTest extends TestCase
       MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
       assertNotNull(managementService);
+      managementService.start();
 
       Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
 
@@ -189,6 +192,7 @@ public class ManagementServiceImplTest extends TestCase
 
       ManagementService managementService = new ManagementServiceImpl(mbeanServer, true);
       assertNotNull(managementService);
+      managementService.start();
 
       managementService.registerAddress(randomSimpleString());
 

@@ -27,11 +27,11 @@ import java.util.List;
 import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 
+import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ReplicationAwareConnectionFactoryControlWrapper
@@ -54,11 +54,9 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
 
    public ReplicationAwareConnectionFactoryControlWrapper(final ObjectName objectName, 
                                                           final ConnectionFactoryControl localControl,
-                                                          final String clusterPassword,
-                                                          final SimpleString managementAddress,
-                                                          final long managementRequestTimeout) throws Exception
+                                                          final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(objectName, ConnectionFactoryControlMBean.class, clusterPassword, managementAddress, managementRequestTimeout);
+      super(objectName, ConnectionFactoryControlMBean.class, replicationInvoker);
       this.localControl = localControl;
    }
 

@@ -27,10 +27,10 @@ import javax.management.ObjectName;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A ReplicationAwareAddressControlWrapper
@@ -53,11 +53,9 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
 
    public ReplicationAwareAddressControlWrapper(final ObjectName objectName, 
                                                 final AddressControl localAddressControl,
-                                                final String clusterPassword,
-                                                final SimpleString managementAddress,
-                                                final long managementRequestTimeout) throws Exception
+                                                final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(objectName, AddressControlMBean.class, clusterPassword, managementAddress, managementRequestTimeout);
+      super(objectName, AddressControlMBean.class, replicationInvoker);
 
       this.localAddressControl = localAddressControl;
    }
