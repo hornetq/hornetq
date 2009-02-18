@@ -102,7 +102,7 @@ public class JBMActivationSpec implements ActivationSpec
    private Boolean redeliverUnspecified;
    
    /** Transaction timeout */
-   private Integer transactionTimeout = 100000;
+   private Integer transactionTimeout;
    
    /** Is same RM override */
    private Boolean isSameRMOverrideValue;
@@ -142,7 +142,7 @@ public class JBMActivationSpec implements ActivationSpec
       sessionTransacted = Boolean.TRUE;
       reconnectAttempts = Integer.valueOf(5);
       redeliverUnspecified = Boolean.TRUE;
-      transactionTimeout = 100000;
+      transactionTimeout = Integer.valueOf(0);
       isSameRMOverrideValue = null;
       forceClearOnShutdown = Boolean.FALSE;
       forceClearOnShutdownInterval = Long.valueOf(1000);
