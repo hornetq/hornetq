@@ -287,7 +287,7 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
          {
             try
             {
-               done.wait();
+               done.await();
             }
             catch (InterruptedException ignore)
             {
@@ -504,7 +504,7 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
    private class XATransactionDemarcationStrategy implements TransactionDemarcationStrategy
    {
       private Transaction trans = null;
-      private TransactionManager tm = pool.getActivation().getTransactionManager();;
+      private TransactionManager tm = pool.getActivation().getTransactionManager();
 
       public XATransactionDemarcationStrategy() throws Throwable
       {
