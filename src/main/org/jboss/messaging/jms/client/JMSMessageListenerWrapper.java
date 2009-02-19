@@ -106,7 +106,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          {            
             try
             {                              
-               session.getCoreSession().rollback();
+               session.getCoreSession().rollback(true);
                
                session.setRecoverCalled(true);
             }

@@ -29,7 +29,6 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.util.SimpleString;
@@ -72,45 +71,153 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       testDedeliveryMessageOnPersistent(false);
    }
 
-   protected void testDedeliveryMessageOnPersistent(boolean strictUpdate) throws Exception
+   public void testDeliveryNonPersistent() throws Exception
+   {
+      testDelivery(false);
+   }
+
+   public void testDeliveryPersistent() throws Exception
+   {
+      testDelivery(true);
+   }
+
+   public void testDelivery(final boolean persistent) throws Exception
+   {
+      setUp(true);
+      ClientSession session = factory.createSession(false, false, false);
+      ClientProducer prod = session.createProducer(ADDRESS);
+
+      for (int i = 0; i < 10; i++)
+      {
+         prod.send(createTextMessage(session, Integer.toString(i), persistent));
+      }
+
+      session.commit();
+      session.close();
+
+      
+      session = factory.createSession(null, null, false, true, true, true, 0);
+      
+      session.start();
+      for (int loopAck = 0; loopAck < 5; loopAck++)
+      {
+         ClientConsumer browser = session.createConsumer(ADDRESS, null, true);
+         for (int i = 0; i < 10; i++)
+         {
+            ClientMessage msg = browser.receive(1000);
+            assertNotNull("element i=" + i + " loopAck = " + loopAck + " was expected", msg);
+            msg.acknowledge();
+            assertEquals(Integer.toString(i), getTextMessage(msg));
+   
+            // We don't change the deliveryCounter on Browser, so this should be always 0
+            assertEquals(0, msg.getDeliveryCount());
+         }
+         
+         session.commit();
+         browser.close();
+      }
+      
+      session.close();
+      
+      
+      
+      session = factory.createSession(false, false, false);
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      for (int loopAck = 0; loopAck < 5; loopAck++)
+      {
+         for (int i = 0; i < 10; i++)
+         {
+            ClientMessage msg = consumer.receive(1000);
+            assertNotNull(msg);
+            assertEquals(Integer.toString(i), getTextMessage(msg));
+
+            // No ACK done, so deliveryCount should be always = 1
+            assertEquals(1, msg.getDeliveryCount());
+         }
+         session.rollback();
+      }
+
+      if (persistent)
+      {
+         session.close();
+         messagingService.stop();
+         messagingService.start();
+         session = factory.createSession(false, false, false);
+         session.start();
+         consumer = session.createConsumer(ADDRESS);
+      }
+
+      for (int loopAck = 1; loopAck <= 5; loopAck++)
+      {
+         for (int i = 0; i < 10; i++)
+         {
+            ClientMessage msg = consumer.receive(1000);
+            assertNotNull(msg);
+            msg.acknowledge();
+            assertEquals(Integer.toString(i), getTextMessage(msg));
+            assertEquals(loopAck, msg.getDeliveryCount());
+         }
+         if (loopAck < 5)
+         {
+            if (persistent)
+            {
+               session.close();
+               messagingService.stop();
+               messagingService.start();
+               session = factory.createSession(false, false, false);
+               session.start();
+               consumer = session.createConsumer(ADDRESS);
+            }
+            else
+            {
+               session.rollback();
+            }
+         }
+      }
+
+      session.close();
+   }
+
+   protected void testDedeliveryMessageOnPersistent(final boolean strictUpdate) throws Exception
    {
       setUp(strictUpdate);
-      ClientSession session = factory.createSession(false, true, false);
+      ClientSession session = factory.createSession(false, false, false);
       ClientProducer prod = session.createProducer(ADDRESS);
       prod.send(createTextMessage(session, "Hello"));
       session.commit();
       session.close();
-      
-      messagingService.stop();
-      messagingService.start();
-      
-      session = factory.createSession(false, true, false);
+
+      session = factory.createSession(false, false, false);
       session.start();
       ClientConsumer consumer = session.createConsumer(ADDRESS);
-      
+
       ClientMessage msg = consumer.receive(1000);
       assertEquals(1, msg.getDeliveryCount());
-      assertNotNull(msg);
       session.stop();
-      
-      // if strictUpdate == true, this will simulating a crash, where the server is stopped without closing/rolling back the session
+
+      // if strictUpdate == true, this will simulate a crash, where the server is stopped without closing/rolling back
+      // the session
       if (!strictUpdate)
       {
          // If non Strict, at least rollback/cancel should still update the delivery-counts
-         session.rollback();
+         session.rollback(true);
          session.close();
       }
-      
+
       messagingService.stop();
-      
+
       messagingService.start();
-      
+
       session = factory.createSession(false, true, false);
       session.start();
       consumer = session.createConsumer(ADDRESS);
       msg = consumer.receive(1000);
       assertNotNull(msg);
       assertEquals(2, msg.getDeliveryCount());
+      session.close();
    }
 
    // Package protected ---------------------------------------------
@@ -128,7 +235,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
     * @throws Exception
     * @throws MessagingException
     */
-   private void setUp(boolean strictUpdateDelivery) throws Exception, MessagingException
+   private void setUp(final boolean strictUpdateDelivery) throws Exception, MessagingException
    {
       Configuration config = createFileConfig();
       config.setJournalFileSize(10 * 1024);

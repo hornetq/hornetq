@@ -25,6 +25,7 @@ package org.jboss.messaging.core.server;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.RollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -81,7 +82,7 @@ public interface ServerSession
 
    void handleExpired(final SessionExpiredMessage packet);
 
-   void handleRollback(Packet packet);
+   void handleRollback(RollbackMessage packet);
 
    void handleCommit(Packet packet);
 

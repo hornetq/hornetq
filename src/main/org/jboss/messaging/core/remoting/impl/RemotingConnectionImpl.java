@@ -100,6 +100,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.RollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -701,7 +702,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          case SESS_ROLLBACK:
          {
-            packet = new PacketImpl(PacketImpl.SESS_ROLLBACK);
+            packet = new RollbackMessage(); 
             break;
          }
          case SESS_QUEUEQUERY:

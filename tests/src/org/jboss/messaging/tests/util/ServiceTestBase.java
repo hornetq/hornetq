@@ -244,6 +244,12 @@ public class ServiceTestBase extends UnitTestCase
    {
       return createTextMessage(session, s, true);
    }
+   
+   public String getTextMessage(ClientMessage m)
+   {
+      m.getBody().rewind();
+      return m.getBody().getString();
+   }
 
    protected ClientMessage createTextMessage(final ClientSession session, final String s, final boolean durable)
    {

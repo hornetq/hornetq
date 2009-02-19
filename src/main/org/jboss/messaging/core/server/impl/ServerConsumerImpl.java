@@ -120,7 +120,7 @@ public class ServerConsumerImpl implements ServerConsumer
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
     */
    private final boolean browseOnly;
-   
+
    private final boolean updateDeliveries;
 
    private final StorageManager storageManager;
@@ -184,7 +184,7 @@ public class ServerConsumerImpl implements ServerConsumer
       binding.getQueue().addConsumer(this);
 
       minLargeMessageSize = session.getMinLargeMessageSize();
-      
+
       this.updateDeliveries = updateDeliveries;
    }
 
@@ -276,7 +276,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       session.removeConsumer(this);
 
-      LinkedList<MessageReference> refs = cancelRefs();
+      LinkedList<MessageReference> refs = cancelRefs(false, null);
 
       Iterator<MessageReference> iter = refs.iterator();
 
@@ -300,11 +300,10 @@ public class ServerConsumerImpl implements ServerConsumer
          props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
 
          props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
-         
+
          props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
-         props.putStringProperty(ManagementHelper.HDR_FILTERSTRING,
-                                 filter == null ? null : filter.getFilterString());
+         props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filter == null ? null : filter.getFilterString());
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
@@ -314,15 +313,27 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
 
-   public LinkedList<MessageReference> cancelRefs() throws Exception
+   public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
    {
+
+      boolean performACK = lastConsumedAsDelivered;
+
       LinkedList<MessageReference> refs = new LinkedList<MessageReference>();
 
       if (!deliveringRefs.isEmpty())
       {
          for (MessageReference ref : deliveringRefs)
          {
-            refs.add(ref);
+            if (performACK)
+            {
+               acknowledge(false, tx, ref.getMessage().getMessageID());
+               performACK = false;
+            }
+            else
+            {
+               ref.decrementDeliveryCount();
+               refs.add(ref);
+            }
          }
 
          deliveringRefs.clear();
@@ -586,7 +597,7 @@ public class ServerConsumerImpl implements ServerConsumer
       }
 
       lock.lock();
-      
+
       try
       {
 
@@ -629,18 +640,32 @@ public class ServerConsumerImpl implements ServerConsumer
             }
 
             ref.getQueue().referenceHandled();
-         }
 
-         if (preAcknowledge)
-         {
-            if (message.isLargeMessage())
+         
+            ref.incrementDeliveryCount();
+
+            // If updateDeliveries = false (set by strict-update),
+            // the updateDeliveryCount would still be updated after cancel
+            if (updateDeliveries)
             {
-               // we must hold one reference, or the file will be deleted before it could be delivered
-               message.incrementRefCount();
+               if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
+               {
+                  storageManager.updateDeliveryCount(ref);
+               }
             }
 
-            // With pre-ack, we ack *before* sending to the client
-            ref.getQueue().acknowledge(ref);
+            if (preAcknowledge)
+            {
+               if (message.isLargeMessage())
+               {
+                  // we must hold one reference, or the file will be deleted before it could be delivered
+                  message.incrementRefCount();
+               }
+
+               // With pre-ack, we ack *before* sending to the client
+               ref.getQueue().acknowledge(ref);
+            }
+
          }
 
          if (message.isLargeMessage())
@@ -652,18 +677,6 @@ public class ServerConsumerImpl implements ServerConsumer
             deliverStandardMessage(ref, message);
          }
 
-         ref.incrementDeliveryCount();
-         
-         // If updateDeliveries = false (set by strict-update),
-         // the updateDeliveryCount would still be updated after cancel
-         if (updateDeliveries)
-         {
-            if (ref.getMessage().isDurable() && ref.getQueue().isDurable())
-            {
-               storageManager.updateDeliveryCount(ref);
-            }
-         }
-         
          return HandleStatus.HANDLED;
       }
       finally
@@ -724,7 +737,7 @@ public class ServerConsumerImpl implements ServerConsumer
          availableCredits.addAndGet(-message.getEncodeSize());
       }
 
-      final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount() + 1);
+      final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount());
 
       DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
 
@@ -824,7 +837,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
                pendingLargeMessage.encodeProperties(headerBuffer);
 
-               initialMessage = new SessionReceiveMessage(id, headerBuffer.array(), ref.getDeliveryCount() + 1);
+               initialMessage = new SessionReceiveMessage(id, headerBuffer.array(), ref.getDeliveryCount());
             }
 
             int precalculateAvailableCredits;

@@ -78,7 +78,7 @@ public class ConsumerTest extends UnitTestCase
    public void testSimpleConsumerBrowser() throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
-      
+
       sf.setBlockOnNonPersistentSend(true);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -284,12 +284,22 @@ public class ConsumerTest extends UnitTestCase
 
    }
 
-   public void testConsumerBrowserMessagesArentAcked() throws Exception
+   public void testConsumerBrowserMessages() throws Exception
    {
+      testConsumerBrowserMessagesArentAcked(false);
+   }
+   
+   public void testConsumerBrowserMessagesPreACK() throws Exception
+   {
+      testConsumerBrowserMessagesArentAcked(false);
+   }
+   
 
+   private void testConsumerBrowserMessagesArentAcked(boolean preACK) throws Exception
+   {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = sf.createSession(null, null, false, true, true, preACK, 0);
 
       session.createQueue(QUEUE, QUEUE, null, false, false);
 
@@ -312,8 +322,10 @@ public class ConsumerTest extends UnitTestCase
          assertEquals("m" + i, message2.getBody().getString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount(), 0);
-      assertEquals(((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount(), 100);
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(100,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -347,8 +359,10 @@ public class ConsumerTest extends UnitTestCase
          assertEquals("m" + i, message2.getBody().getString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(100, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(100,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -441,8 +455,10 @@ public class ConsumerTest extends UnitTestCase
          assertEquals("m" + i, message2.getBody().getString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -475,8 +491,10 @@ public class ConsumerTest extends UnitTestCase
          assertEquals("m" + i, message2.getBody().getString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -513,8 +531,10 @@ public class ConsumerTest extends UnitTestCase
          }
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -551,13 +571,17 @@ public class ConsumerTest extends UnitTestCase
          }
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
 
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0,
+                   ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
    }
 
    private ClientMessage createMessage(final ClientSession session, final String msg)

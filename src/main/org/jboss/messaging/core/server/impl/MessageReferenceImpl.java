@@ -103,6 +103,11 @@ public class MessageReferenceImpl implements MessageReference
    {
       deliveryCount++;
    }
+   
+   public void decrementDeliveryCount()
+   {
+      deliveryCount--;
+   }
 
    public long getScheduledDeliveryTime()
    {

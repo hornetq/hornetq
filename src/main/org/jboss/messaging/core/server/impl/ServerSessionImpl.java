@@ -50,6 +50,7 @@ import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.RollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -305,7 +306,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          // We only rollback local txs on close, not XA tx branches
 
-         rollback();
+         rollback(false);
       }
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -556,7 +557,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void handleRollback(final Packet packet)
+   public void handleRollback(final RollbackMessage packet)
    {
       DelayedResult result = channel.replicatePacket(packet);
 
@@ -1806,13 +1807,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       channel.send(response);
    }
 
-   private void doHandleRollback(final Packet packet)
+   private void doHandleRollback(final RollbackMessage packet)
    {
       Packet response = null;
 
       try
       {
-         rollback();
+         rollback(packet.isLastMessageAsDelived());
 
          response = new NullResponseMessage();
       }
@@ -2134,7 +2135,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                }
                else
                {
-                  doRollback(theTx);
+                  doRollback(false, theTx);
 
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                }
@@ -2702,7 +2703,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return largeMessage;
    }
 
-   private void doRollback(final Transaction theTx) throws Exception
+   private void doRollback(final boolean lastMessageAsDelived, final Transaction theTx) throws Exception
    {
       boolean wasStarted = started;
 
@@ -2715,7 +2716,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             consumer.setStarted(false);
          }
 
-         toCancel.addAll(consumer.cancelRefs());
+         toCancel.addAll(consumer.cancelRefs(lastMessageAsDelived, theTx));
       }
 
       for (MessageReference ref : toCancel)
@@ -2734,7 +2735,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private void rollback() throws Exception
+   private void rollback(boolean lastMessageAsDelived) throws Exception
    {
       if (tx == null)
       {
@@ -2743,7 +2744,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          tx = new TransactionImpl(storageManager);
       }
 
-      doRollback(tx);
+      doRollback(lastMessageAsDelived, tx);
 
       tx = new TransactionImpl(storageManager);
    }

@@ -42,7 +42,7 @@ public interface ServerConsumer extends Consumer
 	
 	void close() throws Exception;
 
-	List<MessageReference> cancelRefs() throws Exception;
+	List<MessageReference> cancelRefs(boolean lastConsumedAsDelivered, Transaction tx) throws Exception;
 	
 	void setStarted(boolean started);
 	

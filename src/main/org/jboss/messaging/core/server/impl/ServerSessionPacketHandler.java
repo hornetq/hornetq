@@ -49,6 +49,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.RollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -159,7 +160,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
             }
             case SESS_ROLLBACK:
             {
-               session.handleRollback(packet);
+               session.handleRollback((RollbackMessage)packet);
                break;
             }
             case SESS_XA_COMMIT:

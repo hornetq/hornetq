@@ -51,6 +51,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.RollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -534,6 +535,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void rollback() throws MessagingException
    {
+      rollback(false);
+   }
+
+   public void rollback(final boolean isLastMessageAsDelived) throws MessagingException
+   {
       checkClosed();
 
       flushAcks();
@@ -556,8 +562,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          consumer.clear();
       }
 
-      channel.sendBlocking(new PacketImpl(PacketImpl.SESS_ROLLBACK));
-
+      channel.sendBlocking(new RollbackMessage(isLastMessageAsDelived));
+                           
       if (wasStarted)
       {
          start();

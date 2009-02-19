@@ -73,7 +73,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       final SimpleString queue2 = new SimpleString("queue2");
                    
-      MessagingService messagingService = Messaging.newMessagingService(conf);
+      MessagingService messagingService = createService(true, conf); 
       
       messagingService.start();
 
@@ -139,7 +139,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       consumer2 = session2.createConsumer(queue2);
       
-      m1 = consumer1.receive(1000);
+      m1 = consumer1.receive(100);
       
       assertNull(m1);
       
@@ -171,11 +171,11 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       consumer2 = session2.createConsumer(queue2);
       
-      m1 = consumer1.receive(1000);
+      m1 = consumer1.receive(100);
       
       assertNull(m1);
       
-      m2 = consumer2.receive(1000);
+      m2 = consumer2.receive(100);
       
       assertNull(m2);
       

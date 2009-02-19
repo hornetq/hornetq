@@ -161,6 +161,12 @@ public interface ClientSession extends XAResource
 
    void rollback() throws MessagingException;
 
+   /**
+    * @param isLastMessageAsDelived the first message on deliveringMessage Buffer is considered as delivered
+    * @throws MessagingException
+    */
+   void rollback(boolean isLastMessageAsDelived) throws MessagingException;
+
    void close() throws MessagingException;
 
    boolean isClosed();
