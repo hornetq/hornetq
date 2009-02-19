@@ -105,11 +105,11 @@ public class AbstractAdmin implements Admin
       deleteConnectionFactory(name);
    }
    
-   public void startEmbeddedServer()
+   public void startServer()
    {
    }
    
-   public void stopEmbeddedServer()
+   public void stopServer()
    {
    }
 }

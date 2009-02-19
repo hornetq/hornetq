@@ -123,15 +123,15 @@ public class GenericAdmin implements Admin
       delegate.deleteTopicConnectionFactory(name);
    }
    
-   public void startEmbeddedServer() throws Exception
+   public void startServer() throws Exception
    {
       log.debug("startEmbeddedServer");
-      delegate.startEmbeddedServer();
+      delegate.startServer();
    }
    
-   public void stopEmbeddedServer() throws Exception
+   public void stopServer() throws Exception
    {
       log.debug("stopEmbeddedServer");
-      delegate.stopEmbeddedServer();
+      delegate.stopServer();
    }
 }

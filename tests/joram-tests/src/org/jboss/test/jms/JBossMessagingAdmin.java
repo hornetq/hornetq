@@ -41,8 +41,13 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Hashtable;
+
 import javax.management.ObjectName;
 import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import junit.framework.Assert;
@@ -52,18 +57,13 @@ import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
-import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
+import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
 import org.objectweb.jtests.jms.admin.Admin;
 
 /**
@@ -82,22 +82,26 @@ public class JBossMessagingAdmin implements Admin
 
    private ClientRequestor requestor;
 
-   private MessagingServiceImpl embeddedServer;
-
    private Context context;
+
+   private Process serverProcess;
 
    public JBossMessagingAdmin()
    {
       try
       {
-         context = new InVMInitialContextFactory().getInitialContext(InVMInitialContextFactory.getJNDIEnvironment());
+         Hashtable<String, String> env = new Hashtable<String, String>();
+         env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+         env.put("java.naming.provider.url", "jnp://localhost:1099");
+         env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+         context = new InitialContext(env);
       }
       catch (NamingException e)
       {
          e.printStackTrace();
       }
    }
-   
+
    public void start() throws Exception
    {
       ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
@@ -111,7 +115,7 @@ public class JBossMessagingAdmin implements Admin
       requestor = new ClientRequestor(clientSession, ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS);
       clientSession.start();
    }
-   
+
    public void stop() throws Exception
    {
       requestor.close();
@@ -254,24 +258,30 @@ public class JBossMessagingAdmin implements Admin
       return this.getClass().getName();
    }
 
-   public void startEmbeddedServer() throws Exception
+   public void startServer() throws Exception
    {
-      Configuration conf = new ConfigurationImpl();
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      conf.setSecurityEnabled(false);
-      embeddedServer = Messaging.newNullStorageMessagingService(conf);
-      
-      embeddedServer.start();
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(embeddedServer.getServer());
-      serverManager.start();
-      serverManager.setContext(context);
+      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), false);
+      InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
+      BufferedReader br = new BufferedReader(isr);
+      String line = null;
+      while ((line = br.readLine()) != null)
+      {
+         System.out.println(line);
+         if ("OK".equals(line.trim()))
+         {
+            return;
+         } else
+         {
+            throw new IllegalStateException("Unable to start the spawned server");
+         }
+      }
    }
-   
-   public void stopEmbeddedServer() throws Exception
+
+   public void stopServer() throws Exception
    {
-      embeddedServer.stop();
+      serverProcess.destroy();
    }
-   
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------

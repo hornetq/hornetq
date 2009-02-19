@@ -130,12 +130,12 @@ public interface Admin
    /**
     * Optional method to start the server embedded (instead of running an external server)
     */
-   public void startEmbeddedServer() throws Exception;
+   public void startServer() throws Exception;
    
    /**
     * Optional method to stop the server embedded (instead of running an external server)
     */
-   public void stopEmbeddedServer() throws Exception;
+   public void stopServer() throws Exception;
 
    /**
     * Optional method for processing to be made after the Admin is instantiated and before

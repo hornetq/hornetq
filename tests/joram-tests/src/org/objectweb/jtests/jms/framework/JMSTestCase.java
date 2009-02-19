@@ -103,7 +103,7 @@ public abstract class JMSTestCase extends TestCase
       Properties props = getProviderProperties();
       admin = AdminFactory.getAdmin(props);
       
-      admin.startEmbeddedServer();
+      admin.startServer();
       
       admin.start();
    }
@@ -113,7 +113,7 @@ public abstract class JMSTestCase extends TestCase
    {
       admin.stop();
       
-      admin.stopEmbeddedServer();
+      admin.stopServer();
       
       super.tearDown();
    }

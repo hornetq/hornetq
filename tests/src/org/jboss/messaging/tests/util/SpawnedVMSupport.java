@@ -56,14 +56,26 @@ public class SpawnedVMSupport
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-
+  
    public static Process spawnVM(String className, String... args)
    throws Exception
    {
-      return spawnVM(className, new String[0], args);
+      return spawnVM(className, new String[0], true, args);
+   }
+
+   public static Process spawnVM(String className, boolean logOutput, String... args)
+   throws Exception
+   {
+      return spawnVM(className, new String[0], logOutput, args);
+   }
+
+   public static Process spawnVM(String className, String[] vmargs, String... args)
+   throws Exception
+   {
+      return spawnVM(className, vmargs, true, args);
    }
    
-   public static Process spawnVM(String className, String[] vmargs, String... args)
+   public static Process spawnVM(String className, String[] vmargs, boolean logOutput, String... args)
    throws Exception
    {
       StringBuffer sb = new StringBuffer();
@@ -107,10 +119,13 @@ public class SpawnedVMSupport
 
       log.trace("process: " + process);
 
-      ProcessLogger outputLogger = new ProcessLogger(process.getInputStream(),
-                                                     className);
-      outputLogger.start();
-
+      if (logOutput)
+      {
+         ProcessLogger outputLogger = new ProcessLogger(process.getInputStream(),
+                                                        className);
+         outputLogger.start();
+      }
+      
       return process;
    }
 

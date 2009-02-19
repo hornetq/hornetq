@@ -279,6 +279,8 @@
    <path id="joram.test.compilation.classpath">
       <path refid="jms.test.compilation.classpath"/>
       <path location="${test.jms.classes.dir}" />
+      <path location="${test.classes.dir}" />
+      <path refid="jboss.jnpserver.classpath"/>
    </path>
    
    <path id="findbugs.classpath">
@@ -1115,7 +1117,7 @@
       </javac>
    </target>
     
-   <target name="compile-joram-tests" depends="compile-jms-tests">
+   <target name="compile-joram-tests" depends="compile-jms-tests, compile-unit-tests">
       <mkdir dir="${test.joram.classes.dir}"/>
       <javac target="${javac.target}"
              source="${javac.source}"
@@ -1286,9 +1288,6 @@
          <jvmarg value="-Xmx1024M"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
-         <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
-         <jvmarg
-               value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->
          <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}"/>
@@ -1346,7 +1345,7 @@
 
    <target name="all-tests" depends="unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests"/>
 
-   <target name="hudson-tests" depends="unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests, joram-tests"/>
+   <target name="hudson-tests" depends="unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests"/>
 
    <target name="compile-reports">
       <mkdir dir="${test.stylesheets.dir}"/>
