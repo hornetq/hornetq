@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.ra.inflow;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -32,6 +34,10 @@ import javax.jms.XAConnection;
 import javax.jms.XASession;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkEvent;
+import javax.resource.spi.work.WorkException;
+import javax.resource.spi.work.WorkListener;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -46,7 +52,7 @@ import org.jboss.messaging.core.logging.Logger;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class JBMMessageHandler implements MessageListener
+public class JBMMessageHandler implements MessageListener, Work, WorkListener
 {
      /** The logger */
    private static final Logger log = Logger.getLogger(JBMMessageHandler.class);
@@ -56,6 +62,12 @@ public class JBMMessageHandler implements MessageListener
 
    /** The message handler pool */
    private JBMMessageHandlerPool pool;
+
+   /** Is in use */
+   private AtomicBoolean inUse;
+
+   /** Done latch */
+   private CountDownLatch done;
 
    /** The transacted flag */
    private boolean transacted;
@@ -97,6 +109,9 @@ public class JBMMessageHandler implements MessageListener
    {
       if (trace)
          log.trace("setup()");
+
+      inUse = new AtomicBoolean(false);
+      done = new CountDownLatch(1);
       
       JBMActivation activation = pool.getActivation();
       JBMActivationSpec spec = activation.getActivationSpec();
@@ -153,9 +168,6 @@ public class JBMMessageHandler implements MessageListener
       
       endpoint = endpointFactory.createEndpoint(xaResource);
 
-      // Create the transaction demarcation strategy
-      txnStrategy = createTransactionDemarcation();
-
       // Set the message listener
       messageConsumer.setMessageListener(this);
    }
@@ -200,6 +212,18 @@ public class JBMMessageHandler implements MessageListener
    }
 
    /**
+    * Is in use
+    * @return True if in use; otherwise false
+    */
+   public boolean isInUse()
+   {
+      if (trace)
+         log.trace("isInUse()");
+      
+      return inUse.get();
+   }
+
+   /**
     * On message
     * @param message The message
     */
@@ -207,6 +231,8 @@ public class JBMMessageHandler implements MessageListener
    {
       if (trace)
          log.trace("onMessage(" + message + ")");
+
+      inUse.set(true);
       
       try
       {
@@ -229,6 +255,51 @@ public class JBMMessageHandler implements MessageListener
          if (txnStrategy != null)
             txnStrategy.error();
       }
+
+      inUse.set(false);
+      done.countDown();
+   }
+
+   /**
+    * Run
+    */
+   public void run()
+   {
+      if (trace)
+         log.trace("run()");
+
+      try
+      {
+         setup();
+
+         txnStrategy = createTransactionDemarcation();
+      } 
+      catch (Throwable t)
+      {
+         log.error("Error creating transaction demarcation. Cannot continue.");
+         return;
+      }
+
+      try
+      {
+         // Wait for onMessage
+         while (done.getCount() > 0)
+         {
+            try
+            {
+               done.wait();
+            }
+            catch (InterruptedException ignore)
+            {
+            }
+         }
+      }
+      catch (Throwable t)
+      {
+         if (txnStrategy != null)
+            txnStrategy.error();
+
+      }
       finally
       {
          if (txnStrategy != null)
@@ -236,8 +307,61 @@ public class JBMMessageHandler implements MessageListener
 
          txnStrategy = null;
       }
+   }
 
+   /**
+    * Release
+    */
+   public void release()
+   {
+      if (trace)
+         log.trace("release()");
+   }
+
+   /**
+    * Work accepted
+    * @param e The work event
+    */
+   public void workAccepted(WorkEvent e)
+   {
+      if (trace)
+         log.trace("workAccepted()");
+   }
+
+   /**
+    * Work completed
+    * @param e The work event
+    */
+   public void workCompleted(WorkEvent e)
+   {
+      if (trace)
+         log.trace("workCompleted()");
+
+      teardown();
       pool.removeHandler(this);
+   }
+
+   /**
+    * Work rejected
+    * @param e The work event
+    */
+   public void workRejected(WorkEvent e)
+   {
+      if (trace)
+         log.trace("workRejected()");
+
+      teardown();
+      pool.removeHandler(this);
+   }
+
+   /**
+    * Work started
+    * @param e The work event
+    */
+   public void workStarted(WorkEvent e)
+   {
+      if (trace)
+         log.trace("workStarted()");
    }
 
    /**

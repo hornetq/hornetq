@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.resource.spi.work.WorkManager;
+
 import org.jboss.messaging.core.logging.Logger;
 
 /**
@@ -46,7 +48,7 @@ public class JBMMessageHandlerPool
    private JBMActivation activation;
 
    /** The active sessions */
-   private List<JBMMessageHandler> activeSessions;
+   private ArrayList<JBMMessageHandler> activeSessions;
    
    /** Whether the pool is stopped */
    private AtomicBoolean stopped;
@@ -114,7 +116,6 @@ public class JBMMessageHandlerPool
 
       synchronized (activeSessions)
       {
-         handler.teardown();
          activeSessions.remove(handler);
          
          if (!stopped.get())
@@ -128,8 +129,8 @@ public class JBMMessageHandlerPool
                log.error("Unable to restart handler", e);
             }
          }
+         activeSessions.notifyAll();
       }
-      activeSessions.notifyAll();
    }
    
    /**
@@ -162,9 +163,11 @@ public class JBMMessageHandlerPool
       if (trace)
          log.trace("setupSession()");
 
+      WorkManager workManager = activation.getWorkManager();
+
       // Create the session
       JBMMessageHandler handler = new JBMMessageHandler(this);
-      handler.setup();
+      workManager.scheduleWork(handler, 0, null, handler);
 
       activeSessions.add(handler);
    }
@@ -176,6 +179,22 @@ public class JBMMessageHandlerPool
    {
       if (trace)
          log.trace("teardownSessions()");
+
+      synchronized (activeSessions)
+      {
+         List<JBMMessageHandler> cloned = (List<JBMMessageHandler>)activeSessions.clone();
+         for (int i = 0; i < cloned.size(); ++i)
+         {
+            JBMMessageHandler handler = cloned.get(i);
+            if (!handler.isInUse())
+            {
+               handler.teardown();
+               activeSessions.remove(handler);
+            }
+         }
+
+         activeSessions.notifyAll();
+      }
 
       synchronized (activeSessions)
       {

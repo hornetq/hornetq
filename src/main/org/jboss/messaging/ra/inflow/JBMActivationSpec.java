@@ -137,7 +137,7 @@ public class JBMActivationSpec implements ActivationSpec
       password = null;
       maxMessages = Integer.valueOf(1);
       minSession = Integer.valueOf(1);
-      maxSession = Integer.valueOf(1);
+      maxSession = Integer.valueOf(15);
       keepAlive = Long.valueOf(60000);
       sessionTransacted = Boolean.TRUE;
       reconnectAttempts = Integer.valueOf(5);

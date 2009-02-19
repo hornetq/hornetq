@@ -188,7 +188,7 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
       if (isDestroyed.get())
          throw new IllegalStateException("The managed connection is already destroyed");
 
-      Object session = null; // TODO - get one from JBossConnection -- new JBMSession(this, (JBMConnectionRequestInfo)cxRequestInfo);
+      Object session = new JBMSession(this, (JBMConnectionRequestInfo)cxRequestInfo);
       handles.add(session);
       return session;
    }
