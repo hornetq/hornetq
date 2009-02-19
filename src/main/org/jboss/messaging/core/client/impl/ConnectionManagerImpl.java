@@ -608,7 +608,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       
       Map<RemotingConnection, List<ClientSessionInternal>> sessionsPerConnection = new HashMap<RemotingConnection, List<ClientSessionInternal>>();
 
-      
       for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
       {
          ClientSessionInternal session = entry.getKey();
@@ -680,7 +679,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
             if (!b)
             {
                //If a session fails to re-attach we doom the lot, but we make sure we try all sessions and don't exit early
-               //or connections might be left lying around
+               //or connections might be left lying around               
                ok = false;
             }
          }

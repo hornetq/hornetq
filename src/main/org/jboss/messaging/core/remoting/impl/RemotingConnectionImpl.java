@@ -260,7 +260,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // debug only stuff
 
    private boolean createdActive;
-
+   
+   
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -295,7 +296,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                  final long connectionTTL)
 
    {
-      this(transportConnection, -1, -1, connectionTTL, null, interceptors, replicatingConnection, active, false);
+      this(transportConnection, -1, -1, connectionTTL, null, interceptors, replicatingConnection, active, false);    
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
@@ -448,7 +449,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          destroyed = true;
       }
 
-      log.warn("Connection failed " + System.identityHashCode(this) + " " + me.getMessage());
+      log.warn("Connection failed, client " + client + " " + System.identityHashCode(this) + " " + me.getMessage(), me);
 
       // Then call the listeners
       callListeners(me);

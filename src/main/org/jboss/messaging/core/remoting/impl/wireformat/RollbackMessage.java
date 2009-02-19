@@ -45,32 +45,33 @@ public class RollbackMessage extends PacketImpl
       super(SESS_ROLLBACK);
    }
 
-   public RollbackMessage(final boolean isLastMessageAsDelived)
+   public RollbackMessage(final boolean considerLastMessageAsDelivered)
    {
       super(SESS_ROLLBACK);
-      this.isLastMessageAsDelived = isLastMessageAsDelived;
+      
+      this.considerLastMessageAsDelivered = considerLastMessageAsDelivered;
    }
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private boolean isLastMessageAsDelived;
+   private boolean considerLastMessageAsDelivered;
 
    /**
-    * @return the isLastMessageAsDelived
+    * @return the considerLastMessageAsDelivered
     */
-   public boolean isLastMessageAsDelived()
+   public boolean isConsiderLastMessageAsDelivered()
    {
-      return isLastMessageAsDelived;
+      return considerLastMessageAsDelivered;
    }
 
    /**
-    * @param isLastMessageAsDelived the isLastMessageAsDelived to set
+    * @param considerLastMessageAsDelivered the considerLastMessageAsDelivered to set
     */
-   public void setLastMessageAsDelived(final boolean isLastMessageAsDelived)
+   public void setConsiderLastMessageAsDelivered(final boolean isLastMessageAsDelived)
    {
-      this.isLastMessageAsDelived = isLastMessageAsDelived;
+      this.considerLastMessageAsDelivered = isLastMessageAsDelived;
    }
 
    /* (non-Javadoc)
@@ -85,13 +86,13 @@ public class RollbackMessage extends PacketImpl
    @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putBoolean(isLastMessageAsDelived);
+      buffer.putBoolean(considerLastMessageAsDelivered);
    }
 
    @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      this.isLastMessageAsDelived = buffer.getBoolean();
+      this.considerLastMessageAsDelivered = buffer.getBoolean();
    }
 
    // Static --------------------------------------------------------

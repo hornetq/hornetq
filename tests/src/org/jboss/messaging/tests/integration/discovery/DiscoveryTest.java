@@ -108,6 +108,71 @@ public class DiscoveryTest extends UnitTestCase
 
    }
    
+   public void testSimpleBroadcastWithStopStartDiscoveryGroup() throws Exception
+   {
+      final InetAddress groupAddress = InetAddress.getByName(address1);
+      final int groupPort = 6745;
+      final int timeout = 500;
+
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
+
+      bg.start();
+
+      TransportConfiguration live1 = generateTC();
+
+      TransportConfiguration backup1 = generateTC();
+
+      Pair<TransportConfiguration, TransportConfiguration> connectorPair = new Pair<TransportConfiguration, TransportConfiguration>(live1,
+                                                                                                                                    backup1);
+
+      bg.addConnectorPair(connectorPair);
+
+      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
+
+      dg.start();
+
+      bg.broadcastConnectors();
+
+      boolean ok = dg.waitForBroadcast(1000);
+
+      assertTrue(ok);
+
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectors = dg.getConnectors();
+
+      assertNotNull(connectors);
+
+      assertEquals(1, connectors.size());
+
+      Pair<TransportConfiguration, TransportConfiguration> receivedPair = connectors.get(0);
+
+      assertEquals(connectorPair, receivedPair);
+
+      bg.stop();
+
+      dg.stop();
+      
+      dg.start();
+                
+      bg.start();
+      
+      bg.broadcastConnectors();
+      
+      ok = dg.waitForBroadcast(1000);
+
+      assertTrue(ok);
+
+      connectors = dg.getConnectors();
+
+      assertNotNull(connectors);
+
+      assertEquals(1, connectors.size());
+
+      receivedPair = connectors.get(0);
+
+      assertEquals(connectorPair, receivedPair);
+
+   }
+   
    public void testIgnoreTrafficFromOwnNode() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(address1);

@@ -34,12 +34,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * A DiscoveryGroupImpl
@@ -61,7 +60,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private final String name;
 
-   private final Thread thread;
+   private Thread thread;
 
    private boolean received;
 
@@ -74,6 +73,10 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    private volatile boolean started;
 
    private final String nodeID;
+   
+   private final InetAddress groupAddress;
+   
+   private final int groupPort;
 
    public DiscoveryGroupImpl(final String nodeID,
                              final String name,
@@ -83,19 +86,13 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    {
       this.nodeID = nodeID;
 
-      this.name = name;
+      this.name = name;     
 
-      socket = new MulticastSocket(groupPort);
-
-      socket.joinGroup(groupAddress);
-
-      socket.setSoTimeout(SOCKET_TIMEOUT);
-
-      this.timeout = timeout;
-
-      thread = new Thread(this);
-
-      thread.setDaemon(true);
+      this.timeout = timeout;     
+      
+      this.groupAddress = groupAddress;
+      
+      this.groupPort = groupPort;
    }
 
    public synchronized void start() throws Exception
@@ -105,8 +102,18 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          return;
       }
       
+      socket = new MulticastSocket(groupPort);
+
+      socket.joinGroup(groupAddress);
+
+      socket.setSoTimeout(SOCKET_TIMEOUT);
+
       started = true;
       
+      thread = new Thread(this);
+
+      thread.setDaemon(true);
+
       thread.start();
    }
 
@@ -131,6 +138,10 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
 
       socket.close();
+      
+      socket = null;
+      
+      thread = null;
    }
 
    public boolean isStarted()
@@ -194,7 +205,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             {
                return;
             }
-  
+
             final DatagramPacket packet = new DatagramPacket(data, data.length);
 
             try
@@ -221,7 +232,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
             if (nodeID.equals(originatingNodeID))
             {
-               //Ignore traffic from own node
+               // Ignore traffic from own node
                continue;
             }
 
@@ -324,40 +335,4 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
    }
 
-   private String replaceWildcardChars(final String str)
-   {
-      return str.replace('.', '-');
-   }
-
-   private SimpleString generateConnectorString(final TransportConfiguration config) throws Exception
-   {
-      StringBuilder str = new StringBuilder(replaceWildcardChars(config.getFactoryClassName()));
-
-      if (config.getParams() != null)
-      {
-         if (!config.getParams().isEmpty())
-         {
-            str.append("?");
-         }
-
-         boolean first = true;
-         for (Map.Entry<String, Object> entry : config.getParams().entrySet())
-         {
-            if (!first)
-            {
-               str.append("&");
-            }
-            String encodedKey = replaceWildcardChars(entry.getKey());
-
-            String val = entry.getValue().toString();
-            String encodedVal = replaceWildcardChars(val);
-
-            str.append(encodedKey).append('=').append(encodedVal);
-
-            first = false;
-         }
-      }
-
-      return new SimpleString(str.toString());
-   }
 }

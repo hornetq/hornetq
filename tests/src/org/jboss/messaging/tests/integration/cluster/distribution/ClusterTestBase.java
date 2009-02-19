@@ -123,15 +123,15 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-//      log.info("waiting for bindings on node " + node +
-//               " address " +
-//               address +
-//               " count " +
-//               count +
-//               " consumerCount " +
-//               consumerCount +
-//               " local " +
-//               local);
+      log.info("waiting for bindings on node " + node +
+               " address " +
+               address +
+               " count " +
+               count +
+               " consumerCount " +
+               consumerCount +
+               " local " +
+               local);
       MessagingService service = this.services[node];
 
       if (service == null)
@@ -163,7 +163,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         //log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
+         log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {

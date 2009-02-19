@@ -205,43 +205,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    public synchronized void setScheduledFuture(final ScheduledFuture<?> future)
    {
       this.future = future;
-   }
-   
-   private String replaceWildcardChars(final String str)
-   {
-      return str.replace('.', '-');
-   }
-
-   private SimpleString generateConnectorString(final TransportConfiguration config) throws Exception
-   {
-      StringBuilder str = new StringBuilder(replaceWildcardChars(config.getFactoryClassName()));
-
-      if (config.getParams() != null)
-      {
-         if (!config.getParams().isEmpty())
-         {
-            str.append("?");
-         }
-
-         boolean first = true;
-         for (Map.Entry<String, Object> entry : config.getParams().entrySet())
-         {
-            if (!first)
-            {
-               str.append("&");
-            }
-            String encodedKey = replaceWildcardChars(entry.getKey());
-
-            String val = entry.getValue().toString();
-            String encodedVal = replaceWildcardChars(val);
-
-            str.append(encodedKey).append('=').append(encodedVal);
-
-            first = false;
-         }
-      }
-
-      return new SimpleString(str.toString());
-   }
+   }   
 
 }

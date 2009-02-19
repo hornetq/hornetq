@@ -76,7 +76,7 @@ public class NettyConnection implements Connection
       {
          return;
       }
-
+      
       SslHandler sslHandler = (SslHandler)channel.getPipeline().get("ssl");
       if (sslHandler != null)
       {

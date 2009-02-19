@@ -62,16 +62,16 @@ public class BindingsImpl implements Bindings
    private final Map<Integer, Binding> bindingsMap = new ConcurrentHashMap<Integer, Binding>();
 
    private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
-   
+
    private volatile boolean routeWhenNoConsumers;
 
    public void setRouteWhenNoConsumers(final boolean routeWhenNoConsumers)
-   {      
+   {
       this.routeWhenNoConsumers = routeWhenNoConsumers;
    }
-   
+
    public Collection<Binding> getBindings()
-   {      
+   {
       return bindingsMap.values();
    }
 
@@ -101,8 +101,8 @@ public class BindingsImpl implements Bindings
 
          bindings.add(binding);
       }
-      
-      bindingsMap.put(binding.getID(), binding);           
+
+      bindingsMap.put(binding.getID(), binding);
    }
 
    public void removeBinding(final Binding binding)
@@ -128,54 +128,54 @@ public class BindingsImpl implements Bindings
          }
       }
 
-      bindingsMap.remove(binding.getID());          
+      bindingsMap.remove(binding.getID());
    }
 
    private void routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception
    {
       byte[] ids = (byte[])message.getProperty(MessageImpl.HDR_ROUTE_TO_IDS);
-      
+
       ByteBuffer buff = ByteBuffer.wrap(ids);
-      
+
       Set<Bindable> chosen = new HashSet<Bindable>();
-      
+
       while (buff.hasRemaining())
       {
          int bindingID = buff.getInt();
-         
+
          Binding binding = bindingsMap.get(bindingID);
-         
+
          if (binding == null)
          {
-            //The binding has been closed - we need to route the message somewhere else...............
+            // The binding has been closed - we need to route the message somewhere else...............
             throw new IllegalStateException("Binding not found when routing from cluster - it must have closed");
-            
-            //FIXME need to deal with this better            
+
+            // FIXME need to deal with this better
          }
-         
+
          binding.willRoute(message);
-         
+
          chosen.add(binding.getBindable());
       }
-      
+
       for (Bindable bindable : chosen)
       {
          bindable.preroute(message, tx);
       }
-      
+
       for (Bindable bindable : chosen)
       {
          bindable.route(message, tx);
       }
    }
-   
+
    public boolean redistribute(final ServerMessage message, final SimpleString routingName, final Transaction tx) throws Exception
    {
       if (routeWhenNoConsumers)
       {
          return false;
       }
-      
+
       List<Binding> bindings = routingNameBindingMap.get(routingName);
 
       if (bindings == null)
@@ -195,7 +195,7 @@ public class BindingsImpl implements Bindings
 
       Binding theBinding = null;
 
-      //TODO - combine this with similar logic in route()
+      // TODO - combine this with similar logic in route()
       while (true)
       {
          Binding binding;
@@ -217,40 +217,40 @@ public class BindingsImpl implements Bindings
                break;
             }
          }
-         
+
          pos = incrementPos(pos, length);
 
          Filter filter = binding.getFilter();
-                                            
+
          boolean highPrior = binding.isHighAcceptPriority(message);
-         
+
          if (highPrior && (filter == null || filter.match(message)))
-         {                     
+         {
             theBinding = binding;
 
-            break;            
+            break;
          }
-         
+
          if (pos == startPos)
-         {            
+         {
             break;
          }
       }
-      
+
       routingNamePositions.put(routingName, pos);
 
       if (theBinding != null)
-      {         
+      {
          theBinding.willRoute(message);
-         
+
          theBinding.getBindable().preroute(message, tx);
-         
-         theBinding.getBindable().route(message, tx);         
-         
+
+         theBinding.getBindable().route(message, tx);
+
          return true;
       }
       else
-      {        
+      {
          return false;
       }
    }
@@ -267,38 +267,38 @@ public class BindingsImpl implements Bindings
       else
       {
          if (message.getProperty(MessageImpl.HDR_FROM_CLUSTER) != null)
-         {            
+         {
             routeFromCluster(message, tx);
          }
          else
          {
             Set<Bindable> chosen = new HashSet<Bindable>();
-   
+
             for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
             {
                SimpleString routingName = entry.getKey();
-   
+
                List<Binding> bindings = entry.getValue();
-   
+
                if (bindings == null)
                {
                   // The value can become null if it's concurrently removed while we're iterating - this is expected
                   // ConcurrentHashMap behaviour!
                   continue;
                }
-   
+
                Integer ipos = routingNamePositions.get(routingName);
-   
+
                int pos = ipos != null ? ipos.intValue() : 0;
-   
+
                int length = bindings.size();
-   
+
                int startPos = pos;
-   
+
                Binding theBinding = null;
-   
+
                int lastLowPriorityBinding = -1;
-   
+
                while (true)
                {
                   Binding binding;
@@ -312,7 +312,7 @@ public class BindingsImpl implements Bindings
                      if (!bindings.isEmpty())
                      {
                         pos = 0;
-   
+
                         continue;
                      }
                      else
@@ -320,19 +320,19 @@ public class BindingsImpl implements Bindings
                         break;
                      }
                   }
-   
+
                   Filter filter = binding.getFilter();
-                                                     
+
                   if (filter == null || filter.match(message))
-                  {                     
+                  {
                      // bindings.length == 1 ==> only a local queue so we don't check for matching consumers (it's an
                      // unnecessary overhead)
                      if (length == 1 || routeWhenNoConsumers || binding.isHighAcceptPriority(message))
                      {
                         theBinding = binding;
-   
+
                         pos = incrementPos(pos, length);
-   
+
                         break;
                      }
                      else
@@ -343,13 +343,13 @@ public class BindingsImpl implements Bindings
                         }
                      }
                   }
-   
+
                   pos = incrementPos(pos, length);
-   
+
                   if (pos == startPos)
                   {
                      if (lastLowPriorityBinding != -1)
-                     {                     
+                     {
                         try
                         {
                            theBinding = bindings.get(pos);
@@ -360,9 +360,9 @@ public class BindingsImpl implements Bindings
                            if (!bindings.isEmpty())
                            {
                               pos = 0;
-                              
+
                               lastLowPriorityBinding = -1;
-   
+
                               continue;
                            }
                            else
@@ -370,32 +370,32 @@ public class BindingsImpl implements Bindings
                               break;
                            }
                         }
-                                            
+
                         pos = lastLowPriorityBinding;
-   
+
                         pos = incrementPos(pos, length);
                      }
                      break;
                   }
                }
-   
+
                if (theBinding != null)
                {
                   theBinding.willRoute(message);
-                  
+
                   chosen.add(theBinding.getBindable());
                }
 
                routingNamePositions.put(routingName, pos);
             }
-   
-            //TODO refactor to do this is one iteration
-            
+
+            // TODO refactor to do this is one iteration
+
             for (Bindable bindable : chosen)
             {
                bindable.preroute(message, tx);
             }
-            
+
             for (Bindable bindable : chosen)
             {
                bindable.route(message, tx);

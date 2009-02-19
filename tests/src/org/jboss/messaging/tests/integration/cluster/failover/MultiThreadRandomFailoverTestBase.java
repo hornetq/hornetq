@@ -83,7 +83,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
 
    protected Timer timer;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -973,6 +973,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    protected void doTestI(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
+      log.info("in testi");
       ClientSession sessCreate = sf.createSession(false, true, true);
 
       sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
@@ -1005,6 +1006,8 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       sessCreate.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
 
       sessCreate.close();
+            
+      log.info("completed testi");
    }
 
    protected void doTestJ(final ClientSessionFactory sf, final int threadNum) throws Exception
@@ -1359,11 +1362,10 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
                }
             }
             
-            log.info("completed*******");
+            log.info("completed loop");
 
             runnable.checkFail();
             
-            log.info("super completed");
          }
          while (!failer.isExecuted());
 

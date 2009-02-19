@@ -104,6 +104,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                                request.isPreAcknowledge(),
                                                request.isXA(),
                                                request.getWindowSize());
+               
                break;
             }
             case REPLICATE_CREATESESSION:

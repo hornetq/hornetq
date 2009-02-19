@@ -24,7 +24,6 @@
 
 package org.jboss.messaging.core.management.impl;
 
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -182,7 +181,7 @@ public class ManagementServiceImpl implements ManagementService
                                                  broadcaster,
                                                  queueFactory);
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
-      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName, 
+      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName,
                                                                                   managedServer,
                                                                                   replicationInvoker));
       registerInRegistry(objectName, managedServer);
@@ -242,9 +241,7 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
       QueueControl queueControl = new QueueControl(queue, postOffice, addressSettingsRepository, counter);
-      registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName,
-                                                                        queueControl,
-                                                                        replicationInvoker));
+      registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName, queueControl, replicationInvoker));
       registerInRegistry(objectName, queueControl);
 
       if (log.isDebugEnabled())
@@ -352,8 +349,11 @@ public class ManagementServiceImpl implements ManagementService
                {
                   exceptionMessage = ((InvocationTargetException)e).getTargetException().getMessage();
                }
-               message.putStringProperty(ManagementHelper.HDR_JMX_OPERATION_EXCEPTION,
-                                         new SimpleString(exceptionMessage));
+               if (e != null)
+               {
+                  message.putStringProperty(ManagementHelper.HDR_JMX_OPERATION_EXCEPTION,
+                                            new SimpleString(exceptionMessage));
+               }
             }
          }
       }
@@ -426,47 +426,47 @@ public class ManagementServiceImpl implements ManagementService
    {
       listeners.remove(listener);
    }
-   
+
    public SimpleString getManagementAddress()
    {
       return managementAddress;
    }
-   
+
    public void setManagementAddress(SimpleString managementAddress)
    {
       this.managementAddress = managementAddress;
    }
-   
+
    public SimpleString getManagementNotificationAddress()
    {
       return managementNotificationAddress;
    }
-   
+
    public void setManagementNotificationAddress(SimpleString managementNotificationAddress)
    {
-      this.managementNotificationAddress = managementNotificationAddress;  
+      this.managementNotificationAddress = managementNotificationAddress;
    }
 
    public String getClusterPassword()
    {
       return managementClusterPassword;
    }
-   
+
    public void setClusterPassword(String clusterPassword)
    {
       this.managementClusterPassword = clusterPassword;
    }
-   
+
    public long getManagementRequestTimeout()
    {
       return managementRequestTimeout;
    }
-   
+
    public void setManagementRequestTimeout(long timeout)
    {
       this.managementRequestTimeout = timeout;
    }
-   
+
    public ReplicationOperationInvoker getReplicationOperationInvoker()
    {
       return replicationInvoker;
@@ -476,7 +476,9 @@ public class ManagementServiceImpl implements ManagementService
 
    public void start() throws Exception
    {
-      replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterPassword, managementAddress, managementRequestTimeout);
+      replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterPassword,
+                                                               managementAddress,
+                                                               managementRequestTimeout);
       started = true;
    }
 
@@ -489,11 +491,11 @@ public class ManagementServiceImpl implements ManagementService
          unregisterResource(objectName);
       }
 
-      //FIXME the replicationInvoker should be properly stopped.
+      // FIXME the replicationInvoker should be properly stopped.
       // the code is commented since stopping the invoker will interact
       // with the remoting service which is stopped first when stopping the server
       // replicationInvoker.stop();
-      
+
       started = false;
    }
 
@@ -570,9 +572,10 @@ public class ManagementServiceImpl implements ManagementService
             {
                notifProps = new TypedProperties();
             }
-            
-            notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE, new SimpleString(notification.getType().toString()));
-            
+
+            notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
+                                         new SimpleString(notification.getType().toString()));
+
             notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
 
             notificationMessage.putTypedProperties(notifProps);

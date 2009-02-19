@@ -397,8 +397,6 @@ public class MessagingServerImpl implements MessagingServer
       // This is the last thing done at the start, after everything else is up and running
       pagingManager.startGlobalDepage();
 
-      log.info("Started messaging server");
-
       started = true;
    }
 
@@ -918,7 +916,7 @@ public class MessagingServerImpl implements MessagingServer
          throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                                       "client not compatible with version: " + version.getFullVersion());
       }
-
+      
       // Is this comment relevant any more ?
 
       // Authenticate. Successful autentication will place a new SubjectContext

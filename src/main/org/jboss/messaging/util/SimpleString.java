@@ -239,13 +239,13 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       {
          for (int i = 0; i < data.length; i++)
          {
-            hash = 31 * hash + data[i];
+            hash = (hash << 5) - hash + data[i]; // (hash << 5) - hash is same as hash * 31
          }
       }
 
       return hash;
    }
-
+   
    public SimpleString[] split(char delim)
    {
       if (!contains(delim))

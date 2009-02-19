@@ -809,7 +809,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return true;
       }
-
+      
       boolean ok = false;
 
       // We lock the channel to prevent any packets to be added to the resend

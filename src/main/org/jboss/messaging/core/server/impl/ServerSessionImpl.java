@@ -139,7 +139,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final boolean autoCommitAcks;
 
    private final boolean preAcknowledge;
-   
+
    private final boolean updateDeliveries;
 
    private volatile RemotingConnection remotingConnection;
@@ -175,11 +175,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private final SimpleString managementAddress;
 
    private final QueueFactory queueFactory;
-   
+
    private final SimpleString nodeID;
 
    // The current currentLargeMessage being processed
-   // In case of replication, currentLargeMessage should only be accessed within the replication callbacks 
+   // In case of replication, currentLargeMessage should only be accessed within the replication callbacks
    private volatile LargeServerMessage currentLargeMessage;
 
    // The current destination used for sending LargeMessages
@@ -242,7 +242,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          tx = new TransactionImpl(storageManager);
       }
-      
+
       this.updateDeliveries = updateDeliveries;
 
       this.channel = channel;
@@ -256,7 +256,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       this.managementAddress = managementAddress;
 
       this.queueFactory = queueFactory;
-      
+
       this.nodeID = server.getNodeID();
    }
 
@@ -399,9 +399,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                         " queueName = " +
                         packet.getQueueName());
                }
-               doHandleCreateQueue(packet);
-
-               lock.unlock();
+               try
+               {
+                  doHandleCreateQueue(packet);
+               }
+               finally
+               {
+                  lock.unlock();
+               }
             }
          });
       }
@@ -444,9 +449,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                {
                   trace("(Replication) DeleteQueue queueName = " + packet.getQueueName());
                }
-               doHandleDeleteQueue(packet);
-
-               lock.unlock();
+               try
+               {
+                  doHandleDeleteQueue(packet);
+               }
+               finally
+               {
+                  lock.unlock();
+               }
             }
          });
       }
@@ -1185,9 +1195,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             public void run()
             {
-               doSend(packet);
-
-               lock.afterSend();
+               try
+               {
+                  doSend(packet);
+               }
+               finally
+               {
+                  lock.afterSend();
+               }
             }
          });
       }
@@ -1232,10 +1247,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                {
                   trace("(Replication) Sending LasChunk MessageID = " + currentLargeMessage.getMessageID());
                }
-               doSendContinuations(packet);
-               if (lock != null)
+               try
                {
-                  lock.afterSend();
+                  doSendContinuations(packet);
+               }
+               finally
+               {
+                  if (lock != null)
+                  {
+                     lock.afterSend();
+                  }
                }
             }
          });
@@ -1269,7 +1290,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          this.setStarted(false);
       }
-      
+
       remotingConnection.removeFailureListener(this);
 
       channel.transferConnection(newConnection);
@@ -1287,7 +1308,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
-      // Destroy the old connection     
+      // Destroy the old connection
       remotingConnection.destroy();
 
       remotingConnection = newConnection;
@@ -1302,7 +1323,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          this.setStarted(true);
       }
-      
+
       return serverLastReceivedCommandID;
    }
 
@@ -1332,9 +1353,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
          }
 
-         // We call handleClose() since we need to replicate the close too, if there is a backup
          handleClose(new PacketImpl(PacketImpl.SESS_CLOSE));
-
+       
          log.info("Cleared up resources for session " + name);
       }
       catch (Throwable t)
@@ -1385,14 +1405,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          }
 
          Queue theQueue;
-         
+
          if (browseOnly)
          {
             // We consume a copy of the queue - TODO - this is a temporary measure
             // and will disappear once we can provide a proper iterator on the queue
 
             theQueue = queueFactory.createQueue(-1, binding.getAddress(), name, filter, false, true);
-                        
+
             // There's no need for any special locking since the list method is synchronized
             List<MessageReference> refs = ((Queue)binding.getBindable()).list(filter);
 
@@ -1400,16 +1420,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             {
                theQueue.addLast(ref);
             }
-            
+
             binding = new LocalQueueBinding(binding.getAddress(), theQueue, nodeID);
          }
          else
-         {            
+         {
             theQueue = (Queue)binding.getBindable();
          }
 
          ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
-                                                          this,                                                          
+                                                          this,
                                                           (QueueBinding)binding,
                                                           filter,
                                                           started,
@@ -1423,26 +1443,26 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                                                           managementService);
 
          consumers.put(consumer.getID(), consumer);
-         
+
          if (!browseOnly)
          {
             TypedProperties props = new TypedProperties();
-            
+
             props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
-            
+
             props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
-            
+
             props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
-            
+
             props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
-                        
+
             if (filterString != null)
             {
                props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
             }
-            
+
             Notification notification = new Notification(CONSUMER_CREATED, props);
-            
+
             managementService.sendNotification(notification);
          }
 
@@ -1505,16 +1525,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          final Queue queue = queueFactory.createQueue(-1, address, name, filter, durable, temporary);
 
-         //The unique name is given by the concatenation of the node id and the queue name - this is because it must be unique *across the entire cluster*
+         // The unique name is given by the concatenation of the node id and the queue name - this is because it must be
+         // unique *across the entire cluster*
          binding = new LocalQueueBinding(address, queue, nodeID);
 
          if (durable)
          {
-            storageManager.addQueueBinding(binding);                        
+            storageManager.addQueueBinding(binding);
          }
- 
+
          postOffice.addBinding(binding);
-         
+
          if (temporary)
          {
             // Temporary queue in core simply means the queue will be deleted if
@@ -1813,7 +1834,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-         rollback(packet.isLastMessageAsDelived());
+         rollback(packet.isConsiderLastMessageAsDelivered());
 
          response = new NullResponseMessage();
       }
@@ -2476,7 +2497,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
 
       channel.confirm(packet);
-      
+
       channel.flushConfirmations();
 
       channel.send(response);

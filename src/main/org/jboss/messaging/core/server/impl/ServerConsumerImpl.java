@@ -315,7 +315,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
    {
-
       boolean performACK = lastConsumedAsDelivered;
 
       LinkedList<MessageReference> refs = new LinkedList<MessageReference>();
@@ -327,11 +326,13 @@ public class ServerConsumerImpl implements ServerConsumer
             if (performACK)
             {
                acknowledge(false, tx, ref.getMessage().getMessageID());
+               
                performACK = false;
             }
             else
             {
                ref.decrementDeliveryCount();
+               
                refs.add(ref);
             }
          }
