@@ -73,7 +73,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_PAGE_MAX_THREADS = 10;
 
-   public static final long DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
+   public static final int DEFAULT_PAGE_WATERMARK_SIZE = 10 * 1024 * 1024;
 
    public static final long DEFAULT_PAGE_MAX_GLOBAL_SIZE = -1;
 
@@ -143,7 +143,7 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean backup = DEFAULT_BACKUP;
 
-   protected boolean strictUpdateDelivery = DEFAULT_STRICT_UPDATE_DELIVERY;
+   protected boolean persistDeliveryCountBeforeDelivery = DEFAULT_STRICT_UPDATE_DELIVERY;
 
    protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
 
@@ -193,7 +193,7 @@ public class ConfigurationImpl implements Configuration
 
    protected long pagingMaxGlobalSize = DEFAULT_PAGE_MAX_GLOBAL_SIZE;
 
-   protected long pagingDefaultSize = DEFAULT_PAGE_SIZE;
+   protected int pageWatermarkSize = DEFAULT_PAGE_WATERMARK_SIZE;
 
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
 
@@ -257,19 +257,19 @@ public class ConfigurationImpl implements Configuration
    }
 
    /**
-    * @return the strictUpdateDelivery
+    * @return the persistDeliveryCountBeforeDelivery
     */
-   public boolean isStrictUpdateDelivery()
+   public boolean isPersistDeliveryCountBeforeDelivery()
    {
-      return strictUpdateDelivery;
+      return persistDeliveryCountBeforeDelivery;
    }
 
    /**
     * @param strictJMS the strictJMS to set
     */
-   public void setStrictUpdateDelivery(final boolean strictUpdateDelivery)
+   public void setPersistDeliveryCountBeforeDelivery(final boolean persistDeliveryCountBeforeDelivery)
    {
-      this.strictUpdateDelivery = strictUpdateDelivery;
+      this.persistDeliveryCountBeforeDelivery = persistDeliveryCountBeforeDelivery;
    }
 
    public void setBackup(final boolean backup)
@@ -670,17 +670,17 @@ public class ConfigurationImpl implements Configuration
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.config.Configuration#getPagingDefaultSize()
     */
-   public long getPagingDefaultSize()
+   public int getPagingGlobalWatermarkSize()
    {
-      return pagingDefaultSize;
+      return pageWatermarkSize;
    }
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.config.Configuration#setPagingDefaultSize(long)
     */
-   public void setPagingDefaultSize(final long pageSize)
+   public void setPagingGlobalWatermarkSize(final int pageSize)
    {
-      pagingDefaultSize = pageSize;
+      pageWatermarkSize = pageSize;
    }
 
    public String getLargeMessagesDirectory()
@@ -770,6 +770,6 @@ public class ConfigurationImpl implements Configuration
              cother.getScheduledThreadPoolMaxSize() == getScheduledThreadPoolMaxSize() &&
              cother.getSecurityInvalidationInterval() == getSecurityInvalidationInterval() &&
              cother.getManagementAddress().equals(getManagementAddress()) &&
-             cother.getPagingDefaultSize() == getPagingDefaultSize();
+             cother.getPagingGlobalWatermarkSize() == getPagingGlobalWatermarkSize();
    }
 }

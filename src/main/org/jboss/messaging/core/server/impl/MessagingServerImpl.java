@@ -780,7 +780,7 @@ public class MessagingServerImpl implements MessagingServer
                                    storageManager,
                                    addressSettingsRepository,
                                    configuration.getPagingMaxGlobalSizeBytes(),
-                                   configuration.getPagingDefaultSize(),
+                                   configuration.getPagingGlobalWatermarkSize(),
                                    configuration.isJournalSyncNonTransactional(),
                                    configuration.isBackup());
    }
@@ -949,7 +949,7 @@ public class MessagingServerImpl implements MessagingServer
                                                               autoCommitSends,
                                                               autoCommitAcks,
                                                               preAcknowledge,
-                                                              configuration.isStrictUpdateDelivery(),
+                                                              configuration.isPersistDeliveryCountBeforeDelivery(),
                                                               xa,
                                                               connection,
                                                               storageManager,

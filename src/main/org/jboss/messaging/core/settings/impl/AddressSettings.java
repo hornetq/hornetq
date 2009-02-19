@@ -46,6 +46,8 @@ public class AddressSettings implements Mergeable<AddressSettings>
    public static final Integer DEFAULT_MAX_SIZE_BYTES = -1;
 
    public static final Boolean DEFAULT_DROP_MESSAGES_WHEN_FULL = Boolean.FALSE;
+   
+   public static final Integer DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
 
    public static final Integer DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
 
@@ -91,7 +93,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public Integer getPageSizeBytes()
    {
-      return pageSizeBytes;
+      return pageSizeBytes != null ? this.pageSizeBytes : DEFAULT_PAGE_SIZE;
    }
 
    public Boolean isDropMessagesWhenFull()

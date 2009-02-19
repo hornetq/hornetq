@@ -24,6 +24,7 @@
       </remoting-interceptors>
       <queue-activation-timeout>12456</queue-activation-timeout>
       <backup>true</backup>
+      <persist-count-before-delivery>true</persist-count-before-delivery>
       <backup-connector-ref connector-name="backup-connector"/>
       <connector name="connector">
          <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
@@ -155,7 +156,7 @@
       </cluster-connection>
       <paging-max-threads>2</paging-max-threads>
       <paging-directory>pagingdir</paging-directory>
-      <paging-default-size>123</paging-default-size>
+      <paging-global-watermark-size>123</paging-global-watermark-size>
       <paging-max-global-size-bytes>4567</paging-max-global-size-bytes>
       <bindings-directory>somedir</bindings-directory>
       <create-bindings-dir>false</create-bindings-dir>

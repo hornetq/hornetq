@@ -80,6 +80,8 @@ public class ConfigurationValidationTest extends TestCase
       FileConfiguration fc = new FileConfiguration();      
       fc.setConfigurationUrl("ConfigurationTest-full-config.xml");      
       fc.start();
+      
+      assertEquals(true, fc.isPersistDeliveryCountBeforeDelivery());
    }
 
    // Package protected ---------------------------------------------

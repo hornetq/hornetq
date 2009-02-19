@@ -96,7 +96,7 @@
 				<xsd:element name="backup" type="xsd:boolean"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="strict-update-delivery" type="xsd:boolean"
+				<xsd:element name="persist-count-before-delivery" type="xsd:boolean"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="backup-connector-ref"
@@ -132,7 +132,7 @@
 				<xsd:element name="paging-directory" type="xsd:string"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="paging-default-size" type="xsd:unsignedLong"
+				<xsd:element name="paging-global-watermark-size" type="xsd:positiveInteger"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="paging-max-global-size-bytes"

@@ -51,9 +51,9 @@ public interface Configuration extends Serializable
 
    void setClustered(boolean clustered);
 
-   boolean isStrictUpdateDelivery();
+   boolean isPersistDeliveryCountBeforeDelivery();
 
-   void setStrictUpdateDelivery(boolean strictUpdateDelivery);
+   void setPersistDeliveryCountBeforeDelivery(boolean persistDeliveryCountBeforeDelivery);
 
    boolean isBackup();
 
@@ -209,9 +209,9 @@ public interface Configuration extends Serializable
 
    void setPagingMaxGlobalSizeBytes(long maxGlobalSize);
 
-   long getPagingDefaultSize();
+   int getPagingGlobalWatermarkSize();
 
-   void setPagingDefaultSize(long pageSize);
+   void setPagingGlobalWatermarkSize(int pageWatermarkSize);
 
    // Large Messages Properties ------------------------------------------------------------
 

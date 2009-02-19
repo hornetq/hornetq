@@ -373,7 +373,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
    protected PagingManager createMockManager()
    {
       PagingManager mockManager = EasyMock.createNiceMock(PagingManager.class);
-      org.easymock.EasyMock.expect(mockManager.getDefaultPageSize()).andStubReturn(ConfigurationImpl.DEFAULT_PAGE_SIZE);
+      org.easymock.EasyMock.expect(mockManager.getGlobalDepageWatermarkBytes()).andStubReturn(ConfigurationImpl.DEFAULT_PAGE_WATERMARK_SIZE);
       EasyMock.replay(mockManager);
       return mockManager;
    }

@@ -87,6 +87,7 @@ public class ChunkTestBase extends ServiceTestBase
                              final boolean useFile,
                              final boolean preAck,
                              final boolean sendingBlocking,
+                             final boolean testBrowser,
                              final int numberOfMessages,
                              final int numberOfIntegers,
                              final int waitOnConsumer,
@@ -96,6 +97,7 @@ public class ChunkTestBase extends ServiceTestBase
                  useFile,
                  preAck,
                  sendingBlocking,
+                 testBrowser,
                  numberOfMessages,
                  numberOfIntegers,
                  waitOnConsumer,
@@ -108,6 +110,7 @@ public class ChunkTestBase extends ServiceTestBase
                              final boolean useFile,
                              final boolean preAck,
                              final boolean sendingBlocking,
+                             final boolean testBrowser,
                              final int numberOfMessages,
                              final int numberOfIntegers,
                              final int waitOnConsumer,
@@ -204,7 +207,7 @@ public class ChunkTestBase extends ServiceTestBase
          if (realFiles)
          {
             messagingService.stop();
-            
+
             messagingService = createService(realFiles);
             messagingService.start();
 
@@ -215,73 +218,90 @@ public class ChunkTestBase extends ServiceTestBase
 
          ClientConsumer consumer = null;
 
-         if (realFiles)
+         // If delayed deliveries... it doesn't make sense with Browsing
+         for (int iteration = (testBrowser ? 0 : 1); iteration < 2; iteration++)
          {
-            consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), ADDRESS);
-         }
-         else
-         {
-            consumer = session.createConsumer(ADDRESS);
-         }
 
-         session.start();
+            System.out.println("Iteration: " + iteration);
 
-         for (int i = 0; i < numberOfMessages; i++)
-         {
-            long start = System.currentTimeMillis();
-
-            ClientMessage message = consumer.receive(waitOnConsumer + delayDelivery);
-
-            assertNotNull(message);
-
+            // first time with a browser
             if (realFiles)
             {
-               assertTrue(message instanceof ClientFileMessage);
+               consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()),
+                                                     ADDRESS,
+                                                     null,
+                                                     iteration == 0);
+            }
+            else
+            {
+               consumer = session.createConsumer(ADDRESS, null, iteration == 0);
             }
 
-            if (testTime)
-            {
-               System.out.println("Message received in " + (System.currentTimeMillis() - start));
-            }
-            start = System.currentTimeMillis();
+            session.start();
 
-            if (delayDelivery > 0)
+            for (int i = 0; i < numberOfMessages; i++)
             {
-               long originalTime = (Long)message.getProperty(new SimpleString("original-time"));
-               assertTrue((System.currentTimeMillis() - originalTime) + "<" + delayDelivery,
-                          System.currentTimeMillis() - originalTime >= delayDelivery);
-            }
+               long start = System.currentTimeMillis();
 
-            if (!preAck)
-            {
-               message.acknowledge();
-            }
+               ClientMessage message = consumer.receive(waitOnConsumer + delayDelivery);
 
-            assertNotNull(message);
+               assertNotNull(message);
 
-            if (delayDelivery <= 0)
-            {
-               // right now there is no guarantee of ordered delivered on multiple scheduledMessages with the same
-               // scheduled delivery time
-               assertEquals(i, ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
-            }
-
-            if (!testTime)
-            {
-               if (message instanceof ClientFileMessage)
+               if (realFiles)
                {
-                  checkFileRead(((ClientFileMessage)message).getFile(), numberOfIntegers);
+                  assertTrue(message instanceof ClientFileMessage);
                }
-               else
+
+               if (testTime)
                {
-                  MessagingBuffer buffer = message.getBody();
-                  buffer.rewind();
-                  assertEquals(numberOfIntegers * DataConstants.SIZE_INT, buffer.limit());
-                  for (int b = 0; b < numberOfIntegers; b++)
+                  System.out.println("Message received in " + (System.currentTimeMillis() - start));
+               }
+               start = System.currentTimeMillis();
+
+               if (delayDelivery > 0)
+               {
+                  long originalTime = (Long)message.getProperty(new SimpleString("original-time"));
+                  assertTrue((System.currentTimeMillis() - originalTime) + "<" + delayDelivery,
+                             System.currentTimeMillis() - originalTime >= delayDelivery);
+               }
+
+               if (!preAck)
+               {
+                  message.acknowledge();
+               }
+
+               assertNotNull(message);
+
+               if (delayDelivery <= 0)
+               {
+                  // right now there is no guarantee of ordered delivered on multiple scheduledMessages with the same
+                  // scheduled delivery time
+                  assertEquals(i, ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
+               }
+
+               if (!testTime)
+               {
+                  if (message instanceof ClientFileMessage)
                   {
-                     assertEquals(b, buffer.getInt());
+                     checkFileRead(((ClientFileMessage)message).getFile(), numberOfIntegers);
+                  }
+                  else
+                  {
+                     MessagingBuffer buffer = message.getBody();
+                     buffer.rewind();
+                     assertEquals(numberOfIntegers * DataConstants.SIZE_INT, buffer.limit());
+                     for (int b = 0; b < numberOfIntegers; b++)
+                     {
+                        assertEquals(b, buffer.getInt());
+                     }
                   }
                }
+            }
+
+            if (iteration == 0)
+            {
+               consumer.close();
+               session.rollback();
             }
          }
 

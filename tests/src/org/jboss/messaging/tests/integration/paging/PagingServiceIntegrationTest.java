@@ -82,7 +82,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
@@ -210,7 +210,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
@@ -350,7 +350,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
@@ -482,7 +482,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
@@ -561,7 +561,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
@@ -683,7 +683,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
          set.setMaxSizeBytes(10 * 1024);
       }
 
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
  
       MessagingService messagingService = createService(true, config, settings);
 
@@ -834,7 +834,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       int NUMBER_OF_MESSAGES = 2;
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 

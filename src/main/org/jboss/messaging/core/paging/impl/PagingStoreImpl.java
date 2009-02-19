@@ -154,14 +154,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       maxSize = addressSettings.getMaxSizeBytes();
 
-      if (addressSettings.getPageSizeBytes() != null)
-      {
-         pageSize = addressSettings.getPageSizeBytes();
-      }
-      else
-      {
-         pageSize = pagingManager.getDefaultPageSize();
-      }
+      pageSize = addressSettings.getPageSizeBytes();
 
       dropMessagesWhenFull = addressSettings.isDropMessagesWhenFull();
 
@@ -228,7 +221,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return storeName;
    }
-   
+
    public void addSize(final long size) throws Exception
    {
       final long maxSize = getMaxSizeBytes();
@@ -286,16 +279,16 @@ public class PagingStoreImpl implements TestSupportPageStore
                log.trace(" globalDepage = " + pagingManager.isGlobalPageMode() +
                          "\n currentGlobalSize = " +
                          currentGlobalSize +
-                         "\n defaultPageSize = " +
-                         pagingManager.getDefaultPageSize() +
+                         "\n GlobalWatermark = " +
+                         pagingManager.getGlobalDepageWatermarkBytes() +
                          "\n maxGlobalSize = " +
                          maxGlobalSize +
                          "\n maxGlobalSize - defaultPageSize = " +
-                         (maxGlobalSize - pagingManager.getDefaultPageSize()));
+                         (maxGlobalSize - pagingManager.getGlobalDepageWatermarkBytes()));
             }
 
             if (maxGlobalSize > 0 && pagingManager.isGlobalPageMode() &&
-                currentGlobalSize < maxGlobalSize - pagingManager.getDefaultPageSize())
+                currentGlobalSize < maxGlobalSize - pagingManager.getGlobalDepageWatermarkBytes())
             {
                pagingManager.startGlobalDepage();
             }
@@ -1035,10 +1028,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    // To be used on isDropMessagesWhenFull
    private boolean isDrop()
    {
-      return (getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes()) ||
-             (pagingManager.getMaxGlobalSize() > 0 && pagingManager.getGlobalSize() > pagingManager.getMaxGlobalSize());
+      return (getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes()) || (pagingManager.getMaxGlobalSize() > 0 && pagingManager.getGlobalSize() > pagingManager.getMaxGlobalSize());
    }
-
 
    // Inner classes -------------------------------------------------
 

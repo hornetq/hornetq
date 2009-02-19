@@ -125,7 +125,7 @@ public interface PagingManager extends MessagingComponent
    /**
     * @return
     */
-   long getDefaultPageSize();
+   long getGlobalDepageWatermarkBytes();
 
    /**
     * @param transactionID

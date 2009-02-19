@@ -84,7 +84,7 @@ public class FailoverTestBase extends ServiceTestBase
       setUpFileBased(maxGlobalSize, 20 * 1024);
    }
 
-   protected void setUpFileBased(final long maxGlobalSize, final long pageSize) throws Exception
+   protected void setUpFileBased(final long maxGlobalSize, final int pageSize) throws Exception
    {
 
       deleteDirectory(new File(getTestDir()));
@@ -98,7 +98,7 @@ public class FailoverTestBase extends ServiceTestBase
       backupConf.setJournalFileSize(100 * 1024);
 
       backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
-      backupConf.setPagingDefaultSize(pageSize);
+      backupConf.setPagingGlobalWatermarkSize(pageSize);
 
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -120,7 +120,7 @@ public class FailoverTestBase extends ServiceTestBase
       liveConf.setPagingDirectory(getPageDir(getTestDir() + "/live"));
 
       liveConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
-      liveConf.setPagingDefaultSize(pageSize);
+      liveConf.setPagingGlobalWatermarkSize(pageSize);
       liveConf.setJournalFileSize(100 * 1024);
 
       liveConf.setSecurityEnabled(false);

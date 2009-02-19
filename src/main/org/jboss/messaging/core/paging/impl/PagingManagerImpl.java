@@ -73,7 +73,7 @@ public class PagingManagerImpl implements PagingManager
 
    private final StorageManager storageManager;
 
-   private final long defaultPageSize;
+   private final long globalDepageWatermarkBytes;
 
    private final boolean syncNonTransactional;
 
@@ -91,14 +91,14 @@ public class PagingManagerImpl implements PagingManager
                             final StorageManager storageManager,
                             final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                             final long maxGlobalSize,
-                            final long defaultPageSize,
+                            final long globalDepageWatermarkBytes,
                             final boolean syncNonTransactional,
                             final boolean backup)
    {
       pagingStoreFactory = pagingSPI;
       this.addressSettingsRepository = addressSettingsRepository;
       this.storageManager = storageManager;
-      this.defaultPageSize = defaultPageSize;
+      this.globalDepageWatermarkBytes = globalDepageWatermarkBytes;
       this.maxGlobalSize = maxGlobalSize;
       this.syncNonTransactional = syncNonTransactional;
       this.backup = backup;
@@ -188,9 +188,9 @@ public class PagingManagerImpl implements PagingManager
       pagingStoreFactory.setPostOffice(postOffice);
    }
 
-   public long getDefaultPageSize()
+   public long getGlobalDepageWatermarkBytes()
    {
-      return defaultPageSize;
+      return globalDepageWatermarkBytes;
    }
 
    public boolean isPaging(final SimpleString destination) throws Exception

@@ -111,7 +111,7 @@ public class MessageChunkTest extends ChunkTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
@@ -285,32 +285,32 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testMessageChunkFilePersistence() throws Exception
    {
-      testChunks(true, false, false, false, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, false, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlocked() throws Exception
    {
-      testChunks(true, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, false, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedPreACK() throws Exception
    {
-      testChunks(true, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, false, true, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceDelayed() throws Exception
    {
-      testChunks(true, false, false, false, 1, 50000, RECEIVE_WAIT_TIME, 2000);
+      testChunks(true, false, false, false, false, 1, 50000, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkNullPersistence() throws Exception
    {
-      testChunks(false, false, false, false, 1, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, false, false, true, 1, 50000, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, false, 100, 50000, RECEIVE_WAIT_TIME, 100);
+      testChunks(false, false, false, false, false, 100, 50000, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testPageOnLargeMessage() throws Exception
@@ -326,44 +326,44 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testSendfileMessage() throws Exception
    {
-      testChunks(true, true, false, false, 100, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
 
    }
 
    public void testSendfileMessageOnNullPersistence() throws Exception
    {
-      testChunks(false, true, false, false, 100, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendfileMessageOnNullPersistenceSmallMessage() throws Exception
    {
-      testChunks(false, true, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendfileMessageSmallMessage() throws Exception
    {
-      testChunks(true, true, false, false, 100, 4, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, true, 100, 4, RECEIVE_WAIT_TIME, 0);
 
    }
 
    public void testSendRegularMessageNullPersistence() throws Exception
    {
-      testChunks(false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessagePersistence() throws Exception
    {
-      testChunks(true, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceDelayed() throws Exception
    {
-      testChunks(true, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testTwoBindingsTwoStartedConsumers() throws Exception
@@ -629,7 +629,7 @@ public class MessageChunkTest extends ChunkTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       messagingService = createService(realFiles, config, new HashMap<String, AddressSettings>());
 

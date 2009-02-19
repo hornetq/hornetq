@@ -129,6 +129,11 @@ public class ServiceTestBase extends UnitTestCase
       {
          service.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
+      
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
+      
+      service.getServer().getAddressSettingsRepository().addMatch("#", defaultSetting);
 
       return service;
    }

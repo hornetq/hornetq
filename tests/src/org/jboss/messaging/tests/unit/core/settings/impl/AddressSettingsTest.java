@@ -35,15 +35,15 @@ public class AddressSettingsTest extends TestCase
    public void testDefaults()
    {
       AddressSettings addressSettings = new AddressSettings();
-      assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
-      assertEquals(addressSettings.getDistributionPolicyClass(), null);
-      assertEquals(addressSettings.getDeadLetterAddress(), null);
-      assertEquals(addressSettings.getExpiryAddress(), null);
-      assertEquals(addressSettings.getMaxDeliveryAttempts(), AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS);
+      assertEquals(AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS, addressSettings.getDistributionPolicy().getClass());
+      assertEquals(null, addressSettings.getDistributionPolicyClass());
+      assertEquals(null, addressSettings.getDeadLetterAddress());
+      assertEquals(null, addressSettings.getExpiryAddress());
+      assertEquals(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS, addressSettings.getMaxDeliveryAttempts());
       assertEquals(addressSettings.getMaxSizeBytes(), AddressSettings.DEFAULT_MAX_SIZE_BYTES);
-      assertEquals(addressSettings.getPageSizeBytes(), null);
-      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT);
-      assertEquals(addressSettings.getRedeliveryDelay(), AddressSettings.DEFAULT_REDELIVER_DELAY);
+      assertEquals(AddressSettings.DEFAULT_PAGE_SIZE, addressSettings.getPageSizeBytes());
+      assertEquals(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT, addressSettings.getMessageCounterHistoryDayLimit());
+      assertEquals(AddressSettings.DEFAULT_REDELIVER_DELAY, addressSettings.getRedeliveryDelay());
 
    }
 

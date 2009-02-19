@@ -48,7 +48,7 @@
 
       <backup>false</backup>
       
-      <strict-update-delivery>false</strict-update-delivery>
+      <persist-count-before-delivery>false</persist-count-before-delivery>
 
       <!--
       <backup-connector-ref connector-name="netty-backup"/>
@@ -144,6 +144,8 @@
       <paging-max-threads>10</paging-max-threads>
       
       <paging-directory>data/paging</paging-directory>
+      
+      <paging-global-watermark-size>10485760</paging-global-watermark-size>
       
       <paging-max-global-size-bytes>104857600</paging-max-global-size-bytes>
       

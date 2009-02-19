@@ -911,7 +911,7 @@ public class ServerConsumerImpl implements ServerConsumer
             }
 
             // we must hold one reference, or the file will be deleted before it could be delivered
-            if (preAcknowledge)
+            if (preAcknowledge && !browseOnly)
             {
                if (pendingLargeMessage.decrementRefCount() == 0)
                {

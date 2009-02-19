@@ -104,7 +104,7 @@ public class PageCrashTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
 
@@ -152,7 +152,7 @@ public class PageCrashTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingDefaultSize(10 * 1024);
+      config.setPagingGlobalWatermarkSize(10 * 1024);
 
       MessagingService service = newMessagingService(config);
 
@@ -267,6 +267,12 @@ public class PageCrashTest extends ServiceTestBase
       server.setSecurityManager(securityManager);
 
       server.setManagementService(managementService);
+      
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
+      
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+
 
       return new MessagingServiceImpl(server, storageManager, remotingService);
    }
@@ -286,7 +292,7 @@ public class PageCrashTest extends ServiceTestBase
                                       super.getStorageManager(),
                                       super.getAddressSettingsRepository(),
                                       super.getConfiguration().getPagingMaxGlobalSizeBytes(),
-                                      super.getConfiguration().getPagingDefaultSize(),
+                                      super.getConfiguration().getPagingGlobalWatermarkSize(),
                                       super.getConfiguration().isJournalSyncNonTransactional(),
                                       false);
       }

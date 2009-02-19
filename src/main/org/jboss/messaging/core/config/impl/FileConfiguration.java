@@ -89,7 +89,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       backup = getBoolean(e, "backup", backup);
 
-      strictUpdateDelivery = getBoolean(e, "strict-update-delivery", strictUpdateDelivery);
+      persistDeliveryCountBeforeDelivery = getBoolean(e, "persist-count-before-delivery", persistDeliveryCountBeforeDelivery);
 
       queueActivationTimeout = getLong(e, "queue-activation-timeout", queueActivationTimeout);
 
@@ -261,8 +261,8 @@ public class FileConfiguration extends ConfigurationImpl
 
       pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);
 
-      pagingDefaultSize = getLong(e, "paging-default-size", pagingDefaultSize);
-
+      pageWatermarkSize = getInteger(e, "paging-global-watermark-size", pageWatermarkSize);
+      
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 
       String s = getString(e, "journal-type", journalType.toString());

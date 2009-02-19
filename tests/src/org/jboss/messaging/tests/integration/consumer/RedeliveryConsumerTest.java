@@ -231,17 +231,17 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    }
 
    /**
-    * @param strictUpdateDelivery
+    * @param persistDeliveryCountBeforeDelivery
     * @throws Exception
     * @throws MessagingException
     */
-   private void setUp(final boolean strictUpdateDelivery) throws Exception, MessagingException
+   private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception, MessagingException
    {
       Configuration config = createFileConfig();
       config.setJournalFileSize(10 * 1024);
       config.setJournalMinFiles(2);
       config.setSecurityEnabled(false);
-      config.setStrictUpdateDelivery(strictUpdateDelivery);
+      config.setPersistDeliveryCountBeforeDelivery(persistDeliveryCountBeforeDelivery);
 
       messagingService = createService(true, config);
       messagingService.start();
