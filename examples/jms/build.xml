@@ -253,14 +253,13 @@
    <target name="jar" depends="compile">
       <jar destfile="${build.dir}/mdb-example.jar"
            basedir="${build.dir}"
-           includes="**/*MDBExample.class">
+           includes="**/*.class">
       </jar>
    </target>
 
    <target name="ear" depends="jar">
       <jar destfile="${build.dir}/mdb-example.ear">
          <zipfileset dir="${build.dir}" includes="mdb-example.jar"/>
-         <zipfileset dir="./config/META-INF"/>
       </jar>
    </target>
 
