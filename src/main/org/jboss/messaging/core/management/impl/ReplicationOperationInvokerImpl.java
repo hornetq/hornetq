@@ -59,8 +59,6 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
 
    private final SimpleString managementAddress;
 
-   private final ClientSessionFactory sf;
-
    private ClientSession clientSession;
 
    private ClientRequestor requestor;
@@ -75,27 +73,26 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
 
    public ReplicationOperationInvokerImpl(final String clusterPassword,
                                          final SimpleString managementAddress,
-                                         final long managementRequestTimeout) throws Exception
+                                         final long managementRequestTimeout)
    {
       this.timeout = managementRequestTimeout;
       this.clusterPassword = clusterPassword;
       this.managementAddress = managementAddress;
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
    }
 
    // Public --------------------------------------------------------
 
-   public Object invoke(final ObjectName objectName,
+   public synchronized Object invoke(final ObjectName objectName,
                                            final String operationName,
                                            final Object... parameters) throws Exception
    {
       if (clientSession == null)
       {
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
          clientSession = sf.createSession(CLUSTER_ADMIN_USER, clusterPassword, false, true, true, false, 1);
          requestor = new ClientRequestor(clientSession, managementAddress);
          clientSession.start();
       }
-
       ClientMessage mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(mngmntMessage, objectName, operationName, parameters);
       ClientMessage reply = requestor.request(mngmntMessage, timeout);
@@ -111,7 +108,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
       else
       {
          throw new Exception(ManagementHelper.getOperationExceptionMessage(reply));
-      }
+      }      
    }
    
    public void stop() 
