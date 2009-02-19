@@ -217,6 +217,16 @@
       </java>
    </target>
 
+   <target name="Sender" depends="compile" description="-> run performance test when sending to a queue">
+      <java classname="org.jboss.jms.example.Sender" fork="true">
+         <classpath refid="runtime.classpath"/>
+         <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+      </java>
+   </target>
+
    <target name="perfNonTransactionalSender" depends="compile"
            description="-> run performance test when sending to a queue">
       <antcall target="perfSender">
@@ -250,10 +260,11 @@
       </antcall>
    </target>
 
+
    <target name="jar" depends="compile">
       <jar destfile="${build.dir}/mdb-example.jar"
            basedir="${build.dir}"
-           includes="**/*.class">
+           includes="**/EJB3*.class">
       </jar>
    </target>
 
