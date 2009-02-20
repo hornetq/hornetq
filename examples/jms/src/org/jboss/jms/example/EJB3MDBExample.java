@@ -44,7 +44,8 @@ import javax.ejb.ActivationConfigProperty;
 @MessageDriven(activationConfig =
 {
       @ActivationConfigProperty(propertyName="destinationType", propertyValue="javax.jms.Queue"),
-      @ActivationConfigProperty(propertyName="destination", propertyValue="queue/testQueue")
+      @ActivationConfigProperty(propertyName="destination", propertyValue="queue/testQueue"),
+      @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "10")
 })
 public class EJB3MDBExample implements MessageListener
 {
@@ -65,15 +66,9 @@ public class EJB3MDBExample implements MessageListener
          String text = tm.getText();
          System.out.println("message " + text + " received");
 
-         // flip the string
-         String result = "";
-         for(int i = 0; i < text.length(); i++)
-         {
-            result = text.charAt(i) + result;
-         }
-
-         System.out.println("message processed, result: " + result);
-
+         System.out.print("Sleeping for 2 secs");
+         Thread.sleep(2000);
+         System.out.println("awake: sending message");
 
          InitialContext ic = new InitialContext();
          ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
@@ -85,7 +80,7 @@ public class EJB3MDBExample implements MessageListener
 
          Destination replyTo = m.getJMSReplyTo();
          MessageProducer producer = session.createProducer(replyTo);
-         TextMessage reply = session.createTextMessage(result);
+         TextMessage reply = session.createTextMessage(text);
 
          producer.send(reply);
          producer.close();

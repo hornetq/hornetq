@@ -28,7 +28,12 @@ import javax.jms.MessageProducer;
 import javax.jms.MessageConsumer;
 import javax.jms.TextMessage;
 import javax.jms.Session;
+import javax.jms.MessageListener;
+import javax.jms.Message;
+import javax.jms.JMSException;
 import javax.naming.InitialContext;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -48,19 +53,33 @@ public class Sender
 
       Queue temporaryQueue = session.createTemporaryQueue();
       MessageConsumer consumer = session.createConsumer(temporaryQueue);
-      TextMessage message = session.createTextMessage("Hello!");
-      message.setJMSReplyTo(temporaryQueue);
-      sender.send(message);
+      final CountDownLatch latch = new CountDownLatch(30);
+      consumer.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message message)
+         {
+            try
+            {
+               TextMessage m = (TextMessage)message;
+               System.out.println("received " + m.getText());
+               latch.countDown();
+            }
+            catch (JMSException e)
+            {
+               e.printStackTrace();
+            }
+         }
+      });
+
       connection.start();
 
-      message = (TextMessage)consumer.receive(500000);
-
-
-      if (message == null)
+      for(int i = 1; i <= 30; i++)
       {
-         throw new Exception("Have not received any reply. The example failed!");
+         TextMessage message = session.createTextMessage("Message " + i);
+         message.setJMSReplyTo(temporaryQueue);
+         sender.send(message);
       }
-
+      latch.await(60, TimeUnit.SECONDS);
       connection.close();
    }
 }

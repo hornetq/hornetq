@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -21,59 +21,38 @@
  */
 package org.jboss.messaging.ra.inflow;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.XAConnection;
-import javax.jms.XASession;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkEvent;
-import javax.resource.spi.work.WorkException;
-import javax.resource.spi.work.WorkListener;
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
-
 import org.jboss.messaging.core.logging.Logger;
 
+import javax.jms.JMSException;
+import javax.jms.Session;
+import javax.jms.XASession;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.Connection;
+import javax.jms.XAConnection;
+import javax.jms.Topic;
+import javax.jms.Message;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.Status;
+import javax.transaction.xa.XAResource;
+import javax.resource.spi.endpoint.MessageEndpoint;
+import javax.resource.spi.endpoint.MessageEndpointFactory;
 /**
  * The message handler
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
-public class JBMMessageHandler implements MessageListener, Work, WorkListener
+public class JBMMessageHandler implements MessageListener
 {
      /** The logger */
    private static final Logger log = Logger.getLogger(JBMMessageHandler.class);
 
    /** Trace enabled */
-   private static boolean trace = log.isTraceEnabled();
-
-   /** The message handler pool */
-   private JBMMessageHandlerPool pool;
-
-   /** Is in use */
-   private AtomicBoolean inUse;
-
-   /** Done latch */
-   private CountDownLatch done;
-
-   /** The transacted flag */
-   private boolean transacted;
-
-   /** The acknowledge mode */
-   private int acknowledge;
+   private static boolean trace  = log.isTraceEnabled();
 
    /** The session */
    private Session session;
@@ -81,39 +60,24 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
    /** Any XA session */
    private XASession xaSession;
 
-   /** The message consumer */
-   private MessageConsumer messageConsumer;
-
    /** The endpoint */
    private MessageEndpoint endpoint;
 
-   /** The transaction demarcation strategy */
-   private TransactionDemarcationStrategy txnStrategy;
+   private final JBMActivation activation;
 
-   /**
-    * Constructor
-    * @param pool The message handler pool
-    */
-   public JBMMessageHandler(JBMMessageHandlerPool pool)
+   /** The transaction demarcation strategy factory */
+   private DemarcationStrategyFactory strategyFactory = new DemarcationStrategyFactory();
+
+   public JBMMessageHandler(JBMActivation activation)
    {
-      if (trace)
-         log.trace("constructor(" + pool + ")");
-
-      this.pool = pool;
+      this.activation = activation;
    }
 
-   /**
-    * Setup the session
-    */
    public void setup() throws Exception
    {
       if (trace)
          log.trace("setup()");
 
-      inUse = new AtomicBoolean(false);
-      done = new CountDownLatch(1);
-      
-      JBMActivation activation = pool.getActivation();
       JBMActivationSpec spec = activation.getActivationSpec();
       String selector = spec.getMessageSelector();
 
@@ -124,15 +88,16 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
       {
          xaSession = ((XAConnection)connection).createXASession();
          session = xaSession.getSession();
-      } 
+      }
       else
       {
-         transacted = spec.isSessionTransacted();
-         acknowledge = spec.getAcknowledgeModeInt();
+         boolean transacted = spec.isSessionTransacted();
+         int acknowledge = spec.getAcknowledgeModeInt();
          session = connection.createSession(transacted, acknowledge);
       }
 
       // Create the message consumer
+      MessageConsumer messageConsumer;
       if (activation.isTopic() && spec.isSubscriptionDurable())
       {
          Topic topic = (Topic) activation.getDestination();
@@ -140,11 +105,11 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
 
          if (selector == null || selector.trim().equals(""))
          {
-            messageConsumer = (MessageConsumer)session.createDurableSubscriber(topic, subscriptionName);
+            messageConsumer = session.createDurableSubscriber(topic, subscriptionName);
          }
          else
          {
-            messageConsumer = (MessageConsumer)session.createDurableSubscriber(topic, subscriptionName, selector, false);
+            messageConsumer = session.createDurableSubscriber(topic, subscriptionName, selector, false);
          }
       }
       else
@@ -162,10 +127,10 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
       // Create the endpoint
       MessageEndpointFactory endpointFactory = activation.getMessageEndpointFactory();
       XAResource xaResource = null;
-      
+
       if (activation.isDeliveryTransacted() && xaSession != null)
          xaResource = xaSession.getXAResource();
-      
+
       endpoint = endpointFactory.createEndpoint(xaResource);
 
       // Set the message listener
@@ -179,12 +144,12 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
    {
       if (trace)
          log.trace("teardown()");
-      
+
       try
       {
          if (endpoint != null)
             endpoint.release();
-      } 
+      }
       catch (Throwable t)
       {
          log.debug("Error releasing endpoint " + endpoint, t);
@@ -212,18 +177,6 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
    }
 
    /**
-    * Is in use
-    * @return True if in use; otherwise false
-    */
-   public boolean isInUse()
-   {
-      if (trace)
-         log.trace("isInUse()");
-      
-      return inUse.get();
-   }
-
-   /**
     * On message
     * @param message The message
     */
@@ -232,8 +185,16 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
       if (trace)
          log.trace("onMessage(" + message + ")");
 
-      inUse.set(true);
-      
+      TransactionDemarcationStrategy txnStrategy = strategyFactory.getStrategy();
+      try
+      {
+         txnStrategy.start();
+      }
+      catch (Throwable throwable)
+      {
+         log.warn("Unable to create transaction: " + throwable.getMessage());
+         txnStrategy = null;
+      }
       try
       {
          endpoint.beforeDelivery(JBMActivation.ONMESSAGE);
@@ -242,7 +203,7 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
          {
             MessageListener listener = (MessageListener) endpoint;
             listener.onMessage(message);
-         } 
+         }
          finally
          {
             endpoint.afterDelivery();
@@ -255,125 +216,11 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
          if (txnStrategy != null)
             txnStrategy.error();
       }
-
-      inUse.set(false);
-      done.countDown();
-   }
-
-   /**
-    * Run
-    */
-   public void run()
-   {
-      if (trace)
-         log.trace("run()");
-
-      try
-      {
-         setup();
-
-         txnStrategy = createTransactionDemarcation();
-      } 
-      catch (Throwable t)
-      {
-         log.error("Error creating transaction demarcation. Cannot continue.");
-         return;
-      }
-
-      try
-      {
-         // Wait for onMessage
-         while (done.getCount() > 0)
-         {
-            try
-            {
-               done.await();
-            }
-            catch (InterruptedException ignore)
-            {
-            }
-         }
-      }
-      catch (Throwable t)
-      {
-         if (txnStrategy != null)
-            txnStrategy.error();
-
-      }
       finally
       {
          if (txnStrategy != null)
             txnStrategy.end();
-
-         txnStrategy = null;
       }
-   }
-
-   /**
-    * Release
-    */
-   public void release()
-   {
-      if (trace)
-         log.trace("release()");
-   }
-
-   /**
-    * Work accepted
-    * @param e The work event
-    */
-   public void workAccepted(WorkEvent e)
-   {
-      if (trace)
-         log.trace("workAccepted()");
-   }
-
-   /**
-    * Work completed
-    * @param e The work event
-    */
-   public void workCompleted(WorkEvent e)
-   {
-      if (trace)
-         log.trace("workCompleted()");
-
-      teardown();
-      pool.removeHandler(this);
-   }
-
-   /**
-    * Work rejected
-    * @param e The work event
-    */
-   public void workRejected(WorkEvent e)
-   {
-      if (trace)
-         log.trace("workRejected()");
-
-      teardown();
-      pool.removeHandler(this);
-   }
-
-   /**
-    * Work started
-    * @param e The work event
-    */
-   public void workStarted(WorkEvent e)
-   {
-      if (trace)
-         log.trace("workStarted()");
-   }
-
-   /**
-    * Create the transaction demarcation strategy
-    * @return The strategy
-    */
-   private TransactionDemarcationStrategy createTransactionDemarcation()
-   {
-      if (trace)
-         log.trace("createTransactionDemarcation()");
-
-      return new DemarcationStrategyFactory().getStrategy();
    }
 
    /**
@@ -390,20 +237,17 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
          if (trace)
             log.trace("getStrategy()");
 
-         final JBMActivationSpec spec = pool.getActivation().getActivationSpec();
-         final JBMActivation activation = pool.getActivation();
-
          if (activation.isDeliveryTransacted())
          {
             try
             {
                return new XATransactionDemarcationStrategy();
-            } 
+            }
             catch (Throwable t)
             {
                log.error(this + " error creating transaction demarcation ", t);
             }
-         } 
+         }
          else
          {
             return new LocalDemarcationStrategy();
@@ -418,6 +262,10 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
     */
    private interface TransactionDemarcationStrategy
    {
+      /*
+      * Start
+      */
+      void start() throws Throwable;
       /**
        * Error
        */
@@ -434,6 +282,13 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
     */
    private class LocalDemarcationStrategy implements TransactionDemarcationStrategy
    {
+      /*
+   * Start
+   */
+      public void start()
+      {
+      }
+
       /**
        * Error
        */
@@ -442,7 +297,7 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
          if (trace)
             log.trace("error()");
 
-         final JBMActivationSpec spec = pool.getActivation().getActivationSpec();
+         final JBMActivationSpec spec = activation.getActivationSpec();
 
          if (spec.isSessionTransacted())
          {
@@ -452,15 +307,15 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
                {
                   /*
                    * Looks strange, but this basically means
-                   * 
+                   *
                    * If the underlying connection was non-XA and the transaction
                    * attribute is REQUIRED we rollback. Also, if the underlying
                    * connection was non-XA and the transaction attribute is
                    * NOT_SUPPORT and the non standard redelivery behavior is
                    * enabled we rollback to force redelivery.
-                   * 
+                   *
                    */
-                  if (pool.getActivation().isDeliveryTransacted() || spec.getRedeliverUnspecified())
+                  if (activation.isDeliveryTransacted() || spec.getRedeliverUnspecified())
                   {
                      session.rollback();
                   }
@@ -480,7 +335,7 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
          if (trace)
             log.trace("error()");
 
-         final JBMActivationSpec spec = pool.getActivation().getActivationSpec();
+         final JBMActivationSpec spec = activation.getActivationSpec();
 
          if (spec.isSessionTransacted())
          {
@@ -504,11 +359,11 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
    private class XATransactionDemarcationStrategy implements TransactionDemarcationStrategy
    {
       private Transaction trans = null;
-      private TransactionManager tm = pool.getActivation().getTransactionManager();
+      private TransactionManager tm = activation.getTransactionManager();
 
-      public XATransactionDemarcationStrategy() throws Throwable
+      public void start() throws Throwable
       {
-         final int timeout = pool.getActivation().getActivationSpec().getTransactionTimeout();
+         final int timeout = activation.getActivationSpec().getTransactionTimeout();
 
          if (timeout > 0)
          {
@@ -538,13 +393,13 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
                if (trace)
                   log.trace(this + " XAResource '" + res + " enlisted.");
             }
-         } 
+         }
          catch (Throwable t)
          {
             try
             {
                tm.rollback();
-            } 
+            }
             catch (Throwable ignored)
             {
                log.trace(this + " ignored error rolling back after failed enlist", ignored);
@@ -562,7 +417,7 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
                log.trace(this + " using TM to mark TX for rollback tx=" + trans);
 
             trans.setRollbackOnly();
-         } 
+         }
          catch (Throwable t)
          {
             log.error(this + " failed to set rollback only", t);
@@ -590,7 +445,7 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
                // NO XASession? then manually rollback.
                // This is not so good but
                // it's the best we can do if we have no XASession.
-               if (xaSession == null && pool.getActivation().isDeliveryTransacted())
+               if (xaSession == null && activation.isDeliveryTransacted())
                {
                   session.rollback();
                }
@@ -608,17 +463,17 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
 
                // NO XASession? then manually commit. This is not so good but
                // it's the best we can do if we have no XASession.
-               if (xaSession == null && pool.getActivation().isDeliveryTransacted())
+               if (xaSession == null && activation.isDeliveryTransacted())
                {
                   session.commit();
                }
 
-            } 
+            }
             else
             {
                tm.suspend();
 
-               if (xaSession == null && pool.getActivation().isDeliveryTransacted())
+               if (xaSession == null && activation.isDeliveryTransacted())
                {
                   session.rollback();
                }
@@ -630,3 +485,4 @@ public class JBMMessageHandler implements MessageListener, Work, WorkListener
       }
    }
 }
+

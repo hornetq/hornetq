@@ -32,6 +32,7 @@ import org.jboss.messaging.core.logging.Logger;
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision:  $
  */
 public class JBMConnectionRequestInfo implements ConnectionRequestInfo
@@ -127,6 +128,7 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
          password = prop.getPassword();
       if (clientID == null) 
          clientID = prop.getClientID();
+      useXA = prop.isUseXA();
    }
 
    /**

@@ -79,6 +79,18 @@
       <pathelement location="config"/>
    </path>
 
+   <property name="jboss.home" value="${JBOSS_HOME}" />
+
+   <path id="as.classpath">
+      <path refid="runtime.classpath"/>
+		<fileset file="${jboss.home}/client/" >
+         <include name="**/*.jar"/>
+      </fileset>
+      <fileset file="${jboss.home}/common/lib/" >
+         <include name="**/*.jar"/>
+      </fileset>
+	</path>
+
    <target name="help" description="-> display help">
       <echo>*****************************************************************</echo>
       <echo>* to run examples execute one of the following *</echo>
@@ -219,7 +231,7 @@
 
    <target name="Sender" depends="compile" description="-> run performance test when sending to a queue">
       <java classname="org.jboss.jms.example.Sender" fork="true">
-         <classpath refid="runtime.classpath"/>
+         <classpath refid="as.classpath"/>
          <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-XX:+AggressiveOpts"/>

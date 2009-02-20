@@ -24,10 +24,13 @@ package org.jboss.messaging.ra.inflow;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.ra.JBMResourceAdapter;
 import org.jboss.messaging.ra.Util;
+import org.jboss.messaging.ra.JBMMessageListener;
 import org.jboss.messaging.core.logging.Logger;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.jms.Connection;
 import javax.jms.Destination;
@@ -54,6 +57,7 @@ import org.jboss.tm.TransactionManagerLocator;
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
 public class JBMActivation implements ExceptionListener
@@ -95,11 +99,13 @@ public class JBMActivation implements ExceptionListener
    protected boolean isDeliveryTransacted;
    
    /** The message handler pool */
-   protected JBMMessageHandlerPool pool;
+   //protected JBMMessageHandlerPool pool;
 
    /** The TransactionManager */
    protected TransactionManager tm;
-   
+
+   private List<JBMMessageHandler> handlers = new ArrayList<JBMMessageHandler>();
+
    static
    {
       try
@@ -345,8 +351,14 @@ public class JBMActivation implements ExceptionListener
          if (ctx != null)
             ctx.close();
       }
-      setupPool();
-      
+      for(int i = 0; i < spec.getMaxSessionInt(); i++)
+      {
+         JBMMessageHandler handler = new JBMMessageHandler(this);
+         handler.setup();
+         handlers.add(handler);
+      }
+
+      connection.start();
       log.debug("Setup complete " + this);
    }
    
@@ -357,7 +369,10 @@ public class JBMActivation implements ExceptionListener
    {
       log.debug("Tearing down " + spec);
 
-      teardownPool();
+      for (JBMMessageHandler handler : handlers)
+      {
+         handler.teardown();
+      }
       teardownConnection();
       teardownDestination();
 
@@ -589,7 +604,7 @@ public class JBMActivation implements ExceptionListener
     * Setup the pool
     * @throws Exception for any error
     */
-   protected void setupPool() throws Exception
+   /*protected void setupPool() throws Exception
    {
       pool = new JBMMessageHandlerPool(this);
       log.debug("Created pool " + pool);
@@ -601,12 +616,12 @@ public class JBMActivation implements ExceptionListener
       log.debug("Starting delivery " + connection);
       connection.start();
       log.debug("Started delivery " + connection);
-   }
-   
+   }*/
+
    /**
     * Teardown the pool
     */
-   protected void teardownPool()
+   /*protected void teardownPool()
    {
       try
       {
@@ -634,7 +649,7 @@ public class JBMActivation implements ExceptionListener
          log.debug("Error clearing the pool " + pool, t);
       }
       pool = null;
-   }
+   }*/
 
    /**
     * Handles the setup
@@ -673,8 +688,8 @@ public class JBMActivation implements ExceptionListener
          buffer.append(" destination=").append(destination);
       if (connection != null)
          buffer.append(" connection=").append(connection);
-      if (pool != null)
-         buffer.append(" pool=").append(pool.getClass().getName());
+      //if (pool != null)
+         //buffer.append(" pool=").append(pool.getClass().getName());
       buffer.append(" transacted=").append(isDeliveryTransacted);
       buffer.append(')');
       return buffer.toString();
