@@ -55,6 +55,7 @@ public class SpawnedJMSServer
    {
       try
       {
+         System.setProperty("java.rmi.server.hostname", "localhost");
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
 
