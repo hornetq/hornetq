@@ -43,21 +43,21 @@ public class AddressSettings implements Mergeable<AddressSettings>
     */
    public static final Class<?> DEFAULT_DISTRIBUTION_POLICY_CLASS = new RoundRobinDistributor().getClass();
 
-   public static final Integer DEFAULT_MAX_SIZE_BYTES = -1;
+   public static final int DEFAULT_MAX_SIZE_BYTES = -1;
 
-   public static final Boolean DEFAULT_DROP_MESSAGES_WHEN_FULL = Boolean.FALSE;
-   
-   public static final Integer DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
+   public static final boolean DEFAULT_DROP_MESSAGES_WHEN_FULL = false;
 
-   public static final Integer DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
+   public static final int DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
 
-   public static final Integer DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
+   public static final int DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
 
-   public static final Long DEFAULT_REDELIVER_DELAY = 0L;
+   public static final int DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
 
-   public static final Boolean DEFAULT_SOLOQUEUE = false;
-   
-   public static final Long DEFAULT_REDISTRIBUTION_DELAY = -1L;
+   public static final long DEFAULT_REDELIVER_DELAY = 0L;
+
+   public static final boolean DEFAULT_SOLO_QUEUE = false;
+
+   public static final long DEFAULT_REDISTRIBUTION_DELAY = -1;
 
    private Integer maxSizeBytes = null;
 
@@ -78,76 +78,76 @@ public class AddressSettings implements Mergeable<AddressSettings>
    private SimpleString expiryAddress = null;
 
    private Boolean soloQueue = null;
-   
+
    private Long redistributionDelay = null;
 
-   public Boolean isSoloQueue()
+   public boolean isSoloQueue()
    {
-      return soloQueue != null?soloQueue:DEFAULT_SOLOQUEUE;
+      return soloQueue != null ? soloQueue : DEFAULT_SOLO_QUEUE;
    }
 
-   public void setSoloQueue(Boolean soloQueue)
+   public void setSoloQueue(final boolean soloQueue)
    {
       this.soloQueue = soloQueue;
    }
 
-   public Integer getPageSizeBytes()
+   public int getPageSizeBytes()
    {
-      return pageSizeBytes != null ? this.pageSizeBytes : DEFAULT_PAGE_SIZE;
+      return pageSizeBytes != null ? pageSizeBytes : DEFAULT_PAGE_SIZE;
    }
 
-   public Boolean isDropMessagesWhenFull()
+   public boolean isDropMessagesWhenFull()
    {
-      return dropMessagesWhenFull != null ? this.dropMessagesWhenFull : DEFAULT_DROP_MESSAGES_WHEN_FULL;
+      return dropMessagesWhenFull != null ? dropMessagesWhenFull : DEFAULT_DROP_MESSAGES_WHEN_FULL;
    }
 
-   public void setDropMessagesWhenFull(Boolean value)
+   public void setDropMessagesWhenFull(final boolean value)
    {
-      this.dropMessagesWhenFull = value;
+      dropMessagesWhenFull = value;
    }
 
-   public void setPageSizeBytes(Integer pageSize)
+   public void setPageSizeBytes(final int pageSize)
    {
-      this.pageSizeBytes = pageSize;
+      pageSizeBytes = pageSize;
    }
 
-   public Integer getMaxSizeBytes()
+   public int getMaxSizeBytes()
    {
       return maxSizeBytes != null ? maxSizeBytes : DEFAULT_MAX_SIZE_BYTES;
    }
 
-   public void setMaxSizeBytes(Integer maxSizeBytes)
+   public void setMaxSizeBytes(final int maxSizeBytes)
    {
       this.maxSizeBytes = maxSizeBytes;
    }
 
-   public Integer getMaxDeliveryAttempts()
+   public int getMaxDeliveryAttempts()
    {
       return maxDeliveryAttempts != null ? maxDeliveryAttempts : DEFAULT_MAX_DELIVERY_ATTEMPTS;
    }
 
-   public void setMaxDeliveryAttempts(Integer maxDeliveryAttempts)
+   public void setMaxDeliveryAttempts(final int maxDeliveryAttempts)
    {
       this.maxDeliveryAttempts = maxDeliveryAttempts;
    }
 
-   public Integer getMessageCounterHistoryDayLimit()
+   public int getMessageCounterHistoryDayLimit()
    {
       return messageCounterHistoryDayLimit != null ? messageCounterHistoryDayLimit
                                                   : DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
    }
 
-   public void setMessageCounterHistoryDayLimit(Integer messageCounterHistoryDayLimit)
+   public void setMessageCounterHistoryDayLimit(final int messageCounterHistoryDayLimit)
    {
       this.messageCounterHistoryDayLimit = messageCounterHistoryDayLimit;
    }
 
-   public Long getRedeliveryDelay()
+   public long getRedeliveryDelay()
    {
       return redeliveryDelay != null ? redeliveryDelay : DEFAULT_REDELIVER_DELAY;
    }
 
-   public void setRedeliveryDelay(Long redeliveryDelay)
+   public void setRedeliveryDelay(final long redeliveryDelay)
    {
       this.redeliveryDelay = redeliveryDelay;
    }
@@ -157,7 +157,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
       return distributionPolicyClass;
    }
 
-   public void setDistributionPolicyClass(String distributionPolicyClass)
+   public void setDistributionPolicyClass(final String distributionPolicyClass)
    {
       this.distributionPolicyClass = distributionPolicyClass;
    }
@@ -167,7 +167,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
       return deadLetterAddress;
    }
 
-   public void setDeadLetterAddress(SimpleString deadLetterAddress)
+   public void setDeadLetterAddress(final SimpleString deadLetterAddress)
    {
       this.deadLetterAddress = deadLetterAddress;
    }
@@ -177,7 +177,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
       return expiryAddress;
    }
 
-   public void setExpiryAddress(SimpleString expiryAddress)
+   public void setExpiryAddress(final SimpleString expiryAddress)
    {
       this.expiryAddress = expiryAddress;
    }
@@ -200,13 +200,13 @@ public class AddressSettings implements Mergeable<AddressSettings>
          throw new IllegalArgumentException("Error instantiating distribution policy '" + e + " '");
       }
    }
-   
-   public Long getRedistributionDelay()
+
+   public long getRedistributionDelay()
    {
       return redistributionDelay != null ? redistributionDelay : DEFAULT_REDISTRIBUTION_DELAY;
    }
-   
-   public void setRedistributionDelay(final Long redistributionDelay)
+
+   public void setRedistributionDelay(final long redistributionDelay)
    {
       this.redistributionDelay = redistributionDelay;
    }
@@ -215,7 +215,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
     * merge 2 objects in to 1
     * @param merged
     */
-   public void merge(AddressSettings merged)
+   public void merge(final AddressSettings merged)
    {
       if (maxDeliveryAttempts == null)
       {
@@ -255,7 +255,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
       }
       if (redistributionDelay == null)
       {
-         this.redistributionDelay = merged.redistributionDelay;
+         redistributionDelay = merged.redistributionDelay;
       }
    }
 

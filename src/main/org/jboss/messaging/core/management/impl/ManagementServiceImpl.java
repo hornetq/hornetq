@@ -135,7 +135,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private final Set<NotificationListener> listeners = new ConcurrentHashSet<NotificationListener>();
 
-   private ReplicationOperationInvokerImpl replicationInvoker;
+   private ReplicationOperationInvoker replicationInvoker;
 
    // Constructor ----------------------------------------------------
 

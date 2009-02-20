@@ -66,11 +66,11 @@ public class AddressSettingsTest extends TestCase
       assertEquals(addressSettings.getDistributionPolicyClass(), null);
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
-      assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
-      assertEquals(addressSettings.getMaxSizeBytes(), Integer.valueOf(1001));
-      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
-      assertEquals(addressSettings.getRedeliveryDelay(), Long.valueOf(1003));
-      assertEquals(addressSettings.getPageSizeBytes(), (Integer)1004);
+      assertEquals(addressSettings.getMaxDeliveryAttempts(), 1000);
+      assertEquals(addressSettings.getMaxSizeBytes(), 1001);
+      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
+      assertEquals(addressSettings.getRedeliveryDelay(), 1003);
+      assertEquals(addressSettings.getPageSizeBytes(), 1004);
       assertTrue(addressSettings.isDropMessagesWhenFull());
    }
 
@@ -98,10 +98,10 @@ public class AddressSettingsTest extends TestCase
       assertEquals(addressSettings.getDistributionPolicyClass(), null);
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
-      assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(1000));
-      assertEquals(addressSettings.getMaxSizeBytes(), Integer.valueOf(1001));
-      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(1002));
-      assertEquals(addressSettings.getRedeliveryDelay(), Long.valueOf(2003));
+      assertEquals(addressSettings.getMaxDeliveryAttempts(), 1000);
+      assertEquals(addressSettings.getMaxSizeBytes(), 1001);
+      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 1002);
+      assertEquals(addressSettings.getRedeliveryDelay(), 2003);
    }
 
    public void testMultipleMergeAll()
@@ -131,9 +131,9 @@ public class AddressSettingsTest extends TestCase
       assertEquals(addressSettings.getDistributionPolicyClass(), null);
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
-      assertEquals(addressSettings.getMaxDeliveryAttempts(), Integer.valueOf(2000));
-      assertEquals(addressSettings.getMaxSizeBytes(), Integer.valueOf(1001));
-      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), Integer.valueOf(2002));
-      assertEquals(addressSettings.getRedeliveryDelay(), Long.valueOf(1003));
+      assertEquals(addressSettings.getMaxDeliveryAttempts(), 2000);
+      assertEquals(addressSettings.getMaxSizeBytes(), 1001);
+      assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 2002);
+      assertEquals(addressSettings.getRedeliveryDelay(),1003);
    }
 }
