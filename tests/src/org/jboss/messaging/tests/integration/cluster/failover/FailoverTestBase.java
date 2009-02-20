@@ -36,6 +36,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -136,6 +137,12 @@ public class FailoverTestBase extends ServiceTestBase
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveService = Messaging.newMessagingService(liveConf);
+      
+      AddressSettings settings = new AddressSettings();
+      settings.setPageSizeBytes(pageSize);
+      
+      liveService.getServer().getAddressSettingsRepository().addMatch("#", settings);
+      backupService.getServer().getAddressSettingsRepository().addMatch("#", settings);
 
       clearData(getTestDir() + "/live");
 

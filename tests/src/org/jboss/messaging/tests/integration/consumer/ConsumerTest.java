@@ -32,7 +32,6 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
@@ -287,21 +286,16 @@ public class ConsumerTest extends UnitTestCase
 
    public void testConsumerBrowserMessages() throws Exception
    {
-      testConsumerBrowserMessagesArentAcked(false, 0);
+      testConsumerBrowserMessagesArentAcked(false);
    }
    
    public void testConsumerBrowserMessagesPreACK() throws Exception
    {
-      testConsumerBrowserMessagesArentAcked(true, 0);
-   }
-   
-   public void testConsumerBrowserMessagesDelayedDelivery() throws Exception
-   {
-      testConsumerBrowserMessagesArentAcked(false, 100);
+      testConsumerBrowserMessagesArentAcked(false);
    }
    
 
-   private void testConsumerBrowserMessagesArentAcked(boolean preACK, long delayedDelivery) throws Exception
+   private void testConsumerBrowserMessagesArentAcked(boolean preACK) throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -316,14 +310,8 @@ public class ConsumerTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createMessage(session, "m" + i);
-         if (delayedDelivery > 0)
-         {
-            message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delayedDelivery);
-         }
          producer.send(message);
       }
-      
-      Thread.sleep(100);
 
       ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
 
@@ -331,7 +319,6 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertNotNull(message2);
          assertEquals("m" + i, message2.getBody().getString());
       }
       // assert that all the messages are there and none have been acked
