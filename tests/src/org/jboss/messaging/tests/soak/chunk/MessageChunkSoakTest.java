@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.soak.chunk;
 
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.tests.integration.chunkmessage.ChunkTestBase;
 
 /**
@@ -48,7 +49,19 @@ public class MessageChunkSoakTest extends ChunkTestBase
 
    public void testMessageChunkFilePersistence1G() throws Exception
    {
-      testChunks(true, true, false, true, false, 2, 268435456, 300000, 0, -1, true);
+      testChunks(true,
+                 true,
+                 false,
+                 true,
+                 false,
+                 2,
+                 268435456,
+                 300000,
+                 0,
+                 -1,
+                 ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                 ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                 true);
    }
 
    // Package protected ---------------------------------------------

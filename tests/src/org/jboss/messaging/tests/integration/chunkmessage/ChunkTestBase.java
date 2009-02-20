@@ -35,6 +35,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -103,6 +104,8 @@ public class ChunkTestBase extends ServiceTestBase
                  waitOnConsumer,
                  delayDelivery,
                  -1,
+                 100 * 1024,
+                 10 * 1024,
                  false);
    }
 
@@ -116,6 +119,8 @@ public class ChunkTestBase extends ServiceTestBase
                              final int waitOnConsumer,
                              final long delayDelivery,
                              final int producerWindow,
+                             final int minSizeProducer,
+                             final int minSizeConsumer,
                              final boolean testTime) throws Exception
    {
 
@@ -139,6 +144,8 @@ public class ChunkTestBase extends ServiceTestBase
          {
             sf.setSendWindowSize(producerWindow);
          }
+         
+         sf.setMinLargeMessageSize(minSizeProducer);
 
          ClientSession session = sf.createSession(null, null, false, true, false, preAck, 0);
 
@@ -214,6 +221,9 @@ public class ChunkTestBase extends ServiceTestBase
             sf = createInVMFactory();
          }
 
+         
+         sf.setMinLargeMessageSize(minSizeConsumer);
+
          session = sf.createSession(null, null, false, true, true, preAck, 0);
 
          ClientConsumer consumer = null;
@@ -221,8 +231,6 @@ public class ChunkTestBase extends ServiceTestBase
          // If delayed deliveries... it doesn't make sense with Browsing
          for (int iteration = (testBrowser ? 0 : 1); iteration < 2; iteration++)
          {
-
-            System.out.println("Iteration: " + iteration);
 
             // first time with a browser
             if (realFiles)
