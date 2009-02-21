@@ -75,7 +75,7 @@ JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousF
 		{
 			delete controller;
 		}
-		throwException(env, "java/lang/RuntimeException", e.what());
+		throwException(env, e.getErrorCode(), e.what());
 		return 0;
 	}
 }
@@ -90,13 +90,13 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 		
 		if (buffer == 0)
 		{
-			throwException(env, "java/lang/IllegalStateException", "Invalid Direct Buffer used");
+			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Direct Buffer used");
 			return;
 		}
 		
 		if (((long)buffer) % 512)
 		{
-			throwException(env, "java/lang/IllegalStateException", "Buffer not aligned for use with DMA");
+			throwException(env, NATIVE_ERROR_NOT_ALIGNED, "Buffer not aligned for use with DMA");
 			return;
 		}
 		
@@ -106,7 +106,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	}
 	catch (AIOException& e)
 	{
-		throwException(env, "java/lang/RuntimeException", e.what());
+		throwException(env, e.getErrorCode(), e.what());
 	}
 }
 
@@ -117,7 +117,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	
 	if (buffer == 0)
 	{
-		throwException(env, "java/lang/IllegalStateException", "Invalid Direct Buffer used");
+		throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Direct Buffer used");
 		return;
 	}
 	
@@ -136,7 +136,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 		void * buffer = env->GetDirectBufferAddress(jbuffer);
 		if (buffer == 0)
 		{
-			throwException(env, "java/lang/IllegalStateException", "Invalid Direct Buffer used");
+			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Direct Buffer used");
 			return;
 		}
 		
@@ -146,7 +146,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	}
 	catch (AIOException& e)
 	{
-		throwException(env, "java/lang/RuntimeException", e.what());
+		throwException(env, e.getErrorCode(), e.what());
 	}
 }
 
@@ -162,7 +162,7 @@ JNIEXPORT void Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_i
 	}
 	catch (AIOException& e)
 	{
-		throwException(env, "java/lang/RuntimeException", e.what());
+		throwException(env, e.getErrorCode(), e.what());
 	}
 }
 
@@ -176,7 +176,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	}
 	catch (AIOException& e)
 	{
-		throwException(env, "java/lang/RuntimeException", e.what());
+		throwException(env, e.getErrorCode(), e.what());
 	}
 }
 
@@ -194,7 +194,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	}
 	catch (AIOException& e)
 	{
-		throwException(env, "java/lang/RuntimeException", e.what());
+		throwException(env, e.getErrorCode(), e.what());
 	}
 }
 
@@ -211,7 +211,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	}
 	catch (AIOException& e)
 	{
-		throwException(env, "java/lang/RuntimeException", e.what());
+		throwException(env, e.getErrorCode(), e.what());
 	}
 }
 
@@ -236,14 +236,14 @@ JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousF
 		long size = controller->fileOutput.getSize();
 		if (size < 0)
 		{
-			throwException(env, "java/lang/RuntimeException", "native method size failed");
+			throwException(env, NATIVE_ERROR_INTERNAL, "InternalError on Native Layer: method size failed");
 			return -1l;
 		}
 		return size;
 	}
 	catch (AIOException& e)
 	{
-		throwException(env, "java/lang/RuntimeException", e.what());
+		throwException(env, e.getErrorCode(), e.what());
 		return -1l;
 	}
 	

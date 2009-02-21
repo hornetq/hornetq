@@ -22,7 +22,7 @@
 #include <string>
 #include <jni.h>
 
-void throwException(JNIEnv * env,const char * clazz, const char * message);
+void throwException(JNIEnv * env, const int code, const char * message);
 std::string convertJavaString(JNIEnv * env, jstring& jstr);
 
 #endif /*JAVAUTILITIES_H_*/

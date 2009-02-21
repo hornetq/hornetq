@@ -22,20 +22,35 @@
 #include <string>
 #include "JavaUtilities.h"
 
-void throwException(JNIEnv * env,const char * clazz, const char * message)
+
+void throwRuntimeException(JNIEnv * env, const char * message)
 {
-  jclass exceptionClass = env->FindClass(clazz);
+  jclass exceptionClass = env->FindClass("java/lang/RuntimeException");
+  env->ThrowNew(exceptionClass,message);
+  
+}
+
+void throwException(JNIEnv * env, const int code, const char * message)
+{
+  jclass exceptionClass = env->FindClass("org/jboss/messaging/core/exception/MessagingException");
   if (exceptionClass==NULL) 
   {
-     exceptionClass = env->FindClass("java/lang/RuntimeException");
-     if (exceptionClass==NULL) 
-     {
-    	std::cerr << "Couldn't throw exception " << clazz << " message:= " << message << "\n";
-        return;
-     }
+     std::cerr << "Couldn't throw exception message:= " << message << "\n";
+     throwRuntimeException (env, "Can't find Exception class");
+     return;
   }
-  
-  env->ThrowNew(exceptionClass,message);
+
+  jmethodID constructor = env->GetMethodID(exceptionClass, "<init>", "(ILjava/lang/String;)V");
+  if (constructor == NULL)
+  {
+       std::cerr << "Couldn't find the constructor ***";
+       throwRuntimeException (env, "Can't find Constructor for Exception");
+       return;
+  }
+
+  jstring strError = env->NewStringUTF(message);
+  jthrowable ex = (jthrowable)env->NewObject(exceptionClass, constructor, code, strError);
+  env->Throw(ex);
   
 }
 

@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.AsynchronousFile;
 import org.jboss.messaging.core.asyncio.BufferCallback;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 
 /**
@@ -53,7 +54,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   private static int EXPECTED_NATIVE_VERSION = 16;
+   private static int EXPECTED_NATIVE_VERSION = 17;
 
    static void addMax(final int io)
    {
@@ -209,7 +210,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    public void write(final long position,
                      final long size,
                      final ByteBuffer directByteBuffer,
-                     final AIOCallback aioPackage)
+                     final AIOCallback aioPackage) throws MessagingException
    {
       checkOpened();
       if (poller == null)
@@ -221,8 +222,15 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          write(handler, position, size, directByteBuffer, aioPackage);
       }
+      catch (MessagingException e)
+      {
+         // Release only if an exception happened
+         writeSemaphore.release();
+         throw e;
+      }
       catch (RuntimeException e)
       {
+         // Release only if an exception happened
          writeSemaphore.release();
          throw e;
       }
@@ -232,7 +240,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    public void read(final long position,
                     final long size,
                     final ByteBuffer directByteBuffer,
-                    final AIOCallback aioPackage)
+                    final AIOCallback aioPackage) throws MessagingException
    {
       checkOpened();
       if (poller == null)
@@ -244,20 +252,27 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          read(handler, position, size, directByteBuffer, aioPackage);
       }
+      catch (MessagingException e)
+      {
+         // Release only if an exception happened
+         writeSemaphore.release();
+         throw e;
+      }
       catch (RuntimeException e)
       {
+         // Release only if an exception happened
          writeSemaphore.release();
          throw e;
       }
    }
 
-   public long size()
+   public long size() throws MessagingException
    {
       checkOpened();
       return size0(handler);
    }
 
-   public void fill(final long position, final int blocks, final long size, final byte fillChar)
+   public void fill(final long position, final int blocks, final long size, final byte fillChar) throws MessagingException
    {
       checkOpened();
       fill(handler, position, blocks, size, fillChar);
@@ -295,7 +310,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    /** The JNI layer will call this method, so we could use it to unlock readWriteLocks held in the java layer */
    @SuppressWarnings("unused")
    // Called by the JNI layer.. just ignore the
-                                 // warning
+   // warning
    private void callbackDone(final AIOCallback callback, final ByteBuffer buffer)
    {
       writeSemaphore.release();
@@ -308,7 +323,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    @SuppressWarnings("unused")
    // Called by the JNI layer.. just ignore the
-                                 // warning
+   // warning
    private void callbackError(final AIOCallback callback, final int errorCode, final String errorMessage)
    {
       log.warn("CallbackError: " + errorMessage);
@@ -366,17 +381,17 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static native long init(String fileName, int maxIO, Logger logger);
 
-   private native long size0(long handle);
+   private native long size0(long handle) throws MessagingException;
 
-   private native void write(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage);
+   private native void write(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws MessagingException;
 
-   private native void read(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage);
+   private native void read(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws MessagingException;
 
-   private static native void fill(long handle, long position, int blocks, long size, byte fillChar);
+   private static native void fill(long handle, long position, int blocks, long size, byte fillChar) throws MessagingException;
 
-   private static native void closeInternal(long handler);
+   private static native void closeInternal(long handler) throws MessagingException;
 
-   private static native void stopPoller(long handler);
+   private static native void stopPoller(long handler) throws MessagingException;
 
    /** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
    private static native int getNativeVersion();

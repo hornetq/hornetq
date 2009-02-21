@@ -33,6 +33,7 @@ import java.util.concurrent.CountDownLatch;
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.BufferCallback;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 
 /**
@@ -312,7 +313,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
 
             fail("An exception was supposed to be thrown");
          }
-         catch (Exception ignored)
+         catch (MessagingException ignored)
          {
          }
 
@@ -340,7 +341,7 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
          {
             controller.close();
          }
-         catch (Throwable ignored)
+         catch (MessagingException ignored)
          {
          }
 

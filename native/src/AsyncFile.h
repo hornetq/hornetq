@@ -68,7 +68,7 @@ public:
 		void * buffer = 0;
 		if (::posix_memalign(&buffer, 512, size))
 		{
-			throw AIOException(10, "Error on posix_memalign");
+			throw AIOException(NATIVE_ERROR_ALLOCATE_MEMORY, "Error on posix_memalign");
 		}
 		return buffer;
 		

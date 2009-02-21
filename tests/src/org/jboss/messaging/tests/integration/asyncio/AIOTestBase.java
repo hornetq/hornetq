@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -83,7 +84,7 @@ public abstract class AIOTestBase extends UnitTestCase
 
    }
 
-   protected void preAlloc(final AsynchronousFileImpl controller, final long size)
+   protected void preAlloc(final AsynchronousFileImpl controller, final long size) throws MessagingException
    {
       controller.fill(0l, 1, size, (byte)0);
    }

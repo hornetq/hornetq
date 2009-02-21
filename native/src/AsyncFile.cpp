@@ -67,14 +67,14 @@ AsyncFile::AsyncFile(std::string & _fileName, AIOController * _controller, int _
 	fileName = _fileName;
 	if (io_queue_init(maxIO, &aioContext))
 	{
-		throw AIOException(1, "Can't initialize aio"); 
+		throw AIOException(NATIVE_ERROR_CANT_INITIALIZE_AIO, "Can't initialize aio"); 
 	}
 
 	fileHandle = ::open(fileName.data(),  O_RDWR | O_CREAT | O_DIRECT, 0666);
 	if (fileHandle < 0)
 	{
 		io_queue_release(aioContext);
-		throw AIOException(1, "Can't open file"); 
+		throw AIOException(NATIVE_ERROR_CANT_OPEN_CLOSE_FILE, "Can't open file"); 
 	}
 	
 #ifdef DEBUG
@@ -85,7 +85,7 @@ AsyncFile::AsyncFile(std::string & _fileName, AIOController * _controller, int _
 	
 	if (events == 0)
 	{
-		throw AIOException (1, "Can't allocate ioEvents");
+		throw AIOException (NATIVE_ERROR_CANT_ALLOCATE_QUEUE, "Can't allocate ioEvents");
 	}
 
 }
@@ -94,11 +94,11 @@ AsyncFile::~AsyncFile()
 {
 	if (io_queue_release(aioContext))
 	{
-		throw AIOException(2,"Can't release aio");
+		throw AIOException(NATIVE_ERROR_CANT_RELEASE_AIO,"Can't release aio");
 	}
 	if (::close(fileHandle))
 	{
-		throw AIOException(2,"Can't close file");
+		throw AIOException(NATIVE_ERROR_CANT_OPEN_CLOSE_FILE,"Can't close file");
 	}
 	free(events);
 	::pthread_mutex_destroy(&fileMutex);
@@ -187,13 +187,13 @@ void AsyncFile::preAllocate(THREAD_CONTEXT , off_t position, int blocks, size_t 
 
 	if (size % ALIGNMENT != 0)
 	{
-		throw AIOException (101, "You can only pre allocate files in multiples of 512");
+		throw AIOException (NATIVE_ERROR_PREALLOCATE_FILE, "You can only pre allocate files in multiples of 512");
 	}
 	
 	void * preAllocBuffer = 0;
 	if (posix_memalign(&preAllocBuffer, 512, size))
 	{
-		throw AIOException(10, "Error on posix_memalign");
+		throw AIOException(NATIVE_ERROR_ALLOCATE_MEMORY, "Error on posix_memalign");
 	}
 	
 	memset(preAllocBuffer, fillChar, size);
@@ -205,11 +205,11 @@ void AsyncFile::preAllocate(THREAD_CONTEXT , off_t position, int blocks, size_t 
 	{
 		if (::write(fileHandle, preAllocBuffer, size)<0)
 		{
-			throw AIOException (12, "Error pre allocating the file");
+			throw AIOException (NATIVE_ERROR_PREALLOCATE_FILE, "Error pre allocating the file");
 		}
 	}
 	
-	if (::lseek (fileHandle, position, SEEK_SET) < 0) throw AIOException (11, "Error positioning the file");
+	if (::lseek (fileHandle, position, SEEK_SET) < 0) throw AIOException (NATIVE_ERROR_IO, "Error positioning the file");
 	
 	free (preAllocBuffer);
 }
@@ -243,7 +243,7 @@ void AsyncFile::write(THREAD_CONTEXT threadContext, long position, size_t size, 
 #ifdef DEBUG
 		    fprintf (stderr, "Error level on retries, throwing exception (retry=%d)\n", tries);
 #endif
-			throw AIOException(500, "Too many retries (500) waiting for a valid iocb block, please increase MAX_IO limit");
+			throw AIOException(NATIVE_ERROR_AIO_FULL, "Too many retries (500) waiting for a valid iocb block, please increase MAX_IO limit");
 		}
 		::usleep(WAIT_FOR_SPOT);
 	}
@@ -252,7 +252,7 @@ void AsyncFile::write(THREAD_CONTEXT threadContext, long position, size_t size, 
 	{
 		std::stringstream str;
 		str<< "Problem on submit block, errorCode=" << result;
-		throw AIOException (6, str.str());
+		throw AIOException (NATIVE_ERROR_IO, str.str());
 	}
 }
 
@@ -285,7 +285,7 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 #ifdef DEBUG
 		    fprintf (stderr, "Error level on retries, throwing exception (retry=%d)\n", tries);
 #endif
-			throw AIOException(500, "Too many retries (500) waiting for a valid iocb block, please increase MAX_IO limit");
+			throw AIOException(NATIVE_ERROR_AIO_FULL, "Too many retries (500) waiting for a valid iocb block, please increase MAX_IO limit");
 		}
 		::usleep(WAIT_FOR_SPOT);
 	}
@@ -294,7 +294,7 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 	{
 		std::stringstream str;
 		str<< "Problem on submit block, errorCode=" << result;
-		throw AIOException (6, str.str());
+		throw AIOException (NATIVE_ERROR_IO, str.str());
 	}
 }
 

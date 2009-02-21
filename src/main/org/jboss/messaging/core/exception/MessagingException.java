@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.exception;
 
@@ -32,70 +32,96 @@ package org.jboss.messaging.core.exception;
 public class MessagingException extends Exception
 {
    private static final long serialVersionUID = -4802014152804997417L;
-   
+
    // Error codes -------------------------------------------------
-            
+
    public static final int INTERNAL_ERROR = 000;
-   
+
    public static final int UNSUPPORTED_PACKET = 001;
-   
+
    public static final int NOT_CONNECTED = 002;
-   
+
    public static final int CONNECTION_TIMEDOUT = 003;
-   
+
    public static final int INTERRUPTED = 004;
 
-   
    public static final int QUEUE_DOES_NOT_EXIST = 100;
-   
+
    public static final int QUEUE_EXISTS = 101;
-   
+
    public static final int OBJECT_CLOSED = 102;
-   
+
    public static final int INVALID_FILTER_EXPRESSION = 103;
-   
+
    public static final int ILLEGAL_STATE = 104;
-   
+
    public static final int SECURITY_EXCEPTION = 105;
-   
+
    public static final int ADDRESS_DOES_NOT_EXIST = 106;
-   
+
    public static final int ADDRESS_EXISTS = 107;
 
    public static final int INCOMPATIBLE_CLIENT_SERVER_VERSIONS = 108;
-   
+
    public static final int SESSION_EXISTS = 109;
+
    
+   // Native Error codes ----------------------------------------------
+   
+   public static final int NATIVE_ERROR_INTERNAL = 200;
+
+   public static final int NATIVE_ERROR_INVALID_BUFFER = 201;
+
+   public static final int NATIVE_ERROR_NOT_ALIGNED = 202;
+
+   public static final int NATIVE_ERROR_CANT_INITIALIZE_AIO = 203;
+
+   public static final int NATIVE_ERROR_CANT_RELEASE_AIO = 204;
+
+   public static final int NATIVE_ERROR_CANT_OPEN_CLOSE_FILE = 205;
+
+   public static final int NATIVE_ERROR_CANT_ALLOCATE_QUEUE = 206;
+
+   public static final int NATIVE_ERROR_PREALLOCATE_FILE = 208;
+
+   public static final int NATIVE_ERROR_ALLOCATE_MEMORY = 209;
+
+   public static final int NATIVE_ERROR_IO = 210;
+
+   public static final int NATIVE_ERROR_AIO_FULL = 211;
+   
+   
+
    private int code;
-   
+
    public MessagingException()
-   {      
+   {
    }
-   
+
    public MessagingException(int code)
    {
       this.code = code;
    }
-   
+
    public MessagingException(int code, String msg)
    {
       super(msg);
-      
+
       this.code = code;
    }
-   
+
    public MessagingException(int code, String msg, Throwable cause)
    {
       super(msg, cause);
-      
+
       this.code = code;
    }
-   
+
    public int getCode()
    {
       return code;
    }
-   
+
    public String toString()
    {
       return "MessagingException[errorCode=" + code + " message=" + getMessage() + "]";

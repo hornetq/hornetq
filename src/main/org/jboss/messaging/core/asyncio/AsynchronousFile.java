@@ -24,6 +24,8 @@ package org.jboss.messaging.core.asyncio;
 
 import java.nio.ByteBuffer;
 
+import org.jboss.messaging.core.exception.MessagingException;
+
 /**
  * 
  * @author clebert.suconic@jboss.com
@@ -43,14 +45,15 @@ public interface AsynchronousFile
 
    /** 
     * Warning: This function will perform a synchronous IO, probably translating to a fstat call
+    * @throws MessagingException 
     * */
-   long size();
+   long size() throws MessagingException;
 
-   void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioPackage);
+   void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioPackage) throws MessagingException;
 
-   void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioPackage);
+   void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioPackage) throws MessagingException;
 
-   void fill(long position, int blocks, long size, byte fillChar);
+   void fill(long position, int blocks, long size, byte fillChar) throws MessagingException;
 
    ByteBuffer newBuffer(int size);
 
