@@ -286,10 +286,15 @@ public class JournalImpl implements TestableJournal
 
    public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
    {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record));
+      appendAddRecord(id, recordType, new ByteArrayEncoding(record), false);
+   }
+   
+   public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
+   {
+      appendAddRecord(id, recordType, record, syncNonTransactional);
    }
 
-   public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
+   public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -312,7 +317,7 @@ public class JournalImpl implements TestableJournal
 
       try
       {
-         JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
+         JournalFile usedFile = appendRecord(bb.getBuffer(), sync, null);
 
          posFilesMap.put(id, new PosFiles(usedFile));
       }

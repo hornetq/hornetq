@@ -85,6 +85,8 @@ import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TimeAndCounterIDGenerator;
+import org.jboss.messaging.util.UUID;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * 
@@ -104,6 +106,8 @@ public class JournalStorageManager implements StorageManager
    public static final byte QUEUE_BINDING_RECORD = 21;
 
    public static final byte DESTINATION_RECORD = 22;
+   
+   public static final byte PERSISTENT_ID_RECORD = 23;
 
    // type + expiration + timestamp + priority
    public static final int SIZE_FIELDS = SIZE_INT + SIZE_LONG + SIZE_LONG + SIZE_BYTE;
@@ -125,6 +129,8 @@ public class JournalStorageManager implements StorageManager
    public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
    public static final byte DUPLICATE_ID = 37;
+   
+   private UUID persistentID;
 
    // This will produce a unique id **for this node only**
    private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
@@ -226,6 +232,11 @@ public class JournalStorageManager implements StorageManager
       this.messageJournal = messageJournal;
       this.bindingsJournal = bindingsJournal;
       this.largeMessagesFactory = largeMessagesFactory;
+   }
+   
+   public UUID getPersistentID()
+   {
+      return persistentID;
    }
 
    public long generateUniqueID()
@@ -959,10 +970,25 @@ public class JournalStorageManager implements StorageManager
 
             destinations.add(destinationEncoding.destination);
          }
+         else if (rec == PERSISTENT_ID_RECORD)
+         {
+            PersistentIDEncoding encoding = new PersistentIDEncoding();
+            
+            encoding.decode(buffer);
+            
+            persistentID = encoding.uuid;
+         }
          else
          {
             throw new IllegalStateException("Invalid record type " + rec);
          }
+      }
+      
+      if (persistentID == null)
+      {
+         persistentID = UUIDGenerator.getInstance().generateUUID();
+         
+         bindingsJournal.appendAddRecord(generateUniqueID(), PERSISTENT_ID_RECORD, new PersistentIDEncoding(persistentID), true);         
       }
    }
 
@@ -1236,6 +1262,40 @@ public class JournalStorageManager implements StorageManager
       public int getEncodeSize()
       {
          return SimpleString.sizeofString(destination);
+      }
+
+   }
+   
+   private static class PersistentIDEncoding implements EncodingSupport
+   {
+      UUID uuid;
+
+      PersistentIDEncoding(final UUID uuid)
+      {
+         this.uuid = uuid;
+      }
+
+      PersistentIDEncoding()
+      {
+      }
+
+      public void decode(final MessagingBuffer buffer)
+      {
+         byte[] bytes = new byte[16];
+         
+         buffer.getBytes(bytes);
+         
+         uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
+      }
+
+      public void encode(final MessagingBuffer buffer)
+      {
+         buffer.putBytes(uuid.asBytes());
+      }
+
+      public int getEncodeSize()
+      {
+         return 16;
       }
 
    }

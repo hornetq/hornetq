@@ -57,6 +57,7 @@ import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.util.ExecutorFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUID;
 
 /**
  * A ClusterManagerImpl
@@ -93,7 +94,7 @@ public class ClusterManagerImpl implements ClusterManager
 
    private final QueueFactory queueFactory;
 
-   private final SimpleString nodeID;
+   private final UUID nodeUUID;
 
    private volatile boolean started;
 
@@ -104,7 +105,7 @@ public class ClusterManagerImpl implements ClusterManager
                              final ManagementService managementService,
                              final Configuration configuration,
                              final QueueFactory queueFactory,
-                             final SimpleString nodeID)
+                             final UUID nodeUUID)
    {
       this.executorFactory = executorFactory;
 
@@ -120,7 +121,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       this.queueFactory = queueFactory;
 
-      this.nodeID = nodeID;
+      this.nodeUUID = nodeUUID;
    }
 
    public synchronized void start() throws Exception
@@ -202,7 +203,7 @@ public class ClusterManagerImpl implements ClusterManager
    {
       return new HashMap<String, Bridge>(bridges);
    }
-   
+
    public Set<ClusterConnection> getClusterConnections()
    {
       return new HashSet<ClusterConnection>(clusters.values());
@@ -222,7 +223,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
 
-      BroadcastGroupImpl group = new BroadcastGroupImpl(nodeID.toString(),
+      BroadcastGroupImpl group = new BroadcastGroupImpl(nodeUUID.toString(),
                                                         config.getName(),
                                                         localBindAddress,
                                                         config.getLocalBindPort(),
@@ -291,7 +292,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
 
-      DiscoveryGroup group = new DiscoveryGroupImpl(nodeID.toString(),
+      DiscoveryGroup group = new DiscoveryGroupImpl(nodeUUID.toString(),
                                                     config.getName(),
                                                     groupAddress,
                                                     config.getGroupPort(),
@@ -381,7 +382,8 @@ public class ClusterManagerImpl implements ClusterManager
          Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
                                                                                                                               backupConnector);
 
-         bridge = new BridgeImpl(new SimpleString(config.getName()),
+         bridge = new BridgeImpl(nodeUUID,
+                                 new SimpleString(config.getName()),
                                  queue,
                                  pair,
                                  executorFactory.getExecutor(),
@@ -477,7 +479,7 @@ public class ClusterManagerImpl implements ClusterManager
                                                        queueFactory,
                                                        connectors,
                                                        config.getMaxHops(),
-                                                       nodeID);
+                                                       nodeUUID);
       }
       else
       {
@@ -505,7 +507,7 @@ public class ClusterManagerImpl implements ClusterManager
                                                        queueFactory,
                                                        dg,
                                                        config.getMaxHops(),
-                                                       nodeID);
+                                                       nodeUUID);
       }
 
       managementService.registerCluster(clusterConnection, config);

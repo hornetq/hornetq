@@ -103,38 +103,11 @@ public class DiscoveryGroupControlTest extends TestCase
 
       discoveryGroupControl.stop();
       assertFalse(discoveryGroupControl.isStarted());
-   }
-
-   public void testStoppedDiscoveryGroupCanNotBeRestarted() throws Exception
-   {
-      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
-
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-      Configuration conf = new ConfigurationImpl();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.setClustered(true);
-      conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
-
-      DiscoveryGroupControlMBean discoveryGroupControl = createDiscoveryGroupControl(discoveryGroupConfig.getName(), mbeanServer);
-
-      // started by the service
-      assertTrue(discoveryGroupControl.isStarted());
-
-      discoveryGroupControl.stop();
-      assertFalse(discoveryGroupControl.isStarted());
       
-      try
-      {
-         discoveryGroupControl.start();      
-         fail("once stopped, a discovery group can not be restarted");
-      }
-      catch (Exception e)
-      {
-      }
+      discoveryGroupControl.start();
+      assertTrue(discoveryGroupControl.isStarted());
    }
+
 
    // Package protected ---------------------------------------------
 

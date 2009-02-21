@@ -43,6 +43,8 @@ import org.jboss.messaging.util.IDGenerator;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
 import org.jboss.messaging.util.TimeAndCounterIDGenerator;
+import org.jboss.messaging.util.UUID;
+import org.jboss.messaging.util.UUIDGenerator;
 
 /**
  * 
@@ -55,8 +57,15 @@ import org.jboss.messaging.util.TimeAndCounterIDGenerator;
 public class NullStorageManager implements StorageManager
 {
    private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
+   
+   private final UUID id = UUIDGenerator.getInstance().generateUUID();
 
    private volatile boolean started;
+   
+   public UUID getPersistentID()
+   {
+      return id;
+   }
 
    public void addQueueBinding(final Binding queueBinding) throws Exception
    {

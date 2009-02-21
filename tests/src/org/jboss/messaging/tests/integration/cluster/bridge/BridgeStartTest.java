@@ -196,7 +196,8 @@ public class BridgeStartTest extends ServiceTestBase
 
       service1.stop();
    }
-
+   
+   
    public void testTargetServerUpAndDown() throws Exception
    {
       //This test needs to use real files, since it requires duplicate detection, since when the target server is shutdown, messages will get resent when it is started, so the dup id cache needs
@@ -383,7 +384,7 @@ public class BridgeStartTest extends ServiceTestBase
          service1.stop();
       }
    }
-
+   
    public void testTargetServerNotAvailableNoReconnectTries() throws Exception
    {
       Map<String, Object> service0Params = new HashMap<String, Object>();

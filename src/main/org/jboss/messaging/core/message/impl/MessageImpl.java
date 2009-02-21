@@ -231,11 +231,8 @@ public abstract class MessageImpl implements Message
       // TODO - this can be optimised
       byte[] bytes = new byte[len];
       buffer.getBytes(bytes);
-      // body = new ByteBufferWrapper(ByteBuffer.wrap(bytes));
-      // body.position(body.limit());
       body = buffer.createNewBuffer(len);
       body.putBytes(bytes);
-
    }
 
    public long getMessageID()

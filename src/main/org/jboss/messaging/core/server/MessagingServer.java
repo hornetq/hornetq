@@ -32,6 +32,7 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUID;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed to other components of the server. The
@@ -118,4 +119,6 @@ public interface MessagingServer extends MessagingComponent
    QueueFactory getQueueFactory();
    
    SimpleString getNodeID();
+   
+   UUID getUUID();
 }

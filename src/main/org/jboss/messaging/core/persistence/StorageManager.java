@@ -40,6 +40,7 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUID;
 
 /**
  * 
@@ -52,6 +53,8 @@ import org.jboss.messaging.util.SimpleString;
 public interface StorageManager extends MessagingComponent
 {
    // Message related operations
+   
+   UUID getPersistentID();
 
    long generateUniqueID();
 

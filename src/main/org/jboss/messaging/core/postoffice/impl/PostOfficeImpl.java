@@ -24,13 +24,11 @@ package org.jboss.messaging.core.postoffice.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -57,7 +55,6 @@ import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.QueueInfo;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
@@ -137,8 +134,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
    
-   private final String nodeID;
-
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory bindableFactory,
@@ -151,8 +146,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                          final int idCacheSize,
                          final boolean persistIDCache,
                          final ExecutorFactory orderedExecutorFactory,           
-                         HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                         final String nodeID)
+                         HierarchicalRepository<AddressSettings> addressSettingsRepository)
 
    {
       this.storageManager = storageManager;
@@ -186,10 +180,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       this.redistributorExecutorFactory = orderedExecutorFactory;
 
-      this.addressSettingsRepository = addressSettingsRepository;
-      
-      this.nodeID = nodeID;
-      
+      this.addressSettingsRepository = addressSettingsRepository;      
    }
 
    // MessagingComponent implementation ---------------------------------------

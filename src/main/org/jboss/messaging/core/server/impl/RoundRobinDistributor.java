@@ -65,8 +65,11 @@ public class RoundRobinDistributor extends DistributorImpl
          return HandleStatus.BUSY;
       }
       int startPos = pos;
+      
       boolean filterRejected = false;
+      
       HandleStatus status;
+      
       while (true)
       {
          status = handle(reference, getNextConsumer());
@@ -95,16 +98,19 @@ public class RoundRobinDistributor extends DistributorImpl
       }
    }
 
-   protected synchronized Consumer getNextConsumer()
+   private final synchronized Consumer getNextConsumer()
    {
       Consumer consumer = consumers.get(pos);
+      
       incrementPosition();
+      
       return consumer;
    }
 
    protected void incrementPosition()
    {
       pos++;
+      
       if (pos == consumers.size())
       {
          pos = 0;

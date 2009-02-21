@@ -27,7 +27,6 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
@@ -78,6 +77,7 @@ import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.util.Future;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UUID;
 import org.jboss.messaging.util.UUIDGenerator;
 
 /**
@@ -96,6 +96,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    private static final Logger log = Logger.getLogger(BridgeImpl.class);
 
    // Attributes ----------------------------------------------------
+
+   private final UUID nodeUUID;
 
    private final SimpleString name;
 
@@ -151,7 +153,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    // Public --------------------------------------------------------
 
-   public BridgeImpl(final SimpleString name,
+   public BridgeImpl(final UUID nodeUUID,
+                     final SimpleString name,
                      final Queue queue,
                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      final Executor executor,
@@ -168,7 +171,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final SimpleString managementNotificationAddress,
                      final String clusterPassword) throws Exception
    {
-      this(name,
+      this(nodeUUID,
+           name,
            queue,
            connectorPair,
            executor,
@@ -187,7 +191,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
            null);
    }
 
-   public BridgeImpl(final SimpleString name,
+   public BridgeImpl(final UUID nodeUUID,
+                     final SimpleString name,
                      final Queue queue,
                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      final Executor executor,
@@ -205,6 +210,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final String clusterPassword,
                      final MessageFlowRecord flowRecord) throws Exception
    {
+      this.nodeUUID = nodeUUID;
+
       this.name = name;
 
       this.queue = queue;
@@ -645,11 +652,17 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
          if (useDuplicateDetection && !message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
          {
-            byte[] bytes = new byte[8];
+            //If we are using duplicate detection and there's not already a duplicate detection header, then
+            //we add a header composed of the persistent node id and the message id, which makes it globally unique
+            //between restarts.
+            //If you use a cluster connection then a guid based duplicate id will be used since it is added *before* the
+            //message goes into the store and forward queue.
+            //But with this technique it also works when the messages don't already have such a header in them in the queue.
+            byte[] bytes = new byte[24];
 
             ByteBuffer bb = ByteBuffer.wrap(bytes);
 
-            // TODO NEEDS to incluse server id
+            bb.put(nodeUUID.asBytes());
 
             bb.putLong(message.getMessageID());
 

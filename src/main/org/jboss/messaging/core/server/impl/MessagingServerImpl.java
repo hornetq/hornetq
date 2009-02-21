@@ -71,8 +71,8 @@ import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
@@ -81,7 +81,7 @@ import org.jboss.messaging.util.JBMThreadFactory;
 import org.jboss.messaging.util.OrderedExecutorFactory;
 import org.jboss.messaging.util.Pair;
 import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.util.UUID;
 import org.jboss.messaging.util.VersionLoader;
 
 /**
@@ -105,6 +105,8 @@ public class MessagingServerImpl implements MessagingServer
    // -----------------------------------------------------------------------------------
 
    private SimpleString nodeID;
+   
+   private UUID uuid;
 
    private final Version version;
 
@@ -173,8 +175,6 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-
-      nodeID = UUIDGenerator.getInstance().generateSimpleStringUUID();
 
       asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
 
@@ -247,8 +247,7 @@ public class MessagingServerImpl implements MessagingServer
                                       configuration.getIDCacheSize(),
                                       configuration.isPersistIDCache(),
                                       executorFactory,                                                           
-                                      addressSettingsRepository,
-                                      nodeID.toString());
+                                      addressSettingsRepository);
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
@@ -263,6 +262,17 @@ public class MessagingServerImpl implements MessagingServer
       managementService.setManagementNotificationAddress(configuration.getManagementNotificationAddress());
       managementService.setClusterPassword(configuration.getManagementClusterPassword());
       managementService.setManagementRequestTimeout(configuration.getManagementRequestTimeout());
+      
+      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
+      List<SimpleString> destinations = new ArrayList<SimpleString>();
+
+      storageManager.loadBindingJournal(queueBindingInfos, destinations);
+      
+      uuid = storageManager.getPersistentID();
+      
+      nodeID = new SimpleString(uuid.toString());
+      
+      log.info("*** messaging server node id is " + nodeID);
 
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
@@ -274,11 +284,8 @@ public class MessagingServerImpl implements MessagingServer
                                                           this,
                                                           queueFactory);
 
-      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
-      List<SimpleString> destinations = new ArrayList<SimpleString>();
-
-      storageManager.loadBindingJournal(queueBindingInfos, destinations);
-
+      
+      
       // FIXME the destination corresponding to the notification address is always created
       // so that queues can be created wether the address is allowable or not (to revisit later)
       if (!postOffice.containsDestination(configuration.getManagementNotificationAddress()))
@@ -387,7 +394,7 @@ public class MessagingServerImpl implements MessagingServer
                                                  managementService,
                                                  configuration,
                                                  queueFactory,
-                                                 nodeID);
+                                                 uuid);
 
          clusterManager.start();
       }
@@ -759,6 +766,11 @@ public class MessagingServerImpl implements MessagingServer
    public SimpleString getNodeID()
    {
       return nodeID;
+   }
+   
+   public UUID getUUID()
+   {
+      return uuid;
    }
 
    // Public

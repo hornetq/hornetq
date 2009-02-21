@@ -22,6 +22,7 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Consumer;
@@ -38,6 +39,7 @@ import org.jboss.messaging.util.SimpleString;
  * so on.
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class GroupingRoundRobinDistributor extends RoundRobinDistributor
 {
@@ -47,34 +49,42 @@ public class GroupingRoundRobinDistributor extends RoundRobinDistributor
 
    // Attributes ----------------------------------------------------
 
-   private ConcurrentHashMap<SimpleString, Consumer> cons = new ConcurrentHashMap<SimpleString, Consumer>();
-
+   private ConcurrentMap<SimpleString, Consumer> cons = new ConcurrentHashMap<SimpleString, Consumer>();
 
    // Distributor implementation ------------------------------------
 
-   public HandleStatus distribute(MessageReference reference)
+   public HandleStatus distribute(final MessageReference reference)
    {
-      if (getConsumerCount() == 0)
+      if (consumers.isEmpty())
       {
          return HandleStatus.BUSY;
       }
-      final SimpleString groupId = (SimpleString) reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
+      
+      final SimpleString groupId = (SimpleString)reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
+      
       if (groupId != null)
       {
          int startPos = pos;
+         
          boolean filterRejected = false;
 
          while (true)
          {
-            Consumer consumer = cons.putIfAbsent(groupId, consumers.get(pos));
+            Consumer consumer = consumers.get(pos);
+            
+            Consumer oldConsumer = cons.putIfAbsent(groupId, consumer);
 
-            if (consumer == null)
+            if (oldConsumer == null)
             {
                incrementPosition();
-               consumer = cons.get(groupId);
             }
-            
+            else
+            {
+               consumer = oldConsumer;
+            }
+
             HandleStatus status = handle(reference, consumer);
+            
             if (status == HandleStatus.HANDLED)
             {
                return HandleStatus.HANDLED;
@@ -85,10 +95,10 @@ public class GroupingRoundRobinDistributor extends RoundRobinDistributor
             }
             else if (status == HandleStatus.BUSY)
             {
-               //if we were previously bound, we can remove and try the next consumer
+               // if we were previously bound, we can remove and try the next consumer
                return HandleStatus.BUSY;
             }
-            //if we've tried all of them
+            // if we've tried all of them
             if (startPos == pos)
             {
                // Tried all of them
@@ -113,6 +123,7 @@ public class GroupingRoundRobinDistributor extends RoundRobinDistributor
    public synchronized boolean removeConsumer(Consumer consumer)
    {
       boolean removed = super.removeConsumer(consumer);
+      
       if (removed)
       {
          for (SimpleString group : cons.keySet())

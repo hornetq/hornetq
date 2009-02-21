@@ -88,7 +88,7 @@ public final class UUID
     * @param data
     *           16 byte UUID contents
     */
-   UUID(int type, byte[] data)
+   public UUID(int type, byte[] data)
    {
       for (int i = 0; i < 16; ++i)
       {

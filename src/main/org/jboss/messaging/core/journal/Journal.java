@@ -41,6 +41,8 @@ public interface Journal extends MessagingComponent
    void appendAddRecord(long id, byte recordType, byte[] record) throws Exception;
 
    void appendAddRecord(long id, byte recordType, EncodingSupport record) throws Exception;
+   
+   void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
 
    void appendUpdateRecord(long id, byte recordType, byte[] record) throws Exception;
 
