@@ -379,7 +379,6 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void putUTF(final String str) throws Exception
    {
-      flip();
       UTF8Util.saveUTF(this, str);
       buffer.readerIndex(buffer.writerIndex());
    }
