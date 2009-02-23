@@ -25,8 +25,18 @@ package org.jboss.messaging.tests.timing.util;
 import junit.framework.TestCase;
 
 import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
-import org.jboss.messaging.util.UTFUtil;
+import org.jboss.messaging.util.UTF8Util;
 
+/**
+ * 
+ * A UTF8Test
+ *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * 
+ * Created Feb 23, 2009 11:57:55 AM
+ *
+ *
+ */
 public class UTF8Test extends TestCase
 {
 
@@ -40,31 +50,11 @@ public class UTF8Test extends TestCase
                               + "abcdef&^*&!^ghijkl\uB5E2\uCAC7\uB2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5";
 
    final int TIMES = 5;
+
    final long numberOfIteractions = 1000000;
 
-   // Attributes ----------------------------------------------------
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-
-   public void testValidateUTF() throws Exception
-   {
-      ChannelBufferWrapper buffer = new ChannelBufferWrapper(10 * 1024);
-
-      UTFUtil.saveUTF(buffer, str);
-
-      buffer.rewind();
-
-      String newStr = UTFUtil.readUTF(buffer);
-
-      assertEquals(str, newStr);
-   }
-
-   public void testUTF() throws Exception
+   public void testWriteUTF() throws Exception
    {
       ChannelBufferWrapper buffer = new ChannelBufferWrapper(10 * 1024);
 
@@ -87,7 +77,6 @@ public class UTF8Test extends TestCase
 
          System.out.println("Time WriteUTF = " + spentTime);
       }
-
    }
 
    public void testReadUTF() throws Exception
@@ -118,59 +107,10 @@ public class UTF8Test extends TestCase
       }
 
    }
-
-   public void testNewUTF() throws Exception
+   
+   protected void tearDown() throws Exception
    {
-      ChannelBufferWrapper buffer = new ChannelBufferWrapper(10 * 1024);
-
-      long start = System.currentTimeMillis();
-
-      for (int c = 0; c < TIMES; c++)
-      {
-         for (long i = 0; i < numberOfIteractions; i++)
-         {
-            if (i == 10000)
-            {
-               start = System.currentTimeMillis();
-            }
-
-            buffer.rewind();
-            UTFUtil.saveUTF(buffer, str);
-         }
-
-         long spentTime = System.currentTimeMillis() - start;
-
-         System.out.println("time NewUTF = " + spentTime);
-      }
-
-   }
-
-   public void testReadNewUTF() throws Exception
-   {
-      ChannelBufferWrapper buffer = new ChannelBufferWrapper(10 * 1024);
-
-      UTFUtil.saveUTF(buffer, str);
-
-      long start = System.currentTimeMillis();
-
-      for (int c = 0; c < TIMES; c++)
-      {
-         for (long i = 0; i < numberOfIteractions; i++)
-         {
-            if (i == 10000)
-            {
-               start = System.currentTimeMillis();
-            }
-
-            buffer.rewind();
-            String newstr = UTFUtil.readUTF(buffer);
-            assertEquals(str, newstr);
-         }
-
-         long spentTime = System.currentTimeMillis() - start;
-
-         System.out.println("spentTime readUTFNew = " + spentTime);
-      }
-
+      UTF8Util.clearBuffer();
+      super.tearDown();
    }
 }

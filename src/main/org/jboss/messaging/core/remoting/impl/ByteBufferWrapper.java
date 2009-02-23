@@ -33,6 +33,7 @@ import java.nio.charset.Charset;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UTF8Util;
 
 /**
  * 
@@ -195,11 +196,7 @@ public class ByteBufferWrapper implements MessagingBuffer
 	
 	public void putUTF(final String str) throws Exception
    {
-		//TODO This is quite inefficient - can be improved using a method similar to what MINA IOBuffer does
-		//(putPrefixedString)
-		ByteBuffer bb = utf8.encode(str);
-   	buffer.putInt(bb.limit() - bb.position());
-   	buffer.put(bb);
+	   UTF8Util.saveUTF(this, str);
    }
 
 	public short getShort()
@@ -277,12 +274,7 @@ public class ByteBufferWrapper implements MessagingBuffer
    
    public String getUTF() throws Exception
    {
-   	int len = buffer.getInt();
-   	byte[] data = new byte[len];
-   	buffer.get(data);
-   	ByteBuffer bb = ByteBuffer.wrap(data); 
-   	CharBuffer cb = utf8.newDecoder().decode(bb);
-   	return cb.toString();
+      return UTF8Util.readUTF(this);
    }
 
 	public int limit()

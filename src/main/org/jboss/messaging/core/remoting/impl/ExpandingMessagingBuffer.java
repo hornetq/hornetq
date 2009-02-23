@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UTF8Util;
 
 /**
  * A {@link MessagingBuffer} which increases its capacity and length by itself
@@ -173,10 +174,7 @@ public class ExpandingMessagingBuffer implements MessagingBuffer
 
    public String getUTF() throws Exception
    {
-      int length = getUnsignedShort();
-      byte[] data = new byte[length];
-      getBytes(data);
-      return new String(data, "UTF-8");
+      return UTF8Util.readUTF(this);
    }
 
    public short getUnsignedByte()
@@ -319,13 +317,7 @@ public class ExpandingMessagingBuffer implements MessagingBuffer
 
    public void putUTF(String utf) throws Exception
    {
-      byte[] data = utf.getBytes("UTF-8");
-      if (data.length > 65535) {
-         throw new IllegalArgumentException("String is too long: " + data.length);
-      }
-      ensureRemaining(2 + data.length);
-      buf.putShort((short) data.length);
-      buf.put(data);
+      UTF8Util.saveUTF(this, utf);
    }
 
    public int remaining()

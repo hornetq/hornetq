@@ -33,6 +33,7 @@ import java.nio.BufferUnderflowException;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.util.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
@@ -378,16 +379,8 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public void putUTF(final String str) throws Exception
    {
-      ChannelBuffer encoded = copiedBuffer(str, "UTF-8");
-      int length = encoded.readableBytes();
-      if (length >= 65536)
-      {
-         throw new IllegalArgumentException("the specified string is too long (" + length + ")");
-      }
-
       flip();
-      buffer.writeShort((short)length);
-      buffer.writeBytes(encoded);
+      UTF8Util.saveUTF(this, str);
       buffer.readerIndex(buffer.writerIndex());
    }
 
@@ -439,18 +432,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
 
    public String getUTF() throws Exception
    {
-      ChannelBuffer utf8value;
-      try
-      {
-         int length = buffer.readUnsignedShort();
-         utf8value = buffer.readSlice(length);
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
-
-      return utf8value.toString("UTF-8");
+      return UTF8Util.readUTF(this);
    }
 
    public Object getUnderlyingBuffer()
