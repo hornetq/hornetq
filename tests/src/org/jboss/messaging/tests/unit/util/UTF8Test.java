@@ -34,6 +34,7 @@ import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.ExpandingMessagingBuffer;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.Random;
 import org.jboss.messaging.util.UTF8Util;
@@ -74,13 +75,15 @@ public class UTF8Test extends TestCase
    {
       for (int i = 0; i < 100; i++)
       {
-         byte[] bytes = new byte[20000];
-
          Random random = new Random();
+
+         // Random size between 15k and 20K
+         byte[] bytes = new byte[15000 + RandomUtil.randomPositiveInt() % 5000];
+
          random.getRandom().nextBytes(bytes);
 
          String str = new String(bytes);
-
+         
          // The maximum size the encoded UTF string would reach is str.length * 3 (look at the UTF8 implementation)
          testValidateUTFOnDataInputStream(str, new ByteBufferWrapper(ByteBuffer.allocate(str.length() * 3 + DataConstants.SIZE_SHORT)));
 
