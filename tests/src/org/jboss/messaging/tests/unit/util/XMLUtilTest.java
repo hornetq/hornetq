@@ -22,8 +22,7 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import junit.framework.TestCase;
-
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -34,26 +33,11 @@ import org.w3c.dom.NodeList;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class XMLUtilTest extends TestCase
+public class XMLUtilTest extends UnitTestCase
 {
    // Constructors --------------------------------------------------
 
-   public XMLUtilTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
-
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   public void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
 
    public void testGetTextContext_1() throws Exception
    {

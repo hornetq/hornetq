@@ -22,19 +22,18 @@
 
 package org.jboss.messaging.tests.integration.security;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public abstract class SecurityManagerClientTestBase extends TestCase
+public abstract class SecurityManagerClientTestBase extends UnitTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 

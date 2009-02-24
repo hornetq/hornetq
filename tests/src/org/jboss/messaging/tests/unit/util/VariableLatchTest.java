@@ -24,9 +24,8 @@ package org.jboss.messaging.tests.unit.util;
 
 import java.util.concurrent.CountDownLatch;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.VariableLatch;
 
 /**
@@ -34,7 +33,7 @@ import org.jboss.messaging.util.VariableLatch;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * 
  */
-public class VariableLatchTest extends TestCase
+public class VariableLatchTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(VariableLatchTest.class);
 

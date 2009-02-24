@@ -26,12 +26,12 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.easymock.classextension.EasyMock.createMock;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,7 +39,7 @@ import org.jboss.messaging.jms.server.management.impl.TopicControl;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class TopicControlTest extends TestCase
+public class TopicControlTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

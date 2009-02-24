@@ -43,8 +43,6 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
@@ -57,6 +55,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -65,7 +64,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSQueueControlTest extends TestCase
+public class JMSQueueControlTest extends UnitTestCase
 {
    private String jndiBinding;
 

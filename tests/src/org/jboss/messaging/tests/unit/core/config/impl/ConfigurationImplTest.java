@@ -32,11 +32,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -46,7 +45,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class ConfigurationImplTest extends TestCase
+public class ConfigurationImplTest extends UnitTestCase
 {
    protected Configuration conf;
          

@@ -26,9 +26,8 @@ import static java.lang.Integer.parseInt;
 
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.VersionLoader;
 
 /**
@@ -37,7 +36,7 @@ import org.jboss.messaging.util.VersionLoader;
  * @version <tt>$Revision$</tt>
  *
  */
-public class VersionLoaderTest extends TestCase
+public class VersionLoaderTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

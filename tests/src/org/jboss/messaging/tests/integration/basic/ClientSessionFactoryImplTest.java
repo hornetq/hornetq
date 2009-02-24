@@ -22,12 +22,11 @@
 
 package org.jboss.messaging.tests.integration.basic;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +35,7 @@ import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
  *
  *
  */
-public class ClientSessionFactoryImplTest extends TestCase
+public class ClientSessionFactoryImplTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

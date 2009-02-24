@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.tests.unit.jms.referenceable;
 
-import junit.framework.TestCase;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -30,7 +30,7 @@ import junit.framework.TestCase;
  * @version <tt>$Revision$</tt>
  *
  */
-public class ConnectionFactoryObjectFactoryTest extends TestCase
+public class ConnectionFactoryObjectFactoryTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

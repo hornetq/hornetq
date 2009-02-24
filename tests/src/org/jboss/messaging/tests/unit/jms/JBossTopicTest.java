@@ -23,9 +23,9 @@
 package org.jboss.messaging.tests.unit.jms;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.Pair;
 
 /**
@@ -34,7 +34,7 @@ import org.jboss.messaging.util.Pair;
  * @version <tt>$Revision$</tt>
  *
  */
-public class JBossTopicTest extends TestCase
+public class JBossTopicTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

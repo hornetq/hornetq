@@ -22,12 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -36,7 +35,7 @@ import org.w3c.dom.NodeList;
  * tests BasicSecurityDeployer
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class BasicSecurityDeployerTest  extends TestCase
+public class BasicSecurityDeployerTest  extends UnitTestCase
 {
    private BasicSecurityDeployer deployer;
    

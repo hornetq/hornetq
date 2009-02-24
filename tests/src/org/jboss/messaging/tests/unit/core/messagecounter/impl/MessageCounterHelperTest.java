@@ -35,11 +35,10 @@ import java.io.StringReader;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
 import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -49,7 +48,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  */
-public class MessageCounterHelperTest extends TestCase
+public class MessageCounterHelperTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

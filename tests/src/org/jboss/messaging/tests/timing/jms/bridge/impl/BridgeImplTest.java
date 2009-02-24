@@ -45,13 +45,12 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.transaction.TransactionManager;
 
-import junit.framework.TestCase;
-
 import org.easymock.IAnswer;
 import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.DestinationFactory;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -59,7 +58,7 @@ import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class BridgeImplTest extends TestCase
+public class BridgeImplTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

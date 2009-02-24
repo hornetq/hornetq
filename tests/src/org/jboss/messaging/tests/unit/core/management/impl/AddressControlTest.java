@@ -38,14 +38,13 @@ import java.util.Set;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -54,7 +53,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class AddressControlTest extends TestCase
+public class AddressControlTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

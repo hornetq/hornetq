@@ -22,9 +22,8 @@
 
 package org.jboss.messaging.tests.timing.util;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.TokenBucketLimiterImpl;
 
 /**
@@ -34,7 +33,7 @@ import org.jboss.messaging.util.TokenBucketLimiterImpl;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class TokenBucketLimiterImplTest extends TestCase
+public class TokenBucketLimiterImplTest extends UnitTestCase
 {
 	private static final Logger log = Logger.getLogger(TokenBucketLimiterImplTest.class);
 	

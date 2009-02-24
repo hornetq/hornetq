@@ -34,8 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import junit.framework.TestCase;
-
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
 
 /**
@@ -45,7 +44,7 @@ import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
  * @version <tt>$Revision$</tt>
  *
  */
-public class ObjectInputStreamWithClassLoaderTest extends TestCase
+public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

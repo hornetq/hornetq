@@ -22,13 +22,12 @@
 
 package org.jboss.messaging.tests.unit.core.config.impl;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.core.deployers.impl.QueueDeployer;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -39,7 +38,7 @@ import org.w3c.dom.NodeList;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  */
-public class QueueDeployerTest extends TestCase
+public class QueueDeployerTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

@@ -28,10 +28,9 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.jms.client.JMSExceptionHelper;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,7 +38,7 @@ import org.jboss.messaging.jms.client.JMSExceptionHelper;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSExceptionHelperTest extends TestCase
+public class JMSExceptionHelperTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

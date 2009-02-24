@@ -25,8 +25,6 @@ package org.jboss.messaging.tests.unit.core.security.impl;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -34,6 +32,7 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -41,7 +40,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class SecurityStoreImplTest extends TestCase
+public class SecurityStoreImplTest extends UnitTestCase
 {
    SecurityStoreImpl securityStore;
 

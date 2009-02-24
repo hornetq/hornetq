@@ -30,30 +30,16 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
-import java.util.Set;
-
 import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
-import junit.framework.TestCase;
-
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
-import org.jboss.messaging.core.management.impl.MessagingServerControl;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.server.RemotingService;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -62,7 +48,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class ManagementServiceImplTest extends TestCase
+public class ManagementServiceImplTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

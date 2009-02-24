@@ -24,8 +24,7 @@
 package org.jboss.messaging.tests.unit.core.config.impl;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-
-import junit.framework.TestCase;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A TransportConfigurationTest
@@ -36,7 +35,7 @@ import junit.framework.TestCase;
  *
  *
  */
-public class TransportConfigurationTest extends TestCase
+public class TransportConfigurationTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

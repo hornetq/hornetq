@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -45,6 +43,7 @@ import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -59,7 +58,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public class FailBackupServerTest extends TestCase
+public class FailBackupServerTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(FailBackupServerTest.class);
 

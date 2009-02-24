@@ -22,13 +22,12 @@
 
 package org.jboss.messaging.tests.unit.core.filter.impl;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -38,16 +37,11 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision: 3514 $
  */
-public class FilterTest  extends TestCase
+public class FilterTest  extends UnitTestCase
 {
    private Filter filter;
    
    private ServerMessage message;
-   
-   public FilterTest(String name)
-   {
-      super(name);
-   }
    
    protected void setUp() throws Exception
    {

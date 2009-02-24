@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.integration.management;
 
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientRequestor;
@@ -35,6 +34,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -43,7 +43,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public abstract class SecurityManagementTestBase extends TestCase
+public abstract class SecurityManagementTestBase extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
@@ -65,6 +65,8 @@ public abstract class SecurityManagementTestBase extends TestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       service = setupAndStartMessagingService();
    }
 

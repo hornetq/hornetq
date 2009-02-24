@@ -46,6 +46,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
@@ -324,14 +325,19 @@ public class UnitTestCase extends TestCase
    {
       super.setUp();
       
+      InVMRegistry.instance.clear();
+      
       log.info("###### starting test " + this.getName());
    }
    
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
       deleteDirectory(new File(getTestDir()));
+
+      assertEquals(0, InVMRegistry.instance.size());
+      
+      super.tearDown();
    }
 
    protected byte[] autoEncode(Object... args)

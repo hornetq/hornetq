@@ -33,11 +33,10 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.easymock.classextension.EasyMock;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -45,7 +44,7 @@ import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class ConnectionFactoryControlTest extends TestCase
+public class ConnectionFactoryControlTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

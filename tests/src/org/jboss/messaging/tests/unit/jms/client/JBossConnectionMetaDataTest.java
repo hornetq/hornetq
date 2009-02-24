@@ -33,10 +33,9 @@ import java.util.Set;
 
 import javax.jms.ConnectionMetaData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.jms.client.JBossConnectionMetaData;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -44,7 +43,7 @@ import org.jboss.messaging.jms.client.JBossConnectionMetaData;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossConnectionMetaDataTest extends TestCase
+public class JBossConnectionMetaDataTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

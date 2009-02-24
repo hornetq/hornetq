@@ -39,10 +39,9 @@ import java.util.ArrayList;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.jms.client.JBossStreamMessage;
 import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -50,7 +49,7 @@ import org.jboss.messaging.tests.util.RandomUtil;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossStreamMessageTest extends TestCase
+public class JBossStreamMessageTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

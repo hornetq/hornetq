@@ -26,11 +26,10 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.naming.Reference;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.referenceable.DestinationObjectFactory;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -38,7 +37,7 @@ import org.jboss.messaging.jms.referenceable.DestinationObjectFactory;
  * @version <tt>$Revision$</tt>
  *
  */
-public class DestinationObjectFactoryTest extends TestCase
+public class DestinationObjectFactoryTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

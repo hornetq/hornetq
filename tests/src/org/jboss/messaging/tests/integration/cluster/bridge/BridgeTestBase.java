@@ -25,14 +25,13 @@ package org.jboss.messaging.tests.integration.cluster.bridge;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A BridgeTestBase
@@ -43,7 +42,7 @@ import org.jboss.messaging.core.server.MessagingService;
  *
  *
  */
-public abstract class BridgeTestBase extends TestCase
+public abstract class BridgeTestBase extends UnitTestCase
 {
    protected MessagingService createMessagingServiceNIO(final int id, final Map<String, Object> params)
    {

@@ -29,9 +29,8 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,7 +38,7 @@ import org.jboss.messaging.jms.server.management.SubscriptionInfo;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SubscriptionInfoTest extends TestCase
+public class SubscriptionInfoTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

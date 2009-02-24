@@ -29,8 +29,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -40,13 +38,14 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A ReplicationAwareAddressControlWrapperTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ReplicationAwareTestBase extends TestCase
+public class ReplicationAwareTestBase extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

@@ -36,8 +36,6 @@ import javax.jms.Session;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -53,6 +51,7 @@ import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A QueueControlTest
@@ -63,7 +62,7 @@ import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
  *
  *
  */
-public class JMSServerControlTest extends TestCase
+public class JMSServerControlTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

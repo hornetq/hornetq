@@ -22,10 +22,9 @@
 
 package org.jboss.messaging.tests.unit.jms.client;
 
-import junit.framework.TestCase;
-
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -33,7 +32,7 @@ import org.jboss.messaging.core.remoting.FailureListener;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossConnectionTest extends TestCase
+public class JBossConnectionTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

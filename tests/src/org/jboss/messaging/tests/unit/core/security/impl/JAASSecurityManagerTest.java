@@ -41,11 +41,10 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.spi.LoginModule;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.integration.security.JAASSecurityManager;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.security.SimpleGroup;
 
 /**
@@ -53,7 +52,7 @@ import org.jboss.security.SimpleGroup;
  *
  *@author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class JAASSecurityManagerTest extends TestCase
+public class JAASSecurityManagerTest extends UnitTestCase
 {
    private JAASSecurityManager securityManager;
 

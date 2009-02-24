@@ -32,8 +32,6 @@ import java.util.Enumeration;
 
 import javax.jms.Message;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -42,6 +40,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossQueueBrowser;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -50,7 +49,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  *
  */
-public class JBossQueueBrowserTest extends TestCase
+public class JBossQueueBrowserTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

@@ -26,8 +26,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.ConcurrentHashSet;
 import org.jboss.messaging.util.ConcurrentSet;
 
@@ -37,7 +36,7 @@ import org.jboss.messaging.util.ConcurrentSet;
  * @version <tt>$Revision$</tt>
  *
  */
-public class ConcurrentHashSetTest extends TestCase
+public class ConcurrentHashSetTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

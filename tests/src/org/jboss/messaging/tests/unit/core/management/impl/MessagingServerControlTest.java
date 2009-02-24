@@ -26,24 +26,10 @@ import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.management.NotificationBroadcasterSupport;
-import javax.transaction.xa.Xid;
-
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
@@ -52,16 +38,12 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * t
@@ -71,7 +53,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingServerControlTest extends TestCase
+public class MessagingServerControlTest extends UnitTestCase
 {
    private PostOffice postOffice;
 

@@ -23,8 +23,8 @@
 package org.jboss.messaging.tests.unit.util;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import junit.framework.TestCase;
 
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.SimpleString;
 
@@ -35,7 +35,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SimpleStringTest extends TestCase
+public class SimpleStringTest extends UnitTestCase
 {
 	public void testString() throws Exception
 	{

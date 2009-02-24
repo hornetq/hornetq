@@ -32,8 +32,6 @@ import javax.jms.Topic;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -43,6 +41,7 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A TopicControlTest
@@ -53,7 +52,7 @@ import org.jboss.messaging.jms.server.management.TopicControlMBean;
  *
  *
  */
-public class TopicControlTest extends TestCase
+public class TopicControlTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
@@ -75,11 +74,6 @@ public class TopicControlTest extends TestCase
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public TopicControlTest(String name)
-   {
-      super(name);
-   }
 
    // Public --------------------------------------------------------
 

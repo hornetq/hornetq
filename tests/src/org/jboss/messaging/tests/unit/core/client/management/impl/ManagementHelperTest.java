@@ -31,13 +31,12 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /*
@@ -45,7 +44,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ManagementHelperTest extends TestCase
+public class ManagementHelperTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

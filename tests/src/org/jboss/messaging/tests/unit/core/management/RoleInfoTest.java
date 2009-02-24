@@ -28,9 +28,8 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.management.RoleInfo;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -38,7 +37,7 @@ import org.jboss.messaging.core.management.RoleInfo;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class RoleInfoTest extends TestCase
+public class RoleInfoTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

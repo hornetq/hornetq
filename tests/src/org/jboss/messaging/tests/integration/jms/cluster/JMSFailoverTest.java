@@ -54,8 +54,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
@@ -71,6 +69,7 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossSession;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -86,7 +85,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public class JMSFailoverTest extends TestCase
+public class JMSFailoverTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(JMSFailoverTest.class);
 

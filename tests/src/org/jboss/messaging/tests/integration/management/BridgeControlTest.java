@@ -27,10 +27,10 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.Pair;
 
 /**
@@ -41,7 +41,7 @@ import org.jboss.messaging.util.Pair;
  * Created 11 dec. 2008 17:38:58
  *
  */
-public class BridgeControlTest extends TestCase
+public class BridgeControlTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

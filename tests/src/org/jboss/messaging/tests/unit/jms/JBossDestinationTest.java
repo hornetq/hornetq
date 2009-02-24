@@ -29,13 +29,12 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTemporaryQueue;
 import org.jboss.messaging.jms.JBossTemporaryTopic;
 import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -43,7 +42,7 @@ import org.jboss.messaging.jms.JBossTopic;
  * @version <tt>$Revision$</tt>
  *
  */
-public class JBossDestinationTest extends TestCase
+public class JBossDestinationTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

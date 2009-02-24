@@ -46,8 +46,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -59,12 +57,13 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.integration.jms.management.NullInitialContext;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ConsumerTest extends TestCase
+public class ConsumerTest extends UnitTestCase
 {
    private MessagingService service;
 

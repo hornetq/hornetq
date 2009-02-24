@@ -38,8 +38,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -52,6 +50,7 @@ import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossMessageConsumer;
 import org.jboss.messaging.jms.client.JBossSession;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -59,7 +58,7 @@ import org.jboss.messaging.jms.client.JBossSession;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossMessageConsumerTest extends TestCase
+public class JBossMessageConsumerTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

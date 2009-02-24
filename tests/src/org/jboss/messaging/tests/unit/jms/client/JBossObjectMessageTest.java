@@ -38,8 +38,6 @@ import java.util.Collections;
 import javax.jms.DeliveryMode;
 import javax.jms.ObjectMessage;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -47,6 +45,7 @@ import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.client.JBossObjectMessage;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -54,7 +53,7 @@ import org.jboss.messaging.jms.client.JBossObjectMessage;
  * @version <tt>$Revision$</tt>
  *
  */
-public class JBossObjectMessageTest extends TestCase
+public class JBossObjectMessageTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

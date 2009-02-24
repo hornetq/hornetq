@@ -24,18 +24,17 @@ package org.jboss.messaging.tests.unit.core.security.impl;
 
 import java.util.HashSet;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * tests JBMSecurityManagerImpl
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class JBMSecurityManagerImplTest extends TestCase
+public class JBMSecurityManagerImplTest extends UnitTestCase
 {
    private JBMSecurityManagerImpl securityManager;
 

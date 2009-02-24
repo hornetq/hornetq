@@ -49,8 +49,6 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -64,6 +62,7 @@ import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossMessageProducer;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -72,7 +71,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  *
  */
-public class JBossMessageProducerTest extends TestCase
+public class JBossMessageProducerTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

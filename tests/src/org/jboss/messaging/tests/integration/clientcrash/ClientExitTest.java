@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.integration.clientcrash;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSession;
@@ -38,6 +37,7 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -52,7 +52,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * $Id$
  */
-public class ClientExitTest extends TestCase
+public class ClientExitTest extends UnitTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 

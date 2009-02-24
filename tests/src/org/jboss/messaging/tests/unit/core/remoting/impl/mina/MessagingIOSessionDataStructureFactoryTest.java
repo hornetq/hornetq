@@ -26,11 +26,11 @@ import static org.easymock.EasyMock.createStrictMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import junit.framework.TestCase;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.session.IoSessionAttributeMap;
 import org.jboss.messaging.integration.transports.mina.MessagingIOSessionDataStructureFactory;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -38,7 +38,7 @@ import org.jboss.messaging.integration.transports.mina.MessagingIOSessionDataStr
  * @version <tt>$Revision$</tt>
  *
  */
-public class MessagingIOSessionDataStructureFactoryTest extends TestCase
+public class MessagingIOSessionDataStructureFactoryTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

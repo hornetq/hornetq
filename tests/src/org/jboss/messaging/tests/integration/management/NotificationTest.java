@@ -28,8 +28,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -44,6 +42,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -52,7 +51,7 @@ import org.jboss.messaging.util.SimpleString;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class NotificationTest extends TestCase
+public class NotificationTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

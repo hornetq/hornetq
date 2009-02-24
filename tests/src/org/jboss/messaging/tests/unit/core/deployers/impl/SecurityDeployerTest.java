@@ -25,20 +25,19 @@ package org.jboss.messaging.tests.unit.core.deployers.impl;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class SecurityDeployerTest extends TestCase
+public class SecurityDeployerTest extends UnitTestCase
 {
    private SecurityDeployer deployer;
    private String conf = 

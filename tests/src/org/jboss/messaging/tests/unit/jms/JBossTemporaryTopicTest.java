@@ -32,8 +32,6 @@ import java.util.ArrayList;
 
 import javax.jms.Session;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
@@ -41,6 +39,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResp
 import org.jboss.messaging.jms.JBossTemporaryTopic;
 import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.jms.client.JBossSession;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -49,7 +48,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossTemporaryTopicTest extends TestCase
+public class JBossTemporaryTopicTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

@@ -25,17 +25,16 @@ package org.jboss.messaging.tests.unit.core.settings.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.Mergeable;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class RepositoryTest extends TestCase
+public class RepositoryTest extends UnitTestCase
 {
    HierarchicalRepository<HashSet<Role>> securityRepository;
 

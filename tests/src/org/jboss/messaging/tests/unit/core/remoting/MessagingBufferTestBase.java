@@ -30,10 +30,10 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -41,7 +41,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  * @version <tt>$Revision$</tt>
  */
-public abstract class MessagingBufferTestBase extends TestCase
+public abstract class MessagingBufferTestBase extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -58,6 +58,8 @@ public abstract class MessagingBufferTestBase extends TestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       wrapper = createBuffer();
    }
 
@@ -65,6 +67,8 @@ public abstract class MessagingBufferTestBase extends TestCase
    protected void tearDown() throws Exception
    {
       wrapper = null;
+      
+      super.tearDown();
    }
 
    protected abstract MessagingBuffer createBuffer();

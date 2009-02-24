@@ -22,15 +22,14 @@
 
 package org.jboss.messaging.tests.unit.core.settings.impl;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class AddressSettingsTest extends TestCase
+public class AddressSettingsTest extends UnitTestCase
 {
    public void testDefaults()
    {

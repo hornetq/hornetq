@@ -30,8 +30,6 @@ import java.util.HashMap;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -44,6 +42,7 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A AcceptorControlTest
@@ -54,7 +53,7 @@ import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
  *
  *
  */
-public class AcceptorControlTest extends TestCase
+public class AcceptorControlTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

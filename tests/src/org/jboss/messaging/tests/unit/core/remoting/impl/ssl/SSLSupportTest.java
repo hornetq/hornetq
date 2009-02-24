@@ -25,9 +25,8 @@ package org.jboss.messaging.tests.unit.core.remoting.impl.ssl;
 import java.io.File;
 import java.net.URL;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -35,7 +34,7 @@ import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class SSLSupportTest extends TestCase
+public class SSLSupportTest extends UnitTestCase
 {
    private String keyStorePath;
    private String keyStorePassword;
@@ -55,6 +54,8 @@ public class SSLSupportTest extends TestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       keyStorePath = "messaging.keystore";
       keyStorePassword = "secureexample";
       trustStorePath = "messaging.truststore";

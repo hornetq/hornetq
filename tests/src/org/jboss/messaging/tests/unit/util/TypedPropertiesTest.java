@@ -32,11 +32,8 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
 
 import java.util.Iterator;
-
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.mina.IoBufferWrapper;
@@ -50,7 +47,7 @@ import org.jboss.messaging.util.TypedProperties;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class TypedPropertiesTest extends TestCase
+public class TypedPropertiesTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

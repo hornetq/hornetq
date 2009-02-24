@@ -45,8 +45,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageFormatException;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -61,6 +59,7 @@ import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.JBossObjectMessage;
 import org.jboss.messaging.jms.client.JBossStreamMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -69,7 +68,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossMessageTest extends TestCase
+public class JBossMessageTest extends UnitTestCase
 {
    private ClientSession clientSession;
    private ClientMessage clientMessage;

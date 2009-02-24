@@ -36,8 +36,6 @@ import java.util.List;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
@@ -58,13 +56,14 @@ import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  */
-public class JMSManagementServiceImplTest extends TestCase
+public class JMSManagementServiceImplTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

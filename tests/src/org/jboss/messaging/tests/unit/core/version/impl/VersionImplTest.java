@@ -27,9 +27,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.version.impl.VersionImpl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -37,7 +36,7 @@ import org.jboss.messaging.core.version.impl.VersionImpl;
  * @version <tt>$Revision$</tt>
  *
  */
-public class VersionImplTest extends TestCase
+public class VersionImplTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

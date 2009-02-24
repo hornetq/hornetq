@@ -33,9 +33,8 @@ import java.util.Collection;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.management.MessageInfo;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -43,7 +42,7 @@ import org.jboss.messaging.core.management.MessageInfo;
  * @version <tt>$Revision$</tt>
  *
  */
-public class MessageInfoTest extends TestCase
+public class MessageInfoTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

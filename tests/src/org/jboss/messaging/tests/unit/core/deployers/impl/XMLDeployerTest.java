@@ -26,9 +26,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -37,7 +36,7 @@ import org.w3c.dom.Node;
  * tests the abstract xml deployer class
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class XMLDeployerTest extends TestCase
+public class XMLDeployerTest extends UnitTestCase
 {
    private static final String conf1 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
                                        + "   <test name=\"test2\">content2</test>\n"

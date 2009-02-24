@@ -25,9 +25,9 @@ package org.jboss.messaging.tests.unit.core.security;
 import static org.jboss.messaging.core.security.CheckType.CREATE;
 import static org.jboss.messaging.core.security.CheckType.READ;
 import static org.jboss.messaging.core.security.CheckType.WRITE;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -35,7 +35,7 @@ import org.jboss.messaging.core.security.Role;
  * @version <tt>$Revision$</tt>
  *
  */
-public class RoleTest extends TestCase
+public class RoleTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

@@ -49,6 +49,8 @@ public class CreateQueueTest extends ServiceTestBase
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       Queue q = (Queue) binding.getBindable();
       assertFalse(q.isDurable());
+      
+      session.close();
    }
 
    public void testDurableTrue() throws Exception
@@ -58,6 +60,8 @@ public class CreateQueueTest extends ServiceTestBase
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       Queue q = (Queue) binding.getBindable();
       assertTrue(q.isDurable());
+
+      session.close();
    }
 
    public void testTemporaryFalse() throws Exception
@@ -67,6 +71,8 @@ public class CreateQueueTest extends ServiceTestBase
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       Queue q = (Queue) binding.getBindable();
       assertFalse(q.isTemporary());
+      
+      session.close();
    }
 
    public void testTemporaryTrue() throws Exception
@@ -76,6 +82,8 @@ public class CreateQueueTest extends ServiceTestBase
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       Queue q = (Queue) binding.getBindable();
       assertTrue(q.isTemporary());
+      
+      session.close();
    }
 
    public void testcreateWithFilter() throws Exception
@@ -86,6 +94,8 @@ public class CreateQueueTest extends ServiceTestBase
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       Queue q = (Queue) binding.getBindable();
       assertEquals(q.getFilter().getFilterString(), filterString);
+      
+      session.close();
    }
 
     public void testAddressSettingUSed() throws Exception
@@ -98,6 +108,8 @@ public class CreateQueueTest extends ServiceTestBase
       session.createQueue(address, queueName, filterString, false, false);
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       assertTrue(binding.getBindable() instanceof SoloQueueImpl);
+
+      session.close();
    }
 
    @Override
@@ -111,10 +123,12 @@ public class CreateQueueTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
       if(messagingService != null && messagingService.isStarted())
       {
          messagingService.stop();
       }
+      
+      super.tearDown();
+
    }
 }

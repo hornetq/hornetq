@@ -22,9 +22,8 @@
 
 package org.jboss.messaging.tests.timing.util;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.UTF8Util;
 
 /**
@@ -37,7 +36,7 @@ import org.jboss.messaging.util.UTF8Util;
  *
  *
  */
-public class UTF8Test extends TestCase
+public class UTF8Test extends UnitTestCase
 {
 
    private final String str = "abcdef&^*&!^ghijkl\uB5E2\uCAC7\uB2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5" + "abcdef&^*&!^ghijkl\uB5E2\uCAC7\uB2BB\uB7DD\uB7C7\uB3A3\uBCE4\uB5A5"

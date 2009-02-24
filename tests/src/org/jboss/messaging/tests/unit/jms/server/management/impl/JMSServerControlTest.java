@@ -39,11 +39,10 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -51,7 +50,7 @@ import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSServerControlTest extends TestCase
+public class JMSServerControlTest extends UnitTestCase
 {
    private MBeanServer mbeanServer;
    private ObjectName serverON;

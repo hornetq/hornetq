@@ -33,8 +33,6 @@ import java.util.List;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
@@ -43,6 +41,7 @@ import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.Pair;
 
 /**
@@ -54,7 +53,7 @@ import org.jboss.messaging.util.Pair;
  *
  *
  */
-public class BroadcastGroupControlTest extends TestCase
+public class BroadcastGroupControlTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

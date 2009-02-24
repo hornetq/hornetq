@@ -36,9 +36,8 @@ import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays
 
 import javax.jms.MessageFormatException;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.jms.client.JBossMapMessage;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -46,7 +45,7 @@ import org.jboss.messaging.jms.client.JBossMapMessage;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossMapMessageTest extends TestCase
+public class JBossMapMessageTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

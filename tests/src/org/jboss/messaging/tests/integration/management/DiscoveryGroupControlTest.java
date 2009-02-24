@@ -29,14 +29,13 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A AcceptorControlTest
@@ -47,7 +46,7 @@ import org.jboss.messaging.core.server.MessagingService;
  *
  *
  */
-public class DiscoveryGroupControlTest extends TestCase
+public class DiscoveryGroupControlTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

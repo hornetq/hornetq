@@ -43,8 +43,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AddressControlMBean;
@@ -57,6 +55,7 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /*
@@ -64,7 +63,7 @@ import org.jboss.messaging.util.SimpleString;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ManagementServiceImplTest extends TestCase
+public class ManagementServiceImplTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

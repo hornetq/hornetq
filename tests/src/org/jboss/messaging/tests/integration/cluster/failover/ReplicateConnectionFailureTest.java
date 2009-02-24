@@ -44,8 +44,6 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
@@ -59,6 +57,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * 
@@ -72,7 +71,7 @@ import org.jboss.messaging.core.server.MessagingService;
  * is replicated to backup.
  *
  */
-public class ReplicateConnectionFailureTest extends TestCase
+public class ReplicateConnectionFailureTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(ReplicateConnectionFailureTest.class);
 

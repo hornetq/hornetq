@@ -23,8 +23,6 @@ package org.jboss.messaging.tests.integration.basic;
 
 import java.util.concurrent.CountDownLatch;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -42,12 +40,13 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class AutoGroupClientTest extends TestCase
+public class AutoGroupClientTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(AutoGroupClientTest.class);
 

@@ -27,10 +27,10 @@ import static org.easymock.classextension.EasyMock.createStrictMock;
 import static org.easymock.classextension.EasyMock.replay;
 import static org.easymock.classextension.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.jms.JBossTemporaryQueue;
 import org.jboss.messaging.jms.client.JBossSession;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -38,7 +38,7 @@ import org.jboss.messaging.jms.client.JBossSession;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossTemporaryQueueTest extends TestCase
+public class JBossTemporaryQueueTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

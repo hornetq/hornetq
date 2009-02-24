@@ -22,12 +22,11 @@
 
 package org.jboss.messaging.tests.integration.ssl;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -36,7 +35,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision: 3716 $</tt>
  * 
  */
-public class CoreClientOverSSLTest extends TestCase
+public class CoreClientOverSSLTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -58,11 +57,6 @@ public class CoreClientOverSSLTest extends TestCase
    private ClientConsumer consumer;
    
    // Constructors --------------------------------------------------
-
-   public CoreClientOverSSLTest(String name)
-   {
-      super(name);
-   }
 
    // Public --------------------------------------------------------
 

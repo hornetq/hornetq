@@ -24,9 +24,8 @@ package org.jboss.messaging.tests.unit.jms.client;
 
 import javax.jms.Connection;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -34,7 +33,7 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossConnectionFactoryTest extends TestCase
+public class JBossConnectionFactoryTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

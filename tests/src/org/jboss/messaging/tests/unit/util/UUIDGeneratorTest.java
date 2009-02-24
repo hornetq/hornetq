@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.tests.unit.util;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.UUIDGenerator;
 
@@ -33,7 +31,7 @@ import org.jboss.messaging.util.UUIDGenerator;
  * @version <tt>$Revision$</tt>
  *
  */
-public class UUIDGeneratorTest extends TestCase
+public class UUIDGeneratorTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

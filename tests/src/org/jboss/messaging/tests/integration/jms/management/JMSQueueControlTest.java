@@ -56,8 +56,6 @@ import javax.management.MBeanServerFactory;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -69,6 +67,7 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A QueueControlTest
@@ -79,7 +78,7 @@ import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
  *
  *
  */
-public class JMSQueueControlTest extends TestCase
+public class JMSQueueControlTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

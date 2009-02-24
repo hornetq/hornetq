@@ -40,10 +40,9 @@ import java.util.Set;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -52,7 +51,7 @@ import org.jboss.messaging.util.SimpleString;
  * @version <tt>$Revision$</tt>
  *
  */
-public class JMSMessageInfoTest extends TestCase
+public class JMSMessageInfoTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

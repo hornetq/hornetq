@@ -23,9 +23,9 @@
 package org.jboss.messaging.tests.unit.jms;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import junit.framework.TestCase;
 
 import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -33,7 +33,7 @@ import org.jboss.messaging.jms.JBossQueue;
  * @version <tt>$Revision$</tt>
  *
  */
-public class JBossQueueTest extends TestCase
+public class JBossQueueTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

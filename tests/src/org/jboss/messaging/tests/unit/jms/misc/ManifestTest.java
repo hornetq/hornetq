@@ -31,17 +31,16 @@ import java.util.jar.Manifest;
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossConnectionMetaData;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class ManifestTest extends TestCase
+public class ManifestTest extends UnitTestCase
 {
       // Constants -----------------------------------------------------
     Logger log = Logger.getLogger(ManifestTest.class);
@@ -50,11 +49,6 @@ public class ManifestTest extends TestCase
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public ManifestTest(String name)
-   {
-      super(name);
-   }
 
    // Public --------------------------------------------------------
 

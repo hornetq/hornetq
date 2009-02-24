@@ -26,10 +26,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -37,7 +36,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossSessionTest extends TestCase
+public class JBossSessionTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

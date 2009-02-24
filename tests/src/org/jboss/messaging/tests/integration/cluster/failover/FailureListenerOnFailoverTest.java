@@ -25,8 +25,6 @@ package org.jboss.messaging.tests.integration.cluster.failover;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
@@ -43,6 +41,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * 
@@ -56,7 +55,7 @@ import org.jboss.messaging.core.server.MessagingService;
  *
  *
  */
-public class FailureListenerOnFailoverTest extends TestCase
+public class FailureListenerOnFailoverTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(FailureListenerOnFailoverTest.class);
 

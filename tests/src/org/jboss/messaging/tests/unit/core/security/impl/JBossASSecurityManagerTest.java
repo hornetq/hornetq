@@ -27,13 +27,12 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import junit.framework.TestCase;
-
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.integration.security.JBossASSecurityManager;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
@@ -43,7 +42,7 @@ import org.jboss.security.SimplePrincipal;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class JBossASSecurityManagerTest extends TestCase
+public class JBossASSecurityManagerTest extends UnitTestCase
 {
    private JBossASSecurityManager securityManager;
 

@@ -22,9 +22,8 @@
 
 package org.jboss.messaging.tests.unit.core.config.impl;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.impl.FileConfiguration;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 
@@ -37,7 +36,7 @@ import org.w3c.dom.Element;
  *
  *
  */
-public class ConfigurationValidationTest extends TestCase
+public class ConfigurationValidationTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

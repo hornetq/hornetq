@@ -30,8 +30,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.openmbean.TabularData;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -40,6 +38,7 @@ import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A QueueControlTest
@@ -50,7 +49,7 @@ import org.jboss.messaging.core.server.MessagingService;
  *
  *
  */
-public class MessagingServerControlTest extends TestCase
+public class MessagingServerControlTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

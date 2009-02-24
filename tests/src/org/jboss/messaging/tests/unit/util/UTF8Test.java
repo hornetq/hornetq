@@ -28,13 +28,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.ExpandingMessagingBuffer;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
 import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.DataConstants;
 import org.jboss.messaging.util.Random;
 import org.jboss.messaging.util.UTF8Util;
@@ -48,7 +47,7 @@ import org.jboss.messaging.util.UTF8Util;
  *
  *
  */
-public class UTF8Test extends TestCase
+public class UTF8Test extends UnitTestCase
 {
 
    public void testValidateUTF() throws Exception

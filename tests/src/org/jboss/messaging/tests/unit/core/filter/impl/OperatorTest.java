@@ -49,9 +49,8 @@ import static org.jboss.messaging.core.filter.impl.Operator.SUB;
 
 import java.util.HashSet;
 
-import junit.framework.TestCase;
-
 import org.jboss.messaging.core.filter.impl.Operator;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.util.SimpleString;
 
 /**
@@ -63,7 +62,7 @@ import org.jboss.messaging.util.SimpleString;
  *
  *
  */
-public class OperatorTest extends TestCase
+public class OperatorTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
