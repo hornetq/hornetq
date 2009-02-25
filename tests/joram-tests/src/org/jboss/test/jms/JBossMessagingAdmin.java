@@ -69,10 +69,7 @@ import org.objectweb.jtests.jms.admin.Admin;
 /**
  * A JBossMessagingAdmin
  *
- * @author jmesnil
- * 
- * Created 16 févr. 2009 10:36:29
- *
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public class JBossMessagingAdmin implements Admin
