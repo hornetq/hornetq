@@ -38,7 +38,7 @@ import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

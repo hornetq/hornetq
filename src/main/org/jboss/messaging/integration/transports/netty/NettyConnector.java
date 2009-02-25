@@ -44,8 +44,8 @@ import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
-import org.jboss.messaging.util.ConfigurationHelper;
-import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.utils.ConfigurationHelper;
+import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
@@ -212,7 +212,7 @@ public class NettyConnector implements Connector
          return;
       }
       
-      workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-worker-threads"));
+      workerExecutor = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-netty-connector-worker-threads"));
       if (useNio)
       {
          bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));

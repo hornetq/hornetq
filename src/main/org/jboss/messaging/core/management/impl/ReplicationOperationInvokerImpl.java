@@ -36,7 +36,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ReplicationOperationInvoker

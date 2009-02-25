@@ -24,7 +24,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy;
-import org.jboss.messaging.util.Random;
+import org.jboss.messaging.utils.Random;
 
 /**
  * A RandomConnectionLoadBalancingPolicy

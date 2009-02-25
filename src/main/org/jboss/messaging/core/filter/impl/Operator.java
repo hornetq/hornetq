@@ -25,7 +25,7 @@ package org.jboss.messaging.core.filter.impl;
 import java.util.HashSet;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
 * Implementations of the operators used in JBM filter expressions

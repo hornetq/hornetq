@@ -42,7 +42,7 @@ import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.tests.util.RandomUtil;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ReplicationAwareQueueControlWrapperTest

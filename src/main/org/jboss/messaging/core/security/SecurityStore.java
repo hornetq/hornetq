@@ -26,7 +26,7 @@ import java.util.Set;
 
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 
 /**

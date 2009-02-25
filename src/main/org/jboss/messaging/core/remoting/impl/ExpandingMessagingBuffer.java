@@ -22,14 +22,14 @@
  */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.util.DataConstants.NOT_NULL;
-import static org.jboss.messaging.util.DataConstants.NULL;
+import static org.jboss.messaging.utils.DataConstants.NOT_NULL;
+import static org.jboss.messaging.utils.DataConstants.NULL;
+import org.jboss.messaging.utils.SimpleString;
 
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UTF8Util;
+import org.jboss.messaging.utils.UTF8Util;
 
 /**
  * A {@link MessagingBuffer} which increases its capacity and length by itself

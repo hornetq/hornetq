@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * The JMS Management interface.

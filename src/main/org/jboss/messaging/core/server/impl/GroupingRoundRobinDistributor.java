@@ -28,7 +28,7 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * Distributes message based on the message property 'JBM_GROUP_ID'. Once a message has been successfully delivered to a

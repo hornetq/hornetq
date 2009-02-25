@@ -31,7 +31,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A BridgeControlTest

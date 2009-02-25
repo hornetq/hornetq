@@ -27,7 +27,7 @@ import org.jboss.messaging.core.client.impl.ClientMessageInternal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

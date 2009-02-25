@@ -36,8 +36,8 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.ConcurrentHashSet;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  *
@@ -62,7 +62,7 @@ public class FakePostOffice implements PostOffice
 
    private ConcurrentHashMap<SimpleString, Binding> bindings = new ConcurrentHashMap<SimpleString, Binding>();
 
-   private ConcurrentHashSet<SimpleString> addresses = new ConcurrentHashSet<SimpleString>();
+   private org.jboss.messaging.utils.ConcurrentHashSet<SimpleString> addresses = new ConcurrentHashSet<SimpleString>();
 
    private volatile boolean started;
 

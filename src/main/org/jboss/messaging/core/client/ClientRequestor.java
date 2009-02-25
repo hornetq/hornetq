@@ -21,12 +21,12 @@
  */
 package org.jboss.messaging.core.client;
 
-import static org.jboss.messaging.util.SimpleString.toSimpleString;
+import static org.jboss.messaging.utils.SimpleString.toSimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 import java.util.UUID;
 
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * a ClientRequestor.

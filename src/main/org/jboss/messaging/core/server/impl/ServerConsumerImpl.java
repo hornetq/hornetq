@@ -62,8 +62,7 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.utils.TypedProperties;
 
 /**
  * Concrete implementation of a ClientConsumer.

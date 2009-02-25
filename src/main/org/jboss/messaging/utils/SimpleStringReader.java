@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.util;
+package org.jboss.messaging.utils;
 
 import java.io.IOException;
 import java.io.Reader;

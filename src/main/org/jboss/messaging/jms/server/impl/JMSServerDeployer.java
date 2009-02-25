@@ -23,8 +23,7 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.Pair;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -126,7 +125,7 @@ public class JMSServerDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      XMLUtil.validate(rootNode, "jbm-jms.xsd");
+      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-jms.xsd");
    }
    
    /**
@@ -187,35 +186,35 @@ public class JMSServerDeployer extends XmlDeployer
 
             if (PING_PERIOD_ELEMENT.equals(child.getNodeName()))
             {
-               pingPeriod = XMLUtil.parseLong(child);
+               pingPeriod = org.jboss.messaging.utils.XMLUtil.parseLong(child);
             }
             else if (CONNECTION_TTL_ELEMENT.equals(child.getNodeName()))
             {
-               connectionTTL = XMLUtil.parseLong(child);
+               connectionTTL = org.jboss.messaging.utils.XMLUtil.parseLong(child);
             }
             else if (CALL_TIMEOUT_ELEMENT.equals(child.getNodeName()))
             {
-               callTimeout = XMLUtil.parseLong(child);
+               callTimeout = org.jboss.messaging.utils.XMLUtil.parseLong(child);
             }
             else if (CONSUMER_WINDOW_SIZE_ELEMENT.equals(child.getNodeName()))
             {
-               consumerWindowSize = XMLUtil.parseInt(child);
+               consumerWindowSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (CONSUMER_MAX_RATE_ELEMENT.equals(child.getNodeName()))
             {
-               consumerMaxRate = XMLUtil.parseInt(child);
+               consumerMaxRate = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (SEND_WINDOW_SIZE.equals(child.getNodeName()))
             {
-               sendWindowSize = XMLUtil.parseInt(child);
+               sendWindowSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (PRODUCER_MAX_RATE_ELEMENT.equals(child.getNodeName()))
             {
-               producerMaxRate = XMLUtil.parseInt(child);
+               producerMaxRate = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (BIG_MESSAGE_ELEMENT.equals(child.getNodeName()))
             {
-               minLargeMessageSize = XMLUtil.parseInt(child);
+               minLargeMessageSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (CLIENTID_ELEMENT.equals(child.getNodeName()))
             {
@@ -223,55 +222,55 @@ public class JMSServerDeployer extends XmlDeployer
             }
             else if (DUPS_OK_BATCH_SIZE_ELEMENT.equals(child.getNodeName()))
             {
-               dupsOKBatchSize = XMLUtil.parseInt(child);
+               dupsOKBatchSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (TRANSACTION_BATCH_SIZE_ELEMENT.equals(child.getNodeName()))
             {
-               transactionBatchSize = XMLUtil.parseInt(child);
+               transactionBatchSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (BLOCK_ON_ACKNOWLEDGE_ELEMENT.equals(child.getNodeName()))
             {
-               blockOnAcknowledge = XMLUtil.parseBoolean(child);
+               blockOnAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
             else if (SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT.equals(child.getNodeName()))
             {
-               blockOnNonPersistentSend = XMLUtil.parseBoolean(child);
+               blockOnNonPersistentSend = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
             else if (SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT.equals(child.getNodeName()))
             {
-               blockOnPersistentSend = XMLUtil.parseBoolean(child);
+               blockOnPersistentSend = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
             else if (AUTO_GROUP_ID_ELEMENT.equals(child.getNodeName()))
             {
-               autoGroup = XMLUtil.parseBoolean(child);
+               autoGroup = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
             else if (MAX_CONNECTIONS_ELEMENT.equals(child.getNodeName()))
             {
-               maxConnections = XMLUtil.parseInt(child);
+               maxConnections = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (PRE_ACKNOWLEDGE_ELEMENT.equals(child.getNodeName()))
             {
-               preAcknowledge = XMLUtil.parseBoolean(child);;
+               preAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);;
             }
             else if (RETRY_ON_FAILURE_ELEMENT.equals(child.getNodeName()))
             {
-               preAcknowledge = XMLUtil.parseBoolean(child);;
+               preAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);;
             }
             else if (RETRY_INTERVAL.equals(child.getNodeName()))
             {
-               retryInterval = XMLUtil.parseInt(child);;
+               retryInterval = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
             }
             else if (RETRY_INTERVAL_MULTIPLIER.equals(child.getNodeName()))
             {
-               retryIntervalMultiplier = XMLUtil.parseDouble(child);
+               retryIntervalMultiplier = org.jboss.messaging.utils.XMLUtil.parseDouble(child);
             }
             else if (MAX_RETRIES_BEFORE_FAILOVER.equals(child.getNodeName()))
             {
-               maxRetriesBeforeFailover = XMLUtil.parseInt(child);;
+               maxRetriesBeforeFailover = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
             }
             else if (MAX_RETRIES_AFTER_FAILOVER.equals(child.getNodeName()))
             {
-               maxRetriesAfterFailover = XMLUtil.parseInt(child);;
+               maxRetriesAfterFailover = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
             }            
             else if (ENTRY_NODE_NAME.equals(child.getNodeName()))
             {
@@ -331,7 +330,7 @@ public class JMSServerDeployer extends XmlDeployer
             }
             else if (DISCOVERY_INITIAL_WAIT_ELEMENT.equals(child.getNodeName()))
             {
-               discoveryInitialWait = XMLUtil.parseInt(child);
+               discoveryInitialWait = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
          }
 

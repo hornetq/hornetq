@@ -59,8 +59,8 @@ import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.util.OrderedExecutorFactory;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * This test will make sure that a failing depage won't cause duplicated messages
@@ -319,7 +319,7 @@ public class PageCrashTest extends ServiceTestBase
             Field factoryField = PagingStoreFactoryNIO.class.getDeclaredField("executorFactory");
             factoryField.setAccessible(true);
 
-            OrderedExecutorFactory factory = (OrderedExecutorFactory)factoryField.get(this);
+            OrderedExecutorFactory factory = (org.jboss.messaging.utils.OrderedExecutorFactory)factoryField.get(this);
             return new FailingPagingStore(destinationName, settings, factory.getExecutor());
          }
 

@@ -25,7 +25,7 @@ package org.jboss.messaging.core.postoffice;
 import java.util.List;
 
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A DuplicateIDCache

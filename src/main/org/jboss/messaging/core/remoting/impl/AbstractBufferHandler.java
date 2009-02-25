@@ -21,7 +21,7 @@
   */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;

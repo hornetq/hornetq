@@ -28,7 +28,7 @@ import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 

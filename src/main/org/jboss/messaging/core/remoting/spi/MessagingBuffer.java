@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.remoting.spi;
 
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  *

@@ -29,7 +29,7 @@ import java.util.Set;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

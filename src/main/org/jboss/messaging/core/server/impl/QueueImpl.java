@@ -55,9 +55,9 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.ConcurrentSet;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.ConcurrentHashSet;
+import org.jboss.messaging.utils.ConcurrentSet;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue

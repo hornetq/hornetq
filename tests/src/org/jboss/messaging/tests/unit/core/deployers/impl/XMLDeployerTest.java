@@ -28,7 +28,7 @@ import java.util.HashMap;
 
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -93,7 +93,7 @@ public class XMLDeployerTest extends UnitTestCase
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);
-      e = XMLUtil.stringToElement(conf2);
+      e = org.jboss.messaging.utils.XMLUtil.stringToElement(conf2);
       testDeployer.setElement(e);
       testDeployer.redeploy(url);
       assertEquals(testDeployer.getDeployments(), 4);
@@ -113,7 +113,7 @@ public class XMLDeployerTest extends UnitTestCase
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);
-      e = XMLUtil.stringToElement(conf3);
+      e = org.jboss.messaging.utils.XMLUtil.stringToElement(conf3);
       testDeployer.setElement(e);
       testDeployer.redeploy(url);
       assertEquals(testDeployer.getDeployments(), 2);
@@ -131,7 +131,7 @@ public class XMLDeployerTest extends UnitTestCase
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);
-      e = XMLUtil.stringToElement(conf4);
+      e = org.jboss.messaging.utils.XMLUtil.stringToElement(conf4);
       testDeployer.setElement(e);
       testDeployer.redeploy(url);
       assertEquals(testDeployer.getDeployments(), 6);
@@ -151,7 +151,7 @@ public class XMLDeployerTest extends UnitTestCase
 
    public void testUndeploy() throws Exception
    {
-      Element e = XMLUtil.stringToElement(conf1);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(conf1);
       TestDeployer testDeployer = new TestDeployer();
       testDeployer.setElement(e);
       testDeployer.deploy(url);

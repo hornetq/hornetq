@@ -27,7 +27,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

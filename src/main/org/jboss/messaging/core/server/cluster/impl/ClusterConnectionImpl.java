@@ -52,10 +52,10 @@ import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.MessageFlowRecord;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
-import org.jboss.messaging.util.ExecutorFactory;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUID;
+import org.jboss.messaging.utils.ExecutorFactory;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUID;
 
 /**
  * 
@@ -71,7 +71,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 {
    private static final Logger log = Logger.getLogger(ClusterConnectionImpl.class);
 
-   private final ExecutorFactory executorFactory;
+   private final org.jboss.messaging.utils.ExecutorFactory executorFactory;
 
    private final StorageManager storageManager;
 
@@ -120,7 +120,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final int maxRetriesAfterFailover,
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
-                                final ExecutorFactory executorFactory,
+                                final org.jboss.messaging.utils.ExecutorFactory executorFactory,
                                 final StorageManager storageManager,
                                 final PostOffice postOffice,
                                 final ManagementService managementService,

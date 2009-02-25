@@ -29,8 +29,8 @@ import org.jboss.messaging.core.deployers.impl.AddressSettingsDeployer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.XMLUtil;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

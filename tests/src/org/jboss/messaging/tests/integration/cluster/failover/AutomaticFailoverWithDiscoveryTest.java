@@ -46,8 +46,8 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 

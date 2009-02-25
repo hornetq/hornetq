@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;

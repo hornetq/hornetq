@@ -52,8 +52,8 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.Future;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.Future;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 
@@ -505,7 +505,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          running = false;
 
-         Future future = new Future();
+         org.jboss.messaging.utils.Future future = new Future();
 
          executor.execute(future);
 

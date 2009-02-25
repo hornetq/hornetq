@@ -24,7 +24,7 @@ package org.jboss.test.messaging.util;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
-import org.jboss.messaging.util.JNDIUtil;
+import org.jboss.messaging.utils.JNDIUtil;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 

@@ -33,7 +33,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * This class implements javax.jms.StreamMessage.

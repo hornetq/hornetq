@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -170,7 +170,7 @@ class ServiceContainerConfiguration
 
       try
       {
-         Element root = XMLUtil.readerToElement(reader);
+         Element root = org.jboss.messaging.utils.XMLUtil.readerToElement(reader);
 
          if (!"container".equals(root.getNodeName()))
          {
@@ -199,15 +199,15 @@ class ServiceContainerConfiguration
                }
                else if ("database".equals(name))
                {
-                  currentDatabase = XMLUtil.getTextContent(n);
+                  currentDatabase = org.jboss.messaging.utils.XMLUtil.getTextContent(n);
                }
                else if ("remoting-transport".equals(name))
                {
-                  currentRemotingTransport = XMLUtil.getTextContent(n);
+                  currentRemotingTransport = org.jboss.messaging.utils.XMLUtil.getTextContent(n);
                }
                else if ("manageConfirmations".equals(name))
                {
-                  currentClusteredMode = Boolean.getBoolean(XMLUtil.getTextContent(n));
+                  currentClusteredMode = Boolean.getBoolean(org.jboss.messaging.utils.XMLUtil.getTextContent(n));
                }
                else
                {

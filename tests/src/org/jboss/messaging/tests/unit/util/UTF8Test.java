@@ -34,9 +34,9 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.DataConstants;
-import org.jboss.messaging.util.Random;
-import org.jboss.messaging.util.UTF8Util;
+import org.jboss.messaging.utils.DataConstants;
+import org.jboss.messaging.utils.Random;
+import org.jboss.messaging.utils.UTF8Util;
 
 /**
  * A UTF8Test

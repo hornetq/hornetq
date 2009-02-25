@@ -39,8 +39,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.SimpleStringReader;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.SimpleStringReader;
 
 /**
  * A JavaCC 2.0 grammar for JBoss Messaging filters

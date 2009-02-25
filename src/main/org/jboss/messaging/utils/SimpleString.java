@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.util;
+package org.jboss.messaging.utils;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 
 import java.io.Serializable;
 import java.util.ArrayList;

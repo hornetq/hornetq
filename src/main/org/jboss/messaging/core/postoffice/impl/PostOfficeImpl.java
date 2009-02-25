@@ -68,10 +68,9 @@ import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.ExecutorFactory;
-import org.jboss.messaging.util.JBMThreadFactory;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.utils.ExecutorFactory;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TypedProperties;
 
 /**
  * A PostOfficeImpl
@@ -130,7 +129,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private final Object notificationLock = new Object();
 
-   private final ExecutorFactory redistributorExecutorFactory;
+   private final org.jboss.messaging.utils.ExecutorFactory redistributorExecutorFactory;
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
    
@@ -200,7 +199,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       if (messageExpiryScanPeriod > 0)
       {
          MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner();
-         messageExpiryExecutor = new ScheduledThreadPoolExecutor(1, new JBMThreadFactory("JBM-scheduled-threads",
+         messageExpiryExecutor = new ScheduledThreadPoolExecutor(1, new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads",
                                                                                          messageExpiryThreadPriority));
          messageExpiryExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
          messageExpiryExecutor.scheduleWithFixedDelay(messageExpiryRunner,

@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.management.MBeanInfo;
-import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
@@ -85,9 +83,8 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TypedProperties;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -133,7 +130,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private boolean noticationsEnabled;
 
-   private final Set<NotificationListener> listeners = new ConcurrentHashSet<NotificationListener>();
+   private final Set<NotificationListener> listeners = new org.jboss.messaging.utils.ConcurrentHashSet<NotificationListener>();
 
    private ReplicationOperationInvoker replicationInvoker;
 

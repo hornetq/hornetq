@@ -49,7 +49,7 @@ import javax.jms.TopicSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;

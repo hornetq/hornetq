@@ -28,7 +28,6 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.core.deployers.impl.QueueDeployer;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -60,7 +59,7 @@ public class QueueDeployerTest extends UnitTestCase
                  + "<queue name='foo' address='bar' filter='speed > 88' durable='false' />"
                  + "</settings>";
       
-      Element rootNode = XMLUtil.stringToElement(xml);
+      Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
       NodeList queueNodes = rootNode.getElementsByTagName("queue");
       assertEquals(1, queueNodes.getLength());
@@ -90,7 +89,7 @@ public class QueueDeployerTest extends UnitTestCase
                  + "</settings>"
                  + "</deployment>";
       
-      Element rootNode = XMLUtil.stringToElement(xml);
+      Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
       NodeList queueNodes = rootNode.getElementsByTagName("queue");
       assertEquals(2, queueNodes.getLength());

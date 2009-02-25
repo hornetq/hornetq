@@ -37,7 +37,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * Info for a Message property.

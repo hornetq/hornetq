@@ -28,7 +28,7 @@ import org.jboss.messaging.core.server.impl.SoloQueueImpl;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

@@ -25,7 +25,7 @@ package org.jboss.messaging.core.postoffice;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 

@@ -1,4 +1,4 @@
-package org.jboss.messaging.util;
+package org.jboss.messaging.utils;
 
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p>

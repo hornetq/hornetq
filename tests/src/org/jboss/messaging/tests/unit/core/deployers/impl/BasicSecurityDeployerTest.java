@@ -27,7 +27,7 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

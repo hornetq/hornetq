@@ -41,7 +41,8 @@ import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
-import org.jboss.messaging.util.ConfigurationHelper;
+import org.jboss.messaging.utils.ConfigurationHelper;
+
 /**
  *
  * A MinaConnector

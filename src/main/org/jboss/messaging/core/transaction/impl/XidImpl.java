@@ -26,7 +26,7 @@ import java.io.Serializable;
 
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.util.Base64;
+import org.jboss.messaging.utils.Base64;
 
 /**
  * 

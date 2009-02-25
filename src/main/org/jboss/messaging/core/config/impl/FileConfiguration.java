@@ -43,9 +43,9 @@ import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.JournalType;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -80,10 +80,10 @@ public class FileConfiguration extends ConfigurationImpl
    {
       URL url = getClass().getClassLoader().getResource(configurationUrl);
       Reader reader = new InputStreamReader(url.openStream());
-      String xml = XMLUtil.readerToString(reader);
+      String xml = org.jboss.messaging.utils.XMLUtil.readerToString(reader);
       xml = XMLUtil.replaceSystemProps(xml);
-      Element e = XMLUtil.stringToElement(xml);
-      XMLUtil.validate(e, CONFIGURATION_SCHEMA_URL);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
+      org.jboss.messaging.utils.XMLUtil.validate(e, CONFIGURATION_SCHEMA_URL);
 
       clustered = getBoolean(e, "clustered", clustered);
 
@@ -315,7 +315,7 @@ public class FileConfiguration extends ConfigurationImpl
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {
-         return XMLUtil.parseBoolean(nl.item(0));
+         return org.jboss.messaging.utils.XMLUtil.parseBoolean(nl.item(0));
       }
       return def;
    }
@@ -335,7 +335,7 @@ public class FileConfiguration extends ConfigurationImpl
       NodeList nl = e.getElementsByTagName(name);
       if (nl.getLength() > 0)
       {
-         return XMLUtil.parseLong(nl.item(0));
+         return org.jboss.messaging.utils.XMLUtil.parseLong(nl.item(0));
       }
       return def;
    }
@@ -386,13 +386,13 @@ public class FileConfiguration extends ConfigurationImpl
 
             if (type.equalsIgnoreCase("Integer"))
             {
-               int iVal = XMLUtil.parseInt(nValue);
+               int iVal = org.jboss.messaging.utils.XMLUtil.parseInt(nValue);
 
                params.put(key, iVal);
             }
             else if (type.equalsIgnoreCase("Long"))
             {
-               long lVal = XMLUtil.parseLong(nValue);
+               long lVal = org.jboss.messaging.utils.XMLUtil.parseLong(nValue);
 
                params.put(key, lVal);
             }
@@ -402,7 +402,7 @@ public class FileConfiguration extends ConfigurationImpl
             }
             else if (type.equalsIgnoreCase("Boolean"))
             {
-               boolean bVal = XMLUtil.parseBoolean(nValue);
+               boolean bVal = org.jboss.messaging.utils.XMLUtil.parseBoolean(nValue);
 
                params.put(key, bVal);
             }
@@ -444,7 +444,7 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("local-bind-port"))
          {
-            localBindPort = XMLUtil.parseInt(child);
+            localBindPort = org.jboss.messaging.utils.XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("group-address"))
          {
@@ -452,11 +452,11 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("group-port"))
          {
-            groupPort = XMLUtil.parseInt(child);
+            groupPort = org.jboss.messaging.utils.XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("broadcast-period"))
          {
-            broadcastPeriod = XMLUtil.parseLong(child);
+            broadcastPeriod = org.jboss.messaging.utils.XMLUtil.parseLong(child);
          }
          else if (child.getNodeName().equals("connector-ref"))
          {
@@ -510,11 +510,11 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("group-port"))
          {
-            groupPort = XMLUtil.parseInt(child);
+            groupPort = org.jboss.messaging.utils.XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("refresh-timeout"))
          {
-            refreshTimeout = XMLUtil.parseLong(child);
+            refreshTimeout = org.jboss.messaging.utils.XMLUtil.parseLong(child);
          }
       }
 
@@ -573,19 +573,19 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("retry-interval-multiplier"))
          {
-            retryIntervalMultiplier = XMLUtil.parseDouble(child);
+            retryIntervalMultiplier = org.jboss.messaging.utils.XMLUtil.parseDouble(child);
          }
          else if (child.getNodeName().equals("max-retries-before-failover"))
          {
-            maxRetriesBeforeFailover = XMLUtil.parseInt(child);
+            maxRetriesBeforeFailover = org.jboss.messaging.utils.XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("max-retries-after-failover"))
          {
-            maxRetriesAfterFailover = XMLUtil.parseInt(child);
+            maxRetriesAfterFailover = org.jboss.messaging.utils.XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("use-duplicate-detection"))
          {
-            duplicateDetection = XMLUtil.parseBoolean(child);
+            duplicateDetection = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
          }
          else if (child.getNodeName().equals("discovery-group-ref"))
          {
@@ -694,7 +694,7 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("retry-interval"))
          {
-            retryInterval = XMLUtil.parseLong(child);
+            retryInterval = org.jboss.messaging.utils.XMLUtil.parseLong(child);
          }
          else if (child.getNodeName().equals("retry-interval-multiplier"))
          {
@@ -706,11 +706,11 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("max-retries-after-failover"))
          {
-            maxRetriesAfterFailover = XMLUtil.parseInt(child);
+            maxRetriesAfterFailover = org.jboss.messaging.utils.XMLUtil.parseInt(child);
          }
          else if (child.getNodeName().equals("use-duplicate-detection"))
          {
-            useDuplicateDetection = XMLUtil.parseBoolean(child);
+            useDuplicateDetection = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
          }
          else if (child.getNodeName().equals("discovery-group-ref"))
          {
@@ -807,7 +807,7 @@ public class FileConfiguration extends ConfigurationImpl
          }
          else if (child.getNodeName().equals("exclusive"))
          {
-            exclusive = XMLUtil.parseBoolean(child);
+            exclusive = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
          }
          else if (child.getNodeName().equals("filter"))
          {

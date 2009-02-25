@@ -34,7 +34,7 @@ import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A DivertImpl simply diverts a message to a different forwardAddress

@@ -31,7 +31,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A RedeliveryConsumerTest

@@ -38,14 +38,13 @@ import javax.net.ssl.SSLContext;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
-import org.jboss.messaging.util.ConfigurationHelper;
-import org.jboss.messaging.util.JBMThreadFactory;
+import org.jboss.messaging.utils.ConfigurationHelper;
+import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -208,7 +207,7 @@ public class NettyAcceptor implements Acceptor
          // Already started
          return;
       }
-      bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
+      bossExecutor = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
       workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-worker-threads"));
       if (useNio)
       {

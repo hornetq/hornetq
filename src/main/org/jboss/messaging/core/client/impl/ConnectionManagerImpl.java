@@ -54,9 +54,8 @@ import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.JBMThreadFactory;
-import org.jboss.messaging.util.UUIDGenerator;
-import org.jboss.messaging.util.VersionLoader;
+import org.jboss.messaging.utils.UUIDGenerator;
+import org.jboss.messaging.utils.VersionLoader;
 
 /**
  * A ConnectionManagerImpl
@@ -107,7 +106,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    // TODO - allow this to be configurable
    private static final ScheduledThreadPoolExecutor pingExecutor = new ScheduledThreadPoolExecutor(5,
-                                                                                                   new JBMThreadFactory("jbm-pinger-threads"));
+                                                                                                   new org.jboss.messaging.utils.JBMThreadFactory("jbm-pinger-threads"));
 
    private final Map<Object, ConnectionEntry> connections = new LinkedHashMap<Object, ConnectionEntry>();
 

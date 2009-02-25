@@ -20,21 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
+package org.jboss.messaging.utils;
 
-package org.jboss.messaging.util;
+import java.util.Set;
 
 /**
- * A IDGenerator
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 25 Sep 2008 10:28:52
+ * A ConcurrentSet
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
- *
+ * @param <E>
  */
-public interface IDGenerator
+public interface ConcurrentSet<E> extends Set<E>
 {
-   long generateID();
-   
-   long getCurrentID();
+	boolean addIfAbsent(E o);
 }

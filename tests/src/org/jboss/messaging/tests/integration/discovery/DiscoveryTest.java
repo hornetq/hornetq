@@ -37,8 +37,8 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.server.cluster.impl.BroadcastGroupImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * A DiscoveryTest

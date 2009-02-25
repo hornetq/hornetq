@@ -30,7 +30,7 @@ import java.util.List;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

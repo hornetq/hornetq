@@ -29,8 +29,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.jms.client.JBossMessage;
+import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**

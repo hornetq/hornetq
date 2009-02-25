@@ -26,7 +26,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.VariableLatch;
+import org.jboss.messaging.utils.VariableLatch;
 
 /**
  * 

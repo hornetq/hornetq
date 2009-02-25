@@ -34,7 +34,7 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.Future;
+import org.jboss.messaging.utils.Future;
 
 /**
  * A Redistributor

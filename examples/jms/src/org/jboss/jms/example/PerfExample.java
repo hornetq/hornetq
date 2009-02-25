@@ -39,8 +39,8 @@ import javax.naming.InitialContext;
 
 import org.jboss.jms.util.PerfParams;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.TokenBucketLimiter;
-import org.jboss.messaging.util.TokenBucketLimiterImpl;
+import org.jboss.messaging.utils.TokenBucketLimiter;
+import org.jboss.messaging.utils.TokenBucketLimiterImpl;
 
 /**
  * A simple example that can be used to gather basic performance measurements.

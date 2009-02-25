@@ -28,7 +28,7 @@ import static javax.management.ObjectName.quote;
 
 import javax.management.ObjectName;
 
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ObjectNames

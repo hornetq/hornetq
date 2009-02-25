@@ -96,10 +96,10 @@ import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.IDGenerator;
-import org.jboss.messaging.util.SimpleIDGenerator;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.utils.IDGenerator;
+import org.jboss.messaging.utils.SimpleIDGenerator;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TypedProperties;
 
 /*
  * Session implementation 

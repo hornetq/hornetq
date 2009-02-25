@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.postoffice;
 
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 import java.util.List;
 

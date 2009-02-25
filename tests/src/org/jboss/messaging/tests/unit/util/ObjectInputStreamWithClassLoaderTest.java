@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.ObjectInputStreamWithClassLoader;
+import org.jboss.messaging.utils.ObjectInputStreamWithClassLoader;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -100,7 +100,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
          Thread.currentThread().setContextClassLoader(testClassLoader);
 
          ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-         ObjectInputStreamWithClassLoader ois = new ObjectInputStreamWithClassLoader(bais);
+         org.jboss.messaging.utils.ObjectInputStreamWithClassLoader ois = new ObjectInputStreamWithClassLoader(bais);
 
          Object deserializedObj= ois.readObject();
          

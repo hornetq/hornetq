@@ -43,8 +43,8 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.impl.BridgeImpl;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A BridgeReconnectTest

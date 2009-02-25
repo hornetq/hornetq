@@ -22,19 +22,18 @@
 
 package org.jboss.messaging.core.message.impl;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+import static org.jboss.messaging.utils.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.utils.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
+import org.jboss.messaging.utils.SimpleString;
 
 import java.util.Set;
 
-import org.jboss.messaging.core.client.SendAcknowledgementHandler;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.utils.TypedProperties;
 
 /**
  * A concrete implementation of a message

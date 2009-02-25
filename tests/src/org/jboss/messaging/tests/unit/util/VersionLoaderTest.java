@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.VersionLoader;
+import org.jboss.messaging.utils.VersionLoader;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

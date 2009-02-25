@@ -20,28 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.util;
+package org.jboss.messaging.utils;
 
-import static org.jboss.messaging.util.DataConstants.BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.BYTE;
-import static org.jboss.messaging.util.DataConstants.BYTES;
-import static org.jboss.messaging.util.DataConstants.CHAR;
-import static org.jboss.messaging.util.DataConstants.DOUBLE;
-import static org.jboss.messaging.util.DataConstants.FLOAT;
-import static org.jboss.messaging.util.DataConstants.INT;
-import static org.jboss.messaging.util.DataConstants.LONG;
-import static org.jboss.messaging.util.DataConstants.NOT_NULL;
-import static org.jboss.messaging.util.DataConstants.NULL;
-import static org.jboss.messaging.util.DataConstants.SHORT;
-import static org.jboss.messaging.util.DataConstants.SIZE_BOOLEAN;
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_CHAR;
-import static org.jboss.messaging.util.DataConstants.SIZE_DOUBLE;
-import static org.jboss.messaging.util.DataConstants.SIZE_FLOAT;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
-import static org.jboss.messaging.util.DataConstants.SIZE_SHORT;
-import static org.jboss.messaging.util.DataConstants.STRING;
+import static org.jboss.messaging.utils.DataConstants.BOOLEAN;
+import static org.jboss.messaging.utils.DataConstants.BYTE;
+import static org.jboss.messaging.utils.DataConstants.BYTES;
+import static org.jboss.messaging.utils.DataConstants.CHAR;
+import static org.jboss.messaging.utils.DataConstants.DOUBLE;
+import static org.jboss.messaging.utils.DataConstants.FLOAT;
+import static org.jboss.messaging.utils.DataConstants.INT;
+import static org.jboss.messaging.utils.DataConstants.LONG;
+import static org.jboss.messaging.utils.DataConstants.NOT_NULL;
+import static org.jboss.messaging.utils.DataConstants.NULL;
+import static org.jboss.messaging.utils.DataConstants.SHORT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_BOOLEAN;
+import static org.jboss.messaging.utils.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.utils.DataConstants.SIZE_CHAR;
+import static org.jboss.messaging.utils.DataConstants.SIZE_DOUBLE;
+import static org.jboss.messaging.utils.DataConstants.SIZE_FLOAT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
+import static org.jboss.messaging.utils.DataConstants.SIZE_SHORT;
+import static org.jboss.messaging.utils.DataConstants.STRING;
 
 import java.util.Collections;
 import java.util.HashMap;

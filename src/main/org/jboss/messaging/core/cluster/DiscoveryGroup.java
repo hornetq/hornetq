@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A DiscoveryGroup

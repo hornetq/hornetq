@@ -23,7 +23,7 @@
 
 package org.jboss.messaging.core.persistence;
 
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A QueueBindingInfo

@@ -35,7 +35,7 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 /**

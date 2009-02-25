@@ -31,7 +31,6 @@ import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -70,7 +69,7 @@ public class SecurityDeployerTest extends UnitTestCase
 
    public void testSingle() throws Exception
    {
-      Element e = XMLUtil.stringToElement(conf);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(conf);
       Role role = new Role("durpublisher", true, true, true);
       Role role2 = new Role("guest", true, true, false);
       Role role3 = new Role("publisher", true, true, false);
@@ -96,8 +95,8 @@ public class SecurityDeployerTest extends UnitTestCase
       repository.addMatch("topics.testTopic", roles);
       repository.addMatch("queues.testQueue", roles);
       EasyMock.replay(repository);
-      deployer.deploy(XMLUtil.stringToElement(conf));
-      deployer.deploy(XMLUtil.stringToElement(conf2));
+      deployer.deploy(org.jboss.messaging.utils.XMLUtil.stringToElement(conf));
+      deployer.deploy(org.jboss.messaging.utils.XMLUtil.stringToElement(conf2));
       EasyMock.verify(repository);
    }
    
@@ -106,7 +105,7 @@ public class SecurityDeployerTest extends UnitTestCase
       HashSet<Role> roles = new HashSet<Role>();
       repository.addMatch("queues.testQueue", roles);
       EasyMock.replay(repository);
-      deployer.deploy(XMLUtil.stringToElement(noRoles));
+      deployer.deploy(org.jboss.messaging.utils.XMLUtil.stringToElement(noRoles));
       EasyMock.verify(repository);
    }
 }

@@ -49,6 +49,11 @@ import javax.ejb.ActivationConfigProperty;
 })
 public class EJB3MDBExample implements MessageListener
 {
+   public EJB3MDBExample()
+   {
+      System.out.println("this = " + this);
+   }
+
    public void onMessage(Message m)
    {
       businessLogic(m);

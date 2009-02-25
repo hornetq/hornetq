@@ -27,8 +27,8 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import java.util.Iterator;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.ConcurrentSet;
+import org.jboss.messaging.utils.ConcurrentHashSet;
+import org.jboss.messaging.utils.ConcurrentSet;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

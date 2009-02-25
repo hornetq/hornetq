@@ -27,7 +27,7 @@ import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.AN
 import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.DELIM;
 import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.SINGLE_WORD;
 import static org.jboss.messaging.core.postoffice.impl.WildcardAddressManager.SINGLE_WORD_SIMPLESTRING;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 import java.util.ArrayList;
 import java.util.List;

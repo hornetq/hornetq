@@ -25,8 +25,7 @@ package org.jboss.messaging.core.deployers.impl;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.SimpleString;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -77,11 +76,11 @@ public class AddressSettingsDeployer extends XmlDeployer
    {
       if ("deployment".equals(rootNode.getNodeName()))
       {
-         XMLUtil.validate(rootNode, "jbm-configuration.xsd");
+         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
       }
       else
       {
-         XMLUtil.validate(rootNode, "jbm-queues.xsd");
+         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-queues.xsd");
       }
    }
 

@@ -18,27 +18,20 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.util;
+package org.jboss.messaging.utils;
+
+import java.util.concurrent.Executor;
 
 /**
  * 
- * A TokenBucketLimiterImpl
- * 
- * This class can throttle to a specfic rate, using an algorithm based on the Token Bucket metaphor
- * http://en.wikipedia.org/wiki/Token_bucket
- * 
- * The rate is specified in Hertz
+ * A ExecutorFactory
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface TokenBucketLimiter
+public interface ExecutorFactory
 {
-   int getRate();
-   
-   boolean isSpin();
-      
-   void limit();
+   Executor getExecutor();
 }

@@ -20,35 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
-package org.jboss.messaging.util;
-
+package org.jboss.messaging.utils;
 
 /**
- * A Random
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
- * Created 28 Nov 2008 10:28:28
- *
+ * A TokenBucketLimiterImpl
+ * 
+ * This class can throttle to a specfic rate, using an algorithm based on the Token Bucket metaphor
+ * http://en.wikipedia.org/wiki/Token_bucket
+ * 
+ * The rate is specified in Hertz
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class Random
+public interface TokenBucketLimiter
 {
-   private static int extraSeed;
+   int getRate();
    
-   private static synchronized long getSeed()
-   {
-      long seed = System.currentTimeMillis() + extraSeed++;
+   boolean isSpin();
       
-      return seed;
-   }
-   
-   private java.util.Random random = new java.util.Random(getSeed());
-   
-   public java.util.Random getRandom()
-   {
-      return random;
-   }
-
+   void limit();
 }

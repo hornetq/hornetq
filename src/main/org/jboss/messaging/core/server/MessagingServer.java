@@ -31,8 +31,8 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUID;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUID;
 
 /**
  * This interface defines the internal interface of the Messaging Server exposed to other components of the server. The

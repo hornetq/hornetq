@@ -29,7 +29,6 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * 

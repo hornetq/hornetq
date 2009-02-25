@@ -42,8 +42,8 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

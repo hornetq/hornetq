@@ -27,7 +27,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A BroadcastGroupConfiguration

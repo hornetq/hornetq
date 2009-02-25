@@ -25,7 +25,7 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.jboss.test.messaging.MessagingTestCase;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 import org.w3c.dom.Element;
@@ -68,7 +68,7 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
          "       <attribute name=\"SomeName\" value=\"SomeValue\"/>" +
          "</mbean>";
 
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       MBeanConfigurationElement mbeanConfig = new MBeanConfigurationElement(e);
 
       assertEquals(new ObjectName("somedomain:service=SomeService"), mbeanConfig.getObjectName());
@@ -92,7 +92,7 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
          "       <attribute name=\"SomeName\">SomeValue</attribute>" +
          "</mbean>";
 
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       MBeanConfigurationElement mbeanConfig = new MBeanConfigurationElement(e);
 
       assertEquals(new ObjectName("somedomain:service=SomeService"), mbeanConfig.getObjectName());
@@ -116,7 +116,7 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
          "       <attribute name=\"SomeName\" value=\"SomeValue\">SomeOtherValue</attribute>" +
          "</mbean>";
 
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       MBeanConfigurationElement mbeanConfig = new MBeanConfigurationElement(e);
 
       assertEquals(new ObjectName("somedomain:service=SomeService"), mbeanConfig.getObjectName());
@@ -141,7 +141,7 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
          "       <depends>somedomain:somekey=somevalue</depends>" +
          "</mbean>";
 
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       MBeanConfigurationElement mbeanConfig = new MBeanConfigurationElement(e);
 
       assertEquals(new ObjectName("somedomain:service=SomeService"), mbeanConfig.getObjectName());
@@ -186,7 +186,7 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
          "       </attribute>" +
          "</mbean>";
 
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       MBeanConfigurationElement mbeanConfig = new MBeanConfigurationElement(e);
 
       Set optionalAttributeNames = mbeanConfig.attributeNames();
@@ -195,7 +195,7 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
 
       String attributeValue = mbeanConfig.getAttributeValue("xmlattribute");
 
-      Node n = XMLUtil.stringToElement(attributeValue);
+      Node n = org.jboss.messaging.utils.XMLUtil.stringToElement(attributeValue);
       assertEquals("something", n.getNodeName());
 
       NodeList nl = n.getChildNodes();
@@ -229,7 +229,7 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
          "       </constructor>" +
          "</mbean>";
 
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       MBeanConfigurationElement mbeanConfig = new MBeanConfigurationElement(e);
 
       assertEquals(new ObjectName("somedomain:service=SomeService"), mbeanConfig.getObjectName());

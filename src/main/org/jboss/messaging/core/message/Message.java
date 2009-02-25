@@ -24,10 +24,9 @@ package org.jboss.messaging.core.message;
 
 import java.util.Set;
 
-import org.jboss.messaging.core.client.SendAcknowledgementHandler;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TypedProperties;
 
 /**
  * A message is a routable instance that has a payload.

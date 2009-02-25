@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.unit.core.config.impl;
 
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -54,7 +54,7 @@ public class ConfigurationValidationTest extends UnitTestCase
       String xml = "<deployment xmlns='urn:jboss:messaging'>" 
                  + "<configuration></configuration>"
                  + "</deployment>";
-      Element element = XMLUtil.stringToElement(xml);
+      Element element = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       assertNotNull(element);
       try
       {

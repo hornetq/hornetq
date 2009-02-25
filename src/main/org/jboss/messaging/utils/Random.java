@@ -18,42 +18,37 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.util;
+
+package org.jboss.messaging.utils;
+
 
 /**
- * 
- * A DataConstants
- * 
+ * A Random
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 28 Nov 2008 10:28:28
+ *
  *
  */
-public class DataConstants
+public class Random
 {
-   public static final int SIZE_INT = 4;   
-   public static final int SIZE_BOOLEAN = 1;   
-   public static final int SIZE_LONG = 8;   
-   public static final int SIZE_BYTE = 1;
-   public static final int SIZE_SHORT = 2;
-   public static final int SIZE_DOUBLE = 8;
-   public static final int SIZE_FLOAT = 4;
-   public static final int SIZE_CHAR = 2;
- 
-   public static final byte TRUE = 1;
-   public static final byte FALSE = 0;
-      
-   public static final byte NULL = 0;   
-   public static final byte NOT_NULL = 1;
+   private static int extraSeed;
    
-   public static final byte BOOLEAN = 2;	
-   public static final byte BYTE = 3;
-   public static final byte BYTES = 4;
-   public static final byte SHORT = 5;
-   public static final byte INT = 6;
-   public static final byte LONG = 7;
-   public static final byte FLOAT = 8;
-   public static final byte DOUBLE = 9;
-   public static final byte STRING = 10;
-   public static final byte CHAR = 11;      
+   private static synchronized long getSeed()
+   {
+      long seed = System.currentTimeMillis() + extraSeed++;
+      
+      return seed;
+   }
+   
+   private java.util.Random random = new java.util.Random(getSeed());
+   
+   public java.util.Random getRandom()
+   {
+      return random;
+   }
+
 }

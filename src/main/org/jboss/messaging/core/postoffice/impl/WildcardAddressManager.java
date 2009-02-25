@@ -30,7 +30,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Address;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * extends the simple manager to allow wildcard addresses to be used.

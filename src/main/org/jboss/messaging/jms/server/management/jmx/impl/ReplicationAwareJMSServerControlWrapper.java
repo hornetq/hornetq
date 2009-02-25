@@ -33,7 +33,7 @@ import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A ReplicationAwareJMSServerControlWrapper

@@ -29,14 +29,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A BroadcastGroupImpl

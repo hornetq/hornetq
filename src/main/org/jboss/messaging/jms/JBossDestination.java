@@ -30,7 +30,7 @@ import javax.naming.Reference;
 
 import org.jboss.messaging.jms.referenceable.DestinationObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 
 /**

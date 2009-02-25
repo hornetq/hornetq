@@ -40,7 +40,7 @@ import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A BindingsImpl

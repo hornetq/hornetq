@@ -32,7 +32,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCred
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.Future;
+import org.jboss.messaging.utils.Future;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -515,7 +515,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
 
-      Future future = new Future();
+      org.jboss.messaging.utils.Future future = new Future();
 
       sessionExecutor.execute(future);
 

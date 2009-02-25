@@ -41,7 +41,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

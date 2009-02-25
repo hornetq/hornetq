@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.unit.core.config.impl;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

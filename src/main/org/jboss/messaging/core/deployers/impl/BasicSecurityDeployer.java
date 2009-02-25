@@ -23,7 +23,6 @@ package org.jboss.messaging.core.deployers.impl;
 
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
-import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -52,7 +51,7 @@ public class BasicSecurityDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      XMLUtil.validate(rootNode, "jbm-security.xsd");
+      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-security.xsd");
    }
 
    public void deploy(final Node node) throws Exception

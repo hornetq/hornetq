@@ -22,18 +22,18 @@
 
 package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.messaging.util.DataConstants.FALSE;
-import static org.jboss.messaging.util.DataConstants.NOT_NULL;
-import static org.jboss.messaging.util.DataConstants.NULL;
-import static org.jboss.messaging.util.DataConstants.TRUE;
+import static org.jboss.messaging.utils.DataConstants.FALSE;
+import static org.jboss.messaging.utils.DataConstants.NOT_NULL;
+import static org.jboss.messaging.utils.DataConstants.NULL;
+import static org.jboss.messaging.utils.DataConstants.TRUE;
+import org.jboss.messaging.utils.SimpleString;
 import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
 import static org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer;
 
 import java.nio.BufferUnderflowException;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UTF8Util;
+import org.jboss.messaging.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**

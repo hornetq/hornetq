@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.timing.util;
 
 import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.UTF8Util;
+import org.jboss.messaging.utils.UTF8Util;
 
 /**
  * 

@@ -897,4 +897,25 @@ public class JBMActivationSpec implements ActivationSpec
       buffer.append(')');
       return buffer.toString();
    }
+
+   //here for backwards compatibilty
+   public void setUseDLQ(boolean b)
+   {
+      
+   }
+
+   public void setDLQJNDIName(String name)
+   {
+
+   }
+
+   public void setDLQMaxResent(int maxResent)
+   {
+
+   }
+
+   public void setProviderAdapterJNDI(String jndi)
+   {
+
+   }
 }

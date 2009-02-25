@@ -29,7 +29,7 @@ import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.server.JournalType;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>

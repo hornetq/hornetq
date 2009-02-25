@@ -33,8 +33,8 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.util.UUIDGenerator;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
+import org.jboss.messaging.utils.SimpleString;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;

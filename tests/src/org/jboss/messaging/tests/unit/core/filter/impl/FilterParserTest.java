@@ -31,7 +31,7 @@ import org.jboss.messaging.core.filter.impl.Identifier;
 import org.jboss.messaging.core.filter.impl.Operator;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  Tests of the JavaCC LL(1) parser for the JBoss Messaging filters

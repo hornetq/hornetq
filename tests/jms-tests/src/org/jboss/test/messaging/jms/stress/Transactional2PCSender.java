@@ -28,7 +28,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * 

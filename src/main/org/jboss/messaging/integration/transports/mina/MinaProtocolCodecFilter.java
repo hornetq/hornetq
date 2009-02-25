@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.integration.transports.mina;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;

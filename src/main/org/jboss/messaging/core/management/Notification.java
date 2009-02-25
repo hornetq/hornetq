@@ -23,7 +23,7 @@
 
 package org.jboss.messaging.core.management;
 
-import org.jboss.messaging.util.TypedProperties;
+import org.jboss.messaging.utils.TypedProperties;
 
 /**
  * A Notification

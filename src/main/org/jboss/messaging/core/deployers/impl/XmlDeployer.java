@@ -36,7 +36,6 @@ import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.util.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -279,9 +278,9 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
            throws Exception
    {
       Reader reader = new InputStreamReader(url.openStream());
-      String xml = XMLUtil.readerToString(reader);
-      xml = XMLUtil.replaceSystemProps(xml);
-      return XMLUtil.stringToElement(xml);
+      String xml = org.jboss.messaging.utils.XMLUtil.readerToString(reader);
+      xml = org.jboss.messaging.utils.XMLUtil.replaceSystemProps(xml);
+      return org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
    }
 
    private boolean hasNodeChanged(final URL url, final Node child, final String name)

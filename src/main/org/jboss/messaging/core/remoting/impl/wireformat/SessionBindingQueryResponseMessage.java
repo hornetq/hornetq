@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 

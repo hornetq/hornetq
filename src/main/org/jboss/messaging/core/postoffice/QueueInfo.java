@@ -26,7 +26,7 @@ package org.jboss.messaging.core.postoffice;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A QueueInfo

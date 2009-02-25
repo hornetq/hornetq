@@ -30,7 +30,6 @@ import java.util.List;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.util.SimpleString;
 
 /**
  * This interface describes the core management interface exposed by the server

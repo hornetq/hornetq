@@ -29,7 +29,7 @@ import java.util.Random;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

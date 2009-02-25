@@ -22,7 +22,7 @@
 package org.jboss.messaging.tests.timing.util;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.VariableLatch;
+import org.jboss.messaging.utils.VariableLatch;
 
 /**
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>

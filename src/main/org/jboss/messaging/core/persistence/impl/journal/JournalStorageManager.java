@@ -22,9 +22,9 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
-import static org.jboss.messaging.util.DataConstants.SIZE_LONG;
+import static org.jboss.messaging.utils.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -79,14 +79,14 @@ import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
 import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
-import org.jboss.messaging.util.DataConstants;
-import org.jboss.messaging.util.IDGenerator;
-import org.jboss.messaging.util.JBMThreadFactory;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TimeAndCounterIDGenerator;
-import org.jboss.messaging.util.UUID;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.DataConstants;
+import org.jboss.messaging.utils.IDGenerator;
+import org.jboss.messaging.utils.JBMThreadFactory;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TimeAndCounterIDGenerator;
+import org.jboss.messaging.utils.UUID;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * 

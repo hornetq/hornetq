@@ -14,7 +14,7 @@ import javax.naming.InitialContext;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
@@ -47,7 +47,7 @@ public class JMSTestCase extends JBMServerTestCase
       // All jms tests should use a specific cg which has blockOnAcknowledge = true and
       // both np and p messages are sent synchronously
 
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = 
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs =
          new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"), null));

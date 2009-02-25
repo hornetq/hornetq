@@ -23,7 +23,7 @@
 package org.jboss.messaging.tests.unit.util;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.persistence.impl.journal;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 
 import java.nio.ByteBuffer;
 

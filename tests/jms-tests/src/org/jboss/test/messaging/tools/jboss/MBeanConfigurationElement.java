@@ -31,7 +31,7 @@ import java.util.Set;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -138,7 +138,7 @@ public class MBeanConfigurationElement
                {
                   configAttribValue = XMLUtil.getTextContent(mbeanConfigNode);
                }
-               configAttribValue = XMLUtil.stripCDATA(configAttribValue);
+               configAttribValue = org.jboss.messaging.utils.XMLUtil.stripCDATA(configAttribValue);
 
                mbeanConfigAttributes.put(configAttribName, configAttribValue);
             }

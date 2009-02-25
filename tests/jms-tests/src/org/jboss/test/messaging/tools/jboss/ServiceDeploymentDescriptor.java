@@ -30,7 +30,7 @@ import java.util.List;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -61,7 +61,7 @@ public class ServiceDeploymentDescriptor
 
    public ServiceDeploymentDescriptor(String config) throws Exception
    {
-      this(XMLUtil.stringToElement(config));
+      this(org.jboss.messaging.utils.XMLUtil.stringToElement(config));
    }
 
    public ServiceDeploymentDescriptor(URL descriptorURL) throws Exception

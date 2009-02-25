@@ -40,7 +40,7 @@ import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ManagementControlHelper

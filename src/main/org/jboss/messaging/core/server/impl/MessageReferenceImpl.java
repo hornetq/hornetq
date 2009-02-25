@@ -26,7 +26,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.util.DataConstants;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * Implementation of a MessageReference

@@ -23,7 +23,7 @@
 package org.jboss.messaging.tests.unit.util;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.XMLUtil;
+import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -43,9 +43,9 @@ public class XMLUtilTest extends UnitTestCase
    {
       String document = "<blah>foo</blah>";
 
-      Element e = XMLUtil.stringToElement(document);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(document);
 
-      assertEquals("foo", XMLUtil.getTextContent(e));
+      assertEquals("foo", org.jboss.messaging.utils.XMLUtil.getTextContent(e));
    }
 
    public void testGetTextContext_2() throws Exception
@@ -54,18 +54,18 @@ public class XMLUtilTest extends UnitTestCase
 
       Element e = XMLUtil.stringToElement(document);
 
-      assertEquals("foo", XMLUtil.getTextContent(e));
+      assertEquals("foo", org.jboss.messaging.utils.XMLUtil.getTextContent(e));
    }
 
    public void testGetTextContext_3() throws Exception
    {
       String document = "<blah someattribute=\"somevalue\"><a/></blah>";
 
-      Element e = XMLUtil.stringToElement(document);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(document);
 
-      String s = XMLUtil.getTextContent(e);
+      String s = org.jboss.messaging.utils.XMLUtil.getTextContent(e);
 
-      Element subelement = XMLUtil.stringToElement(s);
+      Element subelement = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
 
       assertEquals("a", subelement.getNodeName());
    }
@@ -74,11 +74,11 @@ public class XMLUtilTest extends UnitTestCase
    {
       String document = "<blah someattribute=\"somevalue\"><a></a></blah>";
 
-      Element e = XMLUtil.stringToElement(document);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(document);
 
-      String s = XMLUtil.getTextContent(e);
+      String s = org.jboss.messaging.utils.XMLUtil.getTextContent(e);
 
-      Element subelement = XMLUtil.stringToElement(s);
+      Element subelement = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
 
       assertEquals("a", subelement.getNodeName());
    }
@@ -87,11 +87,11 @@ public class XMLUtilTest extends UnitTestCase
    {
       String document = "<blah someattribute=\"somevalue\"><a><b/></a></blah>";
 
-      Element e = XMLUtil.stringToElement(document);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(document);
 
-      String s = XMLUtil.getTextContent(e);
+      String s = org.jboss.messaging.utils.XMLUtil.getTextContent(e);
 
-      Element subelement = XMLUtil.stringToElement(s);
+      Element subelement = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
 
       assertEquals("a", subelement.getNodeName());
       NodeList nl = subelement.getChildNodes();
@@ -115,7 +115,7 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<a/>";
       String s2 = "<a/>";
 
-      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), org.jboss.messaging.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testEquivalent_2() throws Exception
@@ -123,7 +123,7 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<a></a>";
       String s2 = "<a/>";
 
-      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), org.jboss.messaging.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testEquivalent_3() throws Exception
@@ -133,7 +133,7 @@ public class XMLUtilTest extends UnitTestCase
 
       try
       {
-         XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+         org.jboss.messaging.utils.XMLUtil.assertEquivalent(org.jboss.messaging.utils.XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
          fail("this should throw exception");
       }
       catch(IllegalArgumentException e)
@@ -148,7 +148,7 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<a attr1=\"val1\" attr2=\"val2\"/>";
       String s2 = "<a attr2=\"val2\" attr1=\"val1\"/>";
 
-      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+      org.jboss.messaging.utils.XMLUtil.assertEquivalent(org.jboss.messaging.utils.XMLUtil.stringToElement(s), org.jboss.messaging.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testEquivalent_5() throws Exception
@@ -156,7 +156,7 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<a><b/></a>";
       String s2 = "<a><b/></a>";
 
-      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+      org.jboss.messaging.utils.XMLUtil.assertEquivalent(org.jboss.messaging.utils.XMLUtil.stringToElement(s), org.jboss.messaging.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testEquivalent_6() throws Exception
@@ -164,7 +164,7 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<enclosing><a attr1=\"val1\" attr2=\"val2\"/></enclosing>";
       String s2 = "<enclosing><a attr2=\"val2\" attr1=\"val1\"/></enclosing>";
 
-      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+      org.jboss.messaging.utils.XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), org.jboss.messaging.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testEquivalent_7() throws Exception
@@ -174,7 +174,7 @@ public class XMLUtilTest extends UnitTestCase
 
       try
       {
-         XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+         org.jboss.messaging.utils.XMLUtil.assertEquivalent(org.jboss.messaging.utils.XMLUtil.stringToElement(s), org.jboss.messaging.utils.XMLUtil.stringToElement(s2));
          fail("this should throw exception");
       }
       catch(IllegalArgumentException e)
@@ -189,22 +189,22 @@ public class XMLUtilTest extends UnitTestCase
       String s = "<a><!-- some comment --><b/><!--some other comment --><c/><!-- blah --></a>";
       String s2 = "<a><b/><!--blah blah--><c/></a>";
 
-      XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
+      org.jboss.messaging.utils.XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), org.jboss.messaging.utils.XMLUtil.stringToElement(s2));
    }
 
    public void testElementToString_1() throws Exception
    {
       String s = "<a b=\"something\">somethingelse</a>";
-      Element e = XMLUtil.stringToElement(s);
-      String tostring = XMLUtil.elementToString(e);
-      Element convertedAgain = XMLUtil.stringToElement(tostring);
-      XMLUtil.assertEquivalent(e, convertedAgain);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
+      String tostring = org.jboss.messaging.utils.XMLUtil.elementToString(e);
+      Element convertedAgain = org.jboss.messaging.utils.XMLUtil.stringToElement(tostring);
+      org.jboss.messaging.utils.XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
    public void testElementToString_2() throws Exception
    {
       String s = "<a b=\"something\"></a>";
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       String tostring = XMLUtil.elementToString(e);
       Element convertedAgain = XMLUtil.stringToElement(tostring);
       XMLUtil.assertEquivalent(e, convertedAgain);
@@ -213,19 +213,19 @@ public class XMLUtilTest extends UnitTestCase
    public void testElementToString_3() throws Exception
    {
       String s = "<a b=\"something\"/>";
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       String tostring = XMLUtil.elementToString(e);
-      Element convertedAgain = XMLUtil.stringToElement(tostring);
-      XMLUtil.assertEquivalent(e, convertedAgain);
+      Element convertedAgain = org.jboss.messaging.utils.XMLUtil.stringToElement(tostring);
+      org.jboss.messaging.utils.XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
    public void testElementToString_4() throws Exception
    {
       String s = "<a><![CDATA[somedata]]></a>";
-      Element e = XMLUtil.stringToElement(s);
+      Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(s);
       String tostring = XMLUtil.elementToString(e);
-      Element convertedAgain = XMLUtil.stringToElement(tostring);
-      XMLUtil.assertEquivalent(e, convertedAgain);
+      Element convertedAgain = org.jboss.messaging.utils.XMLUtil.stringToElement(tostring);
+      org.jboss.messaging.utils.XMLUtil.assertEquivalent(e, convertedAgain);
    }
 
    public void testReplaceSystemProperties()
@@ -248,7 +248,7 @@ public class XMLUtilTest extends UnitTestCase
            "</deployment>";
       System.setProperty("sysprop1", "test1");
       System.setProperty("sysprop2", "content4");
-      String replaced = XMLUtil.replaceSystemProps(before);
+      String replaced = org.jboss.messaging.utils.XMLUtil.replaceSystemProps(before);
       assertEquals(after, replaced);
    }
    

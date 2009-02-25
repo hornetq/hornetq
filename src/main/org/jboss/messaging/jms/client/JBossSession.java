@@ -72,7 +72,7 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTemporaryQueue;
 import org.jboss.messaging.jms.JBossTemporaryTopic;
 import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  *

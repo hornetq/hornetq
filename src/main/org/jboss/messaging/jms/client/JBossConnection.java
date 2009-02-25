@@ -53,10 +53,9 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUIDGenerator;
-import org.jboss.messaging.util.VersionLoader;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
+import org.jboss.messaging.utils.VersionLoader;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -87,11 +86,11 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private final int connectionType;
 
-   private final Set<JBossSession> sessions = new ConcurrentHashSet<JBossSession>();
+   private final Set<JBossSession> sessions = new org.jboss.messaging.utils.ConcurrentHashSet<JBossSession>();
 
-   private final Set<SimpleString> tempAddresses = new ConcurrentHashSet<SimpleString>();
+   private final Set<SimpleString> tempAddresses = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
 
-   private final Set<SimpleString> tempQueues = new ConcurrentHashSet<SimpleString>();
+   private final Set<SimpleString> tempQueues = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
 
    private volatile boolean hasNoLocal;
 

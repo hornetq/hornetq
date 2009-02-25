@@ -47,10 +47,9 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.util.JBMThreadFactory;
-import org.jboss.messaging.util.OrderedExecutorFactory;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * 
@@ -90,9 +89,9 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
       this.directory = directory;
 
-      parentExecutor = Executors.newFixedThreadPool(maxThreads, new JBMThreadFactory("JBM-depaging-threads"));
+      parentExecutor = Executors.newFixedThreadPool(maxThreads, new org.jboss.messaging.utils.JBMThreadFactory("JBM-depaging-threads"));
 
-      executorFactory = new OrderedExecutorFactory(parentExecutor);
+      executorFactory = new org.jboss.messaging.utils.OrderedExecutorFactory(parentExecutor);
 
       globalDepagerExecutor = executorFactory.getExecutor();
    }

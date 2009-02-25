@@ -24,7 +24,7 @@ package org.jboss.messaging.core.client;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

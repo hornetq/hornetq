@@ -51,8 +51,7 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
-import org.jboss.messaging.util.JNDIUtil;
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
@@ -432,7 +431,7 @@ public class JMSServerManagerImpl implements JMSServerManager
          // OK
       }
 
-      Context c = JNDIUtil.createContext(context, parentContext);
+      Context c = org.jboss.messaging.utils.JNDIUtil.createContext(context, parentContext);
 
       c.rebind(jndiNameInContext, objectToBind);
       return true;

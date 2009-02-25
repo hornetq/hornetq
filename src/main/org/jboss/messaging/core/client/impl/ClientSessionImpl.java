@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.util.SimpleString.toSimpleString;
+import static org.jboss.messaging.utils.SimpleString.toSimpleString;
 
 import java.io.File;
 import java.util.HashSet;
@@ -83,14 +83,12 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMess
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.ExecutorFactory;
-import org.jboss.messaging.util.IDGenerator;
-import org.jboss.messaging.util.JBMThreadFactory;
-import org.jboss.messaging.util.OrderedExecutorFactory;
-import org.jboss.messaging.util.SimpleIDGenerator;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TokenBucketLimiterImpl;
+import org.jboss.messaging.utils.ConcurrentHashSet;
+import org.jboss.messaging.utils.IDGenerator;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
+import org.jboss.messaging.utils.SimpleIDGenerator;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TokenBucketLimiterImpl;
 
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -118,7 +116,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public static final int INITIAL_MESSAGE_BODY_SIZE = 1024;
 
-   private static final ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("jbm-client-session-threads")));
+   private static final org.jboss.messaging.utils.ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-client-session-threads")));
 
    // Attributes ----------------------------------------------------------------------------
 

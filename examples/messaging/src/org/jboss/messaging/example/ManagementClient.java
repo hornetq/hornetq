@@ -40,7 +40,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /*
  * Uses the core messaging API to send and receive a message to a queue.

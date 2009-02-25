@@ -26,7 +26,7 @@ package org.jboss.messaging.core.server.cluster;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 
 /**

@@ -24,9 +24,9 @@ package org.jboss.messaging.core.postoffice.impl;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.ConcurrentSet;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.ConcurrentHashSet;
+import org.jboss.messaging.utils.ConcurrentSet;
+import org.jboss.messaging.utils.SimpleString;
 
 import java.util.Map;
 import java.util.Set;

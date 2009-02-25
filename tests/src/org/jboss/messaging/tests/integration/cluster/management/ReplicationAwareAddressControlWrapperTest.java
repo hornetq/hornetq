@@ -34,7 +34,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ReplicationAwareQueueControlWrapperTest

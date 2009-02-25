@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.util.SimpleString.toSimpleString;
+import static org.jboss.messaging.utils.SimpleString.toSimpleString;
 
 import java.nio.ByteBuffer;
 
@@ -35,9 +35,9 @@ import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.TokenBucketLimiter;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TokenBucketLimiter;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * The client-side Producer connectionFactory class.

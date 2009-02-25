@@ -25,7 +25,7 @@ package org.jboss.messaging.core.config.cluster;
 import java.io.Serializable;
 import java.util.List;
 
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A MessageFlowConfiguration

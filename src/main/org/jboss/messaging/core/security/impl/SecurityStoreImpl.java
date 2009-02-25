@@ -35,8 +35,7 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * The JBM SecurityStore implementation
@@ -72,11 +71,11 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private JBMSecurityManager securityManager;
 
-   private final Set<SimpleString> readCache = new ConcurrentHashSet<SimpleString>();
+   private final Set<SimpleString> readCache = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
 
-   private final Set<SimpleString> writeCache = new ConcurrentHashSet<SimpleString>();
+   private final Set<SimpleString> writeCache = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
 
-   private final Set<SimpleString> createCache = new ConcurrentHashSet<SimpleString>();
+   private final Set<SimpleString> createCache = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
 
    private final long invalidationInterval;
 

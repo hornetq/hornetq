@@ -51,7 +51,7 @@ import java.util.HashSet;
 
 import org.jboss.messaging.core.filter.impl.Operator;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A OperatorTest

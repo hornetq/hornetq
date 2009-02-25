@@ -62,8 +62,8 @@ import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.VariableLatch;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.VariableLatch;
 
 /**
  * 

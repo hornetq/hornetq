@@ -25,7 +25,7 @@ package org.jboss.messaging.jms;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

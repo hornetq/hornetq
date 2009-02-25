@@ -41,7 +41,7 @@ import javax.management.openmbean.TabularType;
 import org.jboss.messaging.core.management.PropertiesInfo;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

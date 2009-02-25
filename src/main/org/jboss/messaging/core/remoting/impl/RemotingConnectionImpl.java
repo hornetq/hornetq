@@ -140,7 +140,7 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.util.SimpleIDGenerator;
+import org.jboss.messaging.utils.SimpleIDGenerator;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>

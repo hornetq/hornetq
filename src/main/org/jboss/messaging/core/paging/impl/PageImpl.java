@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.core.paging.impl;
 
-import static org.jboss.messaging.util.DataConstants.SIZE_BYTE;
-import static org.jboss.messaging.util.DataConstants.SIZE_INT;
+import static org.jboss.messaging.utils.DataConstants.SIZE_BYTE;
+import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

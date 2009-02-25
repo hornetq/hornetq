@@ -28,8 +28,8 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

@@ -25,8 +25,8 @@ package org.jboss.messaging.tests.unit.util;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.TimeAndCounterIDGenerator;
+import org.jboss.messaging.utils.ConcurrentHashSet;
+import org.jboss.messaging.utils.TimeAndCounterIDGenerator;
 
 /**
  * A TimeAndCounterIDGeneratorTest
@@ -160,7 +160,7 @@ public class TimeAndCounterIDGeneratorTest extends UnitTestCase
    
    public void testWrapID() throws Throwable
    {
-      final ConcurrentHashSet<Long> hashSet = new ConcurrentHashSet<Long>();
+      final ConcurrentHashSet<Long> hashSet = new org.jboss.messaging.utils.ConcurrentHashSet<Long>();
 
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
 

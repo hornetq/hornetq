@@ -34,7 +34,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.tests.integration.cluster.failover.PagingFailoverTest;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A PagingFailoverTest

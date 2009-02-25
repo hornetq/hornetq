@@ -32,9 +32,8 @@ import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
-import org.jboss.messaging.util.ConcurrentHashSet;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A DuplicateIDCacheImpl
@@ -51,7 +50,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 {
    private static final Logger log = Logger.getLogger(DuplicateIDCacheImpl.class);
 
-   private final Set<ByteArrayHolder> cache = new ConcurrentHashSet<ByteArrayHolder>();
+   private final Set<ByteArrayHolder> cache = new org.jboss.messaging.utils.ConcurrentHashSet<ByteArrayHolder>();
 
    private final SimpleString address;
 

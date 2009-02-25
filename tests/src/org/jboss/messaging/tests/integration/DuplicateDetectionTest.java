@@ -35,13 +35,12 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.postoffice.impl.DuplicateIDCacheImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * A DuplicateDetectionTest

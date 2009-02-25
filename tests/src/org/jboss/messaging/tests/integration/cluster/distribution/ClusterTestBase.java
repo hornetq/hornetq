@@ -55,8 +55,8 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ClusterTestBase

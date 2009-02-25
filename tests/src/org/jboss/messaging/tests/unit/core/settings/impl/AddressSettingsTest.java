@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.unit.core.settings.impl;
 
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

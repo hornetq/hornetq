@@ -74,11 +74,11 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.MessageFlowRecord;
 import org.jboss.messaging.core.server.cluster.Transformer;
-import org.jboss.messaging.util.Future;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUID;
-import org.jboss.messaging.util.UUIDGenerator;
+import org.jboss.messaging.utils.Future;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUID;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * A BridgeImpl

@@ -25,7 +25,7 @@ package org.jboss.messaging.core.paging;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 

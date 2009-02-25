@@ -76,13 +76,10 @@ import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.util.ExecutorFactory;
-import org.jboss.messaging.util.JBMThreadFactory;
-import org.jboss.messaging.util.OrderedExecutorFactory;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUID;
-import org.jboss.messaging.util.VersionLoader;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUID;
+import org.jboss.messaging.utils.VersionLoader;
 
 /**
  * The messaging server implementation
@@ -128,7 +125,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private ExecutorService asyncDeliveryPool;
 
-   private ExecutorFactory executorFactory;
+   private org.jboss.messaging.utils.ExecutorFactory executorFactory;
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -176,9 +173,9 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
-      asyncDeliveryPool = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-async-session-delivery-threads"));
+      asyncDeliveryPool = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("JBM-async-session-delivery-threads"));
 
-      executorFactory = new OrderedExecutorFactory(asyncDeliveryPool);
+      executorFactory = new org.jboss.messaging.utils.OrderedExecutorFactory(asyncDeliveryPool);
 
       /*
        * The following components are pluggable on the messaging server: Configuration, StorageManager, RemotingService,
@@ -228,7 +225,7 @@ public class MessagingServerImpl implements MessagingServer
       securityStore.setManagementClusterPassword(configuration.getManagementClusterPassword());
       addressSettingsRepository.setDefault(new AddressSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                          new JBMThreadFactory("JBM-scheduled-threads"));
+                                                          new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads"));
       queueFactory = new QueueFactoryImpl(scheduledExecutor, addressSettingsRepository, storageManager);
 
       pagingManager = createPagingManager();

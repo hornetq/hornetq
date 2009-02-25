@@ -24,7 +24,7 @@ package org.jboss.messaging.core.config.cluster;
 
 import java.io.Serializable;
 
-import org.jboss.messaging.util.Pair;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A BridgeConfiguration

@@ -55,7 +55,7 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A test that makes sure that a Messaging server cleans up the associated

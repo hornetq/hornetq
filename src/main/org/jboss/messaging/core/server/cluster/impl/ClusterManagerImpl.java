@@ -54,10 +54,9 @@ import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.Transformer;
-import org.jboss.messaging.util.ExecutorFactory;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
-import org.jboss.messaging.util.UUID;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUID;
 
 /**
  * A ClusterManagerImpl
@@ -80,7 +79,7 @@ public class ClusterManagerImpl implements ClusterManager
 
    private final Map<String, ClusterConnection> clusters = new HashMap<String, ClusterConnection>();
 
-   private final ExecutorFactory executorFactory;
+   private final org.jboss.messaging.utils.ExecutorFactory executorFactory;
 
    private final StorageManager storageManager;
 
@@ -98,7 +97,7 @@ public class ClusterManagerImpl implements ClusterManager
 
    private volatile boolean started;
 
-   public ClusterManagerImpl(final ExecutorFactory executorFactory,
+   public ClusterManagerImpl(final org.jboss.messaging.utils.ExecutorFactory executorFactory,
                              final StorageManager storageManager,
                              final PostOffice postOffice,
                              final ScheduledExecutorService scheduledExecutor,

@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.timing.util;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.util.TokenBucketLimiterImpl;
+import org.jboss.messaging.utils.TokenBucketLimiterImpl;
 
 /**
  * 

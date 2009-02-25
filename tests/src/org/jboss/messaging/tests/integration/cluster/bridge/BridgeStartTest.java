@@ -42,8 +42,8 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.util.Pair;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A BridgeStartTest

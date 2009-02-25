@@ -26,7 +26,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Distributor;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributor;
 import org.jboss.messaging.core.settings.Mergeable;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * Configuration settings that are applied on the address level

@@ -18,20 +18,23 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.util;
 
-import java.util.concurrent.Executor;
+package org.jboss.messaging.utils;
 
 /**
- * 
- * A ExecutorFactory
- * 
+ * A IDGenerator
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * 
+ * Created 25 Sep 2008 10:28:52
+ *
  *
  */
-public interface ExecutorFactory
+public interface IDGenerator
 {
-   Executor getExecutor();
+   long generateID();
+   
+   long getCurrentID();
 }

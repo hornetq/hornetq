@@ -49,8 +49,8 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnector;
 import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnectorFactory;
-import org.jboss.messaging.util.DataConstants;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.DataConstants;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A TestMessageChunk

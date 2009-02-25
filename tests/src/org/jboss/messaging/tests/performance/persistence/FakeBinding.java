@@ -27,7 +27,7 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.server.Bindable;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 

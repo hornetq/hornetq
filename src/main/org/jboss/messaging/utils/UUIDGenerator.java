@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.jboss.messaging.util;
+package org.jboss.messaging.utils;
 
 import java.lang.reflect.Method;
 import java.net.NetworkInterface;
