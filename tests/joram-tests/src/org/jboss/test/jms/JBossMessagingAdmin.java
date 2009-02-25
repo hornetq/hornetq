@@ -63,7 +63,7 @@ import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
-import org.jboss.messaging.util.SimpleString;
+import org.jboss.messaging.utils.SimpleString;
 import org.objectweb.jtests.jms.admin.Admin;
 
 /**
