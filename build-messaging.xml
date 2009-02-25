@@ -450,7 +450,7 @@
             <pathelement path="${src.main.dir}"/>
          </src>
          <include name="**/messaging/core/**/*.java"/>
-         <include name="**/messaging/util/**/*.java"/>
+         <include name="**/messaging/utils/**/*.java"/>
       </javac>
       <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
              classpath="${build.core.classes.dir}" destdir="./native/src"/>
@@ -681,7 +681,7 @@
             <include name="org/jboss/messaging/core/exception/**/*.class"/>
             <include name="org/jboss/messaging/core/logging/**/*.class"/>
             <include name="org/jboss/messaging/core/remoting/**/*.class"/>
-            <include name="org/jboss/messaging/util/**/*.class"/>
+            <include name="org/jboss/messaging/utils/**/*.class"/>
              <include name="org/jboss/messaging/core/cluster/**/*.class"/>
             <include name="org/jboss/messaging/core/config/**/*.class"/>
             <include name="org/jboss/messaging/core/list/**/*.class"/>
