@@ -215,6 +215,8 @@ public class JustReplicationTest extends FailoverTestBase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       setUpFileBased(100 * 1024 * 1024);
    }
 

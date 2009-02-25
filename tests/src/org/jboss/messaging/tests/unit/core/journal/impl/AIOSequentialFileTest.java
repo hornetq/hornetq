@@ -459,8 +459,10 @@ public class AIOSequentialFileTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp()
+   protected void setUp() throws Exception
    {
+      super.setUp();
+      
       mockFile = null;
       File testDir = new File(getTestDir());
       testDir.mkdirs();

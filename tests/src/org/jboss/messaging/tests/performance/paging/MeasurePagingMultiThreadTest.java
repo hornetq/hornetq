@@ -62,12 +62,6 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
    // Public --------------------------------------------------------
 
    @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-   @Override
    protected void setUp() throws Exception
    {
       super.setUp();

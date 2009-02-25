@@ -78,6 +78,8 @@ public class ConsumerTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -132,6 +134,8 @@ public class ConsumerTest extends UnitTestCase
          service = null;
 
       }
+      
+      super.tearDown();
    }
 
    public void testPreCommitAcks() throws Exception

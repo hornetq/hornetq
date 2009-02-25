@@ -62,6 +62,8 @@ public class BasicSecurityDeployerTest  extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
       deployer = new BasicSecurityDeployer(deploymentManager);
    }
@@ -69,6 +71,8 @@ public class BasicSecurityDeployerTest  extends UnitTestCase
    protected void tearDown() throws Exception
    {
       deployer = null;
+      
+      super.tearDown();
    }
 
    private void deploy(String xml) throws Exception

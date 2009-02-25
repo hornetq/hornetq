@@ -30,6 +30,8 @@ public class WildcardAddressManagerTest extends SimpleAddressManagerTest
 {
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       sam = new WildcardAddressManager();
    }
 

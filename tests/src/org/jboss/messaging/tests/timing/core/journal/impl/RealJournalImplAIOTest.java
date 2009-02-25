@@ -54,12 +54,6 @@ public class RealJournalImplAIOTest extends JournalImplTestUnit
       }
    }
    
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-      
    protected SequentialFileFactory getFileFactory() throws Exception
    {
       File file = new File(getTestDir());

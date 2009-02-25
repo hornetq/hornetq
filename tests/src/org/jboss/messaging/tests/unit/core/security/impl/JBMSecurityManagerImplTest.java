@@ -40,12 +40,16 @@ public class JBMSecurityManagerImplTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       securityManager = new JBMSecurityManagerImpl(true);
    }
 
    protected void tearDown() throws Exception
    {
       securityManager = null;
+      
+      super.tearDown();
    }
 
    public void testDefaultSecurity()

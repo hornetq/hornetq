@@ -50,8 +50,9 @@ public class StorageManagerTimingTest extends UnitTestCase
 
    protected void tearDown() throws Exception
    {
-      super.tearDown();
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+
+      super.tearDown();
    }
 
    public void testAIO() throws Exception

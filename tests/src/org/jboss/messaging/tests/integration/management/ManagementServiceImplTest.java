@@ -205,6 +205,21 @@ public class ManagementServiceImplTest extends UnitTestCase
    // Package protected ---------------------------------------------
 
    @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+
+      Set set = mbeanServer.queryNames(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
+
+      for (Object objectName : set)
+      {
+         mbeanServer.unregisterMBean((ObjectName)objectName);
+      }
+   }
+   
+   @Override
    protected void tearDown() throws Exception
    {
       MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();

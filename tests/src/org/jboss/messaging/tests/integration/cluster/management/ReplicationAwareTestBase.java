@@ -92,6 +92,8 @@ public class ReplicationAwareTestBase extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       backupMBeanServer = MBeanServerFactory.createMBeanServer();
       liveMBeanServer = MBeanServerFactory.createMBeanServer();
 
@@ -129,7 +131,7 @@ public class ReplicationAwareTestBase extends UnitTestCase
 
       liveService.stop();
 
-      assertEquals(0, InVMRegistry.instance.size());
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

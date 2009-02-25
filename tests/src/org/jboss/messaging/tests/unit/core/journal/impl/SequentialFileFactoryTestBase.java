@@ -55,8 +55,9 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+      
+      super.tearDown();
    }
 
    protected abstract SequentialFileFactory createFactory();

@@ -308,6 +308,8 @@ public class JMSQueueControlTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);

@@ -68,12 +68,12 @@ public class SendAcknowledgementsTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
-
       if (messagingService != null && messagingService.isStarted())
       {
          messagingService.stop();
       }
+      
+      super.tearDown();
    }
 
    public void testSendAcknowledgements() throws Exception

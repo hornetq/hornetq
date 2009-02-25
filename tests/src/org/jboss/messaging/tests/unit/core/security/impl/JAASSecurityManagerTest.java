@@ -64,6 +64,8 @@ public class JAASSecurityManagerTest extends UnitTestCase
    
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       securityManager = new JAASSecurityManager();
       
       final String domainName = SimpleLogingModule.class.getName();
@@ -88,6 +90,8 @@ public class JAASSecurityManagerTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       securityManager = null;
+      
+      super.tearDown();
    }
 
    public void testValidatingUser()

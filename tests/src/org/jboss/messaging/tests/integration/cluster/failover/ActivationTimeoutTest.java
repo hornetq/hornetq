@@ -265,6 +265,8 @@ public class ActivationTimeoutTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupConf.setQueueActivationTimeout(ACTIVATION_TIMEOUT);
@@ -298,6 +300,8 @@ public class ActivationTimeoutTest extends UnitTestCase
       liveService.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

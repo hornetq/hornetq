@@ -46,12 +46,16 @@ public class SecurityStoreImplTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       securityStore = new SecurityStoreImpl(1000000000, true);
    }
 
    protected void tearDown() throws Exception
    {
       securityStore = null;
+      
+      super.tearDown();
    }
 
    public void testSuccessfulAuthentication() throws Exception

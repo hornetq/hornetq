@@ -1341,8 +1341,6 @@ public class AlignedJournalImplTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
-
       if (journalImpl != null)
       {
          try
@@ -1353,6 +1351,8 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
          }
       }
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

@@ -67,8 +67,9 @@ public abstract class AIOTestBase extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+
+      super.tearDown();
    }
 
    protected void encodeBufer(final ByteBuffer buffer)

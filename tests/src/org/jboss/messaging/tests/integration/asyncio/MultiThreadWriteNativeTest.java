@@ -68,12 +68,6 @@ public class MultiThreadWriteNativeTest extends AIOTestBase
       position.set(0);
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    public void testMultipleASynchronousWrites() throws Throwable
    {
       executeTest(false);

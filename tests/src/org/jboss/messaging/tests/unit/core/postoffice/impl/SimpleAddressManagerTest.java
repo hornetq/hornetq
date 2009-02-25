@@ -36,6 +36,8 @@ public class SimpleAddressManagerTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+
       sam = new SimpleAddressManager();
    }
 //

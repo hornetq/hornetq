@@ -41,6 +41,8 @@ public class RepositoryTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       securityRepository = new HierarchicalObjectRepository<HashSet<Role>>();
    }
 

@@ -230,6 +230,7 @@ public class ClientRequestorTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
 
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);

@@ -48,12 +48,16 @@ public class JBossASSecurityManagerTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       securityManager = new JBossASSecurityManager();
    }
 
    protected void tearDown() throws Exception
    {
       securityManager = null;
+      
+      super.tearDown();
    }
 
    public void testValidatingUser()

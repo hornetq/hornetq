@@ -397,6 +397,8 @@ public class QueueControlTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       mbeanServer = MBeanServerFactory.createMBeanServer();
       
       Configuration conf = new ConfigurationImpl();

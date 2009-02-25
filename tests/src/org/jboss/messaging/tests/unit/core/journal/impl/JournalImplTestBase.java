@@ -89,8 +89,6 @@ public abstract class JournalImplTestBase extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
-
       if (journal != null)
       {
          try
@@ -107,6 +105,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
       journal = null;
 
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
+      
+      super.tearDown();
    }
 
    protected void resetFileFactory() throws Exception

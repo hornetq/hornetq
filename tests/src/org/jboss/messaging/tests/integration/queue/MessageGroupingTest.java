@@ -543,10 +543,14 @@ public class MessageGroupingTest extends UnitTestCase
       }
       messagingService = null;
       clientSession = null;
+      
+      super.tearDown();
    }
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);

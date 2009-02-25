@@ -62,9 +62,9 @@ public class QueueImplTest extends UnitTestCase
 
    public void tearDown() throws Exception
    {
-   	super.tearDown();
-
    	scheduledExecutor.shutdownNow();
+
+      super.tearDown();
    }
 
    // The tests ----------------------------------------------------------------

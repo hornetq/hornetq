@@ -45,12 +45,7 @@ public class MessageChunkStressTest extends ChunkTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();
-   }
-   
+      
    public void testMessageChunkFilePersistence1M() throws Exception
    {
       // testChunks(true, true, false, true, false, 1000, 262144, 120000, 0, -1, false);
@@ -60,12 +55,6 @@ public class MessageChunkStressTest extends ChunkTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      //super.tearDown();
-   }
 
    // Private -------------------------------------------------------
 

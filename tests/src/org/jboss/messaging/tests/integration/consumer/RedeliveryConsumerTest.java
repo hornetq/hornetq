@@ -224,12 +224,6 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
    // Protected -----------------------------------------------------
 
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
    /**
     * @param persistDeliveryCountBeforeDelivery
     * @throws Exception
@@ -257,11 +251,12 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
       if (messagingService != null && messagingService.isStarted())
       {
          messagingService.stop();
       }
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

@@ -335,8 +335,6 @@ public class EasyMockJournalTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
-
       if (journalImpl != null)
       {
          EasyMock.reset(mockFactory, file1, file2);
@@ -350,11 +348,14 @@ public class EasyMockJournalTest extends UnitTestCase
          }
       }
 
+      super.tearDown();
    }
 
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       journalImpl = newJournal();
    }
 

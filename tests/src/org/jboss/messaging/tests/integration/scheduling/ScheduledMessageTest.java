@@ -59,6 +59,8 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       super.clearData();
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);

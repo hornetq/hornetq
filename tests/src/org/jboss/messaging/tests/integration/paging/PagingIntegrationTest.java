@@ -68,12 +68,6 @@ public class PagingIntegrationTest extends PageImplTestBase
       fileJournalDir.mkdirs();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

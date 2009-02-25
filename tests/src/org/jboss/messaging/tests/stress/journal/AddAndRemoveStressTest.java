@@ -208,17 +208,13 @@ public class AddAndRemoveStressTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp()
+   protected void setUp() throws Exception
    {
+      super.setUp();
+      
       File file = new File(getTestDir());
       deleteDirectory(file);
       file.mkdirs();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
    }
 
    // Private -------------------------------------------------------

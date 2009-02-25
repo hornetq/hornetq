@@ -81,12 +81,6 @@ public class ClusterTestBase extends ServiceTestBase
       clearData();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    // Private -------------------------------------------------------------------------------------------------------
 
    private static final int MAX_CONSUMERS = 100;

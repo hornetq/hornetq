@@ -326,8 +326,9 @@ public class PageStressTest extends ServiceTestBase
    @Override
    protected void setUp() throws Exception
    {
-      clearData();
       super.setUp();
+
+      clearData();
    }
 
    @Override

@@ -135,12 +135,6 @@ public class PageCrashTest extends ServiceTestBase
 
    // Protected -----------------------------------------------------
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    // Private -------------------------------------------------------
 
    /** This method will leave garbage on paging. 

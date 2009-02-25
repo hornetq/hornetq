@@ -99,14 +99,10 @@ public class ValidateTransactionHealthTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
-   protected void tearDown() throws Exception
+   protected void setUp() throws Exception
    {
-      super.tearDown();
-   }
-
-   @Override
-   protected void setUp()
-   {
+      super.setUp();
+      
       File file = new File(getTestDir());
       deleteDirectory(file);
       file.mkdir();

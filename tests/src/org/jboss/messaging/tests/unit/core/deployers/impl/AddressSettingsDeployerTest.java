@@ -53,6 +53,8 @@ public class AddressSettingsDeployerTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       repository = EasyMock.createStrictMock(HierarchicalRepository.class);
       DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
       addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, repository);

@@ -72,6 +72,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       clearData();
       addressSettings.clear();
       configuration = createDefaultConfig();

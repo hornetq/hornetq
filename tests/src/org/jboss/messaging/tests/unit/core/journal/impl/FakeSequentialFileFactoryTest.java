@@ -34,11 +34,6 @@ import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFile
  */
 public class FakeSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
 
    @Override
    protected SequentialFileFactory createFactory()

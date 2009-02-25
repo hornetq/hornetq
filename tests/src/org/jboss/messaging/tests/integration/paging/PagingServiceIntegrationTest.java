@@ -69,12 +69,6 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    public void testSendReceivePaging() throws Exception
    {
       clearData();

@@ -61,12 +61,6 @@ public class RealAIOJournalImplTest extends JournalImplTestUnit
    }
 
    @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-   @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
       File file = new File(getTestDir());

@@ -59,18 +59,6 @@ public class SingleThreadWriteNativeTest extends AIOTestBase
       log.debug(msg);
    }
 
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    /** 
     * Opening and closing a file immediately can lead to races on the native layer,
     * creating crash conditions.

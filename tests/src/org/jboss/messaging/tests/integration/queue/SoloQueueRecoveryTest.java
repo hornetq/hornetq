@@ -185,10 +185,14 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       }
       messagingService = null;
       clientSession = null;
+      
+      super.tearDown();
    }
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       clearData();
       configuration = createFileConfig();
       configuration.setSecurityEnabled(false);

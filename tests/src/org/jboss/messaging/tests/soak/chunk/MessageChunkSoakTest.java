@@ -68,12 +68,6 @@ public class MessageChunkSoakTest extends ChunkTestBase
 
    // Protected -----------------------------------------------------
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

@@ -78,12 +78,6 @@ public class ChunkTestBase extends ServiceTestBase
 
    // Protected -----------------------------------------------------
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    protected void testChunks(final boolean realFiles,
                              final boolean useFile,
                              final boolean preAck,

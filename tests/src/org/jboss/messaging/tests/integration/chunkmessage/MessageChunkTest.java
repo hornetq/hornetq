@@ -617,9 +617,9 @@ public class MessageChunkTest extends ChunkTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      super.tearDown();
       log.info("\n*********************************************************************************\nDone with  " + this.getName() +
                "\n*********************************************************************************");
+      super.tearDown();
    }
 
    protected void testPageOnLargeMessage(final boolean realFiles, final boolean sendBlocking) throws Exception

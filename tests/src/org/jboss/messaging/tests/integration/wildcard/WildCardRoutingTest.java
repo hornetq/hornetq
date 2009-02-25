@@ -794,6 +794,8 @@ public class WildCardRoutingTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setWildcardRoutingEnabled(true);
       configuration.setSecurityEnabled(false);
@@ -836,5 +838,7 @@ public class WildCardRoutingTest extends UnitTestCase
       }
       messagingService = null;
       clientSession = null;
+      
+      super.tearDown();
    }
 }

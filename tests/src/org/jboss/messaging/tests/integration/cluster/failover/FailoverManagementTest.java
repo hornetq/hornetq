@@ -267,6 +267,8 @@ public class FailoverManagementTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -299,6 +301,8 @@ public class FailoverManagementTest extends UnitTestCase
       liveService.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

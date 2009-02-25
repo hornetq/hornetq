@@ -288,6 +288,8 @@ public class ExpiryRunnerTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.setMessageExpiryScanPeriod(1000);

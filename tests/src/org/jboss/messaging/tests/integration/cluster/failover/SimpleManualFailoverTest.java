@@ -178,6 +178,8 @@ public class SimpleManualFailoverTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       Configuration server1Conf = new ConfigurationImpl();
       server1Conf.setSecurityEnabled(false);
       server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -202,6 +204,8 @@ public class SimpleManualFailoverTest extends UnitTestCase
       server0Service.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

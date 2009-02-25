@@ -355,9 +355,6 @@ public class NettyHttpTest extends UnitTestCase
          i++;
       }
    }
-   protected void setUp() throws Exception
-   {
-   }
 
    @Override
    protected void tearDown() throws Exception
@@ -372,6 +369,8 @@ public class NettyHttpTest extends UnitTestCase
          acceptor.stop();
          acceptor = null;
       }
+      
+      super.tearDown();
    }
 
    class SimpleBufferHandler extends AbstractBufferHandler

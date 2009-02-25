@@ -190,12 +190,6 @@ public class PagingFailoverTest extends FailoverTestBase
       return 500;
    }
    
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
    protected void fail(final ClientSession session) throws Exception
    {
       RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
@@ -205,12 +199,6 @@ public class PagingFailoverTest extends FailoverTestBase
       System.out.println("Forcing a failure");
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
 
-   }
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
    }
 
 

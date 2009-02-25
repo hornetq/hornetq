@@ -69,6 +69,8 @@ public class XaTimeoutTest extends UnitTestCase
 
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       addressSettings.clear();
       configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -112,6 +114,8 @@ public class XaTimeoutTest extends UnitTestCase
       }
       messagingService = null;
       clientSession = null;
+      
+      super.tearDown();
    }
 
    public void testSimpleTimeoutOnSendOnCommit() throws Exception

@@ -65,12 +65,6 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
    }
 
    @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();
-   }
-
-   @Override
    protected SequentialFileFactory createFactory()
    {
       return new AIOSequentialFileFactory(getTestDir());

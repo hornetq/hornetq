@@ -616,6 +616,8 @@ public class ReconnectTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
@@ -632,6 +634,8 @@ public class ReconnectTest extends UnitTestCase
       service.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

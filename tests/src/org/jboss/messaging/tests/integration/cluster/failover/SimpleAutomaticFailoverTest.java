@@ -827,6 +827,8 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       startServers();
    }
 
@@ -834,6 +836,8 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       stopServers();
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------

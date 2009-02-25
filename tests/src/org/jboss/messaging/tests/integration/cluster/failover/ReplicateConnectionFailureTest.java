@@ -162,6 +162,8 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
+      
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setConnectionScanPeriod(100);
       backupConf.setSecurityEnabled(false);
@@ -201,6 +203,8 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
       liveService.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------
