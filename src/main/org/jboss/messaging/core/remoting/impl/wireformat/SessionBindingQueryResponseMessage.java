@@ -99,7 +99,7 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
       int size = BASIC_PACKET_SIZE + BASIC_SIZE;
       for (SimpleString queueName : queueNames)
       {
-         size += queueName.length() + DataConstants.SIZE_INT;
+         size += queueName.length() * 2 + DataConstants.SIZE_INT;
       }
       return size; 
    }
