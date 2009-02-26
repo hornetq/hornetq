@@ -1603,11 +1603,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
          }
 
+         queue.deleteAllReferences();
+
          if (queue.isDurable())
          {
             storageManager.deleteQueueBinding(queue.getPersistenceID());
-
-            queue.deleteAllReferences();
          }
 
          response = new NullResponseMessage();
