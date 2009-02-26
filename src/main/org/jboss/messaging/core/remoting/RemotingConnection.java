@@ -66,4 +66,9 @@ public interface RemotingConnection extends BufferHandler
    void setReplicatingConnection(RemotingConnection connection);
    
    Connection getTransportConnection();
+   
+   void setReadyToClose();
+   
+   boolean isReadyToClose();
+
 }

@@ -16,6 +16,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREAT
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.QUIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL_RESPONSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
@@ -257,6 +258,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private final Object failLock = new Object();
 
+   private boolean readyToClose = false;
+   
    // debug only stuff
 
    private boolean createdActive;
@@ -519,6 +522,15 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       {
          if (!frozen)
          {
+            // we intercept the QUIT command her to flag the remoting connection
+            // as ready to be closed. No other packets are expected to be
+            // handled after the QUIT packet
+            if (packet.getType() == QUIT)
+            {
+               setReadyToClose();
+               return;
+            }
+            
             final ChannelImpl channel = channels.get(packet.getChannelID());
 
             if (channel != null)
@@ -542,6 +554,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       {
          frozen = true;
       }
+   }
+   
+   public void setReadyToClose()
+   {
+      this.readyToClose = true;
+   }
+   
+   public boolean isReadyToClose()
+   {
+      return readyToClose;
    }
    
 //   public void resetAllReplicatingChannels()
@@ -874,6 +896,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          case SESS_REPLICATE_DELIVERY:
          {
             packet = new SessionReplicateDeliveryMessage();
+            break;
+         }
+         case QUIT:
+         {
+            packet = new PacketImpl(QUIT);
             break;
          }
          default:
@@ -1335,6 +1362,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          if (!connection.destroyed && connection.channels.remove(id) == null)
          {
             throw new IllegalArgumentException("Cannot find channel with id " + id + " to close");
+         }
+         
+         if (connection.channels.size() == 0)
+         {
+            Packet last = new PacketImpl(QUIT);
+            send(last);
          }
          
          if (replicatingChannel != null)

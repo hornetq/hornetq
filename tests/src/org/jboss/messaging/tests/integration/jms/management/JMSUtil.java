@@ -102,6 +102,37 @@ public class JMSUtil
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                              DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                              DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+      return cf.createConnection();
+   }
+   
+   public static Connection createConnection(final String connectorFactory,
+                                             final long pingPeriod,
+                                             final long connectionTTL) throws JMSException
+   {
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory),
+                                                             null,
+                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                             DEFAULT_PING_PERIOD,
+                                                             connectionTTL,
+                                                             DEFAULT_CALL_TIMEOUT,
+                                                             null,
+                                                             DEFAULT_ACK_BATCH_SIZE,
+                                                             DEFAULT_ACK_BATCH_SIZE,
+                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                             DEFAULT_CONSUMER_MAX_RATE,
+                                                             DEFAULT_SEND_WINDOW_SIZE,
+                                                             DEFAULT_PRODUCER_MAX_RATE,
+                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                             true,
+                                                             true,
+                                                             DEFAULT_AUTO_GROUP,
+                                                             DEFAULT_MAX_CONNECTIONS,
+                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                  
+                                                             DEFAULT_RETRY_INTERVAL,
+                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       return cf.createConnection();
    }

@@ -343,6 +343,7 @@ public class JMSServerControlTest extends UnitTestCase
          Thread.sleep(500);
 
          assertEquals(0, control.listRemoteAddresses().length);
+         assertEquals(0, control.listConnectionIDs().length);
       }
       finally
       {
@@ -389,6 +390,7 @@ public class JMSServerControlTest extends UnitTestCase
          
          boolean gotException = exceptionLatch.await(1, TimeUnit.SECONDS);
          assertTrue("did not received the expected JMSException", gotException);
+         Thread.sleep(500);
          assertEquals(0, control.listRemoteAddresses().length);
          assertEquals(0, service.getServer().getConnectionCount());
       }
@@ -440,6 +442,10 @@ public class JMSServerControlTest extends UnitTestCase
 
          assertEquals(1, control.listRemoteAddresses().length);
          assertEquals(1, service.getServer().getConnectionCount());
+         
+         connection.close();
+         Thread.sleep(1000);
+         assertEquals(0, service.getServer().getConnectionCount());
 
       }
       finally

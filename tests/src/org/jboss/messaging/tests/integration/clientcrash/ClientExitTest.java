@@ -29,15 +29,10 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -52,7 +47,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  * $Id$
  */
-public class ClientExitTest extends UnitTestCase
+public class ClientExitTest extends ClientTestBase
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -65,8 +60,6 @@ public class ClientExitTest extends UnitTestCase
    private static final Logger log = Logger.getLogger(ClientExitTest.class);
 
    // Attributes -----------------------------------------------------------------------------------
-
-   private MessagingService messagingService;
 
    private ClientSession session;
 
@@ -94,6 +87,16 @@ public class ClientExitTest extends UnitTestCase
       p.waitFor();
 
       assertEquals(0, p.exitValue());
+      
+      // the local session
+      assertActiveConnections(1);
+      assertActiveSession(1);
+      
+      session.close();
+      
+      Thread.sleep(1000);
+      assertActiveConnections(0);
+      assertActiveSession(0);
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -103,12 +106,6 @@ public class ClientExitTest extends UnitTestCase
    {
       super.setUp();
       
-      ConfigurationImpl config = new ConfigurationImpl();
-      config.setSecurityEnabled(false);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      messagingService = Messaging.newNullStorageMessagingService(config);
-      messagingService.start();
-
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.createQueue(QUEUE, QUEUE, null, false, false);
@@ -116,17 +113,6 @@ public class ClientExitTest extends UnitTestCase
       session.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      consumer.close();
-      session.close();
-
-      messagingService.stop();
-
-      super.tearDown();
-   }
-   
    // Protected ------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------

@@ -47,13 +47,10 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -65,8 +62,12 @@ import org.jboss.messaging.utils.SimpleString;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @version <tt>$Revision: 4032 $</tt>
  */
-public class ClientCrashTest extends ServiceTestBase
+public class ClientCrashTest extends ClientTestBase
 {
+   static final int PING_PERIOD = 2000;
+
+   static final int CONNECTION_TTL = 3000;
+
    // Constants -----------------------------------------------------
 
    public static final SimpleString QUEUE = new SimpleString("ClientCrashTestQueue");
@@ -83,45 +84,33 @@ public class ClientCrashTest extends ServiceTestBase
 
    private ClientSessionFactory sf;
    
-   private MessagingService messagingService;
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   public void testCrashClientWithOneConnection() throws Exception
-   {
-      crashClient(1);
-   }
-
-   public void testCrashClientWithTwoConnections() throws Exception
-   {
-      crashClient(2);
-   }
-
-   public void crashClient(int numberOfConnectionsOnTheClient) throws Exception
+   public void testCrashClient() throws Exception
    {
       assertActiveConnections(0);
-
+      
       // spawn a JVM that creates a JMS client, which waits to receive a test
       // message
-      Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName(),
-                                           new String[] { Integer.toString(numberOfConnectionsOnTheClient) });
-
+      Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName());
+      
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       ClientConsumer consumer = session.createConsumer(QUEUE);
       ClientProducer producer = session.createProducer(QUEUE);
-
+      
       session.start();
-
+      
       // send the message to the queue
       Message messageFromClient = consumer.receive(5000);
       assertNotNull("no message received", messageFromClient);
       assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBody().getString());
-
+      
       assertActiveConnections(1 + 1); // One local and one from the other vm
-
+      assertActiveSession(1 + 1);
+      
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
                                                           false,
                                                           0,
@@ -129,22 +118,27 @@ public class ClientCrashTest extends ServiceTestBase
                                                           (byte)1);
       message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
       producer.send(message);
+      session.close();
+
+      Thread.sleep(500);
+      
+      assertActiveConnections(1);
+      assertActiveSession(1);      
 
       log.debug("waiting for the client VM to crash ...");
       p.waitFor();
-
+      
       assertEquals(9, p.exitValue());
+      
+      System.out.println("VM Exited");
 
-      Thread.sleep(4000);
-      // the crash must have been detected and the client resources cleaned
-      // up only the local connection remains
       assertActiveConnections(1);
+      assertActiveSession(1);      
 
-      session.close();
-
-      Thread.sleep(1000);
-
+      Thread.sleep(2 * PING_PERIOD + 2 * CONNECTION_TTL);
+      // the crash must have been detected and the resources cleaned up
       assertActiveConnections(0);
+      assertActiveSession(0);      
    }
 
    // Package protected ---------------------------------------------
@@ -154,16 +148,11 @@ public class ClientCrashTest extends ServiceTestBase
    {
       super.setUp();
 
-      Configuration config = createDefaultConfig(true);
-      config.setSecurityEnabled(false);
-      messagingService = createService(false, config);
-      messagingService.start();
-
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
                                         null,
                                         DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        2000,
-                                        3000,
+                                        PING_PERIOD,
+                                        CONNECTION_TTL,
                                         DEFAULT_CALL_TIMEOUT,
                                         DEFAULT_CONSUMER_WINDOW_SIZE,
                                         DEFAULT_CONSUMER_MAX_RATE,
@@ -187,19 +176,12 @@ public class ClientCrashTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      messagingService.stop();
-
-      super.tearDown();
+      sf.close();
    }
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private void assertActiveConnections(int expectedActiveConnections) throws Exception
-   {
-      assertEquals(expectedActiveConnections, messagingService.getServer().getServerManagement().getConnectionCount());
-   }
 
    // Inner classes -------------------------------------------------
 

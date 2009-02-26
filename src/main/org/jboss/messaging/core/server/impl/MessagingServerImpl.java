@@ -706,6 +706,18 @@ public class MessagingServerImpl implements MessagingServer
       }
       return matchingSessions;
    }
+   
+   public List<ServerSession> getSessions()
+   {
+      Set<Entry<String, ServerSession>> sessionEntries = sessions.entrySet();
+      List<ServerSession> matchingSessions = new ArrayList<ServerSession>();
+      for (Entry<String, ServerSession> sessionEntry : sessionEntries)
+      {
+         ServerSession serverSession = sessionEntry.getValue();
+         matchingSessions.add(serverSession);
+      }
+      return matchingSessions;
+   }
 
    public RemotingConnection getReplicatingConnection()
    {

@@ -277,12 +277,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void connectionDestroyed(final Object connectionID)
    {
-      RemotingConnection conn = connections.remove(connectionID);
-            
-      if (conn != null)
+      RemotingConnection conn = connections.get(connectionID);
+      
+      // if the connection is not ready to be closed properly,
+      // the cleanup will occur when the connection TTL is hit
+      if (conn != null && conn.isReadyToClose())
       {
+         connections.remove(connectionID);
          conn.destroy();
-      }      
+      }
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
@@ -292,7 +295,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       if (rc != null)
       {
          rc.fail(me);
-      }     
+      }
    }
 
    public void addInterceptor(final Interceptor interceptor)
@@ -341,6 +344,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          for (RemotingConnection conn : failedConnections)
          {
+            connections.remove(conn.getID());
             MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
                                                            "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
 

@@ -513,6 +513,8 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
          String remoteAddress = connection.getRemoteAddress();
          if (remoteAddress.contains(ipAddress))
          {
+            // force the immediate closure of the connection and its resources
+            connection.setReadyToClose();
             connection.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "connections for " + ipAddress +
                                                                                       " closed by management"));
             closed = true;

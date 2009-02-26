@@ -68,6 +68,8 @@ public class PacketImpl implements Packet
 
    public static final byte REPLICATE_CREATESESSION = 34;
 
+   public static final byte QUIT = 35;
+
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
 

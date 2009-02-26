@@ -22,11 +22,28 @@
 
 package org.jboss.messaging.tests.integration.clientcrash;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 import static org.jboss.messaging.tests.integration.clientcrash.ClientCrashTest.QUEUE;
 
 import java.util.Arrays;
 
-import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
@@ -60,39 +77,39 @@ public class CrashClient
       try
       {
          log.debug("args = " + Arrays.asList(args));
-
-         if (args.length != 1)
-         {
-            log.fatal("unexpected number of args (should be 1)");
-            System.exit(1);
-         }
-
-         int numberOfConnections = Integer.parseInt(args[0]);
          
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
+                                           null,
+                                           DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                           ClientCrashTest.PING_PERIOD,
+                                           ClientCrashTest.CONNECTION_TTL,
+                                           DEFAULT_CALL_TIMEOUT,
+                                           DEFAULT_CONSUMER_WINDOW_SIZE,
+                                           DEFAULT_CONSUMER_MAX_RATE,
+                                           DEFAULT_SEND_WINDOW_SIZE,
+                                           DEFAULT_PRODUCER_MAX_RATE,
+                                           DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                           DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                           DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                           DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                           DEFAULT_AUTO_GROUP,
+                                           DEFAULT_MAX_CONNECTIONS,
+                                           DEFAULT_PRE_ACKNOWLEDGE,
+                                           DEFAULT_ACK_BATCH_SIZE,                                 
+                                           DEFAULT_RETRY_INTERVAL,
+                                           DEFAULT_RETRY_INTERVAL_MULTIPLIER,                                        
+                                           DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                           DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
          ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(QUEUE);
-         ClientConsumer consumer = session.createConsumer(QUEUE);
-
-//         if (numberOfConnections > 1)
-//         {
-//            // create (num - 1) unused connections
-//            for (int i = 0; i < numberOfConnections - 1; i++)
-//            {
-//               cf.createConnection();         
-//            }
-//         }
          
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
          message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
 
          producer.send(message);
-
-         session.start();
-         //consumer.receive(5000);
          
-         // crash
+         // exit without closing the session properly
          System.exit(9);
       }
       catch (Throwable t)
