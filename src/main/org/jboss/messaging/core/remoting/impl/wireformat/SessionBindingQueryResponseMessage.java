@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * 
@@ -40,7 +41,9 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    private boolean exists;
    
    private List<SimpleString> queueNames;
-   
+
+   private static final int BASIC_SIZE = DataConstants.SIZE_BOOLEAN + DataConstants.SIZE_INT;
+
    public SessionBindingQueryResponseMessage(final boolean exists, final List<SimpleString> queueNames)
    {
       super(SESS_BINDINGQUERY_RESP);
@@ -90,7 +93,17 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
          queueNames.add(buffer.getSimpleString());
       }          
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      int size = BASIC_PACKET_SIZE + BASIC_SIZE;
+      for (SimpleString queueName : queueNames)
+      {
+         size += queueName.length() + DataConstants.SIZE_INT;
+      }
+      return size; 
+   }
+
    public boolean equals(Object other)
    {
       if (other instanceof SessionBindingQueryResponseMessage == false)
