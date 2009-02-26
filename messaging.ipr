@@ -477,7 +477,7 @@
         <root url="jar://$ANT_HOME$/lib/ant.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M4.jar!/" />
         <root url="file:///home/andy/etc" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/netty/lib/netty-3.1.0.ALPHA2.jar!/" />
+        <root url="jar://$PROJECT_DIR$/thirdparty/netty/lib/netty-3.1.0.ALPHA4.jar!/" />
         <root url="file://$PROJECT_DIR$/src/schemas" />
       </CLASSES>
       <JAVADOC />

@@ -53,6 +53,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/common/lib/jboss-common.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jnpserver/lib/jnpserver.jar" sourcepath="thirdparty/jboss/jnpserver/lib/jnpserver-sources.jar"/>
+	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.1.0.ALPHA4.jar" sourcepath="thirdparty/netty/lib/netty-3.1.0.ALPHA4-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts14/lib/jbossjta-integration.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar"/>
@@ -62,7 +63,6 @@
 	<classpathentry kind="lib" path="thirdparty/easymock-classextension/lib/easymockclassextension.jar"/>
 	<classpathentry kind="lib" path="thirdparty/cglib/lib/cglib.jar"/>
 	<classpathentry kind="lib" path="tests/tmpfiles"/>
-	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.1.0.ALPHA2.jar" sourcepath="thirdparty/netty/lib/netty-3.1.0.ALPHA2-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-mina/lib/mina-core-2.0.0-M4.jar"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/log4j/lib/slf4j-log4j12-1.5.2.jar"/>
 	<classpathentry kind="lib" path="thirdparty/slf4j/api/lib/slf4j-api-1.5.2.jar"/>

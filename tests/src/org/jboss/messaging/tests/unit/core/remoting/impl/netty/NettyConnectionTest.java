@@ -21,7 +21,7 @@
  */
 package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 
-import java.util.UUID;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -68,8 +68,8 @@ public class NettyConnectionTest extends UnitTestCase
    {
       Channel channel = EasyMock.createStrictMock(Channel.class);
 
-      final UUID id = UUID.randomUUID();
-
+      final int id = randomInt();
+      
       EasyMock.expect(channel.getId()).andReturn(id);
 
       NettyConnection conn = new NettyConnection(channel, new MyListener());

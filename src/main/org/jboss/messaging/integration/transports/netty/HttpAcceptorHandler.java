@@ -35,9 +35,9 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.DefaultMessageEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.UpstreamMessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
@@ -94,8 +94,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
       // if we are a post then we send upstream, otherwise we are just being prompted for a response.
       if (method.equals(HttpMethod.POST))
       {
-         MessageEvent event = new DefaultMessageEvent(e.getChannel(),
-                                                      e.getFuture(),
+         MessageEvent event = new UpstreamMessageEvent(e.getChannel(),
                                                       request.getContent(),
                                                       e.getRemoteAddress());
          ctx.sendUpstream(event);
@@ -116,7 +115,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
       }
       else
       {
-         write(ctx, e.getChannel(), e.getFuture(), e.getMessage(), e.getRemoteAddress());
+         write(ctx, e.getFuture(), e.getMessage(), e.getRemoteAddress());
       }
    }
 
@@ -182,7 +181,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
             piggyBackResponses();
          }
          responseHolder.response.setContent(buffer);
-         responseHolder.response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buffer.writerIndex()));
+         responseHolder.response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buffer.writerIndex()));
          channel.write(responseHolder.response);
       }
 

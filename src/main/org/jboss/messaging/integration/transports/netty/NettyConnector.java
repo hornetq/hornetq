@@ -56,9 +56,9 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.DefaultMessageEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.UpstreamMessageEvent;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
@@ -371,6 +371,7 @@ public class NettyConnector implements Connector
       }
       else
       {
+         future.getCause().printStackTrace();
          return null;
       }
    }
@@ -435,8 +436,7 @@ public class NettyConnector implements Connector
       public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
       {
          HttpResponse response = (HttpResponse)e.getMessage();
-         MessageEvent event = new DefaultMessageEvent(e.getChannel(),
-                                                      e.getFuture(),
+         MessageEvent event = new UpstreamMessageEvent(e.getChannel(),
                                                       response.getContent(),
                                                       e.getRemoteAddress());
          waitingGet = false;
@@ -451,13 +451,13 @@ public class NettyConnector implements Connector
             HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/jbm/");
             ChannelBuffer buf = (ChannelBuffer)e.getMessage();
             httpRequest.setContent(buf);
-            httpRequest.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
-            write(ctx, e.getChannel(), e.getFuture(), httpRequest, e.getRemoteAddress());
+            httpRequest.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
+            write(ctx, e.getFuture(), httpRequest, e.getRemoteAddress());
             lastSendTime = System.currentTimeMillis();
          }
          else
          {
-            write(ctx, e.getChannel(), e.getFuture(), e.getMessage(), e.getRemoteAddress());
+            write(ctx, e.getFuture(), e.getMessage(), e.getRemoteAddress());
             lastSendTime = System.currentTimeMillis();
          }
       }
