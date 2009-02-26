@@ -177,6 +177,8 @@ public class ClientCrashTest extends ClientTestBase
    protected void tearDown() throws Exception
    {
       sf.close();
+      
+      super.tearDown();
    }
 
    // Protected -----------------------------------------------------
