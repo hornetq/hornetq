@@ -34,7 +34,7 @@ import org.jboss.messaging.tests.util.ServiceTestBase;
  *
  *
  */
-public class ClientTestBase extends ServiceTestBase
+public abstract class ClientTestBase extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------

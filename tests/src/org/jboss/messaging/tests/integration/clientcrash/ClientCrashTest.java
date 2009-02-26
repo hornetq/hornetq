@@ -120,7 +120,7 @@ public class ClientCrashTest extends ClientTestBase
       producer.send(message);
       session.close();
 
-      Thread.sleep(500);
+      Thread.sleep(1000);
       
       assertActiveConnections(1);
       assertActiveSession(1);      
