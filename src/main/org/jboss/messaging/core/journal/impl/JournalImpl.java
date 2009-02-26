@@ -286,7 +286,7 @@ public class JournalImpl implements TestableJournal
 
    public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
    {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record), false);
+      appendAddRecord(id, recordType, new ByteArrayEncoding(record));
    }
    
    public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
