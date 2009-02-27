@@ -65,6 +65,7 @@ public class SimpleClient
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
          ClientSession session = sf.createSession(false, true, true);
          
+         session.addDestination(queueName, false, true);
          session.createQueue(queueName, queueName, null, false, false);
          ClientProducer producer = session.createProducer(queueName);
          ClientConsumer consumer = session.createConsumer(queueName);
@@ -95,6 +96,8 @@ public class SimpleClient
          consumer.close();
          session.deleteQueue(queueName);         
          session.close();
+         
+         System.out.println("DONE: client exited without any issue");
       }
       catch (Throwable t)
       {

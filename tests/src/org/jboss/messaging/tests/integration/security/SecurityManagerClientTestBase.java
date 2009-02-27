@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.tests.integration.security;
 
+import java.net.URL;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -54,10 +56,7 @@ public abstract class SecurityManagerClientTestBase extends UnitTestCase
       doTestProducerConsumerClient(false);
    }
 
-   // disabled tests waiting for fixes on network libraries:
-   // https://jira.jboss.org/jira/browse/NETTY-115 -> fixed in netty 3.1.0.alpha4
-   // https://issues.apache.org/jira/browse/DIRMINA-659
-   public void _testProducerConsumerClientWithSecurityManager() throws Exception
+   public void testProducerConsumerClientWithSecurityManager() throws Exception
    {
       doTestProducerConsumerClient(true);
    }
@@ -97,7 +96,8 @@ public abstract class SecurityManagerClientTestBase extends UnitTestCase
       String[] vmargs = new String[0];
       if (withSecurityManager)
       {
-         vmargs = new String[] { "-Djava.security.manager" };
+         URL securityPolicyURL = Thread.currentThread().getContextClassLoader().getResource("restricted-security-client.policy");
+         vmargs = new String[] { "-Djava.security.manager", "-Djava.security.policy=" + securityPolicyURL.getPath() };
       }
 
       // spawn a JVM that creates a client withor without a security manager which sends and receives a test message
