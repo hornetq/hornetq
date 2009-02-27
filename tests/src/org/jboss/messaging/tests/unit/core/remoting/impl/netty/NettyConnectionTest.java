@@ -113,7 +113,7 @@ public class NettyConnectionTest extends UnitTestCase
       final int size = 1234;
 
       MessagingBuffer buff = conn.createBuffer(size);
-      buff.putByte((byte) 0x00); // Netty buffer does lazy initialization.
+      buff.writeByte((byte) 0x00); // Netty buffer does lazy initialization.
       assertEquals(size, buff.capacity());
 
       EasyMock.verify(channel);

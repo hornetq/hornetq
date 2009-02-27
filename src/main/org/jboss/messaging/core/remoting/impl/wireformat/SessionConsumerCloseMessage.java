@@ -62,12 +62,12 @@ public class SessionConsumerCloseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(consumerID);
+      buffer.writeLong(consumerID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      consumerID = buffer.getLong();
+      consumerID = buffer.readLong();
    }
    
    @Override

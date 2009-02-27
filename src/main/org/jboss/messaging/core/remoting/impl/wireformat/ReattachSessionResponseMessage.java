@@ -74,14 +74,14 @@ public class ReattachSessionResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    { 
-      buffer.putInt(lastReceivedCommandID);
-      buffer.putBoolean(removed);
+      buffer.writeInt(lastReceivedCommandID);
+      buffer.writeBoolean(removed);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    { 
-      lastReceivedCommandID = buffer.getInt();
-      removed = buffer.getBoolean();
+      lastReceivedCommandID = buffer.readInt();
+      removed = buffer.readBoolean();
    }
    
    public boolean isResponse()

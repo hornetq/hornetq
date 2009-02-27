@@ -147,21 +147,21 @@ public class SessionSendMessage extends PacketImpl
    @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putBoolean(largeMessage);
+      buffer.writeBoolean(largeMessage);
 
       if (largeMessage)
       {
-         buffer.putInt(largeMessageHeader.length);
-         buffer.putBytes(largeMessageHeader);
+         buffer.writeInt(largeMessageHeader.length);
+         buffer.writeBytes(largeMessageHeader);
          
          if (largeMessageId > 0)
          {
-            buffer.putBoolean(true);
-            buffer.putLong(largeMessageId);
+            buffer.writeBoolean(true);
+            buffer.writeLong(largeMessageId);
          }
          else
          {
-            buffer.putBoolean(false);
+            buffer.writeBoolean(false);
          }
       }
       else if (clientMessage != null)
@@ -174,27 +174,27 @@ public class SessionSendMessage extends PacketImpl
          serverMessage.encode(buffer);
       }
 
-      buffer.putBoolean(requiresResponse);
+      buffer.writeBoolean(requiresResponse);
    }
 
    @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      largeMessage = buffer.getBoolean();
+      largeMessage = buffer.readBoolean();
 
       if (largeMessage)
       {
-         int largeMessageLength = buffer.getInt();
+         int largeMessageLength = buffer.readInt();
 
          largeMessageHeader = new byte[largeMessageLength];
 
-         buffer.getBytes(largeMessageHeader);
+         buffer.readBytes(largeMessageHeader);
          
-         final boolean largeMessageIDFilled = buffer.getBoolean();
+         final boolean largeMessageIDFilled = buffer.readBoolean();
          
          if (largeMessageIDFilled)
          {
-            this.largeMessageId = buffer.getLong();
+            this.largeMessageId = buffer.readLong();
          }
          else
          {
@@ -211,9 +211,9 @@ public class SessionSendMessage extends PacketImpl
 
          serverMessage.decode(buffer);
 
-         serverMessage.getBody().flip();
+         serverMessage.getBody().resetReaderIndex();
 
-         requiresResponse = buffer.getBoolean();
+         requiresResponse = buffer.readBoolean();
       }
    }
 

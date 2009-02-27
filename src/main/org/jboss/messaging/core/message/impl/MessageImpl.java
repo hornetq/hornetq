@@ -26,13 +26,14 @@ import static org.jboss.messaging.utils.DataConstants.SIZE_BOOLEAN;
 import static org.jboss.messaging.utils.DataConstants.SIZE_BYTE;
 import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
-import org.jboss.messaging.utils.SimpleString;
 
 import java.util.Set;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
 
 /**
@@ -156,7 +157,7 @@ public abstract class MessageImpl implements Message
    public void encode(final MessagingBuffer buffer)
    {
       encodeProperties(buffer);
-      buffer.putInt(getBodySize());
+      buffer.writeInt(getBodySize());
       encodeBody(buffer);
    }
    
@@ -178,31 +179,31 @@ public abstract class MessageImpl implements Message
 
    public int getBodySize()
    {
-      return /* BodySize and Body */body.limit();
+      return body.writerIndex();
    }
 
    public void encodeProperties(MessagingBuffer buffer)
    {
-      buffer.putLong(messageID);
-      buffer.putSimpleString(destination);
-      buffer.putByte(type);
-      buffer.putBoolean(durable);
-      buffer.putLong(expiration);
-      buffer.putLong(timestamp);
-      buffer.putByte(priority);
+      buffer.writeLong(messageID);
+      buffer.writeSimpleString(destination);
+      buffer.writeByte(type);
+      buffer.writeBoolean(durable);
+      buffer.writeLong(expiration);
+      buffer.writeLong(timestamp);
+      buffer.writeByte(priority);
       properties.encode(buffer);
    }
 
    public void encodeBody(MessagingBuffer buffer)
    {
       MessagingBuffer localBody = getBody();
-      buffer.putBytes(localBody.array(), 0, localBody.limit());
+      buffer.writeBytes(localBody.array(), 0, localBody.writerIndex());
    }
 
    // Used on Message chunk
    public void encodeBody(MessagingBuffer buffer, long start, int size)
    {
-      buffer.putBytes(body.array(), (int)start, size);
+      buffer.writeBytes(body.array(), (int)start, size);
    }
 
    public void decode(final MessagingBuffer buffer)
@@ -214,24 +215,24 @@ public abstract class MessageImpl implements Message
 
    public void decodeProperties(final MessagingBuffer buffer)
    {
-      messageID = buffer.getLong();
-      destination = buffer.getSimpleString();
-      type = buffer.getByte();
-      durable = buffer.getBoolean();
-      expiration = buffer.getLong();
-      timestamp = buffer.getLong();
-      priority = buffer.getByte();
+      messageID = buffer.readLong();
+      destination = buffer.readSimpleString();
+      type = buffer.readByte();
+      durable = buffer.readBoolean();
+      expiration = buffer.readLong();
+      timestamp = buffer.readLong();
+      priority = buffer.readByte();
       properties.decode(buffer);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      int len = buffer.getInt();
-      // TODO - this can be optimised
+      int len = buffer.readInt();
       byte[] bytes = new byte[len];
-      buffer.getBytes(bytes);
-      body = buffer.createNewBuffer(len);
-      body.putBytes(bytes);
+      buffer.readBytes(bytes);
+
+      // Reuse the same body on the initial body created
+      body = ChannelBuffers.dynamicBuffer(bytes); 
    }
 
    public long getMessageID()

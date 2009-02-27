@@ -60,16 +60,16 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(consumerID);
+      buffer.writeLong(consumerID);
 
-      buffer.putLong(messageID);
+      buffer.writeLong(messageID);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      consumerID = buffer.getLong();
+      consumerID = buffer.readLong();
 
-      messageID = buffer.getLong();
+      messageID = buffer.readLong();
    }
    
    public boolean isRequiresConfirmations()

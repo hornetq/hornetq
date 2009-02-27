@@ -132,7 +132,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
          if (bytesRead > 0)
          {
-            bufferOut.putBytes(bufferRead.array(), 0, bytesRead);
+            bufferOut.writeBytes(bufferRead.array(), 0, bytesRead);
          }
 
       }

@@ -75,22 +75,22 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putBoolean(exists);
-      buffer.putInt(queueNames.size());      
+      buffer.writeBoolean(exists);
+      buffer.writeInt(queueNames.size());      
       for (SimpleString queueName: queueNames)
       {
-         buffer.putSimpleString(queueName);
+         buffer.writeSimpleString(queueName);
       }      
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      exists = buffer.getBoolean();      
-      int numQueues = buffer.getInt();      
+      exists = buffer.readBoolean();      
+      int numQueues = buffer.readInt();      
       queueNames = new ArrayList<SimpleString>(numQueues);      
       for (int i = 0; i < numQueues; i++)
       {
-         queueNames.add(buffer.getSimpleString());
+         queueNames.add(buffer.readSimpleString());
       }          
    }
 

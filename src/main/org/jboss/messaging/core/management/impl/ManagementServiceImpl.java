@@ -26,7 +26,6 @@ package org.jboss.messaging.core.management.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +38,7 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.config.Configuration;
@@ -68,7 +68,6 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.security.Role;
@@ -554,7 +553,7 @@ public class ManagementServiceImpl implements ManagementService
             // Now send message
 
             ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
-            notificationMessage.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
+            notificationMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
             // Notification messages are always durable so the user can choose whether to add a durable queue to consume
             // them in
             notificationMessage.setDurable(true);

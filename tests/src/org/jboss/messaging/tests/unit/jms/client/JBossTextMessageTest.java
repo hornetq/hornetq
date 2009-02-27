@@ -28,17 +28,16 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import javax.jms.DeliveryMode;
 import javax.jms.TextMessage;
 
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -75,7 +74,7 @@ public class JBossTextMessageTest extends UnitTestCase
    {
       TextMessage foreignMessage = createNiceMock(TextMessage.class);
       ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      MessagingBuffer body = ChannelBuffers.wrappedBuffer(new byte[1024]);
       ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);  
       expect(foreignMessage.getJMSDeliveryMode()).andReturn(DeliveryMode.NON_PERSISTENT);
@@ -120,7 +119,7 @@ public class JBossTextMessageTest extends UnitTestCase
       msg.doBeforeSend();
 
       MessagingBuffer body = msg.getCoreMessage().getBody();
-      String s = body.getNullableString();
+      String s = body.readNullableString();
       assertEquals(text, s);
    }
    
@@ -129,8 +128,7 @@ public class JBossTextMessageTest extends UnitTestCase
       JBossTextMessage msg = new JBossTextMessage();
       assertNull(msg.getText());
       MessagingBuffer body = msg.getCoreMessage().getBody();
-      body.putNullableString(text);
-      body.flip();
+      body.writeNullableString(text);
       
       msg.doBeforeReceive();
       

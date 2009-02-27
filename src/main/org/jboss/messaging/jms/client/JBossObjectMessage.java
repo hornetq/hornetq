@@ -101,10 +101,11 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
    
    public void doBeforeSend() throws Exception
    {
+      getBody().clear();
       if (data != null)
       {
-         getBody().putInt(data.length);
-         getBody().putBytes(data);
+         getBody().writeInt(data.length);
+         getBody().writeBytes(data);
       }
       
       super.doBeforeSend();
@@ -147,9 +148,9 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
       {
          try
          {
-            int len = getBody().getInt();
+            int len = getBody().readInt();
             data = new byte[len];
-            getBody().getBytes(data);
+            getBody().readBytes(data);
          } 
          catch (Exception e)
          {

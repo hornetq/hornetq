@@ -21,13 +21,12 @@
   */
 package org.jboss.messaging.core.remoting.impl.invm;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
@@ -101,7 +100,7 @@ public class InVMConnection implements Connection
 
    public MessagingBuffer createBuffer(final int size)
    {
-      return new ByteBufferWrapper(ByteBuffer.allocate(size));
+      return ChannelBuffers.buffer(size); 
    }
 
    public Object getID()
@@ -119,7 +118,7 @@ public class InVMConnection implements Connection
             {
                if (!closed)
                {
-                  buffer.getInt(); // read and discard
+                  buffer.readInt(); // read and discard
                   handler.bufferReceived(id, buffer);
                }
                else

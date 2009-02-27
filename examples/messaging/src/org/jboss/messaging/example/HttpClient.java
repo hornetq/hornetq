@@ -53,12 +53,12 @@ public class HttpClient
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientMessage message = clientSession.createClientMessage(false);
-         message.getBody().putString("Hello!");
+         message.getBody().writeString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
          clientSession.start();
          ClientMessage msg = clientConsumer.receive(5000);
-         System.out.println("msg.getPayload() = " + msg.getBody().getString());
+         System.out.println("msg.getPayload() = " + msg.getBody().readString());
          msg.acknowledge();
       }
       catch(Exception e)

@@ -17,19 +17,17 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -55,9 +53,9 @@ public class JBossBytesMessageTest extends UnitTestCase
    public void testForeignBytesMessage() throws Exception
    {
       ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(3000));
+      MessagingBuffer body = ChannelBuffers.dynamicBuffer(3000); 
       ClientMessage clientMessage = new ClientMessageImpl(JBossBytesMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
-      ByteBufferWrapper body2 = new ByteBufferWrapper(ByteBuffer.allocate(3000));
+      MessagingBuffer body2 = ChannelBuffers.dynamicBuffer(3000); 
       ClientMessage clientMessage2 = new ClientMessageImpl(JBossBytesMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body2);
       expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
       expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage2);
@@ -127,7 +125,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putBoolean(value);
+      body.writeBoolean(value);
       message.reset();
 
       assertEquals(value, message.readBoolean());
@@ -161,7 +159,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putByte(value);
+      body.writeByte(value);
       message.reset();
 
       assertEquals(value, message.readByte());
@@ -197,7 +195,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putBytes(value);
+      body.writeBytes(value);
       message.reset();
 
       byte[] v = new byte[value.length];
@@ -232,7 +230,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putShort(value);
+      body.writeShort(value);
       message.reset();
 
       assertEquals(value, message.readShort());
@@ -266,7 +264,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putChar(value);
+      body.writeChar(value);
       message.reset();
 
       assertEquals(value, message.readChar());
@@ -300,7 +298,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putInt(value);
+      body.writeInt(value);
       message.reset();
 
       assertEquals(value, message.readInt());
@@ -334,7 +332,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putLong(value);
+      body.writeLong(value);
       message.reset();
 
       assertEquals(value, message.readLong());
@@ -368,7 +366,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putFloat(value);
+      body.writeFloat(value);
       message.reset();
 
       assertEquals(value, message.readFloat());
@@ -402,7 +400,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putDouble(value);
+      body.writeDouble(value);
       message.reset();
 
       assertEquals(value, message.readDouble());
@@ -436,7 +434,7 @@ public class JBossBytesMessageTest extends UnitTestCase
       JBossBytesMessage message = new JBossBytesMessage();
 
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putUTF(value);
+      body.writeUTF(value);
       message.reset();
 
       assertEquals(value, message.readUTF());

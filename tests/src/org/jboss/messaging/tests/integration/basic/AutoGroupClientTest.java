@@ -96,8 +96,7 @@ public class AutoGroupClientTest extends UnitTestCase
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString("testINVMCoreClient");
-         message.getBody().flip();
+         message.getBody().writeString("testINVMCoreClient");
          message.setDurable(false);
          producer.send(message);
       }
@@ -158,16 +157,14 @@ public class AutoGroupClientTest extends UnitTestCase
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString("testINVMCoreClient");
-         message.getBody().flip();
+         message.getBody().writeString("testINVMCoreClient");
          producer.send(message);
       }
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString("testINVMCoreClient");
-         message.getBody().flip();
+         message.getBody().writeString("testINVMCoreClient");
          producer2.send(message);
       }
       latch.await();
@@ -222,8 +219,7 @@ public class AutoGroupClientTest extends UnitTestCase
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString("testINVMCoreClient");
-         message.getBody().flip();
+         message.getBody().writeString("testINVMCoreClient");
          message.setDurable(false);
          producer.send(message);
       }

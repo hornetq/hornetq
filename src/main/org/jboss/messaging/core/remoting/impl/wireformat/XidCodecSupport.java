@@ -45,20 +45,20 @@ public class XidCodecSupport
 
    public static void encodeXid(final Xid xid, final MessagingBuffer out)
    {
-      out.putInt(xid.getFormatId());
-      out.putInt(xid.getBranchQualifier().length);
-      out.putBytes(xid.getBranchQualifier());
-      out.putInt(xid.getGlobalTransactionId().length);
-      out.putBytes(xid.getGlobalTransactionId());
+      out.writeInt(xid.getFormatId());
+      out.writeInt(xid.getBranchQualifier().length);
+      out.writeBytes(xid.getBranchQualifier());
+      out.writeInt(xid.getGlobalTransactionId().length);
+      out.writeBytes(xid.getGlobalTransactionId());
    }
 
    public static Xid decodeXid(final MessagingBuffer in)
    {
-      int formatID = in.getInt();
-      byte[] bq = new byte[in.getInt()];
-      in.getBytes(bq);
-      byte[] gtxid = new byte[in.getInt()];
-      in.getBytes(gtxid);      
+      int formatID = in.readInt();
+      byte[] bq = new byte[in.readInt()];
+      in.readBytes(bq);
+      byte[] gtxid = new byte[in.readInt()];
+      in.readBytes(gtxid);      
       Xid xid = new XidImpl(bq, formatID, gtxid);      
       return xid;
    }

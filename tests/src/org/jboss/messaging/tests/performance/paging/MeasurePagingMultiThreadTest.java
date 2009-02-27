@@ -32,7 +32,6 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
@@ -115,11 +114,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
                session = factory.createSession(false, true, true);
                producer = session.createProducer(adr);
                msg = session.createClientMessage(true);
-
-               ByteBuffer buffer = ByteBuffer.allocate(SIZE_OF_MESSAGE);
-               MessagingBuffer msgBuffer = new ByteBufferWrapper(buffer);
-               msg.setBody(msgBuffer);
-
+               msg.getBody().writeBytes(new byte[SIZE_OF_MESSAGE]);
             }
 
             // run is not going to close sessions or anything, as we don't want to measure that time
@@ -220,9 +215,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(adr);
       ClientMessage msg = session.createClientMessage(true);
 
-      ByteBuffer buffer = ByteBuffer.allocate(messageSize);
-      MessagingBuffer msgBuffer = new ByteBufferWrapper(buffer);
-      msg.setBody(msgBuffer);
+      msg.getBody().writeBytes(new byte[messageSize]);
 
       sendMessages(nMessages, producer, msg);
    }

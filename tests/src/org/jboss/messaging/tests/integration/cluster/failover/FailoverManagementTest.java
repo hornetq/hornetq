@@ -106,8 +106,6 @@ public class FailoverManagementTest extends UnitTestCase
       {
          ClientMessage msg  = session1.createClientMessage(false);
          
-         msg.getBody().flip();
-         
          producer.send(msg);
       }
       
@@ -119,7 +117,6 @@ public class FailoverManagementTest extends UnitTestCase
                                         ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
-         managementMessage.getBody().flip();
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
       }
@@ -139,8 +136,6 @@ public class FailoverManagementTest extends UnitTestCase
                                         ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
-
-         managementMessage.getBody().flip();
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
       }
@@ -200,8 +195,6 @@ public class FailoverManagementTest extends UnitTestCase
       {
          ClientMessage msg  = session1.createClientMessage(false);
          
-         msg.getBody().flip();
-         
          producer.send(msg);
       }
       
@@ -213,7 +206,6 @@ public class FailoverManagementTest extends UnitTestCase
                                         ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
-         managementMessage.getBody().flip();
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
       }

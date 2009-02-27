@@ -43,13 +43,14 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.buffers.HeapChannelBuffer;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -89,7 +90,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
-      MessagingBuffer body = new ByteBufferWrapper(ByteBuffer.allocate(2048));
+      MessagingBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putAttributes(message, ObjectNames.getAddressObjectName(address), "Address");
 
@@ -121,7 +122,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
-      MessagingBuffer body = new ByteBufferWrapper(ByteBuffer.allocate(2048));
+      MessagingBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
                                               on,
@@ -162,7 +163,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
-      MessagingBuffer body = new ByteBufferWrapper(ByteBuffer.allocate(2048));
+      MessagingBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
                                               on,

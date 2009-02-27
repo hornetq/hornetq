@@ -115,8 +115,7 @@ public class FailoverScheduledMessageTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);         
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          long deliveryTime = now + delay * i;
          message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, deliveryTime);
          producer.send(message);                

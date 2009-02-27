@@ -113,7 +113,6 @@
 
    <!--default clustering server settings-->   
    <property name="jbm.remoting.netty.port" value="5445"/>
-   <property name="jbm.remoting.mina.port" value="5600"/>
    <property name="jnp.port" value="1099"/>
    <property name="jnp.rmiPort" value="1098"/>
    <property name="jbm.data.dir" value="data1"/>
@@ -211,7 +210,6 @@
    <path id="transports.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
       <path refid="jboss.jboss.javaee.classpath"/>
-      <path refid="apache.mina.classpath"/>
       <path refid="netty.netty.classpath"/>
    </path>
 
@@ -292,8 +290,6 @@
      <path refid="jboss.test14.classpath"/>
      <path refid="jboss.jboss.retro.classpath"/>-->
       <path refid="easymock.easymock.classpath"/>
-      <path refid="slf4j.api.classpath"/>
-      <path refid="slf4j.log4j.classpath"/>
       <path refid="jboss.jbossxb.classpath"/>
    </path>
 
@@ -305,8 +301,6 @@
       <pathelement location="${src.schemas.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="oswego.concurrent.classpath"/>
-      <path refid="slf4j.api.classpath"/>
-      <path refid="slf4j.log4j.classpath"/>
       <path refid="apache.log4j.classpath"/>
       <path refid="cglib.classpath"/>
       <path refid="jboss.common.core.classpath"/>
@@ -326,8 +320,6 @@
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.compilation.classpath"/>
       <path refid="oswego.concurrent.classpath"/>
-      <path refid="slf4j.api.classpath"/>
-      <path refid="slf4j.log4j.classpath"/>
       <path refid="apache.log4j.classpath"/>
       <path refid="cglib.classpath"/>
       <path refid="jboss.common.core.classpath"/>
@@ -778,10 +770,6 @@
          <fileset dir="${build.jars.dir}">
             <include name="*.jar"/>
          </fileset>
-         <fileset dir="${apache.mina.lib}">
-            <include name="*.jar"/>
-            <exclude name="*sources.jar"/>
-         </fileset>
          <fileset dir="${netty.netty.lib}">
             <include name="*.jar"/>
             <exclude name="*sources.jar"/>
@@ -890,17 +878,8 @@
          <fileset dir="${jboss.jnpserver.lib}">
             <include name="jnpserver.jar"/>
          </fileset>
-         <fileset dir="${apache.mina.lib}">
-            <include name="mina-core-2.0.0-M3-20080730.120633-1.jar"/>
-         </fileset>
          <fileset dir="${netty.netty.lib}">
             <include name="netty-3.1.0.ALPHA2.jar"/>
-         </fileset>
-         <fileset dir="${slf4j.api.lib}">
-            <include name="slf4j-api-1.4.3.jar"/>
-         </fileset>
-         <fileset dir="${slf4j.log4j.lib}">
-            <include name="slf4j-log4j12.jar"/>
          </fileset>
       </copy>
 
@@ -1496,7 +1475,6 @@
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
          <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
          <jvmarg value="-Djbm.remoting.netty.port=${jbm.remoting.netty.port}"/>
-         <jvmarg value="-Djbm.remoting.mina.port=${jbm.remoting.mina.port}"/>
          <jvmarg value="-Djnp.port=${jnp.port}"/>
          <jvmarg value="-Djnp.rmiPort=${jnp.rmiPort}"/>
          <jvmarg value="-Djbm.data.dir=${jbm.data.dir}"/>

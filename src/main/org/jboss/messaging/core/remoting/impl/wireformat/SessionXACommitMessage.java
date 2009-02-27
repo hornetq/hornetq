@@ -74,13 +74,13 @@ public class SessionXACommitMessage extends PacketImpl
    public void encodeBody(final MessagingBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
-      buffer.putBoolean(onePhase);
+      buffer.writeBoolean(onePhase);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
-      onePhase = buffer.getBoolean();
+      onePhase = buffer.readBoolean();
    }
 
    @Override

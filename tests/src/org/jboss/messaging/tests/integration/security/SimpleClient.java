@@ -75,7 +75,7 @@ public class SimpleClient
                                                              0,
                                                              System.currentTimeMillis(),
                                                              (byte)1);
-         message.getBody().putString(messageText);
+         message.getBody().writeString(messageText);
          producer.send(message);
 
          session.start();
@@ -86,7 +86,7 @@ public class SimpleClient
             throw new Exception("did not receive the message");
          }
          
-         String text = receivedMsg.getBody().getString();
+         String text = receivedMsg.getBody().readString();
          if (text == null || !text.equals(messageText))
          {
             throw new Exception("received " + text + ", was expecting " + messageText);

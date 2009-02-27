@@ -179,31 +179,29 @@ public class PacketImpl implements Packet
    public int encode(final MessagingBuffer buffer)
    {
       // The standard header fields
-      buffer.putInt(0); // The length gets filled in at the end
-      buffer.putByte(type);
-      buffer.putLong(channelID);
+      buffer.writeInt(0); // The length gets filled in at the end
+      buffer.writeByte(type);
+      buffer.writeLong(channelID);
 
       encodeBody(buffer);
 
-      size = buffer.position();
+      size = buffer.writerIndex();
       
       // The length doesn't include the actual length byte
       int len = size - DataConstants.SIZE_INT;
 
-      buffer.putInt(0, len);
-
-      buffer.flip();
+      buffer.setInt(0, len);
       
       return size;
    }
 
    public void decode(final MessagingBuffer buffer)
    {
-      channelID = buffer.getLong();
+      channelID = buffer.readLong();
 
       decodeBody(buffer);
       
-      size = buffer.position();
+      size = buffer.readerIndex();
    }
    
    public final int getPacketSize()

@@ -64,12 +64,12 @@ public class Ping extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(expirePeriod);
+      buffer.writeLong(expirePeriod);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      expirePeriod = buffer.getLong();
+      expirePeriod = buffer.readLong();
    }
 
    @Override

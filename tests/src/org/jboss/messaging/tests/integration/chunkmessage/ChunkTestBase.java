@@ -29,6 +29,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -38,7 +39,6 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
@@ -289,11 +289,11 @@ public class ChunkTestBase extends ServiceTestBase
                   else
                   {
                      MessagingBuffer buffer = message.getBody();
-                     buffer.rewind();
-                     assertEquals(numberOfIntegers * DataConstants.SIZE_INT, buffer.limit());
+                     buffer.resetReaderIndex();
+                     assertEquals(numberOfIntegers * DataConstants.SIZE_INT, buffer.writerIndex());
                      for (int b = 0; b < numberOfIntegers; b++)
                      {
-                        assertEquals(b, buffer.getInt());
+                        assertEquals(b, buffer.readInt());
                      }
                   }
                }
@@ -332,14 +332,12 @@ public class ChunkTestBase extends ServiceTestBase
 
    protected MessagingBuffer createLargeBuffer(final int numberOfIntegers)
    {
-      ByteBuffer ioBuffer = ByteBuffer.allocate(DataConstants.SIZE_INT * numberOfIntegers);
-      MessagingBuffer body = new ByteBufferWrapper(ioBuffer);
+      MessagingBuffer body = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers); 
 
       for (int i = 0; i < numberOfIntegers; i++)
       {
-         body.putInt(i);
+         body.writeInt(i);
       }
-      body.flip();
 
       return body;
 

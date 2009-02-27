@@ -100,8 +100,7 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -115,7 +114,7 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
          
          assertNotNull(message);
          
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 
@@ -147,8 +146,7 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message2.putIntProperty(new SimpleString("count"), i);
-         message2.getBody().putString("aardvarks");
-         message2.getBody().flip();
+         message2.getBody().writeString("aardvarks");
          producer2.send(message2);
       }
 
@@ -162,7 +160,7 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
          
          assertNotNull(message2);
          
-         assertEquals("aardvarks", message2.getBody().getString());
+         assertEquals("aardvarks", message2.getBody().readString());
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 

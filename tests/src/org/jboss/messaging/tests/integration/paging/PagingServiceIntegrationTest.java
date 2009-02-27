@@ -22,11 +22,11 @@
 
 package org.jboss.messaging.tests.integration.paging;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 import junit.framework.AssertionFailedError;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -35,7 +35,6 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
@@ -58,6 +57,8 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(PagingServiceIntegrationTest.class);
+   
+   private static final int RECEIVE_TIMEOUT = 30000;
 
    // Attributes ----------------------------------------------------
 
@@ -100,29 +101,26 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(DataConstants.SIZE_INT * numberOfIntegers);
-
          ClientMessage message = null;
 
-         MessagingBuffer body = null;
+         byte[] body = null;
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+            message = session.createClientMessage(true);
+
+            MessagingBuffer bodyLocal = message.getBody();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
-               bodyLocal.putInt(j);
+               bodyLocal.writeInt(j);
             }
-            bodyLocal.flip();
-
-            if (i == 0)
+            
+            if (body == null)
             {
-               body = bodyLocal;
+               body = bodyLocal.array();
             }
 
-            message = session.createClientMessage(true);
-            message.setBody(bodyLocal);
             message.putIntProperty(new SimpleString("id"), i);
 
             producer.send(message);
@@ -147,7 +145,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage message2 = consumer.receive(10000);
+            ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
 
@@ -159,11 +157,11 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
             try
             {
-               assertEqualsByteArrays(body.limit(), body.array(), message2.getBody().array());
+               assertEqualsByteArrays(body.length, body, message2.getBody().array());
             }
             catch (AssertionFailedError e)
             {
-               log.info("Expected buffer:" + dumbBytesHex(body.array(), 40));
+               log.info("Expected buffer:" + dumbBytesHex(body, 40));
                log.info("Arriving buffer:" + dumbBytesHex(message2.getBody().array(), 40));
                throw e;
             }
@@ -226,8 +224,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(DataConstants.SIZE_INT * numberOfIntegers);
-         MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+         MessagingBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
 
          ClientMessage message = null;
 
@@ -267,7 +264,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
                ClientConsumer consumer = session.createConsumer(ADDRESS);
                for (int j = 0; j < numberOfMessages; j++)
                {
-                  ClientMessage msg = consumer.receive(1000);
+                  ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
                   msg.acknowledge();
                   assertNotNull(msg);
                }
@@ -293,7 +290,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            message = consumer.receive(10000);
+            message = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message);
 
@@ -368,29 +365,29 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(DataConstants.SIZE_INT * numberOfIntegers);
-
          ClientMessage message = null;
 
-         MessagingBuffer body = null;
+         byte[] body = null;
 
          long scheduledTime = System.currentTimeMillis() + 5000;
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+            message = session.createClientMessage(true);
+
+            MessagingBuffer bodyLocal = message.getBody();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
-               bodyLocal.putInt(j);
+               bodyLocal.writeInt(j);
             }
-            bodyLocal.flip();
 
-            if (i == 0)
+            
+            if (body == null)
             {
-               body = bodyLocal;
+               body = bodyLocal.array();
             }
-            message = session.createClientMessage(true);
+            
             message.setBody(bodyLocal);
             message.putIntProperty(new SimpleString("id"), i);
 
@@ -423,7 +420,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage message2 = consumer.receive(10000);
+            ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
 
@@ -439,11 +436,11 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
             try
             {
-               assertEqualsByteArrays(body.limit(), body.array(), message2.getBody().array());
+               assertEqualsByteArrays(body.length, body, message2.getBody().array());
             }
             catch (AssertionFailedError e)
             {
-               log.info("Expected buffer:" + dumbBytesHex(body.array(), 40));
+               log.info("Expected buffer:" + dumbBytesHex(body, 40));
                log.info("Arriving buffer:" + dumbBytesHex(message2.getBody().array(), 40));
                throw e;
             }
@@ -502,22 +499,20 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          long initialSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(DataConstants.SIZE_INT * numberOfIntegers);
-
          ClientMessage message = null;
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+            message = session.createClientMessage(true);
+
+            MessagingBuffer bodyLocal = message.getBody();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
-               bodyLocal.putInt(j);
+               bodyLocal.writeInt(j);
             }
-            bodyLocal.flip();
 
-            message = session.createClientMessage(true);
-            message.setBody(bodyLocal);
+
             message.putIntProperty(new SimpleString("id"), i);
 
             producer.send(message);
@@ -529,7 +524,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          session.start();
 
-         assertNull(consumer.receive(500));
+         assertNull(consumer.receive(100));
 
          session.close();
 
@@ -581,22 +576,19 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          long initialSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(DataConstants.SIZE_INT * numberOfIntegers);
-
          ClientMessage message = null;
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+            message = session.createClientMessage(true);
+            
+            MessagingBuffer bodyLocal = message.getBody();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
-               bodyLocal.putInt(j);
+               bodyLocal.writeInt(j);
             }
-            bodyLocal.flip();
 
-            message = session.createClientMessage(true);
-            message.setBody(bodyLocal);
             message.putIntProperty(new SimpleString("id"), i);
 
             producer.send(message);
@@ -683,7 +675,6 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
       messagingService.start();
 
-      final int sizeOfMessage = 1024;
       final int numberOfMessages = 1000;
 
       try
@@ -700,13 +691,11 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(sizeOfMessage);
-
          ClientMessage message = null;
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+            MessagingBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
 
             message = session.createClientMessage(true);
             message.setBody(bodyLocal);
@@ -722,7 +711,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          for (int i = 0; i < 9; i++)
          {
-            ClientMessage message2 = consumer.receive(10000);
+            ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
 
@@ -740,7 +729,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+            MessagingBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
 
             message = session.createClientMessage(true);
             message.setBody(bodyLocal);
@@ -750,7 +739,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          for (int i = 0; i < 9; i++)
          {
-            ClientMessage message2 = consumer.receive(10000);
+            ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
 
@@ -767,7 +756,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+            MessagingBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
 
             message = session.createClientMessage(true);
             message.setBody(bodyLocal);
@@ -783,7 +772,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          for (int i = 0; i < 9; i++)
          {
-            ClientMessage message2 = consumer.receive(10000);
+            ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
 
@@ -821,8 +810,6 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
    {
       Configuration config = createDefaultConfig();
 
-      final int MAX_SIZE = 90 * 1024; // this must be lower than minlargeMessageSize on the SessionFactory
-
       final int NUMBER_OF_BINDINGS = 100;
 
       int NUMBER_OF_MESSAGES = 2;
@@ -851,11 +838,9 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(MAX_SIZE - 1024); // A single message with almost maxPageSize
-
          ClientMessage message = null;
 
-         MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+         MessagingBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
 
          message = session.createClientMessage(true);
          message.setBody(bodyLocal);
@@ -892,7 +877,7 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
             {
                ClientConsumer consumer = session.createConsumer(new SimpleString("someQueue" + i));
 
-               ClientMessage message2 = consumer.receive(1000);
+               ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
                assertNotNull(message2);
 

@@ -64,12 +64,12 @@ public class SessionFailoverCompleteMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putString(name);
+      buffer.writeString(name);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      name = buffer.getString();
+      name = buffer.readString();
    }
    
    public boolean isRequiresConfirmations()

@@ -23,19 +23,18 @@
 package org.jboss.messaging.tests.performance.persistence;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.buffers.HeapChannelBuffer;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.integration.transports.mina.IoBufferWrapper;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -143,9 +142,6 @@ public class StorageManagerTimingTest extends UnitTestCase
          bytes[i] = (byte)('a' + (i % 20));
       }
 
-      final IoBufferWrapper buffer = new IoBufferWrapper(1024);
-      buffer.putBytes(bytes);
-
       final AtomicLong transactionGenerator = new AtomicLong(1);
 
       class LocalThread extends Thread
@@ -182,12 +178,12 @@ public class StorageManagerTimingTest extends UnitTestCase
                                                                     0,
                                                                     /* timestamp */0, /* priority */
                                                                     (byte)0,
-                                                                    new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
+                                                                    ChannelBuffers.wrappedBuffer(new byte[1024]));
 
                   implMsg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless!"));
 
                   implMsg.setMessageID(i);
-                  implMsg.setBody(buffer);
+                  implMsg.setBody(ChannelBuffers.wrappedBuffer(bytes));
 
                   implMsg.setDestination(address);
 

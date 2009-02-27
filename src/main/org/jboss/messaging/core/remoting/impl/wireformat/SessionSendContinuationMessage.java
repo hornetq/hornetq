@@ -91,14 +91,14 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    public void encodeBody(final MessagingBuffer buffer)
    {
       super.encodeBody(buffer);
-      buffer.putBoolean(requiresResponse);
+      buffer.writeBoolean(requiresResponse);
    }
 
    @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       super.decodeBody(buffer);
-      requiresResponse = buffer.getBoolean();
+      requiresResponse = buffer.readBoolean();
    }
 
 

@@ -32,16 +32,14 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.nio.ByteBuffer;
 import java.util.Set;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.integration.transports.mina.IoBufferWrapper;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -68,19 +66,16 @@ public abstract class MessageImplTestBase extends UnitTestCase
          {
             bytes[i] = randomByte();
          }
-         ByteBuffer bb = ByteBuffer.wrap(bytes);    
-         MessagingBuffer body = new ByteBufferWrapper(bb);      
+         MessagingBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
          Message message = createMessage(randomByte(), randomBoolean(), randomLong(),
                                          randomLong(), randomByte(), body);
          message.setDestination(new SimpleString("oasoas"));
          
          message.putStringProperty(new SimpleString("prop1"), new SimpleString("blah1"));
          message.putStringProperty(new SimpleString("prop2"), new SimpleString("blah2"));      
-         ByteBuffer bbMsg = ByteBuffer.allocate(message.getEncodeSize());
-         MessagingBuffer buffer = new ByteBufferWrapper(bbMsg);      
+         MessagingBuffer buffer = ChannelBuffers.buffer(message.getEncodeSize()); 
          message.encode(buffer);      
          Message message2 = createMessage();      
-         buffer.flip();      
          message2.decode(buffer);      
          assertMessagesEquivalent(message, message2);
       }
@@ -95,8 +90,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
          {
             bytes[i] = randomByte();
          }
-         ByteBuffer bb = ByteBuffer.wrap(bytes);    
-         MessagingBuffer body = new ByteBufferWrapper(bb); 
+         MessagingBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
          
          final byte type = randomByte();
          final boolean durable = randomBoolean();
@@ -162,17 +156,15 @@ public abstract class MessageImplTestBase extends UnitTestCase
 
    public void testEncodingMessage() throws Exception
    {
-      byte[] bytes = new byte[]{(byte)1, (byte)2, (byte)3};
-      final IoBufferWrapper bufferBody = new IoBufferWrapper(bytes.length);
-      bufferBody.putBytes(bytes);
             
       SimpleString address = new SimpleString("Simple Destination ");
       
       Message msg = createMessage(); 
-      msg.setBody(new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
+
+      byte[] bytes = new byte[]{(byte)1, (byte)2, (byte)3};
+      msg.setBody(ChannelBuffers.wrappedBuffer(bytes));
          
       msg.setDestination(address);
-      msg.setBody(bufferBody);
       msg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless!"));
       msg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless and bigger!"));
       msg.putStringProperty(new SimpleString("Key2"), new SimpleString("This String is worthless and bigger and bigger!"));
@@ -345,21 +337,20 @@ public abstract class MessageImplTestBase extends UnitTestCase
    
    private void checkSizes(final Message obj, final EncodingSupport newObject)
    {
-      ByteBuffer bf = ByteBuffer.allocateDirect(1024);
-      ByteBufferWrapper buffer = new ByteBufferWrapper(bf);
+      MessagingBuffer buffer = ChannelBuffers.buffer(1024);
       obj.encode(buffer);
-      assertEquals (buffer.position(), obj.getEncodeSize());
-      int originalSize = buffer.position();
-      
-      bf.rewind();
+      assertEquals (buffer.writerIndex(), obj.getEncodeSize());
+      int originalSize = buffer.writerIndex();
+
+      buffer.resetReaderIndex();
       newObject.decode(buffer);
       
-      bf = ByteBuffer.allocateDirect(1024 * 10);
-      buffer = new ByteBufferWrapper(bf);
+
+      MessagingBuffer newBuffer = ChannelBuffers.buffer(1024);
       
-      newObject.encode(buffer);
+      newObject.encode(newBuffer);
       
-      assertEquals(newObject.getEncodeSize(), bf.position());
-      assertEquals(originalSize, bf.position());     
+      assertEquals(newObject.getEncodeSize(), newBuffer.writerIndex());
+      assertEquals(originalSize, newBuffer.writerIndex());     
    }  
 }

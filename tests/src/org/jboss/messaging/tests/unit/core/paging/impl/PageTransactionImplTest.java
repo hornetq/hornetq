@@ -22,11 +22,10 @@
 
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
-import java.nio.ByteBuffer;
-
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.buffers.HeapChannelBuffer;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -67,14 +66,12 @@ public class PageTransactionImplTest extends UnitTestCase
 
       assertEquals(nr1, trans.getNumberOfMessages());
 
-      ByteBuffer buffer = ByteBuffer.allocate(trans.getEncodeSize());
-      MessagingBuffer wrapper = new ByteBufferWrapper(buffer);
+      MessagingBuffer buffer = ChannelBuffers.buffer(trans.getEncodeSize());
 
-      trans.encode(wrapper);
-      wrapper.rewind();
+      trans.encode(buffer);
 
       PageTransactionInfo trans2 = new PageTransactionInfoImpl(id1);
-      trans2.decode(wrapper);
+      trans2.decode(buffer);
 
       assertEquals(id2, trans2.getTransactionID());
 

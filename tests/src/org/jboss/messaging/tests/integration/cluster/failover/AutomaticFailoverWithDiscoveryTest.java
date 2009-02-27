@@ -108,8 +108,7 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -126,7 +125,7 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("aardvarks", message2.getBody().getString());
+         assertEquals("aardvarks", message2.getBody().readString());
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
@@ -145,7 +144,7 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("aardvarks", message2.getBody().getString());
+         assertEquals("aardvarks", message2.getBody().readString());
 
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 

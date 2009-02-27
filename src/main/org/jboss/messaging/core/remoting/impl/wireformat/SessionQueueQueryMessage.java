@@ -56,12 +56,12 @@ public class SessionQueueQueryMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putSimpleString(queueName);
+      buffer.writeSimpleString(queueName);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      queueName = buffer.getSimpleString();
+      queueName = buffer.readSimpleString();
    }
    
    public boolean equals(Object other)

@@ -30,12 +30,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.messaging.core.buffers.ChannelBuffer;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 
 /**
  * 
@@ -92,29 +93,32 @@ public class PageImpl implements Page
    {
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
-      ByteBuffer buffer = fileFactory.newBuffer((int)file.size());
+      ByteBuffer buffer2 = fileFactory.newBuffer((int)file.size());
       file.position(0);
-      file.read(buffer);
+      file.read(buffer2);
+      
+      buffer2.rewind();
 
-      ByteBufferWrapper messageBuffer = new ByteBufferWrapper(buffer);
+      ChannelBuffer fileBuffer = ChannelBuffers.wrappedBuffer(buffer2); 
+      fileBuffer.writerIndex(fileBuffer.capacity());
 
-      while (buffer.hasRemaining())
+      while (fileBuffer.readable())
       {
-         final int position = buffer.position();
+         final int position = fileBuffer.readerIndex();
 
-         byte byteRead = buffer.get();
+         byte byteRead = fileBuffer.readByte();
 
          if (byteRead == START_BYTE)
          {
-            if (buffer.position() + SIZE_INT < buffer.limit())
+            if (fileBuffer.readerIndex() + SIZE_INT < fileBuffer.capacity())
             {
-               int messageSize = buffer.getInt();
-               int oldPos = buffer.position();
-               if (buffer.position() + messageSize < buffer.limit() && buffer.get(oldPos + messageSize) == END_BYTE)
+               int messageSize = fileBuffer.readInt();
+               int oldPos = fileBuffer.readerIndex();
+               if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == END_BYTE)
                {
                   PagedMessage msg = new PagedMessageImpl();
-                  msg.decode(messageBuffer);
-                  if (buffer.get() != END_BYTE)
+                  msg.decode(fileBuffer);
+                  if (fileBuffer.readByte() != END_BYTE)
                   {
                      // Sanity Check: This would only happen if there is a bug on decode or any internal code, as this
                      // constraint was already checked
@@ -144,10 +148,14 @@ public class PageImpl implements Page
    public void write(final PagedMessage message) throws Exception
    {
       ByteBuffer buffer = fileFactory.newBuffer(message.getEncodeSize() + SIZE_RECORD);
-      buffer.put(START_BYTE);
-      buffer.putInt(message.getEncodeSize());
-      message.encode(new ByteBufferWrapper(buffer));
-      buffer.put(END_BYTE);
+      
+      ChannelBuffer wrap = ChannelBuffers.wrappedBuffer(buffer);
+      
+      wrap.writeByte(START_BYTE);
+      wrap.writeInt(message.getEncodeSize());
+      message.encode(wrap);
+      wrap.writeByte(END_BYTE);
+
       buffer.rewind();
 
       file.write(buffer, false);

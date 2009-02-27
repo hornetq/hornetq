@@ -66,7 +66,7 @@ public class UTF8Util
          throw new IllegalArgumentException("the encoded string is too long (" + len + ")");
       }
 
-      out.putShort((short)len);
+      out.writeShort((short)len);
 
       if (len > buffer.byteBuffer.length)
       {
@@ -79,7 +79,7 @@ public class UTF8Util
          {
             buffer.byteBuffer[byteLocation] = (byte)buffer.charBuffer[byteLocation];
          }
-         out.putBytes(buffer.byteBuffer, 0, len);
+         out.writeBytes(buffer.byteBuffer, 0, len);
       }
       else
       {
@@ -112,7 +112,7 @@ public class UTF8Util
 
             }
          }
-         out.putBytes(buffer.byteBuffer, 0, len);
+         out.writeBytes(buffer.byteBuffer, 0, len);
       }
    }
 
@@ -120,7 +120,7 @@ public class UTF8Util
    {
       StringUtilBuffer buffer = getThreadLocalBuffer();
 
-      final int size = input.getUnsignedShort();
+      final int size = input.readUnsignedShort();
 
       if (size > buffer.byteBuffer.length)
       {
@@ -141,7 +141,7 @@ public class UTF8Util
       int byte1, byte2, byte3;
       int charCount = 0;
 
-      input.getBytes(buffer.byteBuffer, 0, size);
+      input.readBytes(buffer.byteBuffer, 0, size);
 
       while (count < size)
       {

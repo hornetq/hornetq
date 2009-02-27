@@ -61,7 +61,7 @@ public class SimpleEncoding implements EncodingSupport
    {
       for (int i = 0; i < size; i++)
       {
-         buffer.putByte(bytetosend);
+         buffer.writeByte(bytetosend);
       }
    }
 

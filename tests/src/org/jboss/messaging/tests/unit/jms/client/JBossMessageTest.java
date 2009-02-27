@@ -37,7 +37,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomShort;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import javax.jms.DeliveryMode;
@@ -46,12 +45,12 @@ import javax.jms.Message;
 import javax.jms.MessageFormatException;
 
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.jms.client.JBossMapMessage;
@@ -129,7 +128,7 @@ public class JBossMessageTest extends UnitTestCase
    {
       Message foreignMessage = createNiceMock(Message.class);
       ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      MessagingBuffer body = ChannelBuffers.wrappedBuffer(new byte[1024]);
       ClientMessage clientMessage = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
       expect(foreignMessage.getJMSDeliveryMode()).andReturn(

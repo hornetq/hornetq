@@ -22,17 +22,9 @@
 
 package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.messaging.utils.DataConstants.FALSE;
-import static org.jboss.messaging.utils.DataConstants.NOT_NULL;
-import static org.jboss.messaging.utils.DataConstants.NULL;
-import static org.jboss.messaging.utils.DataConstants.TRUE;
-import org.jboss.messaging.utils.SimpleString;
-import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
-import static org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer;
-
-import java.nio.BufferUnderflowException;
-
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
+import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
@@ -46,59 +38,22 @@ import org.jboss.netty.buffer.ChannelBuffer;
  * @author <a href="mailto:tlee@redhat.com">Trustin Lee</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  * @version $Rev$, $Date$
  */
 public class ChannelBufferWrapper implements MessagingBuffer
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private final ChannelBuffer buffer;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   public ChannelBufferWrapper(final int size)
-   {
-      buffer = dynamicBuffer(size);
-      buffer.writerIndex(buffer.capacity());
-   }
-
+   /**
+    * @param buffer
+    */
    public ChannelBufferWrapper(final ChannelBuffer buffer)
    {
+      super();
       this.buffer = buffer;
-   }
-
-   // Public --------------------------------------------------------
-
-   // MessagingBuffer implementation ----------------------------------------------
-
-   public byte[] array()
-   {
-      return buffer.toByteBuffer().array();
-   }
-
-   public int position()
-   {
-      return buffer.readerIndex();
-   }
-
-   public void position(final int position)
-   {
-      buffer.readerIndex(position);
-   }
-
-   public int limit()
-   {
-      return buffer.writerIndex();
-   }
-
-   public void limit(final int limit)
-   {
-      buffer.writerIndex(limit);
    }
 
    public int capacity()
@@ -106,344 +61,348 @@ public class ChannelBufferWrapper implements MessagingBuffer
       return buffer.capacity();
    }
 
-   public void flip()
+   public void clear()
    {
-      int oldPosition = position();
-      position(0);
-      limit(oldPosition);
+      buffer.clear();
    }
 
-   public MessagingBuffer slice()
+   public boolean readable()
    {
-      return new ChannelBufferWrapper(buffer.slice());
+      return buffer.readable();
    }
 
-   public MessagingBuffer createNewBuffer(int len)
-   {
-      return new ChannelBufferWrapper(len);
-   }
-
-   public int remaining()
+   public int readableBytes()
    {
       return buffer.readableBytes();
    }
 
-   public void rewind()
+   public byte readByte()
    {
-      position(0);
-      buffer.markReaderIndex();
+      return buffer.readByte();
    }
 
-   public void putByte(byte byteValue)
+   public void readBytes(final byte[] dst, final int dstIndex, final int length)
    {
-      flip();
-      buffer.writeByte(byteValue);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.readBytes(dst, dstIndex, length);
    }
 
-   public void putBytes(final byte[] byteArray)
+   public void readBytes(final byte[] dst)
    {
-      flip();
-      buffer.writeBytes(byteArray);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.readBytes(dst);
    }
 
-   public void putBytes(final byte[] bytes, int offset, int length)
+   public int readerIndex()
    {
-      flip();
-      buffer.writeBytes(bytes, offset, length);
-      buffer.readerIndex(buffer.writerIndex());
+      return buffer.readerIndex();
    }
 
-   public void putInt(final int intValue)
+   public void readerIndex(final int readerIndex)
    {
-      flip();
-      buffer.writeInt(intValue);
-      buffer.readerIndex(buffer.writerIndex());
+      buffer.readerIndex(readerIndex);
    }
 
-   public void putInt(final int pos, final int intValue)
+   public int readInt()
    {
-      buffer.setInt(pos, intValue);
+      return buffer.readInt();
    }
 
-   public void putLong(final long longValue)
+   public long readLong()
    {
-      flip();
-      buffer.writeLong(longValue);
-      buffer.readerIndex(buffer.writerIndex());
+      return buffer.readLong();
    }
 
-   public void putFloat(final float floatValue)
+   public short readShort()
    {
-      putInt(Float.floatToIntBits(floatValue));
+      return buffer.readShort();
    }
 
-   public void putDouble(final double d)
+   public short readUnsignedByte()
    {
-      putLong(Double.doubleToLongBits(d));
+      return buffer.readUnsignedByte();
    }
 
-   public void putShort(final short s)
+   public int readUnsignedShort()
    {
-      flip();
-      buffer.writeShort(s);
-      buffer.readerIndex(buffer.writerIndex());
+      return buffer.readUnsignedShort();
    }
 
-   public void putChar(final char chr)
+   public void resetReaderIndex()
    {
-      putShort((short)chr);
+      buffer.resetReaderIndex();
    }
 
-   public byte getByte()
+   public void resetWriterIndex()
    {
-      try
-      {
-         return buffer.readByte();
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
+      buffer.resetWriterIndex();
    }
 
-   public short getUnsignedByte()
+   public void setIndex(final int readerIndex, final int writerIndex)
    {
-      try
-      {
-         return buffer.readUnsignedByte();
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
+      buffer.setIndex(readerIndex, writerIndex);
    }
 
-   public void getBytes(final byte[] b)
+   public void setInt(final int index, final int value)
    {
-      try
-      {
-         buffer.readBytes(b);
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
+      buffer.setInt(index, value);
    }
 
-   public void getBytes(final byte[] b, final int offset, final int length)
+   public boolean writable()
    {
-      try
-      {
-         buffer.readBytes(b, offset, length);
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
+      return buffer.writable();
    }
 
-   public int getInt()
+   public int writableBytes()
    {
-      try
-      {
-         return buffer.readInt();
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
+      return buffer.writableBytes();
    }
 
-   public long getLong()
+   public void writeByte(final byte value)
    {
-      try
-      {
-         return buffer.readLong();
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
+      buffer.writeByte(value);
    }
 
-   public float getFloat()
+   public void writeBytes(final byte[] src, final int srcIndex, final int length)
    {
-      return Float.intBitsToFloat(getInt());
+      buffer.writeBytes(src, srcIndex, length);
    }
 
-   public short getShort()
+   public void writeBytes(final byte[] src)
    {
-      try
-      {
-         return buffer.readShort();
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
+      buffer.writeBytes(src);
    }
 
-   public int getUnsignedShort()
+   public void writeInt(final int value)
    {
-      try
-      {
-         return buffer.readUnsignedShort();
-      }
-      catch (IndexOutOfBoundsException e)
-      {
-         throw new BufferUnderflowException();
-      }
+      buffer.writeInt(value);
    }
 
-   public double getDouble()
+   public void writeLong(final long value)
    {
-      return Double.longBitsToDouble(getLong());
+      buffer.writeLong(value);
    }
 
-   public char getChar()
+   public int writerIndex()
    {
-      return (char)getShort();
+      return buffer.writerIndex();
    }
 
-   public void putBoolean(final boolean b)
+   public void writerIndex(final int writerIndex)
    {
-      if (b)
-      {
-         putByte(TRUE);
-      }
-      else
-      {
-         putByte(FALSE);
-      }
+      buffer.writerIndex(writerIndex);
    }
 
-   public boolean getBoolean()
+   public void writeShort(final short value)
    {
-      byte b = getByte();
-      return b == TRUE;
+      buffer.writeShort(value);
    }
 
-   public void putString(final String nullableString)
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#array()
+    */
+   public byte[] array()
    {
-      flip();
-      buffer.writeInt(nullableString.length());
-      for (int i = 0; i < nullableString.length(); i++)
-      {
-         buffer.writeShort((short)nullableString.charAt(i));
-      }
-      buffer.readerIndex(buffer.writerIndex());
+      return buffer.toByteBuffer().array();
    }
 
-   public void putNullableString(final String nullableString)
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readBoolean()
+    */
+   public boolean readBoolean()
    {
-      if (nullableString == null)
-      {
-         putByte(NULL);
-      }
-      else
-      {
-         putByte(NOT_NULL);
-         putString(nullableString);
-      }
+      return readByte() != 0;
    }
 
-   public String getString()
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readChar()
+    */
+   public char readChar()
    {
-      int len = getInt();
-
-      char[] chars = new char[len];
-
-      for (int i = 0; i < len; i++)
-      {
-         chars[i] = getChar();
-      }
-
-      return new String(chars);
+      return (char)readShort();
    }
 
-   public String getNullableString()
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readDouble()
+    */
+   public double readDouble()
    {
-      byte check = getByte();
+      return Double.longBitsToDouble(readLong());
+   }
 
-      if (check == NULL)
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readFloat()
+    */
+   public float readFloat()
+   {
+      return Float.intBitsToFloat(readInt());
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readNullableSimpleString()
+    */
+   public SimpleString readNullableSimpleString()
+   {
+      int b = readByte();
+      if (b == DataConstants.NULL)
       {
          return null;
       }
       else
       {
-         return getString();
+         return readSimpleString();
       }
    }
 
-   public void putUTF(final String str) throws Exception
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readNullableString()
+    */
+   public String readNullableString()
    {
-      UTF8Util.saveUTF(this, str);
-      buffer.readerIndex(buffer.writerIndex());
-   }
-
-   public void putNullableSimpleString(final SimpleString string)
-   {
-      if (string == null)
+      int b = readByte();
+      if (b == DataConstants.NULL)
       {
-         putByte(NULL);
+         return null;
       }
       else
       {
-         putByte(NOT_NULL);
-         putSimpleString(string);
+         return readString();
       }
    }
 
-   public void putSimpleString(final SimpleString string)
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readSimpleString()
+    */
+   public SimpleString readSimpleString()
    {
-      byte[] data = string.getData();
-
-      flip();
-      buffer.writeInt(data.length);
-      buffer.writeBytes(data);
-      buffer.readerIndex(buffer.writerIndex());
-   }
-
-   public SimpleString getSimpleString()
-   {
-      int len = getInt();
-
+      int len = readInt();
       byte[] data = new byte[len];
-      getBytes(data);
-
+      readBytes(data);
       return new SimpleString(data);
    }
 
-   public SimpleString getNullableSimpleString()
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readString()
+    */
+   public String readString()
    {
-      int b = getByte();
-      if (b == NULL)
+      int len = readInt();
+      char[] chars = new char[len];
+      for (int i = 0; i < len; i++)
       {
-         return null;
+         chars[i] = readChar();
       }
-      else
-      {
-         return getSimpleString();
-      }
+      return new String(chars);
    }
 
-   public String getUTF() throws Exception
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#readUTF()
+    */
+   public String readUTF() throws Exception
    {
       return UTF8Util.readUTF(this);
    }
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeBoolean(boolean)
+    */
+   public void writeBoolean(final boolean val)
+   {
+      writeByte((byte)(val ? -1 : 0));
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeChar(char)
+    */
+   public void writeChar(final char val)
+   {
+      writeShort((short)val);
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeDouble(double)
+    */
+   public void writeDouble(final double val)
+   {
+      writeLong(Double.doubleToLongBits(val));
+
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeFloat(float)
+    */
+   public void writeFloat(final float val)
+   {
+      writeInt(Float.floatToIntBits(val));
+
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeNullableSimpleString(org.jboss.messaging.util.SimpleString)
+    */
+   public void writeNullableSimpleString(final SimpleString val)
+   {
+      if (val == null)
+      {
+         writeByte(DataConstants.NULL);
+      }
+      else
+      {
+         writeByte(DataConstants.NOT_NULL);
+         writeSimpleString(val);
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeNullableString(java.lang.String)
+    */
+   public void writeNullableString(final String val)
+   {
+      if (val == null)
+      {
+         writeByte(DataConstants.NULL);
+      }
+      else
+      {
+         writeByte(DataConstants.NOT_NULL);
+         writeString(val);
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeSimpleString(org.jboss.messaging.util.SimpleString)
+    */
+   public void writeSimpleString(final SimpleString val)
+   {
+      byte[] data = val.getData();
+      writeInt(data.length);
+      writeBytes(data);
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeString(java.lang.String)
+    */
+   public void writeString(final String val)
+   {
+      writeInt(val.length());
+      for (int i = 0; i < val.length(); i++)
+      {
+         writeShort((short)val.charAt(i));
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeUTF(java.lang.String)
+    */
+   public void writeUTF(final String utf) throws Exception
+   {
+      UTF8Util.saveUTF(this, utf);
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#getUnderlyingBuffer()
+    */
    public Object getUnderlyingBuffer()
    {
       return buffer;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

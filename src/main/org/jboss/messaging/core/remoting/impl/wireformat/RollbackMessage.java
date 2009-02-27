@@ -86,13 +86,13 @@ public class RollbackMessage extends PacketImpl
    @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putBoolean(considerLastMessageAsDelivered);
+      buffer.writeBoolean(considerLastMessageAsDelivered);
    }
 
    @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      this.considerLastMessageAsDelivered = buffer.getBoolean();
+      this.considerLastMessageAsDelivered = buffer.readBoolean();
    }
 
    // Static --------------------------------------------------------

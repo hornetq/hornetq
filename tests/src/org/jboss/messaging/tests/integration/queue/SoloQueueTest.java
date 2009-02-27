@@ -72,7 +72,7 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
    }
 
    public void testMultipleMessages() throws Exception
@@ -97,11 +97,11 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
    }
 
    public void testFirstMessageReceivedButAckedAfter() throws Exception
@@ -119,11 +119,11 @@ public class SoloQueueTest extends UnitTestCase
       assertNotNull(m);
       producer.send(m2);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m1");
+      assertEquals(m.getBody().readString(), "m1");
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
    }
 
    public void testFirstMessageReceivedAndCancelled() throws Exception
@@ -145,7 +145,7 @@ public class SoloQueueTest extends UnitTestCase
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
       m = consumer.receive(1000);
       assertNull(m);
    }
@@ -172,33 +172,33 @@ public class SoloQueueTest extends UnitTestCase
       producer.send(m1);
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m1");
+      assertEquals(m.getBody().readString(), "m1");
       producer.send(m2);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
       producer.send(m3);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       producer.send(m4);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
       producer.send(m5);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m5");
+      assertEquals(m.getBody().readString(), "m5");
       producer.send(m6);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
       consumer.close();
       consumer = clientSession.createConsumer(qName1);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
       m = consumer.receive(1000);
       assertNull(m);
    }
@@ -219,7 +219,7 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
    }
 
    public void testMultipleMessagesInTx() throws Exception
@@ -244,11 +244,11 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
       clientSessionTxReceives.commit();
       m = consumer.receive(1000);
       assertNull(m);
@@ -274,30 +274,30 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m1");
+      assertEquals(m.getBody().readString(), "m1");
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
       producer.send(m3);
       producer.send(m4);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
       clientSessionTxReceives.rollback();
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
    }
 
    public void testMultipleMessagesInTxSend() throws Exception
@@ -328,7 +328,7 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
    }
 
    public void testMultipleMessagesPersistedCorrectly() throws Exception
@@ -365,7 +365,7 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
       assertEquals(0, storageManager.messageIds.size());
    }
 
@@ -404,7 +404,7 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
       assertEquals(0, storageManager.messageIds.size());
    }
 
@@ -436,32 +436,32 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m1");
+      assertEquals(m.getBody().readString(), "m1");
       producer.send(m2);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
       producer.send(m3);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       producer.send(m4);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
       producer.send(m5);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m5");
+      assertEquals(m.getBody().readString(), "m5");
       producer.send(m6);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
       assertEquals(6, storageManager.ackIds.size());
    }
 
@@ -493,32 +493,32 @@ public class SoloQueueTest extends UnitTestCase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m1");
+      assertEquals(m.getBody().readString(), "m1");
       producer.send(m2);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
       producer.send(m3);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       producer.send(m4);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
       producer.send(m5);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m5");
+      assertEquals(m.getBody().readString(), "m5");
       producer.send(m6);
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
       clientSessionTxReceives.commit();
       assertEquals(6, storageManager.ackIds.size());
    }

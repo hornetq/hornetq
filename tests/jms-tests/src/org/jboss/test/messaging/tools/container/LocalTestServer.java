@@ -144,7 +144,7 @@ public class LocalTestServer implements Server, Runnable
 
       if (clearDatabase)
       {
-         // Delete the BDB environment
+         // Delete the Journal environment
 
          File dir = new File("data");
 

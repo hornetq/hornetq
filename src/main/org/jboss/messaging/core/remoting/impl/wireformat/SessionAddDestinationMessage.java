@@ -84,16 +84,16 @@ public class SessionAddDestinationMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putSimpleString(address);
-      buffer.putBoolean(durable);
-      buffer.putBoolean(temporary);
+      buffer.writeSimpleString(address);
+      buffer.writeBoolean(durable);
+      buffer.writeBoolean(temporary);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      address = buffer.getSimpleString();
-      durable = buffer.getBoolean();
-      temporary = buffer.getBoolean();
+      address = buffer.readSimpleString();
+      durable = buffer.readBoolean();
+      temporary = buffer.readBoolean();
    }
    
    @Override

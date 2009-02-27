@@ -17,6 +17,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * A ClientSessionInternal
@@ -28,6 +29,8 @@ public interface ClientSessionInternal extends ClientSession
    String getName();
 
    void acknowledge(long consumerID, long messageID) throws MessagingException;
+   
+   MessagingBuffer createBuffer(int size);
 
    void expire(long consumerID, long messageID) throws MessagingException;
 

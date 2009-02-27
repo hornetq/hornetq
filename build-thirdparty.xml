@@ -86,7 +86,6 @@
       -->
 
       <componentref name="netty" version="3.1.0.ALPHA4"/>
-      <componentref name="apache-mina" version="2.0.0-M4"/>
 
       <!--
            Dependencies needed to build the security.jar
@@ -135,7 +134,6 @@
       <componentref name="jboss/jbossxb" version="2.0.0.CR4"/>
       <componentref name="apache-xerces" version="2.7.1-brew"/>
       <componentref name="jboss/profiler/jvmti" version="1.0.0.CR5-brew"/>
-      <componentref name="slf4j/log4j" version="1.5.2"/>
 
       <!--
           Dependencies required to run the jms tests

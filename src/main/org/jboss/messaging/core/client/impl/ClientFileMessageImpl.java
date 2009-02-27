@@ -133,7 +133,7 @@ public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFi
          channel.position(0);
          channel.read(fileBuffer);
 
-         buffer.putBytes(fileBuffer.array(), 0, fileBuffer.limit());
+         buffer.writeBytes(fileBuffer.array(), 0, fileBuffer.limit());
       }
       catch (Exception e)
       {
@@ -167,7 +167,7 @@ public class ClientFileMessageImpl extends ClientMessageImpl implements ClientFi
          channel.position(start);
          channel.read(bufferRead);
 
-         buffer.putBytes(bufferRead.array());
+         buffer.writeBytes(bufferRead.array());
       }
       catch (Exception e)
       {

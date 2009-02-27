@@ -124,7 +124,8 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    
    public void doBeforeSend() throws Exception
    {
-      getBody().putNullableString(text);      
+      getBody().clear();
+      getBody().writeNullableString(text);      
       
       super.doBeforeSend();
    }
@@ -133,7 +134,7 @@ public class JBossTextMessage extends JBossMessage implements TextMessage
    {
       super.doBeforeReceive();
       
-      text = getBody().getNullableString();                        
+      text = getBody().readNullableString();                        
    }
    
    // Package protected ---------------------------------------------

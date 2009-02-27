@@ -91,18 +91,18 @@ public abstract class SessionContinuationMessage extends PacketImpl
    @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(body.length);
-      buffer.putBytes(body);
-      buffer.putBoolean(continues);
+      buffer.writeInt(body.length);
+      buffer.writeBytes(body);
+      buffer.writeBoolean(continues);
    }
 
    @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      int size = buffer.getInt();
+      int size = buffer.readInt();
       body = new byte[size];
-      buffer.getBytes(body);
-      continues = buffer.getBoolean();
+      buffer.readBytes(body);
+      continues = buffer.readBoolean();
    }
 
    // Package protected ---------------------------------------------

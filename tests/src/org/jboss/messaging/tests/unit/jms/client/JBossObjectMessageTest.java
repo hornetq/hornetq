@@ -27,22 +27,20 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import javax.jms.DeliveryMode;
 import javax.jms.ObjectMessage;
 
 import org.easymock.EasyMock;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.client.JBossObjectMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -79,7 +77,7 @@ public class JBossObjectMessageTest extends UnitTestCase
    {
       ObjectMessage foreignMessage = createNiceMock(ObjectMessage.class);
       ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      ByteBufferWrapper body = new ByteBufferWrapper(ByteBuffer.allocate(1024));
+      MessagingBuffer body = ChannelBuffers.wrappedBuffer(new byte[1024]);
       ClientMessage clientMessage = new ClientMessageImpl(JBossObjectMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
       expect(foreignMessage.getJMSDeliveryMode()).andReturn(DeliveryMode.NON_PERSISTENT);
@@ -130,9 +128,9 @@ public class JBossObjectMessageTest extends UnitTestCase
       msg.doBeforeSend();
 
       MessagingBuffer body = msg.getCoreMessage().getBody();
-      assertEquals(data.length, body.getInt());
+      assertEquals(data.length, body.readInt());
       byte[] bytes = new byte[data.length];
-      body.getBytes(bytes);
+      body.readBytes(bytes);
 
       assertEqualsByteArrays(data, bytes);
    }
@@ -147,9 +145,8 @@ public class JBossObjectMessageTest extends UnitTestCase
       
       JBossObjectMessage message = new JBossObjectMessage();
       MessagingBuffer body = message.getCoreMessage().getBody();
-      body.putInt(data.length);
-      body.putBytes(data);
-      body.flip();
+      body.writeInt(data.length);
+      body.writeBytes(data);
       
       message.doBeforeReceive();
       

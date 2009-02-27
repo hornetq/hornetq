@@ -252,8 +252,8 @@ public class ServiceTestBase extends UnitTestCase
    
    public String getTextMessage(ClientMessage m)
    {
-      m.getBody().rewind();
-      return m.getBody().getString();
+      m.getBody().resetReaderIndex();
+      return m.getBody().readString();
    }
 
    protected ClientMessage createTextMessage(final ClientSession session, final String s, final boolean durable)
@@ -263,8 +263,7 @@ public class ServiceTestBase extends UnitTestCase
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
-      message.getBody().putString(s);
-      message.getBody().flip();
+      message.getBody().writeString(s);
       return message;
    }
 
@@ -275,8 +274,7 @@ public class ServiceTestBase extends UnitTestCase
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
-      message.getBody().putBytes(b);
-      message.getBody().flip();
+      message.getBody().writeBytes(b);
       return message;
    }
 

@@ -104,8 +104,7 @@ public class FailBackupServerTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -119,7 +118,7 @@ public class FailBackupServerTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 
@@ -149,8 +148,7 @@ public class FailBackupServerTest extends UnitTestCase
       {
          message = session1.createClientMessage(JBossTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
 
@@ -160,7 +158,7 @@ public class FailBackupServerTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 
@@ -197,8 +195,7 @@ public class FailBackupServerTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       
@@ -208,7 +205,7 @@ public class FailBackupServerTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 

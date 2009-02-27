@@ -72,14 +72,14 @@ public class SessionConsumerFlowCreditMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(consumerID);
-      buffer.putInt(credits);
+      buffer.writeLong(consumerID);
+      buffer.writeInt(credits);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      consumerID = buffer.getLong();
-      credits = buffer.getInt();
+      consumerID = buffer.readLong();
+      credits = buffer.readInt();
    }
 
    @Override

@@ -103,7 +103,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
       consumer.close();
@@ -114,7 +114,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
       consumer.close();
@@ -149,7 +149,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
       consumer.close();
@@ -160,7 +160,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
       consumer.close();
@@ -198,7 +198,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
       session.close();
@@ -231,11 +231,11 @@ public class ConsumerTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
          message2 = consumer2.receive(1000);
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
          message2 = consumer3.receive(1000);
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
       session.close();
@@ -269,17 +269,17 @@ public class ConsumerTest extends UnitTestCase
       for (int i = 0; i < 50; i++)
       {
          ClientMessage message2 = consumer.receive(1000);
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
       for (int i = 50; i < numMessages; i++)
       {
          ClientMessage message2 = consumer2.receive(1000);
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer3.receive(1000);
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
       session.close();
@@ -321,7 +321,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
       // assert that all the messages are there and none have been acked
       assertEquals(0,
@@ -358,7 +358,7 @@ public class ConsumerTest extends UnitTestCase
 
          message2.acknowledge();
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
       // assert that all the messages are there and none have been acked
       assertEquals(0,
@@ -454,7 +454,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
       // assert that all the messages are there and none have been acked
       assertEquals(0,
@@ -490,7 +490,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
       }
       // assert that all the messages are there and none have been acked
       assertEquals(0,
@@ -526,7 +526,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
          if (i < 50)
          {
             message2.acknowledge();
@@ -566,7 +566,7 @@ public class ConsumerTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive(1000);
 
-         assertEquals("m" + i, message2.getBody().getString());
+         assertEquals("m" + i, message2.getBody().readString());
          if (i < 50)
          {
             message2.acknowledge();
@@ -593,8 +593,7 @@ public class ConsumerTest extends UnitTestCase
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
-      message.getBody().putString(msg);
-      message.getBody().flip();
+      message.getBody().writeString(msg);
       return message;
    }
 }

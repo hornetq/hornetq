@@ -33,93 +33,99 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public interface MessagingBuffer
 {
-   void putByte(byte val);
+   void writeByte(byte val);
 
-   void putBytes(byte[] bytes);
+   void writeBytes(byte[] bytes);
 
-   void putBytes(byte[] bytes, int offset, int length);
+   void writeBytes(byte[] bytes, int offset, int length);
 
-   void putInt(int val);
+   void writeInt(int val);
 
-   void putInt(int pos, int val);
+   void setInt(int pos, int val);
 
-   void putLong(long val);
+   void writeLong(long val);
 
-   void putShort(short val);
+   void writeShort(short val);
 
-   void putDouble(double val);
+   void writeDouble(double val);
 
-   void putFloat(float val);
+   void writeFloat(float val);
 
-   void putBoolean(boolean val);
+   void writeBoolean(boolean val);
 
-   void putChar(char val);
+   void writeChar(char val);
 
-   void putNullableString(String val);
+   void writeNullableString(String val);
 
-   void putString(String val);
+   void writeString(String val);
 
-   void putSimpleString(SimpleString val);
+   void writeSimpleString(SimpleString val);
 
-   void putNullableSimpleString(SimpleString val);
+   void writeNullableSimpleString(SimpleString val);
 
-   void putUTF(String utf) throws Exception;
+   void writeUTF(String utf) throws Exception;
 
-   byte getByte();
+   byte readByte();
 
-   short getUnsignedByte();
+   short readUnsignedByte();
 
-   void getBytes(byte[] bytes);
+   void readBytes(byte[] bytes);
 
-   void getBytes(byte[] bytes, int offset, int length);
+   void readBytes(byte[] bytes, int offset, int length);
 
-   int getInt();
+   int readInt();
 
-   long getLong();
+   long readLong();
 
-   short getShort();
+   short readShort();
 
-   int getUnsignedShort();
+   int readUnsignedShort();
 
-   double getDouble();
+   double readDouble();
 
-   float getFloat();
+   float readFloat();
 
-   boolean getBoolean();
+   boolean readBoolean();
 
-   char getChar();
+   char readChar();
 
-   String getString();
+   String readString();
 
-   String getNullableString();
+   String readNullableString();
 
-   SimpleString getSimpleString();
+   SimpleString readSimpleString();
 
-   SimpleString getNullableSimpleString();
+   SimpleString readNullableSimpleString();
 
-   String getUTF() throws Exception;
+   String readUTF() throws Exception;
 
    byte[] array();
 
-   int remaining();
-
    int capacity();
 
-   int limit();
+   int readerIndex();
 
-   void limit(int limit);
+   void readerIndex(int readerIndex);
 
-   void flip();
+   int writerIndex();
 
-   void position(int position);
+   void writerIndex(int writerIndex);
 
-   int position();
+   void setIndex(int readerIndex, int writerIndex);
 
-   void rewind();
+   int readableBytes();
 
-   MessagingBuffer slice();
+   int writableBytes();
 
-   MessagingBuffer createNewBuffer(int len);
+   boolean readable();
+
+   boolean writable();
+
+   void clear();
+
+   void resetReaderIndex();
+
+   void resetWriterIndex();
 
    Object getUnderlyingBuffer();
 }

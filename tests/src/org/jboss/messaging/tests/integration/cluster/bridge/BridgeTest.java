@@ -369,9 +369,7 @@ public class BridgeTest extends ServiceTestBase
 
          message.putStringProperty(propKey, new SimpleString("bing"));
 
-         message.getBody().putString("doo be doo be doo be doo");
-
-         message.getBody().flip();
+         message.getBody().writeString("doo be doo be doo be doo");
 
          producer0.send(message);
       }
@@ -386,7 +384,7 @@ public class BridgeTest extends ServiceTestBase
 
          assertEquals(new SimpleString("bong"), val);
 
-         String sval = message.getBody().getString();
+         String sval = message.getBody().readString();
 
          assertEquals("dee be dee be dee be dee", sval);
 

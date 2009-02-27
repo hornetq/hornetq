@@ -20,13 +20,13 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
@@ -356,8 +356,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          return;
       }
 
-      ByteBuffer body = ByteBuffer.wrap(chunk.getBody());
-
       if (chunk.isContinues())
       {
          flowControl(chunk.getPacketSize(), true);
@@ -370,20 +368,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
       else
       {
-         MessagingBuffer currentBody = currentChunkMessage.getBody();
-
-         final int currentBodySize = currentBody == null ? 0 : currentBody.limit();
-
-         MessagingBuffer newBody = new ByteBufferWrapper(ByteBuffer.allocate(currentBodySize + body.limit()));
-
-         if (currentBody != null)
+         if (currentChunkMessage.getBody() == null)
          {
-            newBody.putBytes(currentBody.array());
+            currentChunkMessage.setBody(ChannelBuffers.dynamicBuffer(chunk.getBody()));
          }
-
-         newBody.putBytes(body.array());
-
-         currentChunkMessage.setBody(newBody);
+         else
+         {
+            currentChunkMessage.getBody().writeBytes(chunk.getBody());
+         }
       }
 
       if (!chunk.isContinues())
@@ -671,7 +663,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          int propertiesSize = message.getPropertiesEncodeSize();
 
-         MessagingBuffer bufferProperties = message.getBody().createNewBuffer(propertiesSize);
+         MessagingBuffer bufferProperties = session.createBuffer(propertiesSize); 
 
          // FIXME: Find a better way to clone this ClientMessageImpl as ClientFileMessageImpl without using the
          // MessagingBuffer.
@@ -679,7 +671,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // abstraction
          message.encodeProperties(bufferProperties);
 
-         bufferProperties.rewind();
+         bufferProperties.resetReaderIndex();
 
          ClientFileMessageImpl cloneMessage = new ClientFileMessageImpl();
 
@@ -708,7 +700,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private ClientMessageInternal createFileMessage(final byte[] header) throws Exception
    {
 
-      MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.wrap(header));
+      MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header); 
 
       if (isFileConsumer())
       {

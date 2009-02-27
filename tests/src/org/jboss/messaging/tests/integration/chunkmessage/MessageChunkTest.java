@@ -23,12 +23,12 @@
 package org.jboss.messaging.tests.integration.chunkmessage;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.AssertionFailedError;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -42,7 +42,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -570,7 +569,7 @@ public class MessageChunkTest extends ChunkTestBase
 
                assertNotNull(clientMessage);
 
-               assertEquals(numberOfIntegers * 4, clientMessage.getBody().limit());
+               assertEquals(numberOfIntegers * 4, clientMessage.getBody().writerIndex());
 
                clientMessage.acknowledge();
 
@@ -656,8 +655,6 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(DataConstants.SIZE_INT * numberOfIntegers);
-
          // printBuffer("body to be sent : " , body);
 
          ClientMessage message = null;
@@ -666,13 +663,12 @@ public class MessageChunkTest extends ChunkTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
+            MessagingBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
-               bodyLocal.putInt(j);
+               bodyLocal.writeInt(j);
             }
-            bodyLocal.flip();
 
             if (i == 0)
             {
@@ -721,7 +717,7 @@ public class MessageChunkTest extends ChunkTestBase
 
             try
             {
-               assertEqualsByteArrays(body.limit(), body.array(), message2.getBody().array());
+               assertEqualsByteArrays(body.writerIndex(), body.array(), message2.getBody().array());
             }
             catch (AssertionFailedError e)
             {

@@ -12,7 +12,6 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -28,13 +27,13 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.utils.SimpleString;
@@ -183,7 +182,7 @@ public class JBossMessage implements javax.jms.Message
                                       0,
                                       System.currentTimeMillis(),
                                       (byte)4,
-                                      new ByteBufferWrapper(ByteBuffer.allocate(1024)));
+                                      ChannelBuffers.dynamicBuffer(1024));
 
    }
 
@@ -194,7 +193,7 @@ public class JBossMessage implements javax.jms.Message
                                       0,
                                       System.currentTimeMillis(),
                                       (byte)4,
-                                      new ByteBufferWrapper(ByteBuffer.allocate(1024)));
+                                      ChannelBuffers.dynamicBuffer(1024));
 
    }
 
@@ -903,7 +902,7 @@ public class JBossMessage implements javax.jms.Message
 
    public void doBeforeSend() throws Exception
    {
-      message.getBody().flip();
+      message.getBody().resetReaderIndex();
    }
 
    public void doBeforeReceive() throws Exception
@@ -911,7 +910,7 @@ public class JBossMessage implements javax.jms.Message
       MessagingBuffer body = message.getBody();
       if (body != null)
       {
-         body.rewind();
+         body.resetReaderIndex();
       }
    }
 

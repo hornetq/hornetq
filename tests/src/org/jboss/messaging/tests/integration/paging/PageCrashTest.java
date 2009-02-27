@@ -25,7 +25,6 @@ package org.jboss.messaging.tests.integration.paging;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -47,10 +46,8 @@ import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -169,14 +166,10 @@ public class PageCrashTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ByteBuffer ioBuffer = ByteBuffer.allocate(1024);
-
          ClientMessage message = null;
 
-         MessagingBuffer bodyLocal = new ByteBufferWrapper(ioBuffer);
-
          message = session.createClientMessage(true);
-         message.setBody(bodyLocal);
+         message.getBody().writeBytes(new byte[1024]);
 
          PagingStore store = service.getServer().getPostOffice().getPagingManager().getPageStore(ADDRESS);
 

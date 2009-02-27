@@ -55,7 +55,7 @@ public class ScheduledMessageExample
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientMessage message = clientSession.createClientMessage(false);
-         message.getBody().putString("Hello!");
+         message.getBody().writeString("Hello!");
          Calendar cal = Calendar.getInstance();
          log.info("current time " + df.format(cal.getTime()));
          cal.add(Calendar.SECOND, 5);

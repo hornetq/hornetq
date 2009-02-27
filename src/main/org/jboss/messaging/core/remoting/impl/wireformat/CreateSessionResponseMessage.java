@@ -68,12 +68,12 @@ public class CreateSessionResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(serverVersion);      
+      buffer.writeInt(serverVersion);      
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      serverVersion = buffer.getInt();
+      serverVersion = buffer.readInt();
    }
 
    public boolean equals(Object other)

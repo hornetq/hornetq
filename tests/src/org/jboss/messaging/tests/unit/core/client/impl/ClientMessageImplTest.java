@@ -23,10 +23,10 @@ package org.jboss.messaging.tests.unit.core.client.impl;
 
 import java.nio.ByteBuffer;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.unit.core.message.impl.MessageImplTestBase;
 import org.jboss.messaging.tests.util.RandomUtil;
@@ -69,19 +69,21 @@ public class ClientMessageImplTest extends MessageImplTestBase
    
    public void testConstructor1()
    {
+      ClientMessage msg2 = new ClientMessageImpl(true, ChannelBuffers.buffer(1024));
+      msg2.getBody();
       for (int i = 0; i < 10; i++)
       {
          boolean durable = RandomUtil.randomBoolean();    
-         ByteBuffer bb = ByteBuffer.wrap(new byte[1000]);    
-         MessagingBuffer body = new ByteBufferWrapper(bb);   
-         
+         MessagingBuffer body = ChannelBuffers.EMPTY_BUFFER;   
+
          ClientMessage msg = new ClientMessageImpl(durable, body);
+         assertTrue("i = " + i + "Time is = " + (System.currentTimeMillis() - msg.getTimestamp()), System.currentTimeMillis() - msg.getTimestamp() < 5);
+
          assertEquals(durable, msg.isDurable());
          assertEquals(body, msg.getBody());
-             
          assertEquals(0, msg.getType());
          assertEquals(0, msg.getExpiration());
-         assertTrue(System.currentTimeMillis() - msg.getTimestamp() < 5);
+       
          assertEquals((byte)4, msg.getPriority());
       }
    }
@@ -93,7 +95,7 @@ public class ClientMessageImplTest extends MessageImplTestBase
          byte type = RandomUtil.randomByte();
          boolean durable = RandomUtil.randomBoolean();    
          ByteBuffer bb = ByteBuffer.wrap(new byte[1000]);    
-         MessagingBuffer body = new ByteBufferWrapper(bb);   
+         MessagingBuffer body = ChannelBuffers.wrappedBuffer(new byte[1000]);   
          
          ClientMessage msg = new ClientMessageImpl(type, durable, body);
          assertEquals(type, msg.getType());
@@ -113,7 +115,7 @@ public class ClientMessageImplTest extends MessageImplTestBase
          byte type = RandomUtil.randomByte();
          boolean durable = RandomUtil.randomBoolean();    
          ByteBuffer bb = ByteBuffer.wrap(new byte[1000]);    
-         MessagingBuffer body = new ByteBufferWrapper(bb);   
+         MessagingBuffer body = ChannelBuffers.wrappedBuffer(new byte[1000]);   
          long expiration = RandomUtil.randomLong();
          long timestamp = RandomUtil.randomLong();
          byte priority = RandomUtil.randomByte();

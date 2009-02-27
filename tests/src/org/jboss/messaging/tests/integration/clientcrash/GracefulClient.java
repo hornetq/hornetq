@@ -70,7 +70,7 @@ public class GracefulClient
 
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString(messageText);
+         message.getBody().writeString(messageText);
          producer.send(message);
 
          session.start();

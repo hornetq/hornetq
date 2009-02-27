@@ -163,32 +163,32 @@ public class ReplicateCreateSessionMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putString(name);
-      buffer.putLong(sessionChannelID);
-      buffer.putInt(version);
-      buffer.putNullableString(username);
-      buffer.putNullableString(password);
-      buffer.putInt(minLargeMessageSize);
-      buffer.putBoolean(xa);
-      buffer.putBoolean(autoCommitSends);
-      buffer.putBoolean(autoCommitAcks);
-      buffer.putInt(windowSize);
-      buffer.putBoolean(preAcknowledge);
+      buffer.writeString(name);
+      buffer.writeLong(sessionChannelID);
+      buffer.writeInt(version);
+      buffer.writeNullableString(username);
+      buffer.writeNullableString(password);
+      buffer.writeInt(minLargeMessageSize);
+      buffer.writeBoolean(xa);
+      buffer.writeBoolean(autoCommitSends);
+      buffer.writeBoolean(autoCommitAcks);
+      buffer.writeInt(windowSize);
+      buffer.writeBoolean(preAcknowledge);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      name = buffer.getString();
-      sessionChannelID = buffer.getLong();
-      version = buffer.getInt();
-      username = buffer.getNullableString();
-      password = buffer.getNullableString();
-      minLargeMessageSize = buffer.getInt();
-      xa = buffer.getBoolean();
-      autoCommitSends = buffer.getBoolean();
-      autoCommitAcks = buffer.getBoolean();
-      windowSize = buffer.getInt();
-      preAcknowledge = buffer.getBoolean();
+      name = buffer.readString();
+      sessionChannelID = buffer.readLong();
+      version = buffer.readInt();
+      username = buffer.readNullableString();
+      password = buffer.readNullableString();
+      minLargeMessageSize = buffer.readInt();
+      xa = buffer.readBoolean();
+      autoCommitSends = buffer.readBoolean();
+      autoCommitAcks = buffer.readBoolean();
+      windowSize = buffer.readInt();
+      preAcknowledge = buffer.readBoolean();
    }
 
    public boolean equals(Object other)

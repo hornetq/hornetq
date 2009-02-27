@@ -92,16 +92,16 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putSimpleString(queueName);
-      buffer.putNullableSimpleString(filterString);
-      buffer.putBoolean(browseOnly);
+      buffer.writeSimpleString(queueName);
+      buffer.writeNullableSimpleString(filterString);
+      buffer.writeBoolean(browseOnly);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      queueName = buffer.getSimpleString();
-      filterString = buffer.getNullableSimpleString();
-      browseOnly = buffer.getBoolean();
+      queueName = buffer.readSimpleString();
+      filterString = buffer.readNullableSimpleString();
+      browseOnly = buffer.readBoolean();
    }
 
    public boolean equals(Object other)

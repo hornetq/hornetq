@@ -25,10 +25,8 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomByte;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 
-import java.nio.ByteBuffer;
-
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -71,8 +69,7 @@ public class ServerMessageImplTest extends MessageImplTestBase
          {
             bytes[i] = randomByte();
          }
-         ByteBuffer bb = ByteBuffer.wrap(bytes);    
-         MessagingBuffer body = new ByteBufferWrapper(bb);      
+         MessagingBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
          ServerMessageImpl message = new ServerMessageImpl(randomByte(), randomBoolean(), randomLong(),
                                          randomLong(), randomByte(), body);
          message.setDestination(new SimpleString("oasoas"));

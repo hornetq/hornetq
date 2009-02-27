@@ -55,9 +55,9 @@ public class WildCardClient
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientProducer clientProducer2 = clientSession.createProducer(queue2);
          ClientMessage message = clientSession.createClientMessage(false);
-         message.getBody().putString("This is a message from queue " + queue);
+         message.getBody().writeString("This is a message from queue " + queue);
          ClientMessage message2 = clientSession.createClientMessage(false);
-         message2.getBody().putString("This is a message from queue " + queue2);
+         message2.getBody().writeString("This is a message from queue " + queue2);
 
          clientSession.createQueue(wildCardQ, wildCardQ, null, false, true);
          clientConsumer = clientSession.createConsumer(wildCardQ);
@@ -68,10 +68,10 @@ public class WildCardClient
          clientSession.start();
          ClientMessage msg = clientConsumer.receive(5000);
          msg.acknowledge();
-         log.info("message received: " + msg.getBody().getString());
+         log.info("message received: " + msg.getBody().readString());
          ClientMessage msg2 = clientConsumer.receive(5000);
          msg2.acknowledge();
-         log.info("message received: " + msg2.getBody().getString());
+         log.info("message received: " + msg2.getBody().readString());
       }
       catch (Exception e)
       {

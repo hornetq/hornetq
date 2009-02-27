@@ -75,14 +75,14 @@ public class SessionRemoveDestinationMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putSimpleString(address);
-      buffer.putBoolean(durable);
+      buffer.writeSimpleString(address);
+      buffer.writeBoolean(durable);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      address = buffer.getSimpleString();
-      durable = buffer.getBoolean();
+      address = buffer.readSimpleString();
+      durable = buffer.readBoolean();
    }
         
    @Override

@@ -35,8 +35,8 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
 import java.util.Iterator;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.integration.transports.mina.IoBufferWrapper;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
@@ -294,37 +294,34 @@ public class TypedPropertiesTest extends UnitTestCase
       SimpleString keyToRemove = randomSimpleString();
       props.putStringProperty(keyToRemove, randomSimpleString());
 
-      MessagingBuffer buffer = new IoBufferWrapper(1024);
+      MessagingBuffer buffer = ChannelBuffers.dynamicBuffer(1024); 
       props.encode(buffer);
       
-      assertEquals(props.getEncodeSize(), buffer.position());
-
-      buffer.flip();
+      assertEquals(props.getEncodeSize(), buffer.writerIndex());
 
       TypedProperties decodedProps = new TypedProperties();
       decodedProps.decode(buffer);
 
       assertEqualsTypeProperties(props, decodedProps);
+
+      buffer.clear();
       
-      buffer.flip();
       
       // After removing a property, you should still be able to encode the Property
       props.removeProperty(keyToRemove);
       props.encode(buffer);
       
-      assertEquals(props.getEncodeSize(), buffer.position());
+      assertEquals(props.getEncodeSize(), buffer.writerIndex());
    }
    
    public void testEncodeDecodeEmpty() throws Exception
    {
       TypedProperties emptyProps = new TypedProperties();
 
-      MessagingBuffer buffer = new IoBufferWrapper(1024);
+      MessagingBuffer buffer = ChannelBuffers.dynamicBuffer(1024); 
       emptyProps.encode(buffer);
       
-      assertEquals(props.getEncodeSize(), buffer.position());
-
-      buffer.flip();
+      assertEquals(props.getEncodeSize(), buffer.writerIndex());
 
       TypedProperties decodedProps = new TypedProperties();
       decodedProps.decode(buffer);

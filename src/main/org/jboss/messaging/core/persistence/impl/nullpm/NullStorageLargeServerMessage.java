@@ -22,9 +22,7 @@
 
 package org.jboss.messaging.core.persistence.impl.nullpm;
 
-import java.nio.ByteBuffer;
-
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -72,18 +70,14 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
 
       if (buffer != null)
       {
-         ByteBuffer newBuffer = ByteBuffer.allocate(buffer.limit() + bytes.length);
-         newBuffer.put(buffer.array());
-         buffer = new ByteBufferWrapper(newBuffer);
-         setBody(buffer);
+         // expand the buffer
+         buffer.writeBytes(bytes);
       }
       else
       {
-         buffer = new ByteBufferWrapper(ByteBuffer.allocate(bytes.length));
-         setBody(buffer);
+         // Reuse the initial byte array on the buffer construction
+         setBody(ChannelBuffers.dynamicBuffer(bytes));
       }
-
-      buffer.putBytes(bytes);
    }
 
    /* (non-Javadoc)

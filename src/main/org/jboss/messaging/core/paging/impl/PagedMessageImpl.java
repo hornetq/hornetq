@@ -26,11 +26,9 @@ import static org.jboss.messaging.utils.DataConstants.SIZE_BYTE;
 import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
 
-import java.nio.ByteBuffer;
-
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -84,7 +82,7 @@ public class PagedMessageImpl implements PagedMessage
       if (largeMessageLazyData != null)
       {
          message = storage.createLargeMessage();
-         MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.wrap(largeMessageLazyData));
+         MessagingBuffer buffer = ChannelBuffers.dynamicBuffer(largeMessageLazyData); 
          message.decode(buffer);
          largeMessageLazyData = null;
       }
@@ -100,21 +98,21 @@ public class PagedMessageImpl implements PagedMessage
 
    public void decode(final MessagingBuffer buffer)
    {
-      transactionID = buffer.getLong();
+      transactionID = buffer.readLong();
 
-      boolean isLargeMessage = buffer.getBoolean();
+      boolean isLargeMessage = buffer.readBoolean();
 
       if (isLargeMessage)
       {
-         int largeMessageHeaderSize = buffer.getInt();
+         int largeMessageHeaderSize = buffer.readInt();
 
          largeMessageLazyData = new byte[largeMessageHeaderSize];
 
-         buffer.getBytes(largeMessageLazyData);
+         buffer.readBytes(largeMessageLazyData);
       }
       else
       {
-         buffer.getInt(); // This value is only used on LargeMessages for now
+         buffer.readInt(); // This value is only used on LargeMessages for now
          
          message = new ServerMessageImpl();
          
@@ -125,11 +123,11 @@ public class PagedMessageImpl implements PagedMessage
 
    public void encode(final MessagingBuffer buffer)
    {
-      buffer.putLong(transactionID);
+      buffer.writeLong(transactionID);
       
-      buffer.putBoolean(message instanceof LargeServerMessage);
+      buffer.writeBoolean(message instanceof LargeServerMessage);
       
-      buffer.putInt(message.getEncodeSize());
+      buffer.writeInt(message.getEncodeSize());
       
       message.encode(buffer);
    }

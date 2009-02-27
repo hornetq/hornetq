@@ -87,11 +87,11 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
    }
 
    public void testManyMessagesReceivedWithRollback() throws Exception
@@ -124,27 +124,27 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       producer.send(m1);
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m1");
+      assertEquals(m.getBody().readString(), "m1");
       producer.send(m2);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
       producer.send(m3);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       producer.send(m4);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
       producer.send(m5);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m5");
+      assertEquals(m.getBody().readString(), "m5");
       producer.send(m6);
       m = consumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
       clientSessionXa.end(xid, XAResource.TMSUCCESS);
       clientSessionXa.prepare(xid);
 
@@ -155,7 +155,7 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m6");
+      assertEquals(m.getBody().readString(), "m6");
       m = consumer.receive(1000);
       assertNull(m);
    }

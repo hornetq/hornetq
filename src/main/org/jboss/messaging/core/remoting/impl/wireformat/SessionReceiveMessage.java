@@ -149,13 +149,13 @@ public class SessionReceiveMessage extends PacketImpl
    }
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(consumerID);
-      buffer.putInt(deliveryCount);
-      buffer.putBoolean(largeMessage);
+      buffer.writeLong(consumerID);
+      buffer.writeInt(deliveryCount);
+      buffer.writeBoolean(largeMessage);
       if (largeMessage)
       {
-         buffer.putInt(largeMessageHeader.length);
-         buffer.putBytes(largeMessageHeader);
+         buffer.writeInt(largeMessageHeader.length);
+         buffer.writeBytes(largeMessageHeader);
       }
       else
       {
@@ -167,23 +167,23 @@ public class SessionReceiveMessage extends PacketImpl
    {
       // TODO can be optimised
 
-      consumerID = buffer.getLong();
+      consumerID = buffer.readLong();
 
-      deliveryCount = buffer.getInt();
+      deliveryCount = buffer.readInt();
 
-      largeMessage = buffer.getBoolean();
+      largeMessage = buffer.readBoolean();
 
       if (largeMessage)
       {
-         int size = buffer.getInt();
+         int size = buffer.readInt();
          largeMessageHeader = new byte[size];
-         buffer.getBytes(largeMessageHeader);
+         buffer.readBytes(largeMessageHeader);
       }
       else
       {
          clientMessage = new ClientMessageImpl(deliveryCount);
          clientMessage.decode(buffer);
-         clientMessage.getBody().flip();
+         clientMessage.getBody().resetReaderIndex();
       }
    }
 

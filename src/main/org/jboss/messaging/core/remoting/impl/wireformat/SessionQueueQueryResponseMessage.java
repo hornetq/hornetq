@@ -119,22 +119,22 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putBoolean(exists);
-      buffer.putBoolean(durable);
-      buffer.putInt(consumerCount);
-      buffer.putInt(messageCount);
-      buffer.putNullableSimpleString(filterString);
-      buffer.putNullableSimpleString(address);
+      buffer.writeBoolean(exists);
+      buffer.writeBoolean(durable);
+      buffer.writeInt(consumerCount);
+      buffer.writeInt(messageCount);
+      buffer.writeNullableSimpleString(filterString);
+      buffer.writeNullableSimpleString(address);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      exists = buffer.getBoolean();
-      durable = buffer.getBoolean();
-      consumerCount = buffer.getInt();
-      messageCount = buffer.getInt();
-      filterString = buffer.getNullableSimpleString();
-      address = buffer.getNullableSimpleString();
+      exists = buffer.readBoolean();
+      durable = buffer.readBoolean();
+      consumerCount = buffer.readInt();
+      messageCount = buffer.readInt();
+      filterString = buffer.readNullableSimpleString();
+      address = buffer.readNullableSimpleString();
    }
 
    public boolean equals(Object other)

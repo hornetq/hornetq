@@ -73,7 +73,7 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(xids.size());
+      buffer.writeInt(xids.size());
 
       for (Xid xid: xids)
       {
@@ -83,7 +83,7 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      int len = buffer.getInt();
+      int len = buffer.readInt();
       xids = new ArrayList<Xid>(len);      
       for (int i = 0; i < len; i++)
       {

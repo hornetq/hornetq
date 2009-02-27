@@ -69,20 +69,20 @@ public class SessionAcknowledgeMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(consumerID);
+      buffer.writeLong(consumerID);
 
-      buffer.putLong(messageID);
+      buffer.writeLong(messageID);
 
-      buffer.putBoolean(requiresResponse);
+      buffer.writeBoolean(requiresResponse);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      consumerID = buffer.getLong();
+      consumerID = buffer.readLong();
 
-      messageID = buffer.getLong();
+      messageID = buffer.readLong();
 
-      requiresResponse = buffer.getBoolean();
+      requiresResponse = buffer.readBoolean();
    }
 
    public boolean equals(Object other)

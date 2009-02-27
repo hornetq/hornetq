@@ -34,7 +34,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  *
- * A MinaAcceptorFactoryTest
+ * A NettyAcceptorFactoryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *

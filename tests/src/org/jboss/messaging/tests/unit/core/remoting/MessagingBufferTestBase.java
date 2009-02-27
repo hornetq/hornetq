@@ -29,7 +29,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomFloat;
 import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-import static org.jboss.messaging.tests.util.UnitTestCase.assertEqualsByteArrays;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.util.RandomUtil;
@@ -122,30 +121,22 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
    public void testByte() throws Exception
    {
       byte b = randomByte();
-      wrapper.putByte(b);
+      wrapper.writeByte(b);
 
-      wrapper.flip();
-
-      assertEquals(b, wrapper.getByte());
+      assertEquals(b, wrapper.readByte());
    }
 
    public void testUnsignedByte() throws Exception
    {
       byte b = (byte) 0xff;
-      wrapper.putByte(b);
+      wrapper.writeByte(b);
 
-      wrapper.flip();
-
-      assertEquals(255, wrapper.getUnsignedByte());
-
-      wrapper.rewind();
+      assertEquals(255, wrapper.readUnsignedByte());
 
       b = (byte) 0xf;
-      wrapper.putByte(b);
+      wrapper.writeByte(b);
 
-      wrapper.flip();
-
-      assertEquals(b, wrapper.getUnsignedByte());
+      assertEquals(b, wrapper.readUnsignedByte());
    }
 
 
@@ -153,12 +144,10 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
    public void testBytes() throws Exception
    {
       byte[] bytes = randomBytes();
-      wrapper.putBytes(bytes);
-
-      wrapper.flip();
+      wrapper.writeBytes(bytes);
 
       byte[] b = new byte[bytes.length];
-      wrapper.getBytes(b);
+      wrapper.readBytes(b);
       assertEqualsByteArrays(bytes, b);
    }
 
@@ -166,50 +155,40 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
    {
       byte[] bytes = randomBytes();
       // put only half of the bytes
-      wrapper.putBytes(bytes, 0, bytes.length / 2);
-
-      wrapper.flip();
+      wrapper.writeBytes(bytes, 0, bytes.length / 2);
 
       byte[] b = new byte[bytes.length / 2];
-      wrapper.getBytes(b, 0, b.length);
+      wrapper.readBytes(b, 0, b.length);
       assertEqualsByteArrays(b.length, bytes, b);
    }
 
    public void testPutTrueBoolean() throws Exception
    {
-      wrapper.putBoolean(true);
+      wrapper.writeBoolean(true);
 
-      wrapper.flip();
-
-      assertTrue(wrapper.getBoolean());
+      assertTrue(wrapper.readBoolean());
    }
 
    public void testPutFalseBoolean() throws Exception
    {
-      wrapper.putBoolean(false);
+      wrapper.writeBoolean(false);
 
-      wrapper.flip();
-
-      assertFalse(wrapper.getBoolean());
+      assertFalse(wrapper.readBoolean());
    }
 
    public void testChar() throws Exception
    {
-      wrapper.putChar('a');
+      wrapper.writeChar('a');
 
-      wrapper.flip();
-
-      assertEquals('a', wrapper.getChar());
+      assertEquals('a', wrapper.readChar());
    }
 
    public void testInt() throws Exception
    {
       int i = randomInt();
-      wrapper.putInt(i);
+      wrapper.writeInt(i);
 
-      wrapper.flip();
-
-      assertEquals(i, wrapper.getInt());
+      assertEquals(i, wrapper.readInt());
    }
 
    public void testIntAtPosition() throws Exception
@@ -217,60 +196,46 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
       int firstInt = randomInt();
       int secondInt = randomInt();
 
-      wrapper.putInt(secondInt);
-      wrapper.putInt(secondInt);
+      wrapper.writeInt(secondInt);
+      wrapper.writeInt(secondInt);
       // rewrite firstInt at the beginning
-      wrapper.putInt(0, firstInt);
+      wrapper.setInt(0, firstInt);
 
-      wrapper.flip();
-
-      assertEquals(firstInt, wrapper.getInt());
-      assertEquals(secondInt, wrapper.getInt());
+      assertEquals(firstInt, wrapper.readInt());
+      assertEquals(secondInt, wrapper.readInt());
    }
 
    public void testLong() throws Exception
    {
       long l = randomLong();
-      wrapper.putLong(l);
+      wrapper.writeLong(l);
 
-      wrapper.flip();
-
-      assertEquals(l, wrapper.getLong());
+      assertEquals(l, wrapper.readLong());
    }
 
    public void testUnsignedShort() throws Exception
    {
       short s1 = Short.MAX_VALUE;
 
-      wrapper.putShort(s1);
+      wrapper.writeShort(s1);
 
-      wrapper.flip();
-
-      int s2 = wrapper.getUnsignedShort();
+      int s2 = wrapper.readUnsignedShort();
 
       assertEquals(s1, s2);
 
-      wrapper.rewind();
-
       s1 = Short.MIN_VALUE;
 
-      wrapper.putShort(s1);
+      wrapper.writeShort(s1);
 
-      wrapper.flip();
-
-      s2 = wrapper.getUnsignedShort();
+      s2 = wrapper.readUnsignedShort();
 
       assertEquals(s1 * -1, s2);
 
-      wrapper.rewind();
-
       s1 = -1;
 
-      wrapper.putShort(s1);
+      wrapper.writeShort(s1);
 
-      wrapper.flip();
-
-      s2 = wrapper.getUnsignedShort();
+      s2 = wrapper.readUnsignedShort();
 
       // / The max of an unsigned short
       // (http://en.wikipedia.org/wiki/Unsigned_short)
@@ -279,49 +244,39 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
 
    public void testShort() throws Exception
    {
-      wrapper.putShort((short) 1);
+      wrapper.writeShort((short) 1);
 
-      wrapper.flip();
-
-      assertEquals((short)1, wrapper.getShort());
+      assertEquals((short)1, wrapper.readShort());
    }
 
    public void testDouble() throws Exception
    {
       double d = randomDouble();
-      wrapper.putDouble(d);
+      wrapper.writeDouble(d);
 
-      wrapper.flip();
-
-      assertEquals(d, wrapper.getDouble());
+      assertEquals(d, wrapper.readDouble());
    }
 
    public void testFloat() throws Exception
    {
       float f = randomFloat();
-      wrapper.putFloat(f);
+      wrapper.writeFloat(f);
 
-      wrapper.flip();
-
-      assertEquals(f, wrapper.getFloat());
+      assertEquals(f, wrapper.readFloat());
    }
 
    public void testUTF() throws Exception
    {
       String str = randomString();
-      wrapper.putUTF(str);
+      wrapper.writeUTF(str);
 
-      wrapper.flip();
-
-      assertEquals(str, wrapper.getUTF());
+      assertEquals(str, wrapper.readUTF());
    }
 
    public void testArray() throws Exception
    {
       byte[] bytes = randomBytes(128);
-      wrapper.putBytes(bytes);
-
-      wrapper.flip();
+      wrapper.writeBytes(bytes);
 
       byte[] array = wrapper.array();
       assertEquals(wrapper.capacity(), array.length);
@@ -331,72 +286,39 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
    public void testRewind() throws Exception
    {
       int i = randomInt();
-      wrapper.putInt(i);
+      wrapper.writeInt(i);
 
-      wrapper.flip();
+      assertEquals(i, wrapper.readInt());
 
-      assertEquals(i, wrapper.getInt());
-
-      wrapper.rewind();
-
-      assertEquals(i, wrapper.getInt());
+      wrapper.resetReaderIndex();
+      
+      assertEquals(i, wrapper.readInt());
    }
 
    public void testRemaining() throws Exception
    {
       int capacity = wrapper.capacity();
-      assertEquals(capacity, wrapper.remaining());
 
       // fill 1/3 of the buffer
       int fill = capacity / 3;
       byte[] bytes = randomBytes(fill);
-      wrapper.putBytes(bytes);
+      wrapper.writeBytes(bytes);
 
       // check the remaining is 2/3
-      assertEquals(capacity - fill, wrapper.remaining());
+      assertEquals(capacity - fill, wrapper.writableBytes());
    }
 
    public void testPosition() throws Exception
    {
-      assertEquals(0, wrapper.position());
+      assertEquals(0, wrapper.writerIndex());
 
       byte[] bytes = randomBytes(128);
-      wrapper.putBytes(bytes);
+      wrapper.writeBytes(bytes);
 
-      assertEquals(bytes.length, wrapper.position());
+      assertEquals(bytes.length, wrapper.writerIndex());
 
-      wrapper.position(0);
-      assertEquals(0, wrapper.position());
-   }
-
-   public void testLimit() throws Exception
-   {
-      assertEquals(wrapper.capacity(), wrapper.limit());
-
-      byte[] bytes = randomBytes(128);
-      wrapper.putBytes(bytes);
-
-      assertTrue(wrapper.limit() >= bytes.length);
-
-      wrapper.limit(128);
-      assertEquals(128, wrapper.limit());
-   }
-
-   public void testSlice() throws Exception
-   {
-      byte[] bytes = randomBytes(128);
-      wrapper.putBytes(bytes);
-
-      wrapper.position(0);
-      wrapper.limit(128);
-
-      MessagingBuffer slicedBuffer = wrapper.slice();
-      assertEquals(128, slicedBuffer.capacity());
-
-      byte[] slicedBytes = new byte[128];
-      slicedBuffer.getBytes(slicedBytes);
-
-      assertEqualsByteArrays(bytes, slicedBytes);
+      wrapper.writerIndex(0);
+      assertEquals(0, wrapper.writerIndex());
    }
 
    // Package protected ---------------------------------------------
@@ -407,20 +329,16 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
 
    private String putAndGetNullableString(String nullableString) throws Exception
    {
-      wrapper.putNullableString(nullableString);
+      wrapper.writeNullableString(nullableString);
 
-      wrapper.flip();
-
-      return wrapper.getNullableString();
+      return wrapper.readNullableString();
    }
 
    private SimpleString putAndGetNullableSimpleString(SimpleString nullableSimpleString) throws Exception
    {
-      wrapper.putNullableSimpleString(nullableSimpleString);
+      wrapper.writeNullableSimpleString(nullableSimpleString);
 
-      wrapper.flip();
-
-      return wrapper.getNullableSimpleString();
+      return wrapper.readNullableSimpleString();
    }
 
    // Inner classes -------------------------------------------------

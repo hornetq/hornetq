@@ -26,6 +26,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
@@ -33,12 +34,11 @@ import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -124,7 +124,7 @@ public class PagingManagerIntegrationTest extends UnitTestCase
                                                 0,
                                                 System.currentTimeMillis(),
                                                 (byte)0,
-                                                new ByteBufferWrapper(buffer));
+                                                ChannelBuffers.wrappedBuffer(new byte[1024]));
 
       msg.setMessageID(messageId);
 

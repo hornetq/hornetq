@@ -51,13 +51,13 @@ public class SSLClient
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
          ClientMessage message = clientSession.createClientMessage(false);
-         message.getBody().putString("Hello!");
+         message.getBody().writeString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);
          clientSession.start();
          ClientMessage msg = clientConsumer.receive(5000);
          msg.acknowledge();
-         System.out.println("msg.getPayload() = " + msg.getBody().getString());
+         System.out.println("msg.getPayload() = " + msg.getBody().readString());
       }
       catch(Exception e)
       {

@@ -192,7 +192,7 @@ public class ManagementClient
    {
       ClientProducer clientProducer = clientSession.createProducer(queue);
       ClientMessage message = clientSession.createClientMessage(false);
-      message.getBody().putString("Hello, World!");
+      message.getBody().writeString("Hello, World!");
       clientProducer.send(message);
       clientProducer.send(message);
       clientProducer.send(message);

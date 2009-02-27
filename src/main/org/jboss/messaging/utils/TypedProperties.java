@@ -191,7 +191,7 @@ public class TypedProperties
 
    public synchronized void decode(final MessagingBuffer buffer)
    {
-      byte b = buffer.getByte();
+      byte b = buffer.readByte();
 
       if (b == NULL)
       {
@@ -199,19 +199,19 @@ public class TypedProperties
       }
       else
       {
-         int numHeaders = buffer.getInt();
+         int numHeaders = buffer.readInt();
 
          properties = new HashMap<SimpleString, PropertyValue>(numHeaders);
          size = 0;
 
          for (int i = 0; i < numHeaders; i++)
          {
-            int len = buffer.getInt();
+            int len = buffer.readInt();
             byte[] data = new byte[len];
-            buffer.getBytes(data);
+            buffer.readBytes(data);
             SimpleString key = new SimpleString(data);
 
-            byte type = buffer.getByte();
+            byte type = buffer.readByte();
 
             PropertyValue val;
 
@@ -296,20 +296,20 @@ public class TypedProperties
    {
       if (properties == null)
       {
-         buffer.putByte(NULL);
+         buffer.writeByte(NULL);
       }
       else
       {
-         buffer.putByte(NOT_NULL);
+         buffer.writeByte(NOT_NULL);
 
-         buffer.putInt(properties.size());
+         buffer.writeInt(properties.size());
 
          for (Map.Entry<SimpleString, PropertyValue> entry : properties.entrySet())
          {
             SimpleString s = entry.getKey();
             byte[] data = s.getData();
-            buffer.putInt(data.length);
-            buffer.putBytes(data);
+            buffer.writeInt(data.length);
+            buffer.writeBytes(data);
 
             entry.getValue().write(buffer);
          }
@@ -424,7 +424,7 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(NULL);
+         buffer.writeByte(NULL);
       }
 
       public int encodeSize()
@@ -445,7 +445,7 @@ public class TypedProperties
 
       public BooleanValue(final MessagingBuffer buffer)
       {
-         val = buffer.getBoolean();
+         val = buffer.readBoolean();
       }
 
       public Object getValue()
@@ -455,8 +455,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(BOOLEAN);
-         buffer.putBoolean(val);
+         buffer.writeByte(BOOLEAN);
+         buffer.writeBoolean(val);
       }
 
       public int encodeSize()
@@ -477,7 +477,7 @@ public class TypedProperties
 
       public ByteValue(final MessagingBuffer buffer)
       {
-         val = buffer.getByte();
+         val = buffer.readByte();
       }
 
       public Object getValue()
@@ -487,8 +487,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(BYTE);
-         buffer.putByte(val);
+         buffer.writeByte(BYTE);
+         buffer.writeByte(val);
       }
 
       public int encodeSize()
@@ -508,9 +508,9 @@ public class TypedProperties
 
       public BytesValue(final MessagingBuffer buffer)
       {
-         int len = buffer.getInt();
+         int len = buffer.readInt();
          val = new byte[len];
-         buffer.getBytes(val);
+         buffer.readBytes(val);
       }
 
       public Object getValue()
@@ -520,9 +520,9 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(BYTES);
-         buffer.putInt(val.length);
-         buffer.putBytes(val);
+         buffer.writeByte(BYTES);
+         buffer.writeInt(val.length);
+         buffer.writeBytes(val);
       }
 
       public int encodeSize()
@@ -543,7 +543,7 @@ public class TypedProperties
 
       public ShortValue(final MessagingBuffer buffer)
       {
-         val = buffer.getShort();
+         val = buffer.readShort();
       }
 
       public Object getValue()
@@ -553,8 +553,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(SHORT);
-         buffer.putShort(val);
+         buffer.writeByte(SHORT);
+         buffer.writeShort(val);
       }
 
       public int encodeSize()
@@ -574,7 +574,7 @@ public class TypedProperties
 
       public IntValue(final MessagingBuffer buffer)
       {
-         val = buffer.getInt();
+         val = buffer.readInt();
       }
 
       public Object getValue()
@@ -584,8 +584,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(INT);
-         buffer.putInt(val);
+         buffer.writeByte(INT);
+         buffer.writeInt(val);
       }
 
       public int encodeSize()
@@ -605,7 +605,7 @@ public class TypedProperties
 
       public LongValue(final MessagingBuffer buffer)
       {
-         val = buffer.getLong();
+         val = buffer.readLong();
       }
 
       public Object getValue()
@@ -615,8 +615,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(LONG);
-         buffer.putLong(val);
+         buffer.writeByte(LONG);
+         buffer.writeLong(val);
       }
 
       public int encodeSize()
@@ -636,7 +636,7 @@ public class TypedProperties
 
       public FloatValue(final MessagingBuffer buffer)
       {
-         val = buffer.getFloat();
+         val = buffer.readFloat();
       }
 
       public Object getValue()
@@ -646,8 +646,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(FLOAT);
-         buffer.putFloat(val);
+         buffer.writeByte(FLOAT);
+         buffer.writeFloat(val);
       }
 
       public int encodeSize()
@@ -668,7 +668,7 @@ public class TypedProperties
 
       public DoubleValue(final MessagingBuffer buffer)
       {
-         val = buffer.getDouble();
+         val = buffer.readDouble();
       }
 
       public Object getValue()
@@ -678,8 +678,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(DOUBLE);
-         buffer.putDouble(val);
+         buffer.writeByte(DOUBLE);
+         buffer.writeDouble(val);
       }
 
       public int encodeSize()
@@ -699,7 +699,7 @@ public class TypedProperties
 
       public CharValue(final MessagingBuffer buffer)
       {
-         val = buffer.getChar();
+         val = buffer.readChar();
       }
 
       public Object getValue()
@@ -709,8 +709,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(CHAR);
-         buffer.putChar(val);
+         buffer.writeByte(CHAR);
+         buffer.writeChar(val);
       }
 
       public int encodeSize()
@@ -730,7 +730,7 @@ public class TypedProperties
 
       public StringValue(final MessagingBuffer buffer)
       {
-         val = buffer.getSimpleString();
+         val = buffer.readSimpleString();
       }
 
       public Object getValue()
@@ -740,8 +740,8 @@ public class TypedProperties
 
       public void write(final MessagingBuffer buffer)
       {
-         buffer.putByte(STRING);
-         buffer.putSimpleString(val);
+         buffer.writeByte(STRING);
+         buffer.writeSimpleString(val);
       }
 
       public int encodeSize()

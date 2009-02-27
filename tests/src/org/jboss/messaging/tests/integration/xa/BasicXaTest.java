@@ -140,16 +140,16 @@ public class BasicXaTest extends ServiceTestBase
       ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m1");
+      assertEquals(m.getBody().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
    }
 
    public void testReceivePrepareDoesntRollbackOnClose() throws Exception
@@ -174,19 +174,19 @@ public class BasicXaTest extends ServiceTestBase
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m1");
+      assertEquals(m.getBody().readString(), "m1");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m2");
+      assertEquals(m.getBody().readString(), "m2");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m3");
+      assertEquals(m.getBody().readString(), "m3");
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().getString(), "m4");
+      assertEquals(m.getBody().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
 

@@ -63,13 +63,13 @@ public class SimpleExample
          clientSession.createQueue(atestq, atestq, null, false, true);
          ClientProducer clientProducer = clientSession.createProducer(atestq);
          ClientMessage message = clientSession.createClientMessage(false);
-         message.getBody().putString("Hello!");
+         message.getBody().writeString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
          clientSession.start();
          ClientMessage msg = clientConsumer.receive(5000);
          msg.acknowledge();
-         System.out.println("msg.getPayload() = " + msg.getBody().getString());
+         System.out.println("msg.getPayload() = " + msg.getBody().readString());
       }
       catch (Exception e)
       {

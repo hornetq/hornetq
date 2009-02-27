@@ -57,16 +57,16 @@ public class SimpleTransformer implements Transformer
       //Change the body
       MessagingBuffer buffer = message.getBody();
       
-      String str = buffer.getString();
+      String str = buffer.readString();
       
       if (!str.equals("doo be doo be doo be doo"))
       {
          throw new IllegalStateException("Wrong body!!");
       }
-        
-      buffer.flip();
       
-      buffer.putString("dee be dee be dee be dee");
+      buffer.clear();
+      
+      buffer.writeString("dee be dee be dee be dee");
       
       return message;
    }

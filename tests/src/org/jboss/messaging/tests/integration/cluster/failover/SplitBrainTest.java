@@ -112,8 +112,7 @@ public class SplitBrainTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), sendCount++);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       
@@ -143,7 +142,7 @@ public class SplitBrainTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
          
          int count = (Integer)message.getProperty(new SimpleString("count"));
          
@@ -178,8 +177,7 @@ public class SplitBrainTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i + numMessages);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       
@@ -191,7 +189,7 @@ public class SplitBrainTest extends UnitTestCase
          
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
          
          int count = (Integer)message.getProperty(new SimpleString("count"));
          

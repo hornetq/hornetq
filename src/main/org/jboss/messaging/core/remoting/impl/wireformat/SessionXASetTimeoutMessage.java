@@ -64,12 +64,12 @@ public class SessionXASetTimeoutMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(timeoutSeconds);
+      buffer.writeInt(timeoutSeconds);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      timeoutSeconds = buffer.getInt();
+      timeoutSeconds = buffer.readInt();
    }
    
    public boolean equals(Object other)

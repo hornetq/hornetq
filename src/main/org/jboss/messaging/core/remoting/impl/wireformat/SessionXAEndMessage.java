@@ -75,13 +75,13 @@ public class SessionXAEndMessage extends PacketImpl
    public void encodeBody(final MessagingBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
-      buffer.putBoolean(failed);
+      buffer.writeBoolean(failed);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
-      failed = buffer.getBoolean();
+      failed = buffer.readBoolean();
    }
 
    @Override

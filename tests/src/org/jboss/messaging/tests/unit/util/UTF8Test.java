@@ -28,10 +28,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
-import org.jboss.messaging.core.remoting.impl.ExpandingMessagingBuffer;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.DataConstants;
@@ -52,7 +50,7 @@ public class UTF8Test extends UnitTestCase
 
    public void testValidateUTF() throws Exception
    {
-      ChannelBufferWrapper buffer = new ChannelBufferWrapper(10 * 1024);
+      MessagingBuffer buffer = ChannelBuffers.buffer(60 * 1024); 
 
       byte[] bytes = new byte[20000];
 
@@ -62,8 +60,6 @@ public class UTF8Test extends UnitTestCase
       String str = new String(bytes);
 
       UTF8Util.saveUTF(buffer, str);
-
-      buffer.rewind();
 
       String newStr = UTF8Util.readUTF(buffer);
 
@@ -84,11 +80,11 @@ public class UTF8Test extends UnitTestCase
          String str = new String(bytes);
          
          // The maximum size the encoded UTF string would reach is str.length * 3 (look at the UTF8 implementation)
-         testValidateUTFOnDataInputStream(str, new ByteBufferWrapper(ByteBuffer.allocate(str.length() * 3 + DataConstants.SIZE_SHORT)));
+         testValidateUTFOnDataInputStream(str, ChannelBuffers.wrappedBuffer(ByteBuffer.allocate(str.length() * 3 + DataConstants.SIZE_SHORT))); 
 
-         testValidateUTFOnDataInputStream(str, new ExpandingMessagingBuffer(100));
+         testValidateUTFOnDataInputStream(str, ChannelBuffers.dynamicBuffer(100));
 
-         testValidateUTFOnDataInputStream(str, new ChannelBufferWrapper(100 * 1024));
+         testValidateUTFOnDataInputStream(str, ChannelBuffers.buffer(100 * 1024));
       }
    }
 
@@ -107,12 +103,9 @@ public class UTF8Test extends UnitTestCase
 
       outData.writeUTF(str);
 
-      ByteBuffer buffer = ByteBuffer.wrap(byteOut.toByteArray());
-      wrap = new ByteBufferWrapper(buffer);
+      MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(byteOut.toByteArray());
 
-      wrap.rewind();
-
-      newStr = UTF8Util.readUTF(wrap);
+      newStr = UTF8Util.readUTF(buffer);
 
       assertEquals(str, newStr);
    }
@@ -129,7 +122,7 @@ public class UTF8Test extends UnitTestCase
 
       String str = new String(chars);
 
-      ChannelBufferWrapper buffer = new ChannelBufferWrapper(0xffff + 4);
+      MessagingBuffer buffer = ChannelBuffers.buffer(0xffff + 4);
 
       try
       {
@@ -140,7 +133,7 @@ public class UTF8Test extends UnitTestCase
       {
       }
 
-      assertEquals(0, buffer.position());
+      assertEquals("A buffer was supposed to be untouched since the string was too big", 0, buffer.writerIndex());
 
       chars = new char[25000];
 
@@ -160,7 +153,7 @@ public class UTF8Test extends UnitTestCase
       {
       }
 
-      assertEquals(0, buffer.position());
+      assertEquals("A buffer was supposed to be untouched since the string was too big", 0, buffer.writerIndex());
 
       // Testing a string right on the limit
       chars = new char[0xffff];
@@ -174,9 +167,7 @@ public class UTF8Test extends UnitTestCase
 
       UTF8Util.saveUTF(buffer, str);
 
-      assertEquals(0xffff + DataConstants.SIZE_SHORT, buffer.position());
-
-      buffer.rewind();
+      assertEquals(0xffff + DataConstants.SIZE_SHORT, buffer.writerIndex());
 
       String newStr = UTF8Util.readUTF(buffer);
 

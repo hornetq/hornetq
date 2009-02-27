@@ -77,7 +77,7 @@ public class ExpiryAddressTest extends UnitTestCase
       clientConsumer = clientSession.createConsumer(eq);
       m = clientConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(m.getBody().getString(), "heyho!");
+      assertEquals(m.getBody().readString(), "heyho!");
       m.acknowledge();
       
       // PageSize should be the same as when it started
@@ -125,7 +125,7 @@ public class ExpiryAddressTest extends UnitTestCase
       log.info("acking");
       m.acknowledge();
       
-      assertEquals(m.getBody().getString(), "heyho!");
+      assertEquals(m.getBody().readString(), "heyho!");
       
       clientConsumer.close();
       
@@ -138,7 +138,7 @@ public class ExpiryAddressTest extends UnitTestCase
       log.info("acking");
       m.acknowledge();
       
-      assertEquals(m.getBody().getString(), "heyho!");
+      assertEquals(m.getBody().readString(), "heyho!");
       
       clientConsumer.close();
       
@@ -205,7 +205,7 @@ public class ExpiryAddressTest extends UnitTestCase
 
          assertNotNull(tm);
 
-         String text = tm.getBody().getString();
+         String text = tm.getBody().readString();
          assertEquals("Message:" + i, text);
 
          // Check the headers

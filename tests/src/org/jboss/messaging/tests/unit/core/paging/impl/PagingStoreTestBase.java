@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +32,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.easymock.classextension.EasyMock;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.buffers.HeapChannelBuffer;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
@@ -45,7 +46,7 @@ import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
@@ -240,9 +241,8 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
          for (PagedMessage msg : msgs)
          {
-            msg.getMessage(null).getBody().rewind();
-            long id = msg.getMessage(null).getBody().getLong();
-            msg.getMessage(null).getBody().rewind();
+            long id = msg.getMessage(null).getBody().readLong();
+            msg.getMessage(null).getBody().resetReaderIndex();
 
             PagedMessageImpl msgWritten = buffers.remove(id);
             buffers2.put(id, msg);
@@ -313,8 +313,7 @@ public abstract class PagingStoreTestBase extends UnitTestCase
          for (PagedMessage msg : msgs)
          {
 
-            msg.getMessage(null).getBody().rewind();
-            long id = msg.getMessage(null).getBody().getLong();
+            long id = msg.getMessage(null).getBody().readLong();
             PagedMessage msgWritten = buffers2.remove(id);
             assertNotNull(msgWritten);
             assertEquals(msg.getMessage(null).getDestination(), msgWritten.getMessage(null).getDestination());
@@ -329,8 +328,8 @@ public abstract class PagingStoreTestBase extends UnitTestCase
       lastPage.close();
       assertEquals(1, lastMessages.size());
 
-      lastMessages.get(0).getMessage(null).getBody().rewind();
-      assertEquals(lastMessages.get(0).getMessage(null).getBody().getLong(), lastMessageId);
+      lastMessages.get(0).getMessage(null).getBody().resetReaderIndex();
+      assertEquals(lastMessages.get(0).getMessage(null).getBody().readLong(), lastMessageId);
       assertEqualsByteArrays(lastMessages.get(0).getMessage(null).getBody().array(), lastMsg.getMessage(null)
                                                                                             .getBody()
                                                                                             .array());
@@ -341,28 +340,28 @@ public abstract class PagingStoreTestBase extends UnitTestCase
 
    }
 
-   protected PagedMessageImpl createMessage(final SimpleString destination, final ByteBuffer buffer)
+   protected PagedMessageImpl createMessage(final SimpleString destination, final MessagingBuffer buffer)
    {
       ServerMessage msg = new ServerMessageImpl((byte)1,
                                                 true,
                                                 0,
                                                 System.currentTimeMillis(),
                                                 (byte)0,
-                                                new ByteBufferWrapper(buffer));
+                                                buffer);
 
       msg.setDestination(destination);
       return new PagedMessageImpl(msg);
    }
 
-   protected ByteBuffer createRandomBuffer(final long id, final int size)
+   protected MessagingBuffer createRandomBuffer(final long id, final int size)
    {
-      ByteBuffer buffer = ByteBuffer.allocate(size + 8);
+      MessagingBuffer buffer = ChannelBuffers.buffer(size + 8);
 
-      buffer.putLong(id);
+      buffer.writeLong(id);
 
-      for (int j = 8; j < buffer.limit(); j++)
+      for (int j = 8; j < buffer.capacity(); j++)
       {
-         buffer.put(RandomUtil.randomByte());
+         buffer.writeByte(RandomUtil.randomByte());
       }
       return buffer;
    }

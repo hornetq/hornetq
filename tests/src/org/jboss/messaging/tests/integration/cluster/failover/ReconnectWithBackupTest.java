@@ -120,8 +120,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
                                                                 System.currentTimeMillis(),
                                                                 (byte)1);
             message.putIntProperty(new SimpleString("count"), i);
-            message.getBody().putString("aardvarks");
-            message.getBody().flip();
+            message.getBody().writeString("aardvarks");
             producer.send(message);
          }
          ClientConsumer consumer = session.createConsumer(ADDRESS);
@@ -138,7 +137,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
             assertNotNull(message);
 
-            assertEquals("aardvarks", message.getBody().getString());
+            assertEquals("aardvarks", message.getBody().readString());
 
             assertEquals(i, message.getProperty(new SimpleString("count")));
 
@@ -193,8 +192,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       ClientConsumer consumer = session.createConsumer(ADDRESS);
@@ -211,7 +209,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 
@@ -234,8 +232,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
          {
             message = session.createClientMessage(JBossTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
             message.putIntProperty(new SimpleString("count"), i);
-            message.getBody().putString("aardvarks");
-            message.getBody().flip();
+            message.getBody().writeString("aardvarks");
             producer.send(message);
          }
 
@@ -253,7 +250,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
             assertNotNull(message);
 
-            assertEquals("aardvarks", message.getBody().getString());
+            assertEquals("aardvarks", message.getBody().readString());
 
             assertEquals(i, message.getProperty(new SimpleString("count")));
 

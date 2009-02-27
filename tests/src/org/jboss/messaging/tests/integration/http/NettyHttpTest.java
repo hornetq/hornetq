@@ -69,14 +69,12 @@ public class NettyHttpTest extends UnitTestCase
       for (int i = 0; i < numPackets; i++)
       {
          MessagingBuffer buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          conn.write(buff);
          buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          acceptorListener.connection.write(buff);
       }
       acceptorLatch.await(10, TimeUnit.SECONDS);
@@ -121,17 +119,15 @@ public class NettyHttpTest extends UnitTestCase
       for (int i = 0; i < numPackets; i++)
       {
          MessagingBuffer buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          conn.write(buff);
       }
       for (int i = 0; i < numPackets; i++)
       {
          MessagingBuffer buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          acceptorListener.connection.write(buff);
       }
       acceptorLatch.await(10, TimeUnit.SECONDS);
@@ -176,18 +172,16 @@ public class NettyHttpTest extends UnitTestCase
       for (int i = 0; i < numPackets; i++)
       {
          MessagingBuffer buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          acceptorListener.connection.write(buff);
       }
 
       for (int i = 0; i < numPackets; i++)
       {
          MessagingBuffer buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          conn.write(buff);
       }
       acceptorLatch.await(10, TimeUnit.SECONDS);
@@ -232,17 +226,15 @@ public class NettyHttpTest extends UnitTestCase
       for (int i = 0; i < numPackets; i++)
       {
          MessagingBuffer buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          acceptorListener.connection.write(buff);
       }
 
 
       MessagingBuffer buff = conn.createBuffer(8);
-      buff.putInt(4);
-      buff.putInt(0);
-      buff.flip();
+      buff.writeInt(4);
+      buff.writeInt(0);
       conn.write(buff);
 
       acceptorLatch.await(10, TimeUnit.SECONDS);
@@ -288,9 +280,8 @@ public class NettyHttpTest extends UnitTestCase
       for (int i = 0; i < numPackets; i++)
       {
          MessagingBuffer buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          acceptorListener.connection.write(buff);
       }
 
@@ -338,9 +329,8 @@ public class NettyHttpTest extends UnitTestCase
       for (int i = 0; i < numPackets; i++)
       {
          MessagingBuffer buff = conn.createBuffer(8);
-         buff.putInt(4);
-         buff.putInt(i);
-         buff.flip();
+         buff.writeInt(4);
+         buff.writeInt(i);
          conn.write(buff);
       }
       acceptorLatch.await(100, TimeUnit.SECONDS);
@@ -388,7 +378,7 @@ public class NettyHttpTest extends UnitTestCase
 
       public void bufferReceived(Object connectionID, MessagingBuffer buffer)
       {
-         int i = buffer.getInt();
+         int i = buffer.readInt();
          messages.add(i);
          messagesReceieved++;
          latch.countDown();
@@ -414,7 +404,7 @@ public class NettyHttpTest extends UnitTestCase
 
       public void bufferReceived(Object connectionID, MessagingBuffer buffer)
       {
-         int i = buffer.getInt();
+         int i = buffer.readInt();
          messages.add(i);
          messagesReceieved++;
          latch.countDown();

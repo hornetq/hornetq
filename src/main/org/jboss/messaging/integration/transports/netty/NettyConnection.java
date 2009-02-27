@@ -115,7 +115,7 @@ public class NettyConnection implements Connection
 
    public MessagingBuffer createBuffer(int size)
    {
-      return new ChannelBufferWrapper(size);
+      return new ChannelBufferWrapper(org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer(size));
    }
 
    public Object getID()

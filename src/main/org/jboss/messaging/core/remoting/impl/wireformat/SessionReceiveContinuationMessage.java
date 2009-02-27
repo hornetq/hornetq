@@ -92,14 +92,14 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
    public void encodeBody(final MessagingBuffer buffer)
    {
       super.encodeBody(buffer);
-      buffer.putLong(consumerID);
+      buffer.writeLong(consumerID);
    }
 
    @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       super.decodeBody(buffer);
-      consumerID = buffer.getLong();
+      consumerID = buffer.readLong();
    }
 
    // Package protected ---------------------------------------------

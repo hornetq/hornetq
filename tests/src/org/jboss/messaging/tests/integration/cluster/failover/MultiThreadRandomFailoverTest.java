@@ -68,7 +68,6 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
    @Override
    protected void setBody(final ClientMessage message) throws Exception
    {
-      message.getBody().flip();
    }
 
    /* (non-Javadoc)
@@ -77,7 +76,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
    @Override
    protected boolean checkSize(final ClientMessage message)
    {
-      return 0 == message.getBody().limit();
+      return 0 == message.getBody().writerIndex();
    }
 
 }

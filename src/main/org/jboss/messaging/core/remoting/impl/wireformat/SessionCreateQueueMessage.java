@@ -105,20 +105,20 @@ public class SessionCreateQueueMessage extends PacketImpl
     
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putSimpleString(address);
-      buffer.putSimpleString(queueName);
-      buffer.putNullableSimpleString(filterString);
-      buffer.putBoolean(durable);
-      buffer.putBoolean(temporary);
+      buffer.writeSimpleString(address);
+      buffer.writeSimpleString(queueName);
+      buffer.writeNullableSimpleString(filterString);
+      buffer.writeBoolean(durable);
+      buffer.writeBoolean(temporary);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      address = buffer.getSimpleString();
-      queueName = buffer.getSimpleString();
-      filterString = buffer.getNullableSimpleString();
-      durable = buffer.getBoolean();
-      temporary = buffer.getBoolean();
+      address = buffer.readSimpleString();
+      queueName = buffer.readSimpleString();
+      filterString = buffer.readNullableSimpleString();
+      durable = buffer.readBoolean();
+      temporary = buffer.readBoolean();
    }
    
    public boolean equals(Object other)

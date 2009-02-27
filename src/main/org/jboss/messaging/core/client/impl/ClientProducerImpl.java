@@ -24,14 +24,12 @@ package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.utils.SimpleString.toSimpleString;
 
-import java.nio.ByteBuffer;
-
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -250,7 +248,7 @@ public class ClientProducerImpl implements ClientProducerInternal
                                       "Header size (" + headerSize + ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
       }
 
-      MessagingBuffer headerBuffer = new ByteBufferWrapper(ByteBuffer.allocate(headerSize));
+      MessagingBuffer headerBuffer = ChannelBuffers.buffer(headerSize); 
       msg.encodeProperties(headerBuffer);
 
       final int bodySize = msg.getBodySize();
@@ -265,7 +263,7 @@ public class ClientProducerImpl implements ClientProducerInternal
                   
          final int chunkLength = Math.min(bodySize - pos, minLargeMessageSize); 
          
-         final MessagingBuffer bodyBuffer = new ByteBufferWrapper(ByteBuffer.allocate(chunkLength));
+         final MessagingBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength); 
 
          msg.encodeBody(bodyBuffer, pos, chunkLength);
 

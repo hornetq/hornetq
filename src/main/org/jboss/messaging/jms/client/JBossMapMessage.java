@@ -443,6 +443,7 @@ public class JBossMapMessage extends JBossMessage implements MapMessage
    
    public void doBeforeSend() throws Exception
    {
+      message.getBody().clear();
       map.encode(message.getBody());
       
       super.doBeforeSend();

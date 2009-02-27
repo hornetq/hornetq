@@ -114,8 +114,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);         
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);                  
       }
       ClientConsumer consumer1 = session1.createConsumer(ADDRESS);

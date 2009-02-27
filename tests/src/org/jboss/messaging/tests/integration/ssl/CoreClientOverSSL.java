@@ -76,7 +76,7 @@ public class CoreClientOverSSL
 
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString(CoreClientOverSSLTest.MESSAGE_TEXT_FROM_CLIENT);
+         message.getBody().writeString(CoreClientOverSSLTest.MESSAGE_TEXT_FROM_CLIENT);
          producer.send(message);
 
          session.close();

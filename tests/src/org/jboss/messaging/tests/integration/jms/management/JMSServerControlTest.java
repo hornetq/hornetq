@@ -44,8 +44,6 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory;
-import org.jboss.messaging.integration.transports.mina.MinaConnectorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
@@ -103,11 +101,6 @@ public class JMSServerControlTest extends UnitTestCase
       doListClientConnections(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
-   public void testListClientConnectionsForMina() throws Exception
-   {
-      doListClientConnections(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
-   }
-
    public void testCloseConnectionsForAddressForInVM() throws Exception
    {
       doCloseConnectionsForAddress(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
@@ -116,11 +109,6 @@ public class JMSServerControlTest extends UnitTestCase
    public void testCloseConnectionsForAddressForNetty() throws Exception
    {
       doCloseConnectionsForAddress(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
-   }
-
-   public void testCloseConnectionsForAddressForMina() throws Exception
-   {
-      doCloseConnectionsForAddress(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
    }
 
    public void testCloseConnectionsForUnknownAddressForInVM() throws Exception
@@ -133,11 +121,6 @@ public class JMSServerControlTest extends UnitTestCase
       doCloseConnectionsForUnknownAddress(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
-   public void testCloseConnectionsForUnknownAddressForMina() throws Exception
-   {
-      doCloseConnectionsForUnknownAddress(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
-   }
-
    public void testListSessionsForInVM() throws Exception
    {
       doListSessions(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
@@ -148,11 +131,6 @@ public class JMSServerControlTest extends UnitTestCase
       doListSessions(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
 
-   public void testListSessionsForMina() throws Exception
-   {
-      doListSessions(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
-   }
-
    public void testListConnectionIDsForInVM() throws Exception
    {
       doListConnectionIDs(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
@@ -161,11 +139,6 @@ public class JMSServerControlTest extends UnitTestCase
    public void testListConnectionIDsForNetty() throws Exception
    {
       doListConnectionIDs(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
-   }
-
-   public void testListConnectionIDsForMina() throws Exception
-   {
-      doListConnectionIDs(MinaAcceptorFactory.class.getName(), MinaConnectorFactory.class.getName());
    }
 
    public void testCreateConnectionFactoryWithDiscoveryGroup() throws Exception

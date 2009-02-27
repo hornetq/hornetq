@@ -70,14 +70,14 @@ public class MessagingExceptionMessage extends PacketImpl
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(exception.getCode());
-      buffer.putNullableString(exception.getMessage());
+      buffer.writeInt(exception.getCode());
+      buffer.writeNullableString(exception.getMessage());
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
-      int code = buffer.getInt();
-      String msg = buffer.getNullableString();
+      int code = buffer.readInt();
+      String msg = buffer.readNullableString();
       exception = new MessagingException(code, msg);
    }
 

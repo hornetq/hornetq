@@ -991,8 +991,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
                                                        0,
                                                        System.currentTimeMillis(),
                                                        (byte)1);
-      message.getBody().flip();
-
       producer.send(message);
 
       ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
@@ -1029,8 +1027,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
                                                        0,
                                                        System.currentTimeMillis(),
                                                        (byte)1);
-      message.getBody().flip();
-
       producer.send(message);
 
       ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
@@ -1224,8 +1220,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
                                                        0,
                                                        System.currentTimeMillis(),
                                                        (byte)1);
-      message.getBody().flip();
-
       producer.send(message);
 
       sess.start();

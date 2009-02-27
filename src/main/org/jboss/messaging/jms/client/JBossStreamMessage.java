@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.nio.BufferUnderflowException;
-
 import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
@@ -32,7 +30,6 @@ import javax.jms.StreamMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.DataConstants;
 
 /**
@@ -119,20 +116,20 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          
          switch (type)
          {
             case DataConstants.BOOLEAN:
-               return getBody().getBoolean();
+               return getBody().readBoolean();
             case DataConstants.STRING:
-               String s = getBody().getNullableString();
+               String s = getBody().readNullableString();
                return Boolean.valueOf(s);
             default:
                throw new MessageFormatException("Invalid conversion");           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -143,19 +140,19 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          switch (type)
          {
             case DataConstants.BYTE:
-               return getBody().getByte();
+               return getBody().readByte();
             case DataConstants.STRING:
-               String s = getBody().getNullableString();
+               String s = getBody().readNullableString();
                return Byte.parseByte(s);
             default:
                throw new MessageFormatException("Invalid conversion");           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -166,21 +163,21 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          switch (type)
          {
             case DataConstants.BYTE:
-               return getBody().getByte();
+               return getBody().readByte();
             case DataConstants.SHORT:
-               return getBody().getShort();
+               return getBody().readShort();
             case DataConstants.STRING:
-               String s = getBody().getNullableString();
+               String s = getBody().readNullableString();
                return Short.parseShort(s);
             default:
                throw new MessageFormatException("Invalid conversion");           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -191,16 +188,16 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          switch (type)
          {
             case DataConstants.CHAR:
-               return getBody().getChar();
+               return getBody().readChar();
             default:
                throw new MessageFormatException("Invalid conversion");           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -211,23 +208,23 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          switch (type)
          {
             case DataConstants.BYTE:
-               return getBody().getByte();
+               return getBody().readByte();
             case DataConstants.SHORT:
-               return getBody().getShort();
+               return getBody().readShort();
             case DataConstants.INT:
-               return getBody().getInt();
+               return getBody().readInt();
             case DataConstants.STRING:
-               String s = getBody().getNullableString();
+               String s = getBody().readNullableString();
                return Integer.parseInt(s);
             default:
                throw new MessageFormatException("Invalid conversion");           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -238,25 +235,25 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          switch (type)
          {
             case DataConstants.BYTE:
-               return getBody().getByte();
+               return getBody().readByte();
             case DataConstants.SHORT:
-               return getBody().getShort();
+               return getBody().readShort();
             case DataConstants.INT:
-               return getBody().getInt();
+               return getBody().readInt();
             case DataConstants.LONG:
-               return getBody().getLong();
+               return getBody().readLong();
             case DataConstants.STRING:
-               String s = getBody().getNullableString();
+               String s = getBody().readNullableString();
                return Long.parseLong(s);
             default:
                throw new MessageFormatException("Invalid conversion");           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -267,19 +264,19 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          switch (type)
          {
             case DataConstants.FLOAT:
-               return getBody().getFloat();
+               return getBody().readFloat();
             case DataConstants.STRING:
-               String s = getBody().getNullableString();
+               String s = getBody().readNullableString();
                return Float.parseFloat(s);
             default:
                throw new MessageFormatException("Invalid conversion");           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -290,21 +287,21 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          switch (type)
          {
             case DataConstants.FLOAT:
-               return getBody().getFloat();
+               return getBody().readFloat();
             case DataConstants.DOUBLE:
-               return getBody().getDouble();
+               return getBody().readDouble();
             case DataConstants.STRING:
-               String s = getBody().getNullableString();
+               String s = getBody().readNullableString();
                return Double.parseDouble(s);
             default:
                throw new MessageFormatException("Invalid conversion: " + type);           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -315,32 +312,32 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       checkRead();
       try
       {
-         byte type = getBody().getByte();
+         byte type = getBody().readByte();
          switch (type)
          {
             case DataConstants.BOOLEAN:
-               return String.valueOf(getBody().getBoolean());
+               return String.valueOf(getBody().readBoolean());
             case DataConstants.BYTE:
-               return String.valueOf(getBody().getByte());
+               return String.valueOf(getBody().readByte());
             case DataConstants.SHORT:
-               return String.valueOf(getBody().getShort());
+               return String.valueOf(getBody().readShort());
             case DataConstants.CHAR:
-               return String.valueOf(getBody().getChar());
+               return String.valueOf(getBody().readChar());
             case DataConstants.INT:
-               return String.valueOf(getBody().getInt());
+               return String.valueOf(getBody().readInt());
             case DataConstants.LONG:
-               return String.valueOf(getBody().getLong());
+               return String.valueOf(getBody().readLong());
             case DataConstants.FLOAT:
-               return String.valueOf(getBody().getFloat());
+               return String.valueOf(getBody().readFloat());
             case DataConstants.DOUBLE:
-               return String.valueOf(getBody().getDouble());
+               return String.valueOf(getBody().readDouble());
             case DataConstants.STRING:
-               return getBody().getNullableString();
+               return getBody().readNullableString();
             default:
                throw new MessageFormatException("Invalid conversion");           
          }
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -360,15 +357,15 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          }
          else if (len == 0)
          {
-            byte type = getBody().getByte();
+            byte type = getBody().readByte();
             if (type != DataConstants.BYTES)
             {
                throw new MessageFormatException("Invalid conversion"); 
             }
-            len = getBody().getInt();       
+            len = getBody().readInt();       
          }     
          int read = Math.min(value.length, len);
-         getBody().getBytes(value, 0, read);
+         getBody().readBytes(value, 0, read);
          len -= read;
          if (len == 0)
          {
@@ -376,7 +373,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
          }
          return read;      
       }
-      catch (BufferUnderflowException e)
+      catch (IndexOutOfBoundsException e)
       {
          throw new MessageEOFException("");
       }
@@ -385,31 +382,31 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public Object readObject() throws JMSException
    {
       checkRead();
-      byte type = getBody().getByte();
+      byte type = getBody().readByte();
       switch (type)
       {
          case DataConstants.BOOLEAN:
-            return getBody().getBoolean();
+            return getBody().readBoolean();
          case DataConstants.BYTE:
-            return getBody().getByte();
+            return getBody().readByte();
          case DataConstants.SHORT:
-            return getBody().getShort();
+            return getBody().readShort();
          case DataConstants.CHAR:
-            return getBody().getChar();
+            return getBody().readChar();
          case DataConstants.INT:
-            return getBody().getInt();
+            return getBody().readInt();
          case DataConstants.LONG:
-            return getBody().getLong();
+            return getBody().readLong();
          case DataConstants.FLOAT:
-            return getBody().getFloat();
+            return getBody().readFloat();
          case DataConstants.DOUBLE:
-            return getBody().getDouble();
+            return getBody().readDouble();
          case DataConstants.STRING:
-            return getBody().getNullableString();         
+            return getBody().readNullableString();         
          case DataConstants.BYTES:
-            int len = getBody().getInt();
+            int len = getBody().readInt();
             byte[] bytes = new byte[len];
-            getBody().getBytes(bytes);
+            getBody().readBytes(bytes);
             return bytes;
          default:
             throw new MessageFormatException("Invalid conversion");           
@@ -419,81 +416,81 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public void writeBoolean(final boolean value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.BOOLEAN);
-      getBody().putBoolean(value);
+      getBody().writeByte(DataConstants.BOOLEAN);
+      getBody().writeBoolean(value);
    }
 
    public void writeByte(final byte value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.BYTE);
-      getBody().putByte(value);
+      getBody().writeByte(DataConstants.BYTE);
+      getBody().writeByte(value);
    }
 
    public void writeShort(final short value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.SHORT);
-      getBody().putShort(value);
+      getBody().writeByte(DataConstants.SHORT);
+      getBody().writeShort(value);
    }
 
    public void writeChar(final char value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.CHAR);
-      getBody().putChar(value);
+      getBody().writeByte(DataConstants.CHAR);
+      getBody().writeChar(value);
    }
 
    public void writeInt(final int value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.INT);
-      getBody().putInt(value);
+      getBody().writeByte(DataConstants.INT);
+      getBody().writeInt(value);
    }
 
    public void writeLong(final long value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.LONG);
-      getBody().putLong(value);
+      getBody().writeByte(DataConstants.LONG);
+      getBody().writeLong(value);
    }
 
    public void writeFloat(final float value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.FLOAT);
-      getBody().putFloat(value);
+      getBody().writeByte(DataConstants.FLOAT);
+      getBody().writeFloat(value);
    }
 
    public void writeDouble(final double value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.DOUBLE);
-      getBody().putDouble(value);
+      getBody().writeByte(DataConstants.DOUBLE);
+      getBody().writeDouble(value);
    }
    
    public void writeString(final String value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.STRING);
-      getBody().putNullableString(value);
+      getBody().writeByte(DataConstants.STRING);
+      getBody().writeNullableString(value);
    }
 
    public void writeBytes(final byte[] value) throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.BYTES);
-      getBody().putInt(value.length);
-      getBody().putBytes(value);
+      getBody().writeByte(DataConstants.BYTES);
+      getBody().writeInt(value.length);
+      getBody().writeBytes(value);
    }
 
    public void writeBytes(final byte[] value, final int offset, final int length)
          throws JMSException
    {
       checkWrite();
-      getBody().putByte(DataConstants.BYTES);
-      getBody().putInt(length);
-      getBody().putBytes(value, offset, length);
+      getBody().writeByte(DataConstants.BYTES);
+      getBody().writeInt(length);
+      getBody().writeBytes(value, offset, length);
    }
 
    public void writeObject(final Object value) throws JMSException
@@ -553,13 +550,8 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       if (!readOnly)
       {
          readOnly = true;
-         
-         getBody().flip();
       }
-      else
-      {
-         getBody().rewind();
-      }
+      getBody().resetReaderIndex();
    }
 
    // JBossMessage overrides ----------------------------------------
@@ -567,8 +559,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      MessagingBuffer currentBody = message.getBody();
-      message.setBody(currentBody.createNewBuffer(1024));
+      message.getBody().clear();
    }
    
    public void doBeforeSend() throws Exception

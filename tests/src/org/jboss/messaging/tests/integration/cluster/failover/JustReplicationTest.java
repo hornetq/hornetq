@@ -22,15 +22,14 @@
 
 package org.jboss.messaging.tests.integration.cluster.failover;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -160,13 +159,11 @@ public class JustReplicationTest extends FailoverTestBase
          {
             ClientMessage message = session.createClientMessage(true);
 
-            ByteBuffer buffer = ByteBuffer.allocate(numberOfBytes);
-
-            buffer.putInt(i);
-
-            buffer.rewind();
-
-            message.setBody(new ByteBufferWrapper(buffer));
+            MessagingBuffer buffer = ChannelBuffers.buffer(15000);
+            buffer.setInt(0, i);
+            buffer.writerIndex(buffer.capacity());
+            
+            message.setBody(buffer);
 
             producer.send(message);
 
@@ -186,11 +183,9 @@ public class JustReplicationTest extends FailoverTestBase
 
             MessagingBuffer buffer = message.getBody();
 
-            buffer.rewind();
+            assertEquals(numberOfBytes, buffer.writerIndex());
 
-            assertEquals(numberOfBytes, buffer.limit());
-
-            assertEquals(i, buffer.getInt());
+            assertEquals(i, buffer.readInt());
          }
 
          assertNull(consumer.receive(500));

@@ -111,8 +111,8 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    public synchronized void decode(final MessagingBuffer buffer)
    {
-      transactionID = buffer.getLong();
-      numberOfMessages.set(buffer.getInt());
+      transactionID = buffer.readLong();
+      numberOfMessages.set(buffer.readInt());
       countDownCompleted = null; // if it is being readed, probably it was
       // committed
       committed = true; // Unless it is a incomplete prepare, which is marked by
@@ -121,8 +121,8 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    public synchronized void encode(final MessagingBuffer buffer)
    {
-      buffer.putLong(transactionID);
-      buffer.putInt(numberOfMessages.get());
+      buffer.writeLong(transactionID);
+      buffer.writeInt(numberOfMessages.get());
    }
 
    public synchronized int getEncodeSize()

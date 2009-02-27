@@ -64,12 +64,12 @@ public class PacketsConfirmedMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putInt(commandID);
+      buffer.writeInt(commandID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      commandID = buffer.getInt();
+      commandID = buffer.readInt();
    }
    
    @Override

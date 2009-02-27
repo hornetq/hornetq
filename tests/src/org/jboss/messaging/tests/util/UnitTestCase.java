@@ -40,12 +40,12 @@ import junit.framework.TestCase;
 
 import org.easymock.EasyMock;
 import org.easymock.IArgumentMatcher;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
@@ -480,9 +480,10 @@ public class UnitTestCase extends TestCase
                return false;
             }
 
-            byte[] compareArray = new byte[size];
+            final byte[] compareArray = new byte[size];
 
-            MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.wrap(compareArray));
+            MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(compareArray);
+            buffer.clear();
             encoding.encode(buffer);
 
             for (int i = 0; i < expectedArray.length; i++)
@@ -595,20 +596,11 @@ public class UnitTestCase extends TestCase
                                                     0,
                                                     System.currentTimeMillis(),
                                                     (byte)4,
-                                                    new ByteBufferWrapper(ByteBuffer.allocateDirect(1024)));
+                                                    ChannelBuffers.dynamicBuffer(1024));
 
       message.setMessageID(id);
 
-      byte[] bytes = new byte[1024];
-
-      for (int i = 0; i < 1024; i++)
-      {
-         bytes[i] = (byte)i;
-      }
-
-      // message.setPayload(bytes);
-
-      message.getBody().putString(UUID.randomUUID().toString());
+      message.getBody().writeString(UUID.randomUUID().toString());
       
       message.setDestination(new SimpleString("foo"));
 
@@ -639,8 +631,7 @@ public class UnitTestCase extends TestCase
                                                                 0,
                                                                 System.currentTimeMillis(),
                                                                 (byte)1);
-      message.getBody().putString(s);
-      message.getBody().flip();
+      message.getBody().writeString(s);
       return message;
    }
    // Private -------------------------------------------------------

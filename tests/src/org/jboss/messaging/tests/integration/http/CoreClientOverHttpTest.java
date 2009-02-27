@@ -73,8 +73,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString("CoreClientOverHttpTest");
-         message.getBody().flip();
+         message.getBody().writeString("CoreClientOverHttpTest");
          producer.send(message);
       }
 
@@ -86,7 +85,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("CoreClientOverHttpTest", message2.getBody().getString());
+         assertEquals("CoreClientOverHttpTest", message2.getBody().readString());
 
          message2.acknowledge();
       }

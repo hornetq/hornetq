@@ -26,15 +26,15 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.impl.PageImpl;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -76,7 +76,7 @@ public abstract class PageImplTestBase extends UnitTestCase
 
       SimpleString simpleDestination = new SimpleString("Test");
 
-      ArrayList<ByteBuffer> buffers = addPageElements(simpleDestination, impl, numberOfElements);
+      ArrayList<MessagingBuffer> buffers = addPageElements(simpleDestination, impl, numberOfElements);
 
       impl.sync();
       impl.close();
@@ -123,7 +123,7 @@ public abstract class PageImplTestBase extends UnitTestCase
 
       SimpleString simpleDestination = new SimpleString("Test");
 
-      ArrayList<ByteBuffer> buffers = addPageElements(simpleDestination, impl, numberOfElements);
+      ArrayList<MessagingBuffer> buffers = addPageElements(simpleDestination, impl, numberOfElements);
 
       impl.sync();
 
@@ -188,19 +188,20 @@ public abstract class PageImplTestBase extends UnitTestCase
     * @return
     * @throws Exception
     */
-   protected ArrayList<ByteBuffer> addPageElements(SimpleString simpleDestination, PageImpl page, int numberOfElements) throws Exception
+   protected ArrayList<MessagingBuffer> addPageElements(SimpleString simpleDestination, PageImpl page, int numberOfElements) throws Exception
    {
-      ArrayList<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+      ArrayList<MessagingBuffer> buffers = new ArrayList<MessagingBuffer>();
       
       int initialNumberOfMessages = page.getNumberOfMessages();
 
       for (int i = 0; i < numberOfElements; i++)
       {
-         ByteBuffer buffer = ByteBuffer.allocate(10);
+         MessagingBuffer buffer = ChannelBuffers.buffer(10); 
 
-         for (int j = 0; j < buffer.limit(); j++)
+         for (int j = 0; j < buffer.capacity(); j++)
          {
-            buffer.put(RandomUtil.randomByte());
+            //buffer.writeByte(RandomUtil.randomByte());
+            buffer.writeByte((byte)'b');
          }
 
          buffers.add(buffer);
@@ -210,7 +211,7 @@ public abstract class PageImplTestBase extends UnitTestCase
                                                    0,
                                                    System.currentTimeMillis(),
                                                    (byte)0,
-                                                   new ByteBufferWrapper(buffer));
+                                                   buffer);
 
          msg.setMessageID(i);
 

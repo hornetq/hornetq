@@ -112,8 +112,7 @@ public class ReconnectTest extends UnitTestCase
                                                                 System.currentTimeMillis(),
                                                                 (byte)1);
             message.putIntProperty(new SimpleString("count"), i);
-            message.getBody().putString("aardvarks");
-            message.getBody().flip();
+            message.getBody().writeString("aardvarks");
             producer.send(message);
          }
 
@@ -131,7 +130,7 @@ public class ReconnectTest extends UnitTestCase
    
             assertNotNull(message);
    
-            assertEquals("aardvarks", message.getBody().getString());
+            assertEquals("aardvarks", message.getBody().readString());
    
             assertEquals(i, message.getProperty(new SimpleString("count")));
    
@@ -188,8 +187,7 @@ public class ReconnectTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       log.info("Sent messages");
@@ -228,7 +226,7 @@ public class ReconnectTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 
@@ -278,8 +276,7 @@ public class ReconnectTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       log.info("Sent messages");
@@ -358,8 +355,7 @@ public class ReconnectTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       log.info("Sent messages");
@@ -400,7 +396,7 @@ public class ReconnectTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 
@@ -450,8 +446,7 @@ public class ReconnectTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       log.info("Sent messages");
@@ -491,7 +486,7 @@ public class ReconnectTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 
@@ -545,8 +540,7 @@ public class ReconnectTest extends UnitTestCase
                                                              System.currentTimeMillis(),
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("aardvarks");
          producer.send(message);
       }
       log.info("Sent messages");
@@ -587,7 +581,7 @@ public class ReconnectTest extends UnitTestCase
 
          assertNotNull(message);
 
-         assertEquals("aardvarks", message.getBody().getString());
+         assertEquals("aardvarks", message.getBody().readString());
 
          assertEquals(i, message.getProperty(new SimpleString("count")));
 

@@ -36,6 +36,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -574,7 +575,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                             final long timestamp,
                                             final byte priority)
    {
-      MessagingBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
+      MessagingBuffer body = createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(type, durable, expiration, timestamp, priority, body);
    }
@@ -588,10 +589,19 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public ClientMessage createClientMessage(final boolean durable)
    {
-      MessagingBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
+      MessagingBuffer body = createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(durable, body);
    }
+   
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.client.impl.ClientSessionInternal#createBuffer(int)
+    */
+   public MessagingBuffer createBuffer(int size)
+   {
+      return ChannelBuffers.dynamicBuffer(size); 
+   }
+
 
    public ClientFileMessage createFileMessage(final boolean durable)
    {

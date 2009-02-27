@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.tests.integration.basic;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.buffers.HeapChannelBuffer;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -54,10 +56,13 @@ public class CoreClientTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   public void testCoreClient() throws Exception
+   public void testCoreClientNetty() throws Exception
    {
-      testCoreClient("org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory", "org.jboss.messaging.integration.transports.mina.MinaConnectorFactory");
       testCoreClient("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory", "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
+   }
+   
+   public void testCoreClientInVM() throws Exception
+   {
       testCoreClient("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
    }
    
@@ -89,8 +94,9 @@ public class CoreClientTest extends UnitTestCase
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);         
-         message.getBody().putString("testINVMCoreClient");
-         message.getBody().flip();         
+         message.setBody(ChannelBuffers.buffer(3000));
+         
+         message.getBody().writeString("testINVMCoreClient");
          producer.send(message);
       }
       
@@ -102,7 +108,7 @@ public class CoreClientTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive();
 
-         assertEquals("testINVMCoreClient", message2.getBody().getString());
+         assertEquals("testINVMCoreClient", message2.getBody().readString());
          
          message2.acknowledge();
       }

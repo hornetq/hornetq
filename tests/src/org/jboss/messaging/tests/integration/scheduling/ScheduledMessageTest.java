@@ -48,20 +48,20 @@ import org.jboss.messaging.utils.UUIDGenerator;
 public class ScheduledMessageTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ScheduledMessageTest.class);
-  
-   private SimpleString atestq = new SimpleString("ascheduledtestq");
 
-   private SimpleString atestq2 = new SimpleString("ascheduledtestq2");
+   private final SimpleString atestq = new SimpleString("ascheduledtestq");
+
+   private final SimpleString atestq2 = new SimpleString("ascheduledtestq2");
 
    private Configuration configuration;
-   
+
    private MessagingService messagingService;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
-      super.clearData();
+      clearData();
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
@@ -70,6 +70,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       messagingService.start();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (messagingService != null)
@@ -140,7 +141,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testPagedMessageDeliveredCorrectly() throws Exception
    {
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = createInVMFactory(); 
+      ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -158,7 +159,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       ClientMessage message2 = consumer.receive(10250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m1", message2.getBody().getString());
+      assertEquals("m1", message2.getBody().readString());
 
       message2.acknowledge();
 
@@ -192,8 +193,8 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.start();
       ClientMessage message3 = consumer.receive(1000);
       ClientMessage message2 = consumer2.receive(1000);
-      assertEquals("m1", message3.getBody().getString());
-      assertEquals("m1", message2.getBody().getString());
+      assertEquals("m1", message3.getBody().readString());
+      assertEquals("m1", message2.getBody().readString());
       long time = System.currentTimeMillis();
       // force redelivery
       consumer.close();
@@ -204,8 +205,8 @@ public class ScheduledMessageTest extends ServiceTestBase
       message2 = consumer2.receive(1000);
       time += 5000;
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m1", message3.getBody().getString());
-      assertEquals("m1", message2.getBody().getString());
+      assertEquals("m1", message3.getBody().readString());
+      assertEquals("m1", message2.getBody().readString());
       message2.acknowledge();
       message3.acknowledge();
 
@@ -243,8 +244,8 @@ public class ScheduledMessageTest extends ServiceTestBase
       assertNotNull(message3);
       ClientMessage message2 = consumer2.receive(1000);
       assertNotNull(message2);
-      assertEquals("m1", message3.getBody().getString());
-      assertEquals("m1", message2.getBody().getString());
+      assertEquals("m1", message3.getBody().readString());
+      assertEquals("m1", message2.getBody().readString());
       long time = System.currentTimeMillis();
       // force redelivery
       consumer.close();
@@ -266,8 +267,8 @@ public class ScheduledMessageTest extends ServiceTestBase
       assertNotNull(message2);
       time += 5000;
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m1", message3.getBody().getString());
-      assertEquals("m1", message2.getBody().getString());
+      assertEquals("m1", message3.getBody().readString());
+      assertEquals("m1", message2.getBody().readString());
       message2.acknowledge();
       message3.acknowledge();
 
@@ -280,10 +281,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.close();
    }
 
-   public void testMessageDeliveredCorrectly(boolean recover) throws Exception
+   public void testMessageDeliveredCorrectly(final boolean recover) throws Exception
    {
 
-       // then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true);
@@ -293,8 +294,7 @@ public class ScheduledMessageTest extends ServiceTestBase
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
-      message.getBody().putString("testINVMCoreClient");
-      message.getBody().flip();
+      message.getBody().writeString("testINVMCoreClient");
       message.setDurable(true);
       long time = System.currentTimeMillis();
       time += 10000;
@@ -319,19 +319,19 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       ClientMessage message2 = consumer.receive(11000);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("testINVMCoreClient", message2.getBody().getString());
+      assertEquals("testINVMCoreClient", message2.getBody().readString());
 
       message2.acknowledge();
-      
+
       // Make sure no more messages
-      consumer.close();   
+      consumer.close();
       consumer = session.createConsumer(atestq);
       assertNull(consumer.receive(1000));
-      
+
       session.close();
    }
 
-   public void testScheduledMessagesDeliveredCorrectly(boolean recover) throws Exception
+   public void testScheduledMessagesDeliveredCorrectly(final boolean recover) throws Exception
    {
 
       ClientSessionFactory sessionFactory = createInVMFactory();
@@ -380,38 +380,38 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       ClientMessage message = consumer.receive(11000);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m1", message.getBody().getString());
+      assertEquals("m1", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m2", message.getBody().getString());
+      assertEquals("m2", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m3", message.getBody().getString());
+      assertEquals("m3", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m4", message.getBody().getString());
+      assertEquals("m4", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m5", message.getBody().getString());
+      assertEquals("m5", message.getBody().readString());
       message.acknowledge();
-      
+
       // Make sure no more messages
       consumer.close();
       consumer = session.createConsumer(atestq);
       assertNull(consumer.receive(1000));
-      
+
       session.close();
    }
 
-   public void testScheduledMessagesDeliveredCorrectlyDifferentOrder(boolean recover) throws Exception
+   public void testScheduledMessagesDeliveredCorrectlyDifferentOrder(final boolean recover) throws Exception
    {
 
       ClientSessionFactory sessionFactory = createInVMFactory();
@@ -461,38 +461,38 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       ClientMessage message = consumer.receive(10250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m1", message.getBody().getString());
+      assertEquals("m1", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m3", message.getBody().getString());
+      assertEquals("m3", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m5", message.getBody().getString());
+      assertEquals("m5", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m2", message.getBody().getString());
+      assertEquals("m2", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m4", message.getBody().getString());
+      assertEquals("m4", message.getBody().readString());
       message.acknowledge();
-      
+
       // Make sure no more messages
       consumer.close();
       consumer = session.createConsumer(atestq);
       assertNull(consumer.receive(1000));
-      
+
       session.close();
    }
 
-   public void testScheduledAndNormalMessagesDeliveredCorrectly(boolean recover) throws Exception
+   public void testScheduledAndNormalMessagesDeliveredCorrectly(final boolean recover) throws Exception
    {
 
       ClientSessionFactory sessionFactory = createInVMFactory();
@@ -536,40 +536,39 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.start();
 
       ClientMessage message = consumer.receive(1000);
-      assertEquals("m2", message.getBody().getString());
+      assertEquals("m2", message.getBody().readString());
       message.acknowledge();
       message = consumer.receive(1000);
-      assertEquals("m4", message.getBody().getString());
+      assertEquals("m4", message.getBody().readString());
       message.acknowledge();
       message = consumer.receive(10250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m1", message.getBody().getString());
+      assertEquals("m1", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m3", message.getBody().getString());
+      assertEquals("m3", message.getBody().readString());
       message.acknowledge();
       time += 1000;
       message = consumer.receive(1250);
       assertTrue(System.currentTimeMillis() >= time);
-      assertEquals("m5", message.getBody().getString());
+      assertEquals("m5", message.getBody().readString());
       message.acknowledge();
-      
+
       // Make sure no more messages
       consumer.close();
       consumer = session.createConsumer(atestq);
       assertNull(consumer.receive(1000));
-      
+
       session.close();
    }
 
-   public void testTxMessageDeliveredCorrectly(boolean recover) throws Exception
+   public void testTxMessageDeliveredCorrectly(final boolean recover) throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
-      
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(true, false, false);
       session.createQueue(atestq, atestq, null, true, false);
@@ -580,8 +579,7 @@ public class ScheduledMessageTest extends ServiceTestBase
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
-      message.getBody().putString("testINVMCoreClient");
-      message.getBody().flip();
+      message.getBody().writeString("testINVMCoreClient");
       message.setDurable(true);
       Calendar cal = Calendar.getInstance();
       cal.roll(Calendar.SECOND, 10);
@@ -610,7 +608,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientMessage message2 = consumer.receive(10000);
       assertTrue(System.currentTimeMillis() >= cal.getTimeInMillis());
       assertNotNull(message2);
-      assertEquals("testINVMCoreClient", message2.getBody().getString());
+      assertEquals("testINVMCoreClient", message2.getBody().readString());
 
       message2.acknowledge();
       session.end(xid2, XAResource.TMSUCCESS);
@@ -623,15 +621,14 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.close();
    }
 
-   private ClientMessage createMessage(ClientSession session, String body)
+   private ClientMessage createMessage(final ClientSession session, final String body)
    {
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
                                                           false,
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
-      message.getBody().putString(body);
-      message.getBody().flip();
+      message.getBody().writeString(body);
       message.setDurable(true);
       return message;
    }

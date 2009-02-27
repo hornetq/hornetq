@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -54,7 +54,6 @@ import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.QueueInfo;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.SendLock;
@@ -769,7 +768,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          // First send a reset message
 
          ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID());
-         message.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
+         message.setBody(ChannelBuffers.EMPTY_BUFFER);
          message.setDestination(queueName);
          message.putBooleanProperty(HDR_RESET_QUEUE_DATA, true);
          queue.preroute(message, null);
@@ -839,7 +838,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    private ServerMessage createQueueInfoMessage(final NotificationType type, final SimpleString queueName)
    {
       ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID());
-      message.setBody(new ByteBufferWrapper(ByteBuffer.allocate(0)));
+      message.setBody(ChannelBuffers.EMPTY_BUFFER);
 
       message.setDestination(queueName);
 

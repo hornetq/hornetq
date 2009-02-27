@@ -35,7 +35,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.utils.SimpleString;
@@ -100,13 +99,7 @@ public class PagingFailoverTest extends FailoverTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session.createClientMessage(true);
-            ByteBuffer buffer = ByteBuffer.allocate(1000);
-
-            buffer.putInt(i);
-
-            buffer.rewind();
-
-            message.setBody(new ByteBufferWrapper(buffer));
+            message.getBody().writeInt(i);
 
             producer.send(message);
 
@@ -145,9 +138,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
             message.acknowledge();
 
-            message.getBody().rewind();
-
-            assertEquals(i, message.getBody().getInt());
+            assertEquals(i, message.getBody().readInt());
 
          }
 

@@ -303,7 +303,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -418,7 +417,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -533,7 +531,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -547,7 +544,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -684,7 +680,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -698,7 +693,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -844,7 +838,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -932,7 +925,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -1034,7 +1026,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -1048,7 +1039,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -1171,7 +1161,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -1185,7 +1174,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                               System.currentTimeMillis(),
                                                               (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().flip();
          producer.send(message);
       }
 
@@ -1293,8 +1281,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                        0,
                                                        System.currentTimeMillis(),
                                                        (byte)1);
-      message.getBody().flip();
-
       producer.send(message);
 
       ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
@@ -1329,8 +1315,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                        0,
                                                        System.currentTimeMillis(),
                                                        (byte)1);
-      message.getBody().flip();
-
       producer.send(message);
 
       ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
@@ -1403,8 +1387,6 @@ public class RandomFailoverTest extends UnitTestCase
                                                        0,
                                                        System.currentTimeMillis(),
                                                        (byte)1);
-      message.getBody().flip();
-
       producer.send(message);
 
       sess.start();

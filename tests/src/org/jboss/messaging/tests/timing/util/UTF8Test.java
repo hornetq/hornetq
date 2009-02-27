@@ -22,7 +22,8 @@
 
 package org.jboss.messaging.tests.timing.util;
 
-import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.UTF8Util;
 
@@ -55,7 +56,7 @@ public class UTF8Test extends UnitTestCase
 
    public void testWriteUTF() throws Exception
    {
-      ChannelBufferWrapper buffer = new ChannelBufferWrapper(10 * 1024);
+      MessagingBuffer buffer = ChannelBuffers.buffer(10 * 1024); 
 
       long start = System.currentTimeMillis();
 
@@ -68,8 +69,8 @@ public class UTF8Test extends UnitTestCase
                start = System.currentTimeMillis();
             }
 
-            buffer.rewind();
-            buffer.putUTF(str);
+            buffer.clear();
+            buffer.writeUTF(str);
          }
 
          long spentTime = System.currentTimeMillis() - start;
@@ -80,9 +81,9 @@ public class UTF8Test extends UnitTestCase
 
    public void testReadUTF() throws Exception
    {
-      ChannelBufferWrapper buffer = new ChannelBufferWrapper(10 * 1024);
+      MessagingBuffer buffer = ChannelBuffers.buffer(10 * 1024); 
 
-      buffer.putUTF(str);
+      buffer.writeUTF(str);
 
       long start = System.currentTimeMillis();
 
@@ -95,8 +96,8 @@ public class UTF8Test extends UnitTestCase
                start = System.currentTimeMillis();
             }
 
-            buffer.rewind();
-            String newstr = buffer.getUTF();
+            buffer.resetReaderIndex();
+            String newstr = buffer.readUTF();
             assertEquals(str, newstr);
          }
 

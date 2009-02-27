@@ -86,16 +86,16 @@ public class SessionXAResponseMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putBoolean(error);      
-      buffer.putInt(responseCode);      
-      buffer.putNullableString(message);
+      buffer.writeBoolean(error);      
+      buffer.writeInt(responseCode);      
+      buffer.writeNullableString(message);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      error = buffer.getBoolean();      
-      responseCode = buffer.getInt();      
-      message = buffer.getNullableString();
+      error = buffer.readBoolean();      
+      responseCode = buffer.readInt();      
+      message = buffer.readNullableString();
    }
    
    public boolean equals(Object other)

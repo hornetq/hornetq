@@ -23,7 +23,6 @@ package org.jboss.messaging.tests.unit.core.persistence.impl.journal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 import javax.transaction.xa.Xid;
@@ -31,6 +30,7 @@ import javax.transaction.xa.Xid;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.easymock.IArgumentMatcher;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.EncodingSupport;
@@ -40,7 +40,7 @@ import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -842,11 +842,7 @@ public class JournalStorageManagerTest extends UnitTestCase
                return false;
             }
 
-            byte newByte[] = new byte[expectedRecord.length];
-
-            ByteBuffer buffer = ByteBuffer.wrap(newByte);
-
-            ByteBufferWrapper wrapper = new ByteBufferWrapper(buffer);
+            MessagingBuffer wrapper = ChannelBuffers.buffer(expectedRecord.length);
 
             support.encode(wrapper);
 

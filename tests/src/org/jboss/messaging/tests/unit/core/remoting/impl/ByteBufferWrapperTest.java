@@ -18,13 +18,13 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
 import java.nio.ByteBuffer;
 
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.tests.unit.core.remoting.MessagingBufferTestBase;
 
@@ -48,13 +48,13 @@ public class ByteBufferWrapperTest extends MessagingBufferTestBase
    // Public --------------------------------------------------------
 
    // MessagingBufferTestBase overrides -----------------------------
-   
+
    @Override
    protected MessagingBuffer createBuffer()
    {
-      return new ByteBufferWrapper(ByteBuffer.allocate(512));
+      return ChannelBuffers.wrappedBuffer(ByteBuffer.allocate(512));
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -49,6 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.jboss.messaging.core.buffers.ChannelBuffer;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.EncodingSupport;
@@ -60,7 +62,6 @@ import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.VariableLatch;
@@ -305,19 +306,19 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_ADD_RECORD + recordLength;
 
-      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
 
-      bb.putByte(ADD_RECORD);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(id);
-      bb.putInt(recordLength);
-      bb.putByte(recordType);
+      bb.writeByte(ADD_RECORD);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(id);
+      bb.writeInt(recordLength);
+      bb.writeByte(recordType);
       record.encode(bb);
-      bb.putInt(size);
+      bb.writeInt(size);
 
       try
       {
-         JournalFile usedFile = appendRecord(bb.getBuffer(), sync, null);
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), sync, null);
 
          posFilesMap.put(id, new PosFiles(usedFile));
       }
@@ -355,19 +356,19 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_UPDATE_RECORD + record.getEncodeSize();
 
-      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
 
-      bb.putByte(UPDATE_RECORD);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(id);
-      bb.putInt(record.getEncodeSize());
-      bb.putByte(recordType);
+      bb.writeByte(UPDATE_RECORD);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(id);
+      bb.writeInt(record.getEncodeSize());
+      bb.writeByte(recordType);
       record.encode(bb);
-      bb.putInt(size);
+      bb.writeInt(size);
 
       try
       {
-         JournalFile usedFile = appendRecord(bb.getBuffer(), syncNonTransactional, null);
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), syncNonTransactional, null);
 
          posFiles.addUpdateFile(usedFile);
       }
@@ -446,20 +447,20 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_ADD_RECORD_TX + recordLength;
 
-      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
 
-      bb.putByte(ADD_RECORD_TX);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(txID);
-      bb.putLong(id);
-      bb.putInt(recordLength);
-      bb.putByte(recordType);
+      bb.writeByte(ADD_RECORD_TX);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(txID);
+      bb.writeLong(id);
+      bb.writeInt(recordLength);
+      bb.writeByte(recordType);
       record.encode(bb);
-      bb.putInt(size);
+      bb.writeInt(size);
 
       try
       {
-         JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -498,20 +499,20 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_UPDATE_RECORD_TX + record.getEncodeSize();
 
-      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
 
-      bb.putByte(UPDATE_RECORD_TX);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(txID);
-      bb.putLong(id);
-      bb.putInt(record.getEncodeSize());
-      bb.putByte(recordType);
+      bb.writeByte(UPDATE_RECORD_TX);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(txID);
+      bb.writeLong(id);
+      bb.writeInt(record.getEncodeSize());
+      bb.writeByte(recordType);
       record.encode(bb);
-      bb.putInt(size);
+      bb.writeInt(size);
 
       try
       {
-         JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -544,22 +545,22 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_DELETE_RECORD_TX + (record != null ? record.getEncodeSize() : 0);
 
-      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
 
-      bb.putByte(DELETE_RECORD_TX);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(txID);
-      bb.putLong(id);
-      bb.putInt(record != null ? record.getEncodeSize() : 0);
+      bb.writeByte(DELETE_RECORD_TX);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(txID);
+      bb.writeLong(id);
+      bb.writeInt(record != null ? record.getEncodeSize() : 0);
       if (record != null)
       {
          record.encode(bb);
       }
-      bb.putInt(size);
+      bb.writeInt(size);
 
       try
       {
-         JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -587,18 +588,18 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_DELETE_RECORD_TX;
 
-      ByteBufferWrapper bb = new ByteBufferWrapper(newBuffer(size));
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
 
-      bb.putByte(DELETE_RECORD_TX);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(txID);
-      bb.putLong(id);
-      bb.putInt(0);
-      bb.putInt(size);
+      bb.writeByte(DELETE_RECORD_TX);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(txID);
+      bb.writeLong(id);
+      bb.writeInt(0);
+      bb.writeInt(size);
 
       try
       {
-         JournalFile usedFile = appendRecord(bb.getBuffer(), false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -1843,33 +1844,33 @@ public class JournalImpl implements TestableJournal
                  2 +
                  (transactionData != null ? transactionData.getEncodeSize() + SIZE_INT : 0);
 
-      ByteBuffer bb = newBuffer(size);
-
-      bb.put(recordType);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(txID);
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
+      
+      bb.writeByte(recordType);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(txID);
 
       if (transactionData != null)
       {
-         bb.putInt(transactionData.getEncodeSize());
+         bb.writeInt(transactionData.getEncodeSize());
       }
 
-      bb.putInt(tx.getElementsSummary().size());
+      bb.writeInt(tx.getElementsSummary().size());
 
       if (transactionData != null)
       {
-         transactionData.encode(new ByteBufferWrapper(bb));
+         transactionData.encode(bb);
       }
 
       for (Map.Entry<Integer, AtomicInteger> entry : tx.getElementsSummary().entrySet())
       {
-         bb.putInt(entry.getKey());
-         bb.putInt(entry.getValue().get());
+         bb.writeInt(entry.getKey());
+         bb.writeInt(entry.getValue().get());
       }
 
-      bb.putInt(size);
+      bb.writeInt(size);
 
-      return bb;
+      return bb.toByteBuffer();
    }
 
    private boolean isTransaction(final byte recordType)
@@ -2641,7 +2642,7 @@ public class JournalImpl implements TestableJournal
 
       public void encode(final MessagingBuffer buffer)
       {
-         buffer.putBytes(data);
+         buffer.writeBytes(data);
       }
 
       public int getEncodeSize()

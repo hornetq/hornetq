@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <!--
+
+    JBoss: The OpenSource J2EE WebOS 
+
+    Distributable under LGPL license.
+    See terms of license at gnu.org.
+
+    -->
+  </head>
+  <body>
+  
+<h2>JBoss Messaging Buffering</h2>
+
+
+<p>This package is a stripped down version of org.jboss.netty.buffer, and we kept only what we needed for JBossMessaging buffers.</p>
+
+<p>ChannelBuffer differs from java.nio.ByteBuffer in two ways:</p>
+
+<p>- It's possible to interface almost directly with byte arrays, what is faster</p>
+
+<p>- There are two positions, one for reading, and one for writing. Hence you will find methods for read, and methods for writing</p>
+
+<h2>Usage</h2>
+
+<p> Always use the static methods declared at org.jboss.messaging.core.buffers.ChannelBuffers to create the buffers you need: </p>
+
+
+<p> buffer(int capacity) - This method will create a fixed size MessagingBuffer </p>
+
+<p> dynamicBuffer(final int estimatedLength) - This method will create a SelfExpandable MessagingBuffer </p>
+
+<p> dynamicBuffer(final byte[] initialBuffer) - This method will create a SelfExpandable MessagingBuffer, but reusing the initialBuffer. Be careful though, the reference will be directly used on the createdBuffer. If your buffer will be used by other operations, you should instead create a new buffer and perform a write. </p> 
+
+<p> buffer(final int capacity) - This method will create a fixed size MessagingBuffer </p>
+
+<p> wrappedBuffer(final byte[] array) - It will create a Buffer, with writePosition at the end, and readPosition at 0 </p>
+
+<p> wrappedBuffer(final ByteBuffer buffer) - It will wrap a Bytebuffer on a MessagingBuffer. The position on this buffer won't affect the position on the inner buffer </p>
+
+
+
+  </body>
+</html>

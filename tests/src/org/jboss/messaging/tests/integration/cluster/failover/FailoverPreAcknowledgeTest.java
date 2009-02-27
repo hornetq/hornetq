@@ -93,8 +93,7 @@ public class FailoverPreAcknowledgeTest extends UnitTestCase
          ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
                                                              false);
          message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().putString("more aardvarks");
-         message.getBody().flip();
+         message.getBody().writeString("more aardvarks");
          producer.send(message);
       }
       ClientConsumer consumer1 = session1.createConsumer(ADDRESS);

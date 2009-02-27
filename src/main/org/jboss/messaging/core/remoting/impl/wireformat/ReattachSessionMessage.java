@@ -73,14 +73,14 @@ public class ReattachSessionMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putString(name);
-      buffer.putInt(lastReceivedCommandID);
+      buffer.writeString(name);
+      buffer.writeInt(lastReceivedCommandID);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      name = buffer.getString();
-      lastReceivedCommandID = buffer.getInt();
+      name = buffer.readString();
+      lastReceivedCommandID = buffer.readInt();
    }
 
    public boolean equals(Object other)

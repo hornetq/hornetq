@@ -105,7 +105,7 @@ public class CrashClient
          
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
-         message.getBody().putString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
+         message.getBody().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
 
          producer.send(message);
          

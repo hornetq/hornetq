@@ -21,10 +21,9 @@
   */
 package org.jboss.messaging.core.remoting.impl;
 
-import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
-
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * A AbstractBufferHandler
@@ -36,14 +35,14 @@ public abstract class AbstractBufferHandler implements BufferHandler
 {
    public int isReadyToHandle(final MessagingBuffer buffer)
    {
-      if (buffer.remaining() <= SIZE_INT)
+      if (buffer.readableBytes() < DataConstants.SIZE_INT)
       {
          return -1;
       }
 
-      int length = buffer.getInt();
+      int length = buffer.readInt();
 
-      if (buffer.remaining() < length)
+      if (buffer.readableBytes() < length)
       {
          return -1;
       }

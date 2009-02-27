@@ -70,12 +70,12 @@ public class Pong extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putLong(newPeriod);
+      buffer.writeLong(newPeriod);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      newPeriod = buffer.getLong();
+      newPeriod = buffer.readLong();
    }
    
    public boolean isWriteAlways()

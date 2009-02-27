@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.integration.cluster.failover;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +31,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
@@ -52,6 +50,7 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   private final byte[] FIVE_HUNDRED_BYTES = new byte[500];
 
    // Static --------------------------------------------------------
 
@@ -62,17 +61,16 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected ClientSessionFactoryInternal createSessionFactory()
    {
       ClientSessionFactoryInternal sf = super.createSessionFactory();
-      
+
       sf.setMinLargeMessageSize(200);
-      
+
       return sf;
 
    }
-
 
    @Override
    protected void start() throws Exception
@@ -124,11 +122,12 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
       liveService.start();
 
    }
-   
+
    @Override
    protected void setBody(final ClientMessage message) throws Exception
    {
-      message.setBody(new ByteBufferWrapper(ByteBuffer.allocate(500)));
+      
+      message.getBody().writeBytes(FIVE_HUNDRED_BYTES);
 
    }
 
@@ -138,7 +137,7 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
    @Override
    protected boolean checkSize(ClientMessage message)
    {
-      return 500 ==  message.getBodySize();
+      return 500 == message.getBodySize();
    }
 
    // Private -------------------------------------------------------

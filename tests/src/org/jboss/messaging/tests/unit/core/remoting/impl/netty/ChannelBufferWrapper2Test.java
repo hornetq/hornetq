@@ -22,8 +22,8 @@
 
 package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.integration.transports.netty.ChannelBufferWrapper;
 import org.jboss.messaging.tests.unit.core.remoting.MessagingBufferTestBase;
 
 /**
@@ -52,7 +52,7 @@ public class ChannelBufferWrapper2Test extends MessagingBufferTestBase
    @Override
    protected MessagingBuffer createBuffer()
    {
-      return new ChannelBufferWrapper(512);
+      return ChannelBuffers.dynamicBuffer(512);
    }
 
    // Package protected ---------------------------------------------

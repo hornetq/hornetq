@@ -637,7 +637,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private Packet decode(final MessagingBuffer in)
    {
-      final byte packetType = in.getByte();
+      final byte packetType = in.readByte();
 
       Packet packet;
 

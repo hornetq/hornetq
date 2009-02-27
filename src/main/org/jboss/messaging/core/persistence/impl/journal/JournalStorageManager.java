@@ -27,7 +27,6 @@ import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -41,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
@@ -62,7 +62,6 @@ import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.remoting.impl.ByteBufferWrapper;
 import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.JournalType;
@@ -468,9 +467,7 @@ public class JournalStorageManager implements StorageManager
       {
          byte[] data = record.data;
 
-         ByteBuffer bb = ByteBuffer.wrap(data);
-
-         MessagingBuffer buff = new ByteBufferWrapper(bb);
+         MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data);
 
          byte recordType = record.getUserRecordType();
 
@@ -710,9 +707,7 @@ public class JournalStorageManager implements StorageManager
          {
             byte[] data = record.data;
 
-            ByteBuffer bb = ByteBuffer.wrap(data);
-
-            MessagingBuffer buff = new ByteBufferWrapper(bb);
+            MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data); 
 
             byte recordType = record.getUserRecordType();
 
@@ -837,9 +832,7 @@ public class JournalStorageManager implements StorageManager
          {
             byte[] data = record.data;
 
-            ByteBuffer bb = ByteBuffer.wrap(data);
-
-            MessagingBuffer buff = new ByteBufferWrapper(bb);
+            MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data); 
 
             long messageID = record.id;
 
@@ -946,7 +939,7 @@ public class JournalStorageManager implements StorageManager
       {
          long id = record.id;
 
-         MessagingBuffer buffer = new ByteBufferWrapper(ByteBuffer.wrap(record.data));
+         MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(record.data);
 
          byte rec = record.getUserRecordType();
 
@@ -1148,7 +1141,7 @@ public class JournalStorageManager implements StorageManager
 
       XidEncoding(final byte[] data)
       {
-         xid = XidCodecSupport.decodeXid(new ByteBufferWrapper(ByteBuffer.wrap(data)));
+         xid = XidCodecSupport.decodeXid(ChannelBuffers.wrappedBuffer(data));
       }
 
       public void decode(final MessagingBuffer buffer)
@@ -1217,16 +1210,16 @@ public class JournalStorageManager implements StorageManager
 
       public void decode(final MessagingBuffer buffer)
       {
-         name = buffer.getSimpleString();
-         address = buffer.getSimpleString();
-         filterString = buffer.getNullableSimpleString();
+         name = buffer.readSimpleString();
+         address = buffer.readSimpleString();
+         filterString = buffer.readNullableSimpleString();
       }
 
       public void encode(final MessagingBuffer buffer)
       {
-         buffer.putSimpleString(name);
-         buffer.putSimpleString(address);
-         buffer.putNullableSimpleString(filterString);
+         buffer.writeSimpleString(name);
+         buffer.writeSimpleString(address);
+         buffer.writeNullableSimpleString(filterString);
       }
 
       public int getEncodeSize()
@@ -1251,12 +1244,12 @@ public class JournalStorageManager implements StorageManager
 
       public void decode(final MessagingBuffer buffer)
       {
-         destination = buffer.getSimpleString();
+         destination = buffer.readSimpleString();
       }
 
       public void encode(final MessagingBuffer buffer)
       {
-         buffer.putSimpleString(destination);
+         buffer.writeSimpleString(destination);
       }
 
       public int getEncodeSize()
@@ -1283,14 +1276,14 @@ public class JournalStorageManager implements StorageManager
       {
          byte[] bytes = new byte[16];
          
-         buffer.getBytes(bytes);
+         buffer.readBytes(bytes);
          
          uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
       }
 
       public void encode(final MessagingBuffer buffer)
       {
-         buffer.putBytes(uuid.asBytes());
+         buffer.writeBytes(uuid.asBytes());
       }
 
       public int getEncodeSize()
@@ -1355,14 +1348,14 @@ public class JournalStorageManager implements StorageManager
 
       public void decode(final MessagingBuffer buffer)
       {
-         queueID = buffer.getLong();
-         count = buffer.getInt();
+         queueID = buffer.readLong();
+         count = buffer.readInt();
       }
 
       public void encode(final MessagingBuffer buffer)
       {
-         buffer.putLong(queueID);
-         buffer.putInt(count);
+         buffer.writeLong(queueID);
+         buffer.writeInt(count);
       }
 
       public int getEncodeSize()
@@ -1388,12 +1381,12 @@ public class JournalStorageManager implements StorageManager
 
       public void decode(final MessagingBuffer buffer)
       {
-         queueID = buffer.getLong();
+         queueID = buffer.readLong();
       }
 
       public void encode(final MessagingBuffer buffer)
       {
-         buffer.putLong(queueID);
+         buffer.writeLong(queueID);
       }
 
       public int getEncodeSize()
@@ -1451,13 +1444,13 @@ public class JournalStorageManager implements StorageManager
       public void encode(MessagingBuffer buffer)
       {
          super.encode(buffer);
-         buffer.putLong(scheduledDeliveryTime);
+         buffer.writeLong(scheduledDeliveryTime);
       }
 
       public void decode(MessagingBuffer buffer)
       {
          super.decode(buffer);
-         scheduledDeliveryTime = buffer.getLong();
+         scheduledDeliveryTime = buffer.readLong();
       }
    }
 
@@ -1480,22 +1473,22 @@ public class JournalStorageManager implements StorageManager
 
       public void decode(final MessagingBuffer buffer)
       {
-         address = buffer.getSimpleString();
+         address = buffer.readSimpleString();
 
-         int size = buffer.getInt();
+         int size = buffer.readInt();
 
          duplID = new byte[size];
 
-         buffer.getBytes(duplID);
+         buffer.readBytes(duplID);
       }
 
       public void encode(final MessagingBuffer buffer)
       {
-         buffer.putSimpleString(address);
+         buffer.writeSimpleString(address);
 
-         buffer.putInt(duplID.length);
+         buffer.writeInt(duplID.length);
 
-         buffer.putBytes(duplID);
+         buffer.writeBytes(duplID);
       }
 
       public int getEncodeSize()

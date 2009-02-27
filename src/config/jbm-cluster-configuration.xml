@@ -114,13 +114,6 @@
          <param key="jbm.remoting.netty.httpserverscanperiod" value="5000" type="Long"/>
       </acceptor>-->
 
-      <!-- Mina Acceptor -->
-      <acceptor name="mina">
-         <factory-class>org.jboss.messaging.integration.transports.mina.MinaAcceptorFactory</factory-class>           	            
-         <param key="jbm.remoting.mina.host" value="localhost" type="String"/>
-         <param key="jbm.remoting.mina.port" value="${jbm.remoting.mina.port}" type="Integer"/>	                     
-      </acceptor>
-      
             <!-- Clustering configuration -->
       
       <broadcast-group name="bg-group1">

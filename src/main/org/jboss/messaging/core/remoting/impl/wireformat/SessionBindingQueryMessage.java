@@ -56,12 +56,12 @@ public class SessionBindingQueryMessage extends PacketImpl
    
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.putSimpleString(address);
+      buffer.writeSimpleString(address);
    }
    
    public void decodeBody(final MessagingBuffer buffer)
    {
-      address = buffer.getSimpleString();
+      address = buffer.readSimpleString();
    }
    
    public boolean equals(Object other)

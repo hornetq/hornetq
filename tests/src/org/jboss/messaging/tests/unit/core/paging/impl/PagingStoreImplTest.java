@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +34,7 @@ import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.utils.SimpleString;
@@ -108,9 +108,9 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
-      List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+      List<MessagingBuffer> buffers = new ArrayList<MessagingBuffer>();
 
-      ByteBuffer buffer = createRandomBuffer(0, 10);
+      MessagingBuffer buffer = createRandomBuffer(0, 10);
 
       buffers.add(buffer);
       SimpleString destination = new SimpleString("test");
@@ -165,12 +165,12 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       storeImpl.startPaging();
 
-      List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+      List<MessagingBuffer> buffers = new ArrayList<MessagingBuffer>();
 
       for (int i = 0; i < 10; i++)
       {
 
-         ByteBuffer buffer = createRandomBuffer(i + 1l, 10);
+         MessagingBuffer buffer = createRandomBuffer(i + 1l, 10);
 
          buffers.add(buffer);
 
@@ -234,12 +234,12 @@ public class PagingStoreImplTest extends PagingStoreTestBase
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
-      List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+      List<MessagingBuffer> buffers = new ArrayList<MessagingBuffer>();
 
       for (int i = 0; i < 10; i++)
       {
 
-         ByteBuffer buffer = createRandomBuffer(i + 1l, 10);
+         MessagingBuffer buffer = createRandomBuffer(i + 1l, 10);
 
          buffers.add(buffer);
 

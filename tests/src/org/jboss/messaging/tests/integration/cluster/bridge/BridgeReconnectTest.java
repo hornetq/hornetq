@@ -167,7 +167,6 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
-         message.getBody().flip();
 
          prod0.send(message);
       }
@@ -298,7 +297,6 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
-         message.getBody().flip();
 
          prod0.send(message);
       }
@@ -456,7 +454,6 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
-         message.getBody().flip();
 
          prod0.send(message);
       }
@@ -573,7 +570,6 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
-         message.getBody().flip();
 
          prod0.send(message);
       }
@@ -687,7 +683,6 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
-         message.getBody().flip();
 
          prod0.send(message);
       }
@@ -708,7 +703,6 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage message = session0.createClientMessage(false);
          message.putIntProperty(propKey, i);
-         message.getBody().flip();
 
          prod0.send(message);
       }
