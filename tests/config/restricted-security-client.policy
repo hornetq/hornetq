@@ -2,5 +2,5 @@ grant {
         //permission java.security.AllPermission;
         
         // allow to connect to localhost
-        permission java.net.SocketPermission "localhost:1024-", "connect";
+        permission java.net.SocketPermission "*:1024-", "connect";
 };
