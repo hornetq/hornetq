@@ -21,20 +21,13 @@
  */
 package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.netty.channel.Channels.write;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelStateEvent;
+import static org.jboss.netty.channel.Channels.write;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
@@ -45,6 +38,12 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * takes care of making sure that every request has a response and also that any uninitiated responses always wait for a response.
@@ -178,18 +177,27 @@ class HttpAcceptorHandler extends SimpleChannelHandler
          while (responseHolder == null);
          if (!bogusResponse)
          {
-            piggyBackResponses();
+            ChannelBuffer piggyBackBuffer = piggyBackResponses();
+            responseHolder.response.setContent(piggyBackBuffer);
+            responseHolder.response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(piggyBackBuffer.writerIndex()));
+            channel.write(responseHolder.response);
          }
-         responseHolder.response.setContent(buffer);
-         responseHolder.response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buffer.writerIndex()));
-         channel.write(responseHolder.response);
+         else
+         {
+            responseHolder.response.setContent(buffer);
+            responseHolder.response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buffer.writerIndex()));
+            channel.write(responseHolder.response);
+         }
+
       }
 
-      private void piggyBackResponses()
+      private ChannelBuffer piggyBackResponses()
       {
          // if we are the last available response then we have to piggy back any remaining responses
          if (responses.isEmpty())
          {
+            ChannelBuffer buf = org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer();
+            buf.writeBytes(buffer);
             do
             {
                try
@@ -199,7 +207,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
                   {
                      break;
                   }
-                  buffer.writeBytes(responseRunner.buffer);
+                  buf.writeBytes(responseRunner.buffer);
                }
                catch (InterruptedException e)
                {
@@ -207,8 +215,11 @@ class HttpAcceptorHandler extends SimpleChannelHandler
                }
             }
             while (responses.isEmpty());
+            return buf;
          }
+         return buffer;
       }
+
    }
 
    /**
