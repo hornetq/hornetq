@@ -241,7 +241,7 @@ public class NettyConnector implements Connector
 
 
          ClientSocketChannelFactory proxyChannelFactory;
-          if(useNio)
+         if (useNio)
          {
             bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
             proxyChannelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
@@ -371,7 +371,7 @@ public class NettyConnector implements Connector
          return null;
       }
       SocketAddress address;
-      if(useServlet)
+      if (useServlet)
       {
          try
          {
@@ -421,7 +421,7 @@ public class NettyConnector implements Connector
             ch.getPipeline().get(MessagingChannelHandler.class).active = true;
          }
 
-         NettyConnection conn =  new NettyConnection(ch, new Listener());
+         NettyConnection conn = new NettyConnection(ch, new Listener());
 
          return conn;
       }
@@ -472,7 +472,7 @@ public class NettyConnector implements Connector
 
       private boolean active = false;
 
-      private boolean handshaking = true;
+      private boolean handshaking = false;
 
       private CookieDecoder cookieDecoder = new CookieDecoder();
 
@@ -509,12 +509,12 @@ public class NettyConnector implements Connector
       @Override
       public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
       {
-         HttpResponse response = (HttpResponse)e.getMessage();
+         HttpResponse response = (HttpResponse) e.getMessage();
          if (httpRequiresSessionId && !active)
          {
             Map<String, Cookie> cookieMap = cookieDecoder.decode(response.getHeader(HttpHeaders.Names.SET_COOKIE));
             Cookie cookie = cookieMap.get("JSESSIONID");
-            if(cookie != null)
+            if (cookie != null)
             {
                cookieEncoder.addCookie(cookie);
                this.cookie = cookieEncoder.encode();
@@ -523,25 +523,34 @@ public class NettyConnector implements Connector
             handShakeFuture.run();
          }
          MessageEvent event = new UpstreamMessageEvent(e.getChannel(),
-                                                      response.getContent(),
-                                                      e.getRemoteAddress());
+                                                       response.getContent(),
+                                                       e.getRemoteAddress());
          waitingGet = false;
          ctx.sendUpstream(event);
       }
+
+      int i = 0;
 
       @Override
       public void writeRequested(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
       {
          if (e.getMessage() instanceof ChannelBuffer)
          {
-            if (!active && handshaking)
+            if (httpRequiresSessionId && !active)
             {
-               handshaking = false;
-               if(!handShakeFuture.await(5000))
+               if (handshaking)
                {
-                  throw new RuntimeException("Handshake failed after timeout");
+                  handshaking = true;
+               }
+               else
+               {
+                  if (!handShakeFuture.await(5000))
+                  {
+                     throw new RuntimeException("Handshake failed after timeout");
+                  }
                }
             }
+
             HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, url);
             if (cookie != null)
             {
