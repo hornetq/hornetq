@@ -48,7 +48,8 @@ public class HttpClient
          params.put("jbm.remoting.netty.httpenabled", true);
          //to use the servlet transport change the last line to
          //map.put("jbm.remoting.netty.useservlet", true);
-         params.put("jbm.remoting.netty.port", 8080);
+         //params.put("jbm.remoting.netty.port", 8080);
+         params.put("jbm.remoting.netty.port", 6100);
          ClientSessionFactory sessionFactory =
             new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", params));
          clientSession = sessionFactory.createSession(false, true, true);
