@@ -202,11 +202,6 @@
       <path refid="jboss.integration.classpath"/>
    </path>
 
-   <path id="servlet.compilation.classpath">
-      <path location="${build.core.classes.dir}"/>
-      <path refid="jboss.jboss.javaee.classpath"/>
-   </path>
-
    <path id="transports.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
       <path refid="jboss.jboss.javaee.classpath"/>
@@ -780,24 +775,11 @@
             <include name="WEB-INF/*"/>
          </fileset>
       </copy>
-      <mkdir dir="${build.war.dir}/WEB-INF/classes"/>
-      <javac destdir="${build.war.dir}/WEB-INF/classes"
-             target="${javac.target}"
-             source="${javac.source}"
-             optimize="${javac.optimize}"
-             debug="${javac.debug}"
-             depend="${javac.depend}"
-             verbose="${javac.verbose}"
-             deprecation="${javac.deprecation}"
-             includeAntRuntime="${javac.include.ant.runtime}"
-             includeJavaRuntime="${javac.include.java.runtime}"
-             failonerror="${javac.fail.onerror}">
-         <src>
-            <pathelement path="${src.main.dir}"/>
-         </src>
-         <include name="**/messaging/servlet/*.java"/>
-         <classpath refid="servlet.compilation.classpath"/>
-      </javac>
+       <copy todir="${build.sar.dir}">
+         <fileset dir="${src.schemas.dir}">
+            <include name="*"/>
+         </fileset>
+      </copy>
    </target>
 
    <target name="distro" depends="jar, jar-client, validate-configuration">

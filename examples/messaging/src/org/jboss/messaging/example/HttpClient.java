@@ -21,8 +21,6 @@
  */
 package org.jboss.messaging.example;
 
-import java.util.HashMap;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -32,6 +30,8 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.HashMap;
 
 /**
  * Uses the core messaging API to send and receive a message to a queue via http. You will need to enable the server with
@@ -46,6 +46,8 @@ public class HttpClient
       {
          HashMap<String, Object> params = new HashMap<String, Object>();
          params.put("jbm.remoting.netty.httpenabled", true);
+         //to use the servlet transport change the last line to
+         //map.put("jbm.remoting.netty.useservlet", true);
          params.put("jbm.remoting.netty.port", 8080);
          ClientSessionFactory sessionFactory =
             new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", params));

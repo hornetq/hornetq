@@ -91,6 +91,11 @@
       <entry name="/TestHttpConnectionFactory"/>
    </connection-factory>
 
+   <connection-factory name="TestServletConnectionFactory">
+      <connector-ref connector-name="netty-servlet"/>
+      <entry name="/TestServletConnectionFactory"/>
+   </connection-factory>
+
    <queue name="MyQueue">
       <entry name="MyQueue"/>
    </queue>

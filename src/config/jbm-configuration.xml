@@ -81,6 +81,13 @@
          <param key="jbm.remoting.netty.httpclientidletime" value="500" type="Long"/>
          <param key="jbm.remoting.netty.httpclientidlescanperiod" value="500" type="Long"/>
       </connector>
+
+      <connector name="netty-servlet">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="8080" type="Integer"/>
+         <param key="jbm.remoting.netty.useservlet" value="true" type="Boolean"/>
+      </connector>
       
       <connector name="in-vm">
          <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</factory-class>

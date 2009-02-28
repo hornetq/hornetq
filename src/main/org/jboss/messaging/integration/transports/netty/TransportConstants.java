@@ -41,6 +41,10 @@ public class TransportConstants
 
    public static final String HTTP_SERVER_SCAN_PERIOD_PROP_NAME = "jbm.remoting.netty.httpserverscanperiod";
 
+   public static final String HTTP_REQUIRES_SESSION_ID = "jbm.remoting.netty.httprequiressessionid";
+
+   public static final String USE_SERVLET_PROP_NAME = "jbm.remoting.netty.useservlet";
+
    public static final String USE_NIO_PROP_NAME = "jbm.remoting.netty.usenio";
 
    public static final String HOST_PROP_NAME = "jbm.remoting.netty.host";
@@ -64,6 +68,8 @@ public class TransportConstants
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
    public static final boolean DEFAULT_USE_NIO = true;
+
+   public static final boolean DEFAULT_USE_SERVLET = false;
 
    public static final String DEFAULT_HOST = "localhost";
 
@@ -93,4 +99,5 @@ public class TransportConstants
 
    public static final long DEFAULT_HTTP_SERVER_SCAN_PERIOD = 5000;
 
+   public static final boolean DEFAULT_HTTP_REQUIRES_SESSION_ID = false;
 }

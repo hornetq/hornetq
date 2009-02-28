@@ -21,22 +21,6 @@
  */
 package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-import static org.jboss.netty.channel.Channels.write;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
@@ -45,6 +29,7 @@ import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.utils.ConfigurationHelper;
+import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -56,11 +41,19 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import static org.jboss.netty.channel.Channels.pipeline;
+import static org.jboss.netty.channel.Channels.write;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
+import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.http.HttpTunnelAddress;
+import org.jboss.netty.channel.socket.http.HttpTunnelingClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
+import org.jboss.netty.handler.codec.http.Cookie;
+import org.jboss.netty.handler.codec.http.CookieDecoder;
+import org.jboss.netty.handler.codec.http.CookieEncoder;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
@@ -70,6 +63,21 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A NettyConnector
@@ -105,7 +113,11 @@ public class NettyConnector implements Connector
 
    private final long httpClientIdleScanPeriod;
 
+   private final boolean httpRequiresSessionId;
+
    private final boolean useNio;
+
+   private final boolean useServlet;
 
    private final String host;
 
@@ -120,8 +132,10 @@ public class NettyConnector implements Connector
    private final int tcpSendBufferSize;
 
    private final int tcpReceiveBufferSize;
-   
+
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
+
+   private static final String SERVLET_PATH = "/messaging/JBMServlet";
 
    // Static --------------------------------------------------------
 
@@ -153,7 +167,7 @@ public class NettyConnector implements Connector
       this.httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
                                                                 TransportConstants.DEFAULT_HTTP_ENABLED,
                                                                 configuration);
-      
+
       if (httpEnabled)
       {
          this.httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
@@ -162,16 +176,23 @@ public class NettyConnector implements Connector
          this.httpClientIdleScanPeriod = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD,
                                                                              TransportConstants.DEFAULT_HTTP_CLIENT_SCAN_PERIOD,
                                                                              configuration);
+         this.httpRequiresSessionId = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_REQUIRES_SESSION_ID,
+                                                                             TransportConstants.DEFAULT_HTTP_REQUIRES_SESSION_ID,
+                                                                             configuration);
       }
       else
       {
          this.httpMaxClientIdleTime = 0;
          this.httpClientIdleScanPeriod = -1;
+         this.httpRequiresSessionId = false;
       }
 
       this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
                                                            TransportConstants.DEFAULT_USE_NIO,
                                                            configuration);
+      this.useServlet = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_SERVLET_PROP_NAME,
+                                                               TransportConstants.DEFAULT_USE_SERVLET,
+                                                               configuration);
       this.host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
                                                         TransportConstants.DEFAULT_HOST,
                                                         configuration);
@@ -203,6 +224,7 @@ public class NettyConnector implements Connector
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
 
+
    }
 
    public synchronized void start()
@@ -211,13 +233,32 @@ public class NettyConnector implements Connector
       {
          return;
       }
-      
-      workerExecutor = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-netty-connector-worker-threads"));
-      if (useNio)
+
+      workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-worker-threads"));
+      if (useServlet)
+      {
+         bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
+
+
+         ClientSocketChannelFactory proxyChannelFactory;
+          if(useNio)
+         {
+            bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
+            proxyChannelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
+         }
+         else
+         {
+            proxyChannelFactory = new OioClientSocketChannelFactory(workerExecutor);
+         }
+         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, workerExecutor);
+
+      }
+      else if (useNio)
       {
          bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
          channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
       }
+
       else
       {
          channelFactory = new OioClientSocketChannelFactory(workerExecutor);
@@ -294,7 +335,7 @@ public class NettyConnector implements Connector
       workerExecutor.shutdown();
       if (bossExecutor != null)
       {
-         for (;;)
+         for (; ;)
          {
             try
             {
@@ -309,7 +350,7 @@ public class NettyConnector implements Connector
             }
          }
       }
-      
+
       for (Connection connection : connections.values())
       {
          listener.connectionDestroyed(connection.getID());
@@ -317,7 +358,7 @@ public class NettyConnector implements Connector
 
       connections.clear();
    }
-   
+
    public boolean isStarted()
    {
       return (channelFactory != null);
@@ -329,8 +370,23 @@ public class NettyConnector implements Connector
       {
          return null;
       }
-
-      InetSocketAddress address = new InetSocketAddress(host, port);
+      SocketAddress address;
+      if(useServlet)
+      {
+         try
+         {
+            URI uri = new URI("http", null, host, port, SERVLET_PATH, null, null);
+            address = new HttpTunnelAddress(uri);
+         }
+         catch (URISyntaxException e)
+         {
+            throw new IllegalArgumentException(e.getMessage());
+         }
+      }
+      else
+      {
+         address = new InetSocketAddress(host, port);
+      }
       ChannelFuture future = bootstrap.connect(address);
       future.awaitUninterruptibly();
 
@@ -364,9 +420,9 @@ public class NettyConnector implements Connector
          {
             ch.getPipeline().get(MessagingChannelHandler.class).active = true;
          }
-         
+
          NettyConnection conn =  new NettyConnection(ch, new Listener());
-         
+
          return conn;
       }
       else
@@ -395,8 +451,8 @@ public class NettyConnector implements Connector
       }
    }
 
-   @ChannelPipelineCoverage("all")
-   private class HttpHandler extends SimpleChannelHandler
+   @ChannelPipelineCoverage("one")
+   class HttpHandler extends SimpleChannelHandler
    {
       private Channel channel;
 
@@ -408,10 +464,28 @@ public class NettyConnector implements Connector
 
       private HttpIdleTimerTask task;
 
+      private String url;
+
+      //private String sessionId = null;
+
+      private Future handShakeFuture = new Future();
+
+      private boolean active = false;
+
+      private boolean handshaking = true;
+
+      private CookieDecoder cookieDecoder = new CookieDecoder();
+
+      private String cookie;
+
+      private CookieEncoder cookieEncoder = new CookieEncoder();
+
+
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
          super.channelConnected(ctx, e);
          channel = e.getChannel();
+         url = "http://" + host + ":" + port + "/messaging/JBMServlet";
          if (httpClientIdleScanPeriod > 0)
          {
             idleClientTimer = new Timer("Http Idle Timer", true);
@@ -428,7 +502,7 @@ public class NettyConnector implements Connector
 
             idleClientTimer.cancel();
          }
-         
+
          super.channelClosed(ctx, e);
       }
 
@@ -436,6 +510,18 @@ public class NettyConnector implements Connector
       public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
       {
          HttpResponse response = (HttpResponse)e.getMessage();
+         if (httpRequiresSessionId && !active)
+         {
+            Map<String, Cookie> cookieMap = cookieDecoder.decode(response.getHeader(HttpHeaders.Names.SET_COOKIE));
+            Cookie cookie = cookieMap.get("JSESSIONID");
+            if(cookie != null)
+            {
+               cookieEncoder.addCookie(cookie);
+               this.cookie = cookieEncoder.encode();
+            }
+            active = true;
+            handShakeFuture.run();
+         }
          MessageEvent event = new UpstreamMessageEvent(e.getChannel(),
                                                       response.getContent(),
                                                       e.getRemoteAddress());
@@ -448,8 +534,20 @@ public class NettyConnector implements Connector
       {
          if (e.getMessage() instanceof ChannelBuffer)
          {
-            HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/jbm/");
-            ChannelBuffer buf = (ChannelBuffer)e.getMessage();
+            if (!active && handshaking)
+            {
+               handshaking = false;
+               if(!handShakeFuture.await(5000))
+               {
+                  throw new RuntimeException("Handshake failed after timeout");
+               }
+            }
+            HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, url);
+            if (cookie != null)
+            {
+               httpRequest.addHeader(HttpHeaders.Names.COOKIE, cookie);
+            }
+            ChannelBuffer buf = (ChannelBuffer) e.getMessage();
             httpRequest.setContent(buf);
             httpRequest.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
             write(ctx, e.getFuture(), httpRequest, e.getRemoteAddress());
@@ -465,11 +563,12 @@ public class NettyConnector implements Connector
       private class HttpIdleTimerTask extends TimerTask
       {
          long currentTime = System.currentTimeMillis();
+
          public synchronized void run()
          {
             if (!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
             {
-               HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/jbm/");
+               HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url);
                waitingGet = true;
                channel.write(httpRequest);
             }
@@ -481,7 +580,7 @@ public class NettyConnector implements Connector
          }
       }
    }
-   
+
    private class Listener implements ConnectionLifeCycleListener
    {
       public void connectionCreated(final Connection connection)

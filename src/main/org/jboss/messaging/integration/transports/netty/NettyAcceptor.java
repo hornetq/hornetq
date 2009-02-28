@@ -22,19 +22,6 @@
 
 package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -55,12 +42,26 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import static org.jboss.netty.channel.Channels.pipeline;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
+import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory;
+import org.jboss.netty.channel.local.LocalAddress;
+import org.jboss.netty.channel.local.LocalServerChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
+
+import javax.net.ssl.SSLContext;
+import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A Netty TCP Acceptor that supports SSL
@@ -119,8 +120,12 @@ public class NettyAcceptor implements Acceptor
    private final Timer httpKeepAliveTimer;
 
    private final HttpKeepAliveTask httpKeepAliveTask;
-   
+
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
+
+   private Channel localChannel;
+
+   private int inVmServerId;
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
@@ -198,6 +203,8 @@ public class NettyAcceptor implements Acceptor
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
 
+
+      inVmServerId = ConfigurationHelper.getIntProperty(org.jboss.messaging.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
    }
 
    public synchronized void start() throws Exception
@@ -240,7 +247,7 @@ public class NettyAcceptor implements Acceptor
          context = null; // Unused
       }
 
-      bootstrap.setPipelineFactory(new ChannelPipelineFactory()
+      ChannelPipelineFactory factory = new ChannelPipelineFactory()
       {
          public ChannelPipeline getPipeline() throws Exception
          {
@@ -260,7 +267,8 @@ public class NettyAcceptor implements Acceptor
             pipeline.addLast("handler", new MessagingServerChannelHandler(handler, listener));
             return pipeline;
          }
-      });
+      };
+      bootstrap.setPipelineFactory(factory);
 
       // Bind
       bootstrap.setOption("child.tcpNoDelay", tcpNoDelay);
@@ -277,17 +285,23 @@ public class NettyAcceptor implements Acceptor
       bootstrap.setOption("child.keepAlive", true);
 
       serverChannelGroup = new DefaultChannelGroup("jbm");
-      
+
       String[] hosts = TransportConfiguration.splitHosts(host);
       for (String h : hosts)
       {
          Channel serverChannel = bootstrap.bind(new InetSocketAddress(h, port));
          serverChannelGroup.add(serverChannel);
       }
+      LocalServerChannelFactory localServerChannelFactory = new DefaultLocalServerChannelFactory();
+      ServerBootstrap localBoot = new ServerBootstrap(localServerChannelFactory);
+      localBoot.setPipelineFactory(factory);
+      LocalAddress localAddress = new LocalAddress("org.jboss.jbm." + inVmServerId);
+      localChannel = localBoot.bind(localAddress);
    }
 
    public synchronized void stop()
    {
+      
       if (channelFactory == null)
       {
          return;
@@ -299,6 +313,7 @@ public class NettyAcceptor implements Acceptor
 
          httpKeepAliveTimer.cancel();
       }
+      localChannel.unbind();
       serverChannelGroup.close().awaitUninterruptibly();
       bossExecutor.shutdown();
       workerExecutor.shutdown();
@@ -317,7 +332,7 @@ public class NettyAcceptor implements Acceptor
          }
       }
       channelFactory = null;
-      
+
       for (Connection connection : connections.values())
       {
          listener.connectionDestroyed(connection.getID());
@@ -325,7 +340,7 @@ public class NettyAcceptor implements Acceptor
 
       connections.clear();
    }
-   
+
    public boolean isStarted()
    {
       return (channelFactory != null);
@@ -343,9 +358,9 @@ public class NettyAcceptor implements Acceptor
 
       @Override
       public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-      {         
+      {
          final Connection tc = new NettyConnection(e.getChannel(), new Listener());
-         
+
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
          {
@@ -372,7 +387,7 @@ public class NettyAcceptor implements Acceptor
          }
       }
    }
-   
+
    private class Listener implements ConnectionLifeCycleListener
    {
       public void connectionCreated(final Connection connection)
