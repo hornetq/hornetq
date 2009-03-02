@@ -203,12 +203,9 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
 
       final String bcGroupName = "bc1";
 
-      final String localBindAddress = "localhost";
-
       final int localBindPort = 5432;
       
       BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
-                                                                              localBindAddress,
                                                                               localBindPort,
                                                                               groupAddress,
                                                                               groupPort,

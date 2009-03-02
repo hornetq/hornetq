@@ -84,11 +84,6 @@ public class BroadcastGroupControl implements BroadcastGroupControlMBean
       return configuration.getGroupPort();
    }
 
-   public String getLocalBindAddress()
-   {
-      return configuration.getLocalBindAddress();
-   }
-
    public int getLocalBindPort()
    {
       return configuration.getLocalBindPort();

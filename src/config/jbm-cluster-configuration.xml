@@ -117,7 +117,6 @@
             <!-- Clustering configuration -->
       
       <broadcast-group name="bg-group1">
-        <local-bind-address>localhost</local-bind-address>
         <local-bind-port>1234</local-bind-port>
         <group-address>231.7.7.7</group-address>
         <group-port>9876</group-port>

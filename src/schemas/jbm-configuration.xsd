@@ -197,9 +197,6 @@
 	<xsd:element name="broadcast-group">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element ref="local-bind-address" maxOccurs="1"
-					minOccurs="0">
-				</xsd:element>
 				<xsd:element ref="local-bind-port" maxOccurs="1"
 					minOccurs="0">
 				</xsd:element>

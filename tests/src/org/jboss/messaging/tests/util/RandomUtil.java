@@ -82,6 +82,11 @@ public class RandomUtil
       return Math.abs(randomInt());
    }
    
+   public static int randomPort()
+   {
+      return random.nextInt(65536);
+   }
+
    public static short randomShort()
    {
       return (short) random.nextInt(Short.MAX_VALUE);

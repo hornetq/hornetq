@@ -218,13 +218,10 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
-      InetAddress localBindAddress = InetAddress.getByName(config.getLocalBindAddress());
-
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
 
       BroadcastGroupImpl group = new BroadcastGroupImpl(nodeUUID.toString(),
                                                         config.getName(),
-                                                        localBindAddress,
                                                         config.getLocalBindPort(),
                                                         groupAddress,
                                                         config.getGroupPort());

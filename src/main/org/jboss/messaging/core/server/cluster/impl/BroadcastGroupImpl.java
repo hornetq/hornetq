@@ -52,8 +52,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private final String name;
 
-   private final InetAddress localBindAddress;
-
    private final int localPort;
 
    private final InetAddress groupAddress;
@@ -70,7 +68,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    public BroadcastGroupImpl(final String nodeID,
                              final String name,
-                             final InetAddress localBindAddress,
                              final int localPort,
                              final InetAddress groupAddress,
                              final int groupPort) throws Exception
@@ -79,17 +76,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
       this.name = name;
 
-      this.localBindAddress = localBindAddress;
-
       this.localPort = localPort;
 
       this.groupAddress = groupAddress;
 
       this.groupPort = groupPort;
-
-      // FIXME - doesn't seem to work when specifying port and address
-
-      // this.socket = new DatagramSocket(localPort, localBindAddress);
    }
 
    public synchronized void start() throws Exception
@@ -99,8 +90,15 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          return;
       }
 
-      socket = new DatagramSocket();
-
+      // we configure only the port, the address must be bound to the wildcard address to receive broadcast packets
+      if (localPort != -1)
+      {
+         socket = new DatagramSocket(localPort);
+      } else
+      {
+         socket = new DatagramSocket();         
+      }
+      
       started = true;
    }
 

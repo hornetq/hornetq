@@ -69,7 +69,6 @@
 	      <param key="b_mykey4" value="b_foovalue4" type="String"/>            
 	   </acceptor>
 	  <broadcast-group name="bg1">
-	     <local-bind-address>127.0.0.1</local-bind-address>
 	     <local-bind-port>10999</local-bind-port>
 	     <group-address>192.168.0.120</group-address>
 	     <group-port>11999</group-port>
@@ -77,7 +76,6 @@
          <connector-ref connector-name="connector"/>
 	  </broadcast-group>
       <broadcast-group name="bg2">
-         <local-bind-address>127.0.0.1</local-bind-address>
          <local-bind-port>10999</local-bind-port>
          <group-address>192.168.0.120</group-address>
          <group-port>11999</group-port>

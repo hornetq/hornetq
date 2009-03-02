@@ -34,8 +34,6 @@ public interface BroadcastGroupControlMBean extends MessagingComponentControlMBe
 {
    String getName();
 
-   String getLocalBindAddress();
-
    int getLocalBindPort();
 
    String getGroupAddress();
