@@ -207,7 +207,7 @@ public class BasicXaTest extends ServiceTestBase
 
    }
 
-/*   public void testReceiveRollback() throws Exception
+   /*public void testReceiveRollback() throws Exception
    {
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer = clientSession2.createProducer(atestq);
@@ -223,7 +223,7 @@ public class BasicXaTest extends ServiceTestBase
       {
          clientSessions[i] = sessionFactory.createSession(true, false, false);
          clientConsumers[i] = clientSessions[i].createConsumer(atestq);
-         handlers[i] = new TxMessageHandler(clientSessions[i], i, latch);
+         handlers[i] = new TxMessageHandler(clientSessions[i], latch);
          clientConsumers[i].setMessageHandler(handlers[i]);
       }
       for (ClientSession session : clientSessions)
@@ -249,11 +249,11 @@ public class BasicXaTest extends ServiceTestBase
 
       private CountDownLatch latch;
 
-      public TxMessageHandler(ClientSession session, int id, CountDownLatch latch)
+      public TxMessageHandler(ClientSession session, CountDownLatch latch)
       {
          this.latch = latch;
          this.session = session;
-         xid = new XidImpl(("xa" + id).getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         xid = new XidImpl( UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          try
          {
             session.start(xid, XAResource.TMNOFLAGS);
@@ -291,10 +291,13 @@ public class BasicXaTest extends ServiceTestBase
          try
          {
             session.end(xid, XAResource.TMSUCCESS);
+            //session.stop();
             session.rollback(xid);
+           // session.start();
+            xid = new XidImpl( UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
             session.start(xid, XAResource.TMNOFLAGS);
          }
-         catch (XAException e)
+         catch (Exception e)
          {
             e.printStackTrace();
             failedToAck = true;
