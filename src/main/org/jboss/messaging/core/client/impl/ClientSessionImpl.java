@@ -1087,6 +1087,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          flushAcks();
 
+         boolean wasStarted = started;
+
+         if (wasStarted)
+         {
+            stop();
+         }
+
          // We need to make sure we don't get any inflight messages
          for (ClientConsumerInternal consumer : consumers.values())
          {
@@ -1095,7 +1102,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
 
-         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+         SessionXAResponseMessage response = (SessionXAResponseMessage) channel.sendBlocking(packet);
+
+         if (wasStarted)
+         {
+            start();
+         }
 
          if (response.isError())
          {

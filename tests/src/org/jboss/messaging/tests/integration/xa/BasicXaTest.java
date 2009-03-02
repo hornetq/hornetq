@@ -38,9 +38,9 @@ import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
 
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import javax.transaction.xa.XAException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -207,18 +207,19 @@ public class BasicXaTest extends ServiceTestBase
 
    }
 
-   /*public void testReceiveRollback() throws Exception
+   public void testReceiveRollback() throws Exception
    {
+      int numSessions = 100;
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer = clientSession2.createProducer(atestq);
-     for(int i = 0; i < 100; i++)
-     {
-        clientProducer.send(createTextMessage(clientSession2, "m" + i));
-     }
-      ClientSession[] clientSessions = new ClientSession[10];
-      ClientConsumer[] clientConsumers = new ClientConsumer[10];
-      TxMessageHandler[] handlers = new TxMessageHandler[10];
-      CountDownLatch latch = new CountDownLatch(10*10);
+      for (int i = 0; i < 10 * numSessions; i++)
+      {
+         clientProducer.send(createTextMessage(clientSession2, "m" + i));
+      }
+      ClientSession[] clientSessions = new ClientSession[numSessions];
+      ClientConsumer[] clientConsumers = new ClientConsumer[numSessions];
+      TxMessageHandler[] handlers = new TxMessageHandler[numSessions];
+      CountDownLatch latch = new CountDownLatch(numSessions * AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS);
       for (int i = 0; i < clientSessions.length; i++)
       {
          clientSessions[i] = sessionFactory.createSession(true, false, false);
@@ -232,7 +233,7 @@ public class BasicXaTest extends ServiceTestBase
       }
 
 
-     latch.await(10, TimeUnit.SECONDS);
+      assertTrue(latch.await(10, TimeUnit.SECONDS));
       for (TxMessageHandler messageHandler : handlers)
       {
          assertFalse(messageHandler.failedToAck);
@@ -256,7 +257,7 @@ public class BasicXaTest extends ServiceTestBase
       public void onMessage(final ClientMessage message)
       {
          JBossMessage jbm = JBossMessage.createMessage(message, session);
-         Xid xid = new XidImpl( UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         Xid xid = new XidImpl(UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          try
          {
             session.start(xid, XAResource.TMNOFLAGS);
@@ -308,5 +309,5 @@ public class BasicXaTest extends ServiceTestBase
          latch.countDown();
 
       }
-   }*/
+   }
 }
