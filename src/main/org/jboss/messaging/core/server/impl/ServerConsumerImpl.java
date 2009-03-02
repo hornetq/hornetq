@@ -908,9 +908,11 @@ public class ServerConsumerImpl implements ServerConsumer
                trace("Finished deliverLargeMessage isBackup = " + messageQueue.isBackup());
             }
 
-            // we must hold one reference, or the file will be deleted before it could be delivered
+            pendingLargeMessage.releaseResources();
+
             if (preAcknowledge && !browseOnly)
             {
+               // We added a reference for pre-ack, to avoid deleting the file before it was delivered
                if (pendingLargeMessage.decrementRefCount() == 0)
                {
                   // On pre-acks for Large messages, the decrement was deferred to large-message, hence we need to
@@ -927,8 +929,6 @@ public class ServerConsumerImpl implements ServerConsumer
                   }
                }
             }
-
-            pendingLargeMessage.releaseResources();
 
             largeMessageDeliverer = null;
 
