@@ -245,15 +245,18 @@ public class BasicXaTest extends ServiceTestBase
 
       final ClientSession session;
 
-      private Xid xid;
-
       private CountDownLatch latch;
 
       public TxMessageHandler(ClientSession session, CountDownLatch latch)
       {
          this.latch = latch;
          this.session = session;
-         xid = new XidImpl( UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      }
+
+      public void onMessage(final ClientMessage message)
+      {
+         JBossMessage jbm = JBossMessage.createMessage(message, session);
+         Xid xid = new XidImpl( UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          try
          {
             session.start(xid, XAResource.TMNOFLAGS);
@@ -262,12 +265,6 @@ public class BasicXaTest extends ServiceTestBase
          {
             e.printStackTrace();
          }
-      }
-
-      public void onMessage(final ClientMessage message)
-      {
-         JBossMessage jbm = JBossMessage.createMessage(message, session);
-
          try
          {
             jbm.doBeforeReceive();
@@ -293,9 +290,7 @@ public class BasicXaTest extends ServiceTestBase
             session.end(xid, XAResource.TMSUCCESS);
             //session.stop();
             session.rollback(xid);
-           // session.start();
-            xid = new XidImpl( UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-            session.start(xid, XAResource.TMNOFLAGS);
+            //session.start();
          }
          catch (Exception e)
          {
