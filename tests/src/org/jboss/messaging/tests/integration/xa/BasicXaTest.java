@@ -256,7 +256,6 @@ public class BasicXaTest extends ServiceTestBase
 
       public void onMessage(final ClientMessage message)
       {
-         JBossMessage jbm = JBossMessage.createMessage(message, session);
          Xid xid = new XidImpl(UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          try
          {
@@ -265,16 +264,6 @@ public class BasicXaTest extends ServiceTestBase
          catch (XAException e)
          {
             e.printStackTrace();
-         }
-         try
-         {
-            jbm.doBeforeReceive();
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to prepare message for receipt", e);
-
-            return;
          }
 
 
@@ -289,9 +278,7 @@ public class BasicXaTest extends ServiceTestBase
          try
          {
             session.end(xid, XAResource.TMSUCCESS);
-            //session.stop();
             session.rollback(xid);
-            //session.start();
          }
          catch (Exception e)
          {
