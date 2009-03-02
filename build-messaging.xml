@@ -665,6 +665,7 @@
          <fileset dir="${build.core.classes.dir}">
             <include name="version.properties"/>
             <include name="org/jboss/messaging/core/client/**/*.class"/>
+            <include name="org/jboss/messaging/core/buffers/**/*.class"/>
             <include name="org/jboss/messaging/core/exception/**/*.class"/>
             <include name="org/jboss/messaging/core/logging/**/*.class"/>
             <include name="org/jboss/messaging/core/remoting/**/*.class"/>

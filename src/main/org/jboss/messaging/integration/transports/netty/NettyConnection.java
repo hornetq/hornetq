@@ -113,9 +113,9 @@ public class NettyConnection implements Connection
       listener.connectionDestroyed(getID());
    }
 
-   public MessagingBuffer createBuffer(int size)
+   public MessagingBuffer createBuffer(final int size)
    {
-      return new ChannelBufferWrapper(org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer(size));
+      return new ChannelBufferWrapper(org.jboss.netty.buffer.ChannelBuffers.buffer(size));
    }
 
    public Object getID()
