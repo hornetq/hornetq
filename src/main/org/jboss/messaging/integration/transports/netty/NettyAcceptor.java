@@ -123,10 +123,6 @@ public class NettyAcceptor implements Acceptor
 
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
-   private Channel localChannel;
-
-   private int inVmServerId;
-
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener)
@@ -202,9 +198,6 @@ public class NettyAcceptor implements Acceptor
       this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
-
-
-      inVmServerId = ConfigurationHelper.getIntProperty(org.jboss.messaging.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
    }
 
    public synchronized void start() throws Exception
@@ -292,11 +285,6 @@ public class NettyAcceptor implements Acceptor
          Channel serverChannel = bootstrap.bind(new InetSocketAddress(h, port));
          serverChannelGroup.add(serverChannel);
       }
-      LocalServerChannelFactory localServerChannelFactory = new DefaultLocalServerChannelFactory();
-      ServerBootstrap localBoot = new ServerBootstrap(localServerChannelFactory);
-      localBoot.setPipelineFactory(factory);
-      LocalAddress localAddress = new LocalAddress("org.jboss.jbm." + inVmServerId);
-      localChannel = localBoot.bind(localAddress);
    }
 
    public synchronized void stop()
@@ -313,7 +301,6 @@ public class NettyAcceptor implements Acceptor
 
          httpKeepAliveTimer.cancel();
       }
-      localChannel.unbind();
       serverChannelGroup.close().awaitUninterruptibly();
       bossExecutor.shutdown();
       workerExecutor.shutdown();
