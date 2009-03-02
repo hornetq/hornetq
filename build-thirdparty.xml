@@ -92,8 +92,8 @@
       -->
 
       <componentref name="jboss/integration" version="5.0.0.Beta4"/>
-      <componentref name="jboss/jboss-security-spi" version="2.0.1.GA"/>
-      <componentref name="jboss/jbosssx-client" version="2.0.1.GA"/>
+      <componentref name="jboss/jboss-security-spi" version="2.0.2-SNAPSHOT"/>
+      <componentref name="jboss/jbosssx-client" version="2.0.2-SNAPSHOT"/>
       <componentref name="jboss/jboss-jaspi-api" version="1.0-BETA1"/>
 
       <!--

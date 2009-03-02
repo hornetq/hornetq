@@ -21,14 +21,19 @@
  */
 package org.jboss.messaging.ra;
 
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.ra.inflow.JBMActivation;
 import org.jboss.messaging.ra.inflow.JBMActivationSpec;
 
+import javax.jms.Session;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.BootstrapContext;
@@ -75,7 +80,7 @@ public class JBMResourceAdapter implements ResourceAdapter
    /**
     * The JBoss connection factory
     */
-   private JBossConnectionFactory factory;
+   private ClientSessionFactory sessionFactory;
 
    /**
     * Have the factory been configured
@@ -86,6 +91,8 @@ public class JBMResourceAdapter implements ResourceAdapter
     * The activations by activation spec
     */
    private Map activations;
+
+   private JBossConnectionFactory jBossConnectionFactory;
 
    /**
     * Constructor
@@ -98,7 +105,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       }
 
       raProperties = new JBMRAProperties();
-      factory = null;
+      sessionFactory = null;
       configured = new AtomicBoolean(false);
       activations = new ConcurrentHashMap();
    }
@@ -112,6 +119,17 @@ public class JBMResourceAdapter implements ResourceAdapter
     */
    public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException
    {
+      if(!configured.getAndSet(true))
+      {
+         try
+         {
+            setup();
+         }
+         catch (MessagingException e)
+         {
+            throw new ResourceException("Unable to create activation", e);
+         }
+      }
       if (trace)
       {
          log.trace("endpointActivation(" + endpointFactory + ", " + spec + ")");
@@ -1238,19 +1256,39 @@ public class JBMResourceAdapter implements ResourceAdapter
       return ctx.getWorkManager();
    }
 
-   /**
-    * Get the JBoss connection factory
-    *
-    * @return The factory
-    */
-   public JBossConnectionFactory getJBossConnectionFactory()
+   public ClientSession createSession(int ackMode, String user, String pass, Boolean preAck, Integer dupsOkBatchSize, Integer transactionBatchSize, boolean deliveryTransacted) throws Exception
    {
-      if (!configured.get())
+
+      ClientSession result;
+
+      boolean actPreAck = preAck != null ? preAck : ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+      int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+      int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+      switch (ackMode)
       {
-         setup();
+         case Session.SESSION_TRANSACTED:
+            result = sessionFactory.createSession(user, pass, deliveryTransacted, false, false, actPreAck, actTxBatchSize);
+            break;
+         case Session.AUTO_ACKNOWLEDGE:
+            result = sessionFactory.createSession(user, pass, deliveryTransacted, true, false, actPreAck, actTxBatchSize);
+            break;
+         case Session.DUPS_OK_ACKNOWLEDGE:
+            result = sessionFactory.createSession(user, pass, deliveryTransacted, true, false, actPreAck, actDupsOkBatchSize);
+            break;
+         case Session.CLIENT_ACKNOWLEDGE:
+            result = sessionFactory.createSession(user, pass, deliveryTransacted, false, false, actPreAck, actTxBatchSize);
+            break;
+         case JBossSession.SERVER_ACKNOWLEDGE:
+            result = sessionFactory.createSession(user, pass, deliveryTransacted, false, true, actPreAck, actTxBatchSize);
+            break;
+         default:
+            throw new IllegalArgumentException("Invalid ackmode: " + ackMode);
       }
 
-      return factory;
+      log.debug("Using queue connection " + result);
+
+      return result;
+
    }
 
    /**
@@ -1271,74 +1309,74 @@ public class JBMResourceAdapter implements ResourceAdapter
    /**
     * Setup the factory
     */
-   protected void setup()
+   protected void setup() throws MessagingException
    {
       if (getTransportType() != null)
       {
          TransportConfiguration transportConf = new TransportConfiguration(getTransportType(), getTransportConfiguration());
          TransportConfiguration backup = getBackUpTransportType() == null ? null : new TransportConfiguration(getBackUpTransportType(), getBackupTransportConfiguration());
-         factory = new JBossConnectionFactory(transportConf,
-                                              backup,
-                                              getLoadBalancingPolicyClassName() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME : getLoadBalancingPolicyClassName(),
-                                              getPingPeriod() == null ? ClientSessionFactoryImpl.DEFAULT_PING_PERIOD : getPingPeriod(),
-                                              getConnectionTTL() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL : getConnectionTTL(),
-                                              getCallTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT : getCallTimeout(),
-                                              getClientID(),
-                                              getDupsOKBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getDupsOKBatchSize(),
-                                              getTransactionBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getTransactionBatchSize(),
-                                              getConsumerWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE : getConsumerWindowSize(),
-                                              getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE : getConsumerMaxRate(),
-                                              getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE : getSendWindowSize(),
-                                              getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE : getProducerMaxRate(),
-                                              getMinLargeMessageSize() == null ? ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE : getMinLargeMessageSize(),
-                                              getBlockOnAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE : getBlockOnAcknowledge(),
-                                              getBlockOnNonPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND : getBlockOnNonPersistentSend(),
-                                              getBlockOnPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND : getBlockOnPersistentSend(),
-                                              getAutoGroup() == null ? ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP : getAutoGroup(),
-                                              getMaxConnections() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS : getMaxConnections(),
-                                              getPreAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE : getPreAcknowledge(),
-                                              getRetryInterval() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL : getRetryInterval(),
-                                              getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER : getRetryIntervalMultiplier(),
-                                              getMaxRetriesBeforeFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER : getMaxRetriesBeforeFailover(),
-                                              getMaxRetriesAfterFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER : getMaxRetriesAfterFailover()
+         jBossConnectionFactory = new JBossConnectionFactory(transportConf,
+                                                             backup,
+                                                             getLoadBalancingPolicyClassName() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME : getLoadBalancingPolicyClassName(),
+                                                             getPingPeriod() == null ? ClientSessionFactoryImpl.DEFAULT_PING_PERIOD : getPingPeriod(),
+                                                             getConnectionTTL() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL : getConnectionTTL(),
+                                                             getCallTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT : getCallTimeout(),
+                                                             getClientID(),
+                                                             getDupsOKBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getDupsOKBatchSize(),
+                                                             getTransactionBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getTransactionBatchSize(),
+                                                             getConsumerWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE : getConsumerWindowSize(),
+                                                             getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE : getConsumerMaxRate(),
+                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE : getSendWindowSize(),
+                                                             getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE : getProducerMaxRate(),
+                                                             getMinLargeMessageSize() == null ? ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE : getMinLargeMessageSize(),
+                                                             getBlockOnAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE : getBlockOnAcknowledge(),
+                                                             getBlockOnNonPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND : getBlockOnNonPersistentSend(),
+                                                             getBlockOnPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND : getBlockOnPersistentSend(),
+                                                             getAutoGroup() == null ? ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP : getAutoGroup(),
+                                                             getMaxConnections() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS : getMaxConnections(),
+                                                             getPreAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE : getPreAcknowledge(),
+                                                             getRetryInterval() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL : getRetryInterval(),
+                                                             getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER : getRetryIntervalMultiplier(),
+                                                             getMaxRetriesBeforeFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER : getMaxRetriesBeforeFailover(),
+                                                             getMaxRetriesAfterFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER : getMaxRetriesAfterFailover()
          );
-         configured.set(true);
       }
       else if (getDiscoveryGroupAddress() != null && getDiscoveryGroupPort() != null)
       {
-         factory = new JBossConnectionFactory(getDiscoveryGroupAddress(),
-                                              getDiscoveryGroupPort(),
-                                              getDiscoveryRefreshTimeout() == null ? ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT : getDiscoveryRefreshTimeout(),
-                                              getDiscoveryInitialWaitTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT : getDiscoveryInitialWaitTimeout(),
-                                              getLoadBalancingPolicyClassName() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME : getLoadBalancingPolicyClassName(),
-                                              getPingPeriod() == null ? ClientSessionFactoryImpl.DEFAULT_PING_PERIOD : getPingPeriod(),
-                                              getConnectionTTL() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL : getConnectionTTL(),
-                                              getCallTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT : getCallTimeout(),
-                                              getClientID(),
-                                              getDupsOKBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getDupsOKBatchSize(),
-                                              getTransactionBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getTransactionBatchSize(),
-                                              getConsumerWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE : getConsumerWindowSize(),
-                                              getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE : getConsumerMaxRate(),
-                                              getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE : getSendWindowSize(),
-                                              getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE : getProducerMaxRate(),
-                                              getMinLargeMessageSize() == null ? ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE : getMinLargeMessageSize(),
-                                              getBlockOnAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE : getBlockOnAcknowledge(),
-                                              getBlockOnNonPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND : getBlockOnNonPersistentSend(),
-                                              getBlockOnPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND : getBlockOnPersistentSend(),
-                                              getAutoGroup() == null ? ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP : getAutoGroup(),
-                                              getMaxConnections() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS : getMaxConnections(),
-                                              getPreAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE : getPreAcknowledge(),
-                                              getRetryInterval() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL : getRetryInterval(),
-                                              getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER : getRetryIntervalMultiplier(),
-                                              getMaxRetriesBeforeFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER : getMaxRetriesBeforeFailover(),
-                                              getMaxRetriesAfterFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER : getMaxRetriesAfterFailover()
+         jBossConnectionFactory = new JBossConnectionFactory(getDiscoveryGroupAddress(),
+                                                             getDiscoveryGroupPort(),
+                                                             getDiscoveryRefreshTimeout() == null ? ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT : getDiscoveryRefreshTimeout(),
+                                                             getDiscoveryInitialWaitTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT : getDiscoveryInitialWaitTimeout(),
+                                                             getLoadBalancingPolicyClassName() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME : getLoadBalancingPolicyClassName(),
+                                                             getPingPeriod() == null ? ClientSessionFactoryImpl.DEFAULT_PING_PERIOD : getPingPeriod(),
+                                                             getConnectionTTL() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL : getConnectionTTL(),
+                                                             getCallTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT : getCallTimeout(),
+                                                             getClientID(),
+                                                             getDupsOKBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getDupsOKBatchSize(),
+                                                             getTransactionBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getTransactionBatchSize(),
+                                                             getConsumerWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE : getConsumerWindowSize(),
+                                                             getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE : getConsumerMaxRate(),
+                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE : getSendWindowSize(),
+                                                             getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE : getProducerMaxRate(),
+                                                             getMinLargeMessageSize() == null ? ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE : getMinLargeMessageSize(),
+                                                             getBlockOnAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE : getBlockOnAcknowledge(),
+                                                             getBlockOnNonPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND : getBlockOnNonPersistentSend(),
+                                                             getBlockOnPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND : getBlockOnPersistentSend(),
+                                                             getAutoGroup() == null ? ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP : getAutoGroup(),
+                                                             getMaxConnections() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS : getMaxConnections(),
+                                                             getPreAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE : getPreAcknowledge(),
+                                                             getRetryInterval() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL : getRetryInterval(),
+                                                             getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER : getRetryIntervalMultiplier(),
+                                                             getMaxRetriesBeforeFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER : getMaxRetriesBeforeFailover(),
+                                                             getMaxRetriesAfterFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER : getMaxRetriesAfterFailover()
          );
-         configured.set(true);
       }
       else
       {
          log.fatal("must provide either TransportTyoe or DiscoveryGroupAddress and DiscoveryGroupPort for JBM ResourceAdapter");
       }
+
+         sessionFactory = jBossConnectionFactory.getCoreFactory();
    }
 
 
@@ -1380,5 +1418,10 @@ public class JBMResourceAdapter implements ResourceAdapter
          val = conf[2];
       }
       return val;
+   }
+
+   public JBossConnectionFactory getJBossConnectionFactory()
+   {
+      return jBossConnectionFactory;
    }
 }

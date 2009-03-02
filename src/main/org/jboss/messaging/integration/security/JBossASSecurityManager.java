@@ -24,6 +24,7 @@ package org.jboss.messaging.integration.security;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.security.Principal;
 
 import javax.naming.InitialContext;
 import javax.security.auth.Subject;
@@ -107,8 +108,8 @@ public class JBossASSecurityManager implements JBMSecurityManager, MessagingComp
       // security my be screwed up, on account of thread local security stack being corrupted.
       if (authenticated)
       {
-         SecurityActions.pushSubjectContext(principal, passwordChars, subject);
-         Set<SimplePrincipal> rolePrincipals = getRolePrincipals(checkType, roles);
+         SecurityActions.pushSubjectContext(principal, passwordChars, subject, securityDomainName);
+         Set<Principal> rolePrincipals = getRolePrincipals(checkType, roles);
 
          authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
 
@@ -121,9 +122,9 @@ public class JBossASSecurityManager implements JBMSecurityManager, MessagingComp
       return authenticated;
    }
 
-   private Set<SimplePrincipal> getRolePrincipals(final CheckType checkType, final Set<Role> roles)
+   private Set<Principal> getRolePrincipals(final CheckType checkType, final Set<Role> roles)
    {
-      Set<SimplePrincipal> principals = new HashSet<SimplePrincipal>();
+      Set<Principal> principals = new HashSet<Principal>();
       for (Role role : roles)
       {
          if ((checkType.equals(CheckType.CREATE) && role.isCheckType(CheckType.CREATE)) ||

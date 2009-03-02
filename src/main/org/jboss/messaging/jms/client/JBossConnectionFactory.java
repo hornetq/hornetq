@@ -553,58 +553,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       {
          if (sessionFactory == null)
          {
-            if (connectorConfigs != null)
-            {
-               sessionFactory = new ClientSessionFactoryImpl(connectorConfigs,
-                                                             connectionLoadBalancingPolicyClassName,
-                                                             pingPeriod,
-                                                             connectionTTL,
-                                                             callTimeout,
-                                                             consumerWindowSize,
-                                                             consumerMaxRate,
-                                                             sendWindowSize,
-                                                             producerMaxRate,
-                                                             minLargeMessageSize,
-                                                             blockOnAcknowledge,
-                                                             blockOnNonPersistentSend,
-                                                             blockOnPersistentSend,
-                                                             autoGroup,
-                                                             maxConnections,
-                                                             preAcknowledge,
-                                                             dupsOKBatchSize,                                                     
-                                                             retryInterval,
-                                                             retryIntervalMultiplier,                                                             
-                                                             maxRetriesBeforeFailover,
-                                                             maxRetriesAfterFailover);
-            }
-            else
-            {
-               sessionFactory = new ClientSessionFactoryImpl(discoveryGroupAddress,
-                                                             discoveryGroupPort,
-                                                             discoveryRefreshTimeout,
-                                                             discoveryInitialWaitTimeout,
-                                                             connectionLoadBalancingPolicyClassName,
-                                                             pingPeriod,
-                                                             connectionTTL,
-                                                             callTimeout,
-                                                             consumerWindowSize,
-                                                             consumerMaxRate,
-                                                             sendWindowSize,
-                                                             producerMaxRate,
-                                                             minLargeMessageSize,
-                                                             blockOnAcknowledge,
-                                                             blockOnNonPersistentSend,
-                                                             blockOnPersistentSend,
-                                                             autoGroup,
-                                                             maxConnections,
-                                                             preAcknowledge,
-                                                             dupsOKBatchSize,                                                             
-                                                             retryInterval,
-                                                             retryIntervalMultiplier,
-                                                             maxRetriesBeforeFailover,
-                                                             maxRetriesAfterFailover);
-            }
-   
+            createFactory();
          }
       }
       catch (MessagingException me)
@@ -650,7 +599,71 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  sessionFactory);
    }
 
+   private void createFactory() throws MessagingException
+   {
+      if (connectorConfigs != null)
+      {
+         sessionFactory = new ClientSessionFactoryImpl(connectorConfigs,
+                                                       connectionLoadBalancingPolicyClassName,
+                                                       pingPeriod,
+                                                       connectionTTL,
+                                                       callTimeout,
+                                                       consumerWindowSize,
+                                                       consumerMaxRate,
+                                                       sendWindowSize,
+                                                       producerMaxRate,
+                                                       minLargeMessageSize,
+                                                       blockOnAcknowledge,
+                                                       blockOnNonPersistentSend,
+                                                       blockOnPersistentSend,
+                                                       autoGroup,
+                                                       maxConnections,
+                                                       preAcknowledge,
+                                                       dupsOKBatchSize,
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover);
+      }
+      else
+      {
+         sessionFactory = new ClientSessionFactoryImpl(discoveryGroupAddress,
+                                                       discoveryGroupPort,
+                                                       discoveryRefreshTimeout,
+                                                       discoveryInitialWaitTimeout,
+                                                       connectionLoadBalancingPolicyClassName,
+                                                       pingPeriod,
+                                                       connectionTTL,
+                                                       callTimeout,
+                                                       consumerWindowSize,
+                                                       consumerMaxRate,
+                                                       sendWindowSize,
+                                                       producerMaxRate,
+                                                       minLargeMessageSize,
+                                                       blockOnAcknowledge,
+                                                       blockOnNonPersistentSend,
+                                                       blockOnPersistentSend,
+                                                       autoGroup,
+                                                       maxConnections,
+                                                       preAcknowledge,
+                                                       dupsOKBatchSize,
+                                                       retryInterval,
+                                                       retryIntervalMultiplier,
+                                                       maxRetriesBeforeFailover,
+                                                       maxRetriesAfterFailover);
+      }
+   }
+
    // Private --------------------------------------------------------------------------------------
 
    // Inner classes --------------------------------------------------------------------------------
+
+   public ClientSessionFactory getCoreFactory() throws MessagingException
+   {
+      if (sessionFactory == null)
+      {
+         createFactory();
+      }
+      return sessionFactory;
+   }
 }

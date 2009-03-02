@@ -145,6 +145,11 @@ public class TransactionImpl implements Transaction
 
    public void commit() throws Exception
    {           
+      commit(true);
+   }
+
+   public void commit(boolean onePhase) throws Exception
+   {
       synchronized (timeoutLock)
       {
          if (state == State.ROLLBACK_ONLY)
@@ -159,9 +164,16 @@ public class TransactionImpl implements Transaction
                return;
             }
          }
-         
+
          if (xid != null)
          {
+            if (onePhase)
+            {
+               if(state == State.ACTIVE)
+               {
+                  prepare();
+               }
+            }
             if (state != State.PREPARED)
             {
                throw new IllegalStateException("Transaction is in invalid state " + state);
@@ -174,7 +186,7 @@ public class TransactionImpl implements Transaction
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
          }
-         
+
          if (operations != null)
          {
             for (TransactionOperation operation : operations)
@@ -196,7 +208,7 @@ public class TransactionImpl implements Transaction
             {
                operation.afterCommit(this);
             }
-         }                  
+         }
       }
    }
 

@@ -21,23 +21,28 @@
  */
 package org.jboss.messaging.ra.inflow;
 
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.JBossMessage;
+import org.jboss.messaging.utils.SimpleString;
 
+import javax.jms.InvalidClientIDException;
 import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.XASession;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
-import javax.jms.Connection;
-import javax.jms.XAConnection;
-import javax.jms.Topic;
-import javax.jms.Message;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.Status;
-import javax.transaction.xa.XAResource;
+import javax.jms.Session;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.Status;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import java.util.UUID;
+
 /**
  * The message handler
  *
@@ -46,95 +51,128 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
-public class JBMMessageHandler implements MessageListener
+public class JBMMessageHandler implements MessageHandler
 {
-     /** The logger */
+   /**
+    * The logger
+    */
    private static final Logger log = Logger.getLogger(JBMMessageHandler.class);
 
-   /** Trace enabled */
-   private static boolean trace  = log.isTraceEnabled();
+   /**
+    * Trace enabled
+    */
+   private static boolean trace = log.isTraceEnabled();
 
-   /** The session */
-   private Session session;
+   /**
+    * The session
+    */
+   private final ClientSession session;
 
-   /** Any XA session */
-   private XASession xaSession;
-
-   /** The endpoint */
+   /**
+    * The endpoint
+    */
    private MessageEndpoint endpoint;
 
    private final JBMActivation activation;
 
-   /** The transaction demarcation strategy factory */
+   /**
+    * The transaction demarcation strategy factory
+    */
    private DemarcationStrategyFactory strategyFactory = new DemarcationStrategyFactory();
 
-   public JBMMessageHandler(JBMActivation activation)
+   public JBMMessageHandler(JBMActivation activation, ClientSession session)
    {
       this.activation = activation;
+      this.session = session;
    }
 
    public void setup() throws Exception
    {
       if (trace)
+      {
          log.trace("setup()");
+      }
 
       JBMActivationSpec spec = activation.getActivationSpec();
       String selector = spec.getMessageSelector();
 
-      Connection connection = activation.getConnection();
-
-      // Create the session
-      if (activation.isDeliveryTransacted())
-      {
-         xaSession = ((XAConnection)connection).createXASession();
-         session = xaSession.getSession();
-      }
-      else
-      {
-         boolean transacted = spec.isSessionTransacted();
-         int acknowledge = spec.getAcknowledgeModeInt();
-         session = connection.createSession(transacted, acknowledge);
-      }
-
       // Create the message consumer
-      MessageConsumer messageConsumer;
+      ClientConsumer consumer;
+      SimpleString selectorString = selector == null || selector.trim().equals("") ? null : new SimpleString(selector);
       if (activation.isTopic() && spec.isSubscriptionDurable())
       {
-         Topic topic = (Topic) activation.getDestination();
          String subscriptionName = spec.getSubscriptionName();
 
-         if (selector == null || selector.trim().equals(""))
+         // Durable sub
+
+         if (activation.getActivationSpec().getClientId() == null)
          {
-            messageConsumer = session.createDurableSubscriber(topic, subscriptionName);
+            throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
+         }
+
+         SimpleString queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(activation.getActivationSpec().getClientId(),
+                                                                                                    subscriptionName));
+
+         SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
+
+         if (!subResponse.isExists())
+         {
+            session.createQueue(activation.getAddress(), queueName, selectorString, true, false);
          }
          else
          {
-            messageConsumer = session.createDurableSubscriber(topic, subscriptionName, selector, false);
+            // Already exists
+            if (subResponse.getConsumerCount() > 0)
+            {
+               throw new javax.jms.IllegalStateException("Cannot create a subscriber on the durable subscription since it already has subscriber(s)");
+            }
+
+            SimpleString oldFilterString = subResponse.getFilterString();
+
+            boolean selectorChanged = (selector == null && oldFilterString != null) || (oldFilterString == null && selector != null) ||
+                                      (oldFilterString != null && selector != null && !oldFilterString.equals(selector));
+
+            SimpleString oldTopicName = subResponse.getAddress();
+
+            boolean topicChanged = !oldTopicName.equals(activation.getAddress());
+
+            if (selectorChanged || topicChanged)
+            {
+               // Delete the old durable sub
+               session.deleteQueue(queueName);
+
+               // Create the new one
+               session.createQueue(activation.getAddress(), queueName, selectorString, true, false);
+            }
          }
+         consumer = session.createConsumer(queueName, null, false);
       }
       else
       {
-         if (selector == null || selector.trim().equals(""))
+         SimpleString queueName;
+         if (activation.isTopic())
          {
-            messageConsumer = session.createConsumer(activation.getDestination());
+            queueName = new SimpleString(UUID.randomUUID().toString());
+            session.createQueue(activation.getAddress(), queueName, selectorString, false, false);
          }
          else
          {
-            messageConsumer = session.createConsumer(activation.getDestination(), selector);
+            queueName = activation.getAddress();
          }
+         consumer = session.createConsumer(queueName, selectorString);
       }
 
       // Create the endpoint
       MessageEndpointFactory endpointFactory = activation.getMessageEndpointFactory();
-      XAResource xaResource = null;
-
-      if (activation.isDeliveryTransacted() && xaSession != null)
-         xaResource = xaSession.getXAResource();
-
-      endpoint = endpointFactory.createEndpoint(xaResource);
-
-      // Set the message listener
-      messageConsumer.setMessageListener(this);
+      if (activation.isDeliveryTransacted())
+      {
+         endpoint = endpointFactory.createEndpoint(session);
+      }
+      else
+      {
+         endpoint = endpointFactory.createEndpoint(null);
+      }
+      consumer.setMessageHandler(this);
    }
 
    /**
@@ -143,12 +181,16 @@ public class JBMMessageHandler implements MessageListener
    public void teardown()
    {
       if (trace)
+      {
          log.trace("teardown()");
+      }
 
       try
       {
          if (endpoint != null)
+         {
             endpoint.release();
+         }
       }
       catch (Throwable t)
       {
@@ -157,18 +199,10 @@ public class JBMMessageHandler implements MessageListener
 
       try
       {
-         if (xaSession != null)
-            xaSession.close();
-      }
-      catch (Throwable t)
-      {
-         log.debug("Error releasing xaSession " + xaSession, t);
-      }
-
-      try
-      {
          if (session != null)
+         {
             session.close();
+         }
       }
       catch (Throwable t)
       {
@@ -176,11 +210,7 @@ public class JBMMessageHandler implements MessageListener
       }
    }
 
-   /**
-    * On message
-    * @param message The message
-    */
-   public void onMessage(Message message)
+   public void onMessage(ClientMessage message)
    {
       if (trace)
          log.trace("onMessage(" + message + ")");
@@ -195,14 +225,39 @@ public class JBMMessageHandler implements MessageListener
          log.warn("Unable to create transaction: " + throwable.getMessage());
          txnStrategy = null;
       }
+
+      JBossMessage jbm = JBossMessage.createMessage(message, session);
+
+      try
+      {
+         jbm.doBeforeReceive();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to prepare message for receipt", e);
+
+         return;
+      }
+
+      if (activation.getActivationSpec().getAcknowledgeModeInt() == Session.SESSION_TRANSACTED ||
+          activation.getActivationSpec().getAcknowledgeModeInt() == Session.CLIENT_ACKNOWLEDGE)
+      {
+         try
+         {
+            message.acknowledge();
+         }
+         catch (MessagingException e)
+         {
+            log.error("Failed to process message", e);
+         }
+      }
       try
       {
          endpoint.beforeDelivery(JBMActivation.ONMESSAGE);
-
          try
          {
             MessageListener listener = (MessageListener) endpoint;
-            listener.onMessage(message);
+            listener.onMessage(jbm);
          }
          finally
          {
@@ -214,13 +269,18 @@ public class JBMMessageHandler implements MessageListener
          log.error("Unexpected error delivering message " + message, t);
 
          if (txnStrategy != null)
+         {
             txnStrategy.error();
+         }
       }
       finally
       {
          if (txnStrategy != null)
+         {
             txnStrategy.end();
+         }
       }
+
    }
 
    /**
@@ -230,12 +290,15 @@ public class JBMMessageHandler implements MessageListener
    {
       /**
        * Get the transaction demarcation strategy
+       *
        * @return The strategy
        */
       TransactionDemarcationStrategy getStrategy()
       {
          if (trace)
+         {
             log.trace("getStrategy()");
+         }
 
          if (activation.isDeliveryTransacted())
          {
@@ -266,6 +329,7 @@ public class JBMMessageHandler implements MessageListener
       * Start
       */
       void start() throws Throwable;
+
       /**
        * Error
        */
@@ -285,6 +349,7 @@ public class JBMMessageHandler implements MessageListener
       /*
    * Start
    */
+
       public void start()
       {
       }
@@ -295,7 +360,9 @@ public class JBMMessageHandler implements MessageListener
       public void error()
       {
          if (trace)
+         {
             log.trace("error()");
+         }
 
          final JBMActivationSpec spec = activation.getActivationSpec();
 
@@ -319,7 +386,8 @@ public class JBMMessageHandler implements MessageListener
                   {
                      session.rollback();
                   }
-               } catch (JMSException e)
+               }
+               catch (MessagingException e)
                {
                   log.error("Failed to rollback session transaction", e);
                }
@@ -333,7 +401,9 @@ public class JBMMessageHandler implements MessageListener
       public void end()
       {
          if (trace)
+         {
             log.trace("error()");
+         }
 
          final JBMActivationSpec spec = activation.getActivationSpec();
 
@@ -344,7 +414,8 @@ public class JBMMessageHandler implements MessageListener
                try
                {
                   session.commit();
-               } catch (JMSException e)
+               }
+               catch (MessagingException e)
                {
                   log.error("Failed to commit session transaction", e);
                }
@@ -359,6 +430,7 @@ public class JBMMessageHandler implements MessageListener
    private class XATransactionDemarcationStrategy implements TransactionDemarcationStrategy
    {
       private Transaction trans = null;
+
       private TransactionManager tm = activation.getTransactionManager();
 
       public void start() throws Throwable
@@ -368,7 +440,9 @@ public class JBMMessageHandler implements MessageListener
          if (timeout > 0)
          {
             if (trace)
+            {
                log.trace("Setting transactionTimeout for JMSSessionPool to " + timeout);
+            }
 
             tm.setTransactionTimeout(timeout);
          }
@@ -380,19 +454,19 @@ public class JBMMessageHandler implements MessageListener
             trans = tm.getTransaction();
 
             if (trace)
-               log.trace(this + " using tx=" + trans);
-
-            if (xaSession != null)
             {
-               XAResource res = xaSession.getXAResource();
-
-               if (!trans.enlistResource(res))
-               {
-                  throw new JMSException("could not enlist resource");
-               }
-               if (trace)
-                  log.trace(this + " XAResource '" + res + " enlisted.");
+               log.trace(this + " using tx=" + trans);
             }
+
+            if (!trans.enlistResource(session))
+            {
+               throw new JMSException("could not enlist resource");
+            }
+            if (trace)
+            {
+               log.trace(this + " XAResource '" + session + " enlisted.");
+            }
+
          }
          catch (Throwable t)
          {
@@ -414,7 +488,9 @@ public class JBMMessageHandler implements MessageListener
          try
          {
             if (trace)
+            {
                log.trace(this + " using TM to mark TX for rollback tx=" + trans);
+            }
 
             trans.setRollbackOnly();
          }
@@ -431,24 +507,21 @@ public class JBMMessageHandler implements MessageListener
             // Use the TM to commit the Tx (assert the correct association)
             Transaction currentTx = tm.getTransaction();
             if (trans.equals(currentTx) == false)
+            {
                throw new IllegalStateException("Wrong tx association: expected " + trans + " was " + currentTx);
+            }
 
             // Marked rollback
             if (trans.getStatus() == Status.STATUS_MARKED_ROLLBACK)
             {
                if (trace)
+               {
                   log.trace(this + " rolling back JMS transaction tx=" + trans);
+               }
 
                // Actually roll it back
                tm.rollback();
 
-               // NO XASession? then manually rollback.
-               // This is not so good but
-               // it's the best we can do if we have no XASession.
-               if (xaSession == null && activation.isDeliveryTransacted())
-               {
-                  session.rollback();
-               }
             }
             else if (trans.getStatus() == Status.STATUS_ACTIVE)
             {
@@ -457,28 +530,19 @@ public class JBMMessageHandler implements MessageListener
                // a) everything goes well
                // b) app. exception was thrown
                if (trace)
+               {
                   log.trace(this + " commiting the JMS transaction tx=" + trans);
+               }
 
                tm.commit();
-
-               // NO XASession? then manually commit. This is not so good but
-               // it's the best we can do if we have no XASession.
-               if (xaSession == null && activation.isDeliveryTransacted())
-               {
-                  session.commit();
-               }
 
             }
             else
             {
                tm.suspend();
-
-               if (xaSession == null && activation.isDeliveryTransacted())
-               {
-                  session.rollback();
-               }
             }
-         } catch (Throwable t)
+         }
+         catch (Throwable t)
          {
             log.error(this + " failed to commit/rollback", t);
          }

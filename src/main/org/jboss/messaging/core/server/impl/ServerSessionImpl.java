@@ -1891,7 +1891,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                }
                else
                {
-                  theTx.commit();
+                  theTx.commit(packet.isOnePhase());
 
                   response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
                }

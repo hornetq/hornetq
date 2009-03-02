@@ -38,6 +38,8 @@ public interface Transaction
 
    void commit() throws Exception;
 
+   void commit(boolean onePhase) throws Exception;
+
    void rollback() throws Exception;
 
    int getOperationsCount();
