@@ -21,32 +21,37 @@
  */
 package org.jboss.messaging.tests.integration.xa;
 
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.util.Map;
+import javax.transaction.xa.XAException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class BasicXaTest extends ServiceTestBase
 {
-      private static Logger log = Logger.getLogger(BasicXaTest.class);
+   private static Logger log = Logger.getLogger(BasicXaTest.class);
 
    private final Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
@@ -64,7 +69,7 @@ public class BasicXaTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       clearData();
       addressSettings.clear();
       configuration = createDefaultConfig();
@@ -201,4 +206,109 @@ public class BasicXaTest extends ServiceTestBase
       assertNull(m);
 
    }
+
+/*   public void testReceiveRollback() throws Exception
+   {
+      ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
+      ClientProducer clientProducer = clientSession2.createProducer(atestq);
+     for(int i = 0; i < 100; i++)
+     {
+        clientProducer.send(createTextMessage(clientSession2, "m" + i));
+     }
+      ClientSession[] clientSessions = new ClientSession[10];
+      ClientConsumer[] clientConsumers = new ClientConsumer[10];
+      TxMessageHandler[] handlers = new TxMessageHandler[10];
+      CountDownLatch latch = new CountDownLatch(10*10);
+      for (int i = 0; i < clientSessions.length; i++)
+      {
+         clientSessions[i] = sessionFactory.createSession(true, false, false);
+         clientConsumers[i] = clientSessions[i].createConsumer(atestq);
+         handlers[i] = new TxMessageHandler(clientSessions[i], i, latch);
+         clientConsumers[i].setMessageHandler(handlers[i]);
+      }
+      for (ClientSession session : clientSessions)
+      {
+         session.start();
+      }
+
+
+     latch.await(10, TimeUnit.SECONDS);
+      for (TxMessageHandler messageHandler : handlers)
+      {
+         assertFalse(messageHandler.failedToAck);
+      }
+   }
+
+   class TxMessageHandler implements MessageHandler
+   {
+      boolean failedToAck = false;
+
+      final ClientSession session;
+
+      private Xid xid;
+
+      private CountDownLatch latch;
+
+      public TxMessageHandler(ClientSession session, int id, CountDownLatch latch)
+      {
+         this.latch = latch;
+         this.session = session;
+         xid = new XidImpl(("xa" + id).getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         try
+         {
+            session.start(xid, XAResource.TMNOFLAGS);
+         }
+         catch (XAException e)
+         {
+            e.printStackTrace();
+         }
+      }
+
+      public void onMessage(final ClientMessage message)
+      {
+         JBossMessage jbm = JBossMessage.createMessage(message, session);
+
+         try
+         {
+            jbm.doBeforeReceive();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to prepare message for receipt", e);
+
+            return;
+         }
+
+
+         try
+         {
+            message.acknowledge();
+         }
+         catch (MessagingException e)
+         {
+            log.error("Failed to process message", e);
+         }
+         try
+         {
+            session.end(xid, XAResource.TMSUCCESS);
+            session.rollback(xid);
+            session.start(xid, XAResource.TMNOFLAGS);
+         }
+         catch (XAException e)
+         {
+            e.printStackTrace();
+            failedToAck = true;
+            try
+            {
+               session.close();
+            }
+            catch (MessagingException e1)
+            {
+               //
+            }
+         }
+         latch.countDown();
+
+      }
+   }*/
 }
