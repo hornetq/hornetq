@@ -12,20 +12,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
@@ -35,6 +21,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
@@ -99,6 +86,17 @@ import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 /*
  * Session implementation 
@@ -2741,7 +2739,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       for (MessageReference ref : toCancel)
       {
-         ref.getQueue().cancel(tx, ref);
+         ref.getQueue().cancel(theTx, ref);
       }
 
       theTx.rollback();
