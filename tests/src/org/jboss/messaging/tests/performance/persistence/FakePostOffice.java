@@ -34,7 +34,6 @@ import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.SimpleString;
@@ -145,11 +144,6 @@ public class FakePostOffice implements PostOffice
    }
 
    public PagingManager getPagingManager()
-   {
-      return null;
-   }
-
-   public SendLockImpl getAddressLock(SimpleString address)
    {
       return null;
    }

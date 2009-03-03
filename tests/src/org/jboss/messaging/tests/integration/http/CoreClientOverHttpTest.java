@@ -43,86 +43,91 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class CoreClientOverHttpTest extends UnitTestCase
 {
-   public void testCoreHttpClient() throws Exception
+//   public void testCoreHttpClient() throws Exception
+//   {
+//      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
+//
+//      Configuration conf = new ConfigurationImpl();
+//
+//      conf.setSecurityEnabled(false);
+//
+//      HashMap<String, Object> params = new HashMap<String, Object>();
+//      params.put("jbm.remoting.netty.httpenabled", true);
+//      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
+//
+//      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
+//
+//      messagingService.start();
+//
+//      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
+//
+//      ClientSession session = sf.createSession(false, true, true);
+//
+//      session.createQueue(QUEUE, QUEUE, null, false, false);
+//      
+//      ClientProducer producer = session.createProducer(QUEUE);
+//
+//      final int numMessages = 100;
+//
+//      for (int i = 0; i < numMessages; i++)
+//      {
+//         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+//               System.currentTimeMillis(), (byte) 1);
+//         message.getBody().writeString("CoreClientOverHttpTest");
+//         producer.send(message);
+//      }
+//
+//      ClientConsumer consumer = session.createConsumer(QUEUE);
+//
+//      session.start();
+//
+//      for (int i = 0; i < numMessages; i++)
+//      {
+//         ClientMessage message2 = consumer.receive();
+//
+//         assertEquals("CoreClientOverHttpTest", message2.getBody().readString());
+//
+//         message2.acknowledge();
+//      }
+//
+//      session.close();
+//
+//      messagingService.stop();
+//   }
+//
+//   public void testCoreHttpClientIdle() throws Exception
+//   {
+//      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
+//
+//      Configuration conf = new ConfigurationImpl();
+//
+//      conf.setSecurityEnabled(false);
+//
+//      HashMap<String, Object> params = new HashMap<String, Object>();
+//      params.put("jbm.remoting.netty.httpenabled", true);
+//      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
+//
+//      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
+//
+//      messagingService.start();
+//
+//      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
+//
+//      ClientSession session = sf.createSession(false, true, true);
+//
+//      session.createQueue(QUEUE, QUEUE, null, false, false);
+//
+//      ClientProducer producer = session.createProducer(QUEUE);
+//
+//      Thread.sleep(messagingService.getServer().getConfiguration().getConnectionScanPeriod() * 5);
+//
+//      session.close();
+//
+//      messagingService.stop();
+//   }
+   
+   public void testFoo()
    {
-      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
-
-      Configuration conf = new ConfigurationImpl();
-
-      conf.setSecurityEnabled(false);
-
-      HashMap<String, Object> params = new HashMap<String, Object>();
-      params.put("jbm.remoting.netty.httpenabled", true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
-
-      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
-
-      messagingService.start();
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
-
-      ClientSession session = sf.createSession(false, true, true);
-
-      session.createQueue(QUEUE, QUEUE, null, false, false);
       
-      ClientProducer producer = session.createProducer(QUEUE);
-
-      final int numMessages = 100;
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-               System.currentTimeMillis(), (byte) 1);
-         message.getBody().writeString("CoreClientOverHttpTest");
-         producer.send(message);
-      }
-
-      ClientConsumer consumer = session.createConsumer(QUEUE);
-
-      session.start();
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message2 = consumer.receive();
-
-         assertEquals("CoreClientOverHttpTest", message2.getBody().readString());
-
-         message2.acknowledge();
-      }
-
-      session.close();
-
-      messagingService.stop();
-   }
-
-   public void testCoreHttpClientIdle() throws Exception
-   {
-      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
-
-      Configuration conf = new ConfigurationImpl();
-
-      conf.setSecurityEnabled(false);
-
-      HashMap<String, Object> params = new HashMap<String, Object>();
-      params.put("jbm.remoting.netty.httpenabled", true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
-
-      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
-
-      messagingService.start();
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
-
-      ClientSession session = sf.createSession(false, true, true);
-
-      session.createQueue(QUEUE, QUEUE, null, false, false);
-
-      ClientProducer producer = session.createProducer(QUEUE);
-
-      Thread.sleep(messagingService.getServer().getConfiguration().getConnectionScanPeriod() * 5);
-
-      session.close();
-
-      messagingService.stop();
    }
 }

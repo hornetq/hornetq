@@ -21,10 +21,9 @@
  */
 package org.jboss.messaging.core.postoffice;
 
-import org.jboss.messaging.utils.SimpleString;
-
 import java.util.Map;
-import java.util.Set;
+
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * Used to maintain addresses and Bindings.
@@ -42,14 +41,6 @@ public interface AddressManager
    Bindings getBindings(SimpleString address);
 
    void clear();
-
-   boolean addDestination(SimpleString address);
-
-   boolean removeDestination(SimpleString address);
-
-   boolean containsDestination(SimpleString address);
-
-   Set<SimpleString> getDestinations();
 
    Binding getBinding(SimpleString queueName);
 

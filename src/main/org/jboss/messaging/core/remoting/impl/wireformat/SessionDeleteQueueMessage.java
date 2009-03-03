@@ -37,7 +37,7 @@ public class SessionDeleteQueueMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString queueName;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------

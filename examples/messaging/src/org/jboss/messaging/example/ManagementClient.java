@@ -59,8 +59,7 @@ public class ManagementClient
 
       sendMessages(clientSession, queue);
 
-      // add temporary destination and queue
-      clientSession.addDestination(replytoQueue, false, true);
+      // add temporary queue
       clientSession.createQueue(replytoQueue, replytoQueue, null, false, true);
 
       SimpleString notifQueue = new SimpleString("notifQueue");
@@ -90,11 +89,6 @@ public class ManagementClient
 
       });
       clientSession.start();
-
-      // add and remove a destination to receive two notifications from the
-      // server
-      clientSession.addDestination(new SimpleString("anotherQueue"), false, true);
-      clientSession.removeDestination(new SimpleString("anotherQueue"), false);
 
       ClientRequestor requestor = new ClientRequestor(clientSession, DEFAULT_MANAGEMENT_ADDRESS);
 
@@ -164,7 +158,6 @@ public class ManagementClient
       consumeMessages(clientSession, queue);
 
       notifConsumer.close();
-      clientSession.removeDestination(replytoQueue, false);
       clientSession.deleteQueue(replytoQueue);
       clientSession.deleteQueue(notifQueue);
 

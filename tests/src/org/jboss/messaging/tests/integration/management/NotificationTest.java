@@ -78,11 +78,6 @@ public class NotificationTest extends UnitTestCase
       ClientConsumer notifConsumer = session.createConsumer(notifQueue);
       session.start();
       
-      // generate notifications
-      SimpleString destinationName = randomSimpleString();
-      session.addDestination(destinationName, false, true);
-      session.removeDestination(destinationName, false);
-
       // we've generated at least 2 notifications
       // but there is more in the queue (e.g. the notification when the notifQueue was created)      
       ClientMessage notifMessage = notifConsumer.receive(500);
@@ -105,6 +100,29 @@ public class NotificationTest extends UnitTestCase
          System.out.println(key + "=" + notifMessage.getProperty(key));
       }
       notifMessage.acknowledge();
+      
+      // generate more notifications
+      session.createQueue(new SimpleString("testaddress"), new SimpleString("queue1"), false);
+      session.deleteQueue(new SimpleString("queue1"));
+
+      notifMessage = notifConsumer.receive(500);
+      assertNotNull(notifMessage);
+      propertyNames = notifMessage.getPropertyNames();
+      for (SimpleString key : propertyNames)
+      {
+         System.out.println(key + "=" + notifMessage.getProperty(key));
+      }
+      notifMessage.acknowledge();
+      
+      notifMessage = notifConsumer.receive(500);
+      assertNotNull(notifMessage);
+      propertyNames = notifMessage.getPropertyNames();
+      for (SimpleString key : propertyNames)
+      {
+         System.out.println(key + "=" + notifMessage.getProperty(key));
+      }
+      notifMessage.acknowledge();
+      
       
       notifConsumer.close();
       session.deleteQueue(notifQueue);
@@ -129,18 +147,18 @@ public class NotificationTest extends UnitTestCase
       session.start();
 
       // generate notifications that do NOT match the filter
-      session.addDestination(unmatchedDestinationName, false, true);
-      session.removeDestination(unmatchedDestinationName, false);
+      session.createQueue(unmatchedDestinationName, unmatchedDestinationName, true);
+      session.deleteQueue(unmatchedDestinationName);
       
       assertNull(notifConsumer.receive(500));
       
       // generate notifications that match the filter
-      session.addDestination(destinationName, false, true);
-      session.removeDestination(destinationName, false);
+      session.createQueue(destinationName, destinationName, true);
+      session.deleteQueue(destinationName);
 
       ClientMessage notifMessage = notifConsumer.receive(500);
       assertNotNull(notifMessage);
-      assertEquals(NotificationType.ADDRESS_ADDED.toString(), notifMessage.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(NotificationType.BINDING_ADDED.toString(), notifMessage.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
       Set<SimpleString> propertyNames = notifMessage.getPropertyNames();
 
       for (SimpleString key : propertyNames)
@@ -153,7 +171,7 @@ public class NotificationTest extends UnitTestCase
 
       notifMessage = notifConsumer.receive(500);
       assertNotNull(notifMessage);
-      assertEquals(NotificationType.ADDRESS_REMOVED.toString(), notifMessage.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(NotificationType.BINDING_REMOVED.toString(), notifMessage.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
       propertyNames = notifMessage.getPropertyNames();
       for (SimpleString key : propertyNames)
       {

@@ -56,7 +56,7 @@ public interface MessagingServerControlMBean
 
    boolean isSecurityEnabled();
 
-   boolean isRequireDestinations();
+  // boolean isRequireDestinations();
 
    String getBindingsDirectory();
 
@@ -118,13 +118,13 @@ public interface MessagingServerControlMBean
    void destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy")
    String name) throws Exception;
 
-   @Operation(desc = "Add an address to the post office", impact = ACTION)
-   boolean addAddress(@Parameter(name = "address", desc = "The address to add")
-   String address) throws Exception;
-
-   @Operation(desc = "Remove an address from the post office", impact = ACTION)
-   boolean removeAddress(@Parameter(name = "address", desc = "The address to remove")
-   String address) throws Exception;
+//   @Operation(desc = "Add an address to the post office", impact = ACTION)
+//   boolean addAddress(@Parameter(name = "address", desc = "The address to add")
+//   String address) throws Exception;
+//
+//   @Operation(desc = "Remove an address from the post office", impact = ACTION)
+//   boolean removeAddress(@Parameter(name = "address", desc = "The address to remove")
+//   String address) throws Exception;
 
    void enableMessageCounters() throws Exception;
 

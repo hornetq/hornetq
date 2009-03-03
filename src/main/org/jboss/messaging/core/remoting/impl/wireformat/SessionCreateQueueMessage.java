@@ -41,7 +41,7 @@ public class SessionCreateQueueMessage extends PacketImpl
    private SimpleString filterString;
    private boolean durable;
    private boolean temporary;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -49,7 +49,7 @@ public class SessionCreateQueueMessage extends PacketImpl
    public SessionCreateQueueMessage(final SimpleString address, final SimpleString queueName,
    		final SimpleString filterString, final boolean durable, final boolean temporary)
    {
-      super(SESS_CREATEQUEUE);
+      super(SESS_CREATE_QUEUE);
 
       this.address = address;
       this.queueName = queueName;
@@ -60,7 +60,7 @@ public class SessionCreateQueueMessage extends PacketImpl
    
    public SessionCreateQueueMessage()
    {
-      super(SESS_CREATEQUEUE);
+      super(SESS_CREATE_QUEUE);
    }
 
    // Public --------------------------------------------------------

@@ -189,8 +189,8 @@ public class ManagementServiceImpl implements ManagementService
    {
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       unregisterResource(objectName);
-   }
-
+   }  
+   
    public void registerAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = ObjectNames.getAddressObjectName(address);
@@ -206,11 +206,6 @@ public class ManagementServiceImpl implements ManagementService
       {
          log.debug("registered address " + objectName);
       }
-      TypedProperties props = new TypedProperties();
-
-      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
-
-      sendNotification(new Notification(NotificationType.ADDRESS_ADDED, props));
    }
 
    public void unregisterAddress(final SimpleString address) throws Exception
@@ -218,12 +213,6 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = ObjectNames.getAddressObjectName(address);
 
       unregisterResource(objectName);
-
-      TypedProperties props = new TypedProperties();
-
-      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
-
-      sendNotification(new Notification(NotificationType.ADDRESS_REMOVED, props));
    }
 
    public void registerQueue(final Queue queue, final SimpleString address, final StorageManager storageManager) throws Exception

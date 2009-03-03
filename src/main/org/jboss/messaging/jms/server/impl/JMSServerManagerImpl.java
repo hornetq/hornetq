@@ -144,8 +144,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public boolean createQueue(final String queueName, final String jndiBinding) throws Exception
    {
-      JBossQueue jBossQueue = new JBossQueue(queueName);
-      postOffice.addDestination(jBossQueue.getSimpleAddress(), true);
+      JBossQueue jBossQueue = new JBossQueue(queueName);      
       messagingServer.createQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
       boolean added = bindToJndi(jndiBinding, jBossQueue);
       if (added)
@@ -165,7 +164,6 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean createTopic(final String topicName, final String jndiBinding) throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(topicName);
-      postOffice.addDestination(jBossTopic.getSimpleAddress(), true);
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
       {
@@ -195,7 +193,6 @@ public class JMSServerManagerImpl implements JMSServerManager
 
       destinations.remove(name);
       managementService.unregisterQueue(name);
-      postOffice.removeDestination(JBossQueue.createAddressFromName(name), false);
       messagingServer.destroyQueue(JBossQueue.createAddressFromName(name).toString());
 
       return true;
@@ -207,7 +204,6 @@ public class JMSServerManagerImpl implements JMSServerManager
 
       destinations.remove(name);
       managementService.unregisterTopic(name);
-      postOffice.removeDestination(JBossTopic.createAddressFromName(name), false);
 
       return true;
    }

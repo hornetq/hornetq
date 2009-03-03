@@ -14,7 +14,6 @@ package org.jboss.messaging.core.remoting;
 import java.util.concurrent.locks.Lock;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.remoting.server.DelayedResult;
 
 /**
  * A Channel A Channel *does not* support concurrent access by more than one thread!
@@ -29,19 +28,15 @@ public interface Channel
 
    Packet sendBlocking(Packet packet) throws MessagingException;
 
-   DelayedResult replicatePacket(Packet packet);
+   void replicatePacket(Packet packet, long replicatedChannelID, Runnable action);
    
-   void replicateComplete();
-
    void setHandler(ChannelHandler handler);
 
    void close();
 
-   Channel getReplicatingChannel();
-
-   void transferConnection(RemotingConnection newConnection);
+   void transferConnection(RemotingConnection newConnection, final long newID, final Channel replicatingChannel);
    
-   void replayCommands(int lastReceivedCommandID);
+   void replayCommands(int lastReceivedCommandID, final long newID);
 
    int getLastReceivedCommandID();
 
@@ -55,11 +50,11 @@ public interface Channel
    
    RemotingConnection getConnection();
    
-   void replicatingChannelDead();
+   void executeOutstandingDelayedResults();
    
    void confirm(Packet packet);
    
    void setCommandConfirmationHandler(CommandConfirmationHandler handler);
    
-   void flushConfirmations();
+   void flushConfirmations();      
 }

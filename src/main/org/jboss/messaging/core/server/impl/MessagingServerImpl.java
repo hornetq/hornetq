@@ -49,7 +49,7 @@ import org.jboss.messaging.core.postoffice.impl.DivertBinding;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
@@ -102,7 +102,7 @@ public class MessagingServerImpl implements MessagingServer
    // -----------------------------------------------------------------------------------
 
    private SimpleString nodeID;
-   
+
    private UUID uuid;
 
    private final Version version;
@@ -140,6 +140,12 @@ public class MessagingServerImpl implements MessagingServer
    private ConnectorFactory backupConnectorFactory;
 
    private Map<String, Object> backupConnectorParams;
+
+   private RemotingConnection replicatingConnection;
+
+   private Channel replicatingChannel;
+
+   private Object replicatingChannelLock = new Object();
 
    // plugins
 
@@ -238,12 +244,11 @@ public class MessagingServerImpl implements MessagingServer
                                       managementService,
                                       configuration.getMessageExpiryScanPeriod(),
                                       configuration.getMessageExpiryThreadPriority(),
-                                      configuration.isRequireDestinations(),
                                       configuration.isWildcardRoutingEnabled(),
                                       configuration.isBackup(),
                                       configuration.getIDCacheSize(),
                                       configuration.isPersistIDCache(),
-                                      executorFactory,                                                           
+                                      executorFactory,
                                       addressSettingsRepository);
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
@@ -259,17 +264,15 @@ public class MessagingServerImpl implements MessagingServer
       managementService.setManagementNotificationAddress(configuration.getManagementNotificationAddress());
       managementService.setClusterPassword(configuration.getManagementClusterPassword());
       managementService.setManagementRequestTimeout(configuration.getManagementRequestTimeout());
-      
-      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
-      List<SimpleString> destinations = new ArrayList<SimpleString>();
 
-      storageManager.loadBindingJournal(queueBindingInfos, destinations);
-      
+      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
+      // List<SimpleString> destinations = new ArrayList<SimpleString>();
+
+      storageManager.loadBindingJournal(queueBindingInfos);
+
       uuid = storageManager.getPersistentID();
-      
+
       nodeID = new SimpleString(uuid.toString());
-      
-      log.info("*** messaging server node id is " + nodeID);
 
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
@@ -280,22 +283,6 @@ public class MessagingServerImpl implements MessagingServer
                                                           remotingService,
                                                           this,
                                                           queueFactory);
-
-      
-      
-      // FIXME the destination corresponding to the notification address is always created
-      // so that queues can be created wether the address is allowable or not (to revisit later)
-      if (!postOffice.containsDestination(configuration.getManagementNotificationAddress()))
-      {
-         postOffice.addDestination(configuration.getManagementNotificationAddress(), true);
-      }
-
-      // Destinations must be added first to ensure flow controllers exist
-      // before queues are created
-      for (SimpleString destination : destinations)
-      {
-         postOffice.addDestination(destination, true);
-      }
 
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
@@ -380,6 +367,7 @@ public class MessagingServerImpl implements MessagingServer
             backupConnectorParams = backupConnector.getParams();
          }
       }
+
       remotingService.setMessagingServer(this);
 
       if (configuration.isClustered())
@@ -428,6 +416,20 @@ public class MessagingServerImpl implements MessagingServer
       catch (InterruptedException e)
       {
          // Ignore
+      }
+
+      if (replicatingConnection != null)
+      {
+         try
+         {
+            replicatingConnection.destroy();
+         }
+         catch (Exception ignore)
+         {
+         }
+
+         replicatingConnection = null;
+         replicatingChannel = null;
       }
 
       pagingManager.stop();
@@ -564,7 +566,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       if (configuration.isBackup())
       {
-         freezeAllBackupConnections();
+         freezeBackupConnection();
 
          List<Queue> toActivate = postOffice.activate();
 
@@ -583,7 +585,7 @@ public class MessagingServerImpl implements MessagingServer
       connection.activate();
    }
 
-   // We need to prevent any more packets being handled on any connections (from live) as soon as first live connection
+   // We need to prevent any more packets being handled on replicating connection as soon as first live connection
    // is created or re-attaches, to prevent a situation like the following:
    // connection 1 create queue A
    // connection 2 fails over
@@ -592,18 +594,29 @@ public class MessagingServerImpl implements MessagingServer
    // connection 1 delivery
    // connection 1 delivery gets replicated
    // can't find message in queue since active was delivered immediately
-   private void freezeAllBackupConnections()
+   private void freezeBackupConnection()
    {
-      Set<RemotingConnection> connections = new HashSet<RemotingConnection>();
+      // Sanity check
+      // All replicated sessions should be on the same connection
+      RemotingConnection replConnection = null;
 
       for (ServerSession session : sessions.values())
       {
-         connections.add(session.getChannel().getConnection());
+         RemotingConnection rc = session.getChannel().getConnection();
+
+         if (replConnection == null)
+         {
+            replConnection = rc;
+         }
+         else if (replConnection != rc)
+         {
+            throw new IllegalStateException("More than one replicating connection!");
+         }
       }
 
-      for (RemotingConnection connection : connections)
+      if (replConnection != null)
       {
-         connection.freeze();
+         replConnection.freeze();
       }
    }
 
@@ -632,7 +645,8 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public CreateSessionResponseMessage replicateCreateSession(final String name,
-                                                              final long channelID,
+                                                              final long replicatedChannelID,
+                                                              final long originalChannelID,
                                                               final String username,
                                                               final String password,
                                                               final int minLargeMessageSize,
@@ -645,7 +659,8 @@ public class MessagingServerImpl implements MessagingServer
                                                               final int sendWindowSize) throws Exception
    {
       return doCreateSession(name,
-                             channelID,
+                             replicatedChannelID,
+                             originalChannelID,
                              username,
                              password,
                              minLargeMessageSize,
@@ -655,11 +670,13 @@ public class MessagingServerImpl implements MessagingServer
                              autoCommitAcks,
                              preAcknowledge,
                              xa,
-                             sendWindowSize);
+                             sendWindowSize,
+                             true);
    }
 
    public CreateSessionResponseMessage createSession(final String name,
                                                      final long channelID,
+                                                     final long replicatedChannelID,
                                                      final String username,
                                                      final String password,
                                                      final int minLargeMessageSize,
@@ -675,6 +692,7 @@ public class MessagingServerImpl implements MessagingServer
 
       return doCreateSession(name,
                              channelID,
+                             replicatedChannelID,
                              username,
                              password,
                              minLargeMessageSize,
@@ -684,12 +702,18 @@ public class MessagingServerImpl implements MessagingServer
                              autoCommitAcks,
                              preAcknowledge,
                              xa,
-                             sendWindowSize);
+                             sendWindowSize,
+                             false);
    }
 
    public void removeSession(final String name) throws Exception
    {
       sessions.remove(name);
+   }
+
+   public ServerSession getSession(final String name)
+   {
+      return sessions.get(name);
    }
 
    public List<ServerSession> getSessions(final String connectionID)
@@ -706,50 +730,47 @@ public class MessagingServerImpl implements MessagingServer
       }
       return matchingSessions;
    }
-   
-   public List<ServerSession> getSessions()
+
+   public Set<ServerSession> getSessions()
    {
-      Set<Entry<String, ServerSession>> sessionEntries = sessions.entrySet();
-      List<ServerSession> matchingSessions = new ArrayList<ServerSession>();
-      for (Entry<String, ServerSession> sessionEntry : sessionEntries)
-      {
-         ServerSession serverSession = sessionEntry.getValue();
-         matchingSessions.add(serverSession);
-      }
-      return matchingSessions;
+      return new HashSet<ServerSession>(sessions.values());
    }
 
-   public RemotingConnection getReplicatingConnection()
+   public Channel getReplicatingChannel()
    {
-      // Note we must always get a new connection each time - since there must
-      // be a one to one correspondence
-      // between connections to clients and replicating connections, since we
-      // need to preserve channel ids
-      // before and after failover
-
-      if (backupConnectorFactory != null)
+      synchronized (replicatingChannelLock)
       {
-         NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener();
+         if (replicatingChannel == null && backupConnectorFactory != null)
+         {
+            NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener();
 
-         RemotingConnectionImpl replicatingConnection = (RemotingConnectionImpl)RemotingConnectionImpl.createConnection(backupConnectorFactory,
-                                                                                                                        backupConnectorParams,
-                                                                                                                        ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                                                                                        ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                                                                                                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                                                                                                        scheduledExecutor,
-                                                                                                                        listener);
+            replicatingConnection = (RemotingConnectionImpl)RemotingConnectionImpl.createConnection(backupConnectorFactory,
+                                                                                                    backupConnectorParams,
+                                                                                                    ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                                                                                    ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                                                                                    scheduledExecutor,
+                                                                                                    listener);
 
-         listener.conn = replicatingConnection;
+            listener.conn = replicatingConnection;
 
-         replicatingConnection.startPinger();
+            replicatingChannel = replicatingConnection.getChannel(2, -1, false);
 
-         return replicatingConnection;
+            replicatingConnection.addFailureListener(new FailureListener()
+            {
+               public boolean connectionFailed(MessagingException me)
+               {
+                  replicatingChannel.executeOutstandingDelayedResults();
+
+                  return true;
+               }
+            });
+
+            replicatingConnection.startPinger();
+         }
       }
-      else
-      {
-         return null;
-      }
 
+      return replicatingChannel;
    }
 
    public MessagingServerControlMBean getServerManagement()
@@ -776,7 +797,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       return nodeID;
    }
-   
+
    public UUID getUUID()
    {
       return uuid;
@@ -921,6 +942,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private CreateSessionResponseMessage doCreateSession(final String name,
                                                         final long channelID,
+                                                        final long oppositeChannelID,
                                                         final String username,
                                                         final String password,
                                                         final int minLargeMessageSize,
@@ -930,14 +952,15 @@ public class MessagingServerImpl implements MessagingServer
                                                         final boolean autoCommitAcks,
                                                         final boolean preAcknowledge,
                                                         final boolean xa,
-                                                        final int sendWindowSize) throws Exception
+                                                        final int sendWindowSize,
+                                                        final boolean backup) throws Exception
    {
       if (version.getIncrementingVersion() < incrementingVersion)
       {
          throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
                                       "client not compatible with version: " + version.getFullVersion());
       }
-      
+
       // Is this comment relevant any more ?
 
       // Authenticate. Successful autentication will place a new SubjectContext
@@ -962,8 +985,10 @@ public class MessagingServerImpl implements MessagingServer
 
       Channel channel = connection.getChannel(channelID, sendWindowSize, false);
 
+      Channel replicatingChannel = getReplicatingChannel();
+
       final ServerSessionImpl session = new ServerSessionImpl(name,
-                                                              channelID,
+                                                              oppositeChannelID,
                                                               username,
                                                               password,
                                                               minLargeMessageSize,
@@ -982,11 +1007,15 @@ public class MessagingServerImpl implements MessagingServer
                                                               managementService,
                                                               queueFactory,
                                                               this,
-                                                              configuration.getManagementAddress());
+                                                              configuration.getManagementAddress(),
+                                                              replicatingChannel,
+                                                              backup);
 
       sessions.put(name, session);
 
-      ChannelHandler handler = new ServerSessionPacketHandler(session, channel);
+      ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session, channel);
+
+      session.setHandler(handler);
 
       channel.setHandler(handler);
 

@@ -621,7 +621,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          ServerMessage message = ref.getMessage();
 
          refs.add(ref);
-
+         
          if (flowRecord != null)
          {
             // We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave
@@ -687,7 +687,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          }
 
          producer.send(dest, message);
-
+         
          return HandleStatus.HANDLED;
       }
    }

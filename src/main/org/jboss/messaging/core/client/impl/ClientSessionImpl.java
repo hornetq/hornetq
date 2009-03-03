@@ -54,7 +54,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.RollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
@@ -68,7 +67,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessag
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -175,9 +173,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private volatile boolean started;
 
    private SendAcknowledgementHandler sendAckHandler;
+    
+   private volatile boolean closedSent;
    
-   private volatile boolean inClose;
-
    // Constructors ----------------------------------------------------------------------------
 
    public ClientSessionImpl(final ConnectionManager connectionManager,
@@ -319,35 +317,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return response;
    }
-
-   public void addDestination(final SimpleString address, final boolean durable, final boolean temp) throws MessagingException
-   {
-      checkClosed();
-
-      SessionAddDestinationMessage request = new SessionAddDestinationMessage(address, durable, temp);
-
-      channel.sendBlocking(request);
-   }
-
-   public void addDestination(final String address, final boolean durable, final boolean temporary) throws MessagingException
-   {
-      addDestination(toSimpleString(address), durable, temporary);
-   }
-
-   public void removeDestination(final SimpleString address, final boolean durable) throws MessagingException
-   {
-      checkClosed();
-
-      SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(address, durable);
-
-      channel.sendBlocking(request);
-   }
-
-   public void removeDestination(final String address, final boolean durable) throws MessagingException
-   {
-      removeDestination(toSimpleString(address), durable);
-   }
-
+ 
    public ClientConsumer createConsumer(final SimpleString queueName) throws MessagingException
    {
       return createConsumer(queueName, null, false);
@@ -541,8 +511,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      flushAcks();
-
       // We do a "JMS style" rollback where the session is stopped, and the buffer is cancelled back
       // first before rolling back
       // This ensures messages are received in the same order after rollback w.r.t. to messages in the buffer
@@ -560,6 +528,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          consumer.clear();
       }
+      
+      //Acks must be flushed here *after connection is stopped and all onmessages finished executing
+      flushAcks();
 
       channel.sendBlocking(new RollbackMessage(isLastMessageAsDelived));
                            
@@ -688,6 +659,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
+      
       checkClosed();
 
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(consumerID, messageID, blockOnAcknowledge);
@@ -774,18 +746,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       try
       {
          closeChildren();
-
-         inClose = true;
+         
+         closedSent = true;
          
          channel.sendBlocking(new SessionCloseMessage());   
       }
       catch (Throwable ignore)
       {
          // Session close should always return without exception
-      }
-      finally
-      {
-         inClose = false;
       }
       
       doCleanup();
@@ -826,7 +794,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       try
       {
-         channel.transferConnection(backupConnection);
+         channel.transferConnection(backupConnection, channel.getID(), null);
 
          backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
@@ -840,13 +808,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (!response.isRemoved())
          {
-            channel.replayCommands(response.getLastReceivedCommandID());
+            channel.replayCommands(response.getLastReceivedCommandID(), channel.getID());
 
             ok = true;
          }
          else
          {                        
-            if (inClose)
+            if (closedSent)
             {            
                // a session re-attach may fail, if the session close was sent before failover started, hit the server,
                // processed, then before the response was received back, failover occurred, re-attach was attempted. in
@@ -858,8 +826,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                ok = true;
             }
             else
-            {
-               log.warn("Session not found on server when attempting to re-attach");
+            {                              
+               log.warn(System.identityHashCode(this) + " Session not found on server when attempting to re-attach");
             }
             
             channel.returnBlocking();            
@@ -1082,11 +1050,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void rollback(final Xid xid) throws XAException
    {
       checkXA();
-
+      
       try
       {
-         flushAcks();
-
          boolean wasStarted = started;
 
          if (wasStarted)
@@ -1099,6 +1065,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             consumer.clear();
          }
+         
+         flushAcks();
 
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
 

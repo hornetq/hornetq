@@ -83,7 +83,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
 
    protected Timer timer;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -269,14 +269,63 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    protected ClientSession createAutoCommitSession(ClientSessionFactory sf) throws Exception
    {
-      return sf.createSession(false, true, true);      
+      return sf.createSession(false, true, true);
    }
-   
+
    protected ClientSession createTransactionalSession(ClientSessionFactory sf) throws Exception
    {
-      return sf.createSession(false, false, false);      
+      return sf.createSession(false, false, false);
    }
-   
+
+   protected void doTestA(final ClientSessionFactory sf, final int threadNum, final ClientSession session2) throws Exception
+   {
+      SimpleString subName = new SimpleString("sub" + threadNum);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(ADDRESS, subName, null, false, false);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      ClientConsumer consumer = session.createConsumer(subName);
+
+      final int numMessages = 100;
+
+      sendMessages(session, producer, numMessages, threadNum);
+
+      // log.info("sent messages");
+
+      session.start();
+
+      MyHandler handler = new MyHandler(threadNum, numMessages);
+
+      consumer.setMessageHandler(handler);
+
+      boolean ok = handler.latch.await(20000, TimeUnit.MILLISECONDS);
+
+      if (!ok)
+      {
+         throw new Exception("Timed out waiting for messages on handler " + System.identityHashCode(handler) +
+                             " threadnum " +
+                             threadNum);
+      }
+
+      if (handler.failure != null)
+      {
+         throw new Exception("Handler failed: " + handler.failure);
+      }
+
+      producer.close();
+
+      consumer.close();
+
+      session.deleteQueue(subName);
+
+      session.close();
+
+      log.info("** done");
+   }
+
    protected void doTestA(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
       long start = System.currentTimeMillis();
@@ -305,6 +354,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          consumers.add(consumer);
 
          sessions.add(sessConsume);
+
       }
 
       ClientSession sessSend = sf.createSession(false, true, true);
@@ -342,6 +392,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       }
 
       sessSend.close();
+
       for (ClientSession session : sessions)
       {
          session.close();
@@ -467,7 +518,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       {
          SimpleString subName = new SimpleString(threadNum + "sub" + i);
 
-         ClientSession sessConsume = createTransactionalSession(sf); 
+         ClientSession sessConsume = createTransactionalSession(sf);
 
          sessConsume.start();
 
@@ -518,13 +569,15 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          {
             throw new Exception("Handler failed: " + handler.failure);
          }
+         
+         handler.reset();
       }
 
       for (ClientSession session : sessions)
       {
          session.rollback();
       }
-
+      
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
@@ -973,7 +1026,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    protected void doTestI(final ClientSessionFactory sf, final int threadNum) throws Exception
    {
-      log.info("in testi");
       ClientSession sessCreate = sf.createSession(false, true, true);
 
       sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
@@ -1004,7 +1056,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       sessCreate.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
 
       sessCreate.close();
-            
+
       log.info("completed testi");
    }
 
@@ -1068,17 +1120,15 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
     * This test tests failure during create connection
     */
    protected void doTestL(final ClientSessionFactory sf) throws Exception
-   {     
+   {
       final int numSessions = 10;
 
       for (int i = 0; i < numSessions; i++)
       {
-         log.info("i " + i);
-         
          ClientSession session = sf.createSession(false, false, false);
 
          session.close();
-      }   
+      }
    }
 
    // Browsers
@@ -1280,13 +1330,20 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
    {
       runTestMultipleThreads(runnable, numThreads, fileBased, false);
    }
-   
-   private void runTestMultipleThreads(final RunnableT runnable, final int numThreads, final boolean fileBased, final boolean failOnCreateConnection) throws Exception
+
+   private void runTestMultipleThreads(final RunnableT runnable,
+                                       final int numThreads,
+                                       final boolean fileBased,
+                                       final boolean failOnCreateConnection) throws Exception
    {
       this.runTestMultipleThreads(runnable, numThreads, fileBased, failOnCreateConnection, 1000);
    }
-   
-   private void runTestMultipleThreads(final RunnableT runnable, final int numThreads, final boolean fileBased, final boolean failOnCreateConnection, final long failDelay) throws Exception
+
+   private void runTestMultipleThreads(final RunnableT runnable,
+                                       final int numThreads,
+                                       final boolean fileBased,
+                                       final boolean failOnCreateConnection,
+                                       final long failDelay) throws Exception
    {
       final int numIts = getNumIterations();
 
@@ -1298,7 +1355,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
          final ClientSessionFactoryInternal sf = createSessionFactory();
 
-         ClientSession session = sf.createSession(false, false, false);
+         final ClientSession session = sf.createSession(false, true, true);
 
          Failer failer = startFailer(failDelay, session, failOnCreateConnection);
 
@@ -1355,11 +1412,11 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
                   throw new Exception("Exception on thread " + thread, thread.throwable);
                }
             }
-            
+
             log.info("completed loop");
 
             runnable.checkFail();
-            
+
          }
          while (!failer.isExecuted());
 
@@ -1457,8 +1514,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
             int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
             int cnt = (Integer)msg.getProperty(new SimpleString("count"));
 
-            // log.info("Got message " + tn + ":" + cnt);
-
             Integer c = consumerCounts.get(tn);
             if (c == null)
             {
@@ -1492,13 +1547,13 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       private final ClientSession session;
 
       private boolean executed;
-      
+
       private final boolean failOnCreateConnection;
-      
+
       public Failer(final ClientSession session, final boolean failOnCreateConnection)
       {
          this.session = session;
-         
+
          this.failOnCreateConnection = failOnCreateConnection;
       }
 
@@ -1508,11 +1563,11 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          log.info("** Failing connection");
 
          RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
-         
+
          if (failOnCreateConnection)
          {
             InVMConnector.numberOfFailures = 1;
-            InVMConnector.failOnCreateConnection = true;            
+            InVMConnector.failOnCreateConnection = true;
          }
          else
          {
@@ -1562,7 +1617,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    private class MyHandler implements MessageHandler
    {
-      final CountDownLatch latch = new CountDownLatch(1);
+      CountDownLatch latch = new CountDownLatch(1);
 
       private final Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
 
@@ -1573,6 +1628,17 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       final int numMessages;
 
       volatile boolean done;
+      
+      synchronized void reset()
+      {
+         counts.clear();
+         
+         done = false;
+         
+         failure = null;
+         
+         latch = new CountDownLatch(1);;
+      }
 
       MyHandler(final int threadNum, final int numMessages)
       {
@@ -1581,8 +1647,9 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          this.numMessages = numMessages;
       }
 
-      public void onMessage(final ClientMessage message)
+      public synchronized void onMessage(final ClientMessage message)
       {
+         // log.info("*** handler got message");
          try
          {
             message.acknowledge();

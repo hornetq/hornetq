@@ -25,9 +25,9 @@ package org.jboss.messaging.core.server;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.RollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
@@ -36,8 +36,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
@@ -49,6 +47,8 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
+import org.jboss.messaging.core.server.impl.ServerSessionPacketHandler;
 
 /**
  *
@@ -110,13 +110,9 @@ public interface ServerSession
 
    void handleSetXATimeout(SessionXASetTimeoutMessage packet);
 
-   void handleAddDestination(SessionAddDestinationMessage packet);
-
    void handleStart(Packet packet);
 
    void handleStop(Packet packet);
-
-   void handleRemoveDestination(SessionRemoveDestinationMessage packet);
 
    void handleCreateQueue(SessionCreateQueueMessage packet);
 
@@ -143,9 +139,15 @@ public interface ServerSession
    void handleClose(Packet packet);
 
    void handleReplicatedDelivery(SessionReplicateDeliveryMessage packet);
+   
+   void handlePacketsConfirmed(PacketsConfirmedMessage packet);
 
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
 
    Channel getChannel();
+   
+   ServerSessionPacketHandler getHandler();
+   
+   void setHandler(ServerSessionPacketHandler handler);
 
 }

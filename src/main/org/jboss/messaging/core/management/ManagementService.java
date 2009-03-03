@@ -34,6 +34,8 @@ import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.management.impl.AddressControl;
+import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -98,7 +100,7 @@ public interface ManagementService extends MessagingComponent
    void registerInJMX(ObjectName objectName, Object managedResource) throws Exception;
 
    void registerInRegistry(ObjectName objectName, Object managedResource);
-
+   
    void registerAddress(SimpleString address) throws Exception;
 
    void unregisterAddress(SimpleString address) throws Exception;

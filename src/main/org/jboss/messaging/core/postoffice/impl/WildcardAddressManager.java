@@ -161,19 +161,6 @@ public class WildcardAddressManager extends SimpleAddressManager
       return binding;
    }
 
-   public boolean containsDestination(final SimpleString address)
-   {
-      Address add = new AddressImpl(address);
-      if (add.containsWildCard())
-      {
-         return true;
-      }
-      else
-      {
-         return super.containsDestination(address);
-      }
-   }
-
    public void clear()
    {
       super.clear();

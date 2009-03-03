@@ -74,15 +74,6 @@ public class RollbackMessage extends PacketImpl
       this.considerLastMessageAsDelivered = isLastMessageAsDelived;
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl#getRequiredBufferSize()
-    */
-   @Override
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_BOOLEAN;
-   }
-
    @Override
    public void encodeBody(final MessagingBuffer buffer)
    {

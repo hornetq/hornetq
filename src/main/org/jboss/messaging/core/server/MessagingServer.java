@@ -20,6 +20,7 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
@@ -70,6 +71,7 @@ public interface MessagingServer extends MessagingComponent
 
    CreateSessionResponseMessage createSession(String name,
                                               long channelID,
+                                              long replicatedSessionID,
                                               String username,
                                               String password,
                                               int minLargeMessageSize,
@@ -83,6 +85,7 @@ public interface MessagingServer extends MessagingComponent
 
    CreateSessionResponseMessage replicateCreateSession(String name,
                                                        long channelID,
+                                                       long originalSessionID,
                                                        String username,
                                                        String password,
                                                        int minLargeMessageSize,
@@ -93,8 +96,12 @@ public interface MessagingServer extends MessagingComponent
                                                        boolean preAcknowledge,
                                                        boolean xa,
                                                        int sendWindowSize) throws Exception;
-
+   
    void removeSession(String name) throws Exception;
+   
+   ServerSession getSession(String name);
+   
+   Set<ServerSession> getSessions();
 
    boolean isStarted();
 
@@ -108,14 +115,10 @@ public interface MessagingServer extends MessagingComponent
 
    PostOffice getPostOffice();
 
-   RemotingConnection getReplicatingConnection();
-
    ResourceManager getResourceManager();
 
    List<ServerSession> getSessions(String connectionID);
-
-   List<ServerSession> getSessions();
-
+   
    ClusterManager getClusterManager();
    
    QueueFactory getQueueFactory();
@@ -123,4 +126,6 @@ public interface MessagingServer extends MessagingComponent
    SimpleString getNodeID();
    
    UUID getUUID();
+   
+   Channel getReplicatingChannel();
 }

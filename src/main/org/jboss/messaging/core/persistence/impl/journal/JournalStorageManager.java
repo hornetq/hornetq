@@ -32,8 +32,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -104,7 +102,7 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte QUEUE_BINDING_RECORD = 21;
 
-   public static final byte DESTINATION_RECORD = 22;
+  // public static final byte DESTINATION_RECORD = 22;
    
    public static final byte PERSISTENT_ID_RECORD = 23;
 
@@ -139,8 +137,6 @@ public class JournalStorageManager implements StorageManager
    private final Journal bindingsJournal;
 
    private final SequentialFileFactory largeMessagesFactory;
-
-   private final ConcurrentMap<SimpleString, Long> destinationIDMap = new ConcurrentHashMap<SimpleString, Long>();
 
    private volatile boolean started;
 
@@ -892,42 +888,7 @@ public class JournalStorageManager implements StorageManager
       bindingsJournal.appendDeleteRecord(queueBindingID);
    }
 
-   public boolean addDestination(final SimpleString destination) throws Exception
-   {
-      long destinationID = idGenerator.generateID();
-
-      if (destinationIDMap.putIfAbsent(destination, destinationID) != null)
-      {
-         // Already exists
-         return false;
-      }
-      else
-      {
-         DestinationEncoding destinationEnc = new DestinationEncoding(destination);
-
-         bindingsJournal.appendAddRecord(destinationID, DESTINATION_RECORD, destinationEnc);
-
-         return true;
-      }
-   }
-
-   public boolean deleteDestination(final SimpleString destination) throws Exception
-   {
-      Long destinationID = destinationIDMap.remove(destination);
-
-      if (destinationID == null)
-      {
-         return false;
-      }
-      else
-      {
-         bindingsJournal.appendDeleteRecord(destinationID);
-
-         return true;
-      }
-   }
-
-   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, final List<SimpleString> destinations) throws Exception
+   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -952,17 +913,7 @@ public class JournalStorageManager implements StorageManager
             bindingEncoding.setPersistenceID(id);
 
             queueBindingInfos.add(bindingEncoding);
-         }
-         else if (rec == DESTINATION_RECORD)
-         {
-            DestinationEncoding destinationEncoding = new DestinationEncoding();
-
-            destinationEncoding.decode(buffer);
-
-            destinationIDMap.put(destinationEncoding.destination, id);
-
-            destinations.add(destinationEncoding.destination);
-         }
+         }        
          else if (rec == PERSISTENT_ID_RECORD)
          {
             PersistentIDEncoding encoding = new PersistentIDEncoding();
@@ -1086,12 +1037,8 @@ public class JournalStorageManager implements StorageManager
 
       if (!f.exists())
       {
-         log.info("Directory " + dir + " does not already exists");
-
          if (create)
          {
-            log.info("Creating it");
-
             if (!f.mkdirs())
             {
                throw new IllegalStateException("Failed to create directory " + dir);
@@ -1099,14 +1046,8 @@ public class JournalStorageManager implements StorageManager
          }
          else
          {
-            log.info("Not creating it");
-
             throw new IllegalArgumentException("Directory " + dir + " does not exist and will not create it");
          }
-      }
-      else
-      {
-         log.info("Directory " + dir + " already exists");
       }
    }
 
@@ -1121,7 +1062,6 @@ public class JournalStorageManager implements StorageManager
          for (String tmpFile : tmpFiles)
          {
             SequentialFile file = largeMessagesFactory.createSequentialFile(tmpFile, -1);
-            log.info("Deleting file " + file);
             file.delete();
          }
       }

@@ -38,15 +38,15 @@ public interface RemotingConnection extends BufferHandler
    void addFailureListener(FailureListener listener);
 
    boolean removeFailureListener(FailureListener listener);
-   
+
    List<FailureListener> getFailureListeners();
-   
+
    void setFailureListeners(List<FailureListener> listeners);
 
    MessagingBuffer createBuffer(int size);
 
    void fail(MessagingException me);
-      
+
    void destroy();
 
    boolean isExpired(long now);
@@ -56,19 +56,10 @@ public interface RemotingConnection extends BufferHandler
    void syncIDGeneratorSequence(long id);
 
    long getIDGeneratorSequence();
-   
-   void activate();
-   
-   void freeze();
-   
-   RemotingConnection getReplicatingConnection();
-   
-   void setReplicatingConnection(RemotingConnection connection);
-   
-   Connection getTransportConnection();
-   
-   void setReadyToClose();
-   
-   boolean isReadyToClose();
 
+   void activate();
+
+   void freeze();
+  
+   Connection getTransportConnection();
 }

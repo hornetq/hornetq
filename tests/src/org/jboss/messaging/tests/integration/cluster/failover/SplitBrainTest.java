@@ -120,8 +120,8 @@ public class SplitBrainTest extends UnitTestCase
       Set<RemotingConnection> conns = liveService.getServer().getRemotingService().getConnections();
       for (RemotingConnection conn : conns)
       {
-         RemotingConnection replicatingConn = conn.getReplicatingConnection();
-         Connection tcConn = replicatingConn.getTransportConnection();
+         RemotingConnection replicatingConnection = liveService.getServer().getReplicatingChannel().getConnection();
+         Connection tcConn = replicatingConnection.getTransportConnection();
          tcConn.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
       }
       

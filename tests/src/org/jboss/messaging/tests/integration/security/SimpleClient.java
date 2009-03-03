@@ -65,7 +65,6 @@ public class SimpleClient
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
          ClientSession session = sf.createSession(false, true, true);
          
-         session.addDestination(queueName, false, true);
          session.createQueue(queueName, queueName, null, false, false);
          ClientProducer producer = session.createProducer(queueName);
          ClientConsumer consumer = session.createConsumer(queueName);

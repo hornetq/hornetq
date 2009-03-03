@@ -32,11 +32,9 @@ import static org.jboss.messaging.core.security.CheckType.CREATE;
 import static org.jboss.messaging.core.security.CheckType.READ;
 import static org.jboss.messaging.core.security.CheckType.WRITE;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.lang.management.ManagementFactory;
-import java.nio.ByteBuffer;
 import java.util.Set;
 
 import javax.management.MBeanServer;
@@ -44,7 +42,6 @@ import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
-import org.jboss.messaging.core.buffers.HeapChannelBuffer;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AddressControlMBean;
@@ -77,31 +74,6 @@ public class ManagementServiceImplTest extends UnitTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testHandleManagementMessageWithAttribute() throws Exception
-   {
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-      ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
-      assertNotNull(managementService);
-      managementService.start();
-
-      SimpleString address = RandomUtil.randomSimpleString();
-      managementService.registerAddress(address);
-
-      // invoke attribute and operation on the server
-      ServerMessage message = new ServerMessageImpl();
-      MessagingBuffer body = ChannelBuffers.buffer(2048);
-      message.setBody(body);
-      ManagementHelper.putAttributes(message, ObjectNames.getAddressObjectName(address), "Address");
-
-      managementService.handleMessage(message);
-
-      SimpleString value = (SimpleString)message.getProperty(new SimpleString("Address"));
-      assertNotNull(value);
-      assertEquals(address, value);
-
-      managementService.stop();
-   }
 
    public void testHandleManagementMessageWithOperation() throws Exception
    {
@@ -186,22 +158,6 @@ public class ManagementServiceImplTest extends UnitTestCase
       managementService.stop();
    }
 
-   public void testStop() throws Exception
-   {
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-
-      ManagementService managementService = new ManagementServiceImpl(mbeanServer, true);
-      assertNotNull(managementService);
-      managementService.start();
-
-      managementService.registerAddress(randomSimpleString());
-
-      assertEquals(1, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
-
-      managementService.stop();
-
-      assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
-   }
 
    // Package protected ---------------------------------------------
 

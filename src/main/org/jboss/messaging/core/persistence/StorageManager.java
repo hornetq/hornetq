@@ -117,10 +117,5 @@ public interface StorageManager extends MessagingComponent
    
    void deleteQueueBinding(long queueBindingID) throws Exception;
    
-   boolean addDestination(SimpleString destination) throws Exception;
-
-   boolean deleteDestination(SimpleString destination) throws Exception;
-
-   void loadBindingJournal(List<QueueBindingInfo> queueBindingInfos,                           
-                           List<SimpleString> destinations) throws Exception;
+   void loadBindingJournal(List<QueueBindingInfo> queueBindingInfos) throws Exception;
 }

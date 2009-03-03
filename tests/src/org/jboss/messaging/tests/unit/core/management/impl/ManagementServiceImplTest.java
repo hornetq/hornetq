@@ -181,59 +181,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       verify(mbeanServer);
    }
 
-   public void testRegisterAddress() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      ObjectName objectName = ObjectNames.getAddressObjectName(address);
-      ObjectInstance objectInstance = new ObjectInstance(objectName, AddressControl.class.getName());
-
-      MBeanServer mbeanServer = createMock(MBeanServer.class);
-      expect(mbeanServer.isRegistered(objectName)).andReturn(false);
-      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
-
-      replay(mbeanServer);
-
-      ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerAddress(address);
-
-      verify(mbeanServer);
-   }
-
-   public void testRegisterAlreadyRegisteredAddress() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      ObjectName objectName = ObjectNames.getAddressObjectName(address);
-      ObjectInstance objectInstance = new ObjectInstance(objectName, AddressControl.class.getName());
-
-      MBeanServer mbeanServer = createMock(MBeanServer.class);
-      expect(mbeanServer.isRegistered(objectName)).andReturn(true);
-      mbeanServer.unregisterMBean(objectName);
-      expect(mbeanServer.registerMBean(isA(StandardMBean.class), eq(objectName))).andReturn(objectInstance);
-
-      replay(mbeanServer);
-
-      ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.registerAddress(address);
-
-      verify(mbeanServer);
-   }
-
-   public void testUnregisterAddress() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      ObjectName objectName = ObjectNames.getAddressObjectName(address);
-
-      MBeanServer mbeanServer = createMock(MBeanServer.class);
-      expect(mbeanServer.isRegistered(objectName)).andReturn(true);
-      mbeanServer.unregisterMBean(objectName);
-
-      replay(mbeanServer);
-
-      ManagementService service = new ManagementServiceImpl(mbeanServer, true);
-      service.unregisterAddress(address);
-
-      verify(mbeanServer);
-   }
+  
 
 //   public void testRegisterQueue() throws Exception
 //   {

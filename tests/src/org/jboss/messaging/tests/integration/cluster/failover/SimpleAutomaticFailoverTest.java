@@ -696,6 +696,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
    public void testFailoverOnCreateSession() throws Exception
    {
       stopServers();
+      
       for (int j = 0; j < 10; j++)
       {
          startServers();

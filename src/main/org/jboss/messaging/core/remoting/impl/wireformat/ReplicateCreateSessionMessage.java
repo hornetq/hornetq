@@ -38,14 +38,16 @@ public class ReplicateCreateSessionMessage extends PacketImpl
 
    private String name;
 
-   private long sessionChannelID;
+   private long replicatedSessionChannelID;
+
+   private long originalSessionChannelID;
 
    private int version;
 
    private String username;
 
    private String password;
-   
+
    private int minLargeMessageSize;
 
    private boolean xa;
@@ -55,7 +57,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    private boolean autoCommitAcks;
 
    private boolean preAcknowledge;
-   
+
    private int windowSize;
 
    // Static --------------------------------------------------------
@@ -63,7 +65,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    // Constructors --------------------------------------------------
 
    public ReplicateCreateSessionMessage(final String name,
-                                        final long sessionChannelID,
+                                        final long replicatedSessionChannelID,
+                                        final long originalSessionChannelID,
                                         final int version,
                                         final String username,
                                         final String password,
@@ -78,14 +81,16 @@ public class ReplicateCreateSessionMessage extends PacketImpl
 
       this.name = name;
 
-      this.sessionChannelID = sessionChannelID;
+      this.replicatedSessionChannelID = replicatedSessionChannelID;
+
+      this.originalSessionChannelID = originalSessionChannelID;
 
       this.version = version;
 
       this.username = username;
 
       this.password = password;
-      
+
       this.minLargeMessageSize = minLargeMessageSize;
 
       this.xa = xa;
@@ -111,9 +116,14 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       return name;
    }
 
-   public long getSessionChannelID()
+   public long getReplicatedSessionChannelID()
    {
-      return sessionChannelID;
+      return replicatedSessionChannelID;
+   }
+
+   public long getOriginalSessionChannelID()
+   {
+      return originalSessionChannelID;
    }
 
    public int getVersion()
@@ -130,7 +140,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    {
       return password;
    }
-   
+
    public int getMinLargeMessageSize()
    {
       return minLargeMessageSize;
@@ -164,7 +174,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeString(name);
-      buffer.writeLong(sessionChannelID);
+      buffer.writeLong(originalSessionChannelID);
+      buffer.writeLong(replicatedSessionChannelID);
       buffer.writeInt(version);
       buffer.writeNullableString(username);
       buffer.writeNullableString(password);
@@ -179,7 +190,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
    public void decodeBody(final MessagingBuffer buffer)
    {
       name = buffer.readString();
-      sessionChannelID = buffer.readLong();
+      originalSessionChannelID = buffer.readLong();
+      replicatedSessionChannelID = buffer.readLong();
       version = buffer.readInt();
       username = buffer.readNullableString();
       password = buffer.readNullableString();
@@ -201,7 +213,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       ReplicateCreateSessionMessage r = (ReplicateCreateSessionMessage)other;
 
       boolean matches = super.equals(other) && this.name.equals(r.name) &&
-                        this.sessionChannelID == r.sessionChannelID &&
+                        this.originalSessionChannelID == r.originalSessionChannelID &&
+                        this.replicatedSessionChannelID == r.replicatedSessionChannelID &&
                         this.version == r.version &&
                         this.xa == r.xa &&
                         this.autoCommitSends == r.autoCommitSends &&

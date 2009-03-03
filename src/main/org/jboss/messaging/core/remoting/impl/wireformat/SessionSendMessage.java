@@ -54,7 +54,7 @@ public class SessionSendMessage extends PacketImpl
    private ServerMessage serverMessage;
 
    private boolean requiresResponse;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -162,7 +162,7 @@ public class SessionSendMessage extends PacketImpl
          else
          {
             buffer.writeBoolean(false);
-         }
+         }                  
       }
       else if (clientMessage != null)
       {
@@ -200,6 +200,7 @@ public class SessionSendMessage extends PacketImpl
          {
             this.largeMessageId = -1;
          }
+                                       
       }
       else
       {
@@ -220,9 +221,10 @@ public class SessionSendMessage extends PacketImpl
    @Override
    public int getRequiredBufferSize()
    {
+      int size;
       if (largeMessage)
       {
-         return BASIC_PACKET_SIZE +
+         size =  BASIC_PACKET_SIZE +
                 // IsLargeMessage
                 DataConstants.SIZE_BOOLEAN +
                 // BufferSize
@@ -235,10 +237,12 @@ public class SessionSendMessage extends PacketImpl
       }
       else
       {
-         return DataConstants.SIZE_BOOLEAN + BASIC_PACKET_SIZE +
+         size =  DataConstants.SIZE_BOOLEAN + BASIC_PACKET_SIZE +
                 clientMessage.getEncodeSize() +
                 DataConstants.SIZE_BOOLEAN;
       }
+
+      return size;
    }
 
    // Package protected ---------------------------------------------

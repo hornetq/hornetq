@@ -40,7 +40,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(12456, conf.getQueueActivationTimeout());
       assertEquals(12345, conf.getScheduledThreadPoolMaxSize());    
       assertEquals(5423, conf.getSecurityInvalidationInterval());
-      assertEquals(false, conf.isRequireDestinations());
       assertEquals(false, conf.isSecurityEnabled());
       assertEquals(6543, conf.getConnectionScanPeriod());
       assertEquals("somedir", conf.getBindingsDirectory());

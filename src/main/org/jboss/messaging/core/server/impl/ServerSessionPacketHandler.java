@@ -13,19 +13,17 @@
 package org.jboss.messaging.core.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ACKNOWLEDGE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ADD_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATEQUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_EXPIRED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REMOVE_DESTINATION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
@@ -49,9 +47,10 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.RollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
@@ -60,8 +59,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
@@ -73,6 +70,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResumeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.server.ServerSession;
 
 /**
@@ -111,22 +109,27 @@ public class ServerSessionPacketHandler implements ChannelHandler
       {
          switch (type)
          {
+            case PacketImpl.PACKETS_CONFIRMED:
+            {
+               session.handlePacketsConfirmed((PacketsConfirmedMessage)packet);
+               break;
+            }
             case SESS_CREATECONSUMER:
             {
                SessionCreateConsumerMessage request = (SessionCreateConsumerMessage)packet;
                session.handleCreateConsumer(request);
                break;
             }
-            case SESS_CREATEQUEUE:
+            case SESS_CREATE_QUEUE:
             {
                SessionCreateQueueMessage request = (SessionCreateQueueMessage)packet;
-               session.handleCreateQueue(request);
+               session.handleCreateQueue(request);             
                break;
             }
             case SESS_DELETE_QUEUE:
             {
                SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
-               session.handleDeleteQueue(request);
+               session.handleDeleteQueue(request);             
                break;
             }
             case SESS_QUEUEQUERY:
@@ -232,18 +235,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
                session.handleSetXATimeout(message);
                break;
             }
-            case SESS_ADD_DESTINATION:
-            {
-               SessionAddDestinationMessage message = (SessionAddDestinationMessage)packet;
-               session.handleAddDestination(message);
-               break;
-            }
-            case SESS_REMOVE_DESTINATION:
-            {
-               SessionRemoveDestinationMessage message = (SessionRemoveDestinationMessage)packet;
-               session.handleRemoveDestination(message);
-               break;
-            }
             case SESS_START:
             {
                session.handleStart(packet);
@@ -287,19 +278,19 @@ public class ServerSessionPacketHandler implements ChannelHandler
                {
                   session.handleSend(message);
                }
-               break;
+               break;              
             }
             case SESS_SEND_CONTINUATION:
             {
                SessionSendContinuationMessage message = (SessionSendContinuationMessage)packet;
                session.handleSendContinuations(message);
-               break;
+               break;               
             }
             case SESS_REPLICATE_DELIVERY:
             {
                SessionReplicateDeliveryMessage message = (SessionReplicateDeliveryMessage)packet;
                session.handleReplicatedDelivery(message);
-               break;
+               break;               
             }
          }
       }
@@ -307,7 +298,5 @@ public class ServerSessionPacketHandler implements ChannelHandler
       {
          log.error("Caught unexpected exception", t);
       }
-
-      channel.replicateComplete();
    }
 }

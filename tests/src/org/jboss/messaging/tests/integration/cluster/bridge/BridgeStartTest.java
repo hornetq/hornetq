@@ -278,7 +278,7 @@ public class BridgeStartTest extends ServiceTestBase
 
             producer0.send(message);
          }
-
+         
          // Wait a bit
          Thread.sleep(1000);
 
@@ -302,9 +302,9 @@ public class BridgeStartTest extends ServiceTestBase
 
             message.acknowledge();
          }
-
+                  
          assertNull(consumer1.receive(200));
-
+         
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session0.createClientMessage(false);
@@ -313,7 +313,7 @@ public class BridgeStartTest extends ServiceTestBase
 
             producer0.send(message);
          }
-
+         
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = consumer1.receive(1000);
@@ -326,7 +326,7 @@ public class BridgeStartTest extends ServiceTestBase
          }
 
          assertNull(consumer1.receive(200));
-
+         
          session1.close();
 
          sf1.close();
@@ -342,7 +342,6 @@ public class BridgeStartTest extends ServiceTestBase
             producer0.send(message);
          }
 
-
          service1.start();
 
          sf1 = new ClientSessionFactoryImpl(server1tc);
@@ -351,7 +350,6 @@ public class BridgeStartTest extends ServiceTestBase
 
          consumer1 = session1.createConsumer(queueName1);
 
-
          session1.start();
 
          for (int i = 0; i < numMessages; i++)
@@ -359,15 +357,14 @@ public class BridgeStartTest extends ServiceTestBase
             ClientMessage message = consumer1.receive(1000);
 
             assertNotNull(message);
-
+            
             assertEquals((Integer)i, (Integer)message.getProperty(propKey));
 
             message.acknowledge();
          }
 
          assertNull(consumer1.receive(200));
-
-
+         
          session1.close();
 
          sf1.close();
@@ -375,7 +372,6 @@ public class BridgeStartTest extends ServiceTestBase
          session0.close();
 
          sf0.close();
-
       }
       finally
       {

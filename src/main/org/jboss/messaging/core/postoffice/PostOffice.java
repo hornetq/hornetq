@@ -23,12 +23,10 @@
 package org.jboss.messaging.core.postoffice;
 
 import java.util.List;
-import java.util.Set;
 
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.utils.SimpleString;
@@ -53,12 +51,6 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public interface PostOffice extends MessagingComponent
 {
-   boolean addDestination(SimpleString address, boolean durable) throws Exception;
-
-   boolean removeDestination(SimpleString address, boolean durable) throws Exception;
-
-   boolean containsDestination(SimpleString address);
-
    void addBinding(Binding binding) throws Exception;
 
    Binding removeBinding(SimpleString uniqueName) throws Exception;
@@ -73,13 +65,9 @@ public interface PostOffice extends MessagingComponent
    
    boolean redistribute(ServerMessage message, SimpleString routingName, Transaction tx) throws Exception;
 
-   Set<SimpleString> listAllDestinations();
-
    List<Queue> activate();
 
    PagingManager getPagingManager();
-
-   SendLock getAddressLock(SimpleString address);
 
    DuplicateIDCache getDuplicateIDCache(SimpleString address);
    

@@ -308,7 +308,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // This is ok - we just ignore the message
          return;
       }
-
+      
       ClientMessageInternal messageToHandle = message;
 
       if (isFileConsumer())
@@ -402,7 +402,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          buffer.clear();
       }
-
+           
       waitForOnMessageToComplete();
    }
 
@@ -545,7 +545,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       MessageHandler theHandler = handler;
 
       if (theHandler != null)
-      {
+      {         
          synchronized (this)
          {
             message = buffer.poll();
@@ -742,6 +742,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       public void run()
       {
+         
          try
          {
             callOnMessage();
@@ -752,6 +753,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             lastException = e;
          }
+
       }
    }
 

@@ -40,11 +40,9 @@ import java.util.concurrent.ConcurrentMap;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public  class SimpleAddressManager implements AddressManager
+public class SimpleAddressManager implements AddressManager
 {
    private final ConcurrentMap<SimpleString, Bindings> mappings = new ConcurrentHashMap<SimpleString, Bindings>();
-
-   private final ConcurrentSet<SimpleString> destinations = new ConcurrentHashSet<SimpleString>();
 
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
 
@@ -76,26 +74,6 @@ public  class SimpleAddressManager implements AddressManager
       return mappings.get(address);
    }
 
-   public boolean addDestination(final SimpleString address)
-   {
-      return destinations.addIfAbsent(address);
-   }
-
-   public boolean removeDestination(final SimpleString address)
-   {
-      return destinations.remove(address);
-   }
-
-   public boolean containsDestination(final SimpleString address)
-   {
-      return destinations.contains(address);
-   }
-
-   public Set<SimpleString> getDestinations()
-   {
-      return destinations;
-   }
-
    public Binding getBinding(final SimpleString bindableName)
    {
       return nameMap.get(bindableName);
@@ -108,7 +86,7 @@ public  class SimpleAddressManager implements AddressManager
 
    public void clear()
    {
-      destinations.clear();
+    //  destinations.clear();
       nameMap.clear();
       mappings.clear();
    }

@@ -10,8 +10,9 @@
  * site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.remoting.impl.wireformat;
+package org.jboss.messaging.core.remoting.impl.wireformat.replication;
 
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**

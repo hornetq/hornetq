@@ -97,8 +97,6 @@ public class FileConfiguration extends ConfigurationImpl
 
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-max-pool-size", scheduledThreadPoolMaxSize);
 
-      requireDestinations = getBoolean(e, "require-destinations", requireDestinations);
-
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
 
       jmxManagementEnabled = getBoolean(e, "jmx-management-enabled", jmxManagementEnabled);

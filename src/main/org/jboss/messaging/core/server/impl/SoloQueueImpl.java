@@ -21,8 +21,19 @@
  */
 package org.jboss.messaging.core.server.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessageReference;
@@ -30,17 +41,7 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Iterator;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * A queue that will discard messages if a newer message with the same MessageImpl.HDR_SOLE_MESSAGE property value.
@@ -48,38 +49,48 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class SoloQueueImpl extends QueueImpl
 {
+   private static final Logger log = Logger.getLogger(SoloQueueImpl.class);
+
    private final Map<SimpleString, ServerMessage> map = new HashMap<SimpleString, ServerMessage>();
 
    private final PagingManager pagingManager;
 
-    private final StorageManager storageManager;
-
+   private final StorageManager storageManager;
 
    public SoloQueueImpl(final long persistenceID,
                         final SimpleString address,
-                    final SimpleString name,
-                    final Filter filter,
-                    final boolean durable,
-                    final boolean temporary,
-                    final ScheduledExecutorService scheduledExecutor,
-                    final PostOffice postOffice,
-                    final StorageManager storageManager,
-                    final HierarchicalRepository<AddressSettings> addressSettingsRepository)
+                        final SimpleString name,
+                        final Filter filter,
+                        final boolean durable,
+                        final boolean temporary,
+                        final ScheduledExecutorService scheduledExecutor,
+                        final PostOffice postOffice,
+                        final StorageManager storageManager,
+                        final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
-      super(persistenceID, address, name, filter, durable, temporary, scheduledExecutor, postOffice, storageManager, addressSettingsRepository);
-      this.pagingManager  = postOffice.getPagingManager();
+      super(persistenceID,
+            address,
+            name,
+            filter,
+            durable,
+            temporary,
+            scheduledExecutor,
+            postOffice,
+            storageManager,
+            addressSettingsRepository);
+      this.pagingManager = postOffice.getPagingManager();
       this.storageManager = storageManager;
    }
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
-      SimpleString prop = (SimpleString) message.getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+      SimpleString prop = (SimpleString)message.getProperty(MessageImpl.HDR_SOLE_MESSAGE);
       if (prop != null)
       {
          synchronized (map)
          {
             ServerMessage msg = map.put(prop, message);
-            //if an older message existed then we discard it
+            // if an older message existed then we discard it
             if (msg != null)
             {
                MessageReference ref;
@@ -104,7 +115,7 @@ public class SoloQueueImpl extends QueueImpl
 
    public MessageReference reroute(final ServerMessage message, final Transaction tx) throws Exception
    {
-      SimpleString prop = (SimpleString) message.getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+      SimpleString prop = (SimpleString)message.getProperty(MessageImpl.HDR_SOLE_MESSAGE);
       if (prop != null)
       {
          synchronized (map)
@@ -127,12 +138,10 @@ public class SoloQueueImpl extends QueueImpl
       return super.reroute(message, tx);
    }
 
-
-
    public void acknowledge(final MessageReference ref) throws Exception
    {
       super.acknowledge(ref);
-      SimpleString prop = (SimpleString) ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+      SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
       if (prop != null)
       {
          synchronized (map)
@@ -146,10 +155,9 @@ public class SoloQueueImpl extends QueueImpl
       }
    }
 
-
-   public void cancel(final Transaction tx, final  MessageReference ref) throws Exception
+   public void cancel(final Transaction tx, final MessageReference ref) throws Exception
    {
-      SimpleString prop = (SimpleString) ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+      SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
       if (prop != null)
       {
          synchronized (map)
@@ -179,7 +187,7 @@ public class SoloQueueImpl extends QueueImpl
       {
          for (MessageReference ref : refs)
          {
-            SimpleString prop = (SimpleString) ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+            SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
             if (prop != null)
             {
                ServerMessage msg = map.get(prop);
@@ -209,12 +217,12 @@ public class SoloQueueImpl extends QueueImpl
       super.postRollback(refs);
    }
 
-      final void discardMessage(MessageReference ref, Transaction tx) throws Exception
+   final void discardMessage(MessageReference ref, Transaction tx) throws Exception
    {
       deliveringCount.decrementAndGet();
       PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
       store.addSize(-ref.getMemoryEstimate());
-      QueueImpl queue = (QueueImpl) ref.getQueue();
+      QueueImpl queue = (QueueImpl)ref.getQueue();
       ServerMessage msg = ref.getMessage();
       boolean durableRef = msg.isDurable() && queue.isDurable();
 
@@ -254,7 +262,6 @@ public class SoloQueueImpl extends QueueImpl
       }
 
    }
-
 
    final void rediscardMessage(long id, Transaction tx) throws Exception
    {

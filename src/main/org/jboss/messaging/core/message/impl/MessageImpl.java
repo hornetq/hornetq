@@ -94,8 +94,7 @@ public abstract class MessageImpl implements Message
    private byte priority;
 
    private MessagingBuffer body;
-   
-  
+     
    // Constructors --------------------------------------------------
 
    protected MessageImpl()

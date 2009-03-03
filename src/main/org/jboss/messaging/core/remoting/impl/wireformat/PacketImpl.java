@@ -38,7 +38,7 @@ public class PacketImpl implements Packet
    private final byte type;
    
    private int size;
-
+   
    // The packet types
    // -----------------------------------------------------------------------------------
 
@@ -68,8 +68,6 @@ public class PacketImpl implements Packet
 
    public static final byte REPLICATE_CREATESESSION = 34;
 
-   public static final byte QUIT = 35;
-
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
 
@@ -85,13 +83,9 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_QUEUEQUERY_RESP = 49;
 
-   public static final byte SESS_CREATEQUEUE = 50;
+   public static final byte SESS_CREATE_QUEUE = 50;
 
    public static final byte SESS_DELETE_QUEUE = 51;
-
-   public static final byte SESS_ADD_DESTINATION = 52;
-
-   public static final byte SESS_REMOVE_DESTINATION = 53;
 
    public static final byte SESS_BINDINGQUERY = 54;
 
@@ -148,8 +142,22 @@ public class PacketImpl implements Packet
    public static final byte SESS_RECEIVE_CONTINUATION = 80;
 
    public static final byte SESS_FAILOVER_COMPLETE = 81;
+   
+   //Replication
 
-   public static final byte SESS_REPLICATE_DELIVERY = 82;
+   public static final byte SESS_REPLICATE_DELIVERY = 92;
+   
+   public static final byte REPLICATE_ADDRESS_ADDED = 93;
+   
+   public static final byte REPLICATE_ADD_DESTINATION = 94;
+   
+   public static final byte REPLICATE_REMOVE_DESTINATION = 95;
+   
+   public static final byte REPLICATE_ADD_BINDING = 96;
+   
+   public static final byte REPLICATE_REMOVE_BINDING = 97;
+   
+   public static final byte REPLICATE_ROUTE = 98;
 
    // Static --------------------------------------------------------
 
@@ -182,7 +190,7 @@ public class PacketImpl implements Packet
       buffer.writeInt(0); // The length gets filled in at the end
       buffer.writeByte(type);
       buffer.writeLong(channelID);
-
+      
       encodeBody(buffer);
 
       size = buffer.writerIndex();
@@ -198,7 +206,7 @@ public class PacketImpl implements Packet
    public void decode(final MessagingBuffer buffer)
    {
       channelID = buffer.readLong();
-
+      
       decodeBody(buffer);
       
       size = buffer.readerIndex();

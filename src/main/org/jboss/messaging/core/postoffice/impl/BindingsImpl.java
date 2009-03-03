@@ -133,7 +133,7 @@ public class BindingsImpl implements Bindings
 
    private void routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception
    {
-      byte[] ids = (byte[])message.getProperty(MessageImpl.HDR_ROUTE_TO_IDS);
+      byte[] ids = (byte[])message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
 
       ByteBuffer buff = ByteBuffer.wrap(ids);
 

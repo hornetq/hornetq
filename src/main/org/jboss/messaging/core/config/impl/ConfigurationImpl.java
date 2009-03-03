@@ -53,7 +53,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
 
-   public static final boolean DEFAULT_REQUIRE_DESTINATIONS = false;
+   //public static final boolean DEFAULT_REQUIRE_DESTINATIONS = false;
 
    public static final boolean DEFAULT_SECURITY_ENABLED = true;
 
@@ -115,10 +115,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
 
-   public static final int DEFAULT_MAX_FORWARD_BATCH_SIZE = 1;
-
-   public static final long DEFAULT_MAX_FORWARD_BATCH_TIME = -1;
-
    public static final long DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD = 30000;
 
    public static final int DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY = 3;
@@ -150,8 +146,6 @@ public class ConfigurationImpl implements Configuration
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
    protected long securityInvalidationInterval = DEFAULT_SECURITY_INVALIDATION_INTERVAL;
-
-   protected boolean requireDestinations = DEFAULT_REQUIRE_DESTINATIONS;
 
    protected boolean securityEnabled = DEFAULT_SECURITY_ENABLED;
 
@@ -305,16 +299,6 @@ public class ConfigurationImpl implements Configuration
    public void setSecurityInvalidationInterval(final long interval)
    {
       securityInvalidationInterval = interval;
-   }
-
-   public boolean isRequireDestinations()
-   {
-      return requireDestinations;
-   }
-
-   public void setRequireDestinations(final boolean require)
-   {
-      requireDestinations = require;
    }
 
    public long getConnectionScanPeriod()
@@ -756,8 +740,7 @@ public class ConfigurationImpl implements Configuration
       return cother.isClustered() == isClustered() && cother.isCreateBindingsDir() == isCreateBindingsDir() &&
              cother.isCreateJournalDir() == isCreateJournalDir() &&
              cother.isJournalSyncNonTransactional() == isJournalSyncNonTransactional() &&
-             cother.isJournalSyncTransactional() == isJournalSyncTransactional() &&
-             cother.isRequireDestinations() == isRequireDestinations() &&
+             cother.isJournalSyncTransactional() == isJournalSyncTransactional() &&           
              cother.isSecurityEnabled() == isSecurityEnabled() &&
              cother.isWildcardRoutingEnabled() == isWildcardRoutingEnabled() &&
              cother.getLargeMessagesDirectory().equals(getLargeMessagesDirectory()) &&

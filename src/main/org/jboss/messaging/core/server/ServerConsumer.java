@@ -24,7 +24,6 @@ package org.jboss.messaging.core.server;
 
 import java.util.List;
 
-import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.transaction.Transaction;
 
 /**
@@ -38,7 +37,7 @@ public interface ServerConsumer extends Consumer
 {
 	long getID();
 	
-	void handleClose(Packet packet);
+	//void handleClose(Packet packet);
 	
 	void close() throws Exception;
 

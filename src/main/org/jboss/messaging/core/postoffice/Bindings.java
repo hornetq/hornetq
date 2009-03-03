@@ -24,6 +24,7 @@ package org.jboss.messaging.core.postoffice;
 
 import java.util.Collection;
 
+import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.utils.SimpleString;

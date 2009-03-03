@@ -88,8 +88,6 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private final Set<JBossSession> sessions = new org.jboss.messaging.utils.ConcurrentHashSet<JBossSession>();
 
-   private final Set<SimpleString> tempAddresses = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
-
    private final Set<SimpleString> tempQueues = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
 
    private volatile boolean hasNoLocal;
@@ -261,19 +259,14 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
          // TODO may be a better way of doing this that doesn't involve creating a new session
 
-         if (!tempAddresses.isEmpty() || !tempQueues.isEmpty())
+         if (!tempQueues.isEmpty())
          {
             ClientSession session = null;
             try
             {
                session = sessionFactory.createSession(username, password, false, true, true, false, 0);
 
-               // Remove any temporary queues and addresses
-
-               for (SimpleString address : tempAddresses)
-               {
-                  session.removeDestination(address, false);
-               }
+               // Remove any temporary queues
 
                for (SimpleString queueName : tempQueues)
                {
@@ -388,19 +381,9 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void addTemporaryAddress(final SimpleString tempAddress)
-   {
-      tempAddresses.add(tempAddress);
-   }
-
    public void addTemporaryQueue(final SimpleString queueName)
    {
       tempQueues.add(queueName);
-   }
-
-   public void removeTemporaryAddress(final SimpleString tempAddress)
-   {
-      tempAddresses.remove(tempAddress);
    }
 
    public void removeTemporaryQueue(final SimpleString queueName)

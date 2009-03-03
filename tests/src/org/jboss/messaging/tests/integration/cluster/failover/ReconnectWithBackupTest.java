@@ -103,7 +103,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
 
-      final int numIterations = 100;
+      final int numIterations = 10;
       
       // We reconnect in a loop a few times
       for (int j = 0; j < numIterations; j++)
@@ -151,7 +151,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
          producer.close();
 
          consumer.close();
-      }
+     }
 
       session.close();
 

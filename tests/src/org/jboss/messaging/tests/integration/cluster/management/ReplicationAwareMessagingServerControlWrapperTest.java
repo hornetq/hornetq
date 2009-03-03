@@ -58,50 +58,12 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
    // Static --------------------------------------------------------
 
    private SimpleString address;
+
    private ClientSession session;
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testAddAddress() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      ObjectName addressON = ObjectNames.getAddressObjectName(address);
-
-      assertResourceNotExists(liveMBeanServer, addressON);
-      assertResourceNotExists(backupMBeanServer, addressON);
-
-      assertTrue(liveServerControl.addAddress(address.toString()));
-
-      assertResourceExists(liveMBeanServer, addressON);
-      assertResourceExists(backupMBeanServer, addressON);
-   }
-
-   public void testRemoveAddress() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      ObjectName addressON = ObjectNames.getAddressObjectName(address);
-
-      assertResourceNotExists(liveMBeanServer, addressON);
-      assertResourceNotExists(backupMBeanServer, addressON);
-
-      // add the address...
-      assertTrue(liveServerControl.addAddress(address.toString()));
-
-      assertResourceExists(liveMBeanServer, addressON);
-      assertResourceExists(backupMBeanServer, addressON);
-
-      // ... and remove it
-      assertTrue(liveServerControl.removeAddress(address.toString()));
-
-      assertResourceNotExists(liveMBeanServer, addressON);
-      assertResourceNotExists(backupMBeanServer, addressON);
-   }
 
    public void testCreateQueue() throws Exception
    {
@@ -180,7 +142,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
    }
 
    public void testResetAllMessageCounters() throws Exception
-   {      
+   {
       MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
       liveServerControl.enableMessageCounters();
       liveServerControl.setMessageCounterSamplePeriod(2000);
@@ -195,7 +157,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       long value = randomLong();
       message.putLongProperty(key, value);
       producer.send(message);
-      
+
       Thread.sleep(liveServerControl.getMessageCounterSamplePeriod() * 2);
 
       // check the count is to 1 on both live & backup nodes
@@ -203,10 +165,10 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       assertEquals(1, counter.get("count"));
       counter = backupQueueControl.listMessageCounter();
       assertEquals(1, counter.get("count"));
-      
+
       liveServerControl.resetAllMessageCounters();
       Thread.sleep(liveServerControl.getMessageCounterSamplePeriod() * 2);
-      
+
       // check the count has been reset to 0 on both live & backup nodes
       counter = liveQueueControl.listMessageCounter();
       assertEquals(0, counter.get("count"));
@@ -272,7 +234,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
 
       super.tearDown();
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

@@ -124,15 +124,11 @@ public class FailBackupServerTest extends UnitTestCase
 
          if (i == 0)
          {
-            // Fail all the replicating connections - this simulates the backup server crashing
-
-            Set<RemotingConnection> conns = liveService.getServer().getRemotingService().getConnections();
-
-            for (RemotingConnection conn : conns)
-            {
-               log.info("Failing replicating connection");
-               conn.getReplicatingConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
-            }
+            // Fail the replicating connection - this simulates the backup server crashing
+            
+            log.info("Failing backup connection");
+            
+            liveService.getServer().getReplicatingChannel().getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
          }
 
          message.acknowledge();

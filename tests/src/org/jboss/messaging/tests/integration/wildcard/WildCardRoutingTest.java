@@ -172,37 +172,6 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNull(m);
    }
 
-   public void testWildcardRoutingDestinationsAdded() throws Exception
-   {
-      SimpleString addressAB = new SimpleString("a.b");
-      SimpleString addressAC = new SimpleString("a.c");
-      SimpleString address = new SimpleString("a.*");
-      SimpleString queueName1 = new SimpleString("Q1");
-      SimpleString queueName2 = new SimpleString("Q2");
-      SimpleString queueName = new SimpleString("Q");
-      messagingService.getServer().getPostOffice().addDestination(addressAB, false);
-      messagingService.getServer().getPostOffice().addDestination(addressAC, false);
-      clientSession.createQueue(addressAB, queueName1, null, false, false);
-      clientSession.createQueue(addressAC, queueName2, null, false, false);
-      clientSession.createQueue(address, queueName, null, false, false);
-      ClientProducer producer = clientSession.createProducer(addressAB);
-      ClientProducer producer2 = clientSession.createProducer(addressAC);
-      ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
-      clientSession.start();
-      producer.send(createTextMessage("m1", clientSession));
-      producer2.send(createTextMessage("m2", clientSession));
-      ClientMessage m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m1", m.getBody().readString());
-      m.acknowledge();
-      m = clientConsumer.receive(500);
-      assertNotNull(m);
-      assertEquals("m2", m.getBody().readString());
-      m.acknowledge();
-      m = clientConsumer.receive(500);
-      assertNull(m);
-   }
-
    public void testWildcardRoutingQueuesAddedAfter() throws Exception
    {
       SimpleString addressAB = new SimpleString("a.b");

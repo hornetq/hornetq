@@ -510,12 +510,12 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          }
          else
          {
-            SessionBindingQueryResponseMessage response = session.bindingQuery(dest.getSimpleAddress());
+            //SessionBindingQueryResponseMessage response = session.bindingQuery(dest.getSimpleAddress());
 
-            if (!response.isExists())
-            {
-               throw new InvalidDestinationException("Topic " + dest.getName() + " does not exist");
-            }
+//            if (!response.isExists())
+//            {
+//               throw new InvalidDestinationException("Topic " + dest.getName() + " does not exist");
+//            }
 
             SimpleString queueName;
 
@@ -681,10 +681,6 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
          session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), null, false, true);
 
-         session.addDestination(queue.getSimpleAddress(), false, true);
-
-         connection.addTemporaryAddress(simpleAddress);
-
          connection.addTemporaryQueue(simpleAddress);
 
          return queue;
@@ -705,22 +701,22 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
       String topicName = UUID.randomUUID().toString();
 
-      try
-      {
+//      try
+//      {
          JBossTemporaryTopic topic = new JBossTemporaryTopic(this, topicName);
 
          SimpleString simpleAddress = topic.getSimpleAddress();
 
-         session.addDestination(simpleAddress, false, true);
-
-         connection.addTemporaryAddress(simpleAddress);
+//         session.addDestination(simpleAddress, false, true);
+//
+//         connection.addTemporaryAddress(simpleAddress);
 
          return topic;
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
-      }
+//      }
+//      catch (MessagingException e)
+//      {
+//         throw JMSExceptionHelper.convertFromMessagingException(e);
+//      }
    }
 
    public void unsubscribe(final String name) throws JMSException
@@ -865,9 +861,9 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
          SimpleString address = tempTopic.getSimpleAddress();
 
-         session.removeDestination(address, false);
-
-         connection.removeTemporaryAddress(address);
+//         session.removeDestination(address, false);
+//
+//         connection.removeTemporaryAddress(address);
       }
       catch (MessagingException e)
       {
@@ -895,11 +891,8 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
          SimpleString address = tempQueue.getSimpleAddress();
 
-         session.removeDestination(address, false);
-
          session.deleteQueue(address);
 
-         connection.removeTemporaryAddress(address);
          connection.removeTemporaryQueue(address);
       }
       catch (MessagingException e)

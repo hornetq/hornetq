@@ -91,8 +91,12 @@ public class FailoverExpiredMessageTest extends UnitTestCase
       sf1.setSendWindowSize(32 * 1024);
   
       ClientSession session1 = sf1.createSession(false, true, true);
+      
+      log.info("created session");
 
       session1.createQueue(ADDRESS, ADDRESS, null, false, false);
+      
+      log.info("created queue");
       
       session1.start();
 
@@ -103,6 +107,8 @@ public class FailoverExpiredMessageTest extends UnitTestCase
       //Set time to live so at least some of them will more than likely expire before they are consumed by the client
       
       long now = System.currentTimeMillis();
+      
+      log.info("sending messages");
       
       long expire = now + 5000;
 
@@ -115,8 +121,13 @@ public class FailoverExpiredMessageTest extends UnitTestCase
                                                              (byte)1);
          message.putIntProperty(new SimpleString("count"), i);         
          message.getBody().writeString("aardvarks");
-         producer.send(message);                  
+         producer.send(message);               
+         
+         log.info("sent message " + i);
       }
+      
+      log.info("sent messages");
+      
       ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
                  
       final RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();

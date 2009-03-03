@@ -32,7 +32,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
@@ -45,12 +44,9 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionReplicateDeliveryMessage;
-import org.jboss.messaging.core.remoting.server.DelayedResult;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.LargeServerMessage;
@@ -92,6 +88,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final long id;
 
+   private final long replicatedSessionID;
+
    private final Queue messageQueue;
 
    private final Filter filter;
@@ -129,6 +127,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Channel channel;
 
+   private final Channel replicatingChannel;
+
    private volatile boolean closed;
 
    private final boolean preAcknowledge;
@@ -140,6 +140,7 @@ public class ServerConsumerImpl implements ServerConsumer
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerConsumerImpl(final long id,
+                             final long replicatedSessionID,
                              final ServerSession session,
                              final QueueBinding binding,
                              final Filter filter,
@@ -148,12 +149,15 @@ public class ServerConsumerImpl implements ServerConsumer
                              final StorageManager storageManager,
                              final PagingManager pagingManager,
                              final Channel channel,
+                             final Channel replicatingChannel,
                              final boolean preAcknowledge,
                              final boolean updateDeliveries,
                              final Executor executor,
                              final ManagementService managementService) throws Exception
    {
       this.id = id;
+
+      this.replicatedSessionID = replicatedSessionID;
 
       this.filter = filter;
 
@@ -172,6 +176,8 @@ public class ServerConsumerImpl implements ServerConsumer
       this.storageManager = storageManager;
 
       this.channel = channel;
+
+      this.replicatingChannel = replicatingChannel;
 
       this.preAcknowledge = preAcknowledge;
 
@@ -204,75 +210,15 @@ public class ServerConsumerImpl implements ServerConsumer
       return filter;
    }
 
-   public void handleClose(final Packet packet)
-   {
-      // We must stop delivery before replicating the packet, this ensures the close message gets processed
-      // and replicated on the backup in the same order as any delivery that might be occuring gets
-      // processed and replicated on the backup.
-      // Otherwise we could end up with a situation where a close comes in, then a delivery comes in,
-      // then close gets replicated to backup, then delivery gets replicated, but consumer is already
-      // closed!
-      setStarted(false);
-
-      DelayedResult result = channel.replicatePacket(packet);
-
-      if (result != null)
-      {
-         result.setResultRunner(new Runnable()
-         {
-            public void run()
-            {
-               doHandleClose(packet);
-            }
-         });
-      }
-      else
-      {
-         doHandleClose(packet);
-      }
-   }
-
-   private void doHandleClose(final Packet packet)
-   {
-      Packet response = null;
-
-      try
-      {
-         doClose();
-
-         response = new NullResponseMessage();
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to close producer", e);
-
-         if (e instanceof MessagingException)
-         {
-            response = new MessagingExceptionMessage((MessagingException)e);
-         }
-         else
-         {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-         }
-      }
-
-      channel.confirm(packet);
-
-      channel.send(response);
-   }
-
    public void close() throws Exception
    {
       setStarted(false);
 
-      doClose();
-   }
-
-   private void doClose() throws Exception
-   {
       messageQueue.removeConsumer(this);
 
       session.removeConsumer(this);
+
+      // log.info(System.identityHashCode(this) + " consumer close");
 
       LinkedList<MessageReference> refs = cancelRefs(false, null);
 
@@ -309,6 +255,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
          managementService.sendNotification(notification);
       }
+
+      // log.info("closed consumer with id " + id);
    }
 
    public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
@@ -317,6 +265,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
       LinkedList<MessageReference> refs = new LinkedList<MessageReference>();
 
+      // log.info(System.identityHashCode(this) + " cancelling refs");
+
       if (!deliveringRefs.isEmpty())
       {
          for (MessageReference ref : deliveringRefs)
@@ -324,13 +274,13 @@ public class ServerConsumerImpl implements ServerConsumer
             if (performACK)
             {
                acknowledge(false, tx, ref.getMessage().getMessageID());
-               
+
                performACK = false;
             }
             else
             {
                ref.decrementDeliveryCount();
-               
+
                refs.add(ref);
             }
          }
@@ -400,7 +350,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (ref == null)
          {
-            throw new IllegalStateException("Could not find reference on consumerID=" + id +
+            throw new IllegalStateException(System.identityHashCode(this) + " Could not find reference on consumerID=" +
+                                            id +
                                             ", messageId " +
                                             messageID +
                                             " backup " +
@@ -462,13 +413,15 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void deliverReplicated(final long messageID) throws Exception
    {
-      // It may not be the first in the queue - since there may be multiple producers
-      // sending to the queue
-      MessageReference ref = removeReferenceOnBackup(messageID);
+      MessageReference ref = messageQueue.removeFirstReference(messageID);
+      
+      //log.info("handling replicated delivery on backup " + messageID + " session " + session.getName());
 
       if (ref == null)
       {
-         throw new IllegalStateException("Cannot find ref when replicating delivery " + messageID);
+         throw new IllegalStateException("Cannot find ref when replicating delivery " + messageID +
+                                         " queue" +
+                                         messageQueue.getName());
       }
 
       // We call doHandle rather than handle, since we don't want to check available credits
@@ -509,42 +462,6 @@ public class ServerConsumerImpl implements ServerConsumer
    // Public ---------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-
-   private MessageReference removeReferenceOnBackup(final long id) throws Exception
-   {
-      // most of the times, the remove will work ok, so we first try it without any locks
-      MessageReference ref = messageQueue.removeReferenceWithID(id);
-
-      if (ref == null)
-      {
-         PagingStore store = pagingManager.getPageStore(binding.getAddress());
-
-         while (true)
-         {
-            // Can't have the same store being depaged in more than one thread
-            synchronized (store)
-            {
-               // as soon as it gets the lock, it needs to verify if another thread couldn't find the reference
-               ref = messageQueue.removeReferenceWithID(id);
-               if (ref == null)
-               {
-                  // force a depage
-                  if (!store.readPage()) // This returns false if there are no pages
-                  {
-                     break;
-                  }
-               }
-               else
-               {
-                  break;
-               }
-            }
-         }
-      }
-
-      return ref;
-
-   }
 
    private void promptDelivery()
    {
@@ -599,7 +516,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
       try
       {
-
          // If the consumer is stopped then we don't accept the message, it
          // should go back into the
          // queue for delivery later.
@@ -640,7 +556,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
             ref.getQueue().referenceHandled();
 
-         
             ref.incrementDeliveryCount();
 
             // If updateDeliveries = false (set by strict-update),
@@ -690,9 +605,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       final LargeMessageDeliverer localDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, ref);
 
-      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
-
-      if (result == null)
+      if (replicatingChannel == null)
       {
          // it doesn't need lock because deliverLargeMesasge is already inside the lock.lock()
          largeMessageDeliverer = localDeliverer;
@@ -700,7 +613,10 @@ public class ServerConsumerImpl implements ServerConsumer
       }
       else
       {
-         result.setResultRunner(new Runnable()
+         Packet replPacket = new SessionReplicateDeliveryMessage(id, message.getMessageID());
+         replPacket.setChannelID(channel.getID());
+
+         replicatingChannel.replicatePacket(replPacket, replicatedSessionID, new Runnable()
          {
             public void run()
             {
@@ -738,9 +654,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount());
 
-      DelayedResult result = channel.replicatePacket(new SessionReplicateDeliveryMessage(id, message.getMessageID()));
-
-      if (result == null)
+      if (replicatingChannel == null)
       {
          // Not replicated - just send now
 
@@ -748,11 +662,24 @@ public class ServerConsumerImpl implements ServerConsumer
       }
       else
       {
-         // Send when replicate delivery response comes back
-         result.setResultRunner(new Runnable()
+         Packet replPacket = new SessionReplicateDeliveryMessage(id, message.getMessageID());
+         replPacket.setChannelID(channel.getID());
+
+//         log.info("replicating delivery from live for queue " + messageQueue.getName() +
+//                  " ref " +
+//                  message.getMessageID() +
+//                  " session name " +
+//                  session.getName());
+
+         replicatingChannel.replicatePacket(replPacket, replicatedSessionID, new Runnable()
          {
             public void run()
             {
+//               log.info("got replicate delivery response " + messageQueue.getName() +
+//                        " ref " +
+//                        message.getMessageID() +
+//                        " session name " +
+//                        session.getName());
                channel.send(packet);
             }
          });
@@ -832,7 +759,7 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                sentFirstMessage = true;
 
-               MessagingBuffer headerBuffer = ChannelBuffers.buffer(pendingLargeMessage.getPropertiesEncodeSize()); 
+               MessagingBuffer headerBuffer = ChannelBuffers.buffer(pendingLargeMessage.getPropertiesEncodeSize());
 
                pendingLargeMessage.encodeProperties(headerBuffer);
 
@@ -982,7 +909,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
 
-         MessagingBuffer bodyBuffer = ChannelBuffers.buffer(localChunkLen); 
+         MessagingBuffer bodyBuffer = ChannelBuffers.buffer(localChunkLen);
 
          pendingLargeMessage.encodeBody(bodyBuffer, positionPendingLargeMessage, localChunkLen);
 

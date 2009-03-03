@@ -46,7 +46,6 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.PagingStoreFactory;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -818,12 +817,12 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       Transaction depageTransaction = new TransactionImpl(storageManager);
 
-      SendLock sendLock = postOffice.getAddressLock(destination);
-
-      sendLock.beforeSend();
-
-      try
-      {
+//      SendLock sendLock = postOffice.getAddressLock(destination);
+//
+//      sendLock.beforeSend();
+//
+//      try
+//      {
          depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
          HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
@@ -921,11 +920,11 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             trace("Depage committed, running = " + running);
          }
-      }
-      finally
-      {
-         sendLock.afterSend();
-      }
+//      }
+//      finally
+//      {
+//         sendLock.afterSend();
+//      }
 
       return true;
    }

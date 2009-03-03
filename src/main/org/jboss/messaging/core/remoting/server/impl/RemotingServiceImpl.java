@@ -73,7 +73,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private TimerTask failedConnectionsTask;
 
    private final long connectionScanPeriod;
-   
+
    private final long connectionTTL;
 
    private final boolean jmxEnabled;
@@ -86,7 +86,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private ManagementService managementService;
 
-   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -110,12 +109,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       connectionScanPeriod = config.getConnectionScanPeriod();
-      
+
       connectionTTL = config.getConnectionTTLOverride();
 
-      backup = config.isBackup();  
-      
-      jmxEnabled= config.isJMXManagementEnabled();
+      backup = config.isBackup();
+
+      jmxEnabled = config.isJMXManagementEnabled();
    }
 
    // RemotingService implementation -------------------------------
@@ -124,14 +123,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       this.managementService = managementService;
    }
-   
+
    public synchronized void start() throws Exception
    {
       if (started)
       {
          return;
       }
-      
+
       // when JMX is enabled, it requires a INVM acceptor to send the core messages
       // corresponding to the JMX management operations (@see ReplicationAwareStandardMBeanWrapper)
       if (jmxEnabled)
@@ -146,7 +145,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          if (!invmAcceptorConfigured)
          {
-            transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName(), new HashMap<String, Object>(), "in-vm"));
+            transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName(),
+                                                            new HashMap<String, Object>(),
+                                                            "in-vm"));
          }
       }
 
@@ -179,11 +180,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          a.start();
       }
-      
+
       failedConnectionTimer = new Timer(true);
 
       failedConnectionsTask = new FailedConnectionsTask();
-   
+
       failedConnectionTimer.schedule(failedConnectionsTask, connectionScanPeriod, connectionScanPeriod);
 
       started = true;
@@ -201,9 +202,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          failedConnectionsTask.cancel();
 
          failedConnectionsTask = null;
-         
+
          failedConnectionTimer.cancel();
-         
+
          failedConnectionTimer = null;
       }
 
@@ -211,14 +212,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          acceptor.stop();
       }
-      
+
       acceptors.clear();
-      
+
       connections.clear();
 
       started = false;
    }
-   
+
    public boolean isStarted()
    {
       return started;
@@ -252,19 +253,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
-      
-      RemotingConnection replicatingConnection = server.getReplicatingConnection();
-            
-      RemotingConnection rc = new RemotingConnectionImpl(connection,                                                                                             
-                                                         interceptors,  
-                                                         replicatingConnection,
-                                                         !backup,
-                                                         connectionTTL);
-      
-  
-      rc.setReplicatingConnection(replicatingConnection);
 
-      Channel channel1 = rc.getChannel(1,  -1, false);
+      RemotingConnection rc = new RemotingConnectionImpl(connection, interceptors, !backup, connectionTTL);
+
+      Channel channel1 = rc.getChannel(1, -1, false);
 
       ChannelHandler handler = new MessagingServerPacketHandler(server, channel1, rc);
 
@@ -277,15 +269,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void connectionDestroyed(final Object connectionID)
    {
-      RemotingConnection conn = connections.get(connectionID);
-      
-      // if the connection is not ready to be closed properly,
-      // the cleanup will occur when the connection TTL is hit
-      if (conn != null && conn.isReadyToClose())
+      RemotingConnection conn = connections.remove(connectionID);
+   
+      if (conn != null)
       {
-         connections.remove(connectionID);
          conn.destroy();
-      }
+      }      
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
@@ -295,7 +284,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       if (rc != null)
       {
          rc.fail(me);
-      }
+      }     
    }
 
    public void addInterceptor(final Interceptor interceptor)
@@ -307,7 +296,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       return interceptors.remove(interceptor);
    }
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
@@ -344,7 +333,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          for (RemotingConnection conn : failedConnections)
          {
-            connections.remove(conn.getID());
             MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
                                                            "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
 

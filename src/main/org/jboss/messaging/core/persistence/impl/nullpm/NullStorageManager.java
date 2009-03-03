@@ -75,21 +75,11 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public boolean addDestination(final SimpleString destination) throws Exception
-   {
-      return true;
-   }
-
    public void commit(final long txID) throws Exception
    {
    }
 
-   public boolean deleteDestination(final SimpleString destination) throws Exception
-   {
-      return true;
-   }
-
-   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, final List<SimpleString> destinations) throws Exception
+   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos) throws Exception
    {
 
    }

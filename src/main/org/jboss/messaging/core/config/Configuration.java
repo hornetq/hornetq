@@ -75,10 +75,6 @@ public interface Configuration extends Serializable
 
    void setSecurityEnabled(boolean enabled);
 
-   boolean isRequireDestinations();
-
-   void setRequireDestinations(boolean require);
-
    boolean isJMXManagementEnabled();
 
    void setJMXManagementEnabled(boolean enabled);

@@ -56,7 +56,6 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(ConfigurationImpl.DEFAULT_QUEUE_ACTIVATION_TIMEOUT, conf.getQueueActivationTimeout());
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
-      assertEquals(ConfigurationImpl.DEFAULT_REQUIRE_DESTINATIONS, conf.isRequireDestinations());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
       assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_SCAN_PERIOD, conf.getConnectionScanPeriod());
       assertEquals(ConfigurationImpl.DEFAULT_BINDINGS_DIRECTORY, conf.getBindingsDirectory());
@@ -100,10 +99,6 @@ public class ConfigurationImplTest extends UnitTestCase
          l = randomLong();
          conf.setSecurityInvalidationInterval(l);
          assertEquals(l, conf.getSecurityInvalidationInterval());
-         
-         b = randomBoolean();
-         conf.setRequireDestinations(b);
-         assertEquals(b, conf.isRequireDestinations());
          
          b = randomBoolean();
          conf.setSecurityEnabled(b);
@@ -200,9 +195,6 @@ public class ConfigurationImplTest extends UnitTestCase
       l = randomLong();
       conf.setSecurityInvalidationInterval(l);
 
-      b = randomBoolean();
-      conf.setRequireDestinations(b);
-    
       b = randomBoolean();
       conf.setSecurityEnabled(b);
         

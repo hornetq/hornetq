@@ -33,19 +33,15 @@ package org.jboss.messaging.core.management;
  */
 public enum NotificationType
 {
-   BINDING_ADDED, BINDING_REMOVED, ADDRESS_ADDED, ADDRESS_REMOVED, CONSUMER_CREATED, CONSUMER_CLOSED;
+   BINDING_ADDED, BINDING_REMOVED, CONSUMER_CREATED, CONSUMER_CLOSED;
    
    public static final int BINDING_ADDED_INDEX = 0;
    
    public static final int BINDING_REMOVED_INDEX = 1;
    
-   public static final int ADDRESS_ADDED_INDEX = 2;
+   public static final int CONSUMER_CREATED_INDEX = 2;
    
-   public static final int ADDRESS_REMOVED_INDEX = 3;
-   
-   public static final int CONSUMER_CREATED_INDEX = 4;
-   
-   public static final int CONSUMER_CLOSED_INDEX = 5;
+   public static final int CONSUMER_CLOSED_INDEX = 3;
       
    public static NotificationType fromInt(final int index)
    {
@@ -58,14 +54,6 @@ public enum NotificationType
          case BINDING_REMOVED_INDEX:
          {
             return NotificationType.BINDING_REMOVED;
-         }
-         case ADDRESS_ADDED_INDEX:
-         {
-            return NotificationType.ADDRESS_ADDED;
-         }
-         case ADDRESS_REMOVED_INDEX:
-         {
-            return NotificationType.ADDRESS_REMOVED;
          }
          case CONSUMER_CREATED_INDEX:
          {
@@ -91,15 +79,7 @@ public enum NotificationType
       else if (this.equals(NotificationType.BINDING_REMOVED))
       {
          return BINDING_REMOVED_INDEX;
-      }
-      else if (this.equals(NotificationType.ADDRESS_ADDED))
-      {
-         return ADDRESS_ADDED_INDEX;
-      }
-      else if (this.equals(NotificationType.ADDRESS_REMOVED))
-      {
-         return ADDRESS_REMOVED_INDEX;
-      }
+      }     
       else if (this.equals(NotificationType.CONSUMER_CREATED))
       {
          return CONSUMER_CREATED_INDEX;

@@ -363,29 +363,10 @@ public class ReconnectTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
+      InVMConnector.numberOfFailures = 3;
       
       RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
       
-      //Sleep for less than max retries so should succeed in reconnecting
-      
-      Thread t = new Thread()
-      {
-         public void run()
-         {
-            try
-            {
-               Thread.sleep(retryInterval * (maxRetriesBeforeFailover - 1));
-            }
-            catch (InterruptedException ignore)
-            {               
-            }
-            
-            InVMConnector.failOnCreateConnection = false;
-         }
-      };
-      
-      t.start();
-
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
       
       session.start();
@@ -410,8 +391,6 @@ public class ReconnectTest extends UnitTestCase
       session.close();
       
       sf.close();
-      
-      t.join();
    }
      
    public void testRetryInterval() throws Exception

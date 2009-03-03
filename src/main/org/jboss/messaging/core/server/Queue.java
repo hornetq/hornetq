@@ -98,6 +98,8 @@ public interface Queue extends Bindable
    int getMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
+   
+   MessageReference removeFirstReference(long id) throws Exception;
 
    MessageReference getReference(long id);
 

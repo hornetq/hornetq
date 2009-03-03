@@ -358,7 +358,7 @@ public class QueueImpl implements Queue
    }
 
    public void addLast(final MessageReference ref)
-   {
+   {          
       add(ref, false);
    }
 
@@ -514,7 +514,25 @@ public class QueueImpl implements Queue
 
       return removed;
    }
-
+   
+   public synchronized MessageReference removeFirstReference(final long id) throws Exception
+   {      
+      MessageReference ref = messageReferences.peekFirst();
+      
+      if (ref != null && ref.getMessage().getMessageID() == id)
+      {
+         messageReferences.removeFirst();
+         
+         return ref;
+      }
+      else
+      {
+         ref = scheduledDeliveryHandler.removeReferenceWithID(id);
+      }
+      
+      return ref;
+   }
+   
    public synchronized MessageReference getReference(final long id)
    {
       Iterator<MessageReference> iterator = messageReferences.iterator();
@@ -627,7 +645,7 @@ public class QueueImpl implements Queue
       getRefsOperation(tx).addAck(reference);
    }
 
-   public void cancel(final MessageReference reference) throws Exception
+   public synchronized void cancel(final MessageReference reference) throws Exception
    {
       if (checkDLQ(reference))
       {
@@ -866,7 +884,6 @@ public class QueueImpl implements Queue
          {
             deliveringCount.incrementAndGet();
             move(toAddress, tx, ref, false);
-            // ref.acknowledge(tx, storageManager, postOffice, addressSettingsRepository);
             acknowledge(tx, ref);
             count++;
          }
@@ -907,7 +924,7 @@ public class QueueImpl implements Queue
    public synchronized void setBackup()
    {
       backup = true;
-
+      
       direct = false;
    }
 
@@ -918,7 +935,7 @@ public class QueueImpl implements Queue
       if (consumersToFailover == 0)
       {
          backup = false;
-
+         
          return true;
       }
       else
@@ -1173,6 +1190,8 @@ public class QueueImpl implements Queue
       {
          return;
       }
+      
+      direct = false;
 
       MessageReference reference;
 
@@ -1238,12 +1257,12 @@ public class QueueImpl implements Queue
          if (status == HandleStatus.HANDLED)
          {
             if (iterator == null)
-            {
-               messageReferences.removeFirst();
+            {            
+               messageReferences.removeFirst();              
             }
             else
             {
-               iterator.remove();
+               iterator.remove();               
             }
          }
          else if (status == HandleStatus.BUSY)
@@ -1274,7 +1293,7 @@ public class QueueImpl implements Queue
       }
 
       boolean add = false;
-
+      
       if (direct && !backup)
       {
          // Deliver directly
@@ -1310,9 +1329,9 @@ public class QueueImpl implements Queue
          {
             expiringMessageReferences.addIfAbsent(ref);
          }
-
+         
          if (first)
-         {
+         {            
             messageReferences.addFirst(ref, ref.getMessage().getPriority());
          }
          else
@@ -1332,7 +1351,7 @@ public class QueueImpl implements Queue
          }
       }
    }
-
+   
    private HandleStatus deliver(final MessageReference reference)
    {
       HandleStatus status = distributionPolicy.distribute(reference);
@@ -1412,7 +1431,7 @@ public class QueueImpl implements Queue
             ServerMessage msg = ref.getMessage();
 
             if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
-            {
+            {              
                messageReferences.addFirst(ref, msg.getPriority());
             }
          }
@@ -1505,7 +1524,10 @@ public class QueueImpl implements Queue
 
          for (MessageReference ref : refsToAck)
          {
-            postAcknowledge(ref);
+            synchronized (ref.getQueue())
+            {
+               postAcknowledge(ref);
+            }
          }
       }
 

@@ -76,8 +76,7 @@ public class ClientRequestorTest extends UnitTestCase
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
-
-      session.addDestination(requestAddress, false, true);
+     
       session.createQueue(requestAddress, requestQueue, null, false, true);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
@@ -105,8 +104,7 @@ public class ClientRequestorTest extends UnitTestCase
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
-
-      session.addDestination(requestAddress, false, true);
+      
       session.createQueue(requestAddress, requestQueue, null, false, true);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
@@ -139,8 +137,7 @@ public class ClientRequestorTest extends UnitTestCase
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
-
-      session.addDestination(requestAddress, false, true);
+      
       session.createQueue(requestAddress, requestQueue, null, false, true);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
@@ -192,8 +189,7 @@ public class ClientRequestorTest extends UnitTestCase
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
-
-      session.addDestination(requestAddress, false, true);
+      
       session.createQueue(requestAddress, requestQueue, null, false, true);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);

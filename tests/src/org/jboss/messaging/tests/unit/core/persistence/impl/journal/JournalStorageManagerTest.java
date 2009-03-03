@@ -530,86 +530,7 @@ public class JournalStorageManagerTest extends UnitTestCase
 //      EasyMock.verify(messageJournal, bindingsJournal, binding, queue);
 //   }
 
-   public void testAddDeleteDestination() throws Exception
-   {
-      Journal messageJournal = EasyMock.createStrictMock(Journal.class);
-      Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
-
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
-
-      SimpleString dest = new SimpleString("oaskokas");
-
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream daos = new DataOutputStream(baos);
-      byte[] destBytes = dest.getData();
-      daos.writeInt(destBytes.length);
-      daos.write(destBytes);
-      daos.flush();
-      byte[] data = baos.toByteArray();
-      bindingsJournal.appendAddRecord(EasyMock.anyLong(),
-                                      EasyMock.eq(JournalStorageManager.DESTINATION_RECORD),
-                                      compareEncodingSupport(data));
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      jsm.addDestination(dest);
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-
-      EasyMock.reset(messageJournal, bindingsJournal);
-
-      // Adding again should do nothing
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      jsm.addDestination(dest);
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-
-      EasyMock.reset(messageJournal, bindingsJournal);
-
-      // Add diffferent dest
-
-      SimpleString dest2 = new SimpleString("ihjij");
-
-      baos = new ByteArrayOutputStream();
-      daos = new DataOutputStream(baos);
-      destBytes = dest2.getData();
-      daos.writeInt(destBytes.length);
-      daos.write(destBytes);
-      daos.flush();
-      data = baos.toByteArray();
-      bindingsJournal.appendAddRecord(EasyMock.anyLong(),
-                                      EasyMock.eq(JournalStorageManager.DESTINATION_RECORD),
-                                      compareEncodingSupport(data));
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      jsm.addDestination(dest2);
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-
-      EasyMock.reset(messageJournal, bindingsJournal);
-
-      bindingsJournal.appendDeleteRecord(EasyMock.anyLong());
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      jsm.deleteDestination(dest2);
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-
-      EasyMock.reset(messageJournal, bindingsJournal);
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      // Should do nothing
-
-      jsm.deleteDestination(dest2);
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-   }
-
+   
    private RecordInfo createBindingRecord(final long id,
                                           final SimpleString queueName,
                                           final SimpleString address,
@@ -640,20 +561,7 @@ public class JournalStorageManagerTest extends UnitTestCase
       return record;
    }
 
-   private RecordInfo createDestinationRecord(final long id, final SimpleString dest) throws Exception
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream daos = new DataOutputStream(baos);
-      byte[] destBytes = dest.getData();
-      daos.writeInt(destBytes.length);
-      daos.write(destBytes);
-      daos.flush();
-      byte[] data = baos.toByteArray();
 
-      RecordInfo record = new RecordInfo(id, JournalStorageManager.DESTINATION_RECORD, data, false);
-
-      return record;
-   }
 
 //   public void testLoadBindings() throws Exception
 //   {

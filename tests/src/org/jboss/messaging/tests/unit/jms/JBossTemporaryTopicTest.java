@@ -74,31 +74,31 @@ public class JBossTemporaryTopicTest extends UnitTestCase
       assertEquals(true, tempTopic.isTemporary());
    }
 
-   public void testDelete() throws Exception
-   {
-      String topicName = randomString();
-      SimpleString topicAddress = new SimpleString(
-            JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + topicName);
-
-      ClientSession clientSession = createStrictMock(ClientSession.class);
-      SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(
-            true, new ArrayList<SimpleString>());
-      expect(clientSession.bindingQuery(topicAddress)).andReturn(resp);
-      clientSession.removeDestination(topicAddress, false);
-
-      replay(clientSession);
-
-      JBossConnection connection = new JBossConnection("username", "password",
-            JBossConnection.TYPE_TOPIC_CONNECTION, null, 0, 0, EasyMock.createMock(ClientSessionFactory.class));
-      JBossSession session = new JBossSession(connection, false, false,
-            Session.AUTO_ACKNOWLEDGE, clientSession,
-            JBossSession.TYPE_TOPIC_SESSION);
-      JBossTemporaryTopic tempTopic = new JBossTemporaryTopic(session,
-            topicName);
-      tempTopic.delete();
-
-      verify(clientSession);
-   }
+//   public void testDelete() throws Exception
+//   {
+//      String topicName = randomString();
+//      SimpleString topicAddress = new SimpleString(
+//            JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + topicName);
+//
+//      ClientSession clientSession = createStrictMock(ClientSession.class);
+//      SessionBindingQueryResponseMessage resp = new SessionBindingQueryResponseMessage(
+//            true, new ArrayList<SimpleString>());
+//      expect(clientSession.bindingQuery(topicAddress)).andReturn(resp);
+//      clientSession.removeDestination(topicAddress, false);
+//
+//      replay(clientSession);
+//
+//      JBossConnection connection = new JBossConnection("username", "password",
+//            JBossConnection.TYPE_TOPIC_CONNECTION, null, 0, 0, EasyMock.createMock(ClientSessionFactory.class));
+//      JBossSession session = new JBossSession(connection, false, false,
+//            Session.AUTO_ACKNOWLEDGE, clientSession,
+//            JBossSession.TYPE_TOPIC_SESSION);
+//      JBossTemporaryTopic tempTopic = new JBossTemporaryTopic(session,
+//            topicName);
+//      tempTopic.delete();
+//
+//      verify(clientSession);
+//   }
    
    // Package protected ---------------------------------------------
 

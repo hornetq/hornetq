@@ -194,12 +194,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       return localControl.isMessageCounterEnabled();
    }
-
-   public boolean isRequireDestinations()
-   {
-      return localControl.isRequireDestinations();
-   }
-
+   
    public boolean isSecurityEnabled()
    {
       return localControl.isSecurityEnabled();

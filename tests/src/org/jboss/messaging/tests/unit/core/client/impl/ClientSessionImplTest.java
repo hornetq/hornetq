@@ -56,7 +56,6 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionAddDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
@@ -66,7 +65,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessa
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionRemoveDestinationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAResponseMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -222,61 +220,7 @@ public class ClientSessionImplTest extends UnitTestCase
       verifyMocks();
    }
 
-   public void testAddDestination() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      boolean durable = randomBoolean();
-      boolean temporary = randomBoolean();
-
-      SessionAddDestinationMessage request = new SessionAddDestinationMessage(address, durable, temporary);
-
-      // SimpleString verion
-      expect(channel.sendBlocking(request)).andReturn(new NullResponseMessage());
-
-      replayMocks();
-
-      session.addDestination(address, durable, temporary);
-
-      verifyMocks();
-
-      // String verion
-      resetMocks();
-
-      expect(channel.sendBlocking(request)).andReturn(new NullResponseMessage());
-
-      replayMocks();
-
-      session.addDestination(address.toString(), durable, temporary);
-
-      verifyMocks();
-   }
-
-   public void testRemoveDestination() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      boolean durable = randomBoolean();
-
-      SessionRemoveDestinationMessage request = new SessionRemoveDestinationMessage(address, durable);
-
-      // SimpleString version
-      expect(channel.sendBlocking(request)).andReturn(new NullResponseMessage());
-      replayMocks();
-
-      session.removeDestination(address, durable);
-
-      verifyMocks();
-
-      // String version
-      resetMocks();
-
-      expect(channel.sendBlocking(request)).andReturn(new NullResponseMessage());
-      replayMocks();
-
-      session.removeDestination(address.toString(), durable);
-
-      verifyMocks();
-   }
-
+  
    public void testCreateConsumer() throws Exception
    {
       SimpleString queueName = randomSimpleString();
@@ -957,22 +901,7 @@ public class ClientSessionImplTest extends UnitTestCase
          }
       });
 
-      assertMessagingException(OBJECT_CLOSED, new SessionCaller()
-      {
-         public void call(ClientSessionImpl session) throws MessagingException
-         {
-            session.addDestination(randomSimpleString(), randomBoolean(), randomBoolean());
-         }
-      });
-
-      assertMessagingException(OBJECT_CLOSED, new SessionCaller()
-      {
-         public void call(ClientSessionImpl session) throws MessagingException
-         {
-            session.removeDestination(randomSimpleString(), randomBoolean());
-         }
-      });
-
+     
       assertMessagingException(OBJECT_CLOSED, new SessionCaller()
       {
          public void call(ClientSessionImpl session) throws MessagingException

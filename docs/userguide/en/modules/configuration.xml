@@ -38,8 +38,6 @@
 
          <scheduled-executor-max-pool-size>30</scheduled-executor-max-pool-size>
 
-         <require-destinations>true</require-destinations>
-
          <!-- Remoting configuration -->
 
          <!-- one of: TCP, INVM -->
@@ -138,10 +136,6 @@
          <listitem>
             <para>scheduled-executor-max-pool-size</para>
             <para>The maximum number of threads available for scheduling delivery of scheduled messages</para>
-         </listitem>
-         <listitem>
-            <para>require-destinations</para>
-            <para>Whether or not a destination needs to pre-exist when delivering a message</para>
          </listitem>
          <listitem>
             <para>remoting-transport</para>

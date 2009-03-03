@@ -140,16 +140,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    // Public --------------------------------------------------------
 
-   public void addDestination(final SimpleString simpleAddress) throws Exception
-   {
-      postOffice.addDestination(simpleAddress, false);
-   }
-
-   public void removeDestination(final SimpleString simpleAddress) throws Exception
-   {
-      postOffice.removeDestination(simpleAddress, false);
-   }
-
    public Queue getQueue(final String name) throws Exception
    {
       SimpleString sName = new SimpleString(name);
@@ -279,19 +269,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.isJournalSyncTransactional();
    }
 
-   public boolean isRequireDestinations()
-   {
-      return configuration.isRequireDestinations();
-   }
-
    public boolean isSecurityEnabled()
    {
       return configuration.isSecurityEnabled();
-   }
-
-   public boolean addAddress(final String address) throws Exception
-   {
-      return postOffice.addDestination(new SimpleString(address), false);
    }
 
    // TODO - do we really need this method?
@@ -357,11 +337,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    public int getConnectionCount()
    {
       return server.getConnectionCount();
-   }
-
-   public boolean removeAddress(final String address) throws Exception
-   {
-      return postOffice.removeDestination(new SimpleString(address), false);
    }
 
    public void enableMessageCounters()
@@ -513,8 +488,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
          String remoteAddress = connection.getRemoteAddress();
          if (remoteAddress.contains(ipAddress))
          {
-            // force the immediate closure of the connection and its resources
-            connection.setReadyToClose();
             connection.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "connections for " + ipAddress +
                                                                                       " closed by management"));
             closed = true;

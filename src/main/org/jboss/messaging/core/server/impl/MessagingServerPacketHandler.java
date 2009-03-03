@@ -24,10 +24,8 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
-import org.jboss.messaging.core.remoting.server.DelayedResult;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -60,124 +58,174 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
    public void handlePacket(final Packet packet)
    {
-      DelayedResult result = null;
-      
-      if (packet.getType() == PacketImpl.CREATESESSION && channel1.getReplicatingChannel() != null)
-      {
-         CreateSessionMessage msg = (CreateSessionMessage)packet;
-         
-         Packet replPacket = new ReplicateCreateSessionMessage(msg.getName(), msg.getSessionChannelID(),
-                                                               msg.getVersion(), msg.getUsername(),
-                                                               msg.getPassword(), msg.getMinLargeMessageSize(), 
-                                                               msg.isXA(),
-                                                               msg.isAutoCommitSends(),
-                                                               msg.isAutoCommitAcks(),
-                                                               msg.isPreAcknowledge(),
-                                                               msg.getWindowSize());
-         
-         result = channel1.replicatePacket(replPacket);
-      }
-            
-      Packet response = null;
-
       byte type = packet.getType();
-      
+
       // All these operations need to be idempotent since they are outside of the session
       // reliability replay functionality
+      switch (type)
+      {
+         case CREATESESSION:
+         {
+            CreateSessionMessage request = (CreateSessionMessage)packet;
+
+            handleCreateSession(request);
+
+            break;
+         }
+         case REPLICATE_CREATESESSION:
+         {
+            ReplicateCreateSessionMessage request = (ReplicateCreateSessionMessage)packet;
+
+            handleReplicateCreateSession(request);
+
+            break;
+         }
+         case REATTACH_SESSION:
+         {
+            ReattachSessionMessage request = (ReattachSessionMessage)packet;
+
+            handleReattachSession(request);
+
+            break;
+         }
+         default:
+         {
+            log.error("Invalid packet " + packet);
+         }
+      }
+   }
+   
+   private void doHandleCreateSession(final CreateSessionMessage request, final long oppositeChannelID)
+   {
+      Packet response;
       try
       {
-         switch (type)
-         {
-            case CREATESESSION:
-            {
-               CreateSessionMessage request = (CreateSessionMessage)packet;
-
-               response = server.createSession(request.getName(),
-                                               request.getSessionChannelID(),
-                                               request.getUsername(),
-                                               request.getPassword(),
-                                               request.getMinLargeMessageSize(),
-                                               request.getVersion(),
-                                               connection,
-                                               request.isAutoCommitSends(),
-                                               request.isAutoCommitAcks(),
-                                               request.isPreAcknowledge(),
-                                               request.isXA(),
-                                               request.getWindowSize());
-               
-               break;
-            }
-            case REPLICATE_CREATESESSION:
-            {
-               ReplicateCreateSessionMessage request = (ReplicateCreateSessionMessage)packet;
-
-               response = server.replicateCreateSession(request.getName(),
-                                                        request.getSessionChannelID(),
-                                                        request.getUsername(),
-                                                        request.getPassword(),
-                                                        request.getMinLargeMessageSize(),
-                                                        request.getVersion(),
-                                                        connection,
-                                                        request.isAutoCommitSends(),
-                                                        request.isAutoCommitAcks(),
-                                                        request.isPreAcknowledge(),
-                                                        request.isXA(),
-                                                        request.getWindowSize());
-               break;
-            }
-            case REATTACH_SESSION:
-            {
-               ReattachSessionMessage request = (ReattachSessionMessage)packet;
-
-               response = server.reattachSession(connection, request.getName(), request.getLastReceivedCommandID());
-
-               break;
-            }
-            default:
-            {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.UNSUPPORTED_PACKET,
-                                                                               "Unsupported packet " + type));
-            }
-         }
+         response = server.createSession(request.getName(),
+                                         request.getSessionChannelID(),
+                                         oppositeChannelID,
+                                         request.getUsername(),
+                                         request.getPassword(),
+                                         request.getMinLargeMessageSize(),
+                                         request.getVersion(),
+                                         connection,
+                                         request.isAutoCommitSends(),
+                                         request.isAutoCommitAcks(),
+                                         request.isPreAcknowledge(),
+                                         request.isXA(),
+                                         request.getWindowSize());
       }
-      catch (Throwable t)
+      catch (Exception e)
       {
-         MessagingException me;
+         log.error("Failed to create session", e);
 
-         log.error("Caught unexpected exception", t);
-
-         if (t instanceof MessagingException)
+         if (e instanceof MessagingException)
          {
-            me = (MessagingException)t;
+            response = new MessagingExceptionMessage((MessagingException)e);
          }
          else
          {
-            me = new MessagingException(MessagingException.INTERNAL_ERROR);
-         }
-
-         response = new MessagingExceptionMessage(me);
-      }
-
-      if (response != null)
-      {
-         if (result == null)
-         {           
-            channel1.send(response);
-         }
-         else
-         {
-            final Packet theResponse = response;
-
-            result.setResultRunner(new Runnable()
-            {
-               public void run()
-               {                  
-                  channel1.send(theResponse);
-               }
-            });
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-    
-      channel1.replicateComplete();
+      
+      channel1.send(response);
    }
+
+   private void handleCreateSession(final CreateSessionMessage request)
+   {
+      Channel replicatingChannel = server.getReplicatingChannel();
+
+      if (replicatingChannel == null)
+      {
+         doHandleCreateSession(request, -1);
+      }
+      else
+      {
+         final long replicatedChannelID = replicatingChannel.getConnection().generateChannelID();
+
+         Packet replPacket = new ReplicateCreateSessionMessage(request.getName(),
+                                                               replicatedChannelID,
+                                                               request.getSessionChannelID(),
+                                                               request.getVersion(),
+                                                               request.getUsername(),
+                                                               request.getPassword(),
+                                                               request.getMinLargeMessageSize(),
+                                                               request.isXA(),
+                                                               request.isAutoCommitSends(),
+                                                               request.isAutoCommitAcks(),
+                                                               request.isPreAcknowledge(),
+                                                               request.getWindowSize());
+
+         replicatingChannel.replicatePacket(replPacket, 1, new Runnable()
+         {
+            public void run()
+            {
+               doHandleCreateSession(request, replicatedChannelID);
+            }
+         });
+      }
+   }
+
+   private void handleReplicateCreateSession(final ReplicateCreateSessionMessage request)
+   {
+      Packet response;
+
+      try
+      {
+         response = server.replicateCreateSession(request.getName(),
+                                                  request.getReplicatedSessionChannelID(),
+                                                  request.getOriginalSessionChannelID(),
+                                                  request.getUsername(),
+                                                  request.getPassword(),
+                                                  request.getMinLargeMessageSize(),
+                                                  request.getVersion(),
+                                                  connection,
+                                                  request.isAutoCommitSends(),
+                                                  request.isAutoCommitAcks(),
+                                                  request.isPreAcknowledge(),
+                                                  request.isXA(),
+                                                  request.getWindowSize());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle replicate create session", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+      
+      channel1.send(response);
+   }
+   
+   private void handleReattachSession(final ReattachSessionMessage request)
+   {
+      Packet response;
+
+      try
+      {
+         response = server.reattachSession(connection, request.getName(), request.getLastReceivedCommandID());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to reattach session", e);
+
+         if (e instanceof MessagingException)
+         {
+            response = new MessagingExceptionMessage((MessagingException)e);
+         }
+         else
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+         }
+      }
+      
+      channel1.send(response);
+   }
+
 }

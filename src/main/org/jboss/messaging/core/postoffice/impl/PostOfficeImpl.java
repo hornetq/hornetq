@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
@@ -56,9 +55,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.QueueInfo;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
-import org.jboss.messaging.core.server.SendLock;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.SendLockImpl;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
@@ -88,8 +85,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private final QueueFactory queueFactory;
 
-   private final boolean checkAllowable;
-
    private final StorageManager storageManager;
 
    private final PagingManager pagingManager;
@@ -99,8 +94,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    private volatile boolean backup;
 
    private final ManagementService managementService;
-
-   private final Map<SimpleString, SendLock> addressLocks = new HashMap<SimpleString, SendLock>();
 
    private ScheduledThreadPoolExecutor messageExpiryExecutor;
 
@@ -131,19 +124,18 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    private final org.jboss.messaging.utils.ExecutorFactory redistributorExecutorFactory;
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
-   
+
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory bindableFactory,
                          final ManagementService managementService,
                          final long messageExpiryScanPeriod,
                          final int messageExpiryThreadPriority,
-                         final boolean checkAllowable,
                          final boolean enableWildCardRouting,
                          final boolean backup,
                          final int idCacheSize,
                          final boolean persistIDCache,
-                         final ExecutorFactory orderedExecutorFactory,           
+                         final ExecutorFactory orderedExecutorFactory,
                          HierarchicalRepository<AddressSettings> addressSettingsRepository)
 
    {
@@ -152,8 +144,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       this.queueFactory = bindableFactory;
 
       this.managementService = managementService;
-
-      this.checkAllowable = checkAllowable;
 
       this.pagingManager = pagingManager;
 
@@ -178,7 +168,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       this.redistributorExecutorFactory = orderedExecutorFactory;
 
-      this.addressSettingsRepository = addressSettingsRepository;      
+      this.addressSettingsRepository = addressSettingsRepository;
    }
 
    // MessagingComponent implementation ---------------------------------------
@@ -202,9 +192,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                                                                                          messageExpiryThreadPriority));
          messageExpiryExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
          messageExpiryExecutor.scheduleWithFixedDelay(messageExpiryRunner,
-                                                   messageExpiryScanPeriod,
-                                                   messageExpiryScanPeriod,
-                                                   TimeUnit.MILLISECONDS);
+                                                      messageExpiryScanPeriod,
+                                                      messageExpiryScanPeriod,
+                                                      TimeUnit.MILLISECONDS);
       }
       started = true;
    }
@@ -220,14 +210,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       }
 
       addressManager.clear();
-
-      // Release all the locks
-      for (SendLock lock : addressLocks.values())
-      {
-         lock.close();
-      }
-
-      addressLocks.clear();
 
       started = false;
    }
@@ -279,7 +261,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                QueueInfo info = new QueueInfo(routingName, clusterName, address, filterString, transientID, distance);
 
                queueInfos.put(clusterName, info);
-               
+
                break;
             }
             case NotificationType.BINDING_REMOVED_INDEX:
@@ -299,7 +281,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                {
                   throw new IllegalStateException("Cannot find queue info for queue " + clusterName);
                }
-               
+
                break;
             }
             case NotificationType.CONSUMER_CREATED_INDEX:
@@ -334,7 +316,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                      info.setFilterStrings(filterStrings);
                   }
-                  
+
                   filterStrings.add(filterString);
                }
 
@@ -360,19 +342,19 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   {
                      // We have a local queue
                      Queue queue = (Queue)binding.getBindable();
-                     
+
                      AddressSettings addressSettings = addressSettingsRepository.getMatch(binding.getAddress()
-                                                                                        .toString());
+                                                                                                 .toString());
 
                      long redistributionDelay = addressSettings.getRedistributionDelay();
-                     
+
                      if (redistributionDelay != -1)
-                     {                     
+                     {
                         queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
-                     }                                 
+                     }
                   }
                }
-               
+
                break;
             }
             case NotificationType.CONSUMER_CLOSED_INDEX:
@@ -387,7 +369,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                }
 
                SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
-               
+
                QueueInfo info = queueInfos.get(clusterName);
 
                if (info == null)
@@ -430,74 +412,28 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                      }
 
                      Queue queue = (Queue)binding.getBindable();
-                     
+
                      AddressSettings addressSettings = addressSettingsRepository.getMatch(binding.getAddress()
-                                                                                          .toString());
+                                                                                                 .toString());
 
                      long redistributionDelay = addressSettings.getRedistributionDelay();
-                     
+
                      if (redistributionDelay != -1)
                      {
-                        queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());                     
-                     }                        
+                        queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
+                     }
                   }
                }
-                 
-               
-            
+
                break;
             }
-            
+
          }
       }
    }
 
    // PostOffice implementation -----------------------------------------------
 
-   public synchronized boolean addDestination(final SimpleString address, final boolean durable) throws Exception
-   {
-      boolean added = addressManager.addDestination(address);
-
-      if (added)
-      {
-         if (durable)
-         {
-            storageManager.addDestination(address);
-         }
-
-         managementService.registerAddress(address);
-      }
-
-      return added;
-   }
-
-   public synchronized boolean removeDestination(final SimpleString address, final boolean durable) throws Exception
-   {
-      boolean removed = addressManager.removeDestination(address);
-
-      if (removed)
-      {
-         if (durable)
-         {
-            storageManager.deleteDestination(address);
-         }
-         managementService.unregisterAddress(address);
-      }
-
-      addressLocks.remove(address);
-
-      return removed;
-   }
-
-   public synchronized boolean containsDestination(final SimpleString address)
-   {
-      return addressManager.containsDestination(address);
-   }
-
-   public Set<SimpleString> listAllDestinations()
-   {
-      return addressManager.getDestinations();
-   }
 
    // TODO - needs to be synchronized to prevent happening concurrently with activate().
    // (and possible removeBinding and other methods)
@@ -507,9 +443,26 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public synchronized void addBinding(final Binding binding) throws Exception
    {
       binding.setID(generateTransientID());
+      
+      boolean existed = addressManager.addBinding(binding);
+      
+      if (binding.getType() == BindingType.LOCAL_QUEUE)
+      {
+         Queue queue = (Queue)binding.getBindable();
 
-      addBindingInMemory(binding);
+         if (backup)
+         {
+            queue.setBackup();
+         }
 
+         managementService.registerQueue(queue, binding.getAddress(), storageManager);
+         
+         if (!existed)
+         {
+            managementService.registerAddress(binding.getAddress());
+         }
+      }
+                  
       TypedProperties props = new TypedProperties();
 
       props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, binding.getType().toInt());
@@ -536,11 +489,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    public synchronized Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
-      Binding binding = removeBindingInMemory(uniqueName);
-
+      Binding binding = addressManager.removeBinding(uniqueName);
+      
       if (binding.getType() == BindingType.LOCAL_QUEUE)
       {
          managementService.unregisterQueue(uniqueName, binding.getAddress());
+         
+         if (addressManager.getBindings(binding.getAddress()) == null)
+         {
+            managementService.unregisterAddress(binding.getAddress());
+         }
       }
 
       TypedProperties props = new TypedProperties();
@@ -574,19 +532,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {
       return addressManager.getBinding(name);
    }
+   
+   public Set<Long> idsAdded = new HashSet<Long>();
 
    public void route(final ServerMessage message, Transaction tx) throws Exception
-   {
+   {            
       SimpleString address = message.getDestination();
-
-      if (checkAllowable)
-      {
-         if (!addressManager.containsDestination(address))
-         {
-            throw new MessagingException(MessagingException.ADDRESS_DOES_NOT_EXIST,
-                                         "Cannot route to address " + address);
-         }
-      }
 
       byte[] duplicateID = (byte[])message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
@@ -655,6 +606,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       if (bindings != null)
       {
          bindings.route(message, tx);
+         
+        // idsAdded.add(message.getMessageID());
       }
 
       if (startedTx)
@@ -715,20 +668,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       return queues;
    }
 
-   public synchronized SendLock getAddressLock(final SimpleString address)
-   {
-      SendLock lock = addressLocks.get(address);
-
-      if (lock == null)
-      {
-         lock = new SendLockImpl();
-
-         addressLocks.put(address, lock);
-      }
-
-      return lock;
-   }
-
    public DuplicateIDCache getDuplicateIDCache(final SimpleString address)
    {
       DuplicateIDCache cache = duplicateIDCaches.get(address);
@@ -779,7 +718,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             if (info.getAddress().startsWith(address))
             {
                message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
-               
+
                message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
                message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
                message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
@@ -799,7 +738,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
                   message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
                   message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
-                  
+
                   routeDirect(queue, message);
                }
 
@@ -814,7 +753,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                      message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
                      message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
                      message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
-                     
+
                      routeDirect(queue, message);
                   }
                }
@@ -886,40 +825,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       }
 
       return oper;
-   }
-
-   private void addBindingInMemory(final Binding binding) throws Exception
-   {
-      boolean exists = addressManager.addBinding(binding);
-
-      if (!exists)
-      {
-         managementService.registerAddress(binding.getAddress());
-      }
-
-      if (binding.getType() == BindingType.LOCAL_QUEUE)
-      {
-         Queue queue = (Queue)binding.getBindable();
-
-         if (backup)
-         {
-            queue.setBackup();
-         }
-
-         managementService.registerQueue(queue, binding.getAddress(), storageManager);
-      }
-   }
-
-   private Binding removeBindingInMemory(final SimpleString bindingName) throws Exception
-   {
-      Binding binding = addressManager.removeBinding(bindingName);
-
-      if (binding != null)
-      {
-         managementService.unregisterAddress(binding.getAddress());
-      }
-
-      return binding;
    }
 
    private class MessageExpiryRunner implements Runnable
@@ -1068,9 +973,5 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             }
          }
       }
-
    }
-
- 
-
 }

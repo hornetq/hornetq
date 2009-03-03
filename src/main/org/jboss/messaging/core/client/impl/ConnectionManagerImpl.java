@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.QUIT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +48,6 @@ import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
@@ -227,7 +225,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       synchronized (createSessionLock)
       {
          String name = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
-
+         
          boolean retry = false;
          do
          {
@@ -604,6 +602,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    private boolean reconnect(final int retries)
    {
+      log.info("reconnecting");
       // We fail over sessions per connection to ensure there is the same mapping of channel id
       // on live and backup connections
       
@@ -758,8 +757,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          {
             try
             {
-               quitConnection(entry.connection.getTransportConnection());
-
                entry.connection.destroy();
 
                entry.connector.close();
@@ -771,14 +768,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
          mapIterator = null;
       }
-   }
-   
-   private void quitConnection(final Connection connection)
-   {
-      PacketImpl quitPacket = new PacketImpl(QUIT);
-      MessagingBuffer buffer = connection.createBuffer(quitPacket.getRequiredBufferSize());
-      quitPacket.encode(buffer);      
-      connection.write(buffer);      
    }
 
    private RemotingConnection getConnection(final int count)

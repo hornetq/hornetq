@@ -54,8 +54,6 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
 
-      assertEquals(ConfigurationImpl.DEFAULT_REQUIRE_DESTINATIONS, conf.isRequireDestinations());
-
       assertEquals(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED, conf.isJMXManagementEnabled());
 
       assertEquals(0, conf.getInterceptorClassNames().size());
