@@ -58,29 +58,29 @@ public abstract class ClientTestBase extends ServiceTestBase
    {
       super.setUp();
 
-//      Configuration config = createDefaultConfig(true);
-//      config.setSecurityEnabled(false);
-//      messagingService = createService(false, config);
-//      messagingService.start();
+      Configuration config = createDefaultConfig(true);
+      config.setSecurityEnabled(false);
+      messagingService = createService(false, config);
+      messagingService.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-     // messagingService.stop();
+      messagingService.stop();
 
       super.tearDown();
    }
    
-//   protected void assertActiveConnections(int expectedActiveConnections) throws Exception
-//   {
-//      assertEquals(expectedActiveConnections, messagingService.getServer().getServerManagement().getConnectionCount());
-//   }
-//
-//   protected void assertActiveSession(int expectedActiveSession) throws Exception
-//   {
-//      assertEquals(expectedActiveSession, messagingService.getServer().getSessions().size());
-//   }
+   protected void assertActiveConnections(int expectedActiveConnections) throws Exception
+   {
+      assertEquals(expectedActiveConnections, messagingService.getServer().getServerManagement().getConnectionCount());
+   }
+
+   protected void assertActiveSession(int expectedActiveSession) throws Exception
+   {
+      assertEquals(expectedActiveSession, messagingService.getServer().getSessions().size());
+   }
 
    // Private -------------------------------------------------------
 
