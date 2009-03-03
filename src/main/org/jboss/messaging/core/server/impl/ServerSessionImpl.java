@@ -1300,6 +1300,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
+         // FIXME: https://jira.jboss.org/jira/browse/JBMESSAGING-1535
          if (temporary)
          {
             // make sure the user has privileges to create this queue
