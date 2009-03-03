@@ -118,7 +118,11 @@ public class NettySecurityClientTest extends UnitTestCase
       while ((line = br.readLine()) != null)
       {
          line = line.replace('|', '\n');
-         if ("OK".equals(line.trim()))
+         if (line.startsWith("Listening"))
+         {
+            continue;
+         }
+         else if ("OK".equals(line.trim()))
          {
             break;
          } else

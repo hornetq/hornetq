@@ -289,6 +289,13 @@
    </path>
 
    <path id="unit.test.execution.classpath">
+      <!-- ensure that the core client jar is included for
+           tests security tests which needs to read version.properties
+           from inside this jar
+      -->
+      <fileset dir="${build.jars.dir}">
+         <include name="${core.client.jar.name}"/>
+      </fileset>
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${test.dir}/tmpfiles"/>
       <pathelement location="${test.classes.dir}"/>
@@ -1166,6 +1173,7 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="${tests.param}"/>
+               <exclude name="**/LargeMessageMultiThreadFailoverTest.class" />
             </fileset>
          </batchtest>
       </junit>
