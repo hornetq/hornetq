@@ -514,7 +514,6 @@ public class NettyConnector implements Connector
          ctx.sendUpstream(event);
       }
 
-      int i = 0;
 
       @Override
       public void writeRequested(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception

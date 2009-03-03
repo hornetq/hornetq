@@ -121,6 +121,12 @@
          <param key="jbm.remoting.netty.httpresponsetime" value="10000" type="Long"/>
          <param key="jbm.remoting.netty.httpserverscanperiod" value="5000" type="Long"/>
       </acceptor>-->
+     <!-- netty invm acceptor, needed for the servlet transport-->
+     <!-- <acceptor name="netty-invm">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
+         <param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
+      </acceptor>-->
 
       <!-- Clustering configuration -->
       

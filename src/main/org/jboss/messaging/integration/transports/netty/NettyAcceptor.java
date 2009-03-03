@@ -55,6 +55,7 @@ import org.jboss.netty.handler.ssl.SslHandler;
 
 import javax.net.ssl.SSLContext;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,6 +99,8 @@ public class NettyAcceptor implements Acceptor
    private final long httpResponseTime;
 
    private final boolean useNio;
+
+    private final boolean useInvm;
 
    private final String host;
 
@@ -160,6 +163,10 @@ public class NettyAcceptor implements Acceptor
       this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
                                                            TransportConstants.DEFAULT_USE_NIO,
                                                            configuration);
+
+      this.useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
+                                                           TransportConstants.DEFAULT_USE_INVM,
+                                                           configuration);
       this.host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
                                                         TransportConstants.DEFAULT_HOST,
                                                         configuration);
@@ -209,7 +216,12 @@ public class NettyAcceptor implements Acceptor
       }
       bossExecutor = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
       workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-worker-threads"));
-      if (useNio)
+
+      if(useInvm)
+      {
+         channelFactory = new DefaultLocalServerChannelFactory();
+      }
+      else if (useNio)
       {
          channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
       }
@@ -282,7 +294,17 @@ public class NettyAcceptor implements Acceptor
       String[] hosts = TransportConfiguration.splitHosts(host);
       for (String h : hosts)
       {
-         Channel serverChannel = bootstrap.bind(new InetSocketAddress(h, port));
+         SocketAddress address;
+         if(useInvm)
+         {
+            address = new LocalAddress(h);
+            System.out.println("address = " + address);
+         }
+         else
+         {
+            address = new InetSocketAddress(h, port);
+         }
+         Channel serverChannel = bootstrap.bind(address);
          serverChannelGroup.add(serverChannel);
       }
    }
