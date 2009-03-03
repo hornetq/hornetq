@@ -103,18 +103,12 @@ public class ConnectionClosedTest extends JMSTestCase
          prod.send(tm);
       }
 
-      int count = 0;
-      while (true)
+      for (int i = 0; i < NUM_MESSAGES; i++)
       {
          TextMessage tm = (TextMessage)sub1.receive(500);
-         if (tm == null)
-         {
-            break;
-         }
+         assertNotNull(tm);
          assertEquals("hello", tm.getText());
-         count++;
       }
-      assertEquals(NUM_MESSAGES, count);
 
       Message m = sub2.receive(200);
       
@@ -122,18 +116,12 @@ public class ConnectionClosedTest extends JMSTestCase
       
       conn2.start();
       
-      count = 0;
-      while (true)
+      for (int i = 0; i < NUM_MESSAGES; i++)
       {
          TextMessage tm = (TextMessage)sub2.receive(500);
-         if (tm == null)
-         {
-            break;
-         }
+         assertNotNull(tm);
          assertEquals("hello", tm.getText());
-         count++;
       }
-      assertEquals(NUM_MESSAGES, count);
 
       log.debug("all messages received by sub2");
       
