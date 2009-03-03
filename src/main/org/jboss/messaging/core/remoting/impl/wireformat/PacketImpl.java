@@ -71,94 +71,82 @@ public class PacketImpl implements Packet
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
 
-   public static final byte SESS_ACKNOWLEDGE = 44;
+   public static final byte SESS_ACKNOWLEDGE = 41;
    
-   public static final byte SESS_EXPIRED = 45;
+   public static final byte SESS_EXPIRED = 42;
 
-   public static final byte SESS_COMMIT = 46;
+   public static final byte SESS_COMMIT = 43;
 
-   public static final byte SESS_ROLLBACK = 47;
+   public static final byte SESS_ROLLBACK = 44;
 
-   public static final byte SESS_QUEUEQUERY = 48;
+   public static final byte SESS_QUEUEQUERY = 45;
 
-   public static final byte SESS_QUEUEQUERY_RESP = 49;
+   public static final byte SESS_QUEUEQUERY_RESP = 46;
 
-   public static final byte SESS_CREATE_QUEUE = 50;
+   public static final byte SESS_CREATE_QUEUE = 47;
 
-   public static final byte SESS_DELETE_QUEUE = 51;
+   public static final byte SESS_DELETE_QUEUE = 48;
 
-   public static final byte SESS_BINDINGQUERY = 54;
+   public static final byte SESS_BINDINGQUERY = 49;
 
-   public static final byte SESS_BINDINGQUERY_RESP = 55;
+   public static final byte SESS_BINDINGQUERY_RESP = 50;
 
-   public static final byte SESS_XA_START = 56;
+   public static final byte SESS_XA_START = 51;
 
-   public static final byte SESS_XA_END = 57;
+   public static final byte SESS_XA_END = 52;
 
-   public static final byte SESS_XA_COMMIT = 58;
+   public static final byte SESS_XA_COMMIT = 53;
 
-   public static final byte SESS_XA_PREPARE = 59;
+   public static final byte SESS_XA_PREPARE = 54;
 
-   public static final byte SESS_XA_RESP = 60;
+   public static final byte SESS_XA_RESP = 55;
 
-   public static final byte SESS_XA_ROLLBACK = 61;
+   public static final byte SESS_XA_ROLLBACK = 56;
 
-   public static final byte SESS_XA_JOIN = 62;
+   public static final byte SESS_XA_JOIN = 57;
 
-   public static final byte SESS_XA_SUSPEND = 63;
+   public static final byte SESS_XA_SUSPEND = 58;
 
-   public static final byte SESS_XA_RESUME = 64;
+   public static final byte SESS_XA_RESUME = 59;
 
-   public static final byte SESS_XA_FORGET = 65;
+   public static final byte SESS_XA_FORGET = 60;
 
-   public static final byte SESS_XA_INDOUBT_XIDS = 66;
+   public static final byte SESS_XA_INDOUBT_XIDS = 61;
 
-   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 67;
+   public static final byte SESS_XA_INDOUBT_XIDS_RESP = 62;
 
-   public static final byte SESS_XA_SET_TIMEOUT = 68;
+   public static final byte SESS_XA_SET_TIMEOUT = 63;
 
-   public static final byte SESS_XA_SET_TIMEOUT_RESP = 69;
+   public static final byte SESS_XA_SET_TIMEOUT_RESP = 64;
 
-   public static final byte SESS_XA_GET_TIMEOUT = 70;
+   public static final byte SESS_XA_GET_TIMEOUT = 65;
 
-   public static final byte SESS_XA_GET_TIMEOUT_RESP = 71;
+   public static final byte SESS_XA_GET_TIMEOUT_RESP = 66;
 
-   public static final byte SESS_START = 72;
+   public static final byte SESS_START = 67;
 
-   public static final byte SESS_STOP = 73;
+   public static final byte SESS_STOP = 68;
 
-   public static final byte SESS_CLOSE = 74;
+   public static final byte SESS_CLOSE = 69;
 
-   public static final byte SESS_FLOWTOKEN = 75;
+   public static final byte SESS_FLOWTOKEN = 70;
 
-   public static final byte SESS_SEND = 76;
+   public static final byte SESS_SEND = 71;
 
-   public static final byte SESS_SEND_CONTINUATION = 77;
+   public static final byte SESS_SEND_CONTINUATION = 72;
 
-   public static final byte SESS_CONSUMER_CLOSE = 78;
+   public static final byte SESS_CONSUMER_CLOSE = 73;
 
-   public static final byte SESS_RECEIVE_MSG = 79;
+   public static final byte SESS_RECEIVE_MSG = 74;
 
-   public static final byte SESS_RECEIVE_CONTINUATION = 80;
+   public static final byte SESS_RECEIVE_CONTINUATION = 75;
 
-   public static final byte SESS_FAILOVER_COMPLETE = 81;
+   public static final byte SESS_FAILOVER_COMPLETE = 76;
    
    //Replication
 
-   public static final byte SESS_REPLICATE_DELIVERY = 92;
+   public static final byte SESS_REPLICATE_DELIVERY = 91;
    
-   public static final byte REPLICATE_ADDRESS_ADDED = 93;
-   
-   public static final byte REPLICATE_ADD_DESTINATION = 94;
-   
-   public static final byte REPLICATE_REMOVE_DESTINATION = 95;
-   
-   public static final byte REPLICATE_ADD_BINDING = 96;
-   
-   public static final byte REPLICATE_REMOVE_BINDING = 97;
-   
-   public static final byte REPLICATE_ROUTE = 98;
-
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

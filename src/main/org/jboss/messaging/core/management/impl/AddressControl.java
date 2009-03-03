@@ -117,7 +117,7 @@ public class AddressControl implements AddressControlMBean
       return roleInfos;
    }
 
-   public void addRole(final String name, final boolean create, final boolean read, final boolean write) throws Exception
+   public synchronized void addRole(final String name, final boolean create, final boolean read, final boolean write) throws Exception
    {
       Set<Role> roles = securityRepository.getMatch(address.toString());
       Role newRole = new Role(name, read, write, create);
@@ -129,7 +129,7 @@ public class AddressControl implements AddressControlMBean
       securityRepository.addMatch(address.toString(), roles);
    }
 
-   public void removeRole(final String role) throws Exception
+   public synchronized void removeRole(final String role) throws Exception
    {
       Set<Role> roles = securityRepository.getMatch(address.toString());
       Iterator<Role> it = roles.iterator();

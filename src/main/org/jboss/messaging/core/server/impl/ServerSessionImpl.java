@@ -498,8 +498,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    public void handleRollback(final RollbackMessage packet)
-   {
-            
+   {            
       if (replicatingChannel == null)
       {
          doHandleRollback(packet);

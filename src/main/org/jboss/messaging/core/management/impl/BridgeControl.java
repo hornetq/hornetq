@@ -84,7 +84,6 @@ public class BridgeControl implements BridgeControlMBean
       return configuration.getFilterString();
    }
 
-
    public int getMaxRetriesAfterFailover()
    {
       return configuration.getMaxRetriesAfterFailover();
