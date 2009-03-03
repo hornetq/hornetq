@@ -104,6 +104,7 @@ public class SpawnedVMSupport
 
       sb.append("-Djava.library.path=").append(System.getProperty("java.library.path", "./native/bin")).append(" ");
       
+      //sb.append("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 ");
       sb.append(className).append(' ');
 
       for (int i = 0; i < args.length; i++)

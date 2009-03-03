@@ -96,11 +96,17 @@ public class SimpleClient
          session.deleteQueue(queueName);         
          session.close();
          
-         System.out.println("DONE: client exited without any issue");
+         System.out.println("OK");
       }
       catch (Throwable t)
       {
-         log.error(t.getMessage(), t);
+         String allStack = t.getMessage() + "|";
+         StackTraceElement[] stackTrace = t.getStackTrace();
+         for (StackTraceElement stackTraceElement : stackTrace)
+         {
+            allStack += stackTraceElement.toString() + "|";
+         }
+         System.out.println(allStack);
          System.exit(1);
       }
    }

@@ -22,20 +22,35 @@
 
 package org.jboss.messaging.tests.integration.security;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.Messaging;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
+import org.jboss.messaging.tests.util.SpawnedVMSupport;
+import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A NettySecurityClientTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class NettySecurityClientTest extends SecurityManagerClientTestBase
+public class NettySecurityClientTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(NettySecurityClientTest.class);
+
    // Attributes ----------------------------------------------------
+
+   private MessagingService messagingService;
 
    // Static --------------------------------------------------------
 
@@ -43,26 +58,83 @@ public class NettySecurityClientTest extends SecurityManagerClientTestBase
 
    // Public --------------------------------------------------------
 
+
+   public void testProducerConsumerClientWithoutSecurityManager() throws Exception
+   {
+      doTestProducerConsumerClient(false);
+   }
+
+   public void testProducerConsumerClientWithSecurityManager() throws Exception
+   {
+      doTestProducerConsumerClient(true);
+   }
+   
    // SecurityManagerClientTestBase overrides -----------------------
-
-   @Override
-   protected String getAcceptorFactoryClassName()
-   {
-      return NettyAcceptorFactory.class.getName();
-   }
-
-   @Override
-   protected String getConnectorFactoryClassName()
-   {
-      return NettyConnectorFactory.class.getName();
-   }
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      ConfigurationImpl config = new ConfigurationImpl();
+      config.setSecurityEnabled(false);
+      config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
+      messagingService = Messaging.newNullStorageMessagingService(config);
+      messagingService.start();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      messagingService.stop();
+
+      super.tearDown();
+   }
+   
    // Private -------------------------------------------------------
 
+   private void doTestProducerConsumerClient(boolean withSecurityManager) throws Exception
+   {
+      String[] vmargs = new String[0];
+      if (withSecurityManager)
+      {
+         URL securityPolicyURL = Thread.currentThread().getContextClassLoader().getResource("restricted-security-client.policy");
+         vmargs = new String[] { "-Djava.security.manager", "-Djava.security.policy=" + securityPolicyURL.getPath() };
+      }
+
+      // spawn a JVM that creates a client withor without a security manager which sends and receives a test message
+      Process p = SpawnedVMSupport.spawnVM(SimpleClient.class.getName(),
+                                           vmargs,
+                                           false,
+                                           new String[] { NettyConnectorFactory.class.getName() });
+
+      InputStreamReader isr = new InputStreamReader(p.getInputStream());
+      BufferedReader br = new BufferedReader(isr);
+      String line = null;
+      while ((line = br.readLine()) != null)
+      {
+         line = line.replace('|', '\n');
+         if ("OK".equals(line.trim()))
+         {
+            break;
+         } else
+         {
+            fail("Exception when starting the client: " + line);
+         }
+      }
+
+      // the client VM should exit by itself. If it doesn't, that means we have a problem
+      // and the test will timeout
+      log.debug("waiting for the client VM to exit ...");
+      p.waitFor();
+
+      assertEquals("client VM did not exit cleanly", 0, p.exitValue());
+   }
+   
    // Inner classes -------------------------------------------------
 
 }

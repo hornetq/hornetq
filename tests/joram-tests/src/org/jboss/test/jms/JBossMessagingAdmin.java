@@ -42,7 +42,10 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Hashtable;
 
 import javax.management.ObjectName;
@@ -263,20 +266,31 @@ public class JBossMessagingAdmin implements Admin
       String line = null;
       while ((line = br.readLine()) != null)
       {
-         System.out.println(line);
-         if ("OK".equals(line.trim()))
+         line.replace('|', '\n');
+         if (line.startsWith("Listening for transport"))
+         {
+            continue;
+         }
+         else if ("OK".equals(line.trim()))
          {
             return;
          } else
          {
-            throw new IllegalStateException("Unable to start the spawned server");
+            throw new IllegalStateException("Unable to start the spawned server :" + line);
          }
       }
    }
 
    public void stopServer() throws Exception
    {
-      serverProcess.destroy();
+      OutputStreamWriter osw = new OutputStreamWriter(serverProcess.getOutputStream());
+      osw.write("STOP\n");
+      osw.flush();
+      int exitValue = serverProcess.waitFor();
+      if (exitValue != 0)
+      {
+         serverProcess.destroy();
+      }
    }
 
    // Constants -----------------------------------------------------

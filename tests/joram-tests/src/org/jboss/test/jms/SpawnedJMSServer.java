@@ -22,6 +22,8 @@
 
 package org.jboss.test.jms;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Hashtable;
 
 import javax.naming.InitialContext;
@@ -83,31 +85,38 @@ public class SpawnedJMSServer
          env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
          serverManager.setContext(new InitialContext(env));
 
-         Runtime.getRuntime().addShutdownHook(new Thread()
-         {
-            @Override
-            public void run()
-            {
-               try
-               {
-                  server.stop();
-                  jndiServer.stop();
-                  namingInfo.stop();
-                  System.out.println("Server stopped");
-               }
-               catch (Exception e)
-               {
-                  e.printStackTrace();
-               }
-            }
-         });
-
          System.out.println("OK");
 
-         while (true)
+         InputStreamReader isr = new InputStreamReader(System.in);
+         BufferedReader br = new BufferedReader(isr);
+         String line = null;
+         while ((line = br.readLine()) != null)
          {
-            Thread.sleep(100);
+            if ("STOP".equals(line.trim()))
+            {
+               server.stop();
+               jndiServer.stop();
+               namingInfo.stop();
+               System.out.println("Server stopped");
+               System.exit(0);
+            } 
+            else
+            {
+               // stop anyway but with a error status
+               System.exit(1);
+            }
          }
+      }
+      catch (Throwable t)
+      {
+         String allStack = t.getMessage() + "|";
+         StackTraceElement[] stackTrace = t.getStackTrace();
+         for (StackTraceElement stackTraceElement : stackTrace)
+         {
+            allStack += stackTraceElement.toString() + "|";
+         }
+         System.out.println(allStack);
+         System.exit(1);
       }
       finally
       {
