@@ -710,7 +710,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (consumer != null)
       {
          ClientMessageInternal clMessage = message.getClientMessage();
+         
          clMessage.setFlowControlSize(clMessage.getEncodeSize());
+         
          consumer.handleMessage(message.getClientMessage());
       }
    }
@@ -742,14 +744,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-
+   
       try
       {
          closeChildren();
          
          closedSent = true;
          
-         channel.sendBlocking(new SessionCloseMessage());   
+         channel.sendBlocking(new SessionCloseMessage());           
       }
       catch (Throwable ignore)
       {

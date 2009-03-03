@@ -148,6 +148,7 @@ public class QueueControl implements QueueControlMBean
    public String getDeadLetterAddress()
    {
       AddressSettings addressSettings = addressSettingsRepository.getMatch(getName());
+      
       if (addressSettings != null && addressSettings.getDeadLetterAddress() != null)
       {
          return addressSettings.getDeadLetterAddress().toString();
@@ -158,7 +159,7 @@ public class QueueControl implements QueueControlMBean
       }
    }
 
-   public void setDeadLetterAddress(String deadLetterAddress) throws Exception
+   public void setDeadLetterAddress(final String deadLetterAddress) throws Exception
    {
       AddressSettings addressSettings = addressSettingsRepository.getMatch(getName());
 
@@ -171,6 +172,7 @@ public class QueueControl implements QueueControlMBean
    public String getExpiryAddress()
    {
       AddressSettings addressSettings = addressSettingsRepository.getMatch(getName());
+      
       if (addressSettings != null && addressSettings.getExpiryAddress() != null)
       {
          return addressSettings.getExpiryAddress().toString();
@@ -181,7 +183,7 @@ public class QueueControl implements QueueControlMBean
       }
    }
 
-   public void setExpiryAddress(String expiryAddres) throws Exception
+   public void setExpiryAddress(final String expiryAddres) throws Exception
    {
       AddressSettings addressSettings = addressSettingsRepository.getMatch(getName());
 
@@ -291,9 +293,10 @@ public class QueueControl implements QueueControlMBean
       }
    }
 
-   public int removeMatchingMessages(String filterStr) throws Exception
+   public int removeMatchingMessages(final String filterStr) throws Exception
    {
       Filter filter = FilterImpl.createFilter(filterStr);
+      
       return queue.deleteMatchingReferences(filter);
    }
 
@@ -307,6 +310,7 @@ public class QueueControl implements QueueControlMBean
       try
       {
          Filter filter = FilterImpl.createFilter(filterStr);
+         
          return queue.expireMessages(filter);
       }
       catch (MessagingException e)
@@ -318,6 +322,7 @@ public class QueueControl implements QueueControlMBean
    public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
    {
       Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
+      
       if (binding == null)
       {
          throw new IllegalArgumentException("No queue found for " + otherQueueName);
@@ -326,10 +331,12 @@ public class QueueControl implements QueueControlMBean
       return queue.moveMessage(messageID, binding.getAddress());
    }
 
-   public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
+   public int moveMatchingMessages(final String filterStr, final String otherQueueName) throws Exception
    {
       Filter filter = FilterImpl.createFilter(filterStr);
+      
       Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
+      
       if (binding == null)
       {
          throw new IllegalArgumentException("No queue found for " + otherQueueName);

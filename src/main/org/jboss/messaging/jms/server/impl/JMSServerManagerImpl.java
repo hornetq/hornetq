@@ -144,7 +144,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return messagingServer.getVersion();
    }
 
-   public boolean createQueue(final String queueName, final String jndiBinding) throws Exception
+   public synchronized boolean createQueue(final String queueName, final String jndiBinding) throws Exception
    {
       JBossQueue jBossQueue = new JBossQueue(queueName);      
       messagingServer.createQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
@@ -163,7 +163,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return added;
    }
 
-   public boolean createTopic(final String topicName, final String jndiBinding) throws Exception
+   public synchronized boolean createTopic(final String topicName, final String jndiBinding) throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(topicName);
       //We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS checks when routing messages to a topic that
@@ -178,7 +178,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return added;
    }
 
-   public boolean undeployDestination(final String name) throws Exception
+   public synchronized boolean undeployDestination(final String name) throws Exception
    {
       List<String> jndiBindings = destinations.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
@@ -192,7 +192,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean destroyQueue(final String name) throws Exception
+   public synchronized boolean destroyQueue(final String name) throws Exception
    {
       undeployDestination(name);
 
@@ -203,7 +203,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean destroyTopic(final String name) throws Exception
+   public synchronized boolean destroyTopic(final String name) throws Exception
    {
       undeployDestination(name);
 
@@ -214,7 +214,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean createConnectionFactory(final String name,
+   public synchronized boolean createConnectionFactory(final String name,
                                           final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                           final String connectionLoadBalancingPolicyClassName,
                                           final long pingPeriod,
@@ -273,7 +273,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean createConnectionFactory(final String name,
+   public synchronized boolean createConnectionFactory(final String name,
                                           final DiscoveryGroupConfiguration discoveryGroupConfig,
                                           final long discoveryInitialWait,
                                           final String connectionLoadBalancingPolicyClassName,
@@ -336,7 +336,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public boolean destroyConnectionFactory(final String name) throws Exception
+   public synchronized boolean destroyConnectionFactory(final String name) throws Exception
    {
       List<String> jndiBindings = connectionFactoryBindings.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)

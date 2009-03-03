@@ -274,9 +274,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.isSecurityEnabled();
    }
 
-   // TODO - do we really need this method?
-
-   public void createQueue(final String address, final String name) throws Exception
+   public synchronized void createQueue(final String address, final String name) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
@@ -289,7 +287,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
    }
 
-   public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
+   public synchronized void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
@@ -311,7 +309,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       }
    }
 
-   public void destroyQueue(final String name) throws Exception
+   public synchronized void destroyQueue(final String name) throws Exception
    {
       SimpleString sName = new SimpleString(name);
       Binding binding = postOffice.getBinding(sName);
@@ -419,7 +417,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return s;
    }
 
-   public boolean commitPreparedTransaction(String transactionAsBase64) throws Exception
+   public synchronized boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
    {
       List<Xid> xids = resourceManager.getPreparedTransactions();
 
@@ -435,7 +433,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return false;
    }
 
-   public boolean rollbackPreparedTransaction(String transactionAsBase64) throws Exception
+   public synchronized boolean rollbackPreparedTransaction(final String transactionAsBase64) throws Exception
    {
       List<Xid> xids = resourceManager.getPreparedTransactions();
 
@@ -479,7 +477,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return (String[])remoteConnections.toArray(new String[remoteConnections.size()]);
    }
 
-   public boolean closeConnectionsForAddress(final String ipAddress)
+   public synchronized boolean closeConnectionsForAddress(final String ipAddress)
    {
       boolean closed = false;
       Set<RemotingConnection> connections = remotingService.getConnections();

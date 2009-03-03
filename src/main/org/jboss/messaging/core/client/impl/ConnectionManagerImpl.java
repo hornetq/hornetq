@@ -602,7 +602,6 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
 
    private boolean reconnect(final int retries)
    {
-      log.info("reconnecting");
       // We fail over sessions per connection to ensure there is the same mapping of channel id
       // on live and backup connections
       
@@ -748,7 +747,7 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
       if (refCount == 0)
       {
          // Close connections
-
+         
          Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
 
          connections.clear();
@@ -756,13 +755,13 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
          for (ConnectionEntry entry : copy)
          {
             try
-            {
+            {               
                entry.connection.destroy();
-
+               
                entry.connector.close();
             }
             catch (Throwable ignore)
-            {
+            {               
             }
          }
 
