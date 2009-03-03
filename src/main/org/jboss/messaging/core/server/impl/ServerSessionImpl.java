@@ -1303,8 +1303,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          
          log.info("Trying to create queue address " + address + " name " + name);
          
-         // make sure the user has privileges to create this queue
-         securityStore.check(address, CheckType.CREATE, this);
+         
+         if (temporary)
+         {
+            // make sure the user has privileges to create this queue
+            securityStore.check(address, CheckType.READ, this);
+         }
+         else
+         {
+            // make sure the user has privileges to create this queue
+            securityStore.check(address, CheckType.CREATE, this);
+         }
 
          Binding binding = postOffice.getBinding(name);
 
