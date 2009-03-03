@@ -1300,10 +1300,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-         
-         log.info("Trying to create queue address " + address + " name " + name);
-         
-         
          if (temporary)
          {
             // make sure the user has privileges to create this queue
