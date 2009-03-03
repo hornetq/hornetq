@@ -302,22 +302,9 @@ public class NettyAcceptor implements Acceptor
          httpKeepAliveTimer.cancel();
       }
       serverChannelGroup.close().awaitUninterruptibly();
-      bossExecutor.shutdown();
-      workerExecutor.shutdown();
-      for (;;)
-      {
-         try
-         {
-            if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
-            {
-               break;
-            }
-         }
-         catch (InterruptedException e)
-         {
-            // Ignore
-         }
-      }
+      bossExecutor.shutdownNow();
+      workerExecutor.shutdownNow();
+      
       channelFactory = null;
 
       for (Connection connection : connections.values())
