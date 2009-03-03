@@ -50,7 +50,7 @@ public class LargeMessageMultiThreadFailoverStressTest extends LargeMessageMulti
    
    protected int getNumIterations()
    {
-      return 50;
+      return 100;
    }
 
 

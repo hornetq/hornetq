@@ -89,7 +89,9 @@ public class FileConfiguration extends ConfigurationImpl
 
       backup = getBoolean(e, "backup", backup);
 
-      persistDeliveryCountBeforeDelivery = getBoolean(e, "persist-count-before-delivery", persistDeliveryCountBeforeDelivery);
+      persistDeliveryCountBeforeDelivery = getBoolean(e, "persist-delivery-count-before-delivery", persistDeliveryCountBeforeDelivery);
+      
+      allowRouteWhenNoBindings = getBoolean(e, "allow-route-when-no-bindings", allowRouteWhenNoBindings);
 
       queueActivationTimeout = getLong(e, "queue-activation-timeout", queueActivationTimeout);
 

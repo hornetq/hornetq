@@ -305,10 +305,14 @@ public class TopicControl implements TopicControlMBean
             if (binding.getType() == BindingType.LOCAL_QUEUE)
             {
                Queue queue = (Queue)binding.getBindable();
-               if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||
-                   (durability == DurabilityType.NON_DURABLE && !queue.isDurable()))
+               //Ignore the "special" subscription
+               if (!binding.getUniqueName().equals(binding.getAddress()))
                {
-                  matchingQueues.add(queue);
+                  if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||
+                      (durability == DurabilityType.NON_DURABLE && !queue.isDurable()))
+                  {
+                     matchingQueues.add(queue);
+                  }
                }
             }
          }

@@ -98,6 +98,9 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    public static final int TYPE_TOPIC_SESSION = 2;
 
    public static final int SERVER_ACKNOWLEDGE = 4;
+   
+   private static SimpleString REJECTING_FILTER = new SimpleString("_JBMX=-1");
+   
    // Static --------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JBossSession.class);
@@ -510,12 +513,12 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          }
          else
          {
-            //SessionBindingQueryResponseMessage response = session.bindingQuery(dest.getSimpleAddress());
+            SessionBindingQueryResponseMessage response = session.bindingQuery(dest.getSimpleAddress());
 
-//            if (!response.isExists())
-//            {
-//               throw new InvalidDestinationException("Topic " + dest.getName() + " does not exist");
-//            }
+            if (!response.isExists())
+            {
+               throw new InvalidDestinationException("Topic " + dest.getName() + " does not exist");
+            }
 
             SimpleString queueName;
 
@@ -679,7 +682,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
          SimpleString simpleAddress = queue.getSimpleAddress();
 
-         session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), null, false, true);
+         session.createQueue(simpleAddress, simpleAddress, null, false, true);
 
          connection.addTemporaryQueue(simpleAddress);
 
@@ -701,24 +704,27 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
       String topicName = UUID.randomUUID().toString();
 
-//      try
-//      {
+      try
+      {
          JBossTemporaryTopic topic = new JBossTemporaryTopic(this, topicName);
 
          SimpleString simpleAddress = topic.getSimpleAddress();
+         
+         //We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS checks when routing messages to a topic that
+         //does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no subscriptions - core has no notion of a topic
+         
+         session.createQueue(simpleAddress, simpleAddress, REJECTING_FILTER, false, true);
 
-//         session.addDestination(simpleAddress, false, true);
-//
-//         connection.addTemporaryAddress(simpleAddress);
-
+         connection.addTemporaryQueue(simpleAddress);
+         
          return topic;
-//      }
-//      catch (MessagingException e)
-//      {
-//         throw JMSExceptionHelper.convertFromMessagingException(e);
-//      }
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);
+      }
    }
-
+   
    public void unsubscribe(final String name) throws JMSException
    {
       // As per spec. section 4.11
@@ -842,28 +848,28 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    }
 
    public void deleteTemporaryTopic(final JBossTemporaryTopic tempTopic) throws JMSException
-   {
+   { 
       try
       {
          SessionBindingQueryResponseMessage response = session.bindingQuery(tempTopic.getSimpleAddress());
-
+     
          if (!response.isExists())
          {
             throw new InvalidDestinationException("Cannot delete temporary topic " + tempTopic.getName() +
                                                   " does not exist");
          }
-
-         if (!response.getQueueNames().isEmpty())
+                 
+         if (response.getQueueNames().size() > 1)
          {
             throw new IllegalStateException("Cannot delete temporary topic " + tempTopic.getName() +
                                             " since it has subscribers");
          }
-
+         
          SimpleString address = tempTopic.getSimpleAddress();
 
-//         session.removeDestination(address, false);
-//
-//         connection.removeTemporaryAddress(address);
+         session.deleteQueue(address);
+ 
+         connection.removeTemporaryQueue(address);
       }
       catch (MessagingException e)
       {

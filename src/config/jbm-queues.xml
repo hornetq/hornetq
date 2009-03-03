@@ -54,13 +54,13 @@
    </security>
 
    <!--this will catch any word i.e. queuejms.anything-->
-   <!--<security match="queuejms.^">
+   <!--<security match="queuejms.#">
       <permission type="read" roles="guest,publisher"/>
       <permission type="write" roles="guest,publisher"/>
    </security>-->
 
    <!--this will catch any word i.e. queuejms.anything-->
-   <!--<security match="topicjms.^">
+   <!--<security match="topicjms.#">
       <permission type="read" roles="guest,publisher"/>
       <permission type="write" roles="guest,publisher"/>
    </security>-->

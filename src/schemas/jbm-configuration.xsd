@@ -92,10 +92,13 @@
 				</xsd:element>
 				<xsd:element name="backup" type="xsd:boolean"
 					maxOccurs="1" minOccurs="0">
-				</xsd:element>
-				<xsd:element name="persist-count-before-delivery" type="xsd:boolean"
+				</xsd:element>				
+				<xsd:element name="persist-delivery-count-before-delivery" type="xsd:boolean"
 					maxOccurs="1" minOccurs="0">
-				</xsd:element>
+				</xsd:element>				
+				<xsd:element name="allow-route-when-no-bindings" type="xsd:boolean"
+					maxOccurs="1" minOccurs="0">
+				</xsd:element>				
 				<xsd:element name="backup-connector-ref"
 					type="backup-connectorType" maxOccurs="1" minOccurs="0">
 				</xsd:element>

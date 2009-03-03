@@ -89,7 +89,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 	      
 	      assertNotNull(subs);
 	      
-	      assertEquals(1, subs.size());
+	      assertEquals(2, subs.size());
 	      
 	      SubscriptionInfo info = subs.get(0);
 	
@@ -101,7 +101,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 	
 	      subs = listAllSubscribersForTopic("Topic1");
 	
-	      assertEquals(1, subs.size());
+	      assertEquals(2, subs.size());
 	      
 	      info = subs.get(0);
 	

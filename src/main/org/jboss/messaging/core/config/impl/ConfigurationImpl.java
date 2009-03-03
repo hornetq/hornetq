@@ -42,8 +42,10 @@ public class ConfigurationImpl implements Configuration
    private static final long serialVersionUID = 4077088945050267843L;
 
    public static final boolean DEFAULT_CLUSTERED = false;
+   
+   public static final boolean DEFAULT_ALLOW_ROUTE_WHEN_NO_BINDINGS = true;
 
-   public static final boolean DEFAULT_STRICT_UPDATE_DELIVERY = false;
+   public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
    public static final boolean DEFAULT_BACKUP = false;
 
@@ -52,8 +54,6 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 30;
 
    public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
-
-   //public static final boolean DEFAULT_REQUIRE_DESTINATIONS = false;
 
    public static final boolean DEFAULT_SECURITY_ENABLED = true;
 
@@ -138,8 +138,10 @@ public class ConfigurationImpl implements Configuration
    protected boolean clustered = DEFAULT_CLUSTERED;
 
    protected boolean backup = DEFAULT_BACKUP;
-
-   protected boolean persistDeliveryCountBeforeDelivery = DEFAULT_STRICT_UPDATE_DELIVERY;
+      
+   protected boolean allowRouteWhenNoBindings;
+   
+   protected boolean persistDeliveryCountBeforeDelivery = DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 
    protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
 
@@ -265,6 +267,17 @@ public class ConfigurationImpl implements Configuration
    {
       this.persistDeliveryCountBeforeDelivery = persistDeliveryCountBeforeDelivery;
    }
+
+   public boolean isAllowRouteWhenNoBindings()
+   {
+      return allowRouteWhenNoBindings;
+   }
+   
+   public void setAllowRouteWhenNoBindings(final boolean allowRoute)
+   {
+      this.allowRouteWhenNoBindings = allowRoute;
+   }
+
 
    public void setBackup(final boolean backup)
    {

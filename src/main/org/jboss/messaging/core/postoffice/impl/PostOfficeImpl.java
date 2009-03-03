@@ -124,6 +124,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    private final org.jboss.messaging.utils.ExecutorFactory redistributorExecutorFactory;
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
+   
+   private final boolean allowRouteWhenNoBindings;
 
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
@@ -135,6 +137,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                          final boolean backup,
                          final int idCacheSize,
                          final boolean persistIDCache,
+                         final boolean allowRouteWhenNoBindings,
                          final ExecutorFactory orderedExecutorFactory,
                          HierarchicalRepository<AddressSettings> addressSettingsRepository)
 
@@ -165,6 +168,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       this.idCacheSize = idCacheSize;
 
       this.persistIDCache = persistIDCache;
+      
+      this.allowRouteWhenNoBindings = allowRouteWhenNoBindings;
 
       this.redistributorExecutorFactory = orderedExecutorFactory;
 

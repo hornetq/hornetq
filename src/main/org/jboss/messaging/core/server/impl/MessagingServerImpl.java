@@ -248,6 +248,7 @@ public class MessagingServerImpl implements MessagingServer
                                       configuration.isBackup(),
                                       configuration.getIDCacheSize(),
                                       configuration.isPersistIDCache(),
+                                      configuration.isAllowRouteWhenNoBindings(),
                                       executorFactory,
                                       addressSettingsRepository);
 

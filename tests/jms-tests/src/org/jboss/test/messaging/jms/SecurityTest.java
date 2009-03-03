@@ -807,12 +807,13 @@ public class SecurityTest extends JMSTestCase
 
       try
       {
-         sess.createConsumer(dest);
+         log.info("attempting to create consumer on " + dest);
+         sess.createConsumer(dest);         
          return true;
       }
       catch (JMSSecurityException e)
       {
-         log.trace("Can't read destination", e);
+         log.info("Can't read destination", e);
          return false;
       }
       finally

@@ -46,8 +46,10 @@
 
       <backup>false</backup>
       
-      <persist-count-before-delivery>false</persist-count-before-delivery>
-
+      <persist-delivery-count-before-delivery>false</persist-delivery-count-before-delivery>
+      
+      <allow-route-when-no-bindings>false</allow-route-when-no-bindings>
+            
       <!--
       <backup-connector-ref connector-name="netty-backup"/>
       -->

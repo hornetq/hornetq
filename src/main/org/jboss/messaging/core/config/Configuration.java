@@ -50,6 +50,10 @@ public interface Configuration extends Serializable
    boolean isClustered();
 
    void setClustered(boolean clustered);
+   
+   boolean isAllowRouteWhenNoBindings();
+   
+   void setAllowRouteWhenNoBindings(boolean allowRoute);
 
    boolean isPersistDeliveryCountBeforeDelivery();
 

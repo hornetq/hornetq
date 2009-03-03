@@ -63,6 +63,8 @@ import org.jboss.messaging.utils.Pair;
 public class JMSServerManagerImpl implements JMSServerManager
 {
    private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
+   
+   private static final String REJECT_FILTER = "__JBMX=-1";
 
    /**
     * the context to bind to
@@ -164,6 +166,9 @@ public class JMSServerManagerImpl implements JMSServerManager
    public boolean createTopic(final String topicName, final String jndiBinding) throws Exception
    {
       JBossTopic jBossTopic = new JBossTopic(topicName);
+      //We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS checks when routing messages to a topic that
+      //does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no subscriptions - core has no notion of a topic      
+      messagingServer.createQueue(jBossTopic.getAddress(), jBossTopic.getAddress(), REJECT_FILTER, true);
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
       {
@@ -204,6 +209,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
       destinations.remove(name);
       managementService.unregisterTopic(name);
+      messagingServer.destroyQueue(JBossTopic.createAddressFromName(name).toString());
 
       return true;
    }

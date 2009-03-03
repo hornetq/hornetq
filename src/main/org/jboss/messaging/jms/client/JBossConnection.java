@@ -512,7 +512,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
             exceptionListener.onException(je);
          }
-         
+
          return true;
       }
 
