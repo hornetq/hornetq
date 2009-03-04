@@ -23,7 +23,8 @@
 
 package org.jboss.messaging.tests.integration.cluster.failover;
 
-import java.nio.ByteBuffer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -63,6 +64,50 @@ public class PagingFailoverTest extends FailoverTestBase
 
    // Public --------------------------------------------------------
 
+   
+   public void testMultithreadFailoverReplicationOnly() throws Throwable
+   {
+      setUpFileBased(getMaxGlobal(), getPageSize());
+
+      int numberOfProducedMessages = multiThreadProducer(getNumberOfThreads(), false);
+
+      System.out.println(numberOfProducedMessages + " messages produced");
+
+      int numberOfConsumedMessages = multiThreadConsumer(getNumberOfThreads(), false, false);
+
+      assertEquals(numberOfProducedMessages, numberOfConsumedMessages);
+
+   }
+
+   public void testMultithreadFailoverOnProducing() throws Throwable
+   {
+      setUpFileBased(getMaxGlobal(), getPageSize());
+
+      int numberOfProducedMessages = multiThreadProducer(getNumberOfThreads(), true);
+
+      System.out.println(numberOfProducedMessages + " messages produced");
+
+      int numberOfConsumedMessages = multiThreadConsumer(getNumberOfThreads(), true, false);
+
+      assertEquals(numberOfProducedMessages, numberOfConsumedMessages);
+
+   }
+
+   public void testMultithreadFailoverOnConsume() throws Throwable
+   {
+      setUpFileBased(getMaxGlobal(), getPageSize());
+
+      int numberOfProducedMessages = multiThreadProducer(getNumberOfThreads(), false);
+
+      System.out.println(numberOfProducedMessages + " messages produced");
+
+      int numberOfConsumedMessages = multiThreadConsumer(getNumberOfThreads(), false, true);
+
+      assertEquals(numberOfProducedMessages, numberOfConsumedMessages);
+
+   }
+
+   
    public void testFailoverOnPaging() throws Exception
    {
       testPaging(true);
@@ -181,12 +226,27 @@ public class PagingFailoverTest extends FailoverTestBase
       return 500;
    }
    
+   protected int getNumberOfThreads()
+   {
+      return 5;
+   }
+   
+   protected int getMaxGlobal()
+   {
+      return 1024;
+   }
+   
+   protected int getPageSize()
+   {
+      return 512;
+   }
+   
    protected void fail(final ClientSession session) throws Exception
    {
       RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
 
-      InVMConnector.numberOfFailures = 1;
-      InVMConnector.failOnCreateConnection = true;
+//      InVMConnector.numberOfFailures = 1;
+//      InVMConnector.failOnCreateConnection = true;
       System.out.println("Forcing a failure");
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
 
@@ -194,6 +254,306 @@ public class PagingFailoverTest extends FailoverTestBase
 
 
    // Private -------------------------------------------------------
+   
+   /**
+    * @throws Exception
+    * @throws InterruptedException
+    * @throws Throwable
+    */
+   protected int multiThreadConsumer(int numberOfThreads, final boolean connectedOnBackup, final boolean fail) throws Exception,
+                                                                                       InterruptedException,
+                                                                                       Throwable
+   {
+      ClientSession session = null;
+      try
+      {
+         final AtomicInteger numberOfMessages = new AtomicInteger(0);
+
+         final int RECEIVE_TIMEOUT = 2000;
+
+         final ClientSessionFactory factory;
+         final PagingStore store;
+
+         if (connectedOnBackup)
+         {
+            factory = createBackupFactory();
+            store = backupService.getServer().getPostOffice().getPagingManager().getPageStore(ADDRESS);
+         }
+         else
+         {
+            factory = createFailoverFactory();
+            store = liveService.getServer().getPostOffice().getPagingManager().getPageStore(ADDRESS);
+         }
+
+         session = factory.createSession(false, true, true, false);
+
+         final int initialNumberOfPages = store.getNumberOfPages();
+
+         System.out.println("It has initially " + initialNumberOfPages);
+
+         final CountDownLatch startFlag = new CountDownLatch(1);
+         final CountDownLatch alignSemaphore = new CountDownLatch(numberOfThreads);
+
+         class Consumer extends Thread
+         {
+            volatile Throwable e;
+
+            ClientSession session;
+
+            public Consumer() throws Exception
+            {
+               session = factory.createSession(null, null, false, true, true, false, 0);
+            }
+
+            @Override
+            public void run()
+            {
+               boolean started = false;
+
+               try
+               {
+
+                  try
+                  {
+                     ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+                     session.start();
+
+                     alignSemaphore.countDown();
+
+                     started = true;
+
+                     startFlag.await();
+
+                     while (true)
+                     {
+                        ClientMessage msg = consumer.receive(RECEIVE_TIMEOUT);
+                        if (msg == null)
+                        {
+                           break;
+                        }
+
+                        if (numberOfMessages.incrementAndGet() % 1000 == 0)
+                        {
+                           System.out.println(numberOfMessages + " messages read");
+                        }
+
+                        msg.acknowledge();
+                     }
+
+                  }
+                  finally
+                  {
+                     session.close();
+                  }
+               }
+               catch (Throwable e)
+               {
+                  // Using System.out, as it would appear on the test output
+                  e.printStackTrace(); 
+                  if (!started)
+                  {
+                     alignSemaphore.countDown();
+                  }
+                  this.e = e;
+               }
+            }
+         }
+
+         Consumer[] consumers = new Consumer[numberOfThreads];
+
+         for (int i = 0; i < numberOfThreads; i++)
+         {
+            consumers[i] = new Consumer();
+         }
+
+         for (int i = 0; i < numberOfThreads; i++)
+         {
+            consumers[i].start();
+         }
+
+         alignSemaphore.await();
+
+         startFlag.countDown();
+
+         if (fail)
+         {
+            Thread.sleep(1000);
+            while (store.getNumberOfPages() == initialNumberOfPages)
+            {
+               Thread.sleep(100);
+            }
+
+            System.out.println("The system has already depaged " + (initialNumberOfPages - store.getNumberOfPages()) +
+                               ", failing now");
+
+            fail(session);
+         }
+
+         for (Thread t : consumers)
+         {
+            t.join();
+         }
+
+         for (Consumer p : consumers)
+         {
+            if (p.e != null)
+            {
+               throw p.e;
+            }
+         }
+
+         return numberOfMessages.intValue();
+      }
+      finally
+      {
+         if (session != null)
+         {
+            try
+            {
+               session.close();
+            }
+            catch (Exception ignored)
+            {
+            }
+         }
+      }
+   }
+
+   /**
+    * @throws Exception
+    * @throws MessagingException
+    * @throws InterruptedException
+    * @throws Throwable
+    */
+   protected int multiThreadProducer(final int numberOfThreads, final boolean failover) throws Exception,
+                                                          MessagingException,
+                                                          InterruptedException,
+                                                          Throwable
+   {
+
+      final AtomicInteger numberOfMessages = new AtomicInteger(0);
+      final PagingStore store = liveService.getServer().getPostOffice().getPagingManager().getPageStore(ADDRESS);
+
+      final ClientSessionFactory factory = createFailoverFactory();
+
+      ClientSession session = factory.createSession(false, true, true, false);
+      try
+      {
+         session.createQueue(ADDRESS, ADDRESS, null, true, false);
+
+         final CountDownLatch startFlag = new CountDownLatch(1);
+         final CountDownLatch alignSemaphore = new CountDownLatch(numberOfThreads);
+         final CountDownLatch flagPaging = new CountDownLatch(numberOfThreads);
+
+         class Producer extends Thread
+         {
+            volatile Throwable e;
+
+            @Override
+            public void run()
+            {
+               boolean started = false;
+               try
+               {
+                  ClientSession session = factory.createSession(false, true, true);
+                  try
+                  {
+                     ClientProducer producer = session.createProducer(ADDRESS);
+
+                     alignSemaphore.countDown();
+
+                     started = true;
+                     startFlag.await();
+
+                     while (!store.isPaging())
+                     {
+
+                        ClientMessage msg = session.createClientMessage(true);
+
+                        producer.send(msg);
+                        numberOfMessages.incrementAndGet();
+                     }
+
+                     flagPaging.countDown();
+
+                     for (int i = 0; i < 100; i++)
+                     {
+
+                        ClientMessage msg = session.createClientMessage(true);
+
+                        producer.send(msg);
+                        numberOfMessages.incrementAndGet();
+
+                     }
+
+                  }
+                  finally
+                  {
+                     session.close();
+                  }
+               }
+               catch (Throwable e)
+               {
+                  // Using System.out, as it would appear on the test output
+                  e.printStackTrace(); 
+                  if (!started)
+                  {
+                     alignSemaphore.countDown();
+                  }
+                  flagPaging.countDown();
+                  this.e = e;
+               }
+            }
+         }
+
+         Producer[] producers = new Producer[numberOfThreads];
+
+         for (int i = 0; i < numberOfThreads; i++)
+         {
+            producers[i] = new Producer();
+            producers[i].start();
+         }
+
+         alignSemaphore.await();
+
+         // Start producing only when all the sessions are opened
+         startFlag.countDown();
+
+         if (failover)
+         {
+            flagPaging.await(); // for this test I want everybody on the paging part
+
+            Thread.sleep(1500);
+
+            fail(session);
+
+         }
+
+         for (Thread t : producers)
+         {
+            t.join();
+         }
+
+         for (Producer p : producers)
+         {
+            if (p.e != null)
+            {
+               throw p.e;
+            }
+         }
+
+         return numberOfMessages.intValue();
+
+      }
+      finally
+      {
+         session.close();
+         InVMConnector.resetFailures();
+      }
+
+   }
+   
 
    // Inner classes -------------------------------------------------
 

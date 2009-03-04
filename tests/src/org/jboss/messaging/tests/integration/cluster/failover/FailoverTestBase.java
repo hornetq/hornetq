@@ -34,6 +34,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
@@ -97,6 +98,8 @@ public class FailoverTestBase extends ServiceTestBase
       backupConf.setBindingsDirectory(getBindingsDir(getTestDir() + "/backup"));
       backupConf.setPagingDirectory(getPageDir(getTestDir() + "/backup"));
       backupConf.setJournalFileSize(100 * 1024);
+      
+      backupConf.setJournalType(JournalType.NIO);
 
       backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
       backupConf.setPagingGlobalWatermarkSize(pageSize);
@@ -123,6 +126,8 @@ public class FailoverTestBase extends ServiceTestBase
       liveConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
       liveConf.setPagingGlobalWatermarkSize(pageSize);
       liveConf.setJournalFileSize(100 * 1024);
+      
+      liveConf.setJournalType(JournalType.NIO);
 
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
@@ -145,7 +150,7 @@ public class FailoverTestBase extends ServiceTestBase
       backupService.getServer().getAddressSettingsRepository().addMatch("#", settings);
 
       clearData(getTestDir() + "/live");
-
+      
       liveService.start();
    }
 

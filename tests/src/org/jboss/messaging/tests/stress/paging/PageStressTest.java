@@ -21,6 +21,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -319,6 +320,8 @@ public class PageStressTest extends ServiceTestBase
 
       config.setJournalFileSize(10 * 1024 * 1024);
       config.setJournalMinFiles(5);
+      
+      config.setJournalType(JournalType.NIO);
       
       return config;
    }

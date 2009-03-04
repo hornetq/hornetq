@@ -2424,7 +2424,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       LargeServerMessage largeMessage = storageManager.createLargeMessage();
 
-      MessagingBuffer headerBuffer = ChannelBuffers.dynamicBuffer(header); 
+      MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header); 
 
       largeMessage.decodeProperties(headerBuffer);
 

@@ -78,7 +78,7 @@ public class PingTest extends ServiceTestBase
    private static final long PING_INTERVAL = 500;
 
    // Attributes ----------------------------------------------------
-   
+
    private MessagingService messagingService;
 
    // Static --------------------------------------------------------
@@ -110,7 +110,7 @@ public class PingTest extends ServiceTestBase
       public boolean connectionFailed(MessagingException me)
       {
          this.me = me;
-         
+
          return true;
       }
 
@@ -144,7 +144,7 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_AUTO_GROUP,
                                                               DEFAULT_MAX_CONNECTIONS,
                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,                                                            
+                                                              DEFAULT_ACK_BATCH_SIZE,
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                               DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
@@ -219,14 +219,14 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_AUTO_GROUP,
                                                               DEFAULT_MAX_CONNECTIONS,
                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,                                                          
+                                                              DEFAULT_ACK_BATCH_SIZE,
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                               DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                               DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
       ClientSession session = csf.createSession(false, true, true);
-      
+
       assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
       Listener clientListener = new Listener();
@@ -294,20 +294,20 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_AUTO_GROUP,
                                                               DEFAULT_MAX_CONNECTIONS,
                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,                                                             
+                                                              DEFAULT_ACK_BATCH_SIZE,
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                               DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                               DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
-      
+
       Listener clientListener = new Listener();
 
       ClientSession session = csf.createSession(false, true, true);
-      
+
       assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
       session.addFailureListener(clientListener);
-      
+
       RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
 
       // We need to get it to send one ping then stop
@@ -334,7 +334,20 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      Thread.sleep(PING_INTERVAL * 10);
+      for (int i = 0; i < 20; i++)
+      {
+         // a few tries to avoid a possible race caused by GCs or similar issues
+         if (messagingService.getServer().getRemotingService().getConnections().isEmpty())
+         {
+            // Sleep a bit more since it's async
+            // We are not sure about the order in which the listeners are called, so we need another sleep
+            Thread.sleep(PING_INTERVAL);
+
+            break;
+         }
+
+         Thread.sleep(PING_INTERVAL);
+      }
 
       // The client listener should be called too since the server will close it from the server side which will result
       // in the
@@ -347,7 +360,8 @@ public class PingTest extends ServiceTestBase
 
       session.close();
    }
-
+   
+   
    /*
    * Test the client triggering failure due to no pong received in time
    */
@@ -360,6 +374,7 @@ public class PingTest extends ServiceTestBase
             log.info("In interceptor, packet is " + packet.getType());
             if (packet.getType() == PacketImpl.PING)
             {
+               log.info("Ignoring Ping packet.. it will be dropped");
                return false;
             }
             else
@@ -372,7 +387,7 @@ public class PingTest extends ServiceTestBase
       messagingService.getServer().getRemotingService().addInterceptor(noPongInterceptor);
 
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
-      
+
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
                                                               null,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -390,18 +405,18 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_AUTO_GROUP,
                                                               DEFAULT_MAX_CONNECTIONS,
                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,                                                              
+                                                              DEFAULT_ACK_BATCH_SIZE,
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                               0,
                                                               0);
-      
+
       ClientSession session = csf.createSession(false, true, true);
-      
+
       assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
       Listener clientListener = new Listener();
-      
+
       session.addFailureListener(clientListener);
 
       RemotingConnection serverConn = null;
@@ -424,12 +439,21 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      Thread.sleep(PING_INTERVAL * 2);
+      for (int i = 0; i < 20; i++)
+      {
+         // a few tries to avoid a possible race caused by GCs or similar issues
+         if (messagingService.getServer().getRemotingService().getConnections().isEmpty())
+         {
+            // Sleep a bit more since it's async
+            // We are not sure about the order in which the listeners are called, so we need another sleep
+            Thread.sleep(PING_INTERVAL);
+            break;
+         }
+
+         Thread.sleep(PING_INTERVAL);
+      }
 
       assertNotNull(clientListener.getException());
-
-      // Sleep a bit more since it's async
-      Thread.sleep(PING_INTERVAL);
 
       // We don't receive an exception on the server in this case
       assertNull(serverListener.getException());
