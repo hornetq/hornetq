@@ -244,9 +244,6 @@ public class PagingFailoverTest extends FailoverTestBase
    protected void fail(final ClientSession session) throws Exception
    {
       RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
-
-      InVMConnector.numberOfFailures = 1;
-      InVMConnector.failOnCreateConnection = true;
       System.out.println("Forcing a failure");
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
 
