@@ -413,10 +413,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void deliverReplicated(final long messageID) throws Exception
    {
-      MessageReference ref = removeReferenceOnBackup(messageID);
+      MessageReference ref = messageQueue.removeFirstReference(id);
       
-      //log.info("handling replicated delivery on backup " + messageID + " session " + session.getName());
-
       if (ref == null)
       {
          throw new IllegalStateException("Cannot find ref when replicating delivery " + messageID +
@@ -463,43 +461,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Private --------------------------------------------------------------------------------------
    
-   private MessageReference removeReferenceOnBackup(final long id) throws Exception
-   {
-      // most of the times, the remove will work ok, so we first try it without any locks
-      MessageReference ref = messageQueue.removeFirstReference(id);
-
-      if (ref == null)
-      {
-         PagingStore store = pagingManager.getPageStore(binding.getAddress());
-
-         while (true)
-         {
-            // Can't have the same store being depaged in more than one thread
-            synchronized (store)
-            {
-               // as soon as it gets the lock, it needs to verify if another thread couldn't find the reference
-               ref = messageQueue.removeFirstReference(id);
-               if (ref == null)
-               {
-                  // force a depage
-                  if (!store.readPage()) // This returns false if there are no pages
-                  {
-                     break;
-                  }
-               }
-               else
-               {
-                  break;
-               }
-            }
-         }
-      }
-
-      return ref;
-
-   }
-
-
+   
    private void promptDelivery()
    {
       lock.lock();
