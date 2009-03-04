@@ -106,6 +106,7 @@ public class ServiceTestBase extends UnitTestCase
       FileConfiguration config = new FileConfiguration();
       config.setJournalDirectory(getJournalDir());
       config.setBindingsDirectory(getBindingsDir());
+      config.setJournalType(JournalType.NIO);
       config.setLargeMessagesDirectory(getLargeMessagesDir());
       return config;
    }
