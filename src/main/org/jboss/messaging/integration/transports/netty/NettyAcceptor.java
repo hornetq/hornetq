@@ -327,6 +327,42 @@ public class NettyAcceptor implements Acceptor
       bossExecutor.shutdownNow();
       workerExecutor.shutdownNow();
       
+      if (bossExecutor != null)
+      {
+         for (; ;)
+         {
+            try
+            {
+               if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
+               {
+                  break;
+               }
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
+            }
+         }
+      }
+      
+      if (workerExecutor != null)
+      {
+         for (; ;)
+         {
+            try
+            {
+               if (workerExecutor.awaitTermination(1, TimeUnit.SECONDS))
+               {
+                  break;
+               }
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
+            }
+         }
+      }
+      
       channelFactory = null;
 
       for (Connection connection : connections.values())

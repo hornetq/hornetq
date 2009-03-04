@@ -334,7 +334,43 @@ public class NettyConnector implements Connector
       {
          bossExecutor.shutdownNow();
       }
-      workerExecutor.shutdownNow();       
+      workerExecutor.shutdownNow();  
+      
+      if (bossExecutor != null)
+      {
+         for (; ;)
+         {
+            try
+            {
+               if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
+               {
+                  break;
+               }
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
+            }
+         }
+      }
+      
+      if (workerExecutor != null)
+      {
+         for (; ;)
+         {
+            try
+            {
+               if (workerExecutor.awaitTermination(1, TimeUnit.SECONDS))
+               {
+                  break;
+               }
+            }
+            catch (InterruptedException e)
+            {
+               // Ignore
+            }
+         }
+      }
       
       for (Connection connection : connections.values())
       {
