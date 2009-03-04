@@ -52,6 +52,24 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
       // JMS1.1 specs 3.4.3
       assertTrue(messageID.startsWith("ID:"));
    }
+   
+   public void testJMSMessageIDChangedAfterSendingMessage() throws Exception
+   {
+      try
+      {
+         Message m = queueProducerSession.createMessage();;
+         m.setJMSMessageID("ID:something");
+
+         queueProducer.send(m);
+
+         assertFalse("ID:something".equals(m.getJMSMessageID()));
+
+      }
+      finally
+      {
+         removeAllMessages(queue1.getQueueName(), true, 0);
+      }
+   }
 
    // Package protected ---------------------------------------------
    

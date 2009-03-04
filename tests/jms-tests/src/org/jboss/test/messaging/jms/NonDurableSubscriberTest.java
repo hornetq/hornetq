@@ -21,6 +21,7 @@
   */
 package org.jboss.test.messaging.jms;
 
+import javax.jms.InvalidSelectorException;
 import javax.jms.Session;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
@@ -118,6 +119,31 @@ public class NonDurableSubscriberTest extends JMSTestCase
       }
    }
 
+   public void testInvalidSelectorOnSubscription() throws Exception
+   {
+      TopicConnection c = null;
+      try
+      {
+         c = cf.createTopicConnection();
+         c.setClientID("something");
+
+         TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         try
+         {
+            s.createSubscriber(topic1, "=TEST 'test'", false);
+            fail("this should fail");
+         }
+         catch (InvalidSelectorException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         c.close();
+      }
+   }
 
    // Package protected ---------------------------------------------
 

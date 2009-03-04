@@ -97,6 +97,11 @@ public class JMSTestCase extends JBMServerTestCase
       assertRemainingMessages(0);
    }
 
+   public JMSTestCase()
+   {
+      super();
+   }
+   
    public JMSTestCase(String name)
    {
       super(name);

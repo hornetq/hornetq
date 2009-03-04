@@ -22,9 +22,11 @@
 package org.jboss.test.messaging.jms.message.foreign;
 
 import javax.jms.Message;
+import javax.jms.TextMessage;
 
 import org.jboss.test.messaging.jms.message.MessageTestBase;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
+import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 
 
 /**
@@ -63,4 +65,20 @@ public class ForeignMessageTest extends MessageTestBase
 
         return m;
     }
+    
+    public void testForeignMessageSetDestination() throws Exception
+    {
+       // create a Bytes foreign message
+       SimpleJMSTextMessage txt = new SimpleJMSTextMessage("hello from Brazil!");
+       txt.setJMSDestination(null);
+
+       queueProd.send(txt);
+
+       assertNotNull(txt.getJMSDestination());
+
+       TextMessage tm = (TextMessage)queueCons.receive();
+       assertNotNull(tm);
+       assertEquals("hello from Brazil!", txt.getText());
+    }
+
 }
