@@ -267,7 +267,6 @@ public class MessagingServerImpl implements MessagingServer
       managementService.setManagementRequestTimeout(configuration.getManagementRequestTimeout());
 
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
-      // List<SimpleString> destinations = new ArrayList<SimpleString>();
 
       storageManager.loadBindingJournal(queueBindingInfos);
 
@@ -336,7 +335,7 @@ public class MessagingServerImpl implements MessagingServer
       // Deploy any pre-defined queues
       deployQueues();
 
-      // Deply and pre-defined diverts
+      // Deply any pre-defined diverts
       deployDiverts();
 
       String backupConnectorName = configuration.getBackupConnectorName();
@@ -1024,7 +1023,7 @@ public class MessagingServerImpl implements MessagingServer
 
       return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
-
+   
    private Transformer instantiateTransformer(final String transformerClassName)
    {
       Transformer transformer = null;

@@ -255,8 +255,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
          managementService.sendNotification(notification);
       }
-
-      // log.info("closed consumer with id " + id);
    }
 
    public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
@@ -264,8 +262,6 @@ public class ServerConsumerImpl implements ServerConsumer
       boolean performACK = lastConsumedAsDelivered;
 
       LinkedList<MessageReference> refs = new LinkedList<MessageReference>();
-
-      // log.info(System.identityHashCode(this) + " cancelling refs");
 
       if (!deliveringRefs.isEmpty())
       {
@@ -379,7 +375,7 @@ public class ServerConsumerImpl implements ServerConsumer
          return null;
       }
 
-      // Expiries can come in our of sequence with respect to delivery order
+      // Expiries can come in out of sequence with respect to delivery order
 
       Iterator<MessageReference> iter = deliveringRefs.iterator();
 
@@ -413,8 +409,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void deliverReplicated(final long messageID) throws Exception
    {
-      MessageReference ref = messageQueue.removeFirstReference(id);
-      
+      MessageReference ref = messageQueue.removeReferenceWithID(messageID);
+
       if (ref == null)
       {
          throw new IllegalStateException("Cannot find ref when replicating delivery " + messageID +
@@ -460,7 +456,6 @@ public class ServerConsumerImpl implements ServerConsumer
    // Public ---------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
-   
    
    private void promptDelivery()
    {
