@@ -85,10 +85,13 @@ public class SpawnedJMSServer
          env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
          serverManager.setContext(new InitialContext(env));
 
-         System.out.println("OK");
-
+         // create the reader before printing OK so that if the test is quick
+         // we will still capture the STOP message sent by the client
          InputStreamReader isr = new InputStreamReader(System.in);
          BufferedReader br = new BufferedReader(isr);
+
+         System.out.println("OK");
+
          String line = null;
          while ((line = br.readLine()) != null)
          {
