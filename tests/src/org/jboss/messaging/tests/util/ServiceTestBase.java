@@ -37,6 +37,7 @@ import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
@@ -193,6 +194,7 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(index));
       configuration.setJournalFileSize(100 * 1024);
+      configuration.setJournalType(JournalType.NIO);
       configuration.setPagingDirectory(getPageDir(index));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(index));
 
@@ -217,6 +219,8 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setJournalFileSize(100 * 1024);
       configuration.setPagingDirectory(getPageDir());
       configuration.setLargeMessagesDirectory(getLargeMessagesDir());
+      
+      configuration.setJournalType(JournalType.NIO);
 
       configuration.getAcceptorConfigurations().clear();
 

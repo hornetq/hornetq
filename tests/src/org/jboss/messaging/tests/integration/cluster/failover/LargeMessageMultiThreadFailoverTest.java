@@ -33,6 +33,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Messaging;
 
 /**
@@ -85,6 +86,8 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
       backupConf.setBindingsDirectory(getBindingsDir(getTestDir() + "/backup"));
       backupConf.setPagingDirectory(getPageDir(getTestDir() + "/backup"));
       backupConf.setJournalFileSize(100 * 1024);
+      
+      backupConf.setJournalType(JournalType.NIO);
 
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -104,6 +107,9 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
       liveConf.setPagingDirectory(getPageDir(getTestDir() + "/live"));
 
       liveConf.setJournalFileSize(100 * 1024);
+      
+      liveConf.setJournalType(JournalType.NIO);
+
 
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
