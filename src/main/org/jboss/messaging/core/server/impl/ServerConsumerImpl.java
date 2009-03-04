@@ -409,7 +409,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void deliverReplicated(final long messageID) throws Exception
    {
-      MessageReference ref = messageQueue.removeReferenceWithID(messageID);
+      MessageReference ref = removeFirstReference(messageID);
 
       if (ref == null)
       {
@@ -431,7 +431,7 @@ public class ServerConsumerImpl implements ServerConsumer
                                          handled);
       }
    }
-
+   
    public void failedOver()
    {
       if (messageQueue.consumerFailedOver())
@@ -456,6 +456,34 @@ public class ServerConsumerImpl implements ServerConsumer
    // Public ---------------------------------------------------------------------------------------
 
    // Private --------------------------------------------------------------------------------------
+
+   private MessageReference removeFirstReference(final long id) throws Exception
+   {
+      MessageReference ref = messageQueue.removeFirstReference(id);
+
+      if (ref == null)
+      {
+         // The order is correct, but it hasn't been depaged yet, so we need to force a depage
+         PagingStore store = pagingManager.getPageStore(binding.getAddress());
+         
+         // force a depage
+         if (!store.readPage()) // This returns false if there are no pages
+         {
+            throw new IllegalStateException("Cannot find page");
+         }
+         else
+         {
+            ref = messageQueue.removeFirstReference(id);
+            
+            if (ref == null)
+            {
+               throw new IllegalStateException("Cannot find ref after depaging");
+            }
+         }
+      }
+
+      return ref;
+   }
    
    private void promptDelivery()
    {
@@ -659,21 +687,21 @@ public class ServerConsumerImpl implements ServerConsumer
          Packet replPacket = new SessionReplicateDeliveryMessage(id, message.getMessageID());
          replPacket.setChannelID(channel.getID());
 
-//         log.info("replicating delivery from live for queue " + messageQueue.getName() +
-//                  " ref " +
-//                  message.getMessageID() +
-//                  " session name " +
-//                  session.getName());
+         // log.info("replicating delivery from live for queue " + messageQueue.getName() +
+         // " ref " +
+         // message.getMessageID() +
+         // " session name " +
+         // session.getName());
 
          replicatingChannel.replicatePacket(replPacket, replicatedSessionID, new Runnable()
          {
             public void run()
             {
-//               log.info("got replicate delivery response " + messageQueue.getName() +
-//                        " ref " +
-//                        message.getMessageID() +
-//                        " session name " +
-//                        session.getName());
+               // log.info("got replicate delivery response " + messageQueue.getName() +
+               // " ref " +
+               // message.getMessageID() +
+               // " session name " +
+               // session.getName());
                channel.send(packet);
             }
          });
