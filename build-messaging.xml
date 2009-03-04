@@ -1313,7 +1313,7 @@
 
    <target name="all-tests" depends="unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests"/>
 
-   <target name="hudson-tests" depends="unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests, joram-tests"/>
+   <target name="hudson-tests" depends="unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests"/>
 
    <target name="compile-reports">
       <mkdir dir="${test.stylesheets.dir}"/>
