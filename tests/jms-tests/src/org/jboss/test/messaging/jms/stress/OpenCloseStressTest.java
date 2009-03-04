@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.jms.stress;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -34,7 +35,6 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.test.messaging.JBMServerTestCase;
 
@@ -63,7 +63,7 @@ public class OpenCloseStressTest extends JBMServerTestCase
    }
    
    InitialContext ic;
-   JBossConnectionFactory cf;
+   ConnectionFactory cf;
    Topic topic;
 
    public void setUp() throws Exception
@@ -73,7 +73,7 @@ public class OpenCloseStressTest extends JBMServerTestCase
       //ServerManagement.start("all");
 
       ic = getInitialContext();
-      cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
       destroyTopic("TestTopic");
       createTopic("TestTopic");

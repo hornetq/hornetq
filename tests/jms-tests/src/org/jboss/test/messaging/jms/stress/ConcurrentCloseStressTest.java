@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -35,9 +36,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.test.messaging.jms.ConnectionTest;
 
 /**
  * This test was added to test regression on http://jira.jboss.com/jira/browse/JBMESSAGING-660
@@ -47,7 +46,7 @@ import org.jboss.test.messaging.jms.ConnectionTest;
  */
 public class ConcurrentCloseStressTest extends JBMServerTestCase
 {
-   private static final Logger log = Logger.getLogger(ConnectionTest.class);
+   private static final Logger log = Logger.getLogger(ConcurrentCloseStressTest.class);
 
    public ConcurrentCloseStressTest(String name)
    {
@@ -55,7 +54,7 @@ public class ConcurrentCloseStressTest extends JBMServerTestCase
    }
 
    InitialContext ic;
-   JBossConnectionFactory cf;
+   ConnectionFactory cf;
    Queue queue;
 
    public void setUp() throws Exception
@@ -66,7 +65,7 @@ public class ConcurrentCloseStressTest extends JBMServerTestCase
 
 
       ic = getInitialContext();
-      cf = (JBossConnectionFactory)ic.lookup("/ConnectionFactory");
+      cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
 
       destroyQueue("TestQueue");
       createQueue("TestQueue");

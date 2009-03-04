@@ -49,11 +49,6 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.utils.SimpleString;
-
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -556,7 +551,13 @@ public class MessageConsumerTest extends JMSTestCase
 
          try
          {
-            ps.createConsumer(new JBossTopic("NoSuchTopic"));
+            ps.createConsumer(new Topic()
+            {
+               public String getTopicName() throws JMSException
+               {
+                  return "NoSuchTopic";
+               }
+            });
             fail("should throw exception");
          }
          catch (InvalidDestinationException e)
@@ -585,7 +586,13 @@ public class MessageConsumerTest extends JMSTestCase
 
          try
          {
-            ps.createConsumer(new JBossQueue("NoSuchQueue"));
+            ps.createConsumer(new Queue()
+            {
+               public String getQueueName() throws JMSException
+               {
+                  return "NoSuchQueue";
+               }
+            });
             fail("should throw exception");
          }
          catch (InvalidDestinationException e)
@@ -1144,11 +1151,8 @@ public class MessageConsumerTest extends JMSTestCase
          Session sess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
          MessageProducer prod = sess.createProducer(queue1);
          TextMessage tm1 = sess.createTextMessage("hello1");
-         ((JBossMessage)tm1).getCoreMessage().putStringProperty(new SimpleString("w"), new SimpleString("msg1"));
          TextMessage tm2 = sess.createTextMessage("hello2");
-         ((JBossMessage)tm2).getCoreMessage().putStringProperty(new SimpleString("w"), new SimpleString("msg2"));
          TextMessage tm3 = sess.createTextMessage("hello3");
-         ((JBossMessage)tm3).getCoreMessage().putStringProperty(new SimpleString("w"), new SimpleString("msg3"));
          prod.send(tm1);
          prod.send(tm2);
          prod.send(tm3);

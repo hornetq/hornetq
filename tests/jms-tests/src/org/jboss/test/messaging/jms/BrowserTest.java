@@ -25,15 +25,14 @@ import java.util.Enumeration;
 
 import javax.jms.Connection;
 import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.jboss.messaging.jms.JBossQueue;
-
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -99,7 +98,13 @@ public class BrowserTest extends JMSTestCase
 
          try
          {
-            ps.createBrowser(new JBossQueue("NoSuchQueue"));
+            ps.createBrowser(new Queue()
+            {
+               public String getQueueName() throws JMSException
+               {
+                  return "NoSuchQueue";
+               }
+            });
             fail("should throw exception");
          }
          catch(InvalidDestinationException e)

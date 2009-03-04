@@ -27,7 +27,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.management.ObjectName;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -86,7 +85,6 @@ public class TransactedSessionTest extends JMSTestCase
 
 	      conn.close();
 
-	      ObjectName on = new ObjectName("jboss.messaging.destination:service=Queue,name=Queue1");
 	      Integer i = getMessageCountForQueue("Queue1");
 
          assertEquals(1, i.intValue());
