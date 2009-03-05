@@ -328,6 +328,11 @@ public class ConnectionManagerImpl implements ConnectionManager, FailureListener
             }
             catch (Throwable t)
             {
+               if(lock != null)
+               {
+                  lock.unlock();
+                  lock = null;
+               }
                if (connection != null)
                {
                   returnConnection(connection.getID());

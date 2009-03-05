@@ -542,6 +542,18 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             log.error("Failed to execute failure listener", t);
          }
       }
+      for (ChannelImpl channel : channels.values())
+      {
+         channel.lock.lock();
+         try
+         {
+            channel.sendCondition.signalAll();
+         }
+         finally
+         {
+            channel.lock.unlock();
+         }
+      }
    }
 
    private void internalClose()
@@ -1076,7 +1088,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   catch (InterruptedException e)
                   {
                   }
-
+                  if(closed)
+                  {
+                     break;
+                  }
                   final long now = System.currentTimeMillis();
 
                   toWait -= now - start;
@@ -1438,11 +1453,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             if (packet.isResponse())
             {
                response = packet;
-
                confirm(packet);
-
                lock.lock();
-
                try
                {
                   sendCondition.signal();
