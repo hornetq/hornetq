@@ -27,7 +27,6 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
@@ -98,26 +97,24 @@ public class PingStressTest extends ServiceTestBase
       super.tearDown();
    }
 
-   
    protected int getNumberOfIterations()
    {
       System.out.println("Change PingStressTest::getNumberOfIterations to enable this test");
       return 0;
    }
-   
 
    public void testMultiThreadOpenAndCloses() throws Exception
    {
-      for (int i = 0 ; i < getNumberOfIterations(); i++)
+      for (int i = 0; i < getNumberOfIterations(); i++)
       {
          System.out.println("Run " + i);
          internalTest();
          tearDown();
          setUp();
       }
-      
+
    }
-   
+
    /*
     * Test the client triggering failure due to no pong received in time
     */
@@ -144,16 +141,13 @@ public class PingStressTest extends ServiceTestBase
 
       messagingService.getServer().getRemotingService().addInterceptor(noPongInterceptor);
 
-      
-      
-      
-      
       final ClientSessionFactory csf1 = new ClientSessionFactoryImpl(transportConfig,
                                                                      null,
                                                                      DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                      PING_INTERVAL,
                                                                      (long)(PING_INTERVAL * 1.5),
-                                                                     DEFAULT_CALL_TIMEOUT,
+                                                                     PING_INTERVAL * 4, // Using a smaller call timeout
+                                                                                        // for this test
                                                                      DEFAULT_CONSUMER_WINDOW_SIZE,
                                                                      DEFAULT_CONSUMER_MAX_RATE,
                                                                      DEFAULT_SEND_WINDOW_SIZE,
@@ -170,25 +164,23 @@ public class PingStressTest extends ServiceTestBase
                                                                      DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                                      DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
                                                                      DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
-      
-      
-      
+
       final int numberOfSessions = 1;
       final int numberOfThreads = 30;
-      
+
       final CountDownLatch flagStart = new CountDownLatch(1);
       final CountDownLatch flagAligned = new CountDownLatch(numberOfThreads);
 
       class LocalThread extends Thread
       {
          Throwable failure;
-         
+
          int threadNumber;
-         
-         public LocalThread(int i)
+
+         public LocalThread(final int i)
          {
             super("LocalThread i = " + i);
-            this.threadNumber = i;
+            threadNumber = i;
          }
 
          @Override
@@ -198,39 +190,43 @@ public class PingStressTest extends ServiceTestBase
             {
 
                final ClientSessionFactory csf2 = new ClientSessionFactoryImpl(transportConfig,
-                                                                             null,
-                                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                                             PING_INTERVAL,
-                                                                             (long)(PING_INTERVAL * 1.5),
-                                                                             DEFAULT_CALL_TIMEOUT,
-                                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                                             DEFAULT_CONSUMER_MAX_RATE,
-                                                                             DEFAULT_SEND_WINDOW_SIZE,
-                                                                             DEFAULT_PRODUCER_MAX_RATE,
-                                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                                             DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                                             DEFAULT_AUTO_GROUP,
-                                                                             DEFAULT_MAX_CONNECTIONS,
-                                                                             DEFAULT_PRE_ACKNOWLEDGE,
-                                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                                             DEFAULT_RETRY_INTERVAL,
-                                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                                              null,
+                                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                                              PING_INTERVAL,
+                                                                              (long)(PING_INTERVAL * 1.5),
+                                                                              PING_INTERVAL * 4, // Using a smaller call
+                                                                                                 // timeout for this
+                                                                                                 // test
+                                                                              DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                                              DEFAULT_CONSUMER_MAX_RATE,
+                                                                              DEFAULT_SEND_WINDOW_SIZE,
+                                                                              DEFAULT_PRODUCER_MAX_RATE,
+                                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                              DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                                              DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                                              DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                                                              DEFAULT_AUTO_GROUP,
+                                                                              DEFAULT_MAX_CONNECTIONS,
+                                                                              DEFAULT_PRE_ACKNOWLEDGE,
+                                                                              DEFAULT_ACK_BATCH_SIZE,
+                                                                              DEFAULT_RETRY_INTERVAL,
+                                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                              DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                                              DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
 
-              // Start all at once to make concurrency worst
+               // Start all at once to make concurrency worst
                flagAligned.countDown();
                flagStart.await();
                for (int i = 0; i < numberOfSessions; i++)
                {
-                  System.out.println(this.getName() +  " Session = " + i);
+                  System.out.println(getName() + " Session = " + i);
 
                   ClientSession session;
-                  
-                  // Sometimes we use the SessionFactory declared on this thread, sometimes the SessionFactory declared on the test, sharing it with other tests
-                  // (playing a possible user behaviour where you share the Factories among threads, versus not sharing them)
+
+                  // Sometimes we use the SessionFactory declared on this thread, sometimes the SessionFactory declared
+                  // on the test, sharing it with other tests
+                  // (playing a possible user behaviour where you share the Factories among threads, versus not sharing
+                  // them)
                   if (RandomUtil.randomBoolean())
                   {
                      session = csf1.createSession(false, false, false);
@@ -280,7 +276,6 @@ public class PingStressTest extends ServiceTestBase
       }
 
    }
-
 
    // Package protected ---------------------------------------------
 
