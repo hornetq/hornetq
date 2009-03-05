@@ -181,6 +181,10 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
          log.trace("getClientID()");
 
       checkClosed();
+
+      if (clientID == null)
+         return ((JBMResourceAdapter)mcf.getResourceAdapter()).getProperties().getClientID();
+
       return clientID;
    }
     
@@ -602,6 +606,7 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
             info.setUserName(userName);
             info.setPassword(password);
             info.setClientID(clientID);
+            info.setDefaults(((JBMResourceAdapter)mcf.getResourceAdapter()).getProperties());
 
             if (trace)
                log.trace("Allocating session for " + this + " with request info=" + info);
