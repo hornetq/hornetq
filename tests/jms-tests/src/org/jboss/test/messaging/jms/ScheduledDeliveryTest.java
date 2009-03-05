@@ -29,7 +29,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.jms.client.JBossMessage;
 
 
 /**
@@ -58,10 +57,6 @@ public class ScheduledDeliveryTest extends JMSTestCase
    }
 
    // Public --------------------------------------------------------
-   
-   public void test1()
-   {      
-   }
    
    public void testScheduledDeliveryTX() throws Exception
    {
@@ -453,7 +448,7 @@ public class ScheduledDeliveryTest extends JMSTestCase
          //And one scheduled with a -ve number
 
          TextMessage tm9 = sess.createTextMessage("testScheduled9");
-         tm8.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), -3);
+         tm9.setLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME.toString(), -3);
          prod.send(tm9);
 
          if (tx)
