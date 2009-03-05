@@ -145,7 +145,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage message = createMessage(session, "m1");
+      ClientMessage message = createDurableMessage(session, "m1");
       long time = System.currentTimeMillis();
       time += 10000;
       message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
@@ -182,7 +182,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.createQueue(atestq, atestq, null, true, true);
       session.createQueue(atestq, atestq2, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage message = createMessage(session, "m1");
+      ClientMessage message = createDurableMessage(session, "m1");
       producer.send(message);
 
       producer.close();
@@ -231,7 +231,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.createQueue(atestq, atestq, null, true, true);
       session.createQueue(atestq, atestq2, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage message = createMessage(session, "m1");
+      ClientMessage message = createDurableMessage(session, "m1");
       producer.send(message);
 
       producer.close();
@@ -338,11 +338,11 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage m1 = createMessage(session, "m1");
-      ClientMessage m2 = createMessage(session, "m2");
-      ClientMessage m3 = createMessage(session, "m3");
-      ClientMessage m4 = createMessage(session, "m4");
-      ClientMessage m5 = createMessage(session, "m5");
+      ClientMessage m1 = createDurableMessage(session, "m1");
+      ClientMessage m2 = createDurableMessage(session, "m2");
+      ClientMessage m3 = createDurableMessage(session, "m3");
+      ClientMessage m4 = createDurableMessage(session, "m4");
+      ClientMessage m5 = createDurableMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
       m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
@@ -418,11 +418,11 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage m1 = createMessage(session, "m1");
-      ClientMessage m2 = createMessage(session, "m2");
-      ClientMessage m3 = createMessage(session, "m3");
-      ClientMessage m4 = createMessage(session, "m4");
-      ClientMessage m5 = createMessage(session, "m5");
+      ClientMessage m1 = createDurableMessage(session, "m1");
+      ClientMessage m2 = createDurableMessage(session, "m2");
+      ClientMessage m3 = createDurableMessage(session, "m3");
+      ClientMessage m4 = createDurableMessage(session, "m4");
+      ClientMessage m5 = createDurableMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
       m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
@@ -499,11 +499,11 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage m1 = createMessage(session, "m1");
-      ClientMessage m2 = createMessage(session, "m2");
-      ClientMessage m3 = createMessage(session, "m3");
-      ClientMessage m4 = createMessage(session, "m4");
-      ClientMessage m5 = createMessage(session, "m5");
+      ClientMessage m1 = createDurableMessage(session, "m1");
+      ClientMessage m2 = createDurableMessage(session, "m2");
+      ClientMessage m3 = createDurableMessage(session, "m3");
+      ClientMessage m4 = createDurableMessage(session, "m4");
+      ClientMessage m5 = createDurableMessage(session, "m5");
       long time = System.currentTimeMillis();
       time += 10000;
       m1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
@@ -574,13 +574,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.createQueue(atestq, atestq, null, true, false);
       session.start(xid, XAResource.TMNOFLAGS);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
-                                                          false,
-                                                          0,
-                                                          System.currentTimeMillis(),
-                                                          (byte)1);
-      message.getBody().writeString("testINVMCoreClient");
-      message.setDurable(true);
+      ClientMessage message = createDurableMessage(session, "testINVMCoreClient");
       Calendar cal = Calendar.getInstance();
       cal.roll(Calendar.SECOND, 10);
       message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, cal.getTimeInMillis());
@@ -620,16 +614,173 @@ public class ScheduledMessageTest extends ServiceTestBase
       assertNull(consumer.receive(1000));
       session.close();
    }
+   
+   public void testScheduledDeliveryTX() throws Exception
+   {
+      scheduledDelivery(true);
+   }
 
-   private ClientMessage createMessage(final ClientSession session, final String body)
+   public void testScheduledDeliveryNoTX() throws Exception
+   {
+      scheduledDelivery(false);
+   }
+   
+   // Private -------------------------------------------------------
+
+   private void scheduledDelivery(boolean tx) throws Exception
+   {
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSession session = sessionFactory.createSession(tx, false, false);
+      session.createQueue(atestq, atestq, null, true, false);
+      ClientProducer producer = session.createProducer(atestq);
+      ClientConsumer consumer = session.createConsumer(atestq);
+
+      session.start();
+      if (tx)
+      {
+         session.start(xid, XAResource.TMNOFLAGS);
+      }
+      
+      //Send one scheduled
+      long now = System.currentTimeMillis();
+
+      ClientMessage tm1 = createDurableMessage(session, "testScheduled1");
+      tm1.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 7000);
+      producer.send(tm1);
+
+      //First send some non scheduled messages
+
+      ClientMessage tm2 = createDurableMessage(session, "testScheduled2");
+      producer.send(tm2);
+
+      ClientMessage tm3 = createDurableMessage(session, "testScheduled3");
+      producer.send(tm3);
+
+      ClientMessage tm4 = createDurableMessage(session, "testScheduled4");
+      producer.send(tm4);
+
+
+      //Now send some more scheduled messages
+
+      ClientMessage tm5 = createDurableMessage(session, "testScheduled5");
+      tm5.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 5000);
+      producer.send(tm5);
+
+      ClientMessage tm6 = createDurableMessage(session, "testScheduled6");
+      tm6.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 4000);
+      producer.send(tm6);
+
+      ClientMessage tm7 = createDurableMessage(session, "testScheduled7");
+      tm7.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 3000);
+      producer.send(tm7);
+
+      ClientMessage tm8 = createDurableMessage(session, "testScheduled8");
+      tm8.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, now + 6000);
+      producer.send(tm8);
+
+      //And one scheduled with a -ve number
+
+      ClientMessage tm9 = createDurableMessage(session, "testScheduled9");
+      tm9.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, -3);
+      producer.send(tm9);
+
+      if (tx)
+      {
+         session.end(xid, XAResource.TMSUCCESS);
+         session.prepare(xid);
+         session.commit(xid, true);
+      } else
+      {
+         session.commit();
+      }
+
+      //First the non scheduled messages should be received
+      forceGC();
+
+      if (tx)
+      {
+         session.start(xid, XAResource.TMNOFLAGS);
+      }
+
+      ClientMessage rm1 = consumer.receive(250);
+      assertNotNull(rm1);
+      assertEquals("testScheduled2", rm1.getBody().readString());
+
+      ClientMessage rm2 = consumer.receive(250);
+      assertNotNull(rm2);
+      assertEquals("testScheduled3", rm2.getBody().readString());
+
+      ClientMessage rm3 = consumer.receive(250);
+      assertNotNull(rm3);
+      assertEquals("testScheduled4", rm3.getBody().readString());
+
+      //Now the one with a scheduled with a -ve number
+      ClientMessage rm5 = consumer.receive(250);
+      assertNotNull(rm5);
+      assertEquals("testScheduled9", rm5.getBody().readString());
+
+      //Now the scheduled
+      ClientMessage rm6 = consumer.receive(3250);
+      assertNotNull(rm6);
+      assertEquals("testScheduled7", rm6.getBody().readString());
+
+      long now2 = System.currentTimeMillis();
+
+      assertTrue(now2 - now >= 3000);
+
+      ClientMessage rm7 = consumer.receive(1250);
+      assertNotNull(rm7);
+      assertEquals("testScheduled6", rm7.getBody().readString());
+
+      now2 = System.currentTimeMillis();
+
+      assertTrue(now2 - now >= 4000);
+
+      ClientMessage rm8 = consumer.receive(1250);
+      assertNotNull(rm8);
+      assertEquals("testScheduled5", rm8.getBody().readString());
+
+      now2 = System.currentTimeMillis();
+
+      assertTrue(now2 - now >= 5000);
+
+      ClientMessage rm9 = consumer.receive(1250);
+      assertNotNull(rm9);
+      assertEquals("testScheduled8", rm9.getBody().readString());
+
+      now2 = System.currentTimeMillis();
+
+      assertTrue(now2 - now >= 6000);
+
+      ClientMessage rm10 = consumer.receive(1250);
+      assertNotNull(rm10);
+      assertEquals("testScheduled1", rm10.getBody().readString());
+
+      now2 = System.currentTimeMillis();
+
+      assertTrue(now2 - now >= 7000);
+
+      if (tx)
+      {
+         session.end(xid, XAResource.TMSUCCESS);
+         session.prepare(xid);
+         session.commit(xid, true);
+      }
+      
+      session.close();
+      sessionFactory.close();
+   }
+
+   private ClientMessage createDurableMessage(final ClientSession session, final String body)
    {
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
-                                                          false,
+                                                          true,
                                                           0,
                                                           System.currentTimeMillis(),
                                                           (byte)1);
       message.getBody().writeString(body);
-      message.setDurable(true);
       return message;
    }
 }

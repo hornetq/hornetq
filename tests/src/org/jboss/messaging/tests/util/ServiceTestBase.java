@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.util;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,6 +72,22 @@ public class ServiceTestBase extends UnitTestCase
    // Static --------------------------------------------------------
    private final Logger log = Logger.getLogger(this.getClass());
 
+   public static void forceGC()
+   {
+      WeakReference dumbReference = new WeakReference(new Object());
+      // A loopt that will wait GC, using the minimal time as possible
+      while (dumbReference.get() != null)
+      {
+         System.gc();
+         try
+         {
+            Thread.sleep(500);
+         } catch (InterruptedException e)
+         {
+         }
+      }
+   }
+   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
