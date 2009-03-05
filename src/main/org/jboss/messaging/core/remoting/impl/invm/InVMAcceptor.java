@@ -156,13 +156,14 @@ public class InVMAcceptor implements Acceptor
       public void connectionDestroyed(final Object connectionID)
       {
          if (connections.remove(connectionID) != null)
-         {
-            listener.connectionDestroyed(connectionID);
-
+         {            
+            //Execute on different thread to avoid deadlocks
             new Thread()
             {
                public void run()
                {
+                  listener.connectionDestroyed(connectionID);
+                  
                   // Remove on the other side too
                   connector.disconnect((String)connectionID);
                }
