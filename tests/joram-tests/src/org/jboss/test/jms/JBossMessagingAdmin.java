@@ -262,7 +262,7 @@ public class JBossMessagingAdmin implements Admin
    {
       serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
-      BufferedReader br = new BufferedReader(isr);
+      final BufferedReader br = new BufferedReader(isr);
       String line = null;
       while ((line = br.readLine()) != null)
       {
@@ -274,8 +274,27 @@ public class JBossMessagingAdmin implements Admin
          }
          else if ("OK".equals(line.trim()))
          {
+            new Thread()
+            {
+               public void run()
+               {
+                  try
+                  {
+                     String line = null;
+                     while ((line = br.readLine()) != null)
+                     {
+                        System.out.println("JoramServerOutput: " + line);
+                     }
+                  }
+                  catch (Exception e)
+                  {
+                     e.printStackTrace();
+                  }
+               }
+            }.start();
             return;
-         } else
+         }
+         else
          {
             // something went wrong with the server, destroy it:
             serverProcess.destroy();
