@@ -266,7 +266,7 @@ public class PagingFailoverTest extends FailoverTestBase
       {
          final AtomicInteger numberOfMessages = new AtomicInteger(0);
 
-         final int RECEIVE_TIMEOUT = 2000;
+         final int RECEIVE_TIMEOUT = 10000;
 
          final ClientSessionFactory factory;
          final PagingStore store;
