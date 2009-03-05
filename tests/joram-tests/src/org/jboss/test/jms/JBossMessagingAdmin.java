@@ -266,6 +266,7 @@ public class JBossMessagingAdmin implements Admin
       String line = null;
       while ((line = br.readLine()) != null)
       {
+         System.out.println(line);
          line.replace('|', '\n');
          if (line.startsWith("Listening for transport"))
          {
@@ -276,6 +277,8 @@ public class JBossMessagingAdmin implements Admin
             return;
          } else
          {
+            // something went wrong with the server, destroy it:
+            serverProcess.destroy();
             throw new IllegalStateException("Unable to start the spawned server :" + line);
          }
       }
