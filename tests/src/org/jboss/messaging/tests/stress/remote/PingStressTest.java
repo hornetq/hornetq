@@ -230,7 +230,7 @@ public class PingStressTest extends ServiceTestBase
                   ClientSession session;
 
                   // Sometimes we use the SessionFactory declared on this thread, sometimes the SessionFactory declared
-                  // on the test, sharing it with other tests
+                  // on the test, sharing it with other threads
                   // (playing a possible user behaviour where you share the Factories among threads, versus not sharing
                   // them)
                   if (RandomUtil.randomBoolean())
