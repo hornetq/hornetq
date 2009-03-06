@@ -93,24 +93,30 @@ public class PingStressTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      messagingService.stop();
+      if (messagingService != null && messagingService.isStarted())
+      {
+         messagingService.stop();
+         messagingService = null;
+      }
       super.tearDown();
    }
 
    protected int getNumberOfIterations()
    {
-      System.out.println("Change PingStressTest::getNumberOfIterations to enable this test");
-      return 0;
+      return 20;
    }
 
    public void testMultiThreadOpenAndCloses() throws Exception
    {
       for (int i = 0; i < getNumberOfIterations(); i++)
       {
+         if (i > 0)
+         {
+            tearDown();
+            setUp();
+         }
          System.out.println("Run " + i);
          internalTest();
-         tearDown();
-         setUp();
       }
 
    }
