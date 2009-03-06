@@ -204,21 +204,9 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.log(level, text);
    }
 
-   public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
-                               String defaultTopicJNDIContext, boolean clustered) throws Exception
+   public void startServerPeer(int serverPeerID) throws Exception
    {
-      startServerPeer(serverPeerID, defaultQueueJNDIContext,
-                      defaultTopicJNDIContext, null, clustered);
-   }
-
-
-   public void startServerPeer(int serverPeerID, String defaultQueueJNDIContext,
-                               String defaultTopicJNDIContext,
-                               ServiceAttributeOverrides attrOverrides, boolean clustered)
-      throws Exception
-   {
-      server.startServerPeer(serverPeerID, defaultQueueJNDIContext,
-                             defaultTopicJNDIContext, attrOverrides, clustered);
+      server.startServerPeer(serverPeerID);
    }
 
    public void stopServerPeer() throws Exception

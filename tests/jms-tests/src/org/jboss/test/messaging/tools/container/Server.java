@@ -87,14 +87,8 @@ public interface Server extends Remote
 
    /**
     * @param serverPeerID - if null, the jboss-service.xml value will be used.
-    * @param defaultQueueJNDIContext - if null, the jboss-service.xml value will be used.
-    * @param defaultTopicJNDIContext - if null, the jboss-service.xml value will be used.
     */
-   void startServerPeer(int serverPeerID,
-                        String defaultQueueJNDIContext,
-                        String defaultTopicJNDIContext,
-                        ServiceAttributeOverrides attrOverrides,
-                        boolean clustered) throws Exception;
+   void startServerPeer(int serverPeerID) throws Exception;
 
    void stopServerPeer() throws Exception;
 

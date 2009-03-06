@@ -61,7 +61,6 @@ import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -287,11 +286,7 @@ public class LocalTestServer implements Server, Runnable
       return started;
    }
 
-   public synchronized void startServerPeer(int serverPeerID,
-                                            String defaultQueueJNDIContext,
-                                            String defaultTopicJNDIContext,
-                                            ServiceAttributeOverrides attrOverrides,
-                                            boolean clustered) throws Exception
+   public synchronized void startServerPeer(int serverPeerID) throws Exception
    {
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       getMessagingServer().start();
@@ -467,18 +462,6 @@ public class LocalTestServer implements Server, Runnable
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected void overrideServerPeerConfiguration(MBeanConfigurationElement config,
-                                                  int serverPeerID,
-                                                  String defaultQueueJNDIContext,
-                                                  String defaultTopicJNDIContext) throws Exception
-   {
-      config.setAttribute("ServerPeerID", Integer.toString(serverPeerID));
-      config.setAttribute("DefaultQueueJNDIContext", defaultQueueJNDIContext == null ? "/queue"
-                                                                                    : defaultQueueJNDIContext);
-      config.setAttribute("DefaultTopicJNDIContext", defaultTopicJNDIContext == null ? "/topic"
-                                                                                    : defaultTopicJNDIContext);
-   }
 
    // Private --------------------------------------------------------------------------------------
 

@@ -551,34 +551,16 @@ public class ServerManagement
 
    public static void startServerPeer() throws Exception
    {
-      startServerPeer(0, null, null);
+      startServerPeer(0);
    }
 
    /**
     * @param serverPeerID            - if null, the jboss-service.xml value will be used.
-    * @param defaultQueueJNDIContext - if null, the jboss-service.xml value will be used.
-    * @param defaultTopicJNDIContext - if null, the jboss-service.xml value will be used.
     */
-   public static void startServerPeer(int serverPeerID,
-                                      String defaultQueueJNDIContext,
-                                      String defaultTopicJNDIContext) throws Exception
-   {
-      startServerPeer(serverPeerID, defaultQueueJNDIContext, defaultTopicJNDIContext, null);
-   }
-
-   /**
-    * @param serverPeerID            - if null, the jboss-service.xml value will be used.
-    * @param defaultQueueJNDIContext - if null, the jboss-service.xml value will be used.
-    * @param defaultTopicJNDIContext - if null, the jboss-service.xml value will be used.
-    */
-   public static void startServerPeer(int serverPeerID,
-                                      String defaultQueueJNDIContext,
-                                      String defaultTopicJNDIContext,
-                                      ServiceAttributeOverrides attrOverrids) throws Exception
+   public static void startServerPeer(int serverPeerID) throws Exception
    {
 
-      servers.get(0).startServerPeer(serverPeerID, defaultQueueJNDIContext,
-              defaultTopicJNDIContext, attrOverrids, false);
+      servers.get(0).startServerPeer(serverPeerID);
    }
 
    public static void stopServerPeer() throws Exception

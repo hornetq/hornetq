@@ -256,7 +256,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
       System.setProperty("java.naming.factory.initial", getContextFactory());
       for (int i = 0; i < getServerCount(); i++)
       {
-         servers.get(i).startServerPeer(i, null, null, null, false);
+         servers.get(i).startServerPeer(i);
       }
       //deployAdministeredObjects();
    }
