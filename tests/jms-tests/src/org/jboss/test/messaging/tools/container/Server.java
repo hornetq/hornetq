@@ -26,17 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
-import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 
 /**
  * The remote interface exposed by TestServer.
@@ -85,17 +80,6 @@ public interface Server extends Remote
 
    void undeploy(KernelDeployment undeploy) throws Exception;
 
-   Object getAttribute(ObjectName on, String attribute) throws Exception;
-
-   void setAttribute(ObjectName on, String name, String valueAsString) throws Exception;
-
-   Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
-      throws Exception;
-
-   void addNotificationListener(ObjectName on, NotificationListener listener) throws Exception;
-
-   void removeNotificationListener(ObjectName on, NotificationListener listener) throws Exception;
-
    /**
     * Only for remote use!
     */
@@ -113,10 +97,6 @@ public interface Server extends Remote
                         boolean clustered) throws Exception;
 
    void stopServerPeer() throws Exception;
-
-   boolean isServerPeerStarted() throws Exception;
-
-   ObjectName getServerPeerObjectName() throws Exception;
 
    boolean isStarted() throws Exception;
 
@@ -234,24 +214,6 @@ public interface Server extends Remote
     */
    void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception;
 
-   /**
-    * Executes a command on the server
-    * 
-    * @param command
-    * @return the return value
-    * @throws Exception
-    */
-   Object executeCommand(Command command) throws Exception;
-
-   UserTransaction getUserTransaction() throws Exception;
-
-   /**
-    * @return List<Notification>
-    */
-   List pollNotificationListener(long listenerID) throws Exception;
-
-   void flushManagedConnectionPool() throws Exception;
-   
    MessagingServer getMessagingServer() throws Exception;
 
    InitialContext getInitialContext() throws Exception;
@@ -260,7 +222,7 @@ public interface Server extends Remote
 
    Integer getMessageCountForQueue(String queueName) throws Exception;
 
-   List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception;
+   List<String> listAllSubscribersForTopic(String s) throws Exception;
 
    Set<Role> getSecurityConfig() throws Exception;
 

@@ -25,22 +25,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.rmi.Naming;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.container.LocalTestServer;
-import org.jboss.test.messaging.tools.container.NotificationListenerID;
 import org.jboss.test.messaging.tools.container.RMITestServer;
 import org.jboss.test.messaging.tools.container.RemoteInitialContextFactory;
 import org.jboss.test.messaging.tools.container.Server;
@@ -79,10 +70,6 @@ public class ServerManagement
    private static Logger log = Logger.getLogger(ServerManagement.class);
 
    private static List<Server> servers = new ArrayList<Server>();
-
-
-   // Map<NotificationListener - NotificationListenerPoller>
-   private static Map notificationListenerPollers = new HashMap();
 
    public static boolean isLocal()
    {
@@ -535,93 +522,6 @@ public class ServerManagement
       servers.get(0).undeploy(on);
    }
 
-   public static Object getAttribute(ObjectName on, String attribute) throws Exception
-   {
-      return getAttribute(0, on, attribute);
-   }
-
-   public static Object getAttribute(int serverIndex, ObjectName on, String attribute)
-           throws Exception
-   {
-
-      return servers.get(serverIndex).getAttribute(on, attribute);
-   }
-
-
-   public static void setAttribute(ObjectName on, String name, String valueAsString)
-           throws Exception
-   {
-
-      servers.get(0).setAttribute(on, name, valueAsString);
-   }
-
-   public static Object invoke(ObjectName on, String operationName,
-                               Object[] params, String[] signature) throws Exception
-   {
-
-      return servers.get(0).invoke(on, operationName, params, signature);
-   }
-
-   public static void addNotificationListener(int serverIndex, ObjectName on,
-                                              NotificationListener listener) throws Exception
-   {
-
-
-      if (isLocal())
-      {
-         // add the listener directly to the server
-         servers.get(serverIndex).addNotificationListener(on, listener);
-      }
-      else
-      {
-         // is remote, need to poll
-         NotificationListenerPoller p =
-                 new NotificationListenerPoller(servers.get(serverIndex),
-                         on, listener);
-
-         synchronized (notificationListenerPollers)
-         {
-            notificationListenerPollers.put(listener, p);
-         }
-
-         new Thread(p, "Poller for " + Integer.toHexString(p.hashCode())).start();
-      }
-   }
-
-   public static void removeNotificationListener(int serverIndex, ObjectName on,
-                                                 NotificationListener listener) throws Exception
-   {
-
-
-      if (isLocal())
-      {
-         // remove the listener directly
-         servers.get(serverIndex).removeNotificationListener(on, listener);
-      }
-      else
-      {
-         // is remote
-
-         NotificationListenerPoller p = null;
-         synchronized (notificationListenerPollers)
-         {
-            p = (NotificationListenerPoller) notificationListenerPollers.remove(listener);
-         }
-
-         if (p != null)
-         {
-            // stop the polling thread
-            p.stop();
-         }
-      }
-   }
-
-   public static UserTransaction getUserTransaction() throws Exception
-   {
-
-      return servers.get(0).getUserTransaction();
-   }
-
    public static void log(int level, String text)
    {
       log(level, text, 0);
@@ -686,38 +586,6 @@ public class ServerManagement
 
       servers.get(0).stopServerPeer();
    }
-
-//   public static boolean isServerPeerStarted() throws Exception
-//   {
-//
-//      return servers.get(0).isServerPeerStarted();
-//   }
-
-   public static ObjectName getServerPeerObjectName() throws Exception
-   {
-
-      return servers.get(0).getServerPeerObjectName();
-   }
-
-//   public static MessageStore getMessageStore() throws Exception
-//   {
-//
-//      return servers.get(0).getMessageStore();
-//   }
-
-//   public static DestinationManager getDestinationManager()
-//           throws Exception
-//   {
-//
-//      return servers.get(0).getDestinationManager();
-//   }
-//
-//   public static StorageManager getPersistenceManager()
-//           throws Exception
-//   {
-//
-//      return servers.get(0).getPersistenceManager();
-//   }
 
    public static void configureSecurityForDestination(String destName, String config)
            throws Exception
@@ -831,64 +699,5 @@ public class ServerManagement
 //      }
 //   }
    // Inner classes -------------------------------------------------
-
-   private static long listenerIDCounter = 0;
-
-   static class NotificationListenerPoller implements Runnable
-   {
-      public static final int POLL_INTERVAL = 500;
-
-      private long id;
-      private Server server;
-      private NotificationListener listener;
-      private volatile boolean running;
-
-      private synchronized static long generateID()
-      {
-         return listenerIDCounter++;
-      }
-
-      NotificationListenerPoller(Server server, ObjectName on, NotificationListener listener)
-              throws Exception
-      {
-         id = generateID();
-         this.server = server;
-
-         server.addNotificationListener(on, new NotificationListenerID(id));
-
-         this.listener = listener;
-         this.running = true;
-      }
-
-      public void run()
-      {
-         while (running)
-         {
-            try
-            {
-               List notifications = server.pollNotificationListener(id);
-
-               for (Iterator i = notifications.iterator(); i.hasNext();)
-               {
-                  Notification n = (Notification) i.next();
-                  listener.handleNotification(n, null);
-               }
-
-               Thread.sleep(POLL_INTERVAL);
-            }
-            catch (Exception e)
-            {
-               log.error(e);
-               stop();
-            }
-         }
-      }
-
-      public void stop()
-      {
-         running = false;
-      }
-   }
-
 
 }

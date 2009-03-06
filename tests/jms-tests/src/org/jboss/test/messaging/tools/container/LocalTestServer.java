@@ -29,11 +29,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,24 +37,19 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.management.MBeanServerInvocationHandler;
-import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
-import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
@@ -102,11 +93,6 @@ public class LocalTestServer implements Server, Runnable
    }
 
    // Attributes -----------------------------------------------------------------------------------
-
-   private ServiceContainer sc;
-
-   // the server MBean itself
-   private ObjectName serverPeerObjectName;
 
    private int serverIndex;
 
@@ -263,31 +249,6 @@ public class LocalTestServer implements Server, Runnable
       }
    }
 
-   public Object getAttribute(ObjectName on, String attribute) throws Exception
-   {
-      return null;// sc.getAttribute(on, attribute);
-   }
-
-   public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception
-   {
-      // sc.setAttribute(on, name, valueAsString);
-   }
-
-   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature) throws Exception
-   {
-      return null;// sc.invoke(on, operationName, params, signature);
-   }
-
-   public void addNotificationListener(ObjectName on, NotificationListener listener) throws Exception
-   {
-      // sc.addNotificationListener(on, listener);
-   }
-
-   public void removeNotificationListener(ObjectName on, NotificationListener listener) throws Exception
-   {
-      // sc.removeNotificationListener(on, listener);
-   }
-
    public void log(int level, String text)
    {
       if (ServerManagement.FATAL == level)
@@ -354,16 +315,6 @@ public class LocalTestServer implements Server, Runnable
             getInitialContext().unbind(s);
          }
       }
-   }
-
-   public boolean isServerPeerStarted() throws Exception
-   {
-      return this.getJMSServerManager().isStarted();
-   }
-
-   public ObjectName getServerPeerObjectName()
-   {
-      return serverPeerObjectName;
    }
 
    /**
@@ -511,37 +462,11 @@ public class LocalTestServer implements Server, Runnable
       }
    }
 
-   public Object executeCommand(Command command) throws Exception
-   {
-      return command.execute(this);
-   }
-
-   public UserTransaction getUserTransaction() throws Exception
-   {
-      // return sc.getUserTransaction();
-      return null;
-   }
-
-   public List pollNotificationListener(long listenerID) throws Exception
-   {
-      throw new IllegalStateException("Poll doesn't make sense on a local server. " + "Register listeners directly instead.");
-   }
-
-   public void flushManagedConnectionPool()
-   {
-      // sc.flushManagedConnectionPool();
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
-
-   protected ServiceContainer getServiceContainer()
-   {
-      return sc;
-   }
 
    protected void overrideServerPeerConfiguration(MBeanConfigurationElement config,
                                                   int serverPeerID,
@@ -627,14 +552,20 @@ public class LocalTestServer implements Server, Runnable
       }
    }
 
-   public List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception
+   public List<String> listAllSubscribersForTopic(String s) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(s);
       TopicControlMBean topic = (TopicControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
                                                                                                  objectName,
                                                                                                  TopicControlMBean.class,
                                                                                                  false);
-      return Arrays.asList(topic.listAllSubscriptionInfos());
+      SubscriptionInfo[] subInfos = topic.listAllSubscriptionInfos();
+      List<String> subs = new ArrayList<String>();
+      for (SubscriptionInfo info : subInfos)
+      {
+         subs.add(info.getName());
+      }
+      return subs;
    }
 
    public Set<Role> getSecurityConfig() throws Exception
@@ -646,15 +577,6 @@ public class LocalTestServer implements Server, Runnable
    {
       getMessagingServer().getSecurityRepository().removeMatch("#");
       getMessagingServer().getSecurityRepository().addMatch("#", defConfig);
-   }
-
-   public void setRedeliveryDelayOnDestination(String dest, boolean queue, long delay) throws Exception
-   {
-      SimpleString condition = new SimpleString((queue ? "queuejms." : "topicjms.") + dest);
-      AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setRedeliveryDelay(delay);
-      // FIXME we need to expose queue attributes in another way
-      // getMessagingServer().getServerManagement().setQueueAttributes(condition, addressSettings);
    }
 
    // Inner classes --------------------------------------------------------------------------------

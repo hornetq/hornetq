@@ -36,8 +36,6 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
-import org.jboss.messaging.jms.server.management.SubscriptionInfo;
-
 
 /**
  * Tests focused on durable subscription behavior. More durable subscription tests can be found in
@@ -80,15 +78,13 @@ public class DurableSubscriptionTest extends JMSTestCase
 	
 	      s.createDurableSubscriber(topic1, "monicabelucci");
 
-	      List<SubscriptionInfo> subs = listAllSubscribersForTopic("Topic1");
+	      List<String> subs = listAllSubscribersForTopic("Topic1");
 	      
 	      assertNotNull(subs);
 	      
 	      assertEquals(1, subs.size());
 	      
-	      SubscriptionInfo info = subs.get(0);
-	
-	      assertEquals("monicabelucci", info.getName());
+	      assertEquals("monicabelucci", subs.get(0));
 	
 	      prod.send(s.createTextMessage("k"));
 	
@@ -98,9 +94,7 @@ public class DurableSubscriptionTest extends JMSTestCase
 	
 	      assertEquals(1, subs.size());
 	      
-	      info = subs.get(0);
-	
-	      assertEquals("monicabelucci", info.getName());
+	      assertEquals("monicabelucci", subs.get(0));
 	
 	      conn = cf.createConnection();
 	      conn.setClientID("brookeburke");

@@ -51,7 +51,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.tm.TransactionManagerLocator;
 import org.jboss.tm.TxUtils;
 
 /**

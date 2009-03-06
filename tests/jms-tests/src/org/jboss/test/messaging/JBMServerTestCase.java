@@ -38,7 +38,6 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnectionFactory;
-import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
@@ -48,7 +47,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.Server;
 import org.jboss.test.messaging.util.ProxyAssertSupport;
@@ -649,21 +647,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
       servers.get(server).removeAllMessages(destName, isQueue);
    }
 
-   protected int getNoSubscriptions(Topic topic)
-           throws Exception
-   {
-      return getNoSubscriptions(topic, 0);
-   }
-
-   protected int getNoSubscriptions(Topic topic, int server)
-           throws Exception
-   {
-      ObjectName destObjectName = new ObjectName("jboss.messaging.destination:service=Topic,name=" + topic.getTopicName());
-
-      Integer messageCount = (Integer) ServerManagement.getAttribute(server, destObjectName, "AllSubscriptionsCount");
-      return messageCount.intValue();
-   }
-
    protected boolean assertRemainingMessages(int expected) throws Exception
    {
       Integer messageCount = servers.get(0).getMessageCountForQueue("Queue1");
@@ -759,7 +742,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
       servers.get(server).undeployConnectionFactory(objectName);
    }
 
-   protected List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception
+   protected List<String> listAllSubscribersForTopic(String s) throws Exception
    {
       return servers.get(0).listAllSubscribersForTopic(s);
    }

@@ -25,19 +25,15 @@ import java.lang.management.ManagementFactory;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.management.MBeanServerInvocationHandler;
-import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.logging.Logger;
@@ -129,7 +125,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
 
    protected RemoteTestServer server;
    private RMINamingDelegate namingDelegate;
-   private Map proxyListeners;
 
    // Constructors --------------------------------------------------
 
@@ -137,7 +132,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    {
       namingDelegate = new RMINamingDelegate(index);
       server = new RemoteTestServer(index);
-      proxyListeners = new HashMap();
    }
 
    // Server implementation -----------------------------------------
@@ -205,67 +199,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.deployXML(name, xml);
    }
 
-
-   
-
-   public Object getAttribute(ObjectName on, String attribute) throws Exception
-   {
-      return server.getAttribute(on, attribute);
-   }
-
-   public void setAttribute(ObjectName on, String name, String valueAsString) throws Exception
-   {
-      server.setAttribute(on, name, valueAsString);
-   }
-
-   public Object invoke(ObjectName on, String operationName, Object[] params, String[] signature)
-      throws Exception
-   {
-      return server.invoke(on, operationName, params, signature);
-   }
-
-   public void addNotificationListener(ObjectName on, NotificationListener listener)
-      throws Exception
-   {
-      if (!(listener instanceof NotificationListenerID))
-      {
-         throw new IllegalArgumentException("A RMITestServer can only handle NotificationListenerIDs!");
-      }
-
-      long id = ((NotificationListenerID)listener).getID();
-
-      ProxyNotificationListener pl = new ProxyNotificationListener();
-
-      synchronized(proxyListeners)
-      {
-         proxyListeners.put(new Long(id), pl);
-      }
-
-      server.addNotificationListener(on, pl);
-   }
-
-   public void removeNotificationListener(ObjectName on, NotificationListener listener)
-      throws Exception
-   {
-
-      if (!(listener instanceof NotificationListenerID))
-      {
-         throw new IllegalArgumentException("A RMITestServer can only handle NotificationListenerIDs!");
-      }
-
-      long id = ((NotificationListenerID)listener).getID();
-
-      ProxyNotificationListener pl = null;
-
-      synchronized(proxyListeners)
-      {
-         pl = (ProxyNotificationListener)proxyListeners.remove(new Long(id));
-      }
-
-      server.removeNotificationListener(on, pl);
-   }
-
-
    public void log(int level, String text) throws Exception
    {
       server.log(level, text);
@@ -291,26 +224,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void stopServerPeer() throws Exception
    {
       server.stopServerPeer();
-   }
-
-   public void stopDestinationManager() throws Exception
-   {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   public void startDestinationManager() throws Exception
-   {
-      //To change body of implemented methods use File | Settings | File Templates.
-   }
-
-   public boolean isServerPeerStarted() throws Exception
-   {
-      return server.isServerPeerStarted();
-   }
-
-   public ObjectName getServerPeerObjectName() throws Exception
-   {
-      return server.getServerPeerObjectName();
    }
 
    public boolean isStarted() throws Exception
@@ -402,38 +315,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       server.configureSecurityForDestination(destName, isQueue, roles);
    }
  
-   public Object executeCommand(Command command) throws Exception
-   {
-      return server.executeCommand(command);
-   }
-
-   public UserTransaction getUserTransaction() throws Exception
-   {
-      return server.getUserTransaction();
-   }
-
-   public List pollNotificationListener(long listenerID) throws Exception
-   {
-      ProxyNotificationListener pl = null;
-
-      synchronized(proxyListeners)
-      {
-         pl = (ProxyNotificationListener)proxyListeners.get(new Long(listenerID));
-      }
-
-      if (pl == null)
-      {
-         return Collections.EMPTY_LIST;
-      }
-
-      return pl.drain();
-   }
-
-   public void flushManagedConnectionPool()
-   {
-   	server.flushManagedConnectionPool();
-   }
-   
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
@@ -471,12 +352,18 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    }
 
 
-   public List<SubscriptionInfo> listAllSubscribersForTopic(String s) throws Exception
+   public List<String> listAllSubscribersForTopic(String s) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(s);
       TopicControlMBean topic = (TopicControlMBean) MBeanServerInvocationHandler.newProxyInstance(
             ManagementFactory.getPlatformMBeanServer(), objectName, TopicControlMBean.class, false);
-      return Arrays.asList(topic.listAllSubscriptionInfos());
+      SubscriptionInfo[] subInfos = topic.listAllSubscriptionInfos();
+      List<String> subs = new ArrayList<String>();
+      for (SubscriptionInfo info : subInfos)
+      {
+         subs.add(info.getName());
+      }
+      return subs;
    }
 
 
