@@ -43,6 +43,8 @@ import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import static org.jboss.netty.channel.Channels.pipeline;
+
+import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory;
 import org.jboss.netty.channel.local.LocalAddress;
@@ -82,7 +84,7 @@ public class NettyAcceptor implements Acceptor
 
    private ChannelFactory channelFactory;
 
-   private DefaultChannelGroup serverChannelGroup;
+   volatile ChannelGroup channelGroup;
 
    private ServerBootstrap bootstrap;
 
@@ -100,7 +102,7 @@ public class NettyAcceptor implements Acceptor
 
    private final boolean useNio;
 
-    private final boolean useInvm;
+   private final boolean useInvm;
 
    private final String host;
 
@@ -269,7 +271,7 @@ public class NettyAcceptor implements Acceptor
             }
 
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
-            pipeline.addLast("handler", new MessagingServerChannelHandler(handler, listener));
+            pipeline.addLast("handler", new MessagingServerChannelHandler(channelGroup, handler, listener));
             return pipeline;
          }
       };
@@ -289,7 +291,7 @@ public class NettyAcceptor implements Acceptor
       bootstrap.setOption("child.reuseAddress", true);
       bootstrap.setOption("child.keepAlive", true);
 
-      serverChannelGroup = new DefaultChannelGroup("jbm");
+      channelGroup = new DefaultChannelGroup("jbm-acceptor");
 
       String[] hosts = TransportConfiguration.splitHosts(host);
       for (String h : hosts)
@@ -305,7 +307,7 @@ public class NettyAcceptor implements Acceptor
             address = new InetSocketAddress(h, port);
          }
          Channel serverChannel = bootstrap.bind(address);
-         serverChannelGroup.add(serverChannel);
+         channelGroup.add(serverChannel);
       }
    }
 
@@ -323,46 +325,8 @@ public class NettyAcceptor implements Acceptor
 
          httpKeepAliveTimer.cancel();
       }
-      serverChannelGroup.close().awaitUninterruptibly();
-      bossExecutor.shutdownNow();
-      workerExecutor.shutdownNow();
-      
-      if (bossExecutor != null)
-      {
-         for (; ;)
-         {
-            try
-            {
-               if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
-               {
-                  break;
-               }
-            }
-            catch (InterruptedException e)
-            {
-               // Ignore
-            }
-         }
-      }
-      
-      if (workerExecutor != null)
-      {
-         for (; ;)
-         {
-            try
-            {
-               if (workerExecutor.awaitTermination(1, TimeUnit.SECONDS))
-               {
-                  break;
-               }
-            }
-            catch (InterruptedException e)
-            {
-               // Ignore
-            }
-         }
-      }
-      
+      channelGroup.close().awaitUninterruptibly();
+      channelFactory.releaseExternalResources();
       channelFactory = null;
 
       for (Connection connection : connections.values())
@@ -383,9 +347,9 @@ public class NettyAcceptor implements Acceptor
    @ChannelPipelineCoverage("one")
    private final class MessagingServerChannelHandler extends MessagingChannelHandler
    {
-      MessagingServerChannelHandler(BufferHandler handler, ConnectionLifeCycleListener listener)
+      MessagingServerChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
       {
-         super(handler, listener);
+         super(group, handler, listener);
       }
 
       @Override

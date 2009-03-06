@@ -63,6 +63,8 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
+import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.http.HttpTunnelAddress;
 import org.jboss.netty.channel.socket.http.HttpTunnelingClientSocketChannelFactory;
@@ -102,6 +104,8 @@ public class NettyConnector implements Connector
    private ChannelFactory channelFactory;
 
    private ClientBootstrap bootstrap;
+   
+   ChannelGroup channelGroup;
 
    private final BufferHandler handler;
 
@@ -279,6 +283,8 @@ public class NettyConnector implements Connector
       bootstrap.setOption("keepAlive", true);
       bootstrap.setOption("reuseAddress", true);
 
+      channelGroup = new DefaultChannelGroup("jbm-connector");
+
       final SSLContext context;
       if (sslEnabled)
       {
@@ -315,7 +321,7 @@ public class NettyConnector implements Connector
                pipeline.addLast("httphandler", new HttpHandler());
             }
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
-            pipeline.addLast("handler", new MessagingClientChannelHandler(handler, listener));
+            pipeline.addLast("handler", new MessagingClientChannelHandler(channelGroup, handler, listener));
             return pipeline;
          }
       });
@@ -329,48 +335,9 @@ public class NettyConnector implements Connector
       }
       
       bootstrap = null;
+      channelGroup.close().awaitUninterruptibly();
+      channelFactory.releaseExternalResources();
       channelFactory = null;
-      if (bossExecutor != null)
-      {
-         bossExecutor.shutdownNow();
-      }
-      workerExecutor.shutdownNow();  
-      
-      if (bossExecutor != null)
-      {
-         for (; ;)
-         {
-            try
-            {
-               if (bossExecutor.awaitTermination(1, TimeUnit.SECONDS))
-               {
-                  break;
-               }
-            }
-            catch (InterruptedException e)
-            {
-               // Ignore
-            }
-         }
-      }
-      
-      if (workerExecutor != null)
-      {
-         for (; ;)
-         {
-            try
-            {
-               if (workerExecutor.awaitTermination(1, TimeUnit.SECONDS))
-               {
-                  break;
-               }
-            }
-            catch (InterruptedException e)
-            {
-               // Ignore
-            }
-         }
-      }
       
       for (Connection connection : connections.values())
       {
@@ -466,9 +433,9 @@ public class NettyConnector implements Connector
    @ChannelPipelineCoverage("one")
    private final class MessagingClientChannelHandler extends MessagingChannelHandler
    {
-      MessagingClientChannelHandler(BufferHandler handler, ConnectionLifeCycleListener listener)
+      MessagingClientChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
       {
-         super(handler, listener);
+         super(group, handler, listener);
       }
    }
 

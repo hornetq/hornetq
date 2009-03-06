@@ -32,6 +32,7 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.group.ChannelGroup;
 
 /**
  * Common handler implementation for client and server side handler.
@@ -43,16 +44,26 @@ class MessagingChannelHandler extends SimpleChannelHandler
 {
    private static final Logger log = Logger.getLogger(MessagingChannelHandler.class);
 
+   private final ChannelGroup group;
+   
    private final BufferHandler handler;
 
    private final ConnectionLifeCycleListener listener;
 
    volatile boolean active;
 
-   MessagingChannelHandler(BufferHandler handler, ConnectionLifeCycleListener listener)
+   MessagingChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
    {
+      this.group = group;
       this.handler = handler;
       this.listener = listener;
+   }
+
+   @Override
+   public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+   {
+      group.add(e.getChannel());
+      ctx.sendUpstream(e);
    }
 
    @Override
