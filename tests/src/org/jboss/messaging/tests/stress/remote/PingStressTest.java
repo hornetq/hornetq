@@ -152,7 +152,7 @@ public class PingStressTest extends ServiceTestBase
                                                                      DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                      PING_INTERVAL,
                                                                      (long)(PING_INTERVAL * 1.5),
-                                                                     PING_INTERVAL * 4, // Using a smaller call timeout
+                                                                     PING_INTERVAL * 10, // Using a smaller call timeout
                                                                                         // for this test
                                                                      DEFAULT_CONSUMER_WINDOW_SIZE,
                                                                      DEFAULT_CONSUMER_MAX_RATE,
@@ -200,7 +200,7 @@ public class PingStressTest extends ServiceTestBase
                                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                               PING_INTERVAL,
                                                                               (long)(PING_INTERVAL * 1.5),
-                                                                              PING_INTERVAL * 4, // Using a smaller call
+                                                                              PING_INTERVAL * 10, // Using a smaller call
                                                                                                  // timeout for this
                                                                                                  // test
                                                                               DEFAULT_CONSUMER_WINDOW_SIZE,
