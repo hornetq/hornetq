@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.util;
 
@@ -56,27 +56,26 @@ public class SpawnedVMSupport
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-  
-   public static Process spawnVM(String className, String... args)
-   throws Exception
+
+   public static Process spawnVM(final String className, final String... args) throws Exception
    {
       return spawnVM(className, new String[0], true, args);
    }
 
-   public static Process spawnVM(String className, boolean logOutput, String... args)
-   throws Exception
+   public static Process spawnVM(final String className, final boolean logOutput, final String... args) throws Exception
    {
       return spawnVM(className, new String[0], logOutput, args);
    }
 
-   public static Process spawnVM(String className, String[] vmargs, String... args)
-   throws Exception
+   public static Process spawnVM(final String className, final String[] vmargs, final String... args) throws Exception
    {
       return spawnVM(className, vmargs, true, args);
    }
-   
-   public static Process spawnVM(String className, String[] vmargs, boolean logOutput, String... args)
-   throws Exception
+
+   public static Process spawnVM(final String className,
+                                 final String[] vmargs,
+                                 final boolean logOutput,
+                                 final String... args) throws Exception
    {
       StringBuffer sb = new StringBuffer();
 
@@ -84,32 +83,31 @@ public class SpawnedVMSupport
 
       sb.append("-Xms512m -Xmx512m ");
 
-      for (int i = 0; i < vmargs.length; i++)
+      for (String vmarg : vmargs)
       {
-         String vmarg = vmargs[i];
          sb.append(vmarg).append(' ');
       }
 
       String classPath = System.getProperty("java.class.path");
 
       // I guess it'd be simpler to check if the OS is Windows...
-      if (System.getProperty("os.name").equals("Linux")
-               || System.getProperty("os.name").equals("Mac OS X"))
+      if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X"))
       {
          sb.append("-cp").append(" ").append(classPath).append(" ");
-      } else
+      }
+      else
       {
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
       }
 
       sb.append("-Djava.library.path=").append(System.getProperty("java.library.path", "./native/bin")).append(" ");
-      
-      //sb.append("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 ");
+
+      // sb.append("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 ");
       sb.append(className).append(' ');
 
-      for (int i = 0; i < args.length; i++)
+      for (String arg : args)
       {
-         sb.append(args[i]).append(' ');
+         sb.append(arg).append(' ');
       }
 
       String commandLine = sb.toString();
@@ -122,18 +120,27 @@ public class SpawnedVMSupport
 
       if (logOutput)
       {
-         ProcessLogger outputLogger = new ProcessLogger(process.getInputStream(),
-                                                        className);
-         outputLogger.start();
+         startLogger(className, process);
 
-         // Adding a reader to System.err, so the VM won't hang on a System.err.println as identified on this forum thread:
-         // http://www.jboss.org/index.html?module=bb&op=viewtopic&t=151815
-         ProcessLogger errorLogger = new ProcessLogger(process.getErrorStream(),
-                                                        className);
-         errorLogger.start();
       }
-      
+
+      // Adding a reader to System.err, so the VM won't hang on a System.err.println as identified on this forum thread:
+      // http://www.jboss.org/index.html?module=bb&op=viewtopic&t=151815
+      ProcessLogger errorLogger = new ProcessLogger(false, process.getErrorStream(), className);
+      errorLogger.start();
+
       return process;
+   }
+
+   /**
+    * @param className
+    * @param process
+    * @throws ClassNotFoundException
+    */
+   public static void startLogger(final String className, Process process) throws ClassNotFoundException
+   {
+      ProcessLogger outputLogger = new ProcessLogger(true, process.getInputStream(), className);
+      outputLogger.start();
    }
 
    /**
@@ -142,12 +149,11 @@ public class SpawnedVMSupport
     * seconds for the process to exit, then an Exception is thrown. In any case,
     * the process is destroyed before the method returns.
     */
-   public static void assertProcessExits(boolean sameValue, int value,
-         final Process p) throws InterruptedException, ExecutionException,
-         TimeoutException
+   public static void assertProcessExits(final boolean sameValue, final int value, final Process p) throws InterruptedException,
+                                                                                                   ExecutionException,
+                                                                                                   TimeoutException
    {
-      ScheduledExecutorService executor = Executors
-            .newSingleThreadScheduledExecutor();
+      ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
       Future<Integer> future = executor.submit(new Callable<Integer>()
       {
 
@@ -163,11 +169,13 @@ public class SpawnedVMSupport
          if (sameValue)
          {
             assertSame(value, exitValue);
-         } else
+         }
+         else
          {
             assertNotSame(value, exitValue);
          }
-      } finally
+      }
+      finally
       {
          p.destroy();
       }
@@ -178,17 +186,21 @@ public class SpawnedVMSupport
     */
    static class ProcessLogger extends Thread
    {
-      InputStream is;
-      Logger processLogger;
+      private InputStream is;
+      
+      private String className;
 
-      ProcessLogger(InputStream is, String className)
-            throws ClassNotFoundException
+      private final boolean print;
+
+      ProcessLogger(final boolean print, final InputStream is, final String className) throws ClassNotFoundException
       {
          this.is = is;
-         this.processLogger = Logger.getLogger(Class.forName(className));
+         this.print = print;
+         this.className = className;
          setDaemon(true);
       }
 
+      @Override
       public void run()
       {
          try
@@ -197,14 +209,20 @@ public class SpawnedVMSupport
             BufferedReader br = new BufferedReader(isr);
             String line = null;
             while ((line = br.readLine()) != null)
-               processLogger.info(line);
-         } catch (IOException ioe)
+            {
+               if (print)
+               {
+                  System.out.println(className + ":" + line);
+               }
+            }
+         }
+         catch (IOException ioe)
          {
             ioe.printStackTrace();
          }
       }
    }
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------

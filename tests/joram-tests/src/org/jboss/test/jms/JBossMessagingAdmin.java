@@ -262,34 +262,7 @@ public class JBossMessagingAdmin implements Admin
    {
       serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
-      
-      InputStreamReader errorStream = new InputStreamReader(serverProcess.getErrorStream());
-      
-      final BufferedReader errorReader = new BufferedReader(errorStream);
-
-      // Reading System.err, so the server won't hang
-      new Thread()
-      {
-         public void run()
-         {
-            try
-            {
-               String line = null;
-               while ((line = errorReader.readLine()) != null)
-               {
-                  // Uncomment this line if you want to see the ErrorOutput 
-                  // System.out.println("JoramServer ErrorOutput: " + line);
-               }
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-         }
-      }.start();
-      
-      
-      
+     
       final BufferedReader br = new BufferedReader(isr);
       String line = null;
       while ((line = br.readLine()) != null)

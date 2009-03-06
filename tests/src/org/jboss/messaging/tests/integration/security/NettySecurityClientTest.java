@@ -69,6 +69,7 @@ public class NettySecurityClientTest extends UnitTestCase
       doTestProducerConsumerClient(true);
    }
    
+
    // SecurityManagerClientTestBase overrides -----------------------
 
    // Package protected ---------------------------------------------
@@ -130,6 +131,9 @@ public class NettySecurityClientTest extends UnitTestCase
             fail("Exception when starting the client: " + line);
          }
       }
+      
+      
+      SpawnedVMSupport.startLogger(SimpleClient.class.getName(), p);
 
       // the client VM should exit by itself. If it doesn't, that means we have a problem
       // and the test will timeout
