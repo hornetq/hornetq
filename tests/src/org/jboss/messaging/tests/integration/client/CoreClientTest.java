@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */ 
 
-package org.jboss.messaging.tests.integration.basic;
+package org.jboss.messaging.tests.integration.client;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
-import org.jboss.messaging.core.buffers.HeapChannelBuffer;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
