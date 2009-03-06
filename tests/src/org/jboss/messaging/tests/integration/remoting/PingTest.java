@@ -345,14 +345,14 @@ public class PingTest extends ServiceTestBase
          Thread.sleep(PING_INTERVAL);
       }
 
+      assertTrue(messagingService.getServer().getRemotingService().getConnections().isEmpty());
+
       // The client listener should be called too since the server will close it from the server side which will result
       // in the
       // netty detecting closure on the client side and then calling failure listener
       assertNotNull(clientListener.getException());
 
       assertNotNull(serverListener.getException());
-
-      assertTrue(messagingService.getServer().getRemotingService().getConnections().isEmpty());
 
       session.close();
    }
