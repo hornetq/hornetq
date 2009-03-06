@@ -45,6 +45,8 @@ public class TransportConstants
 
    public static final String USE_SERVLET_PROP_NAME = "jbm.remoting.netty.useservlet";
 
+   public static final String SERVLET_PATH = "jbm.remoting.netty.servletpath";
+
    public static final String USE_NIO_PROP_NAME = "jbm.remoting.netty.usenio";
 
    public static final String USE_INVM_PROP_NAME = "jbm.remoting.netty.useinvm";
@@ -104,4 +106,7 @@ public class TransportConstants
    public static final long DEFAULT_HTTP_SERVER_SCAN_PERIOD = 5000;
 
    public static final boolean DEFAULT_HTTP_REQUIRES_SESSION_ID = false;
+
+   public static final String DEFAULT_SERVLET_PATH = "/messaging/JBMServlet";
+
 }

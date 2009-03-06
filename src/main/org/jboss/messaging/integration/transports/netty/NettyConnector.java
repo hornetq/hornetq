@@ -21,25 +21,6 @@
  */
 package org.jboss.messaging.integration.transports.netty;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-import static org.jboss.netty.channel.Channels.write;
-
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
@@ -53,13 +34,14 @@ import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
+import static org.jboss.netty.channel.Channels.pipeline;
+import static org.jboss.netty.channel.Channels.write;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
@@ -83,6 +65,20 @@ import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * A NettyConnector
  *
@@ -101,7 +97,7 @@ public class NettyConnector implements Connector
 
    private ExecutorService workerExecutor;
 
-   private ChannelFactory channelFactory;
+   private ClientSocketChannelFactory channelFactory;
 
    private ClientBootstrap bootstrap;
    
@@ -141,7 +137,7 @@ public class NettyConnector implements Connector
 
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
-   private static final String SERVLET_PATH = "/messaging/JBMServlet";
+   private  final String servletPath;
 
    // Static --------------------------------------------------------
 
@@ -173,7 +169,9 @@ public class NettyConnector implements Connector
       this.httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
                                                                 TransportConstants.DEFAULT_HTTP_ENABLED,
                                                                 configuration);
-
+      servletPath = ConfigurationHelper.getStringProperty(TransportConstants.SERVLET_PATH,
+                                                          TransportConstants.DEFAULT_SERVLET_PATH,
+                                                          configuration);
       if (httpEnabled)
       {
          this.httpMaxClientIdleTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME,
@@ -239,35 +237,21 @@ public class NettyConnector implements Connector
       {
          return;
       }
-
       workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-worker-threads"));
-      if (useServlet)
-      {
-         bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
-
-
-         ClientSocketChannelFactory proxyChannelFactory;
-         if (useNio)
-         {
-            bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
-            proxyChannelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
-         }
-         else
-         {
-            proxyChannelFactory = new OioClientSocketChannelFactory(workerExecutor);
-         }
-         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, workerExecutor);
-
-      }
-      else if (useNio)
+      if (useNio)
       {
          bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
          channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
       }
-
       else
       {
          channelFactory = new OioClientSocketChannelFactory(workerExecutor);
+      }
+      //if we are a servlet wrap the socketChannelFactory
+      if(useServlet)
+      {
+         ClientSocketChannelFactory proxyChannelFactory = channelFactory;
+         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, workerExecutor);
       }
       bootstrap = new ClientBootstrap(channelFactory);
 
@@ -363,7 +347,7 @@ public class NettyConnector implements Connector
       {
          try
          {
-            URI uri = new URI("http", null, host, port, SERVLET_PATH, null, null);
+            URI uri = new URI("http", null, host, port, servletPath, null, null);
             address = new HttpTunnelAddress(uri);
          }
          catch (URISyntaxException e)
@@ -473,7 +457,7 @@ public class NettyConnector implements Connector
       {
          super.channelConnected(ctx, e);
          channel = e.getChannel();
-         url = "http://" + host + ":" + port + "/messaging/JBMServlet";
+         url = "http://" + host + ":" + port + servletPath;
          if (httpClientIdleScanPeriod > 0)
          {
             idleClientTimer = new Timer("Http Idle Timer", true);
