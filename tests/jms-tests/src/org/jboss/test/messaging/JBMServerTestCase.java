@@ -36,15 +36,17 @@ import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.XAConnectionFactory;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
+import javax.transaction.TransactionManager;
+
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.test.messaging.tools.ServerManagement;
@@ -391,16 +393,31 @@ public class JBMServerTestCase extends ProxyAssertSupport
       return getInitialContext(0);
    }
 
-   public JBossConnectionFactory getConnectionFactory() throws Exception
+   public ConnectionFactory getConnectionFactory() throws Exception
    {
-      return (JBossConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
+      return (ConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
    }
 
+   public TopicConnectionFactory getTopicConnectionFactory() throws Exception
+   {
+      return (TopicConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
+   }
 
+   public XAConnectionFactory getXAConnectionFactory() throws Exception
+   {
+      return (XAConnectionFactory) getInitialContext().lookup("/ConnectionFactory");
+   }
+   
    public InitialContext getInitialContext(int serverid) throws Exception
    {
       return new InitialContext(ServerManagement.getJNDIEnvironment(serverid));
    }
+
+   protected TransactionManager getTransactionManager()
+   {
+      return new TransactionManagerImple();
+   }
+
 
    public void configureSecurityForDestination(String destName, boolean isQueue, HashSet<Role> roles) throws Exception
    {
@@ -629,14 +646,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
    protected void removeAllMessages(String destName, boolean isQueue, int server) throws Exception
    {
-      if (isQueue)
-      {
-         servers.get(server).removeAllMessages(new JBossQueue(destName));
-      }
-      else
-      {
-         servers.get(server).removeAllMessages(new JBossTopic(destName));
-      }
+      servers.get(server).removeAllMessages(destName, isQueue);
    }
 
    protected int getNoSubscriptions(Topic topic)
@@ -777,16 +787,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
    protected void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> lockedConf) throws Exception
    {
       servers.get(0).configureSecurityForDestination(s, b, lockedConf);
-   }
-
-   protected void addAddressSettings(String name, long scheduledDeliveryTime)
-   {
-      servers.get(0).addAddressSettings("queuejms." + name, scheduledDeliveryTime);
-   }
-
-   protected void removeAddressSettings(String name)
-   {
-      servers.get(0).removeAddressSettings(name);   
    }
 
    protected void kill(int i) throws Exception

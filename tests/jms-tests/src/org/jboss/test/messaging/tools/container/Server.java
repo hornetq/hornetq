@@ -256,7 +256,7 @@ public interface Server extends Remote
 
    InitialContext getInitialContext() throws Exception;
 
-   void removeAllMessages(JBossDestination destination) throws Exception;
+   void removeAllMessages(String destination, boolean isQueue) throws Exception;
 
    Integer getMessageCountForQueue(String queueName) throws Exception;
 
@@ -270,8 +270,4 @@ public interface Server extends Remote
 
    //void setDefaultRedeliveryDelay(long delay) throws Exception;
    JMSServerManager getJMSServerManager() throws Exception;
-
-   void addAddressSettings(String name, long redeliveryDelay);
-
-   void removeAddressSettings(String name);
 }

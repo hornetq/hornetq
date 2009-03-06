@@ -66,7 +66,7 @@ public class ObjectMessageDeliveryTest extends JBMServerTestCase
     */
    public void testTopic() throws Exception
    {
-      TopicConnection conn = getConnectionFactory().createTopicConnection();
+      TopicConnection conn = getTopicConnectionFactory().createTopicConnection();
 
       try
       {

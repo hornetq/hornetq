@@ -148,7 +148,7 @@ public class SessionTest extends JBMServerTestCase
    
    public void testGetSession2() throws Exception
    {
-      XAConnection conn = getConnectionFactory().createXAConnection();
+      XAConnection conn = getXAConnectionFactory().createXAConnection();
       XASession sess = conn.createXASession();
       
       sess.getSession();
@@ -339,7 +339,7 @@ public class SessionTest extends JBMServerTestCase
 
    public void testGetXAResource2() throws Exception
    {
-      XAConnection conn = getConnectionFactory().createXAConnection();
+      XAConnection conn = getXAConnectionFactory().createXAConnection();
       XASession sess = conn.createXASession();
 
       sess.getXAResource();

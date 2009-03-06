@@ -24,6 +24,7 @@ package org.jboss.test.messaging.jms;
 import java.util.ArrayList;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -35,6 +36,7 @@ import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.XAConnection;
+import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -47,7 +49,6 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.tm.TransactionManagerLocator;
@@ -76,7 +77,9 @@ public class XATest extends JBMServerTestCase
 
    protected Transaction suspendedTx;
 
-   protected JBossConnectionFactory cf;
+   protected XAConnectionFactory xacf;
+
+   protected ConnectionFactory cf;
 
    // Constructors --------------------------------------------------
 
@@ -88,7 +91,9 @@ public class XATest extends JBMServerTestCase
       
       cf = getConnectionFactory();
 
-      tm = TransactionManagerLocator.getInstance().getTransactionManager();//this.getTransactionManager();
+      xacf = getXAConnectionFactory();
+
+      tm = getTransactionManager();
       
 
       assertTrue(tm instanceof TransactionManagerImple);
@@ -145,7 +150,7 @@ public class XATest extends JBMServerTestCase
 
       try
       {
-         conn1 = cf.createXAConnection();
+         conn1 = xacf.createXAConnection();
 
          XASession sess1 = conn1.createXASession();
 
@@ -179,7 +184,7 @@ public class XATest extends JBMServerTestCase
          
          conn1.close();
          
-         conn1 = cf.createXAConnection();
+         conn1 = xacf.createXAConnection();
 
          XAResource res = conn1.createXASession().getXAResource();
 
@@ -226,7 +231,7 @@ public class XATest extends JBMServerTestCase
 
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          tm.begin();
 
@@ -284,7 +289,7 @@ public class XATest extends JBMServerTestCase
 
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          tm.begin();
 
@@ -354,7 +359,7 @@ public class XATest extends JBMServerTestCase
       Connection conn2 = null;
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          tm.begin();
 
@@ -407,7 +412,7 @@ public class XATest extends JBMServerTestCase
       Connection conn2 = null;
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          tm.begin();
 
@@ -476,7 +481,7 @@ public class XATest extends JBMServerTestCase
       Connection conn2 = null;
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          tm.begin();
 
@@ -543,7 +548,7 @@ public class XATest extends JBMServerTestCase
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -620,7 +625,7 @@ public class XATest extends JBMServerTestCase
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -700,7 +705,7 @@ public class XATest extends JBMServerTestCase
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -782,7 +787,7 @@ public class XATest extends JBMServerTestCase
          prod.send(m);
 
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -857,7 +862,7 @@ public class XATest extends JBMServerTestCase
 
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          tm.begin();
 
@@ -912,7 +917,7 @@ public class XATest extends JBMServerTestCase
       Connection conn2 = null;
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          tm.begin();
 
@@ -970,7 +975,7 @@ public class XATest extends JBMServerTestCase
          m = sessProducer.createTextMessage("XATest2");
          prod.send(m);
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1040,7 +1045,7 @@ public class XATest extends JBMServerTestCase
          prod.send(m);
 
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1125,7 +1130,7 @@ public class XATest extends JBMServerTestCase
          prod.send(m);
 
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1200,7 +1205,7 @@ public class XATest extends JBMServerTestCase
          prod.send(m);
 
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1284,7 +1289,7 @@ public class XATest extends JBMServerTestCase
          prod.send(m);
 
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1444,7 +1449,7 @@ public class XATest extends JBMServerTestCase
          prod.send(m);
 
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1608,7 +1613,7 @@ public class XATest extends JBMServerTestCase
          m = sessProducer.createTextMessage("jellyfish4");
          prod.send(m);
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1728,7 +1733,7 @@ public class XATest extends JBMServerTestCase
 
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1797,7 +1802,7 @@ public class XATest extends JBMServerTestCase
       try
       {
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1870,7 +1875,7 @@ public class XATest extends JBMServerTestCase
 
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -1932,7 +1937,7 @@ public class XATest extends JBMServerTestCase
       try
       {
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
          conn.start();
 
          tm.begin();
@@ -2004,7 +2009,7 @@ public class XATest extends JBMServerTestCase
          m = sessProducer.createTextMessage("jellyfish2");
          prod.send(m);
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();
@@ -2093,7 +2098,7 @@ public class XATest extends JBMServerTestCase
          m = sessProducer.createTextMessage("jellyfish2");
          prod.send(m);
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();
@@ -2186,7 +2191,7 @@ public class XATest extends JBMServerTestCase
 
       try
       {
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();
@@ -2268,7 +2273,7 @@ public class XATest extends JBMServerTestCase
       try
       {
 
-         conn = cf.createXAConnection();
+         conn = xacf.createXAConnection();
 
          //Create a session
          XASession sess1 = conn.createXASession();

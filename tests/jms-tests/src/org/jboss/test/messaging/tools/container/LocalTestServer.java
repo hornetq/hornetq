@@ -44,8 +44,6 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
 import org.jboss.kernel.spi.deployment.KernelDeployment;
@@ -53,14 +51,17 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
+import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
-import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
@@ -70,7 +71,6 @@ import org.jboss.messaging.utils.SimpleString;
 import org.jboss.test.messaging.tools.ConfigurationHelper;
 import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.jboss.MBeanConfigurationElement;
-import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -180,91 +180,6 @@ public class LocalTestServer implements Server, Runnable
       }
 
       return directory.delete();
-   }
-
-   protected void deleteAllData() throws Exception
-   {
-      log.info("DELETING ALL DATA FROM DATABASE!");
-
-      InitialContext ctx = getInitialContext();
-
-      // We need to execute each drop in its own transaction otherwise postgresql will not execute
-      // further commands after one fails
-
-      TransactionManager mgr = TransactionManagerLocator.locateTransactionManager();
-      DataSource ds = (DataSource)ctx.lookup("java:/DefaultDS");
-
-      javax.transaction.Transaction txOld = mgr.suspend();
-
-      executeStatement(mgr, ds, "DELETE FROM JBM_POSTOFFICE");
-
-      executeStatement(mgr, ds, "DELETE FROM JBM_MSG_REF");
-
-      executeStatement(mgr, ds, "DELETE FROM JBM_MSG");
-
-      executeStatement(mgr, ds, "DELETE FROM JBM_TX");
-
-      executeStatement(mgr, ds, "DELETE FROM JBM_COUNTER");
-
-      executeStatement(mgr, ds, "DELETE FROM JBM_USER");
-
-      executeStatement(mgr, ds, "DELETE FROM JBM_ROLE");
-
-      if (txOld != null)
-      {
-         mgr.resume(txOld);
-      }
-
-      log.debug("done with the deleting data");
-   }
-
-   private void executeStatement(TransactionManager mgr, DataSource ds, String statement) throws Exception
-   {
-      Connection conn = null;
-      boolean exception = false;
-
-      try
-      {
-         try
-         {
-            mgr.begin();
-
-            conn = ds.getConnection();
-
-            log.debug("executing " + statement);
-
-            PreparedStatement ps = conn.prepareStatement(statement);
-
-            ps.executeUpdate();
-
-            log.debug(statement + " executed");
-
-            ps.close();
-         }
-         catch (SQLException e)
-         {
-            // Ignore
-            log.debug("Failed to execute statement", e);
-            exception = true;
-         }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-
-         if (exception)
-         {
-            mgr.rollback();
-         }
-         else
-         {
-            mgr.commit();
-         }
-      }
-
    }
 
    public synchronized boolean stop() throws Exception
@@ -652,20 +567,6 @@ public class LocalTestServer implements Server, Runnable
       return (JMSServerManager)bootstrap.getKernel().getRegistry().getEntry("JMSServerManager").getTarget();
    }
 
-   public void addAddressSettings(String name, long redeliveryDelay)
-   {
-      AddressSettings qs = getMessagingServer().getAddressSettingsRepository().getMatch("*");
-      AddressSettings newSets = new AddressSettings();
-      newSets.setRedeliveryDelay(redeliveryDelay);
-      newSets.merge(qs);
-      getMessagingServer().getAddressSettingsRepository().addMatch(name, newSets);
-   }
-
-   public void removeAddressSettings(String name)
-   {
-      getMessagingServer().getAddressSettingsRepository().removeMatch(name);
-   }
-
    public InitialContext getInitialContext() throws Exception
    {
       Properties props = new Properties();
@@ -711,10 +612,15 @@ public class LocalTestServer implements Server, Runnable
          return -1;
       }
    }
-
-   public void removeAllMessages(JBossDestination destination) throws Exception
+   
+   public void removeAllMessages(String destination, boolean isQueue) throws Exception
    {
-      Binding binding = getMessagingServer().getPostOffice().getBinding(destination.getSimpleAddress());
+      SimpleString address = JBossQueue.createAddressFromName(destination);
+      if (!isQueue)
+      {
+         address = JBossTopic.createAddressFromName(destination);
+      }
+      Binding binding = getMessagingServer().getPostOffice().getBinding(address);
       if (binding != null && binding.getType() == BindingType.LOCAL_QUEUE)
       {
          ((Queue)binding.getBindable()).deleteAllReferences();

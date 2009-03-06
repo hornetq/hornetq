@@ -44,7 +44,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
@@ -458,9 +457,9 @@ public class RMITestServer extends UnicastRemoteObject implements Server
       return server.getJMSServerManager();
    }
 
-   public void removeAllMessages(JBossDestination destination) throws Exception
+   public void removeAllMessages(String destination, boolean isQueue) throws Exception
    {
-      server.removeAllMessages(destination);
+      server.removeAllMessages(destination, isQueue);
    }
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
@@ -489,16 +488,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
       server.setSecurityConfig(defConfig);
-   }
-
-   public void addAddressSettings(String name, long redeliveryDelay)
-   {
-      server.addAddressSettings(name, redeliveryDelay);
-   }
-
-   public void removeAddressSettings(String name)
-   {
-      server.removeAddressSettings(name);
    }
 
    public InitialContext getInitialContext() throws Exception
