@@ -37,11 +37,6 @@ public class JMSTypeHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-   public JMSTypeHeaderTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testJMSType() throws Exception

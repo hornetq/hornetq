@@ -38,21 +38,6 @@ import javax.jms.Session;
  */
 public class ConnectionConsumerStressTest extends JMSStressTestBase
 {
-   public ConnectionConsumerStressTest(String name)
-   {
-      super(name);
-   }
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();      
-   }
-   
-   public void tearDown() throws Exception
-   {     
-      super.tearDown();            
-   }
-   
    
    public void testConnectionConsumer() throws Exception
    {

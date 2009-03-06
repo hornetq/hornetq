@@ -69,11 +69,6 @@ public class MessageBodyTest extends JBMServerTestCase
 
 	// Constructors --------------------------------------------------
 
-	public MessageBodyTest(String name)
-	{
-		super(name);
-	}
-
 	// Public --------------------------------------------------------
 
 	public void setUp() throws Exception

@@ -38,11 +38,6 @@ public class JMSDeliveryModeHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-   public JMSDeliveryModeHeaderTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testDefaultDeliveryMode() throws Exception

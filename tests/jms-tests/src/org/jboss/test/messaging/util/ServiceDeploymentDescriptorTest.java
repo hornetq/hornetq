@@ -37,11 +37,6 @@ public class ServiceDeploymentDescriptorTest extends MessagingTestCase
 {
    // Constructors --------------------------------------------------
 
-   public ServiceDeploymentDescriptorTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

@@ -52,11 +52,6 @@ public class String64KLimitTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public String64KLimitTest(String name)
-   {
-      super(name);
-   }
-
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------

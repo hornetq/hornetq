@@ -46,11 +46,6 @@ public class JMSPriorityHeaderTest extends JBMServerTestCase
    
    // Constructors --------------------------------------------------
 
-   public JMSPriorityHeaderTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
 

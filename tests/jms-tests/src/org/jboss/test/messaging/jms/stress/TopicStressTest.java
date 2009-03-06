@@ -41,21 +41,6 @@ import javax.jms.XASession;
  */
 public class TopicStressTest extends JMSStressTestBase
 {
-   public TopicStressTest(String name)
-   {
-      super(name);
-   }
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();      
-   }
-   
-   public void tearDown() throws Exception
-   {     
-      super.tearDown();            
-   }
-   
    /*
     * Stress a topic with with many non transactional, transactional and 2pc receivers.
     * Non transactional receivers use ack modes of auto, dups and client ack.

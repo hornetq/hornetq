@@ -67,11 +67,6 @@ public class MessageConsumerTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public MessageConsumerTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testReceiveWithClientAckThenCloseSession() throws Exception

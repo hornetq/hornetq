@@ -47,11 +47,6 @@ public class NonDurableSubscriberTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public NonDurableSubscriberTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
   
    /**

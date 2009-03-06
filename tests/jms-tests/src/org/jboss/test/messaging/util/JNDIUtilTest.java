@@ -44,11 +44,6 @@ public class JNDIUtilTest extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
 
-   public JNDIUtilTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testRebind_1() throws Exception

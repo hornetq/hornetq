@@ -61,11 +61,6 @@ public class JMSStressTestBase extends JBMServerTestCase
    protected Topic topic3;
    protected Topic topic4;
 
-   public JMSStressTestBase(String name)
-   {
-      super(name);
-   }
-
    public void setUp() throws Exception
    {
       super.setUp();

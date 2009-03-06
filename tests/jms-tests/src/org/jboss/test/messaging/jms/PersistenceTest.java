@@ -47,10 +47,6 @@ public class PersistenceTest extends JMSTestCase
    // Attributes ----------------------------------------------------
 
    // Constructors --------------------------------------------------
-   public PersistenceTest(String name)
-   {
-      super(name);
-   }
 
    // TestCase overrides -------------------------------------------
 

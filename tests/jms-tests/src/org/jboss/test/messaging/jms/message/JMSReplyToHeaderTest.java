@@ -44,11 +44,6 @@ public class JMSReplyToHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-   public JMSReplyToHeaderTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
 

@@ -21,22 +21,25 @@
    */
 package org.jboss.test.messaging;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jms.Topic;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
-import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossQueue;
@@ -45,23 +48,46 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.DatabaseClearer;
 import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.tm.TransactionManagerLocator;
+import org.jboss.test.messaging.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.org">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class JBMServerTestCase extends JBMBaseTestCase
+public class JBMServerTestCase extends ProxyAssertSupport
 {
    // Constants -----------------------------------------------------
 
    public final static int MAX_TIMEOUT = 1000 * 10 /* seconds */;
 
    public final static int MIN_TIMEOUT = 1000 * 1 /* seconds */;
+
+   protected final Logger log = Logger.getLogger(getClass());
+   
+   // Static --------------------------------------------------------
+   
+   /** Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios*/
+   public static void forceGC()
+   {
+      WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
+      // A loop that will wait GC, using the minimal time as possible
+      while (dumbReference.get() != null)
+      {
+         System.gc();
+         try
+         {
+            Thread.sleep(500);
+         } catch (InterruptedException e)
+         {
+         }
+      }
+   }
+   
+   // Attributes ----------------------------------------------------
 
    protected static List<Server> servers = new ArrayList<Server>();
 
@@ -78,23 +104,13 @@ public class JBMServerTestCase extends JBMBaseTestCase
    protected static Queue queue3;
 
    protected static Queue queue4;
-   private static DatabaseClearer databaseClearer;
-
-
-   public JBMServerTestCase()
-   {
-      super();    //To change body of overridden methods use File | Settings | File Templates.
-   }
-
-   public JBMServerTestCase(String string)
-   {
-      super(string);    //To change body of overridden methods use File | Settings | File Templates.
-   }
 
    protected void setUp() throws Exception
    {
       super.setUp();
       
+      System.setProperty("java.naming.factory.initial", getContextFactory());
+
       String banner =
          "####################################################### Start " +
          (isRemote() ? "REMOTE" : "IN-VM") + " test: " + getName();
@@ -102,10 +118,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
       log.info(banner);
 
     
-      if (getClearDatabase())
-      {
-         //clearDatabase();
-      }
       try
       {
          //create any new server we need
@@ -149,7 +161,7 @@ public class JBMServerTestCase extends JBMBaseTestCase
                {
 //                  try
 //                  {
-                     servers.get(i).start(getContainerConfig(), getConfiguration(), getClearDatabase() && i == 0);
+                     servers.get(i).start(getContainerConfig(), getConfiguration(), i == 0);
 //                  }
 //                  catch (Exception e)
 //                  {
@@ -206,6 +218,11 @@ public class JBMServerTestCase extends JBMBaseTestCase
       }
    }
 
+   public String getContextFactory()
+   {
+      return "org.jboss.test.messaging.tools.container.InVMInitialContextFactory";
+   }
+
    public void start() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
@@ -242,12 +259,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
          servers.get(i).startServerPeer(i, null, null, null, false);
       }
       //deployAdministeredObjects();
-   }
-
-
-   protected boolean getClearDatabase()
-   {
-      return true;
    }
 
    protected HashMap<String, Object> getConfiguration()
@@ -335,6 +346,40 @@ public class JBMServerTestCase extends JBMBaseTestCase
          servers.get(i).stopServerPeer();
       }
    }*/
+
+   protected void checkNoSubscriptions(Topic topic) throws Exception
+   {
+
+   }
+
+   protected void checkNoSubscriptions(Topic topic, int server) throws Exception
+   {
+
+   }
+
+   protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception
+   {
+      Connection conn = null;
+      try
+      {
+         conn = cf.createConnection();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer cons = sess.createConsumer(dest);
+         Message m = null;
+         conn.start();
+         log.trace("Draining messages from " + dest);
+         while (true)
+         {
+            m = cons.receive(500);
+            if (m == null) break;
+            log.trace("Drained message");
+         }
+      }
+      finally
+      {
+         if (conn!= null) conn.close();
+      }
+   }
 
    public int getServerCount()
    {
@@ -592,99 +637,6 @@ public class JBMServerTestCase extends JBMBaseTestCase
       {
          servers.get(server).removeAllMessages(new JBossTopic(destName));
       }
-   }
-
-   public void dropTables() throws Exception
-   {
-      dropAllTables();
-   }
-
-   private void dropAllTables() throws Exception
-   {
-      log.info("DROPPING ALL TABLES FROM DATABASE!");
-
-      InitialContext ctx = new InitialContext();
-
-      // We need to execute each drop in its own transaction otherwise postgresql will not execute
-      // further commands after one fails
-
-      TransactionManager mgr = TransactionManagerLocator.locateTransactionManager();
-      DataSource ds = (DataSource) ctx.lookup("java:/DefaultDS");
-
-      javax.transaction.Transaction txOld = mgr.suspend();
-
-      executeStatement(mgr, ds, "DROP TABLE JBM_POSTOFFICE");
-
-      executeStatement(mgr, ds, "DROP TABLE JBM_MSG_REF");
-
-      executeStatement(mgr, ds, "DROP TABLE JBM_MSG");
-
-      executeStatement(mgr, ds, "DROP TABLE JBM_TX");
-
-      executeStatement(mgr, ds, "DROP TABLE JBM_COUNTER");
-
-      executeStatement(mgr, ds, "DROP TABLE JBM_USER");
-
-      executeStatement(mgr, ds, "DROP TABLE JBM_ROLE");
-
-      executeStatement(mgr, ds, "DROP TABLE JBM_DUAL");
-
-      if (txOld != null)
-      {
-         mgr.resume(txOld);
-      }
-
-      log.debug("done with dropping tables");
-   }
-
-   private void executeStatement(TransactionManager mgr, DataSource ds, String statement) throws Exception
-   {
-      Connection conn = null;
-      boolean exception = false;
-
-      try
-      {
-         try
-         {
-            mgr.begin();
-
-            conn = ds.getConnection();
-
-            log.debug("executing " + statement);
-
-            PreparedStatement ps = conn.prepareStatement(statement);
-
-            ps.executeUpdate();
-
-            log.debug(statement + " executed");
-
-            ps.close();
-         }
-         catch (SQLException e)
-         {
-            // Ignore
-            log.debug("Failed to execute statement", e);
-            exception = true;
-         }
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-
-         if (exception)
-         {
-            mgr.rollback();
-         }
-         else
-         {
-            mgr.commit();
-         }
-      }
-
-
    }
 
    protected int getNoSubscriptions(Topic topic)

@@ -39,11 +39,6 @@ import org.jboss.test.messaging.jms.message.SimpleJMSBytesMessage;
  */
 public class ForeignBytesMessageTest extends ForeignMessageTest
 {
-    public ForeignBytesMessageTest(String name)
-    {
-       super(name);
-    }
-    
     protected Message createForeignMessage() throws Exception
     {
         SimpleJMSBytesMessage m = new SimpleJMSBytesMessage();

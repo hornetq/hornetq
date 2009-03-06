@@ -37,11 +37,6 @@ public class JMSTimestampHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-   public JMSTimestampHeaderTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testJMSTimestamp() throws Exception

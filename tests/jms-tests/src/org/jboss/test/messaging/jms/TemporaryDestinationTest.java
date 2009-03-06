@@ -49,11 +49,6 @@ public class TemporaryDestinationTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public TemporaryDestinationTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testTemp() throws Exception

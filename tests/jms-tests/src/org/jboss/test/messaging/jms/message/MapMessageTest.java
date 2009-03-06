@@ -44,11 +44,6 @@ public class MapMessageTest extends MessageTestBase
 
    // Constructors --------------------------------------------------
 
-   public MapMessageTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

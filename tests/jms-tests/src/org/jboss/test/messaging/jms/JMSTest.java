@@ -55,11 +55,6 @@ public class JMSTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public JMSTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testNoop() throws Exception

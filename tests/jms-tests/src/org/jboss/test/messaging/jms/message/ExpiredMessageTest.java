@@ -33,11 +33,6 @@ public class ExpiredMessageTest extends JBMServerTestCase
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ExpiredMessageTest(String name)
-   {
-      super(name);
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    public void testSimpleExpiration() throws Exception

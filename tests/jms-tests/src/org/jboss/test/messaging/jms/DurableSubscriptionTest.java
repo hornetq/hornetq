@@ -58,11 +58,6 @@ public class DurableSubscriptionTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public DurableSubscriptionTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testSimplestDurableSubscription() throws Exception

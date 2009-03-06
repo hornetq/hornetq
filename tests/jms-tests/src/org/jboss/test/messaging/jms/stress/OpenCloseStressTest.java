@@ -56,12 +56,7 @@ import org.jboss.test.messaging.JBMServerTestCase;
  * $Id: StressTest.java 2349 2007-02-19 14:15:53Z timfox $
  */
 public class OpenCloseStressTest extends JBMServerTestCase
-{
-   public OpenCloseStressTest(String name)
-   {
-      super(name);
-   }
-   
+{   
    InitialContext ic;
    ConnectionFactory cf;
    Topic topic;

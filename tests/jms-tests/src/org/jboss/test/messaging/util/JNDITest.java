@@ -49,11 +49,6 @@ public class JNDITest extends MessagingTestCase
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JNDITest(String name)
-   {
-      super(name);
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    public void testInterServerJNDI() throws Throwable

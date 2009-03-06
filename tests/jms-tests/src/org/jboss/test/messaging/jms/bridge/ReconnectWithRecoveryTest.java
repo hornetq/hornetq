@@ -37,11 +37,6 @@ public class ReconnectWithRecoveryTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(ReconnectTest.class);
 
-   public ReconnectWithRecoveryTest(String name)
-   {
-      super(name);
-   }
-
    protected void setUp() throws Exception
    {   
       super.setUp();         

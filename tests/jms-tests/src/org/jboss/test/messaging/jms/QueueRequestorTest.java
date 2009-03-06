@@ -49,11 +49,6 @@ public class QueueRequestorTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public QueueRequestorTest(String name)
-   {
-      super(name);
-   }
-
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------

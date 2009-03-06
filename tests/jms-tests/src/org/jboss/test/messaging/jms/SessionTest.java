@@ -57,11 +57,6 @@ public class SessionTest extends JBMServerTestCase
    
    // Constructors --------------------------------------------------
    
-   public SessionTest(String name)
-   {
-      super(name);
-   }
-   
    // Public --------------------------------------------------------
    
 //   public void testNoTransactionAfterClose() throws Exception

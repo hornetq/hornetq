@@ -52,11 +52,6 @@ public class MessageWithReadResolveTest extends JMSTestCase
    
    // Constructors --------------------------------------------------
    
-   public MessageWithReadResolveTest(String name)
-   {
-      super(name);
-   }
-   
    // TestCase overrides -------------------------------------------
       
    // Public --------------------------------------------------------

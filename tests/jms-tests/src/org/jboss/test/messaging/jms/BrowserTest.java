@@ -52,11 +52,6 @@ public class BrowserTest extends JMSTestCase
 
 	// Constructors ---------------------------------------------------------------------------------
 
-	public BrowserTest(String name)
-	{
-		super(name);
-	}
-
 	// Public ---------------------------------------------------------------------------------------
 
    public void testCreateBrowserOnNullDestination() throws Exception

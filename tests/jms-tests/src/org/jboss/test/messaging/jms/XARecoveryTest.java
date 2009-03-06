@@ -59,11 +59,6 @@ public class XARecoveryTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public XARecoveryTest(String name)
-   {
-      super(name);
-   }
-
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------

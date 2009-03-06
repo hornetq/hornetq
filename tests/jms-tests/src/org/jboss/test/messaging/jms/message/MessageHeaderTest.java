@@ -70,12 +70,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-   public MessageHeaderTest(String name)
-   {
-      super(name);
-   }
-
-   // Public --------------------------------------------------------
+    // Public --------------------------------------------------------
 
 
    public void testClearMessage() throws Exception

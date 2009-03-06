@@ -52,11 +52,6 @@ public class ReferenceableTest extends JMSTestCase
    
    // Constructors --------------------------------------------------
 
-   public ReferenceableTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
    
    public void testSerializable() throws Exception

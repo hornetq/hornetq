@@ -37,11 +37,6 @@ public class ReconnectTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(ReconnectTest.class);
 
-   public ReconnectTest(String name)
-   {
-      super(name);
-   }
-        
    // Crash and reconnect
    
    // Once and only once

@@ -59,11 +59,6 @@ public class ManyConnectionsStressTest extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
 
-   public ManyConnectionsStressTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    protected void setUp() throws Exception

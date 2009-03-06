@@ -92,11 +92,6 @@ public class SeveralClientsStressTest extends JBMServerTestCase
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public SeveralClientsStressTest(String name)
-   {
-      super(name);
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    public void testQueue() throws Exception

@@ -44,11 +44,6 @@ public class TextMessageTest extends MessageTestBase
 
    // Constructors --------------------------------------------------
 
-   public TextMessageTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

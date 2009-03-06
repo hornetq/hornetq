@@ -75,11 +75,6 @@ public class BridgeTestBase extends JBMServerTestCase
    
    protected static boolean firstTime = true;
    
-   public BridgeTestBase(String name)
-   {
-      super(name);
-   }
-
    protected void setUp() throws Exception
    {
       super.setUp();

@@ -48,11 +48,6 @@ public class QueueTest extends JMSTestCase
 
    // Constructors ---------------------------------------------------------------------------------
    
-   public QueueTest(String name)
-   {
-      super(name);
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    /**

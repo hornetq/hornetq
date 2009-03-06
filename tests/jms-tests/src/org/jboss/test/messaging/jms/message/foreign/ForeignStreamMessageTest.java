@@ -40,11 +40,6 @@ import org.jboss.test.messaging.jms.message.SimpleJMSStreamMessage;
 public class ForeignStreamMessageTest extends ForeignMessageTest
 {
 
-    public ForeignStreamMessageTest(String name)
-    {
-        super(name);
-    }
-    
     protected Message createForeignMessage() throws Exception
     {
         SimpleJMSStreamMessage m = new SimpleJMSStreamMessage();

@@ -41,21 +41,6 @@ import javax.jms.XASession;
  */
 public class QueueStressTest extends JMSStressTestBase
 {
-   public QueueStressTest(String name)
-   {
-      super(name);
-   }
-   
-   public void setUp() throws Exception
-   {
-      super.setUp();      
-   }
-   
-   public void tearDown() throws Exception
-   {     
-      super.tearDown();            
-   }
-   
    /*
     * Stress a queue with transational, non transactional and 2pc senders sending both persistent
     * and non persistent messages

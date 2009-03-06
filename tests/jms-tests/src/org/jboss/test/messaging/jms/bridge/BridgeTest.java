@@ -54,11 +54,6 @@ public class BridgeTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeTest.class);
    
-   public BridgeTest(String name)
-   {
-      super(name);
-   }
-  
    // MaxBatchSize but no MaxBatchTime
    
    public void testNoMaxBatchTime_AtMostOnce_P() throws Exception

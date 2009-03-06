@@ -41,11 +41,6 @@ public class ForeignObjectMessageTest extends ForeignMessageTest
 {
     private ForeignTestObject testObj;
     
-    public ForeignObjectMessageTest(String name)
-    {
-        super(name);
-    }
-    
     public void setUp() throws Exception
     {
         testObj = new ForeignTestObject("hello",2.2D); 

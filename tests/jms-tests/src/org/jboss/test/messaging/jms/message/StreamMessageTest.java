@@ -44,11 +44,6 @@ public class StreamMessageTest extends MessageTestBase
 
    // Constructors --------------------------------------------------
 
-   public StreamMessageTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

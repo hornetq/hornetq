@@ -64,11 +64,6 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JMSXDeliveryCountTest(String name)
-   {
-      super(name);
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
 

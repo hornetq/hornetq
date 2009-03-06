@@ -56,12 +56,6 @@ public class XAResourceRecoveryTest extends JBMServerTestCase
 
 	protected static Queue otherQueue;
 
-	public XAResourceRecoveryTest(String name)
-	{
-		super(name);
-	}
-
-
    public int getServerCount()
    {
       return 2;

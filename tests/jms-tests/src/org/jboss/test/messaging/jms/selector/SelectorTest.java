@@ -52,11 +52,6 @@ public class SelectorTest extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
 
-   public SelectorTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    /**

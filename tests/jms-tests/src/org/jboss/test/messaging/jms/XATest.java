@@ -80,12 +80,6 @@ public class XATest extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
 
-   public XATest(String name)
-   {
-      super(name);
-   }
-
-
    // TestCase overrides -------------------------------------------
 
    public void setUp() throws Exception

@@ -48,11 +48,6 @@ public class TopicTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
    
-   public TopicTest(String name)
-   {
-      super(name);
-   }
-   
    protected void setUp() throws Exception
    {
       

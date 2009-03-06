@@ -32,11 +32,6 @@ public class ConsumerClosedTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public ConsumerClosedTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
 

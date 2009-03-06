@@ -52,11 +52,6 @@ public class MessageProducerTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public MessageProducerTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testSendForeignWithForeignDestinationSet() throws Exception

@@ -60,11 +60,6 @@ public class SecurityAssociationTest extends JMSTestCase
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public SecurityAssociationTest(String name)
-   {
-      super(name);
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    /**

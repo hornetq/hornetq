@@ -53,11 +53,6 @@ public class BridgeMBeanTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeMBeanTest.class);
    
-   public BridgeMBeanTest(String name)
-   {
-      super(name);
-   }
-   
    private static ObjectName sourceProviderLoader;
    
    private static ObjectName targetProviderLoader;

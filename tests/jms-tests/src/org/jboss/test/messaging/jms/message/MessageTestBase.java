@@ -57,11 +57,6 @@ public class MessageTestBase extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
 
-   public MessageTestBase(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

@@ -53,11 +53,6 @@ public class ConnectionClosedTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public ConnectionClosedTest(String name)
-   {
-      super(name);
-   }
-
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------

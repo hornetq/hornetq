@@ -42,11 +42,6 @@ public class CorruptMessageStressTest extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
 
-   public CorruptMessageStressTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testMultipleSenders() throws Exception

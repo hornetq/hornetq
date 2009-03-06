@@ -40,11 +40,6 @@ import org.jboss.test.messaging.jms.message.SimpleJMSMapMessage;
 public class ForeignMapMessageTest extends ForeignMessageTest
 {
     private String obj = new String("stringobject");
-
-    public ForeignMapMessageTest(String name)
-    {
-        super(name);
-    }
     
     protected Message createForeignMessage() throws Exception
     {

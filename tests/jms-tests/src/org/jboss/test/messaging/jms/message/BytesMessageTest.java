@@ -44,11 +44,6 @@ public class BytesMessageTest extends MessageTestBase
 
    // Constructors --------------------------------------------------
 
-   public BytesMessageTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

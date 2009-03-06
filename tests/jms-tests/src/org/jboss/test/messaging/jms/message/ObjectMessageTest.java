@@ -32,8 +32,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
-import org.jboss.messaging.jms.client.JBossObjectMessage;
-
 /**
  * A test that sends/receives object messages to the JMS provider and verifies their integrity.
  *
@@ -52,11 +50,6 @@ public class ObjectMessageTest extends MessageTestBase
    // Attributes -----------------------------------------------------------------------------------
 
    // Constructors ---------------------------------------------------------------------------------
-
-   public ObjectMessageTest(String name)
-   {
-      super(name);
-   }
 
    // Public ---------------------------------------------------------------------------------------
 

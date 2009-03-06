@@ -42,11 +42,6 @@ public class MBeanConfigurationElementTest extends MessagingTestCase
 {
    // Constructors --------------------------------------------------
 
-   public MBeanConfigurationElementTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

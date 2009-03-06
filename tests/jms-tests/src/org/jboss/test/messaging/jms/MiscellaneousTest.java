@@ -51,11 +51,6 @@ public class MiscellaneousTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public MiscellaneousTest(String name)
-   {
-      super(name);
-   }
-   
    protected void tearDown() throws Exception
    {
       removeAllMessages(queue1.getQueueName(), true, 0);

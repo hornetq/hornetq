@@ -76,11 +76,6 @@ public class SecurityTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public SecurityTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    /**

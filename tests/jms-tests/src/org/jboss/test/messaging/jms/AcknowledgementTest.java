@@ -44,11 +44,6 @@ public class AcknowledgementTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public AcknowledgementTest(final String name)
-   {
-      super(name);
-   }
-
    // TestCase overrides -------------------------------------------
 
    // Public --------------------------------------------------------

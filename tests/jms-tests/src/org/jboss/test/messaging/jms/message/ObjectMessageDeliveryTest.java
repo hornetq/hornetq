@@ -53,11 +53,6 @@ public class ObjectMessageDeliveryTest extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
    
-   public ObjectMessageDeliveryTest(String name)
-   {
-      super(name);
-   }
-   
    // Public --------------------------------------------------------
    
    static class TestObject implements Serializable

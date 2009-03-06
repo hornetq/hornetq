@@ -39,11 +39,6 @@ public class JMSCorrelationIDHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-   public JMSCorrelationIDHeaderTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testJMSDestination() throws Exception

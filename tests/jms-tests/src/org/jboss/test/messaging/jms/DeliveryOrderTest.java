@@ -47,11 +47,6 @@ import javax.jms.TextMessage;
 public class DeliveryOrderTest extends JMSTestCase
 {
 
-   public DeliveryOrderTest(String name)
-   {
-      super(name);
-   }
-     
    public void testOutOfOrder() throws Exception
    {
       Connection conn = null;

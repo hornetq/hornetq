@@ -48,11 +48,6 @@ public class ConcurrentCloseStressTest extends JBMServerTestCase
 {
    private static final Logger log = Logger.getLogger(ConcurrentCloseStressTest.class);
 
-   public ConcurrentCloseStressTest(String name)
-   {
-      super(name);
-   }
-
    InitialContext ic;
    ConnectionFactory cf;
    Queue queue;

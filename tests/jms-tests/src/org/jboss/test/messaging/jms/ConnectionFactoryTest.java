@@ -55,11 +55,6 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-   public ConnectionFactoryTest(String name)
-   {
-      super(name);
-   }
-
    protected void setUp() throws Exception
    {
       super.setUp();    //To change body of overridden methods use File | Settings | File Templates.

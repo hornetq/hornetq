@@ -37,11 +37,6 @@ public class JMSDestinationHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-   public JMSDestinationHeaderTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testJMSDestination() throws Exception

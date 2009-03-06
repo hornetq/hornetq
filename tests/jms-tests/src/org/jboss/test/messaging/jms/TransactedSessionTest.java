@@ -43,11 +43,6 @@ public class TransactedSessionTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
 
-	public TransactedSessionTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
   

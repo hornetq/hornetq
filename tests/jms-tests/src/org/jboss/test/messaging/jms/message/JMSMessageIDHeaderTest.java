@@ -37,11 +37,6 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
 
    // Constructors --------------------------------------------------
 
-   public JMSMessageIDHeaderTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void testJMSMessageIDPrefix() throws Exception

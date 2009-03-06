@@ -46,11 +46,6 @@ public class RelayStressTest extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
 
-   public RelayStressTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    protected void setUp() throws Exception

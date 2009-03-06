@@ -50,11 +50,6 @@ public class MessagePropertyConversionTest extends JBMServerTestCase
 
    // Constructors --------------------------------------------------
 
-   public MessagePropertyConversionTest(String name)
-   {
-      super(name);
-   }
-
    // Public --------------------------------------------------------
 
    public void setUp() throws Exception

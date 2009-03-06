@@ -41,11 +41,6 @@ public class ManualQueueSoakTest extends SeveralClientsStressTest
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ManualQueueSoakTest(String name)
-   {
-      super(name);
-   }
-
    // Public ---------------------------------------------------------------------------------------
 
    // Package protected ----------------------------------------------------------------------------

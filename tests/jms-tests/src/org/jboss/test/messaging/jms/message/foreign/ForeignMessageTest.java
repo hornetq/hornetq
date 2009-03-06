@@ -41,11 +41,6 @@ import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
  */
 public class ForeignMessageTest extends MessageTestBase
 {
-    public ForeignMessageTest(String name)
-    {
-        super(name);
-    }
-
     public void setUp() throws Exception
     {
        super.setUp();
