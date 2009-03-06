@@ -334,15 +334,11 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      for (int i = 0; i < 20; i++)
+      for (int i = 0; i < 40; i++)
       {
          // a few tries to avoid a possible race caused by GCs or similar issues
-         if (messagingService.getServer().getRemotingService().getConnections().isEmpty())
+         if (messagingService.getServer().getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
          {
-            // Sleep a bit more since it's async
-            // We are not sure about the order in which the listeners are called, so we need another sleep
-            Thread.sleep(PING_INTERVAL);
-
             break;
          }
 
@@ -360,8 +356,7 @@ public class PingTest extends ServiceTestBase
 
       session.close();
    }
-   
-   
+
    /*
    * Test the client triggering failure due to no pong received in time
    */
@@ -439,14 +434,11 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      for (int i = 0; i < 20; i++)
+      for (int i = 0; i < 40; i++)
       {
          // a few tries to avoid a possible race caused by GCs or similar issues
-         if (messagingService.getServer().getRemotingService().getConnections().isEmpty())
+         if (messagingService.getServer().getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
          {
-            // Sleep a bit more since it's async
-            // We are not sure about the order in which the listeners are called, so we need another sleep
-            Thread.sleep(PING_INTERVAL);
             break;
          }
 
