@@ -22,9 +22,7 @@
 
 package org.jboss.messaging.core.cluster.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.InterruptedIOException;
-import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -34,10 +32,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -223,12 +223,10 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   continue;
                }
             }
-
-            ByteArrayInputStream bis = new ByteArrayInputStream(data);
-
-            ObjectInputStream ois = new ObjectInputStream(bis);
-
-            String originatingNodeID = ois.readUTF();
+            
+            MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(data);
+            
+            String originatingNodeID = buffer.readString();
 
             if (nodeID.equals(originatingNodeID))
             {
@@ -236,7 +234,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                continue;
             }
 
-            int size = ois.readInt();
+            int size = buffer.readInt();
 
             boolean changed = false;
 
@@ -244,15 +242,19 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             {
                for (int i = 0; i < size; i++)
                {
-                  TransportConfiguration connector = (TransportConfiguration)ois.readObject();
+                  TransportConfiguration connector = new TransportConfiguration();
+                  
+                  connector.decode(buffer);
 
-                  boolean existsBackup = ois.readBoolean();
+                  boolean existsBackup = buffer.readBoolean();
 
                   TransportConfiguration backupConnector = null;
 
                   if (existsBackup)
                   {
-                     backupConnector = (TransportConfiguration)ois.readObject();
+                     backupConnector = new TransportConfiguration();
+                     
+                     backupConnector.decode(buffer);
                   }
 
                   Pair<TransportConfiguration, TransportConfiguration> connectorPair = new Pair<TransportConfiguration, TransportConfiguration>(connector,

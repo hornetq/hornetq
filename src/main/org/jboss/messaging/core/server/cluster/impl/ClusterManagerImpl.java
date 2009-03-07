@@ -207,6 +207,11 @@ public class ClusterManagerImpl implements ClusterManager
    {
       return new HashSet<ClusterConnection>(clusters.values());
    }
+   
+   public ClusterConnection getClusterConnection(final SimpleString name)
+   {
+      return clusters.get(name.toString()); 
+   }
 
    private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
    {
@@ -475,7 +480,9 @@ public class ClusterManagerImpl implements ClusterManager
                                                        queueFactory,
                                                        connectors,
                                                        config.getMaxHops(),
-                                                       nodeUUID);
+                                                       nodeUUID,
+                                                       null,
+                                                       false);
       }
       else
       {
@@ -503,7 +510,9 @@ public class ClusterManagerImpl implements ClusterManager
                                                        queueFactory,
                                                        dg,
                                                        config.getMaxHops(),
-                                                       nodeUUID);
+                                                       nodeUUID,
+                                                       null,
+                                                       false);
       }
 
       managementService.registerCluster(clusterConnection, config);

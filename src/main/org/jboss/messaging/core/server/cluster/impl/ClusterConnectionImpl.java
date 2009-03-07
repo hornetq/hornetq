@@ -46,6 +46,9 @@ import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateClusterConnectionUpdate;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
@@ -106,6 +109,10 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    private final int maxHops;
 
    private final UUID nodeUUID;
+   
+   private final Channel replicatingChannel;
+   
+   private boolean backup;
 
    private volatile boolean started;
 
@@ -128,7 +135,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final QueueFactory queueFactory,
                                 final List<Pair<TransportConfiguration, TransportConfiguration>> connectors,
                                 final int maxHops,
-                                final UUID nodeUUID) throws Exception
+                                final UUID nodeUUID,
+                                final Channel replicatingChannel,
+                                final boolean backup) throws Exception
    {
       this.name = name;
 
@@ -163,6 +172,10 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.maxHops = maxHops;
 
       this.nodeUUID = nodeUUID;
+      
+      this.replicatingChannel = replicatingChannel;
+      
+      this.backup = backup;
 
       this.updateConnectors(connectors);
    }
@@ -186,7 +199,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final QueueFactory queueFactory,
                                 final DiscoveryGroup discoveryGroup,
                                 final int maxHops,
-                                final UUID nodeUUID) throws Exception
+                                final UUID nodeUUID,
+                                final Channel replicatingChannel,
+                                final boolean backup) throws Exception
    {
       this.name = name;
 
@@ -221,6 +236,10 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.maxHops = maxHops;
 
       this.nodeUUID = nodeUUID;
+      
+      this.replicatingChannel = replicatingChannel;
+      
+      this.backup = backup;
    }
 
    public synchronized void start() throws Exception
@@ -267,7 +286,17 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    {
       return name;
    }
-
+   
+   public synchronized void handleReplicatedUpdateConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
+   {
+      if (!backup)
+      {
+         return;
+      }
+      
+      updateConnectors(connectors);
+   }
+   
    // DiscoveryListener implementation ------------------------------------------------------------------
 
    public synchronized void connectorsChanged()
@@ -283,8 +312,37 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          log.error("Failed to update connectors", e);
       }
    }
-
+   
    private void updateConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
+   {
+      if (replicatingChannel == null)
+      {
+         doUpdateConnectors(connectors);
+      }
+      else
+      {
+         Packet packet = new ReplicateClusterConnectionUpdate(name, connectors);
+         
+         Runnable action = new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  doUpdateConnectors(connectors);
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to update connectors", e);
+               }
+            }
+         };
+         
+         replicatingChannel.replicatePacket(packet, 1, action);
+      }
+   }
+
+   private void doUpdateConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
    {
       Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
 

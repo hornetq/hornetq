@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.server.cluster.impl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -31,8 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.utils.Pair;
 
@@ -94,11 +95,12 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       if (localPort != -1)
       {
          socket = new DatagramSocket(localPort);
-      } else
-      {
-         socket = new DatagramSocket();         
       }
-      
+      else
+      {
+         socket = new DatagramSocket();
+      }
+
       started = true;
    }
 
@@ -146,36 +148,30 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    public synchronized void broadcastConnectors() throws Exception
    {
-      // TODO - for now we just use plain serialization to serialize the transport configs
-      // we should use our own format for a tighter representation
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      MessagingBuffer buff = ChannelBuffers.dynamicBuffer(4096);
+     
+      buff.writeString(nodeID);
 
-      ObjectOutputStream oos = new ObjectOutputStream(bos);
-      
-      oos.writeUTF(nodeID);
+      buff.writeInt(connectorPairs.size());
 
-      oos.writeInt(connectorPairs.size());
-      
       for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectorPairs)
       {
-         oos.writeObject(connectorPair.a);
+         connectorPair.a.encode(buff);
 
          if (connectorPair.b != null)
          {
-            oos.writeBoolean(true);
+            buff.writeBoolean(true);
 
-            oos.writeObject(connectorPair.b);
+            connectorPair.b.encode(buff);
          }
          else
          {
-            oos.writeBoolean(false);
+            buff.writeBoolean(false);
          }
       }
-
-      oos.flush();
-
-      byte[] data = bos.toByteArray();
-
+      
+      byte[] data = buff.array();
+            
       DatagramPacket packet = new DatagramPacket(data, data.length, groupAddress, groupPort);
 
       socket.send(packet);
@@ -194,13 +190,13 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
       catch (Exception e)
       {
-         log.error("Failed to broadcast connector configs");
+         log.error("Failed to broadcast connector configs", e);
       }
    }
 
    public synchronized void setScheduledFuture(final ScheduledFuture<?> future)
    {
       this.future = future;
-   }   
+   }
 
 }

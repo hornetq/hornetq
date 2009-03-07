@@ -189,7 +189,17 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       // Injecting the postoffice (itself) on queueFactory for paging-control
       queueFactory.setPostOffice(this);
-
+      
+      if (!backup)
+      {
+         startExpiryScanner();
+      }
+                  
+      started = true;
+   }
+   
+   private void startExpiryScanner()
+   {
       if (messageExpiryScanPeriod > 0)
       {
          MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner();
@@ -201,7 +211,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                                                       messageExpiryScanPeriod,
                                                       TimeUnit.MILLISECONDS);
       }
-      started = true;
    }
 
    public void stop() throws Exception
@@ -669,6 +678,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             }
          }
       }
+      
+      startExpiryScanner();
 
       return queues;
    }

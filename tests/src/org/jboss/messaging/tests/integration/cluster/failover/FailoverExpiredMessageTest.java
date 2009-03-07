@@ -92,12 +92,8 @@ public class FailoverExpiredMessageTest extends UnitTestCase
   
       ClientSession session1 = sf1.createSession(false, true, true);
       
-      log.info("created session");
-
       session1.createQueue(ADDRESS, ADDRESS, null, false, false);
-      
-      log.info("created queue");
-      
+       
       session1.start();
 
       ClientProducer producer = session1.createProducer(ADDRESS);
@@ -107,9 +103,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
       //Set time to live so at least some of them will more than likely expire before they are consumed by the client
       
       long now = System.currentTimeMillis();
-      
-      log.info("sending messages");
-      
+       
       long expire = now + 5000;
 
       for (int i = 0; i < numMessages; i++)
@@ -122,11 +116,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
          message.putIntProperty(new SimpleString("count"), i);         
          message.getBody().writeString("aardvarks");
          producer.send(message);               
-         
-         log.info("sent message " + i);
       }
-      
-      log.info("sent messages");
       
       ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
                  
@@ -169,13 +159,10 @@ public class FailoverExpiredMessageTest extends UnitTestCase
          }
          else
          {
-            log.info("message was null");
             break;
          }
       }           
       
-      log.info("Got " + count + " messages");
-           
       t.join();
                    
       session1.close();
@@ -194,16 +181,87 @@ public class FailoverExpiredMessageTest extends UnitTestCase
       session2.close();      
    }
    
+   public void testExpireViaReaperOnLive() throws Exception
+   {            
+      ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                 backupParams));
+      
+      sf1.setSendWindowSize(32 * 1024);
+  
+      ClientSession session1 = sf1.createSession(false, true, true);
+      
+      log.info("created session");
+
+      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
+      
+      log.info("created queue");
+      
+      ClientProducer producer = session1.createProducer(ADDRESS);
+
+      final int numMessages = 10000;
+      
+      //Set time to live so messages are expired on the server
+      
+      long now = System.currentTimeMillis();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
+                                                             false,
+                                                             now,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);         
+         message.getBody().writeString("aardvarks");
+         producer.send(message);               
+      }
+
+      Thread.sleep(4 * expireScanPeriod);
+      
+      //Messages should all be expired now
+      
+      ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
+      
+      session1.start();
+                 
+      RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
+ 
+      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+                              
+      ClientMessage message = consumer1.receive(1000);
+      
+      assertNull(message);
+                         
+      session1.close();
+      
+      //Make sure no more messages
+      ClientSession session2 = sf1.createSession(false, true, true);
+      
+      session2.start();
+      
+      ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
+      
+      message = consumer2.receive(1000);
+      
+      assertNull(message);
+      
+      session2.close();      
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
+   private final long expireScanPeriod = 1000;
+   
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       
       Configuration backupConf = new ConfigurationImpl();
+      backupConf.setMessageExpiryScanPeriod(expireScanPeriod);
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
@@ -214,6 +272,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
+      liveConf.setMessageExpiryScanPeriod(expireScanPeriod);
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));

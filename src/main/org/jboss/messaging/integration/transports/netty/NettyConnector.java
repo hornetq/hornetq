@@ -21,6 +21,24 @@
  */
 package org.jboss.messaging.integration.transports.netty;
 
+import static org.jboss.netty.channel.Channels.pipeline;
+import static org.jboss.netty.channel.Channels.write;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
@@ -40,8 +58,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import static org.jboss.netty.channel.Channels.pipeline;
-import static org.jboss.netty.channel.Channels.write;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
@@ -65,20 +81,6 @@ import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 /**
  * A NettyConnector
  *
@@ -100,7 +102,7 @@ public class NettyConnector implements Connector
    private ClientSocketChannelFactory channelFactory;
 
    private ClientBootstrap bootstrap;
-   
+
    ChannelGroup channelGroup;
 
    private final BufferHandler handler;
@@ -137,7 +139,7 @@ public class NettyConnector implements Connector
 
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
-   private  final String servletPath;
+   private final String servletPath;
 
    // Static --------------------------------------------------------
 
@@ -227,8 +229,6 @@ public class NettyConnector implements Connector
       this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
-
-
    }
 
    public synchronized void start()
@@ -247,8 +247,8 @@ public class NettyConnector implements Connector
       {
          channelFactory = new OioClientSocketChannelFactory(workerExecutor);
       }
-      //if we are a servlet wrap the socketChannelFactory
-      if(useServlet)
+      // if we are a servlet wrap the socketChannelFactory
+      if (useServlet)
       {
          ClientSocketChannelFactory proxyChannelFactory = channelFactory;
          channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, workerExecutor);
@@ -305,7 +305,7 @@ public class NettyConnector implements Connector
                pipeline.addLast("httphandler", new HttpHandler());
             }
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
-            pipeline.addLast("handler", new MessagingClientChannelHandler(channelGroup, handler, listener));
+            pipeline.addLast("handler", new MessagingClientChannelHandler(channelGroup, handler, new Listener()));
             return pipeline;
          }
       });
@@ -317,12 +317,12 @@ public class NettyConnector implements Connector
       {
          return;
       }
-      
+
       bootstrap = null;
       channelGroup.close().awaitUninterruptibly();
       channelFactory.releaseExternalResources();
       channelFactory = null;
-      
+
       for (Connection connection : connections.values())
       {
          listener.connectionDestroyed(connection.getID());
@@ -438,8 +438,6 @@ public class NettyConnector implements Connector
 
       private String url;
 
-      //private String sessionId = null;
-
       private Future handShakeFuture = new Future();
 
       private boolean active = false;
@@ -451,7 +449,6 @@ public class NettyConnector implements Connector
       private String cookie;
 
       private CookieEncoder cookieEncoder = new CookieEncoder();
-
 
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
@@ -481,7 +478,7 @@ public class NettyConnector implements Connector
       @Override
       public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
       {
-         HttpResponse response = (HttpResponse) e.getMessage();
+         HttpResponse response = (HttpResponse)e.getMessage();
          if (httpRequiresSessionId && !active)
          {
             Map<String, Cookie> cookieMap = cookieDecoder.decode(response.getHeader(HttpHeaders.Names.SET_COOKIE));
@@ -494,13 +491,10 @@ public class NettyConnector implements Connector
             active = true;
             handShakeFuture.run();
          }
-         MessageEvent event = new UpstreamMessageEvent(e.getChannel(),
-                                                       response.getContent(),
-                                                       e.getRemoteAddress());
+         MessageEvent event = new UpstreamMessageEvent(e.getChannel(), response.getContent(), e.getRemoteAddress());
          waitingGet = false;
          ctx.sendUpstream(event);
       }
-
 
       @Override
       public void writeRequested(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception
@@ -527,7 +521,7 @@ public class NettyConnector implements Connector
             {
                httpRequest.addHeader(HttpHeaders.Names.COOKIE, cookie);
             }
-            ChannelBuffer buf = (ChannelBuffer) e.getMessage();
+            ChannelBuffer buf = (ChannelBuffer)e.getMessage();
             httpRequest.setContent(buf);
             httpRequest.addHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(buf.writerIndex()));
             write(ctx, e.getFuture(), httpRequest, e.getRemoteAddress());
@@ -573,7 +567,17 @@ public class NettyConnector implements Connector
 
       public void connectionDestroyed(final Object connectionID)
       {
-         connections.remove(connectionID);
+         if (connections.remove(connectionID) != null)
+         {
+            // Execute on different thread to avoid deadlocks
+            new Thread()
+            {
+               public void run()
+               {
+                  listener.connectionDestroyed(connectionID);
+               }
+            }.start();
+         }
       }
 
       public void connectionException(final Object connectionID, final MessagingException me)

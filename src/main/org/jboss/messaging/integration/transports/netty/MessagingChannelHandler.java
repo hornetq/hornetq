@@ -81,6 +81,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
          if (active)
          {
             listener.connectionDestroyed(e.getChannel().getId());
+            
             active = false;
          }
       }

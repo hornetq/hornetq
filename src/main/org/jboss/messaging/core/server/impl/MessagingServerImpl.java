@@ -67,6 +67,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
+import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
@@ -716,6 +717,19 @@ public class MessagingServerImpl implements MessagingServer
       return sessions.get(name);
    }
 
+   public void updateClusterConnectionConnectors(final SimpleString clusterConnectionName,
+                                                 final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
+   {
+      ClusterConnection cc = clusterManager.getClusterConnection(clusterConnectionName);
+
+      if (cc == null)
+      {
+         throw new IllegalStateException("Cannot find cluster connection with name " + clusterConnectionName);
+      }
+
+      cc.handleReplicatedUpdateConnectors(connectors);
+   }
+
    public List<ServerSession> getSessions(final String connectionID)
    {
       Set<Entry<String, ServerSession>> sessionEntries = sessions.entrySet();
@@ -1023,7 +1037,7 @@ public class MessagingServerImpl implements MessagingServer
 
       return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
-   
+
    private Transformer instantiateTransformer(final String transformerClassName)
    {
       Transformer transformer = null;

@@ -913,7 +913,7 @@ public class DiscoveryTest extends UnitTestCase
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(UUIDGenerator.getInstance().generateStringUUID(), 123);
       params.put(UUIDGenerator.getInstance().generateStringUUID(), UUIDGenerator.getInstance().generateStringUUID());
-      params.put(UUIDGenerator.getInstance().generateStringUUID(), 721633.123d);
+      params.put(UUIDGenerator.getInstance().generateStringUUID(), true);
       TransportConfiguration tc = new TransportConfiguration(className, params, name);
       return tc;
    }

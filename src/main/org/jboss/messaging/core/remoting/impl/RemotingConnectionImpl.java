@@ -358,6 +358,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    public String getRemoteAddress()
    {
+      log.info("transport connection is " + transportConnection);
       return transportConnection.getRemoteAddress();
    }
 

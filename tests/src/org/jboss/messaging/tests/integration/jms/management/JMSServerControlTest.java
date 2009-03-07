@@ -40,6 +40,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
@@ -63,6 +64,9 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 public class JMSServerControlTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(JMSServerControlTest.class);
+
 
    // Attributes ----------------------------------------------------
 
@@ -314,6 +318,8 @@ public class JMSServerControlTest extends UnitTestCase
 
          // FIXME: with Netty, the server is not notified immediately that the connection is closed
          Thread.sleep(500);
+         
+         log.info("got here");
 
          assertEquals(0, control.listRemoteAddresses().length);
       }

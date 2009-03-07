@@ -23,7 +23,11 @@
 
 package org.jboss.messaging.core.server.cluster;
 
+import java.util.List;
+
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -38,4 +42,6 @@ import org.jboss.messaging.utils.SimpleString;
 public interface ClusterConnection extends MessagingComponent
 {
    SimpleString getName();
+   
+   void handleReplicatedUpdateConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception;
 }

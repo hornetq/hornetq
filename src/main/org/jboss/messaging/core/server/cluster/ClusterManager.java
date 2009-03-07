@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.server.MessagingComponent;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ClusterManager
@@ -38,6 +39,8 @@ import org.jboss.messaging.core.server.MessagingComponent;
 public interface ClusterManager extends MessagingComponent
 {
    Map<String, Bridge> getBridges();
-   
+
    Set<ClusterConnection> getClusterConnections();
+
+   ClusterConnection getClusterConnection(SimpleString name);
 }

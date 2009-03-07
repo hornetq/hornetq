@@ -22,6 +22,19 @@
 
 package org.jboss.messaging.integration.transports.netty;
 
+import static org.jboss.netty.channel.Channels.pipeline;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.net.ssl.SSLContext;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -42,29 +55,15 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import static org.jboss.netty.channel.Channels.pipeline;
-
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory;
 import org.jboss.netty.channel.local.LocalAddress;
-import org.jboss.netty.channel.local.LocalServerChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
-
-import javax.net.ssl.SSLContext;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A Netty TCP Acceptor that supports SSL
@@ -271,7 +270,7 @@ public class NettyAcceptor implements Acceptor
             }
 
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
-            pipeline.addLast("handler", new MessagingServerChannelHandler(channelGroup, handler, listener));
+            pipeline.addLast("handler", new MessagingServerChannelHandler(channelGroup, handler, new Listener()));
             return pipeline;
          }
       };
@@ -355,7 +354,7 @@ public class NettyAcceptor implements Acceptor
       @Override
       public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
       {
-         final Connection tc = new NettyConnection(e.getChannel(), new Listener());
+         new NettyConnection(e.getChannel(), new Listener());
 
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
@@ -366,7 +365,6 @@ public class NettyAcceptor implements Acceptor
                {
                   if (future.isSuccess())
                   {
-                     listener.connectionCreated(tc);
                      active = true;
                   }
                   else
@@ -378,7 +376,6 @@ public class NettyAcceptor implements Acceptor
          }
          else
          {
-            listener.connectionCreated(tc);
             active = true;
          }
       }
@@ -392,13 +389,22 @@ public class NettyAcceptor implements Acceptor
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
+         
+         listener.connectionCreated(connection);
       }
 
       public void connectionDestroyed(final Object connectionID)
       {
          if (connections.remove(connectionID) != null)
          {
-            listener.connectionDestroyed(connectionID);
+            //Execute on different thread to avoid deadlocks
+            new Thread()
+            {
+               public void run()
+               {
+                  listener.connectionDestroyed(connectionID);               
+               }
+            }.start();
          }
       }
 

@@ -22,8 +22,11 @@
 package org.jboss.messaging.core.config;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * A TransportConfiguration
@@ -35,73 +38,191 @@ public class TransportConfiguration implements Serializable
 {
    private static final long serialVersionUID = -3994528421527392679L;
 
-   private final String name;
-   
-   private final String factoryClassName;
-   
-   private final Map<String, Object> params;
-   
+   private String name;
+
+   private String factoryClassName;
+
+   private Map<String, Object> params;
+
+   private static final byte TYPE_BOOLEAN = 0;
+
+   private static final byte TYPE_INT = 1;
+
+   private static final byte TYPE_LONG = 2;
+
+   private static final byte TYPE_STRING = 3;
+
+   public void encode(final MessagingBuffer buffer)
+   {
+      buffer.writeString(name);
+      buffer.writeString(factoryClassName);
+
+      buffer.writeInt(params == null ? 0 : params.size());
+
+      if (params != null)
+      {
+         for (Map.Entry<String, Object> entry : params.entrySet())
+         {
+            buffer.writeString(entry.getKey());
+
+            Object val = entry.getValue();
+
+            if (val instanceof Boolean)
+            {
+               buffer.writeByte(TYPE_BOOLEAN);
+               buffer.writeBoolean((Boolean)val);
+            }
+            else if (val instanceof Integer)
+            {
+               buffer.writeByte(TYPE_INT);
+               buffer.writeInt((Integer)val);
+            }
+            else if (val instanceof Long)
+            {
+               buffer.writeByte(TYPE_LONG);
+               buffer.writeLong((Long)val);
+            }
+            else if (val instanceof String)
+            {
+               buffer.writeByte(TYPE_STRING);
+               buffer.writeString((String)val);
+            }
+            else
+            {
+               throw new IllegalArgumentException("Invalid type " + val);
+            }
+         }
+      }
+   }
+
+   public void decode(final MessagingBuffer buffer)
+   {
+      name = buffer.readString();
+      factoryClassName = buffer.readString();
+
+      int num = buffer.readInt();
+
+      if (params == null)
+      {
+         if (num > 0)
+         {
+            params = new HashMap<String, Object>();
+         }
+      }
+      else
+      {
+         params.clear();
+      }
+
+      for (int i = 0; i < num; i++)
+      {
+         String key = buffer.readString();
+
+         byte type = buffer.readByte();
+
+         Object val;
+
+         switch (type)
+         {
+            case TYPE_BOOLEAN:
+            {
+               val = buffer.readBoolean();
+
+               break;
+            }
+            case TYPE_INT:
+            {
+               val = buffer.readInt();
+
+               break;
+            }
+            case TYPE_LONG:
+            {
+               val = buffer.readLong();
+
+               break;
+            }
+            case TYPE_STRING:
+            {
+               val = buffer.readString();
+
+               break;
+            }
+            default:
+            {
+               throw new IllegalArgumentException("Invalid type " + type);
+            }
+         }
+
+         params.put(key, val);
+      }
+   }
+
    public static String[] splitHosts(final String commaSeparatedHosts)
-   {  
+   {
       if (commaSeparatedHosts == null)
       {
          return new String[0];
       }
       String[] hosts = commaSeparatedHosts.split(",");
-      
+
       for (int i = 0; i < hosts.length; i++)
       {
-         hosts[i] = hosts[i].trim();         
+         hosts[i] = hosts[i].trim();
       }
-      return hosts;      
+      return hosts;
    }
-   
+
+   public TransportConfiguration()
+   {
+   }
+
    public TransportConfiguration(final String className, final Map<String, Object> params, final String name)
    {
       this.factoryClassName = className;
-      
+
       this.params = params;
-      
+
       this.name = name;
    }
-   
+
    public TransportConfiguration(final String className, final Map<String, Object> params)
    {
       this(className, params, UUID.randomUUID().toString());
    }
-   
+
    public TransportConfiguration(final String className)
    {
       this(className, null, UUID.randomUUID().toString());
    }
-   
+
    public String getName()
    {
       return name;
    }
-   
+
    public String getFactoryClassName()
    {
       return factoryClassName;
    }
-   
+
    public Map<String, Object> getParams()
    {
       return params;
    }
-   
+
    public int hashCode()
    {
       return factoryClassName.hashCode();
    }
-   
+
    public boolean equals(final Object other)
    {
       if (other instanceof TransportConfiguration == false)
       {
          return false;
       }
-      
+
       TransportConfiguration kother = (TransportConfiguration)other;
 
       if (factoryClassName.equals(kother.factoryClassName))

@@ -15,6 +15,7 @@ package org.jboss.messaging.core.server.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATE_CREATESESSION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATE_UPDATE_CONNECTORS;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -26,6 +27,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateClusterConnectionUpdate;
 import org.jboss.messaging.core.server.MessagingServer;
 
 /**
@@ -87,6 +89,15 @@ public class MessagingServerPacketHandler implements ChannelHandler
             handleReattachSession(request);
 
             break;
+         }
+         case REPLICATE_UPDATE_CONNECTORS:
+         {
+            ReplicateClusterConnectionUpdate request = (ReplicateClusterConnectionUpdate)packet;
+            
+            handleClusterConnectionUpdate(request);
+            
+            break;
+            
          }
          default:
          {
@@ -226,6 +237,18 @@ public class MessagingServerPacketHandler implements ChannelHandler
       }
       
       channel1.send(response);
+   }
+   
+   private void handleClusterConnectionUpdate(final ReplicateClusterConnectionUpdate request)
+   {
+      try
+      {
+         server.updateClusterConnectionConnectors(request.getClusterConnectionName(), request.getConnectors());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle cluster connection update", e);
+      }
    }
 
 }

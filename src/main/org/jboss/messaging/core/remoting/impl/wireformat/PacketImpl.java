@@ -147,6 +147,10 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_REPLICATE_DELIVERY = 91;
    
+   public static final byte REPLICATE_UPDATE_CONNECTORS = 92;
+   
+   public static final byte REPLICATE_NOTIFICATION = 93;
+   
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

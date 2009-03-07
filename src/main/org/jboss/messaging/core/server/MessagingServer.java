@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -32,6 +33,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
 
@@ -96,6 +98,8 @@ public interface MessagingServer extends MessagingComponent
                                                        boolean preAcknowledge,
                                                        boolean xa,
                                                        int sendWindowSize) throws Exception;
+   
+   void updateClusterConnectionConnectors(SimpleString clusterConnectionName, List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception;
    
    void removeSession(String name) throws Exception;
    
