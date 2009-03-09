@@ -39,7 +39,6 @@ import javax.jms.Topic;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * Test JMS Security.

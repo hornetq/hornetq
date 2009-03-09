@@ -40,6 +40,7 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
+import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
@@ -58,8 +59,6 @@ import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
-import org.jboss.test.messaging.tools.ConfigurationHelper;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -98,14 +97,9 @@ public class LocalTestServer implements Server, Runnable
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public LocalTestServer()
+    public LocalTestServer(int serverIndex)
    {
       super();
-   }
-
-   public LocalTestServer(int serverIndex)
-   {
-      this();
 
       this.serverIndex = serverIndex;
    }
@@ -117,16 +111,16 @@ public class LocalTestServer implements Server, Runnable
       return serverIndex;
    }
 
-   public synchronized void start(String[] containerConfig, HashMap<String, Object> configuration, boolean clearDatabase) throws Exception
+   public synchronized void start(String[] containerConfig, HashMap<String, Object> configuration, boolean clearJournal) throws Exception
    {
       if (isStarted())
       {
          return;
       }
 
-      log.info("** deleting database?" + clearDatabase);
+      log.info("** deleting journal?" + clearJournal);
 
-      if (clearDatabase)
+      if (clearJournal)
       {
          // Delete the Journal environment
 
@@ -137,9 +131,7 @@ public class LocalTestServer implements Server, Runnable
          log.info("Deleted dir: " + dir.getAbsolutePath() + " deleted: " + deleted);
       }
 
-      ConfigurationHelper.addServerConfig(getServerID(), configuration);
-
-      JBMPropertyKernelConfig propertyKernelConfig = new JBMPropertyKernelConfig(System.getProperties());
+      PropertyKernelConfig propertyKernelConfig = new PropertyKernelConfig(System.getProperties());
       // propertyKernelConfig.setServerID(getServerID());
       bootstrap = new JBMBootstrapServer(containerConfig, propertyKernelConfig);
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
@@ -185,39 +177,6 @@ public class LocalTestServer implements Server, Runnable
    public synchronized void kill() throws Exception
    {
       stop();
-   }
-
-   public void log(int level, String text)
-   {
-      if (ServerManagement.FATAL == level)
-      {
-         log.fatal(text);
-      }
-      else if (ServerManagement.ERROR == level)
-      {
-         log.error(text);
-      }
-      else if (ServerManagement.WARN == level)
-      {
-         log.warn(text);
-      }
-      else if (ServerManagement.INFO == level)
-      {
-         log.info(text);
-      }
-      else if (ServerManagement.DEBUG == level)
-      {
-         log.debug(text);
-      }
-      else if (ServerManagement.TRACE == level)
-      {
-         log.trace(text);
-      }
-      else
-      {
-         // log everything else as INFO
-         log.info(text);
-      }
    }
 
    public synchronized boolean isStarted() throws Exception

@@ -163,57 +163,6 @@ public class ServerManagement
 
    }
 
-   /**
-    * This method make sure that all servers that have been implicitely spawned when as a side
-    * effect of create() and/or start() are killed. The method is important because a forked
-    * ant junit task won't exit if processes created by it are still active. If you run tests
-    * from ant, always call killSpawnedServers() in tearDown().
-    * <p/>
-    * The servers created directed invoking spawn() are not subject to destroySpawnedServers(); they
-    * need to be explicitely killed.
-    *
-    * @return a List<Integer> containing the indexes of the destroyed servers.
-    */
-   public static synchronized List destroySpawnedServers() throws Exception
-   {
-      log.info("################# Destroying spawned servers****");
-      List destroyed = new ArrayList();
-
-      for (Server server : servers)
-      {
-         destroyed.add(new Integer(server.getServerID()));
-
-         log.info("Killing spawned server " + server.getServerID());
-
-         try
-         {
-            server.kill();
-         }
-         catch (Throwable t)
-         {
-         }
-      }
-
-      return destroyed;
-   }
-
-   public static void log(int level, String text)
-   {
-      log(level, text, 0);
-   }
-
-   public static void log(int level, String text, int index)
-   {
-      try
-      {
-         servers.get(0).log(level, text);
-      }
-      catch (Exception e)
-      {
-         log.error("failed to forward the logging request to the remote server", e);
-      }
-   }
-
    public static void startServerPeer() throws Exception
    {
       startServerPeer(0);
