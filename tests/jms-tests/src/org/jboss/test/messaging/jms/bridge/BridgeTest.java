@@ -556,7 +556,7 @@ public class BridgeTest extends BridgeTestBase
             bridge.stop();
          }
          
-         removeAllMessages(sourceQueue.getQueueName(), true, 0);
+         removeAllMessages(sourceQueue.getQueueName(), true);
       }                  
    }
    

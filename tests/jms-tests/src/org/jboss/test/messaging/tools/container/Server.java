@@ -72,9 +72,8 @@ public interface Server extends Remote
    void ping() throws Exception;
 
    /**
-    * @param serverPeerID - if null, the jboss-service.xml value will be used.
     */
-   void startServerPeer(int serverPeerID) throws Exception;
+   void startServerPeer() throws Exception;
 
    void stopServerPeer() throws Exception;
 

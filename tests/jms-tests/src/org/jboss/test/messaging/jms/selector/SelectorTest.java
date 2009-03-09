@@ -450,7 +450,7 @@ public class SelectorTest extends JBMServerTestCase
       		conn.close();
       	}
 
-      	removeAllMessages(queue1.getQueueName(), true, 0);
+      	removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

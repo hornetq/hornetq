@@ -85,7 +85,7 @@ public class QueueReceiverTest extends JMSTestCase
          }
          Thread.sleep(2000);
          log.info("****** removing merssages");
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
          checkEmpty(queue1);
       }
    }

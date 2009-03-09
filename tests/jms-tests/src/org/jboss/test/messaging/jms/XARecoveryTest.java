@@ -809,8 +809,8 @@ public class XARecoveryTest extends JMSTestCase
             }
          } 
          Thread.sleep(1000);
-         removeAllMessages(queue2.getQueueName(), true, 0);
-         removeAllMessages(queue3.getQueueName(), true, 0);
+         removeAllMessages(queue2.getQueueName(), true);
+         removeAllMessages(queue3.getQueueName(), true);
       }
    }
    

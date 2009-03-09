@@ -97,11 +97,11 @@ public class LocalTestServer implements Server, Runnable
 
    // Constructors ---------------------------------------------------------------------------------
 
-    public LocalTestServer(int serverIndex)
+    public LocalTestServer()
    {
       super();
 
-      this.serverIndex = serverIndex;
+      this.serverIndex = 0;
    }
 
    // Server implementation ------------------------------------------------------------------------
@@ -184,7 +184,7 @@ public class LocalTestServer implements Server, Runnable
       return started;
    }
 
-   public synchronized void startServerPeer(int serverPeerID) throws Exception
+   public synchronized void startServerPeer() throws Exception
    {
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       getMessagingServer().start();

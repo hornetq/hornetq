@@ -62,7 +62,7 @@ public class JMSMessageIDHeaderTest extends MessageHeaderTestBase
       }
       finally
       {
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

@@ -121,7 +121,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
       try
       {
          //create any new server we need
-         servers.add(ServerManagement.create(0));
+         servers.add(ServerManagement.create());
 
          //start the servers if needed
          boolean started = false;
@@ -147,7 +147,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
             //                  }
          }
          //deploy the objects for this test
-         deployAdministeredObjects(0);
+         deployAdministeredObjects();
          lookUp();
       }
       catch (Exception e)
@@ -202,7 +202,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
    public void startServerPeer() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-      servers.get(0).startServerPeer(0);
+      servers.get(0).startServerPeer();
       //deployAdministeredObjects();
    }
 
@@ -224,15 +224,15 @@ public class JBMServerTestCase extends ProxyAssertSupport
       lookUp();
    }
 
-   protected void deployAdministeredObjects(int i) throws Exception
+   protected void deployAdministeredObjects() throws Exception
    {
-      createTopic("Topic1", i);
-      createTopic("Topic2", i);
-      createTopic("Topic3", i);
-      createQueue("Queue1", i);
-      createQueue("Queue2", i);
-      createQueue("Queue3", i);
-      createQueue("Queue4", i);
+      createTopic("Topic1");
+      createTopic("Topic2");
+      createTopic("Topic3");
+      createQueue("Queue1");
+      createQueue("Queue2");
+      createQueue("Queue3");
+      createQueue("Queue4");
    }
 
    private void lookUp()
@@ -297,11 +297,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
    }
 
-   protected void checkNoSubscriptions(Topic topic, int server) throws Exception
-   {
-
-   }
-
    protected void drainDestination(ConnectionFactory cf, Destination dest) throws Exception
    {
       Connection conn = null;
@@ -328,7 +323,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
    public InitialContext getInitialContext() throws Exception
    {
-      return getInitialContext(0);
+      return new InitialContext(ServerManagement.getJNDIEnvironment(0));
    }
 
    public ConnectionFactory getConnectionFactory() throws Exception
@@ -398,133 +393,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
       servers.get(i).destroyQueue(name, null);      
    }
 
-//   public void deployQueue(String name) throws Exception
-//   {
-//      for (int i = 0; i < getServerCount(); i++)
-//      {
-//         servers.get(i).deployQueue(name, null, i != 0);
-//      }
-//   }
-//
-//   public void deployQueue(String name, String jndiName) throws Exception
-//   {
-//      for (int i = 0; i < getServerCount(); i++)
-//      {
-//         servers.get(i).deployQueue(name, jndiName, i != 0);
-//      }
-//   }
-//
-//   public void deployQueue(String name, int server) throws Exception
-//   {
-//      servers.get(server).deployQueue(name, null, true);
-//
-//   }
-//
-//   public void deployQueue(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
-//   {
-//      for (int i = 0; i < getServerCount(); i++)
-//      {
-//         servers.get(i).deployQueue(name, null, fullSize, pageSize, downCacheSize, i != 0);
-//      }
-//   }
-//
-//   public void deployQueue(String name, String jndiName, int fullSize, int pageSize,
-//                           int downCacheSize, int serverIndex, boolean manageConfirmations) throws Exception
-//   {
-//      servers.get(serverIndex).deployQueue(name, jndiName, fullSize, pageSize, downCacheSize, manageConfirmations);
-//
-//   }
-//
-//   public void deployTopic(String name) throws Exception
-//   {
-//      for (int i = 0; i < getServerCount(); i++)
-//      {
-//         servers.get(i).deployTopic(name, null, i != 0);
-//      }
-//   }
-//
-//   public void deployTopic(String name, String jndiName) throws Exception
-//   {
-//      for (int i = 0; i < getServerCount(); i++)
-//      {
-//         servers.get(i).deployTopic(name, jndiName, i != 0);
-//      }
-//   }
-//
-//   public void deployTopic(String name, int server) throws Exception
-//   {
-//      servers.get(server).deployTopic(name, null, server != 0);
-//
-//   }
-//
-//   public void deployTopic(String name, int fullSize, int pageSize, int downCacheSize) throws Exception
-//   {
-//      for (int i = 0; i < getServerCount(); i++)
-//      {
-//         servers.get(i).deployTopic(name, null, fullSize, pageSize, downCacheSize, i != 0);
-//      }
-//   }
-//
-//   public void deployTopic(String name, String jndiName, int fullSize, int pageSize,
-//                           int downCacheSize, int serverIndex, boolean manageConfirmations) throws Exception
-//   {
-//      servers.get(serverIndex).deployTopic(name, jndiName, fullSize, pageSize, downCacheSize, manageConfirmations);
-//
-//   }
-//
-//   public void undeployQueue(String name) throws Exception
-//   {
-//      for (int i = 0; i < getServerCount(); i++)
-//      {
-//         try
-//         {
-//            servers.get(i).undeployDestination(true, name);
-//         }
-//         catch (Exception e)
-//         {
-//            log.info("did not undeploy " + name);
-//         }
-//      }
-//   }
-//
-//   public void undeployQueue(String name, int server) throws Exception
-//   {
-//      servers.get(server).undeployDestination(true, name);
-//
-//   }
-//
-//   public void undeployTopic(String name) throws Exception
-//   {
-//      for (int i = 0; i < getServerCount(); i++)
-//      {
-//         try
-//         {
-//            servers.get(i).undeployDestination(false, name);
-//         }
-//         catch (Exception e)
-//         {
-//            log.info("did not undeploy " + name);
-//         }
-//      }
-//   }
-//
-//   public void undeployTopic(String name, int server) throws Exception
-//   {
-//      servers.get(server).undeployDestination(false, name);
-//
-//   }
-//
-//   public static boolean destroyTopic(String name) throws Exception
-//   {
-//      return servers.get(0).undeployDestinationProgrammatically(false, name);
-//   }
-//
-//   public static boolean destroyQueue(String name) throws Exception
-//   {
-//      return servers.get(0).undeployDestinationProgrammatically(true, name);
-//   }
-//
-
    public boolean checkNoMessageData()
    {
       return false;
@@ -550,26 +418,9 @@ public class JBMServerTestCase extends ProxyAssertSupport
       return true;
    }
 
-   public boolean checkEmpty(Topic topic, int i)
-   {
-      return true;
-   }
-
    protected void removeAllMessages(String destName, boolean isQueue) throws Exception
    {
-      try
-      {
-         removeAllMessages(destName, isQueue, 0);
-      }
-      catch (Exception e)
-      {
-         log.info("did not clear messages for " + destName);
-      }
-   }
-
-   protected void removeAllMessages(String destName, boolean isQueue, int server) throws Exception
-   {
-      servers.get(server).removeAllMessages(destName, isQueue);
+      servers.get(0).removeAllMessages(destName, isQueue);
    }
 
    protected boolean assertRemainingMessages(int expected) throws Exception
@@ -662,11 +513,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
       servers.get(0).undeployConnectionFactory(objectName);
    }
 
-   public static void undeployConnectionFactory(int server, String objectName) throws Exception
-   {
-      servers.get(server).undeployConnectionFactory(objectName);
-   }
-
    protected List<String> listAllSubscribersForTopic(String s) throws Exception
    {
       return servers.get(0).listAllSubscribersForTopic(s);
@@ -675,11 +521,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
    protected Integer getMessageCountForQueue(String s) throws Exception
    {
       return servers.get(0).getMessageCountForQueue(s);
-   }
-
-   protected Integer getMessageCountForQueue(String s, int server) throws Exception
-   {
-      return servers.get(server).getMessageCountForQueue(s);
    }
 
    protected Set<Role> getSecurityConfig() throws Exception
@@ -696,59 +537,4 @@ public class JBMServerTestCase extends ProxyAssertSupport
    {
       servers.get(0).configureSecurityForDestination(destination, isQueue, roles);
    }
-
-   protected void kill(int i) throws Exception
-   {
-      log.info("Attempting to kill server " + i);
-
-      if (i == 0)
-      {
-         //Cannot kill server 0 if there are any other servers since it has the rmi registry in it
-         for (int j = 1; j < servers.size(); j++)
-         {
-            if (servers.get(j) != null)
-            {
-               throw new IllegalStateException("Cannot kill server 0, since server[" + j + "] still exists");
-            }
-         }
-      }
-
-      if (i >= servers.size())
-      {
-         log.info("server " + i + " has not been created or has already been killed, so it cannot be killed");
-      }
-      else
-      {
-         Server server = servers.get(i);
-         log.info("invoking kill() on server " + i);
-         try
-         {
-            server.kill();
-         }
-         catch (Throwable t)
-         {
-            // This is likely to throw an exception since the server dies before the response is received
-         }
-
-         log.info("Waiting for server to die");
-
-         try
-         {
-            while (true)
-            {
-               server.ping();
-               log.debug("server " + i + " still alive ...");
-               Thread.sleep(100);
-            }
-         }
-         catch (Throwable e)
-         {
-            //Ok
-         }
-
-         Thread.sleep(300);
-
-         log.info("server " + i + " killed and dead");
-      }
-   }   
 }

@@ -865,7 +865,7 @@ public class SecurityTest extends JMSTestCase
             if (dest instanceof Queue)
             {
                String destName = ((Queue)dest).getQueueName();
-               removeAllMessages(destName, true, 0);
+               removeAllMessages(destName, true);
             }
          }
 

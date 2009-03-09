@@ -116,7 +116,7 @@ public class MessageConsumerTest extends JMSTestCase
             conn.close();
          }
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -199,7 +199,7 @@ public class MessageConsumerTest extends JMSTestCase
             conn.close();
          }
 
-         removeAllMessages(queue2.getQueueName(), true, 0);
+         removeAllMessages(queue2.getQueueName(), true);
       }
    }
 
@@ -776,7 +776,7 @@ public class MessageConsumerTest extends JMSTestCase
          }
       }
 
-      removeAllMessages(queue1.getQueueName(), true, 0);
+      removeAllMessages(queue1.getQueueName(), true);
    }
 
 
@@ -899,7 +899,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          checkEmpty(queue1);
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -954,7 +954,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          checkEmpty(queue1);
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -1008,7 +1008,7 @@ public class MessageConsumerTest extends JMSTestCase
 
          checkEmpty(queue1);
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -1066,7 +1066,7 @@ public class MessageConsumerTest extends JMSTestCase
          //This last step is important - there shouldn't be any more messages to receive
          checkEmpty(queue1);
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -1129,7 +1129,7 @@ public class MessageConsumerTest extends JMSTestCase
          //This last step is important - there shouldn't be any more messages to receive
          checkEmpty(queue1);
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -1185,7 +1185,7 @@ public class MessageConsumerTest extends JMSTestCase
          //This last step is important - there shouldn't be any more messages to receive
          checkEmpty(queue1);
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -1248,7 +1248,7 @@ public class MessageConsumerTest extends JMSTestCase
          //This last step is important - there shouldn't be any more messages to receive
          checkEmpty(queue1);
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -1307,7 +1307,7 @@ public class MessageConsumerTest extends JMSTestCase
          {
             conn.close();
          }
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -2624,7 +2624,7 @@ public class MessageConsumerTest extends JMSTestCase
          {
             consumerConnection.close();
          }
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -2738,7 +2738,7 @@ public class MessageConsumerTest extends JMSTestCase
          {
             consumerConnection.close();
          }
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -3664,7 +3664,7 @@ public class MessageConsumerTest extends JMSTestCase
          {
             consumerConnection.close();
          }
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -3900,7 +3900,7 @@ public class MessageConsumerTest extends JMSTestCase
          {
             conn.close();
          }
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -3949,7 +3949,7 @@ public class MessageConsumerTest extends JMSTestCase
             conn.close();
          }
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

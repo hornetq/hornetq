@@ -90,7 +90,7 @@ public class TransactedSessionTest extends JMSTestCase
       	{
       		conn.close();
       	}
-      	removeAllMessages(queue1.getQueueName(), true, 0);
+      	removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -679,7 +679,7 @@ public class TransactedSessionTest extends JMSTestCase
          {
             conn.close();
          }
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
 
    }
@@ -799,7 +799,7 @@ public class TransactedSessionTest extends JMSTestCase
          {
             conn.close();
          }
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -1034,7 +1034,7 @@ public class TransactedSessionTest extends JMSTestCase
          {
             conn.close();
          }
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
 
    }

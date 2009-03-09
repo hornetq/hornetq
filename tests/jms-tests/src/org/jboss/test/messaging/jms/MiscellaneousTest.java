@@ -53,7 +53,7 @@ public class MiscellaneousTest extends JMSTestCase
 
    protected void tearDown() throws Exception
    {
-      removeAllMessages(queue1.getQueueName(), true, 0);
+      removeAllMessages(queue1.getQueueName(), true);
       
       super.tearDown();
    }
@@ -94,7 +94,7 @@ public class MiscellaneousTest extends JMSTestCase
       		conn.close();
       	}
       	
-      	removeAllMessages(queue1.getQueueName(), true, 0);
+      	removeAllMessages(queue1.getQueueName(), true);
       }
    }
 
@@ -483,7 +483,7 @@ public class MiscellaneousTest extends JMSTestCase
             conn.close();
          }
          
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

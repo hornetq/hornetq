@@ -151,7 +151,7 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
             c.close();
          }
 
-         removeAllMessages(queue1.getQueueName(), true, 0);
+         removeAllMessages(queue1.getQueueName(), true);
       }
    }
 

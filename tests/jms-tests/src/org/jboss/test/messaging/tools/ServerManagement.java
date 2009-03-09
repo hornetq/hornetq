@@ -66,10 +66,10 @@ public class ServerManagement
     * Makes sure that a "hollow" TestServer (either local or remote, depending on the nature of the
     * test), exists and it's ready to be started.
     */
-   public static synchronized Server create(int i) throws Exception
+   public static synchronized Server create() throws Exception
    {
-      log.info("Attempting to create local server " + i);
-      return new LocalTestServer(i);
+      log.info("Attempting to create local server ");
+      return new LocalTestServer();
    }
 
    public static void start(int i, String config, boolean clearDatabase) throws Exception
@@ -93,18 +93,9 @@ public class ServerManagement
 
       s.start(config, attrOverrides, clearDatabase, startMessagingServer);
 */
-      log.info("server " + i + " started");
-   }
+      throw new IllegalStateException("Method to start a server is not implemented");
 
-
-   public static synchronized boolean isStarted(int i) throws Exception
-   {
-      return servers.get(i).isStarted();
-   }
-
-   public static void stop() throws Exception
-   {
-      servers.get(0).stop();
+      //log.info("server " + i + " started");
    }
 
    public static synchronized void kill(int i) throws Exception
@@ -161,31 +152,6 @@ public class ServerManagement
          log.info("server " + i + " killed and dead");
       }
 
-   }
-
-   public static void startServerPeer() throws Exception
-   {
-      startServerPeer(0);
-   }
-
-   /**
-    * @param serverPeerID            - if null, the jboss-service.xml value will be used.
-    */
-   public static void startServerPeer(int serverPeerID) throws Exception
-   {
-
-      servers.get(0).startServerPeer(serverPeerID);
-   }
-
-   public static void stopServerPeer() throws Exception
-   {
-
-      servers.get(0).stopServerPeer();
-   }
-
-   public static Hashtable getJNDIEnvironment()
-   {
-      return getJNDIEnvironment(0);
    }
 
    public static Hashtable getJNDIEnvironment(int serverIndex)
