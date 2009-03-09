@@ -40,7 +40,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 /**
  * Safeguards for previously detected TCK failures.
@@ -59,8 +58,6 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
 
    // Attributes ----------------------------------------------------
    protected static JBossConnectionFactory cf;
-
-   protected ServiceAttributeOverrides overrides;
 
    private static final String ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY = "StrictTCKConnectionFactory";
 

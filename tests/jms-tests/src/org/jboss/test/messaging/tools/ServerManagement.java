@@ -21,21 +21,16 @@
 */
 package org.jboss.test.messaging.tools;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.rmi.Naming;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.container.LocalTestServer;
 import org.jboss.test.messaging.tools.container.RMITestServer;
-import org.jboss.test.messaging.tools.container.RemoteInitialContextFactory;
 import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 
 
 /**
@@ -51,8 +46,6 @@ import org.jboss.test.messaging.tools.container.ServiceAttributeOverrides;
 public class ServerManagement
 {
    // Constants -----------------------------------------------------
-
-   public static final int MAX_SERVER_COUNT = 10;
 
    // logging levels used by the remote client to forward log output on a remote server
    public static int FATAL = 0;
@@ -71,62 +64,19 @@ public class ServerManagement
 
    private static List<Server> servers = new ArrayList<Server>();
 
-   public static boolean isLocal()
-   {
-      return !"true".equals(System.getProperty("remote"));
-   }
-
-   public static boolean isRemote()
-   {
-      return !isLocal();
-   }
-
-   public static boolean isClustered()
-   {
-      return "true".equals(System.getProperty("test.clustered"));
-   }
-
-
-   /**
-    * May return null if the corresponding server is not initialized.
-    */
-   public synchronized static Server getServer(int i)
-   {
-      return servers.get(i);
-   }
-
-
    /**
     * Makes sure that a "hollow" TestServer (either local or remote, depending on the nature of the
     * test), exists and it's ready to be started.
     */
    public static synchronized Server create(int i) throws Exception
    {
-      if (isLocal())
-      {
-         log.info("Attempting to create local server " + i);
-         return new LocalTestServer(i);
-      }
-      else
-      {
-         //Need to spawn a new server - we DON'T use start-rmi-server any more, so we know if the servers[i] is null
-         //the server is not there - killing a server sets servers[i] to null
-         log.info("Attempting to create remote server " + i);
-         return ServerManagement.spawn(i);
-      }
-
+      log.info("Attempting to create local server " + i);
+      return new LocalTestServer(i);
    }
 
    public static void start(int i, String config, boolean clearDatabase) throws Exception
    {
-      start(i, config, null, clearDatabase);
-   }
-
-   public static void start(int i, String config,
-                            ServiceAttributeOverrides attrOverrides,
-                            boolean clearDatabase) throws Exception
-   {
-      start(i, config, attrOverrides, clearDatabase, true);
+      start(i, config, clearDatabase, true);
    }
 
    /**
@@ -134,7 +84,6 @@ public class ServerManagement
     * operational (the service container and the server peer are created and started).
     */
    public static void start(int i, String config,
-                             ServiceAttributeOverrides attrOverrides,
                              boolean clearDatabase,
                              boolean startMessagingServer) throws Exception
    {
@@ -157,19 +106,7 @@ public class ServerManagement
 
    public static void stop() throws Exception
    {
-      stop(0);
-   }
-
-   /**
-    * The method stops the local or remote server, bringing it to a "hollow" state. A stopped
-    * server is identical with a server that has just been created, but not started.
-    *
-    * @return true if the server was effectively stopped, or false if the server was alreayd stopped
-    *         when the method was invoked.
-    */
-   public static boolean stop(int i) throws Exception
-   {
-      return servers.get(i).stop();
+      servers.get(0).stop();
    }
 
    public static synchronized void kill(int i) throws Exception
@@ -262,266 +199,6 @@ public class ServerManagement
       return destroyed;
    }
 
-   /**
-    * For a local test, is a noop, but for a remote test, the method call spawns a new VM
-    */
-   private static synchronized Server spawn(final int i) throws Exception
-   {
-      if (isLocal())
-      {
-         return null;
-      }
-
-      StringBuffer sb = new StringBuffer();
-
-      sb.append("java").append(' ');
-
-      sb.append("-Xmx512M").append(' ');
-
-      String remoteDebugIndex = "";//System.getProperty("test.remote.debug.index");
-      if (remoteDebugIndex != null)                             
-      {
-         //sb.append("-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006 ");
-      }
-
-
-      String objectStoreDir = System.getProperty("objectstore.dir");
-
-      if (objectStoreDir != null)
-      {
-         sb.append("-Dobjectstore.dir=" + objectStoreDir).append(" ");
-      }
-
-      String moduleOutput = System.getProperty("module.output");
-      if (moduleOutput == null)
-      {
-         moduleOutput = "./output";
-      }
-
-      sb.append("-Dmodule.output=").append(moduleOutput).append(' ');
-
-      String bindAddress = System.getProperty("test.bind.address");
-      if (bindAddress == null)
-      {
-         bindAddress = "localhost";
-      }
-
-      sb.append("-Dtest.bind.address=").append(bindAddress).append(' ');
-
-      //Use test.bind.address for the jgroups.bind_addr
-
-      String jgroupsBindAddr = bindAddress;
-
-      sb.append("-D").append("jgroups.bind_addr").append("=")
-              .append(jgroupsBindAddr).append(' ');
-
-      String database = System.getProperty("test.database");
-      if (database != null)
-      {
-         sb.append("-Dtest.database=").append(database).append(' ');
-      }
-
-      String serialization = System.getProperty("test.serialization");
-      if (serialization != null)
-      {
-         sb.append("-Dtest.serialization=").append(serialization).append(' ');
-      }
-
-      sb.append("-Dtest.server.index=").append(i).append(' ');
-
-      String clustered = System.getProperty("test.clustered");
-      if (clustered != null && clustered.trim().length() == 0)
-      {
-         clustered = null;
-      }
-      if (clustered != null)
-      {
-         sb.append("-Dtest.clustered=").append(clustered).append(' ');
-      }
-
-      String remoting = System.getProperty("test.remoting");
-      if (remoting != null)
-      {
-         sb.append("-Dtest.remoting=").append(remoting).append(' ');
-      }
-
-      String groupName = System.getProperty("jboss.messaging.groupname");
-      log.info("******* GROUP NAME IS " + groupName);
-      if (groupName != null)
-      {
-         sb.append("-Djboss.messaging.groupname=").append(groupName).append(' ');
-      }
-
-      String dataChannelUDPPort = System.getProperty("jboss.messaging.datachanneludpport");
-      log.info("*** data UDP port is " + dataChannelUDPPort);
-      if (dataChannelUDPPort != null)
-      {
-         sb.append("-Djboss.messaging.datachanneludpport=").append(dataChannelUDPPort).append(' ');
-      }
-
-      String controlChannelUDPPort = System.getProperty("jboss.messaging.controlchanneludpport");
-      log.info("*** control UDP port is " + controlChannelUDPPort);
-      if (controlChannelUDPPort != null)
-      {
-         sb.append("-Djboss.messaging.controlchanneludpport=").append(controlChannelUDPPort).append(' ');
-      }
-
-      String dataChannelUDPAddress = System.getProperty("jboss.messaging.datachanneludpaddress");
-      log.info("*** data UDP address is " + dataChannelUDPAddress);
-      if (dataChannelUDPAddress != null)
-      {
-         sb.append("-Djboss.messaging.datachanneludpaddress=").append(dataChannelUDPAddress).append(' ');
-      }
-
-      String controlChannelUDPAddress = System.getProperty("jboss.messaging.controlchanneludpaddress");
-      log.info("*** control UDP address is " + controlChannelUDPAddress);
-      if (controlChannelUDPAddress != null)
-      {
-         sb.append("-Djboss.messaging.controlchanneludpaddress=").append(controlChannelUDPAddress).append(' ');
-      }
-
-      sb.append("-Djava.naming.factory.initial=org.jboss.test.messaging.tools.container.InVMInitialContextFactory  ");
-      String ipttl = System.getProperty("jboss.messaging.ipttl");
-      log.info("*** ip_ttl is " + ipttl);
-      if (ipttl != null)
-      {
-         sb.append("-Djboss.messaging.ipttl=").append(ipttl).append(' ');
-      }
-      
-      String testLogfileSuffix = System.getProperty("test.logfile.suffix");
-
-      if (testLogfileSuffix == null)
-      {
-         testLogfileSuffix = "undefined-test-type";
-      }
-      else
-      {
-         int pos;
-         if ((pos = testLogfileSuffix.lastIndexOf("client")) != -1)
-         {
-            testLogfileSuffix = testLogfileSuffix.substring(0, pos) + "server";
-         }
-
-         // We need to add the i even in the non manageConfirmations case since we can have multiple
-         // non manageConfirmations servers
-         testLogfileSuffix += i;
-      }
-
-      sb.append("-Dtest.logfile.suffix=").append(testLogfileSuffix).append(' ');
-
-      String classPath = System.getProperty("java.class.path");
-
-      if (System.getProperty("os.name").equals("Linux"))
-      {
-         sb.append("-cp").append(" ").append(classPath).append(" ");
-      }
-      else
-      {
-         sb.append("-cp").append(" \"").append(classPath).append("\" ");
-      }
-
-      // As there is a problem with Multicast and JGroups on Linux (in certain JDKs)
-      // The stack introduced by multiplexer might fail under Linux if we don't have this
-      if (System.getProperty("os.name").equals("Linux"))
-      {
-         sb.append(" -Djava.net.preferIPv4Stack=true ");
-      }
-
-      sb.append("org.jboss.test.messaging.tools.container.RMITestServer");
-
-      String commandLine = sb.toString();
-
-      Process process = Runtime.getRuntime().exec(commandLine);
-
-      log.trace("process: " + process);
-
-      // if you ever need to debug the spawing process, turn this flag to true:
-
-      String parameterVerbose = "true";//System.getProperty("test.spawn.verbose");
-      final boolean verbose = parameterVerbose != null && parameterVerbose.equals("true");
-
-      final BufferedReader rs = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      final BufferedReader re = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               String line;
-
-               while ((line = rs.readLine()) != null)
-               {
-                  if (verbose)
-                  {
-                     System.out.println("SERVER " + i + " STDOUT: " + line);
-                  }
-               }
-            }
-            catch (Exception e)
-            {
-               log.error("exception", e);
-            }
-         }
-
-      }, "Server " + i + " STDOUT reader thread").start();
-
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               String line;
-
-               while ((line = re.readLine()) != null)
-               {
-                  if (verbose)
-                  {
-                     System.out.println("SERVER " + i + " STDERR: " + line);
-                  }
-               }
-            }
-            catch (Exception e)
-            {
-               log.error("exception", e);
-            }
-         }
-
-      }, "Server " + i + " STDERR reader thread").start();
-
-      // put the invoking thread on wait until the server is actually up and running and bound
-      // in the RMI registry
-
-      log.info("spawned server " + i + ", waiting for it to come online");
-
-      Server s = acquireRemote(500, i, true);
-
-      log.info("Server contacted");
-
-      if (s == null)
-      {
-         log.error("Cannot contact newly spawned server " + i + ", most likely the attempt failed, timing out ...");
-         throw new Exception("Cannot contact newly spawned server " + i + ", most likely the attempt failed, timing out ...");
-      }
-
-      return s;
-   }
-
-
-   public static KernelDeployment deploy(String resource) throws Throwable
-   {
-
-      return servers.get(0).deploy(resource);
-   }
-
-   public static void undeploy(KernelDeployment on) throws Throwable
-   {
-
-      servers.get(0).undeploy(on);
-   }
-
    public static void log(int level, String text)
    {
       log(level, text, 0);
@@ -529,23 +206,13 @@ public class ServerManagement
 
    public static void log(int level, String text, int index)
    {
-      if (isRemote())
+      try
       {
-         if (servers.get(index) == null)
-         {
-            log.debug("The remote server " + index + " has not been created yet " +
-                    "so this log won't make it to the server!");
-            return;
-         }
-
-         try
-         {
-            servers.get(index).log(level, text);
-         }
-         catch (Exception e)
-         {
-            log.error("failed to forward the logging request to the remote server", e);
-         }
+         servers.get(0).log(level, text);
+      }
+      catch (Exception e)
+      {
+         log.error("failed to forward the logging request to the remote server", e);
       }
    }
 
@@ -588,14 +255,7 @@ public class ServerManagement
 
    public static Hashtable getJNDIEnvironment(int serverIndex)
    {
-      if (isLocal())
-      {
-         return InVMInitialContextFactory.getJNDIEnvironment(serverIndex);
-      }
-      else
-      {
-         return RemoteInitialContextFactory.getJNDIEnvironment(serverIndex);
-      }
+      return InVMInitialContextFactory.getJNDIEnvironment(serverIndex);
    }
 
    public static Server acquireRemote(int initialRetries, int index, boolean quiet)

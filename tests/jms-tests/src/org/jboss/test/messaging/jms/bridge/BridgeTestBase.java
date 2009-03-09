@@ -45,7 +45,6 @@ import org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.ServiceContainer;
 
 /**
  * 
@@ -60,8 +59,6 @@ import org.jboss.test.messaging.tools.container.ServiceContainer;
 public class BridgeTestBase extends JBMServerTestCase
 {
    private static final Logger log = Logger.getLogger(BridgeTestBase.class);
-   
-   protected static ServiceContainer sc;
    
    protected static ConnectionFactoryFactory cff0, cff1;
    

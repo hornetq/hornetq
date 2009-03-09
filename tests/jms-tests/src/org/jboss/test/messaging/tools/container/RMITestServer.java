@@ -35,7 +35,6 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.security.Role;
@@ -182,21 +181,6 @@ public class RMITestServer extends UnicastRemoteObject implements Server
    public void ping() throws Exception
    {
       //noop - nothing to be done
-   }
-
-   public KernelDeployment deploy(String mbeanConfiguration) throws Exception
-   {
-      return server.deploy(mbeanConfiguration);
-   }
-
-   public void undeploy(KernelDeployment deployment) throws Exception
-   {
-      server.undeploy(deployment);
-   }
-   
-   public KernelDeployment deployXML(String name, String xml) throws Exception
-   {
-      return server.deployXML(name, xml);
    }
 
    public void log(int level, String text) throws Exception

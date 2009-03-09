@@ -40,7 +40,6 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
-import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
@@ -186,66 +185,6 @@ public class LocalTestServer implements Server, Runnable
    public synchronized void kill() throws Exception
    {
       stop();
-   }
-
-   public KernelDeployment deploy(String resourceName) throws Exception
-   {
-      try
-      {
-         return bootstrap.deploy(resourceName);
-      }
-      catch (Throwable e)
-      {
-         // RMI can only throw Exception or its subclasses... This is case we ever implement Server as remote again
-         if (e instanceof Exception)
-         {
-            throw (Exception)e;
-         }
-         else
-         {
-            throw new Exception(e.toString(), e);
-         }
-      }
-   }
-
-   public KernelDeployment deployXML(String name, String xml) throws Exception
-   {
-      try
-      {
-         return bootstrap.deploy(name, xml);
-      }
-      catch (Throwable e)
-      {
-         // RMI can only throw Exception or its subclasses... This is case we ever implement Server as remote again
-         if (e instanceof Exception)
-         {
-            throw (Exception)e;
-         }
-         else
-         {
-            throw new Exception(e.toString(), e);
-         }
-      }
-   }
-
-   public void undeploy(KernelDeployment deployment) throws Exception
-   {
-      try
-      {
-         bootstrap.undeploy(deployment);
-      }
-      catch (Throwable e)
-      {
-         // RMI can only throw Exception or its subclasses... This is case we ever implement Server as remote again
-         if (e instanceof Exception)
-         {
-            throw (Exception)e;
-         }
-         else
-         {
-            throw new Exception(e.toString(), e);
-         }
-      }
    }
 
    public void log(int level, String text)

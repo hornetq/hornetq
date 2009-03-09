@@ -67,11 +67,6 @@ public class SecurityAssociationTest extends JMSTestCase
     */
    public void testSecurityAssociation() throws Exception
    {
-      if(ServerManagement.isRemote())
-      {
-         fail("This test is supposed to be run in a local configuration");
-      }
-
       Principal nabopolassar = new SimplePrincipal("nabopolassar");
       Set principals = new HashSet();
       principals.add(nabopolassar);
@@ -140,11 +135,6 @@ public class SecurityAssociationTest extends JMSTestCase
     */
    public void testGuestAuthorizedSend() throws Exception
    {
-      if(ServerManagement.isRemote())
-      {
-         fail("This test is supposed to be run in a local configuration");
-      }
-
       MockJBossSecurityManager sm =
          (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
       assertTrue(sm.isSimulateJBossJaasSecurityManager());
@@ -216,11 +206,6 @@ public class SecurityAssociationTest extends JMSTestCase
     */
    public void testAuthorizedSend() throws Exception
    {
-      if(ServerManagement.isRemote())
-      {
-         fail("This test is supposed to be run in a local configuration");
-      }
-
       MockJBossSecurityManager sm =
          (MockJBossSecurityManager)ic.lookup(MockJBossSecurityManager.TEST_SECURITY_DOMAIN);
       assertTrue(sm.isSimulateJBossJaasSecurityManager());
@@ -289,11 +274,6 @@ public class SecurityAssociationTest extends JMSTestCase
 
    protected void setUp() throws Exception
    {
-      if (ServerManagement.isRemote())
-      {
-         fail("This test is supposed to be run in a local configuration");
-      }
-
       super.setUp();
    
       final String secureQueueConfig =

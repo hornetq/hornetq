@@ -28,7 +28,6 @@ import java.util.Set;
 
 import javax.naming.InitialContext;
 
-import org.jboss.kernel.spi.deployment.KernelDeployment;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.JMSServerManager;
@@ -71,14 +70,6 @@ public interface Server extends Remote
     * For that we have this simple ping we can use to verify if the server still alive or not.
     */
    void ping() throws Exception;
-
-   
-   /** Deploys a XML on the MicroContainer */
-   KernelDeployment deployXML(String name, String xml) throws Exception;
-   
-   KernelDeployment deploy(String resource) throws Exception;
-
-   void undeploy(KernelDeployment undeploy) throws Exception;
 
    /**
     * Only for remote use!

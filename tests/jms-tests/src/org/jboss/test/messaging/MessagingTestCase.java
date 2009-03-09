@@ -22,7 +22,6 @@
 package org.jboss.test.messaging;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.util.ProxyAssertSupport;
 
 /**
@@ -61,41 +60,20 @@ public class MessagingTestCase extends ProxyAssertSupport
            
       String banner =
          "####################################################### Start " +
-         (isRemote() ? "REMOTE" : "IN-VM") + " test: " + getName();
+         " test: " + getName();
 
       log.info(banner);
-
-      if (isRemote())
-      {
-         // log the test start in the remote log, this will make hunting through logs so much easier
-         ServerManagement.log(ServerManagement.INFO, banner);
-      }
    }
 
    protected void tearDown() throws Exception
    {
       String banner =
          "####################################################### Stop " + 
-         (isRemote() ? "REMOTE" : "IN-VM") + " test: " + getName();
+         " test: " + getName();
 
-      log.info(banner);
-      
-      if (isRemote())
-      {
-         // log the test stop in the remote log, this will make hunting through logs so much easier
-         ServerManagement.log(ServerManagement.INFO, banner);
-      }
+      log.info(banner);      
    }
    
-   /**
-    * @return true if this test is ran in "remote" mode, i.e. the server side of the test runs in a
-    *         different VM than this one (that is running the client side)
-    */
-   protected boolean isRemote()
-   {
-      return ServerManagement.isRemote();
-   }
-
    // Private -------------------------------------------------------
    
    // Inner classes -------------------------------------------------   

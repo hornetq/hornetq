@@ -113,77 +113,48 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
       String banner =
          "####################################################### Start " +
-         (isRemote() ? "REMOTE" : "IN-VM") + " test: " + getName();
+         " test: " + getName();
 
       log.info(banner);
 
-    
+
       try
       {
          //create any new server we need
-         for (int i = servers.size(); i < getServerCount(); i++)
-         {
-            servers.add(ServerManagement.create(i));
-         }
-         //kill off any servers we dont need anymore
-         for (int i = getServerCount(); i < servers.size();)
-         {
-            try
-            {
+         servers.add(ServerManagement.create(0));
 
-               servers.get(i).stop();
-            }
-            catch (Exception e)
-            {
-               //ignore, as it meay be remote and stopped anyway
-            }
-            servers.remove(i);
-         }
          //start the servers if needed
-         for (int i = 0; i < servers.size(); i++)
+         boolean started = false;
+         try
          {
-            boolean started = false;
-            try
-            {
-               started = servers.get(i).isStarted();
-            }
-            catch (Exception e)
-            {
-               //ignore, incase its a remote server
-            }
-            if (!started)
-            {
-               if(i > getServerCount())
-               {
-                  servers.get(i).stop();
-               }
-               else
-               {
-//                  try
-//                  {
-                     servers.get(i).start(getContainerConfig(), getConfiguration(), i == 0);
-//                  }
-//                  catch (Exception e)
-//                  {
-//                     //if we are remote we will need recreating if we get here
-//                     servers.set(i, ServerManagement.create(i));
-//                     servers.get(i).start(getContainerConfig(), getConfiguration(), getClearDatabase() && i == 0);
-//                  }
-               }
-               //deploy the objects for this test
-               deployAdministeredObjects(i);
-            }
+            started = servers.get(0).isStarted();
          }
+         catch (Exception e)
+         {
+            //ignore, incase its a remote server
+         }
+         if (!started)
+         {
+            //                  try
+            //                  {
+            servers.get(0).start(getContainerConfig(), getConfiguration(), true);
+            //                  }
+            //                  catch (Exception e)
+            //                  {
+            //                     //if we are remote we will need recreating if we get here
+            //                     servers.set(i, ServerManagement.create(i));
+            //                     servers.get(i).start(getContainerConfig(), getConfiguration(), getClearDatabase() && i == 0);
+            //                  }
+         }
+         //deploy the objects for this test
+         deployAdministeredObjects(0);
          lookUp();
       }
       catch (Exception e)
       {
          //if we get here we need to clean up for the next test
          e.printStackTrace();
-         for (int i = 0; i < getServerCount(); i++)
-         {
-            servers.get(i).stop();
-         }
+         servers.get(0).stop();
          throw e;
       }
       //empty the queues
@@ -197,25 +168,11 @@ public class JBMServerTestCase extends ProxyAssertSupport
       checkNoSubscriptions(topic1);
       checkNoSubscriptions(topic2);
       checkNoSubscriptions(topic3);
-
-      if (isRemote())
-      {
-         // log the test start in the remote log, this will make hunting through logs so much easier
-         ServerManagement.log(ServerManagement.INFO, banner);
-      }           
    }
 
-   protected boolean isRemote()
-   {
-      return ServerManagement.isRemote();
-   }
-   
    public void stop() throws Exception
    {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).stop();
-      }
+      servers.get(0).stop();
    }
 
    public String getContextFactory()
@@ -226,38 +183,26 @@ public class JBMServerTestCase extends ProxyAssertSupport
    public void start() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).start(getContainerConfig(), getConfiguration(), i != 0);
-      }
+         servers.get(0).start(getContainerConfig(), getConfiguration(), false);
       //deployAdministeredObjects();
    }
    
    public void startNoDelete() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).start(getContainerConfig(), getConfiguration(), false);
-      }
+      servers.get(0).start(getContainerConfig(), getConfiguration(), false);
       //deployAdministeredObjects();
    }
 
    public void stopServerPeer() throws Exception
    {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).stopServerPeer();
-      }
+      servers.get(0).stopServerPeer();
    }
 
    public void startServerPeer() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).startServerPeer(i);
-      }
+      servers.get(0).startServerPeer(0);
       //deployAdministeredObjects();
    }
 
@@ -381,11 +326,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
       }
    }
 
-   public int getServerCount()
-   {
-      return 1;
-   }
-
    public InitialContext getInitialContext() throws Exception
    {
       return getInitialContext(0);
@@ -424,34 +364,22 @@ public class JBMServerTestCase extends ProxyAssertSupport
    
    public void createQueue(String name) throws Exception
    {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).createQueue(name, null);
-      }
+      servers.get(0).createQueue(name, null);
    }
    
    public void createTopic(String name) throws Exception
    {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).createTopic(name, null);
-      }
+      servers.get(0).createTopic(name, null);
    }
    
    public void destroyQueue(String name) throws Exception
    {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).destroyQueue(name, null);
-      }
+      servers.get(0).destroyQueue(name, null);
    }
    
    public void destroyTopic(String name) throws Exception
    {
-      for (int i = 0; i < getServerCount(); i++)
-      {
-         servers.get(i).destroyTopic(name, null);
-      }
+      servers.get(0).destroyTopic(name, null);
    }
    
    
@@ -629,16 +557,13 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
    protected void removeAllMessages(String destName, boolean isQueue) throws Exception
    {
-      for (int i = 0; i < getServerCount(); i++)
+      try
       {
-         try
-         {
-            removeAllMessages(destName, isQueue, i);
-         }
-         catch (Exception e)
-         {
-            log.info("did not clear messages for " + destName);
-         }
+         removeAllMessages(destName, isQueue, 0);
+      }
+      catch (Exception e)
+      {
+         log.info("did not clear messages for " + destName);
       }
    }
 

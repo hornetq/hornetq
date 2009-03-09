@@ -31,7 +31,6 @@ import javax.jms.TextMessage;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
-import javax.naming.InitialContext;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
@@ -41,7 +40,6 @@ import javax.transaction.xa.Xid;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import org.jboss.test.messaging.JBMServerTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 
 /**
  * 
@@ -491,18 +489,7 @@ public class JMSXDeliveryCountTest extends JBMServerTestCase
       XAConnection xaConn = null;
       
       Connection conn = null;
-      TransactionManager mgr;
-      if (ServerManagement.isRemote())
-      {
-         mgr = new TransactionManagerImple();
-      }
-      else
-      {
-         InitialContext localIc = getInitialContext();
-
-         mgr =  new TransactionManagerImple();
-         //getTransactionManager();
-      }
+      TransactionManager mgr =  new TransactionManagerImple();
       
       Transaction toResume = null;
       
