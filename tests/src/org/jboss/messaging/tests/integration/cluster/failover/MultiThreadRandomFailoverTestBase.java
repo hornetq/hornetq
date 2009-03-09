@@ -1384,6 +1384,9 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
                catch (Throwable t)
                {
                   throwable = t;
+                  // Case a failure happened here, it should print the Thread dump
+                  // Sending it to System.out, as it would show on the Tests report
+                  System.out.println(threadDump());
 
                   log.error("Failed to run test", t);
                }

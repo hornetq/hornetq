@@ -29,9 +29,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.transaction.xa.Xid;
@@ -83,6 +86,34 @@ public class UnitTestCase extends TestCase
    private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/jbm-unit-test";
 
    // Static --------------------------------------------------------
+   
+   public static String threadDump()
+   {
+      StringWriter str = new StringWriter();
+      PrintWriter out = new PrintWriter(str);
+      
+      
+      Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
+
+      out.println("*******************************************************************************");
+      out.println("Complete Thread dump");
+
+      for (Map.Entry<Thread, StackTraceElement[]> el : stackTrace.entrySet())
+      {
+         out.println("===============================================================================");
+         out.println("Thread " + el.getKey() + " name = " + el.getKey().getName() + " group = " + el.getKey().getThreadGroup());
+         out.println();
+         for (StackTraceElement traceEl : el.getValue())
+         {
+            out.println(traceEl);
+         }
+      }
+      out.println("*******************************************************************************");
+      
+      
+      return str.toString();
+   }
+   
 
    public static String dumpBytes(byte[] bytes)
    {

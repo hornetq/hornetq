@@ -213,32 +213,43 @@ public class ClusterTestBase extends ServiceTestBase
 
    protected void addConsumer(int consumerID, int node, String queueName, String filterVal) throws Exception
    {
-      if (consumers[consumerID] != null)
+      try
       {
-         throw new IllegalArgumentException("Already a consumer at " + node);
+         if (consumers[consumerID] != null)
+         {
+            throw new IllegalArgumentException("Already a consumer at " + node);
+         }
+   
+         ClientSessionFactory sf = this.sfs[node];
+   
+         if (sf == null)
+         {
+            throw new IllegalArgumentException("No sf at " + node);
+         }
+   
+         ClientSession session = sf.createSession(false, true, true);
+   
+         String filterString = null;
+   
+         if (filterVal != null)
+         {
+            filterString = FILTER_PROP.toString() + "='" + filterVal + "'";
+         }
+   
+         ClientConsumer consumer = session.createConsumer(queueName, filterString);
+   
+         session.start();
+   
+         consumers[consumerID] = new ConsumerHolder(consumer, session);
       }
-
-      ClientSessionFactory sf = this.sfs[node];
-
-      if (sf == null)
+      catch (Exception e)
       {
-         throw new IllegalArgumentException("No sf at " + node);
+         // Proxy the faliure and print a dump into System.out, so it is captured by Hudson reports
+         e.printStackTrace();
+         System.out.println(threadDump());
+         
+         throw e;
       }
-
-      ClientSession session = sf.createSession(false, true, true);
-
-      String filterString = null;
-
-      if (filterVal != null)
-      {
-         filterString = FILTER_PROP.toString() + "='" + filterVal + "'";
-      }
-
-      ClientConsumer consumer = session.createConsumer(queueName, filterString);
-
-      session.start();
-
-      consumers[consumerID] = new ConsumerHolder(consumer, session);
    }
 
    protected void removeConsumer(int consumerID) throws Exception
