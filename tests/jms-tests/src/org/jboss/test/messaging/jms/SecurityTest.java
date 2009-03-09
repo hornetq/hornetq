@@ -612,20 +612,15 @@ public class SecurityTest extends JMSTestCase
          assertTrue(canReadDestination(conn, queue2));
          assertTrue(canWriteDestination(conn, queue2, false));
 
-         // Now set to null
-
-         ServerManagement.configureSecurityForDestination("Queue2", null);
-
-         // Should fall back to the default config
          HashSet<Role> lockedConf = new HashSet<Role>();
          lockedConf.add(new Role("alien", true, true, true));
 
-         setSecurityConfigOnManager(true, "Queue2", lockedConf);
+         setSecurityConfigOnManager("Queue2", true, lockedConf);
 
          assertFalse(canReadDestination(conn, queue2));
          assertFalse(canWriteDestination(conn, queue2, false));
 
-         setSecurityConfigOnManager(true, "Queue2", defConfig);
+         setSecurityConfigOnManager("Queue2", true, defConfig);
 
          assertTrue(canReadDestination(conn, queue2));
          assertTrue(canWriteDestination(conn, queue2, false));

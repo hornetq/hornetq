@@ -21,7 +21,6 @@
 */
 package org.jboss.test.messaging.tools;
 
-import java.rmi.Naming;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.List;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.tools.container.InVMInitialContextFactory;
 import org.jboss.test.messaging.tools.container.LocalTestServer;
-import org.jboss.test.messaging.tools.container.RMITestServer;
 import org.jboss.test.messaging.tools.container.Server;
 
 
@@ -236,18 +234,6 @@ public class ServerManagement
       servers.get(0).stopServerPeer();
    }
 
-   public static void configureSecurityForDestination(String destName, String config)
-           throws Exception
-   {
-      configureSecurityForDestination(0, destName, config);
-   }
-
-   public static void configureSecurityForDestination(int serverID, String destName, String config)
-           throws Exception
-   {
-      //servers.get(0).configureSecurityForDestination(destName, config);
-   }
-
    public static Hashtable getJNDIEnvironment()
    {
       return getJNDIEnvironment(0);
@@ -256,57 +242,6 @@ public class ServerManagement
    public static Hashtable getJNDIEnvironment(int serverIndex)
    {
       return InVMInitialContextFactory.getJNDIEnvironment(serverIndex);
-   }
-
-   public static Server acquireRemote(int initialRetries, int index, boolean quiet)
-   {
-      String name =
-              "//localhost:" + RMITestServer.DEFAULT_REGISTRY_PORT + "/" +
-                      RMITestServer.RMI_SERVER_PREFIX + index;
-
-      Server s = null;
-      int retries = initialRetries;
-
-      while (s == null && retries > 0)
-      {
-         int attempt = initialRetries - retries + 1;
-         try
-         {
-            String msg = "trying to connect to the remote RMI server " + index +
-                    (attempt == 1 ? "" : ", attempt " + attempt);
-
-            if (quiet)
-            {
-               log.debug(msg);
-            }
-            else
-            {
-               log.info(msg);
-            }
-
-            s = (Server) Naming.lookup(name);
-
-            log.debug("connected to remote server " + index);
-         }
-         catch (Exception e)
-         {
-            log.debug("failed to get the RMI server stub, attempt " +
-                    (initialRetries - retries + 1), e);
-
-            try
-            {
-               Thread.sleep(500);
-            }
-            catch (InterruptedException e2)
-            {
-               // OK
-            }
-
-            retries--;
-         }
-      }
-
-      return s;
    }
 
    // Attributes ----------------------------------------------------
@@ -321,25 +256,6 @@ public class ServerManagement
 
    // Private -------------------------------------------------------
 
-
-//   private static JmsServer getJmsServer(int id)
-//   {
-//      try
-//      {
-//         if (isLocal())
-//         {
-//            return servers.get(id).getJmsServer();
-//         }
-//         else
-//         {
-//            return null;
-//         }
-//      }
-//      catch (Exception e)
-//      {
-//         throw new RuntimeException();
-//      }
-//   }
    // Inner classes -------------------------------------------------
 
 }

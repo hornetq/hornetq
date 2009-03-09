@@ -692,9 +692,9 @@ public class JBMServerTestCase extends ProxyAssertSupport
       servers.get(0).setSecurityConfig(defConfig);
    }
 
-   protected void setSecurityConfigOnManager(boolean b, String s, HashSet<Role> lockedConf) throws Exception
+   protected void setSecurityConfigOnManager(String destination, boolean isQueue, Set<Role> roles) throws Exception
    {
-      servers.get(0).configureSecurityForDestination(s, b, lockedConf);
+      servers.get(0).configureSecurityForDestination(destination, isQueue, roles);
    }
 
    protected void kill(int i) throws Exception

@@ -33,10 +33,10 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.security.auth.Subject;
 
+import org.jboss.messaging.core.security.Role;
 import org.jboss.security.SecurityAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.test.messaging.jms.JMSTestCase;
-import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.test.messaging.tools.container.MockJBossSecurityManager;
 
 /**
@@ -276,12 +276,11 @@ public class SecurityAssociationTest extends JMSTestCase
    {
       super.setUp();
    
-      final String secureQueueConfig =
-         "<security>" +
-            "<role name=\"publisher\" read=\"true\" write=\"true\" create=\"false\"/>" +
-            "<role name=\"guest\" read=\"true\" write=\"true\" create=\"false\"/>" +
-         "</security>";
-      ServerManagement.configureSecurityForDestination("Queue2", secureQueueConfig);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(new Role("publisher", true, true, false));
+      roles.add(new Role("guest", true, true, false));
+      
+      setSecurityConfigOnManager("Queue2", true, roles);
 
       // make MockSecurityManager simulate JaasSecurityManager behavior. This is the whole point
       // of this test, to catch JBoss AS integreation failure before the integration test suite
@@ -305,7 +304,7 @@ public class SecurityAssociationTest extends JMSTestCase
 
       sm.setSimulateJBossJaasSecurityManager(false);
 
-      ServerManagement.configureSecurityForDestination("Queue2", null);
+      setSecurityConfigOnManager("Queue2", true, new HashSet<Role>());
    }
 
    // Private --------------------------------------------------------------------------------------

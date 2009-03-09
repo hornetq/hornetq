@@ -193,10 +193,6 @@ public interface Server extends Remote
 
    void undeployConnectionFactory(String objectName) throws Exception;
 
-   /**
-    * @param config - sending 'config' as a String and not as an org.w3c.dom.Element to avoid
-    *        NotSerializableExceptions that show up when running tests on JDK 1.4.
-    */
    void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception;
 
    MessagingServer getMessagingServer() throws Exception;
