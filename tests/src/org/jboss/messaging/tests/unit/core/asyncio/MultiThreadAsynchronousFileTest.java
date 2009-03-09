@@ -44,10 +44,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   
  *  @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>.
  *   */
-public class MultiThreadWriteNativeTest extends AIOTestBase
+public class MultiThreadAsynchronousFileTest extends AIOTestBase
 {
 
-   static Logger log = Logger.getLogger(MultiThreadWriteNativeTest.class);
+   static Logger log = Logger.getLogger(MultiThreadAsynchronousFileTest.class);
 
    AtomicInteger position = new AtomicInteger(0);
 

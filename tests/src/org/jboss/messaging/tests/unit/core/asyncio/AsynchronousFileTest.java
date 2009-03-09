@@ -45,10 +45,10 @@ import java.util.concurrent.CountDownLatch;
  *   III - Add -Djava.library.path=<your project place>/native/src/.libs
  *  @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>.
  *   */
-public class SingleThreadWriteNativeTest extends AIOTestBase
+public class AsynchronousFileTest extends AIOTestBase
 {
 
-   private static final Logger log = Logger.getLogger(SingleThreadWriteNativeTest.class);
+   private static final Logger log = Logger.getLogger(AsynchronousFileTest.class);
 
    private static CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8").newEncoder();
 
