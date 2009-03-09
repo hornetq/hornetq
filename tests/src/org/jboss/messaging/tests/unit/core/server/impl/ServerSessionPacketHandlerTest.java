@@ -76,7 +76,7 @@ public class ServerSessionPacketHandlerTest extends UnitTestCase
 //
 //   public void testCreateQueue() throws Exception
 //   {
-//      SessionCreateQueueMessage request = new SessionCreateQueueMessage(queueName, queueName, filterString, true, true);
+//      CreateQueueMessage request = new CreateQueueMessage(queueName, queueName, filterString, true, true);
 //      session.createQueue(queueName, queueName, filterString, true, true);
 //      long responseTargetID = 1212;
 //      request.setResponseTargetID(responseTargetID);

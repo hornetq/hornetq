@@ -43,4 +43,6 @@ public interface ClusterManager extends MessagingComponent
    Set<ClusterConnection> getClusterConnections();
 
    ClusterConnection getClusterConnection(SimpleString name);
+   
+   void activate();
 }

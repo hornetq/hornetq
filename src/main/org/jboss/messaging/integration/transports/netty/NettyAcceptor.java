@@ -166,8 +166,8 @@ public class NettyAcceptor implements Acceptor
                                                            configuration);
 
       this.useInvm = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_INVM_PROP_NAME,
-                                                           TransportConstants.DEFAULT_USE_INVM,
-                                                           configuration);
+                                                            TransportConstants.DEFAULT_USE_INVM,
+                                                            configuration);
       this.host = ConfigurationHelper.getStringProperty(TransportConstants.HOST_PROP_NAME,
                                                         TransportConstants.DEFAULT_HOST,
                                                         configuration);
@@ -218,7 +218,7 @@ public class NettyAcceptor implements Acceptor
       bossExecutor = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
       workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-worker-threads"));
 
-      if(useInvm)
+      if (useInvm)
       {
          channelFactory = new DefaultLocalServerChannelFactory();
       }
@@ -296,7 +296,7 @@ public class NettyAcceptor implements Acceptor
       for (String h : hosts)
       {
          SocketAddress address;
-         if(useInvm)
+         if (useInvm)
          {
             address = new LocalAddress(h);
             System.out.println("address = " + address);
@@ -312,7 +312,7 @@ public class NettyAcceptor implements Acceptor
 
    public synchronized void stop()
    {
-      
+
       if (channelFactory == null)
       {
          return;
@@ -389,7 +389,7 @@ public class NettyAcceptor implements Acceptor
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
-         
+
          listener.connectionCreated(connection);
       }
 
@@ -397,12 +397,12 @@ public class NettyAcceptor implements Acceptor
       {
          if (connections.remove(connectionID) != null)
          {
-            //Execute on different thread to avoid deadlocks
+            // Execute on different thread to avoid deadlocks
             new Thread()
             {
                public void run()
                {
-                  listener.connectionDestroyed(connectionID);               
+                  listener.connectionDestroyed(connectionID);
                }
             }.start();
          }
@@ -410,7 +410,15 @@ public class NettyAcceptor implements Acceptor
 
       public void connectionException(final Object connectionID, final MessagingException me)
       {
-         listener.connectionException(connectionID, me);
+         // Execute on different thread to avoid deadlocks
+         new Thread()
+         {
+            public void run()
+            {
+               listener.connectionException(connectionID, me);
+            }
+         }.start();
+
       }
    }
 }

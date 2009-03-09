@@ -157,7 +157,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         //log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
+        // log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -165,7 +165,7 @@ public class ClusterTestBase extends ServiceTestBase
             return;
          }
 
-         Thread.sleep(10);
+         Thread.sleep(100);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
 
@@ -396,7 +396,7 @@ public class ClusterTestBase extends ServiceTestBase
 
             if (message != null)
             {
-               log.info("Consumer " + consumerIDs[i] + " received message " + message.getProperty(COUNT_PROP));
+               //log.info("Consumer " + consumerIDs[i] + " received message " + message.getProperty(COUNT_PROP));
             }
          }
          while (message != null);
@@ -515,13 +515,13 @@ public class ClusterTestBase extends ServiceTestBase
          ClientMessage message;
          do
          {
-            message = holder.consumer.receive(200);
+            message = holder.consumer.receive(1000);
 
             if (message != null)
             {
                int count = (Integer)message.getProperty(COUNT_PROP);
 
-               //log.info("consumer " + consumerIDs[i] + " received message " + count);
+              // log.info("consumer " + consumerIDs[i] + " received message " + count);
 
                assertFalse(counts.contains(count));
 
@@ -1057,7 +1057,7 @@ public class ClusterTestBase extends ServiceTestBase
    }
 
    protected void stopServers(int... nodes) throws Exception
-   {
+   {      
       for (int i = 0; i < nodes.length; i++)
       {
          if (services[nodes[i]].isStarted())

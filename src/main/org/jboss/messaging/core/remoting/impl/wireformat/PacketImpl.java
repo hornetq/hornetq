@@ -67,6 +67,11 @@ public class PacketImpl implements Packet
    public static final byte REATTACH_SESSION_RESP = 33;
 
    public static final byte REPLICATE_CREATESESSION = 34;
+   
+   public static final byte CREATE_QUEUE = 35;
+
+   public static final byte DELETE_QUEUE = 36;
+
 
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
@@ -82,10 +87,6 @@ public class PacketImpl implements Packet
    public static final byte SESS_QUEUEQUERY = 45;
 
    public static final byte SESS_QUEUEQUERY_RESP = 46;
-
-   public static final byte SESS_CREATE_QUEUE = 47;
-
-   public static final byte SESS_DELETE_QUEUE = 48;
 
    public static final byte SESS_BINDINGQUERY = 49;
 
@@ -145,11 +146,17 @@ public class PacketImpl implements Packet
    
    //Replication
 
-   public static final byte SESS_REPLICATE_DELIVERY = 91;
+   public static final byte SESS_REPLICATE_DELIVERY = 90;
    
-   public static final byte REPLICATE_UPDATE_CONNECTORS = 92;
+   public static final byte REPLICATE_ADD_REMOTE_QUEUE_BINDING = 91;
    
-   public static final byte REPLICATE_NOTIFICATION = 93;
+   public static final byte REPLICATE_REMOVE_REMOTE_QUEUE_BINDING = 92;
+   
+   public static final byte REPLICATE_ADD_REMOTE_CONSUMER = 93;
+   
+   public static final byte REPLICATE_REMOVE_REMOTE_CONSUMER = 94;
+   
+   public static final byte REPLICATE_ACKNOWLEDGE = 95;
    
    // Static --------------------------------------------------------
 

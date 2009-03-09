@@ -336,7 +336,7 @@ public class TypedProperties
          properties.clear();
       }
    }
-
+   
    // Private ------------------------------------------------------------------------------------
 
    private void checkCreateProperties()

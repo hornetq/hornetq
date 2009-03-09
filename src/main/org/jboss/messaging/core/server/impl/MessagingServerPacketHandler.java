@@ -13,22 +13,33 @@
 package org.jboss.messaging.core.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATE_CREATESESSION;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATE_UPDATE_CONNECTORS;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateClusterConnectionUpdate;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteBindingAddedMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteBindingRemovedMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerAddedMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerRemovedMessage;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.cluster.ClusterConnection;
+import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
 
 /**
  * A packet handler for all packets that need to be handled at the server level
@@ -90,14 +101,55 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
             break;
          }
-         case REPLICATE_UPDATE_CONNECTORS:
+         case CREATE_QUEUE:
          {
-            ReplicateClusterConnectionUpdate request = (ReplicateClusterConnectionUpdate)packet;
-            
-            handleClusterConnectionUpdate(request);
-            
+            // Create queue can also be fielded here in the case of a replicated store and forward queue creation
+
+            CreateQueueMessage request = (CreateQueueMessage)packet;
+
+            handleCreateQueue(request);
+
             break;
-            
+         }
+         case PacketImpl.REPLICATE_ADD_REMOTE_QUEUE_BINDING:
+         {
+            ReplicateRemoteBindingAddedMessage request = (ReplicateRemoteBindingAddedMessage)packet;
+
+            handleAddRemoteQueueBinding(request);
+
+            break;
+         }
+         case PacketImpl.REPLICATE_REMOVE_REMOTE_QUEUE_BINDING:
+         {
+            ReplicateRemoteBindingRemovedMessage request = (ReplicateRemoteBindingRemovedMessage)packet;
+
+            handleRemoveRemoteQueueBinding(request);
+
+            break;
+         }
+         case PacketImpl.REPLICATE_ADD_REMOTE_CONSUMER:
+         {
+            ReplicateRemoteConsumerAddedMessage request = (ReplicateRemoteConsumerAddedMessage)packet;
+
+            handleAddRemoteConsumer(request);
+
+            break;
+         }
+         case PacketImpl.REPLICATE_REMOVE_REMOTE_CONSUMER:
+         {
+            ReplicateRemoteConsumerRemovedMessage request = (ReplicateRemoteConsumerRemovedMessage)packet;
+
+            handleRemoveRemoteConsumer(request);
+
+            break;
+         }
+         case PacketImpl.REPLICATE_ACKNOWLEDGE:
+         {
+            ReplicateAcknowledgeMessage request = (ReplicateAcknowledgeMessage)packet;
+
+            handleReplicateAcknowledge(request);
+
+            break;
          }
          default:
          {
@@ -105,7 +157,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
          }
       }
    }
-   
+
    private void doHandleCreateSession(final CreateSessionMessage request, final long oppositeChannelID)
    {
       Packet response;
@@ -138,7 +190,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-      
+
       channel1.send(response);
    }
 
@@ -179,41 +231,28 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
    private void handleReplicateCreateSession(final ReplicateCreateSessionMessage request)
    {
-      Packet response;
-
       try
       {
-         response = server.replicateCreateSession(request.getName(),
-                                                  request.getReplicatedSessionChannelID(),
-                                                  request.getOriginalSessionChannelID(),
-                                                  request.getUsername(),
-                                                  request.getPassword(),
-                                                  request.getMinLargeMessageSize(),
-                                                  request.getVersion(),
-                                                  connection,
-                                                  request.isAutoCommitSends(),
-                                                  request.isAutoCommitAcks(),
-                                                  request.isPreAcknowledge(),
-                                                  request.isXA(),
-                                                  request.getWindowSize());
+         server.replicateCreateSession(request.getName(),
+                                       request.getReplicatedSessionChannelID(),
+                                       request.getOriginalSessionChannelID(),
+                                       request.getUsername(),
+                                       request.getPassword(),
+                                       request.getMinLargeMessageSize(),
+                                       request.getVersion(),
+                                       connection,
+                                       request.isAutoCommitSends(),
+                                       request.isAutoCommitAcks(),
+                                       request.isPreAcknowledge(),
+                                       request.isXA(),
+                                       request.getWindowSize());
       }
       catch (Exception e)
       {
          log.error("Failed to handle replicate create session", e);
-
-         if (e instanceof MessagingException)
-         {
-            response = new MessagingExceptionMessage((MessagingException)e);
-         }
-         else
-         {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-         }
       }
-      
-      channel1.send(response);
    }
-   
+
    private void handleReattachSession(final ReattachSessionMessage request)
    {
       Packet response;
@@ -235,15 +274,15 @@ public class MessagingServerPacketHandler implements ChannelHandler
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-      
+
       channel1.send(response);
    }
-   
-   private void handleClusterConnectionUpdate(final ReplicateClusterConnectionUpdate request)
+
+   private void handleCreateQueue(final CreateQueueMessage request)
    {
       try
       {
-         server.updateClusterConnectionConnectors(request.getClusterConnectionName(), request.getConnectors());
+         server.getServerManagement().createQueue(request.getAddress().toString(), request.getQueueName().toString());
       }
       catch (Exception e)
       {
@@ -251,4 +290,108 @@ public class MessagingServerPacketHandler implements ChannelHandler
       }
    }
 
+   private void handleAddRemoteQueueBinding(final ReplicateRemoteBindingAddedMessage request)
+   {
+      ClusterConnection cc = server.getClusterManager().getClusterConnection(request.getClusterConnectionName());
+
+      if (cc == null)
+      {
+         throw new IllegalStateException("No cluster connection found with name " + request.getClusterConnectionName());
+      }
+
+      try
+      {
+         cc.handleReplicatedAddBinding(request.getAddress(),
+                                       request.getUniqueName(),
+                                       request.getRoutingName(),
+                                       request.getRemoteQueueID(),
+                                       request.getFilterString(),
+                                       request.getSfQueueName(),
+                                       request.getDistance());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle add remote queue binding", e);
+      }
+   }
+
+   private void handleRemoveRemoteQueueBinding(final ReplicateRemoteBindingRemovedMessage request)
+   {
+      try
+      {
+         Binding binding = server.getPostOffice().removeBinding(request.getUniqueName());
+
+         if (binding == null)
+         {
+            throw new IllegalStateException("Cannot find binding to remove " + request.getUniqueName());
+         }
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle remove remote queue binding", e);
+      }
+   }
+
+   private void handleAddRemoteConsumer(final ReplicateRemoteConsumerAddedMessage request)
+   {
+      RemoteQueueBinding binding = (RemoteQueueBinding)server.getPostOffice()
+                                                             .getBinding(request.getUniqueBindingName());
+
+      if (binding == null)
+      {
+         throw new IllegalStateException("Cannot find binding to remove " + request.getUniqueBindingName());
+      }
+
+      try
+      {
+         binding.addConsumer(request.getFilterString());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle add remote consumer", e);
+      }
+   }
+
+   private void handleRemoveRemoteConsumer(final ReplicateRemoteConsumerRemovedMessage request)
+   {
+      RemoteQueueBinding binding = (RemoteQueueBinding)server.getPostOffice()
+                                                             .getBinding(request.getUniqueBindingName());
+
+      if (binding == null)
+      {
+         throw new IllegalStateException("Cannot find binding to remove " + request.getUniqueBindingName());
+      }
+
+      try
+      {
+         binding.removeConsumer(request.getFilterString());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle remove remote consumer", e);
+      }
+   }
+
+   private void handleReplicateAcknowledge(final ReplicateAcknowledgeMessage request)
+   {
+      Binding binding = server.getPostOffice().getBinding(request.getUniqueName());
+
+      if (binding == null)
+      {
+         throw new IllegalStateException("Cannot find binding " + request.getUniqueName());
+      }
+
+      try
+      {
+         Queue queue = (Queue)binding.getBindable();
+         
+         MessageReference ref = queue.removeFirstReference(request.getMessageID());
+         
+         queue.acknowledge(ref);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle remove remote consumer", e);
+      }
+   }
 }

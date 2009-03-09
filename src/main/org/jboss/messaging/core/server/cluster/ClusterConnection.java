@@ -20,14 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.server.cluster;
 
-import java.util.List;
-
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -42,6 +37,14 @@ import org.jboss.messaging.utils.SimpleString;
 public interface ClusterConnection extends MessagingComponent
 {
    SimpleString getName();
+
+   void handleReplicatedAddBinding(SimpleString address,
+                                   SimpleString uniqueName,
+                                   SimpleString routingName,
+                                   int queueID,
+                                   SimpleString filterString,
+                                   SimpleString queueName,                 
+                                   int distance) throws Exception;
    
-   void handleReplicatedUpdateConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception;
+   void activate();
 }

@@ -47,6 +47,7 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
@@ -94,8 +95,12 @@ public class ClusterManagerImpl implements ClusterManager
    private final QueueFactory queueFactory;
 
    private final UUID nodeUUID;
+   
+   private Channel replicatingChannel;
 
    private volatile boolean started;
+   
+   private boolean backup;
 
    public ClusterManagerImpl(final org.jboss.messaging.utils.ExecutorFactory executorFactory,
                              final StorageManager storageManager,
@@ -104,7 +109,9 @@ public class ClusterManagerImpl implements ClusterManager
                              final ManagementService managementService,
                              final Configuration configuration,
                              final QueueFactory queueFactory,
-                             final UUID nodeUUID)
+                             final UUID nodeUUID,
+                             final Channel replicatingChannel,
+                             final boolean backup)
    {
       this.executorFactory = executorFactory;
 
@@ -121,6 +128,10 @@ public class ClusterManagerImpl implements ClusterManager
       this.queueFactory = queueFactory;
 
       this.nodeUUID = nodeUUID;
+      
+      this.replicatingChannel = replicatingChannel;
+      
+      this.backup = backup;
    }
 
    public synchronized void start() throws Exception
@@ -212,6 +223,28 @@ public class ClusterManagerImpl implements ClusterManager
    {
       return clusters.get(name.toString()); 
    }
+   
+   public synchronized void activate()
+   {
+      for (BroadcastGroup bg: broadcastGroups.values())
+      {
+         bg.activate();
+      }
+      
+      for (Bridge bridge: bridges.values())
+      {
+         bridge.activate();
+      }
+      
+      for (ClusterConnection cc: clusters.values())
+      {
+         cc.activate();
+      }
+      
+      replicatingChannel = null;
+      
+      backup = false;
+   }
 
    private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
    {
@@ -229,7 +262,8 @@ public class ClusterManagerImpl implements ClusterManager
                                                         config.getName(),
                                                         config.getLocalBindPort(),
                                                         groupAddress,
-                                                        config.getGroupPort());
+                                                        config.getGroupPort(),
+                                                        !backup);
 
       for (Pair<String, String> connectorInfo : config.getConnectorInfos())
       {
@@ -383,6 +417,8 @@ public class ClusterManagerImpl implements ClusterManager
          Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
                                                                                                                               backupConnector);
 
+         log.info("deploying bridge, backup is " + backup);
+         
          bridge = new BridgeImpl(nodeUUID,
                                  new SimpleString(config.getName()),
                                  queue,
@@ -399,7 +435,9 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.isUseDuplicateDetection(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
-                                 managementService.getClusterPassword());
+                                 managementService.getClusterPassword(),
+                                 replicatingChannel,
+                                 !backup);
 
          bridges.put(config.getName(), bridge);
 
@@ -481,8 +519,8 @@ public class ClusterManagerImpl implements ClusterManager
                                                        connectors,
                                                        config.getMaxHops(),
                                                        nodeUUID,
-                                                       null,
-                                                       false);
+                                                       replicatingChannel,
+                                                       backup);
       }
       else
       {
@@ -511,8 +549,8 @@ public class ClusterManagerImpl implements ClusterManager
                                                        dg,
                                                        config.getMaxHops(),
                                                        nodeUUID,
-                                                       null,
-                                                       false);
+                                                       replicatingChannel,
+                                                       backup);
       }
 
       managementService.registerCluster(clusterConnection, config);

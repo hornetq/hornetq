@@ -47,4 +47,6 @@ public interface BroadcastGroup extends MessagingComponent
    int size();
 
    void broadcastConnectors() throws Exception;
+   
+   void activate();
 }

@@ -31,8 +31,8 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_CREATE_QUEUE;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_DELETE_QUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.DELETE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_EXPIRED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
@@ -106,7 +106,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
@@ -678,12 +678,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             packet = new SessionQueueQueryResponseMessage();
             break;
          }
-         case SESS_CREATE_QUEUE:
+         case CREATE_QUEUE:
          {
-            packet = new SessionCreateQueueMessage();
+            packet = new CreateQueueMessage();
             break;
          }
-         case SESS_DELETE_QUEUE:
+         case DELETE_QUEUE:
          {
             packet = new SessionDeleteQueueMessage();
             break;
@@ -888,6 +888,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private CommandConfirmationHandler commandConfirmationHandler;
 
       private int responseActionCount;
+      
+      private boolean playedResponsesOnFailure;
 
       public void setCommandConfirmationHandler(final CommandConfirmationHandler handler)
       {
@@ -1158,6 +1160,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       public void executeOutstandingDelayedResults()
       {
+         //Execute on different thread to avoid deadlock
+         
+         new Thread()
+         {
+            public void run()
+            {
+               doExecuteOutstandingDelayedResults();
+            }
+         }.start();
+      }
+      
+      private void doExecuteOutstandingDelayedResults()
+      {
          synchronized (replicationLock)
          {
             // Execute all the response actions now
@@ -1328,8 +1343,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
       }
       
-      private boolean playedResponsesOnFailure;
-
       // This will never get called concurrently by more than one thread
 
       // TODO it's not ideal synchronizing this since it forms a contention point with replication
@@ -1454,8 +1467,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             if (packet.isResponse())
             {
                response = packet;
+               
                confirm(packet);
+               
                lock.lock();
+               
                try
                {
                   sendCondition.signal();

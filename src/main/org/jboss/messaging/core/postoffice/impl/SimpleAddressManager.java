@@ -86,7 +86,6 @@ public class SimpleAddressManager implements AddressManager
 
    public void clear()
    {
-    //  destinations.clear();
       nameMap.clear();
       mappings.clear();
    }

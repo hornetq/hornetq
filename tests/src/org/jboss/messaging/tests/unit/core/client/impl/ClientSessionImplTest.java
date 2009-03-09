@@ -61,7 +61,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -107,7 +107,7 @@ public class ClientSessionImplTest extends UnitTestCase
       boolean durable = randomBoolean();
       boolean temporary = randomBoolean();
 
-      SessionCreateQueueMessage request = new SessionCreateQueueMessage(address, queueName, null, durable, false);
+      CreateQueueMessage request = new CreateQueueMessage(address, queueName, null, durable, false);
 
       // SimpleString version
       expect(channel.sendBlocking(request)).andReturn(new NullResponseMessage());
@@ -128,7 +128,7 @@ public class ClientSessionImplTest extends UnitTestCase
       verifyMocks();
 
       // with temporary
-      request = new SessionCreateQueueMessage(address, queueName, null, durable, temporary);
+      request = new CreateQueueMessage(address, queueName, null, durable, temporary);
 
       resetMocks();
 
@@ -142,7 +142,7 @@ public class ClientSessionImplTest extends UnitTestCase
       // full methods
       resetMocks();
 
-      request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temporary);
+      request = new CreateQueueMessage(address, queueName, filterString, durable, temporary);
 
       expect(channel.sendBlocking(request)).andReturn(new NullResponseMessage());
       replayMocks();
@@ -154,7 +154,7 @@ public class ClientSessionImplTest extends UnitTestCase
       // full methods with String
       resetMocks();
 
-      request = new SessionCreateQueueMessage(address, queueName, filterString, durable, temporary);
+      request = new CreateQueueMessage(address, queueName, filterString, durable, temporary);
 
       expect(channel.sendBlocking(request)).andReturn(new NullResponseMessage());
       replayMocks();
@@ -596,7 +596,7 @@ public class ClientSessionImplTest extends UnitTestCase
    // CommandManager cm = EasyMock.createStrictMock(CommandManager.class);
    // ConnectionRegistry reg = EasyMock.createStrictMock(ConnectionRegistry.class);
    //
-   // SessionCreateQueueMessage request = new SessionCreateQueueMessage(new SimpleString("blah"), new
+   // CreateQueueMessage request = new CreateQueueMessage(new SimpleString("blah"), new
    // SimpleString("hagshg"),
    // new SimpleString("jhjhs"), false, false);
    //

@@ -85,26 +85,24 @@ public interface MessagingServer extends MessagingComponent
                                               boolean xa,
                                               int sendWindowSize) throws Exception;
 
-   CreateSessionResponseMessage replicateCreateSession(String name,
-                                                       long channelID,
-                                                       long originalSessionID,
-                                                       String username,
-                                                       String password,
-                                                       int minLargeMessageSize,
-                                                       int incrementingVersion,
-                                                       RemotingConnection remotingConnection,
-                                                       boolean autoCommitSends,
-                                                       boolean autoCommitAcks,
-                                                       boolean preAcknowledge,
-                                                       boolean xa,
-                                                       int sendWindowSize) throws Exception;
-   
-   void updateClusterConnectionConnectors(SimpleString clusterConnectionName, List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception;
-   
+   void replicateCreateSession(String name,
+                               long channelID,
+                               long originalSessionID,
+                               String username,
+                               String password,
+                               int minLargeMessageSize,
+                               int incrementingVersion,
+                               RemotingConnection remotingConnection,
+                               boolean autoCommitSends,
+                               boolean autoCommitAcks,
+                               boolean preAcknowledge,
+                               boolean xa,
+                               int sendWindowSize) throws Exception;
+
    void removeSession(String name) throws Exception;
-   
+
    ServerSession getSession(String name);
-   
+
    Set<ServerSession> getSessions();
 
    boolean isStarted();
@@ -122,14 +120,14 @@ public interface MessagingServer extends MessagingComponent
    ResourceManager getResourceManager();
 
    List<ServerSession> getSessions(String connectionID);
-   
+
    ClusterManager getClusterManager();
-   
+
    QueueFactory getQueueFactory();
-   
+
    SimpleString getNodeID();
-   
+
    UUID getUUID();
-   
+
    Channel getReplicatingChannel();
 }

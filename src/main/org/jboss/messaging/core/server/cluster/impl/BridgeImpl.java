@@ -64,8 +64,11 @@ import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.postoffice.BindingType;
+import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateAcknowledgeMessage;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
@@ -147,6 +150,10 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private final String clusterPassword;
 
+   private Channel replicatingChannel;
+   
+   private boolean activated;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -169,7 +176,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final boolean useDuplicateDetection,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
-                     final String clusterPassword) throws Exception
+                     final String clusterPassword,
+                     final Channel replicatingChannel,
+                     final boolean activated) throws Exception
    {
       this(nodeUUID,
            name,
@@ -188,7 +197,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
            managementAddress,
            managementNotificationAddress,
            clusterPassword,
-           null);
+           null,
+           replicatingChannel,
+           activated);
    }
 
    public BridgeImpl(final UUID nodeUUID,
@@ -208,7 +219,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
                      final String clusterPassword,
-                     final MessageFlowRecord flowRecord) throws Exception
+                     final MessageFlowRecord flowRecord,
+                     final Channel replicatingChannel,
+                     final boolean activated) throws Exception
    {
       this.nodeUUID = nodeUUID;
 
@@ -254,6 +267,10 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       this.clusterPassword = clusterPassword;
 
       this.flowRecord = flowRecord;
+
+      this.replicatingChannel = replicatingChannel;
+      
+      this.activated = activated;            
    }
 
    public synchronized void start() throws Exception
@@ -265,7 +282,10 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       started = true;
 
-      executor.execute(new CreateObjectsRunnable());
+      if (activated)
+      {
+         executor.execute(new CreateObjectsRunnable());
+      }
    }
 
    private void cancelRefs() throws Exception
@@ -304,88 +324,213 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       this.waitForRunnablesToComplete();
    }
 
-   private class StopRunnable implements Runnable
+   public boolean isStarted()
    {
-      public void run()
+      return started;
+   }
+
+   public synchronized void activate()
+   {
+      replicatingChannel = null;
+      
+      activated = true;
+
+      executor.execute(new CreateObjectsRunnable());
+   }
+
+   public SimpleString getName()
+   {
+      return name;
+   }
+
+   public Queue getQueue()
+   {
+      return queue;
+   }
+
+   public Filter getFilter()
+   {
+      return filter;
+   }
+
+   public SimpleString getForwardingAddress()
+   {
+      return forwardingAddress;
+   }
+
+   public Transformer getTransformer()
+   {
+      return transformer;
+   }
+
+   public boolean isUseDuplicateDetection()
+   {
+      return useDuplicateDetection;
+   }
+
+   // For testing only
+   public RemotingConnection getForwardingConnection()
+   {
+      if (session == null)
       {
-         try
-         {
-            synchronized (BridgeImpl.this)
-            {
-               if (!started)
-               {
-                  return;
-               }
-
-               if (session != null)
-               {
-                  session.close();
-               }
-
-               started = false;
-
-               active = false;
-
-            }
-
-            queue.removeConsumer(BridgeImpl.this);
-
-            cancelRefs();
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to stop bridge", e);
-         }
+         return null;
+      }
+      else
+      {
+         return ((ClientSessionImpl)session).getConnection();
       }
    }
 
-   private class FailRunnable implements Runnable
+   // SendAcknowledgementHandler implementation ---------------------
+
+   public void sendAcknowledged(final Message message)
    {
-      public void run()
+      try
       {
-         synchronized (BridgeImpl.this)
+         final MessageReference ref = refs.poll();
+
+         if (ref != null)
          {
-            if (!started)
+            if (replicatingChannel == null)
             {
-               return;
+               // Acknowledge when we know send has been processed on the server
+               ref.getQueue().acknowledge(ref);
             }
-
-            if (flowRecord != null)
+            else
             {
-               try
+               Packet packet = new ReplicateAcknowledgeMessage(name, ref.getMessage().getMessageID());
+
+               replicatingChannel.replicatePacket(packet, 2, new Runnable()
                {
-                  flowRecord.reset();
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to reset", e);
-               }
+                  public void run()
+                  {
+                     try
+                     {
+                        ref.getQueue().acknowledge(ref);
+                     }
+                     catch (Exception e)
+                     {
+                        log.info("Failed to ack", e);
+                     }
+                  }
+               });
             }
-
-            active = false;
-         }
-
-         try
-         {
-            queue.removeConsumer(BridgeImpl.this);
-
-            session.cleanUp();
-
-            cancelRefs();
-
-            csf.close();
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to stop", e);
-         }
-
-         if (!createObjects())
-         {
-            started = false;
          }
       }
+      catch (Exception e)
+      {
+         log.info("Failed to ack", e);
+      }
    }
+
+   // Consumer implementation ---------------------------------------
+
+   public HandleStatus handle(final MessageReference ref) throws Exception
+   {
+      if (filter != null && !filter.match(ref.getMessage()))
+      {
+         return HandleStatus.NO_MATCH;
+      }
+
+      if (!active)
+      {
+         return HandleStatus.BUSY;
+      }
+
+      synchronized (this)
+      {
+         ref.getQueue().referenceHandled();
+
+         ServerMessage message = ref.getMessage();
+
+         refs.add(ref);
+
+         if (flowRecord != null)
+         {
+            // We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave
+            // only
+            // the one pertinent for the destination node - this is important since different queues on different
+            // nodes could have same queue ids
+            // Note we must copy since same message may get routed to other nodes which require different headers
+            message = message.copy();
+
+            // TODO - we can optimise this
+
+            Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
+
+            byte[] queueIds = (byte[])message.getProperty(idsHeaderName);
+
+            for (SimpleString propName : propNames)
+            {
+               if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
+               {
+                  message.removeProperty(propName);
+               }
+            }
+
+            message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
+
+            message.putBooleanProperty(MessageImpl.HDR_FROM_CLUSTER, Boolean.TRUE);
+         }
+
+         if (useDuplicateDetection && !message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
+         {
+            // If we are using duplicate detection and there's not already a duplicate detection header, then
+            // we add a header composed of the persistent node id and the message id, which makes it globally unique
+            // between restarts.
+            // If you use a cluster connection then a guid based duplicate id will be used since it is added *before*
+            // the
+            // message goes into the store and forward queue.
+            // But with this technique it also works when the messages don't already have such a header in them in the
+            // queue.
+            byte[] bytes = new byte[24];
+
+            ByteBuffer bb = ByteBuffer.wrap(bytes);
+
+            bb.put(nodeUUID.asBytes());
+
+            bb.putLong(message.getMessageID());
+
+            message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
+         }
+
+         if (transformer != null)
+         {
+            message = transformer.transform(message);
+         }
+
+         SimpleString dest;
+
+         if (forwardingAddress != null)
+         {
+            dest = forwardingAddress;
+         }
+         else
+         {
+            // Preserve the original address
+            dest = message.getDestination();
+         }
+
+         producer.send(dest, message);
+
+         return HandleStatus.HANDLED;
+      }
+   }
+
+   // FailureListener implementation --------------------------------
+
+   public boolean connectionFailed(final MessagingException me)
+   {
+      fail();
+
+      return true;
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
 
    private void waitForRunnablesToComplete()
    {
@@ -532,182 +677,90 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       }
    }
 
-   public boolean isStarted()
-   {
-      return started;
-   }
+   // Inner classes -------------------------------------------------
 
-   public SimpleString getName()
+   private class StopRunnable implements Runnable
    {
-      return name;
-   }
-
-   public Queue getQueue()
-   {
-      return queue;
-   }
-
-   public Filter getFilter()
-   {
-      return filter;
-   }
-
-   public SimpleString getForwardingAddress()
-   {
-      return forwardingAddress;
-   }
-
-   public Transformer getTransformer()
-   {
-      return transformer;
-   }
-
-   public boolean isUseDuplicateDetection()
-   {
-      return useDuplicateDetection;
-   }
-
-   // For testing only
-   public RemotingConnection getForwardingConnection()
-   {
-      if (session == null)
+      public void run()
       {
-         return null;
-      }
-      else
-      {
-         return ((ClientSessionImpl)session).getConnection();
-      }
-   }
-
-   // SendAcknowledgementHandler implementation ---------------------
-
-   public void sendAcknowledged(final Message message)
-   {
-      try
-      {
-         MessageReference ref = refs.poll();
-
-         if (ref != null)
+         try
          {
-            // Acknowledge when we know send has been processed on the server
-            ref.getQueue().acknowledge(ref);
+            synchronized (BridgeImpl.this)
+            {
+               if (!started)
+               {
+                  return;
+               }
+
+               if (session != null)
+               {
+                  session.close();
+               }
+
+               started = false;
+
+               active = false;
+
+            }
+
+            queue.removeConsumer(BridgeImpl.this);
+
+            cancelRefs();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to stop bridge", e);
          }
       }
-      catch (Exception e)
-      {
-         log.info("Failed to ack", e);
-      }
    }
 
-   // Consumer implementation ---------------------------------------
-
-   public HandleStatus handle(final MessageReference ref) throws Exception
+   private class FailRunnable implements Runnable
    {
-      if (filter != null && !filter.match(ref.getMessage()))
+      public void run()
       {
-         return HandleStatus.NO_MATCH;
-      }
-
-      if (!active)
-      {
-         return HandleStatus.BUSY;
-      }
-
-      synchronized (this)
-      {
-         ref.getQueue().referenceHandled();
-
-         ServerMessage message = ref.getMessage();
-
-         refs.add(ref);
-         
-         if (flowRecord != null)
+         synchronized (BridgeImpl.this)
          {
-            // We make a shallow copy of the message, then we strip out the unwanted routing id headers and leave
-            // only
-            // the one pertinent for the destination node - this is important since different queues on different
-            // nodes could have same queue ids
-            // Note we must copy since same message may get routed to other nodes which require different headers
-            message = message.copy();
-
-            // TODO - we can optimise this
-
-            Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
-
-            byte[] queueIds = (byte[])message.getProperty(idsHeaderName);
-
-            for (SimpleString propName : propNames)
+            if (!started)
             {
-               if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
+               return;
+            }
+
+            if (flowRecord != null)
+            {
+               try
                {
-                  message.removeProperty(propName);
+                  flowRecord.reset();
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to reset", e);
                }
             }
 
-            message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
-
-            message.putBooleanProperty(MessageImpl.HDR_FROM_CLUSTER, Boolean.TRUE);
+            active = false;
          }
 
-         if (useDuplicateDetection && !message.containsProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID))
+         try
          {
-            //If we are using duplicate detection and there's not already a duplicate detection header, then
-            //we add a header composed of the persistent node id and the message id, which makes it globally unique
-            //between restarts.
-            //If you use a cluster connection then a guid based duplicate id will be used since it is added *before* the
-            //message goes into the store and forward queue.
-            //But with this technique it also works when the messages don't already have such a header in them in the queue.
-            byte[] bytes = new byte[24];
+            queue.removeConsumer(BridgeImpl.this);
 
-            ByteBuffer bb = ByteBuffer.wrap(bytes);
+            session.cleanUp();
 
-            bb.put(nodeUUID.asBytes());
+            cancelRefs();
 
-            bb.putLong(message.getMessageID());
-
-            message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
+            csf.close();
          }
-
-         if (transformer != null)
+         catch (Exception e)
          {
-            message = transformer.transform(message);
+            log.error("Failed to stop", e);
          }
 
-         SimpleString dest;
-
-         if (forwardingAddress != null)
+         if (!createObjects())
          {
-            dest = forwardingAddress;
+            started = false;
          }
-         else
-         {
-            // Preserve the original address
-            dest = message.getDestination();
-         }
-
-         producer.send(dest, message);
-         
-         return HandleStatus.HANDLED;
       }
    }
-
-   // FailureListener implementation --------------------------------
-
-   public boolean connectionFailed(final MessagingException me)
-   {
-      fail();
-
-      return true;
-   }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
    private class CreateObjectsRunnable implements Runnable
    {

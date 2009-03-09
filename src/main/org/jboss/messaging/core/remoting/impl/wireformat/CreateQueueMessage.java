@@ -30,7 +30,7 @@ import org.jboss.messaging.utils.SimpleString;
 
  * @version <tt>$Revision$</tt>
  */
-public class SessionCreateQueueMessage extends PacketImpl
+public class CreateQueueMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
@@ -46,10 +46,10 @@ public class SessionCreateQueueMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateQueueMessage(final SimpleString address, final SimpleString queueName,
+   public CreateQueueMessage(final SimpleString address, final SimpleString queueName,
    		final SimpleString filterString, final boolean durable, final boolean temporary)
    {
-      super(SESS_CREATE_QUEUE);
+      super(CREATE_QUEUE);
 
       this.address = address;
       this.queueName = queueName;
@@ -58,9 +58,9 @@ public class SessionCreateQueueMessage extends PacketImpl
       this.temporary = temporary;
    }
    
-   public SessionCreateQueueMessage()
+   public CreateQueueMessage()
    {
-      super(SESS_CREATE_QUEUE);
+      super(CREATE_QUEUE);
    }
 
    // Public --------------------------------------------------------
@@ -123,12 +123,12 @@ public class SessionCreateQueueMessage extends PacketImpl
    
    public boolean equals(Object other)
    {
-      if (other instanceof SessionCreateQueueMessage == false)
+      if (other instanceof CreateQueueMessage == false)
       {
          return false;
       }
             
-      SessionCreateQueueMessage r = (SessionCreateQueueMessage)other;
+      CreateQueueMessage r = (CreateQueueMessage)other;
       
       return super.equals(other) && r.address.equals(this.address) && 
              r.queueName.equals(this.queueName) &&

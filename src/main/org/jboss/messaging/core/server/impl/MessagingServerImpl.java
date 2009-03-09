@@ -380,7 +380,9 @@ public class MessagingServerImpl implements MessagingServer
                                                  managementService,
                                                  configuration,
                                                  queueFactory,
-                                                 uuid);
+                                                 uuid,
+                                                 getReplicatingChannel(),
+                                                 configuration.isBackup());
 
          clusterManager.start();
       }
@@ -442,7 +444,6 @@ public class MessagingServerImpl implements MessagingServer
       postOffice = null;
       securityRepository = null;
       securityStore = null;
-      addressSettingsRepository.clear();
       scheduledExecutor.shutdown();
       queueFactory = null;
       resourceManager = null;
@@ -581,6 +582,11 @@ public class MessagingServerImpl implements MessagingServer
          configuration.setBackup(false);
 
          remotingService.setBackup(false);
+         
+         if (clusterManager != null)
+         {
+            clusterManager.activate();
+         }
       }
 
       connection.activate();
@@ -645,34 +651,34 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   public CreateSessionResponseMessage replicateCreateSession(final String name,
-                                                              final long replicatedChannelID,
-                                                              final long originalChannelID,
-                                                              final String username,
-                                                              final String password,
-                                                              final int minLargeMessageSize,
-                                                              final int incrementingVersion,
-                                                              final RemotingConnection connection,
-                                                              final boolean autoCommitSends,
-                                                              final boolean autoCommitAcks,
-                                                              final boolean preAcknowledge,
-                                                              final boolean xa,
-                                                              final int sendWindowSize) throws Exception
+   public void replicateCreateSession(final String name,
+                                      final long replicatedChannelID,
+                                      final long originalChannelID,
+                                      final String username,
+                                      final String password,
+                                      final int minLargeMessageSize,
+                                      final int incrementingVersion,
+                                      final RemotingConnection connection,
+                                      final boolean autoCommitSends,
+                                      final boolean autoCommitAcks,
+                                      final boolean preAcknowledge,
+                                      final boolean xa,
+                                      final int sendWindowSize) throws Exception
    {
-      return doCreateSession(name,
-                             replicatedChannelID,
-                             originalChannelID,
-                             username,
-                             password,
-                             minLargeMessageSize,
-                             incrementingVersion,
-                             connection,
-                             autoCommitSends,
-                             autoCommitAcks,
-                             preAcknowledge,
-                             xa,
-                             sendWindowSize,
-                             true);
+      doCreateSession(name,
+                      replicatedChannelID,
+                      originalChannelID,
+                      username,
+                      password,
+                      minLargeMessageSize,
+                      incrementingVersion,
+                      connection,
+                      autoCommitSends,
+                      autoCommitAcks,
+                      preAcknowledge,
+                      xa,
+                      sendWindowSize,
+                      true);
    }
 
    public CreateSessionResponseMessage createSession(final String name,
@@ -715,19 +721,6 @@ public class MessagingServerImpl implements MessagingServer
    public ServerSession getSession(final String name)
    {
       return sessions.get(name);
-   }
-
-   public void updateClusterConnectionConnectors(final SimpleString clusterConnectionName,
-                                                 final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
-   {
-      ClusterConnection cc = clusterManager.getClusterConnection(clusterConnectionName);
-
-      if (cc == null)
-      {
-         throw new IllegalStateException("Cannot find cluster connection with name " + clusterConnectionName);
-      }
-
-      cc.handleReplicatedUpdateConnectors(connectors);
    }
 
    public List<ServerSession> getSessions(final String connectionID)
@@ -1099,7 +1092,14 @@ public class MessagingServerImpl implements MessagingServer
 
          if (conn != null)
          {
-            conn.fail(me);
+            // Execute on different thread to avoid deadlocks
+            new Thread()
+            {
+               public void run()
+               {
+                  conn.fail(me);
+               }
+            }.start();
          }
       }
    }

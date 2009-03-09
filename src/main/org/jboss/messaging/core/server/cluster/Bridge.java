@@ -48,5 +48,7 @@ public interface Bridge extends Consumer, MessagingComponent
 
    Transformer getTransformer();
 
-   boolean isUseDuplicateDetection();   
+   boolean isUseDuplicateDetection();  
+   
+   void activate();
 }

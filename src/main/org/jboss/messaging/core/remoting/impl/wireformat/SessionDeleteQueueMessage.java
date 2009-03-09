@@ -44,14 +44,14 @@ public class SessionDeleteQueueMessage extends PacketImpl
 
    public SessionDeleteQueueMessage(final SimpleString queueName)
    {
-      super(SESS_DELETE_QUEUE);
+      super(DELETE_QUEUE);
 
       this.queueName = queueName;
    }
    
    public SessionDeleteQueueMessage()
    {
-      super(SESS_DELETE_QUEUE);
+      super(DELETE_QUEUE);
    }
 
    // Public --------------------------------------------------------

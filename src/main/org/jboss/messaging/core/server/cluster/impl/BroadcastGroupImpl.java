@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.server.cluster.impl;
 
-import java.io.ByteArrayOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -66,12 +65,15 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    private boolean started;
 
    private ScheduledFuture<?> future;
+   
+   private boolean active;
 
    public BroadcastGroupImpl(final String nodeID,
                              final String name,
                              final int localPort,
                              final InetAddress groupAddress,
-                             final int groupPort) throws Exception
+                             final int groupPort,
+                             final boolean active) throws Exception
    {
       this.nodeID = nodeID;
 
@@ -82,6 +84,10 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.groupAddress = groupAddress;
 
       this.groupPort = groupPort;
+      
+      this.active = active;
+      
+      log.info("created broadcast group active "+ active);
    }
 
    public synchronized void start() throws Exception
@@ -145,9 +151,19 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    {
       return connectorPairs.size();
    }
+   
+   public synchronized void activate()
+   {
+      active = true;
+   }
 
    public synchronized void broadcastConnectors() throws Exception
    {
+      if (!active)
+      {
+         return;
+      }
+      
       MessagingBuffer buff = ChannelBuffers.dynamicBuffer(4096);
      
       buff.writeString(nodeID);

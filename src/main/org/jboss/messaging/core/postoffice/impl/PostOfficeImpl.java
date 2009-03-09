@@ -224,6 +224,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       }
 
       addressManager.clear();
+      
+      queueInfos.clear();
+      
+      transientIDs.clear();
 
       started = false;
    }
@@ -361,7 +365,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                                                                                                  .toString());
 
                      long redistributionDelay = addressSettings.getRedistributionDelay();
-
+                     
                      if (redistributionDelay != -1)
                      {
                         queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
@@ -431,7 +435,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                                                                                                  .toString());
 
                      long redistributionDelay = addressSettings.getRedistributionDelay();
-
+                     
                      if (redistributionDelay != -1)
                      {
                         queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
@@ -440,6 +444,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                }
 
                break;
+            }
+            default:
+            {
+               throw new IllegalArgumentException("Invalid type " + type.toInt());
             }
 
          }

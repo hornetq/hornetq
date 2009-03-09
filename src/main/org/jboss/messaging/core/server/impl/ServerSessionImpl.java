@@ -43,7 +43,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
@@ -371,7 +371,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void handleCreateQueue(final SessionCreateQueueMessage packet)
+   public void handleCreateQueue(final CreateQueueMessage packet)
    {
       if (replicatingChannel == null)
       {
@@ -1179,7 +1179,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       boolean browseOnly = packet.isBrowseOnly();
 
       Packet response = null;
-
+      
       try
       {
          Binding binding = postOffice.getBinding(name);
@@ -1284,7 +1284,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    }
 
-   private void doHandleCreateQueue(final SessionCreateQueueMessage packet)
+   private void doHandleCreateQueue(final CreateQueueMessage packet)
    {
       SimpleString address = packet.getAddress();
 

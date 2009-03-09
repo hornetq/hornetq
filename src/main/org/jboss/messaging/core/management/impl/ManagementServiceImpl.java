@@ -551,7 +551,7 @@ public class ManagementServiceImpl implements ManagementService
             TypedProperties notifProps;
             if (notification.getProperties() != null)
             {
-               notifProps = notification.getProperties();
+               notifProps = new TypedProperties(notification.getProperties());
             }
             else
             {
