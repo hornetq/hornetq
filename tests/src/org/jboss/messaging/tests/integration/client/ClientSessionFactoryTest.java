@@ -444,7 +444,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
          ClientSessionImpl sessions[] = new ClientSessionImpl[ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2];
          for (int i = 0; i < sessions.length; i++)
          {
-            sessions[i] = (ClientSessionImpl) cf.createSession(false, true, true);;
+            sessions[i] = (ClientSessionImpl) cf.createSession(false, true, true);
 
          }
          assertEquals(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2, cf.numSessions());
