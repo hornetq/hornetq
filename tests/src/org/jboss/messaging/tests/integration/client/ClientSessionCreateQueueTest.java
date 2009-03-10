@@ -19,21 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.messaging.tests.integration.session;
+package org.jboss.messaging.tests.integration.client;
 
-import org.jboss.messaging.tests.util.ServiceTestBase;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.impl.SoloQueueImpl;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class CreateQueueTest extends ServiceTestBase
+public class ClientSessionCreateQueueTest extends ServiceTestBase
 {
    private MessagingService messagingService;
 

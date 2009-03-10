@@ -20,10 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.session;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+package org.jboss.messaging.tests.integration.client;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -36,6 +33,9 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 /**
  * A SendAcknowledgementsTest
  *
@@ -45,9 +45,9 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class SendAcknowledgementsTest extends ServiceTestBase
+public class ClientSessionSendAcknowledgementHandlerTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(SendAcknowledgementsTest.class);
+   private static final Logger log = Logger.getLogger(ClientSessionSendAcknowledgementHandlerTest.class);
 
    private MessagingService messagingService;
 
