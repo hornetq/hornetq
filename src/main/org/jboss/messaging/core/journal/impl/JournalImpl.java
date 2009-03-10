@@ -2619,14 +2619,7 @@ public class JournalImpl implements TestableJournal
    private class ByteArrayEncoding implements EncodingSupport
    {
 
-      // Constants -----------------------------------------------------
       final byte[] data;
-
-      // Attributes ----------------------------------------------------
-
-      // Static --------------------------------------------------------
-
-      // Constructors --------------------------------------------------
 
       public ByteArrayEncoding(final byte[] data)
       {
@@ -2649,16 +2642,31 @@ public class JournalImpl implements TestableJournal
       {
          return data.length;
       }
+   }
+   
+   
+   // Used on Load
+   private static class TransactionHolder
+   {
+      public TransactionHolder(final long id)
+      {
+         transactionID = id;
+      }
 
-      // Package protected ---------------------------------------------
+      public final long transactionID;
 
-      // Protected -----------------------------------------------------
+      public final List<RecordInfo> recordInfos = new ArrayList<RecordInfo>();
 
-      // Private -------------------------------------------------------
+      public final List<RecordInfo> recordsToDelete = new ArrayList<RecordInfo>();
 
-      // Inner classes -------------------------------------------------
+      public boolean prepared;
+
+      public boolean invalid;
+
+      public byte[] extraData;
 
    }
+
 
 
 }
