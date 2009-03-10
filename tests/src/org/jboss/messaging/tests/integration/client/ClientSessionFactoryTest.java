@@ -32,6 +32,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.Pair;
 
@@ -524,6 +525,62 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       finally
       {
          stopLiveAndBackup();
+      }
+   }
+
+   public void testCreateSessionFailureWithSimpleConstructorWhenNoServer() throws Exception
+   {
+
+      /****************************/
+      /* No JBM Server is started */
+      /****************************/
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+
+      try
+      {
+         sf.createSession(false, true, true);
+         fail("Can not create a session when there is no running JBM Server");
+      }
+      catch (Exception e)
+      {
+      }
+
+   }
+
+   /**
+    * The test is commented because it generates an infinite loop.
+    * The configuration to have it occured is:
+    * - no backup & default values for max retries before/after failover
+    *
+    * - The infinite loop is in ConnectionManagerImpl.getConnectionForCreateSession()
+    *   - getConnection(1) always return null (no server to connect to)
+    *   - failover() always return true
+    *        - the value returned by failover() comes from the reconnect() method
+    *        - when there is no session already connected, the reconnect() method does *nothing*
+    *          and returns true (while nothing has been reconnected)
+    */
+   public void testCreateSessionFailureWithDefaultValuesWhenNoServer() throws Exception
+   {
+
+      /****************************/
+      /* No JBM Server is started */
+      /****************************/
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()),
+                                                             null,
+                                                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                             ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                             ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+
+      try
+      {
+         sf.createSession(false, true, true);
+         fail("Can not create a session when there is no running JBM Server");
+      }
+      catch (Exception e)
+      {
       }
    }
 
