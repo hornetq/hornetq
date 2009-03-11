@@ -2171,6 +2171,24 @@ public class XATest extends JBMServerTestCase
    }
 
 
+   
+   public void testIsSamRM() throws Exception
+   {
+      XAConnection conn = null;
+      
+      conn = xacf.createXAConnection();
+
+      //Create a session
+      XASession sess1 = conn.createXASession();
+      XAResource res1 = sess1.getXAResource();
+
+      //Create a session
+      XASession sess2 = conn.createXASession();
+      XAResource res2 = sess2.getXAResource();
+      
+      assertTrue(res1.isSameRM(res2));
+   }
+   
    public void testOneSessionTwoTransactionsRollbackSend() throws Exception
    {
       XAConnection conn = null;

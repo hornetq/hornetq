@@ -49,6 +49,7 @@ import org.jboss.messaging.core.remoting.CommandConfirmationHandler;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
@@ -59,7 +60,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResp
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCloseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
@@ -125,7 +125,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final boolean xa;
 
-   private ClientXAState state = null;
+   private final ClientXAState state = null;
 
    private final Executor executor;
 
@@ -173,9 +173,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private volatile boolean started;
 
    private SendAcknowledgementHandler sendAckHandler;
-    
+
    private volatile boolean closedSent;
-   
+
    // Constructors ----------------------------------------------------------------------------
 
    public ClientSessionImpl(final ConnectionManager connectionManager,
@@ -317,7 +317,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return response;
    }
- 
+
    public ClientConsumer createConsumer(final SimpleString queueName) throws MessagingException
    {
       return createConsumer(queueName, null, false);
@@ -528,12 +528,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          consumer.clear();
       }
-      
-      //Acks must be flushed here *after connection is stopped and all onmessages finished executing
+
+      // Acks must be flushed here *after connection is stopped and all onmessages finished executing
       flushAcks();
 
       channel.sendBlocking(new RollbackMessage(isLastMessageAsDelived));
-                           
+
       if (wasStarted)
       {
          start();
@@ -564,15 +564,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return new ClientMessageImpl(durable, body);
    }
-   
+
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.client.impl.ClientSessionInternal#createBuffer(int)
     */
-   public MessagingBuffer createBuffer(int size)
+   public MessagingBuffer createBuffer(final int size)
    {
-      return ChannelBuffers.dynamicBuffer(size); 
+      return ChannelBuffers.dynamicBuffer(size);
    }
-
 
    public ClientFileMessage createFileMessage(final boolean durable)
    {
@@ -659,7 +658,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-      
+
       checkClosed();
 
       SessionAcknowledgeMessage message = new SessionAcknowledgeMessage(consumerID, messageID, blockOnAcknowledge);
@@ -710,9 +709,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (consumer != null)
       {
          ClientMessageInternal clMessage = message.getClientMessage();
-         
+
          clMessage.setFlowControlSize(clMessage.getEncodeSize());
-         
+
          consumer.handleMessage(message.getClientMessage());
       }
    }
@@ -737,27 +736,27 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          consumer.handleLargeMessageContinuation(continuation);
       }
    }
-   
+
    public void close() throws MessagingException
    {
       if (closed)
       {
          return;
       }
-   
+
       try
       {
          closeChildren();
-         
+
          closedSent = true;
-         
-         channel.sendBlocking(new SessionCloseMessage());           
+
+         channel.sendBlocking(new SessionCloseMessage());
       }
       catch (Throwable ignore)
       {
          // Session close should always return without exception
       }
-      
+
       doCleanup();
    }
 
@@ -767,7 +766,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-      
+
       cleanUpChildren();
 
       doCleanup();
@@ -775,9 +774,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void setSendAcknowledgementHandler(final SendAcknowledgementHandler handler)
    {
-      this.channel.setCommandConfirmationHandler(this);
+      channel.setCommandConfirmationHandler(this);
 
-      this.sendAckHandler = handler;
+      sendAckHandler = handler;
    }
 
    // Needs to be synchronized to prevent issues with occurring concurrently with close()
@@ -787,7 +786,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return true;
       }
-      
+
       boolean ok = false;
 
       // We lock the channel to prevent any packets to be added to the resend
@@ -815,9 +814,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             ok = true;
          }
          else
-         {                        
+         {
             if (closedSent)
-            {            
+            {
                // a session re-attach may fail, if the session close was sent before failover started, hit the server,
                // processed, then before the response was received back, failover occurred, re-attach was attempted. in
                // this case it's ok - we don't want to call any failure listeners and we don't want to halt the rest of
@@ -828,11 +827,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                ok = true;
             }
             else
-            {                              
+            {
                log.warn(System.identityHashCode(this) + " Session not found on server when attempting to re-attach");
             }
-            
-            channel.returnBlocking();            
+
+            channel.returnBlocking();
          }
       }
       catch (Throwable t)
@@ -848,7 +847,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return ok;
    }
-   
+
    public void returnBlocking()
    {
       channel.returnBlocking();
@@ -987,7 +986,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       ClientSessionImpl other = (ClientSessionImpl)xares;
 
-      return remotingConnection == other.remotingConnection;
+      return connectionManager == other.connectionManager;
    }
 
    public int prepare(final Xid xid) throws XAException
@@ -1052,7 +1051,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void rollback(final Xid xid) throws XAException
    {
       checkXA();
-      
+
       try
       {
          boolean wasStarted = started;
@@ -1067,12 +1066,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             consumer.clear();
          }
-         
+
          flushAcks();
 
          SessionXARollbackMessage packet = new SessionXARollbackMessage(xid);
 
-         SessionXAResponseMessage response = (SessionXAResponseMessage) channel.sendBlocking(packet);
+         SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
          if (wasStarted)
          {
@@ -1361,7 +1360,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       int state;
 
-      public ClientXAState(Xid xid)
+      public ClientXAState(final Xid xid)
       {
          this.xid = xid;
       }

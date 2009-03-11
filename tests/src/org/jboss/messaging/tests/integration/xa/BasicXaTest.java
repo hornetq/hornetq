@@ -30,8 +30,6 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -74,7 +72,7 @@ public class BasicXaTest extends ServiceTestBase
 
       clearData();
       addressSettings.clear();
-      configuration = createDefaultConfig();
+      configuration = createDefaultConfig(true);
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
@@ -121,16 +119,35 @@ public class BasicXaTest extends ServiceTestBase
       super.tearDown();
    }
 
-   public void transactionManagerIntegration() throws Exception
+   public void testIsSameRM() throws Exception
    {
-      TransactionManagerImple tm = new TransactionManagerImple();
-      tm.begin();
+      ClientSessionFactory nettyFactory = createNettyFactory();
+      validateRM(nettyFactory, nettyFactory);
+      validateRM(sessionFactory, sessionFactory);
+      validateRM(nettyFactory, sessionFactory);
+   }
+   
+   private void validateRM(ClientSessionFactory factory1, ClientSessionFactory factory2) throws Exception
+   {
+      ClientSession session1 = factory1.createSession(true, false, false);
+      ClientSession session2 = factory2.createSession(true, false, false);
 
+      if (factory1 == factory2)
+      {
+         assertTrue(session1.isSameRM(session2));
+      }
+      else
+      {
+         assertFalse(session1.isSameRM(session2));
+      }
+
+      session1.close();
+      session2.close();
    }
 
    public void testSendPrepareDoesntRollbackOnClose() throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid = newXID();
 
       ClientMessage m1 = createTextMessage(clientSession, "m1");
       ClientMessage m2 = createTextMessage(clientSession, "m2");
@@ -168,7 +185,7 @@ public class BasicXaTest extends ServiceTestBase
 
    public void testReceivePrepareDoesntRollbackOnClose() throws Exception
    {
-      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+      Xid xid = newXID();
 
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer = clientSession2.createProducer(atestq);
@@ -249,30 +266,61 @@ public class BasicXaTest extends ServiceTestBase
 
    public void testSendMultipleQueues() throws Exception
    {
-      multipleQueuesInternalTest(false, false);
+      multipleQueuesInternalTest(true, false, false, false);
+   }
+
+   public void testSendMultipleQueuesOnePhase() throws Exception
+   {
+      multipleQueuesInternalTest(true, false, false, true);
+      multipleQueuesInternalTest(false, false, true, true);
    }
 
    public void testSendMultipleQueuesRecreate() throws Exception
    {
-      multipleQueuesInternalTest(false, true);
+      multipleQueuesInternalTest(true, false, true, false);
    }
 
    public void testSendMultipleSuspend() throws Exception
    {
-      multipleQueuesInternalTest(true, false);
+      multipleQueuesInternalTest(true, true, false, false);
    }
 
    public void testSendMultipleSuspendRecreate() throws Exception
    {
-      multipleQueuesInternalTest(true, true);
+      multipleQueuesInternalTest(true, true, true, false);
+   }
+
+   public void testSendMultipleSuspendErrorCheck() throws Exception
+   {
+      ClientSession session = null;
+
+      session = sessionFactory.createSession(true, false, false);
+
+      Xid xid = newXID();
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      try
+      {
+         session.start(xid, XAResource.TMRESUME);
+         fail("XAException expected");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_PROTO, e.errorCode);
+      }
+
+      session.close();
    }
 
    /**
     * @throws MessagingException
     * @throws XAException
     */
-   protected void multipleQueuesInternalTest(boolean suspend, boolean recreateSession) throws MessagingException,
-                                                                                      XAException
+   protected void multipleQueuesInternalTest(boolean createQueues,
+                                             boolean suspend,
+                                             boolean recreateSession,
+                                             boolean onePhase) throws MessagingException, XAException
    {
       int NUMBER_OF_MSGS = 100;
       int NUMBER_OF_QUEUES = 10;
@@ -285,15 +333,18 @@ public class BasicXaTest extends ServiceTestBase
 
          session = sessionFactory.createSession(true, false, false);
 
-         for (int i = 0; i < NUMBER_OF_QUEUES; i++)
+         if (createQueues)
          {
-            session.createQueue(ADDRESS, ADDRESS.concat(Integer.toString(i)), true);
+            for (int i = 0; i < NUMBER_OF_QUEUES; i++)
+            {
+               session.createQueue(ADDRESS, ADDRESS.concat(Integer.toString(i)), true);
+            }
          }
 
          for (int tr = 0; tr < 2; tr++)
          {
 
-            Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+            Xid xid = newXID();
 
             session.start(xid, XAResource.TMNOFLAGS);
 
@@ -316,7 +367,10 @@ public class BasicXaTest extends ServiceTestBase
 
             session.end(xid, XAResource.TMSUCCESS);
 
-            session.prepare(xid);
+            if (!onePhase)
+            {
+               session.prepare(xid);
+            }
 
             if (recreateSession)
             {
@@ -330,7 +384,7 @@ public class BasicXaTest extends ServiceTestBase
             }
             else
             {
-               session.commit(xid, false);
+               session.commit(xid, onePhase);
             }
 
          }
@@ -338,7 +392,7 @@ public class BasicXaTest extends ServiceTestBase
          for (int i = 0; i < 2; i++)
          {
 
-            Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+            Xid xid = newXID();
 
             session.start(xid, XAResource.TMNOFLAGS);
 
@@ -362,6 +416,7 @@ public class BasicXaTest extends ServiceTestBase
 
                ClientMessage msg = consumer.receive(1000);
                assertNotNull(msg);
+               msg.acknowledge();
 
                if (suspend)
                {
@@ -404,6 +459,14 @@ public class BasicXaTest extends ServiceTestBase
             session.close();
          }
       }
+   }
+
+   /**
+    * @return
+    */
+   private XidImpl newXID()
+   {
+      return new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
    }
 
    class TxMessageHandler implements MessageHandler
