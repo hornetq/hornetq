@@ -181,8 +181,6 @@
    <!-- 90 mins -->
    <property name="stress.junit.timeout" value="5400000"/>
    <!-- 90 mins -->
-   <property name="bridge.junit.timeout" value="5400000"/>
-   <!-- 90 mins -->
 
    <property name="junit.showoutput" value="true"/>
    <property name="junit.jvm" value=""/>
@@ -311,6 +309,7 @@
       <path refid="javassist.classpath"/>
       <path refid="jboss.jbossxb.classpath"/>
       <path refid="apache.xerces.classpath"/>
+      <path refid="apache.logging.classpath"/>
    </path>
 
    <path id="jms.test.execution.classpath">
@@ -1232,7 +1231,6 @@
                <exclude name="**/jms/XAResourceRecoveryTest.class"/>
                <exclude name="**/jms/XATest.class"/>
                <exclude name="**/jms/stress/**"/>
-               <exclude name="**/jms/bridge/**"/>
                <exclude name="**/jms/manual/**"/>
             </fileset>
          </batchtest>
