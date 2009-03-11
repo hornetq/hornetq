@@ -19,12 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.jms.bridge;
+package org.jboss.messaging.tests.integration.jms.bridge;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
-import org.jboss.test.messaging.tools.ServerManagement;
+// import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
+import org.jboss.messaging.tests.unit.util.InVMContext;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -33,20 +35,20 @@ import org.jboss.test.messaging.tools.ServerManagement;
  * $Id$
  *
  */
-public class ReconnectTest extends BridgeTestBase
+public class BridgeReconnectionTest extends BridgeTestBase
 {
-   private static final Logger log = Logger.getLogger(ReconnectTest.class);
+   private static final Logger log = Logger.getLogger(BridgeReconnectionTest.class);
 
    // Crash and reconnect
    
    // Once and only once
    
-   public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
+   public void _testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
       testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
    
-   public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
+   public void _testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
    {
       testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
    }
@@ -77,12 +79,12 @@ public class ReconnectTest extends BridgeTestBase
 
    // Crash tests specific to XA transactions
 
-   public void testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
+   public void _testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
    {
       testCrashAndReconnectDestCrashBeforePrepare(true);
    }
 
-   public void testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
+   public void _testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
    {
       testCrashAndReconnectDestCrashBeforePrepare(false);
    }
@@ -91,21 +93,29 @@ public class ReconnectTest extends BridgeTestBase
 
    public void testRetryConnectionOnStartup() throws Exception
    {
-      ServerManagement.kill(1);
+      server1.stop();
 
       BridgeImpl bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
             null, null, null, null,
             null, 1000, -1, QualityOfServiceMode.DUPLICATES_OK,
             10, -1,
             null, null, false);
-      
+      bridge.setTransactionManager(newTransactionManager());
+
       try
       {
          bridge.start();
          assertFalse(bridge.isStarted());
          assertTrue(bridge.isFailed());
 
-         ServerManagement.start(1, "all", false);
+         //Restart the server         
+         server1.start();
+         
+         context1 = new InVMContext();
+         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1.getServer());
+         jmsServer1.start();
+         jmsServer1.setContext(context1);
+
          createQueue("targetQueue", 1);
          setUpAdministeredObjects();
          
@@ -145,7 +155,7 @@ public class ReconnectTest extends BridgeTestBase
                   null, 1000, -1, qosMode,
                   10, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
          bridge.start();
             
          final int NUM_MESSAGES = 10;
@@ -162,7 +172,7 @@ public class ReconnectTest extends BridgeTestBase
          
          log.info("About to crash server");
          
-         ServerManagement.kill(1);
+         server1.stop();
          
          //Wait a while before starting up to simulate the dest being down for a while
          log.info("Waiting 5 secs before bringing server back up");
@@ -173,8 +183,13 @@ public class ReconnectTest extends BridgeTestBase
          
          log.info("Restarting server");
          
-         ServerManagement.start(1, "all", false);
+         server1.start();
          
+         context1 = new InVMContext();
+         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1.getServer());
+         jmsServer1.start();
+         jmsServer1.setContext(context1);
+
          createQueue("targetQueue", 1);
          
          setUpAdministeredObjects();
@@ -225,7 +240,8 @@ public class ReconnectTest extends BridgeTestBase
                   null, 1000, -1, QualityOfServiceMode.ONCE_AND_ONLY_ONCE,
                   10, 5000,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
          
          final int NUM_MESSAGES = 10;            
@@ -241,17 +257,21 @@ public class ReconnectTest extends BridgeTestBase
          
          log.info("About to crash server");
          
-         ServerManagement.kill(1);
+         server1.stop();
          
          //Wait a while before starting up to simulate the dest being down for a while
          log.info("Waiting 5 secs before bringing server back up");
          Thread.sleep(5000);
          log.info("Done wait");
          
-         //Restart the server
+         //Restart the server         
+         server1.start();
          
-         ServerManagement.start(1, "all", false);
-         
+         context1 = new InVMContext();
+         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1.getServer());
+         jmsServer1.start();
+         jmsServer1.setContext(context1);
+
          createQueue("targetQueue", 1);
          
          setUpAdministeredObjects();

@@ -156,6 +156,9 @@ public class JBossMessage implements javax.jms.Message
    // Read-only?
    protected boolean readOnly;
 
+   // Read-only?
+   protected boolean propertiesReadOnly;
+
    // Cache it
    private Destination dest;
 
@@ -219,6 +222,8 @@ public class JBossMessage implements javax.jms.Message
       this.message = message;
 
       this.readOnly = true;
+
+      this.propertiesReadOnly = true;
 
       this.session = session;
    }
@@ -525,6 +530,8 @@ public class JBossMessage implements javax.jms.Message
       {
          message.removeProperty(propName);
       }
+      
+      propertiesReadOnly = false;
    }
 
    public void clearBody() throws JMSException
@@ -963,7 +970,10 @@ public class JBossMessage implements javax.jms.Message
 
    private void checkProperty(final String name, final Object value) throws JMSException
    {
-      checkWrite();
+      if (propertiesReadOnly)
+      {
+         throw new MessageNotWriteableException("Message is read-only");
+      }
 
       if (name == null)
       {

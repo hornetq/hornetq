@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.test.messaging.jms.bridge;
+package org.jboss.messaging.tests.integration.jms.bridge;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,7 +39,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
 import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * A BridgeTest
@@ -492,7 +491,8 @@ public class BridgeTest extends BridgeTestBase
                   selector, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          connSource = cf0.createConnection();
@@ -556,7 +556,7 @@ public class BridgeTest extends BridgeTestBase
             bridge.stop();
          }
          
-         removeAllMessages(sourceQueue.getQueueName(), true);
+         removeAllMessages(sourceQueue.getQueueName(), 0);
       }                  
    }
    
@@ -568,7 +568,7 @@ public class BridgeTest extends BridgeTestBase
       
       Transaction started = null;
       
-      TransactionManager mgr = TransactionManagerLocator.getInstance().locate();
+      TransactionManager mgr = newTransactionManager();
                   
       try
       {
@@ -586,7 +586,7 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(mgr);
          bridge.start();
          
          this.sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
@@ -638,7 +638,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
@@ -667,7 +668,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   "subTest", "clientid123", false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, true);
@@ -717,7 +719,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, on);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
          
          connSource = cf0.createConnection();
@@ -888,7 +891,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, messageIDInHeader);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
          
          connSource = cf0.createConnection();
@@ -1049,7 +1053,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
          
          connSource = cf0.createConnection();
@@ -1136,7 +1141,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, qosMode,
                   batchSize, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          connSource = cf0.createConnection();
@@ -1209,7 +1215,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, qosMode,
                   2, maxBatchTime,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          connSource = cf0.createConnection();
@@ -1283,7 +1290,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, qosMode,
                   batchSize, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          connSource = cf0.createConnection();
@@ -1355,7 +1363,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          //Send half the messges
@@ -1413,7 +1422,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
@@ -1473,7 +1483,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
             
          final int NUM_MESSAGES = 10;
@@ -1514,7 +1525,8 @@ public class BridgeTest extends BridgeTestBase
                   null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
                   null, null, false);
-         
+         bridge.setTransactionManager(newTransactionManager());
+
          bridge.start();
          
          final int NUM_MESSAGES = 10;
