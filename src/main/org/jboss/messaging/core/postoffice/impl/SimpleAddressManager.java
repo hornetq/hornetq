@@ -24,12 +24,9 @@ package org.jboss.messaging.core.postoffice.impl;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
-import org.jboss.messaging.utils.ConcurrentHashSet;
-import org.jboss.messaging.utils.ConcurrentSet;
 import org.jboss.messaging.utils.SimpleString;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -61,7 +58,7 @@ public class SimpleAddressManager implements AddressManager
 
       if (binding == null)
       {
-         throw new IllegalStateException("Queue is not bound " + uniqueName);
+         return null;
       }
 
       removeBindingInternal(binding.getAddress(), uniqueName);

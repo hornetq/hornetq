@@ -22,6 +22,7 @@
 package org.jboss.messaging.tests.integration.client;
 
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
@@ -33,7 +34,7 @@ import org.jboss.messaging.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientSessionCreateQueueTest extends ServiceTestBase
+public class ClientSessionCreateAndDeleteQueueTest extends ServiceTestBase
 {
    private MessagingService messagingService;
 
@@ -111,6 +112,34 @@ public class ClientSessionCreateQueueTest extends ServiceTestBase
 
       session.close();
    }
+
+   public void testDeleteQueue() throws Exception
+   {
+      ClientSession session = createInVMFactory().createSession(false, true, true);
+      session.createQueue(address, queueName, false);
+      Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
+      assertNotNull(binding);
+      session.deleteQueue(queueName);
+      binding = messagingService.getServer().getPostOffice().getBinding(queueName);
+      assertNull(binding);
+      session.close();
+   }
+
+   public void testDeleteQueueNotExist() throws Exception
+  {
+     ClientSession session = createInVMFactory().createSession(false, true, true);
+     try
+     {
+        session.deleteQueue(queueName);
+        fail("should throw exception");
+     }
+     catch (MessagingException e)
+     {
+        assertEquals(MessagingException.QUEUE_DOES_NOT_EXIST, e.getCode());
+     }
+     session.close();
+  }
+
 
    @Override
    protected void setUp() throws Exception

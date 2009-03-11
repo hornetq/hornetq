@@ -28,6 +28,8 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
+import java.io.File;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
@@ -158,7 +160,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
       }
    }
 
-   public void testCreateConsumerWithBrowseOnly2() throws Exception
+   public void testCreateConsumerWithOverrides() throws Exception
    {
       MessagingService service = createService(false);
       try
@@ -179,4 +181,149 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
          service.stop();
       }
    }
+
+   public void testCreateFileConsumerTest() throws Exception
+   {
+      MessagingService service = createService(false);
+      try
+      {
+         service.start();
+         ClientSessionFactory cf = createInVMFactory();
+         cf.setProducerMaxRate(99);
+         cf.setBlockOnNonPersistentSend(true);
+         cf.setBlockOnNonPersistentSend(true);
+         ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
+         clientSession.createQueue(queueName, queueName, false);
+         ClientConsumer consumer = clientSession.createFileConsumer(new File(""), queueName);
+         assertNotNull(consumer);
+         clientSession.close();
+      }
+      finally
+      {
+         service.stop();
+      }
+   }
+
+   public void testCreateFileConsumerNoQ() throws Exception
+      {
+         MessagingService service = createService(false);
+         try
+         {
+            service.start();
+            ClientSessionFactory cf = createInVMFactory();
+            cf.setProducerMaxRate(99);
+            cf.setBlockOnNonPersistentSend(true);
+            cf.setBlockOnNonPersistentSend(true);
+            ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
+            try
+            {
+               clientSession.createFileConsumer(new File(""), queueName);
+               fail("should throw exception");
+            }
+            catch (MessagingException e)
+            {
+               assertEquals(e.getCode(), MessagingException.QUEUE_DOES_NOT_EXIST);
+            }
+            clientSession.close();
+         }
+         finally
+         {
+            service.stop();
+         }
+      }
+
+      public void testCreateFileConsumerWithFilter() throws Exception
+      {
+         MessagingService service = createService(false);
+         try
+         {
+            service.start();
+            ClientSessionFactory cf = createInVMFactory();
+            cf.setProducerMaxRate(99);
+            cf.setBlockOnNonPersistentSend(true);
+            cf.setBlockOnNonPersistentSend(true);
+            ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
+            clientSession.createQueue(queueName, queueName, false);
+            ClientConsumer consumer = clientSession.createFileConsumer(new File(""), queueName, "foo=bar");
+            assertNotNull(consumer);
+            clientSession.close();
+         }
+         finally
+         {
+            service.stop();
+         }
+      }
+
+      public void testCreateFileConsumerWithInvalidFilter() throws Exception
+      {
+         MessagingService service = createService(false);
+         try
+         {
+            service.start();
+            ClientSessionFactory cf = createInVMFactory();
+            cf.setProducerMaxRate(99);
+            cf.setBlockOnNonPersistentSend(true);
+            cf.setBlockOnNonPersistentSend(true);
+            ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
+            clientSession.createQueue(queueName, queueName, false);
+            try
+            {
+               clientSession.createFileConsumer(new File(""), queueName, "foobar");
+               fail("should throw exception");
+            }
+            catch (MessagingException e)
+            {
+               assertEquals(e.getCode(), MessagingException.INVALID_FILTER_EXPRESSION);
+            }
+            clientSession.close();
+         }
+         finally
+         {
+            service.stop();
+         }
+      }
+
+      public void testCreateFileConsumerWithBrowseOnly() throws Exception
+      {
+         MessagingService service = createService(false);
+         try
+         {
+            service.start();
+            ClientSessionFactory cf = createInVMFactory();
+            cf.setProducerMaxRate(99);
+            cf.setBlockOnNonPersistentSend(true);
+            cf.setBlockOnNonPersistentSend(true);
+            ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
+            clientSession.createQueue(queueName, queueName, false);
+            ClientConsumer consumer = clientSession.createFileConsumer(new File(""), queueName, null, true);
+            assertNotNull(consumer);
+            clientSession.close();
+         }
+         finally
+         {
+            service.stop();
+         }
+      }
+
+      public void testCreateFileConsumerWithOverrides() throws Exception
+      {
+         MessagingService service = createService(false);
+         try
+         {
+            service.start();
+            ClientSessionFactory cf = createInVMFactory();
+            cf.setProducerMaxRate(99);
+            cf.setBlockOnNonPersistentSend(true);
+            cf.setBlockOnNonPersistentSend(true);
+            ClientSessionInternal clientSession = (ClientSessionInternal) cf.createSession(false, true, true);
+            clientSession.createQueue(queueName, queueName, false);
+            ClientConsumer consumer = clientSession.createFileConsumer(new File(""), queueName, null, 100, 100, false);
+            assertNotNull(consumer);
+            clientSession.close();
+         }
+         finally
+         {
+            service.stop();
+         }
+      }
 }
