@@ -312,6 +312,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
          m.acknowledge();
          clientSession.commit();
       }
+      
+      assertNull(pageConsumer.receiveImmediate());
 
    }
 
@@ -557,7 +559,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(xids.length, 0);
       clientSession.rollback(xid);
       clientSession.start();
-      ClientMessage m = clientConsumer.receive(1000);
+      ClientMessage m = clientConsumer.receive(100);
       log.info("m is " + m);
       assertNull(m);
    }
@@ -743,7 +745,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.rollback(xid);
       clientSession.rollback(xid2);
       clientSession.start();
-      ClientMessage m = clientConsumer.receive(1000);
+      ClientMessage m = clientConsumer.receive(100);
       assertNull(m);
    }
 
@@ -807,7 +809,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "m4");
-      m = clientConsumer.receive(1000);
+      m = clientConsumer.receive(100);
       assertNull(m);
    }
 
@@ -938,7 +940,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(xids.length, 0);
       clientSession.commit(xid, true);
       clientSession.start();
-      m = clientConsumer.receive(1000);
+      m = clientConsumer.receive(100);
       assertNull(m);
    }
 
@@ -1100,7 +1102,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(xids.length, 0);
       clientSession.commit(xid, true);
       clientSession.start();
-      m = clientConsumer.receive(1000);
+      m = clientConsumer.receive(100);
       assertNull(m);
    }
 

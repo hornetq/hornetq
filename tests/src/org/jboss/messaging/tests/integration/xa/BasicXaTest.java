@@ -30,6 +30,8 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -77,7 +79,7 @@ public class BasicXaTest extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
 
-      messagingService = createService(true, configuration, addressSettings);
+      messagingService = createService(false, configuration, addressSettings);
 
       // start the server
       messagingService.start();
@@ -117,6 +119,13 @@ public class BasicXaTest extends ServiceTestBase
       clientSession = null;
 
       super.tearDown();
+   }
+
+   public void transactionManagerIntegration() throws Exception
+   {
+      TransactionManagerImple tm = new TransactionManagerImple();
+      tm.begin();
+
    }
 
    public void testSendPrepareDoesntRollbackOnClose() throws Exception
@@ -160,7 +169,6 @@ public class BasicXaTest extends ServiceTestBase
    public void testReceivePrepareDoesntRollbackOnClose() throws Exception
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
 
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer = clientSession2.createProducer(atestq);
@@ -232,11 +240,169 @@ public class BasicXaTest extends ServiceTestBase
          session.start();
       }
 
-
       assertTrue(latch.await(10, TimeUnit.SECONDS));
       for (TxMessageHandler messageHandler : handlers)
       {
          assertFalse(messageHandler.failedToAck);
+      }
+   }
+
+   public void testSendMultipleQueues() throws Exception
+   {
+      multipleQueuesInternalTest(false, false);
+   }
+
+   public void testSendMultipleQueuesRecreate() throws Exception
+   {
+      multipleQueuesInternalTest(false, true);
+   }
+
+   public void testSendMultipleSuspend() throws Exception
+   {
+      multipleQueuesInternalTest(true, false);
+   }
+
+   public void testSendMultipleSuspendRecreate() throws Exception
+   {
+      multipleQueuesInternalTest(true, true);
+   }
+
+   /**
+    * @throws MessagingException
+    * @throws XAException
+    */
+   protected void multipleQueuesInternalTest(boolean suspend, boolean recreateSession) throws MessagingException,
+                                                                                      XAException
+   {
+      int NUMBER_OF_MSGS = 100;
+      int NUMBER_OF_QUEUES = 10;
+      ClientSession session = null;
+
+      SimpleString ADDRESS = new SimpleString("Address");
+
+      try
+      {
+
+         session = sessionFactory.createSession(true, false, false);
+
+         for (int i = 0; i < NUMBER_OF_QUEUES; i++)
+         {
+            session.createQueue(ADDRESS, ADDRESS.concat(Integer.toString(i)), true);
+         }
+
+         for (int tr = 0; tr < 2; tr++)
+         {
+
+            Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+            session.start(xid, XAResource.TMNOFLAGS);
+
+            ClientProducer prod = session.createProducer(ADDRESS);
+            for (int nmsg = 0; nmsg < NUMBER_OF_MSGS; nmsg++)
+            {
+               ClientMessage msg = createTextMessage(session, "SimpleMessage" + nmsg);
+               prod.send(msg);
+            }
+
+            if (suspend)
+            {
+               session.end(xid, XAResource.TMSUSPEND);
+               session.start(xid, XAResource.TMRESUME);
+            }
+
+            prod.send(createTextMessage(session, "one more"));
+
+            prod.close();
+
+            session.end(xid, XAResource.TMSUCCESS);
+
+            session.prepare(xid);
+
+            if (recreateSession)
+            {
+               session.close();
+               session = sessionFactory.createSession(true, false, false);
+            }
+
+            if (tr == 0)
+            {
+               session.rollback(xid);
+            }
+            else
+            {
+               session.commit(xid, false);
+            }
+
+         }
+
+         for (int i = 0; i < 2; i++)
+         {
+
+            Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+            session.start(xid, XAResource.TMNOFLAGS);
+
+            for (int nqueues = 0; nqueues < NUMBER_OF_QUEUES; nqueues++)
+            {
+
+               ClientConsumer consumer = session.createConsumer(ADDRESS.concat(Integer.toString(nqueues)));
+
+               session.start();
+
+               for (int nmsg = 0; nmsg < NUMBER_OF_MSGS; nmsg++)
+               {
+                  ClientMessage msg = consumer.receive(1000);
+
+                  assertNotNull(msg);
+
+                  assertEquals("SimpleMessage" + nmsg, getTextMessage(msg));
+
+                  msg.acknowledge();
+               }
+
+               ClientMessage msg = consumer.receive(1000);
+               assertNotNull(msg);
+
+               if (suspend)
+               {
+                  session.end(xid, XAResource.TMSUSPEND);
+                  session.start(xid, XAResource.TMRESUME);
+               }
+
+               assertEquals("one more", getTextMessage(msg));
+
+               assertNull(consumer.receiveImmediate());
+
+               consumer.close();
+
+            }
+
+            session.end(xid, XAResource.TMSUCCESS);
+
+            session.prepare(xid);
+
+            if (recreateSession)
+            {
+               session.close();
+               session = sessionFactory.createSession(true, false, false);
+            }
+
+            if (i == 0)
+            {
+               session.rollback(xid);
+            }
+            else
+            {
+               session.commit(xid, true);
+            }
+         }
+      }
+      finally
+      {
+         if (session != null)
+         {
+            session.close();
+         }
       }
    }
 
@@ -256,7 +422,9 @@ public class BasicXaTest extends ServiceTestBase
 
       public void onMessage(final ClientMessage message)
       {
-         Xid xid = new XidImpl(UUIDGenerator.getInstance().generateStringUUID().getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         Xid xid = new XidImpl(UUIDGenerator.getInstance().generateStringUUID().getBytes(),
+                               1,
+                               UUIDGenerator.getInstance().generateStringUUID().getBytes());
          try
          {
             session.start(xid, XAResource.TMNOFLAGS);

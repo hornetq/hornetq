@@ -316,5 +316,11 @@ public class SimpleStringTest extends UnitTestCase
       SimpleString end = new SimpleString("qrstuvwxyz");
       assertEquals(start.concat(middle).concat(end), new SimpleString("abcdefghijklmnopqrstuvwxyz"));
       assertEquals(start.concat('.').concat(end), new SimpleString("abcdefg.qrstuvwxyz"));
+      // Testing concat of SimpleString with String
+      for (int i = 0; i < 10; i++)
+      {
+         assertEquals(new SimpleString("abcdefg-" + i), start.concat("-" + Integer.toString(i)));
+         
+      }
    }
 }

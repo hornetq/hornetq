@@ -289,6 +289,11 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
       return false;
    }
+   
+   public SimpleString concat(final String toAdd)
+   {
+      return concat(new SimpleString(toAdd));
+   }
 
    public SimpleString concat(final SimpleString toAdd)
    {
