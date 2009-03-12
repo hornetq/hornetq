@@ -87,7 +87,7 @@ public class UnitTestCase extends TestCase
 
    // Static --------------------------------------------------------
    
-   public static String threadDump()
+   public static String threadDump(String msg)
    {
       StringWriter str = new StringWriter();
       PrintWriter out = new PrintWriter(str);
@@ -96,7 +96,7 @@ public class UnitTestCase extends TestCase
       Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
 
       out.println("*******************************************************************************");
-      out.println("Complete Thread dump");
+      out.println("Complete Thread dump" + msg);
 
       for (Map.Entry<Thread, StackTraceElement[]> el : stackTrace.entrySet())
       {

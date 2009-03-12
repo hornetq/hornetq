@@ -168,6 +168,8 @@ public class ClusterTestBase extends ServiceTestBase
          Thread.sleep(100);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
+      
+      System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
       throw new IllegalStateException("Timed out waiting for bindings");
    }
@@ -246,7 +248,7 @@ public class ClusterTestBase extends ServiceTestBase
       {
          // Proxy the faliure and print a dump into System.out, so it is captured by Hudson reports
          e.printStackTrace();
-         System.out.println(threadDump());
+         System.out.println(threadDump(" - fired by ClusterTestBase::addConsumer"));
          
          throw e;
       }
