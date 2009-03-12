@@ -298,6 +298,9 @@ public class BindingsImpl implements Bindings
                Binding theBinding = null;
 
                int lastLowPriorityBinding = -1;
+               
+               int nonMatchingFilters = 0;
+
 
                while (true)
                {
@@ -308,10 +311,16 @@ public class BindingsImpl implements Bindings
                   }
                   catch (IndexOutOfBoundsException e)
                   {
+                     if (nonMatchingFilters == bindings.size())
+                     {
+                        break;
+                     }
+                     
                      // This can occur if binding is removed while in route
                      if (!bindings.isEmpty())
                      {
                         pos = 0;
+                        nonMatchingFilters = 0;
 
                         continue;
                      }
@@ -341,6 +350,13 @@ public class BindingsImpl implements Bindings
                         {
                            lastLowPriorityBinding = pos;
                         }
+                     }
+                  }
+                  else
+                  {
+                     if (nonMatchingFilters++ > bindings.size())
+                     {
+                        break;
                      }
                   }
 
