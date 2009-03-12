@@ -1001,29 +1001,6 @@ public class BridgeImpl implements MessagingComponent, Bridge
    
    private void cleanup()
    {
-   	
-      //Close the old objects
-      try
-      {
-         sourceConn.close();
-      }
-      catch (Throwable ignore)
-      {            
-      	if (trace) { log.trace("Failed to close source connection", ignore); }
-      }
-      try
-      {
-         if (targetConn != null)
-         {
-            targetConn.close();
-         }
-      }
-      catch (Throwable ignore)
-      {    
-      	if (trace) { log.trace("Failed to close target connection", ignore); }
-      }
-
-   	
       if (tx != null)
       {
          try
@@ -1043,7 +1020,28 @@ public class BridgeImpl implements MessagingComponent, Bridge
          {
          	if (trace) { log.trace("Failed to rollback", ignore); }
          } 
-      }      
+      }
+      
+      //Close the old objects
+      try
+      {
+         sourceConn.close();
+      }
+      catch (Throwable ignore)
+      {            
+         if (trace) { log.trace("Failed to close source connection", ignore); }
+      }
+      try
+      {
+         if (targetConn != null)
+         {
+            targetConn.close();
+         }
+      }
+      catch (Throwable ignore)
+      {    
+         if (trace) { log.trace("Failed to close target connection", ignore); }
+      }
    }
    
    private void pause(long interval)

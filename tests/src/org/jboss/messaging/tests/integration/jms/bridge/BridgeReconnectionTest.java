@@ -43,12 +43,12 @@ public class BridgeReconnectionTest extends BridgeTestBase
    
    // Once and only once
    
-   public void _testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
+   public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
       testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
    }
    
-   public void _testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
+   public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
    {
       testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
    }
@@ -79,12 +79,12 @@ public class BridgeReconnectionTest extends BridgeTestBase
 
    // Crash tests specific to XA transactions
 
-   public void _testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
+   public void testCrashAndReconnectDestCrashBeforePrepare_P() throws Exception
    {
       testCrashAndReconnectDestCrashBeforePrepare(true);
    }
 
-   public void _testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
+   public void testCrashAndReconnectDestCrashBeforePrepare_NP() throws Exception
    {
       testCrashAndReconnectDestCrashBeforePrepare(false);
    }
