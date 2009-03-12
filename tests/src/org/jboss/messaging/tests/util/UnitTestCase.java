@@ -108,6 +108,9 @@ public class UnitTestCase extends TestCase
             out.println(traceEl);
          }
       }
+      
+      out.println("===============================================================================");
+      out.println("End Thread dump" + msg);
       out.println("*******************************************************************************");
       
       
