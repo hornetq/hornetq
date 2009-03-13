@@ -249,11 +249,10 @@ public class QueueControlTest extends UnitTestCase
       verifyMockedAttributes();
    }
 
-   public void testGetDLQ() throws Exception
+   public void testGetDeadLetterAddress() throws Exception
    {
       final String dlqName = randomString();
 
-      expect(queue.getName()).andReturn(queueName);
       AddressSettings addressSettings = new AddressSettings()
       {
          @Override
@@ -262,7 +261,7 @@ public class QueueControlTest extends UnitTestCase
             return new SimpleString(dlqName);
          }
       };
-      expect(repository.getMatch(queueName.toString())).andReturn(addressSettings);
+      expect(repository.getMatch(address)).andReturn(addressSettings);
 
       replayMockedAttributes();
 
@@ -272,11 +271,10 @@ public class QueueControlTest extends UnitTestCase
       verifyMockedAttributes();
    }
 
-   public void testGetExpiryQueue() throws Exception
+   public void testGetExpiryAddress() throws Exception
    {
       final String expiryQueueName = randomString();
 
-      expect(queue.getName()).andReturn(queueName);
       AddressSettings addressSettings = new AddressSettings()
       {
          @Override
@@ -285,7 +283,7 @@ public class QueueControlTest extends UnitTestCase
             return new SimpleString(expiryQueueName);
          }
       };
-      expect(repository.getMatch(queueName.toString())).andReturn(addressSettings);
+      expect(repository.getMatch(address)).andReturn(addressSettings);
 
       replayMockedAttributes();
 
