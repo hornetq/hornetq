@@ -293,7 +293,7 @@ public class TransactionImpl implements Transaction
       this.messagingException = messagingException;
    }
 
-   public void addOperation(final TransactionOperation operation)
+   public synchronized void addOperation(final TransactionOperation operation)
    {
       checkCreateOperations();
 

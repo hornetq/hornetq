@@ -842,18 +842,23 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private final PageMessageOperation getPageOperation(final Transaction tx)
    {
-      PageMessageOperation oper = (PageMessageOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION);
-
-      if (oper == null)
+      // you could have races on the case two sessions using the same XID
+      // so this whole operation needs to be atomic per TX
+      synchronized (tx)
       {
-         oper = new PageMessageOperation();
-
-         tx.putProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION, oper);
-
-         tx.addOperation(oper);
+         PageMessageOperation oper = (PageMessageOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION);
+   
+         if (oper == null)
+         {
+            oper = new PageMessageOperation();
+   
+            tx.putProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION, oper);
+   
+            tx.addOperation(oper);
+         }
+   
+         return oper;
       }
-
-      return oper;
    }
 
    private class MessageExpiryRunner implements Runnable

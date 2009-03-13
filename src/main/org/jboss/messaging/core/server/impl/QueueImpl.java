@@ -626,18 +626,21 @@ public class QueueImpl implements Queue
 
    final RefsOperation getRefsOperation(final Transaction tx)
    {
-      RefsOperation oper = (RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
-
-      if (oper == null)
+      synchronized (tx)
       {
-         oper = new RefsOperation();
-
-         tx.putProperty(TransactionPropertyIndexes.REFS_OPERATION, oper);
-
-         tx.addOperation(oper);
+         RefsOperation oper = (RefsOperation)tx.getProperty(TransactionPropertyIndexes.REFS_OPERATION);
+   
+         if (oper == null)
+         {
+            oper = new RefsOperation();
+   
+            tx.putProperty(TransactionPropertyIndexes.REFS_OPERATION, oper);
+   
+            tx.addOperation(oper);
+         }
+   
+         return oper;
       }
-
-      return oper;
    }
 
    public void cancel(final Transaction tx, final MessageReference reference) throws Exception
@@ -999,6 +1002,12 @@ public class QueueImpl implements Queue
    public int hashCode()
    {
       return name.hashCode();
+   }
+   
+   @Override
+   public String toString()
+   {
+      return "QueueImpl(name=" + this.name.toString() + ")";
    }
 
    // Private
@@ -1463,12 +1472,12 @@ public class QueueImpl implements Queue
 
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
 
-      void addRef(final MessageReference ref)
+      synchronized void addRef(final MessageReference ref)
       {
          refsToAdd.add(ref);
       }
 
-      void addAck(final MessageReference ref)
+      synchronized void addAck(final MessageReference ref)
       {
          refsToAck.add(ref);
       }

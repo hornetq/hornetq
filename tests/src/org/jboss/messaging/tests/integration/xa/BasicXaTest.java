@@ -26,9 +26,13 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -36,6 +40,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -48,6 +53,7 @@ import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class BasicXaTest extends ServiceTestBase
 {
@@ -76,6 +82,7 @@ public class BasicXaTest extends ServiceTestBase
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
+      configuration.setPagingMaxGlobalSizeBytes(0); // no paging for these tests
 
       messagingService = createService(false, configuration, addressSettings);
 
@@ -126,7 +133,7 @@ public class BasicXaTest extends ServiceTestBase
       validateRM(sessionFactory, sessionFactory);
       validateRM(nettyFactory, sessionFactory);
    }
-   
+
    private void validateRM(ClientSessionFactory factory1, ClientSessionFactory factory2) throws Exception
    {
       ClientSession session1 = factory1.createSession(true, false, false);
@@ -227,7 +234,7 @@ public class BasicXaTest extends ServiceTestBase
       clientSession.commit(xid, true);
       clientSession.start();
       clientConsumer = clientSession.createConsumer(atestq);
-      m = clientConsumer.receive(1000);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
 
    }
@@ -266,28 +273,40 @@ public class BasicXaTest extends ServiceTestBase
 
    public void testSendMultipleQueues() throws Exception
    {
-      multipleQueuesInternalTest(true, false, false, false);
+      multipleQueuesInternalTest(true, false, false, false, false);
    }
 
    public void testSendMultipleQueuesOnePhase() throws Exception
    {
-      multipleQueuesInternalTest(true, false, false, true);
-      multipleQueuesInternalTest(false, false, true, true);
+      multipleQueuesInternalTest(true, false, false, false, true);
+      multipleQueuesInternalTest(false, false, true, false, true);
+   }
+
+   public void testSendMultipleQueuesOnePhaseJoin() throws Exception
+   {
+      multipleQueuesInternalTest(true, false, false, true, true);
+      multipleQueuesInternalTest(false, false, true, true, true);
+   }
+
+   public void testSendMultipleQueuesTwoPhaseJoin() throws Exception
+   {
+      multipleQueuesInternalTest(true, false, false, true, false);
+      multipleQueuesInternalTest(false, false, true, true, false);
    }
 
    public void testSendMultipleQueuesRecreate() throws Exception
    {
-      multipleQueuesInternalTest(true, false, true, false);
+      multipleQueuesInternalTest(true, false, true, false, false);
    }
 
    public void testSendMultipleSuspend() throws Exception
    {
-      multipleQueuesInternalTest(true, true, false, false);
+      multipleQueuesInternalTest(true, true, false, false, false);
    }
 
    public void testSendMultipleSuspendRecreate() throws Exception
    {
-      multipleQueuesInternalTest(true, true, true, false);
+      multipleQueuesInternalTest(true, true, true, false, false);
    }
 
    public void testSendMultipleSuspendErrorCheck() throws Exception
@@ -313,6 +332,78 @@ public class BasicXaTest extends ServiceTestBase
       session.close();
    }
 
+   public void testForget() throws Exception
+   {
+      clientSession.forget(newXID());
+   }
+
+   public void testSimpleJoin() throws Exception
+   {
+      sessionFactory.setBlockOnPersistentSend(true);
+
+      SimpleString ADDRESS1 = new SimpleString("Address-1");
+      SimpleString ADDRESS2 = new SimpleString("Address-2");
+
+      clientSession.createQueue(ADDRESS1, ADDRESS1, true);
+      clientSession.createQueue(ADDRESS2, ADDRESS2, true);
+
+      Xid xid = newXID();
+
+      ClientSession sessionA = sessionFactory.createSession(true, false, false);
+      sessionA.start(xid, XAResource.TMNOFLAGS);
+
+      ClientSession sessionB = sessionFactory.createSession(true, false, false);
+      sessionB.start(xid, XAResource.TMJOIN);
+
+      ClientProducer prodA = sessionA.createProducer(ADDRESS1);
+      ClientProducer prodB = sessionB.createProducer(ADDRESS2);
+
+      for (int i = 0; i < 100; i++)
+      {
+         prodA.send(createTextMessage(sessionA, "A" + i));
+         prodB.send(createTextMessage(sessionB, "B" + i));
+      }
+
+      sessionA.end(xid, XAResource.TMSUCCESS);
+      sessionB.end(xid, XAResource.TMSUCCESS);
+
+      sessionB.close();
+
+      sessionA.commit(xid, true);
+
+      sessionA.close();
+
+      xid = newXID();
+
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+
+      ClientConsumer cons1 = clientSession.createConsumer(ADDRESS1);
+      ClientConsumer cons2 = clientSession.createConsumer(ADDRESS2);
+      clientSession.start();
+
+      for (int i = 0; i < 100; i++)
+      {
+         ClientMessage msg = cons1.receive(1000);
+         assertNotNull(msg);
+         assertEquals("A" + i, getTextMessage(msg));
+         msg.acknowledge();
+
+         msg = cons2.receive(1000);
+         assertNotNull(msg);
+         assertEquals("B" + i, getTextMessage(msg));
+         msg.acknowledge();
+      }
+
+      assertNull(cons1.receiveImmediate());
+      assertNull(cons2.receiveImmediate());
+
+      clientSession.end(xid, XAResource.TMSUCCESS);
+
+      clientSession.commit(xid, true);
+
+      clientSession.close();
+   }
+
    /**
     * @throws MessagingException
     * @throws XAException
@@ -320,13 +411,16 @@ public class BasicXaTest extends ServiceTestBase
    protected void multipleQueuesInternalTest(boolean createQueues,
                                              boolean suspend,
                                              boolean recreateSession,
-                                             boolean onePhase) throws MessagingException, XAException
+                                             boolean isJoinSession,
+                                             boolean onePhase) throws Exception
    {
       int NUMBER_OF_MSGS = 100;
       int NUMBER_OF_QUEUES = 10;
       ClientSession session = null;
 
       SimpleString ADDRESS = new SimpleString("Address");
+
+      ClientSession newJoinSession = null;
 
       try
       {
@@ -338,6 +432,11 @@ public class BasicXaTest extends ServiceTestBase
             for (int i = 0; i < NUMBER_OF_QUEUES; i++)
             {
                session.createQueue(ADDRESS, ADDRESS.concat(Integer.toString(i)), true);
+               if (isJoinSession)
+               {
+                  clientSession.createQueue(ADDRESS.concat("-join"), ADDRESS.concat("-join." + i), true);
+               }
+
             }
          }
 
@@ -365,7 +464,29 @@ public class BasicXaTest extends ServiceTestBase
 
             prod.close();
 
+            if (isJoinSession)
+            {
+               newJoinSession = sessionFactory.createSession(true, false, false);
+
+               // This is a basic condition, or a real TM wouldn't be able to join both sessions in a single
+               // transactions
+               assertTrue(session.isSameRM(newJoinSession));
+
+               newJoinSession.start(xid, XAResource.TMJOIN);
+
+               // The Join Session will have its own queue, as it's not possible to guarantee ordering since this
+               // producer will be using a different session
+               ClientProducer newProd = newJoinSession.createProducer(ADDRESS.concat("-join"));
+               newProd.send(createTextMessage(newJoinSession, "After Join"));
+            }
+
             session.end(xid, XAResource.TMSUCCESS);
+
+            if (isJoinSession)
+            {
+               newJoinSession.end(xid, XAResource.TMSUCCESS);
+               newJoinSession.close();
+            }
 
             if (!onePhase)
             {
@@ -416,6 +537,7 @@ public class BasicXaTest extends ServiceTestBase
 
                ClientMessage msg = consumer.receive(1000);
                assertNotNull(msg);
+               assertEquals("one more", getTextMessage(msg));
                msg.acknowledge();
 
                if (suspend)
@@ -426,8 +548,28 @@ public class BasicXaTest extends ServiceTestBase
 
                assertEquals("one more", getTextMessage(msg));
 
-               assertNull(consumer.receiveImmediate());
+               if (isJoinSession)
+               {
+                  ClientSession newSession = sessionFactory.createSession(true, false, false);
 
+                  newSession.start(xid, XAResource.TMJOIN);
+
+                  newSession.start();
+
+                  ClientConsumer newConsumer = newSession.createConsumer(ADDRESS.concat("-join." + nqueues));
+
+                  msg = newConsumer.receive(1000);
+                  assertNotNull(msg);
+
+                  assertEquals("After Join", getTextMessage(msg));
+                  msg.acknowledge();
+
+                  newSession.end(xid, XAResource.TMSUCCESS);
+
+                  newSession.close();
+               }
+
+               assertNull(consumer.receiveImmediate());
                consumer.close();
 
             }
