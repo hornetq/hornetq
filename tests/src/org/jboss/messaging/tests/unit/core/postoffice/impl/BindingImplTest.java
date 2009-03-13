@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
 import java.util.Set;
@@ -65,34 +64,32 @@ public class BindingImplTest extends UnitTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   
+
    public void testRemoveWhileRouting() throws Exception
    {
       // It would require many iterations before getting a failure
-      for (int i = 0; i < 2000; i++)
+      for (int i = 0; i < 100; i++)
       {
          internalTestRoute();
       }
    }
-   
+
    private void internalTestRoute() throws Exception
    {
-      
+
       final CountDownLatch latchAlign = new CountDownLatch(1);
       final CountDownLatch latchStart = new CountDownLatch(1);
 
       final FakeBinding fake = new FakeBinding(new SimpleString("a"));
-      
+
       final BindingsImpl bind = new BindingsImpl();
       bind.addBinding(fake);
       bind.addBinding(new FakeBinding(new SimpleString("a")));
       bind.addBinding(new FakeBinding(new SimpleString("a")));
-      
-      
-      
+
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -107,40 +104,40 @@ public class BindingImplTest extends UnitTestCase
             }
          }
       };
-      
+
       t.start();
-      
+
       latchAlign.await();
-      latchStart.countDown();     
-      
+      latchStart.countDown();
+
       bind.route(new FakeMessage(), new FakeTransaction());
    }
-   
+
    public void testRemoveWhileRedistributing() throws Exception
    {
       // It would require many iterations before getting a failure
-      for (int i = 0; i < 2000; i++)
+      for (int i = 0; i < 100; i++)
       {
          internalTestRedistribute();
       }
    }
-   
-   
+
    private void internalTestRedistribute() throws Exception
    {
-      
+
       final CountDownLatch latchAlign = new CountDownLatch(1);
       final CountDownLatch latchStart = new CountDownLatch(1);
 
       final FakeBinding fake = new FakeBinding(new SimpleString("a"));
-      
+
       final BindingsImpl bind = new BindingsImpl();
       bind.addBinding(fake);
       bind.addBinding(new FakeBinding(new SimpleString("a")));
       bind.addBinding(new FakeBinding(new SimpleString("a")));
-      
+
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -155,26 +152,24 @@ public class BindingImplTest extends UnitTestCase
             }
          }
       };
-      
+
       t.start();
-      
+
       latchAlign.await();
-      latchStart.countDown();     
+      latchStart.countDown();
 
       bind.redistribute(new FakeMessage(), new SimpleString("a"), new FakeTransaction());
    }
-   
-   
+
    class FakeTransaction implements Transaction
    {
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.transaction.Transaction#addOperation(org.jboss.messaging.core.transaction.TransactionOperation)
        */
-      public void addOperation(TransactionOperation sync)
+      public void addOperation(final TransactionOperation sync)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -182,17 +177,15 @@ public class BindingImplTest extends UnitTestCase
        */
       public void commit() throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.transaction.Transaction#commit(boolean)
        */
-      public void commit(boolean onePhase) throws Exception
+      public void commit(final boolean onePhase) throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -200,7 +193,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public long getCreateTime()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -209,7 +202,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public long getID()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -218,16 +211,16 @@ public class BindingImplTest extends UnitTestCase
        */
       public int getOperationsCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.transaction.Transaction#getProperty(int)
        */
-      public Object getProperty(int index)
+      public Object getProperty(final int index)
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -236,7 +229,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public State getState()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -245,17 +238,16 @@ public class BindingImplTest extends UnitTestCase
        */
       public Xid getXid()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.transaction.Transaction#markAsRollbackOnly(org.jboss.messaging.core.exception.MessagingException)
        */
-      public void markAsRollbackOnly(MessagingException messagingException)
+      public void markAsRollbackOnly(final MessagingException messagingException)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -263,26 +255,23 @@ public class BindingImplTest extends UnitTestCase
        */
       public void prepare() throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.transaction.Transaction#putProperty(int, java.lang.Object)
        */
-      public void putProperty(int index, Object property)
+      public void putProperty(final int index, final Object property)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.transaction.Transaction#removeOperation(org.jboss.messaging.core.transaction.TransactionOperation)
        */
-      public void removeOperation(TransactionOperation sync)
+      public void removeOperation(final TransactionOperation sync)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -290,8 +279,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void resume()
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -299,17 +287,15 @@ public class BindingImplTest extends UnitTestCase
        */
       public void rollback() throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.transaction.Transaction#setState(org.jboss.messaging.core.transaction.Transaction.State)
        */
-      public void setState(State state)
+      public void setState(final State state)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -317,22 +303,20 @@ public class BindingImplTest extends UnitTestCase
        */
       public void suspend()
       {
-         // TODO Auto-generated method stub
-         
+
       }
-      
+
    }
-   
-   
+
    class FakeMessage implements ServerMessage
    {
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.server.ServerMessage#copy(long)
        */
-      public ServerMessage copy(long newID) throws Exception
+      public ServerMessage copy(final long newID) throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -341,16 +325,16 @@ public class BindingImplTest extends UnitTestCase
        */
       public ServerMessage copy() throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.server.ServerMessage#createReference(org.jboss.messaging.core.server.Queue)
        */
-      public MessageReference createReference(Queue queue)
+      public MessageReference createReference(final Queue queue)
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -359,7 +343,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int decrementDurableRefCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -368,7 +352,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int decrementRefCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -377,7 +361,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int getMemoryEstimate()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -386,7 +370,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int getRefCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -395,7 +379,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int incrementDurableRefCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -404,7 +388,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int incrementRefCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -413,7 +397,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public boolean isLargeMessage()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
@@ -422,17 +406,16 @@ public class BindingImplTest extends UnitTestCase
        */
       public boolean isStored()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.server.ServerMessage#setMessageID(long)
        */
-      public void setMessageID(long id)
+      public void setMessageID(final long id)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -440,80 +423,72 @@ public class BindingImplTest extends UnitTestCase
        */
       public void setStored()
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#containsProperty(org.jboss.messaging.utils.SimpleString)
        */
-      public boolean containsProperty(SimpleString key)
+      public boolean containsProperty(final SimpleString key)
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#decode(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
        */
-      public void decode(MessagingBuffer buffer)
+      public void decode(final MessagingBuffer buffer)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#decodeBody(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
        */
-      public void decodeBody(MessagingBuffer buffer)
+      public void decodeBody(final MessagingBuffer buffer)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#decodeProperties(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
        */
-      public void decodeProperties(MessagingBuffer buffer)
+      public void decodeProperties(final MessagingBuffer buffer)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#encode(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
        */
-      public void encode(MessagingBuffer buffer)
+      public void encode(final MessagingBuffer buffer)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#encodeBody(org.jboss.messaging.core.remoting.spi.MessagingBuffer, long, int)
        */
-      public void encodeBody(MessagingBuffer buffer, long start, int size)
+      public void encodeBody(final MessagingBuffer buffer, final long start, final int size)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#encodeBody(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
        */
-      public void encodeBody(MessagingBuffer buffer)
+      public void encodeBody(final MessagingBuffer buffer)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#encodeProperties(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
        */
-      public void encodeProperties(MessagingBuffer buffer)
+      public void encodeProperties(final MessagingBuffer buffer)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -521,7 +496,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public MessagingBuffer getBody()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -530,7 +505,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int getBodySize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -539,7 +514,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public SimpleString getDestination()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -548,7 +523,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int getEncodeSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -557,7 +532,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public long getExpiration()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -566,7 +541,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public long getMessageID()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -575,7 +550,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public byte getPriority()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -584,7 +559,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public TypedProperties getProperties()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -593,16 +568,16 @@ public class BindingImplTest extends UnitTestCase
        */
       public int getPropertiesEncodeSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#getProperty(org.jboss.messaging.utils.SimpleString)
        */
-      public Object getProperty(SimpleString key)
+      public Object getProperty(final SimpleString key)
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -611,7 +586,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public Set<SimpleString> getPropertyNames()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -620,7 +595,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public long getTimestamp()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -629,7 +604,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public byte getType()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -638,7 +613,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public boolean isDurable()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
@@ -647,167 +622,149 @@ public class BindingImplTest extends UnitTestCase
        */
       public boolean isExpired()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putBooleanProperty(org.jboss.messaging.utils.SimpleString, boolean)
        */
-      public void putBooleanProperty(SimpleString key, boolean value)
+      public void putBooleanProperty(final SimpleString key, final boolean value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putByteProperty(org.jboss.messaging.utils.SimpleString, byte)
        */
-      public void putByteProperty(SimpleString key, byte value)
+      public void putByteProperty(final SimpleString key, final byte value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putBytesProperty(org.jboss.messaging.utils.SimpleString, byte[])
        */
-      public void putBytesProperty(SimpleString key, byte[] value)
+      public void putBytesProperty(final SimpleString key, final byte[] value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putDoubleProperty(org.jboss.messaging.utils.SimpleString, double)
        */
-      public void putDoubleProperty(SimpleString key, double value)
+      public void putDoubleProperty(final SimpleString key, final double value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putFloatProperty(org.jboss.messaging.utils.SimpleString, float)
        */
-      public void putFloatProperty(SimpleString key, float value)
+      public void putFloatProperty(final SimpleString key, final float value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putIntProperty(org.jboss.messaging.utils.SimpleString, int)
        */
-      public void putIntProperty(SimpleString key, int value)
+      public void putIntProperty(final SimpleString key, final int value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putLongProperty(org.jboss.messaging.utils.SimpleString, long)
        */
-      public void putLongProperty(SimpleString key, long value)
+      public void putLongProperty(final SimpleString key, final long value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putShortProperty(org.jboss.messaging.utils.SimpleString, short)
        */
-      public void putShortProperty(SimpleString key, short value)
+      public void putShortProperty(final SimpleString key, final short value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putStringProperty(org.jboss.messaging.utils.SimpleString, org.jboss.messaging.utils.SimpleString)
        */
-      public void putStringProperty(SimpleString key, SimpleString value)
+      public void putStringProperty(final SimpleString key, final SimpleString value)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#putTypedProperties(org.jboss.messaging.utils.TypedProperties)
        */
-      public void putTypedProperties(TypedProperties properties)
+      public void putTypedProperties(final TypedProperties properties)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#removeProperty(org.jboss.messaging.utils.SimpleString)
        */
-      public Object removeProperty(SimpleString key)
+      public Object removeProperty(final SimpleString key)
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#setBody(org.jboss.messaging.core.remoting.spi.MessagingBuffer)
        */
-      public void setBody(MessagingBuffer body)
+      public void setBody(final MessagingBuffer body)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#setDestination(org.jboss.messaging.utils.SimpleString)
        */
-      public void setDestination(SimpleString destination)
+      public void setDestination(final SimpleString destination)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#setDurable(boolean)
        */
-      public void setDurable(boolean durable)
+      public void setDurable(final boolean durable)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#setExpiration(long)
        */
-      public void setExpiration(long expiration)
+      public void setExpiration(final long expiration)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#setPriority(byte)
        */
-      public void setPriority(byte priority)
+      public void setPriority(final byte priority)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.message.Message#setTimestamp(long)
        */
-      public void setTimestamp(long timestamp)
+      public void setTimestamp(final long timestamp)
       {
-         // TODO Auto-generated method stub
-         
+
       }
-      
+
    }
 
-   
-   
    class FakeFilter implements Filter
    {
 
@@ -822,27 +779,26 @@ public class BindingImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.filter.Filter#match(org.jboss.messaging.core.server.ServerMessage)
        */
-      public boolean match(ServerMessage message)
+      public boolean match(final ServerMessage message)
       {
          return false;
       }
-      
+
    }
-   
-   
+
    class FakeBinding implements Binding
    {
 
       final SimpleString name;
-      
-      FakeBinding(SimpleString name)
+
+      FakeBinding(final SimpleString name)
       {
          this.name = name;
       }
-      
+
       public SimpleString getAddress()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -851,7 +807,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public Bindable getBindable()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -860,7 +816,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public SimpleString getClusterName()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -869,7 +825,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int getDistance()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -886,7 +842,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public int getID()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
@@ -895,7 +851,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public SimpleString getRoutingName()
       {
-         return this.name;
+         return name;
       }
 
       /* (non-Javadoc)
@@ -903,7 +859,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public BindingType getType()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -912,7 +868,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public SimpleString getUniqueName()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
@@ -921,37 +877,35 @@ public class BindingImplTest extends UnitTestCase
        */
       public boolean isExclusive()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.postoffice.Binding#isHighAcceptPriority(org.jboss.messaging.core.server.ServerMessage)
        */
-      public boolean isHighAcceptPriority(ServerMessage message)
+      public boolean isHighAcceptPriority(final ServerMessage message)
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.postoffice.Binding#setID(int)
        */
-      public void setID(int id)
+      public void setID(final int id)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.postoffice.Binding#willRoute(org.jboss.messaging.core.server.ServerMessage)
        */
-      public void willRoute(ServerMessage message)
+      public void willRoute(final ServerMessage message)
       {
-         // TODO Auto-generated method stub
-         
+
       }
-      
+
    }
 
    // Package protected ---------------------------------------------
