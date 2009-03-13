@@ -1130,7 +1130,92 @@ public class ClientEndToEndTest extends ServiceTestBase
       }
    }
 
-  /* public void testTempQueueGetsDeleted() throws Exception
+   public void testSendDeliveryOrderOnCommit() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession sendSession = cf.createSession(false, false, true);
+         ClientProducer cp = sendSession.createProducer(addressA);
+         int numMessages = 1000;
+         sendSession.createQueue(addressA, queueA, false);
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage cm = sendSession.createClientMessage(false);
+            cm.getBody().writeInt(i);
+            cp.send(cm);
+            if (i % 10 == 0)
+            {
+               sendSession.commit();
+            }
+            sendSession.commit();
+         }
+         ClientConsumer c = sendSession.createConsumer(queueA);
+         sendSession.start();
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage cm = c.receive(5000);
+            assertNotNull(cm);
+            assertEquals(i, cm.getBody().readInt());
+         }
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }
+
+   public void testReceiveDeliveryOrderOnRollback() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession sendSession = cf.createSession(false, true, false);
+         ClientProducer cp = sendSession.createProducer(addressA);
+         int numMessages = 1000;
+         sendSession.createQueue(addressA, queueA, false);
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage cm = sendSession.createClientMessage(false);
+            cm.getBody().writeInt(i);
+            cp.send(cm);
+         }
+         ClientConsumer c = sendSession.createConsumer(queueA);
+         sendSession.start();
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage cm = c.receive(5000);
+            assertNotNull(cm);
+            cm.acknowledge();
+            assertEquals(i, cm.getBody().readInt());
+         }
+         sendSession.rollback();
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage cm = c.receive(5000);
+            assertNotNull(cm);
+            cm.acknowledge();
+            assertEquals(i, cm.getBody().readInt());
+         }
+         sendSession.close();
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }
+
+   /* public void testTempQueueGetsDeleted() throws Exception
    {
       MessagingService messagingService = createService(false);
       try
