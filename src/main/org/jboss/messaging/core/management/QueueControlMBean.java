@@ -40,6 +40,8 @@ public interface QueueControlMBean
 
    String getName();
 
+   String getAddress();
+   
    long getPersistenceID();
 
    boolean isTemporary();

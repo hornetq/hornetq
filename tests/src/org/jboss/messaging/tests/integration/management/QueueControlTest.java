@@ -23,8 +23,10 @@
 package org.jboss.messaging.tests.integration.management;
 
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createQueueControl;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -38,11 +40,13 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -66,12 +70,129 @@ public class QueueControlTest extends UnitTestCase
    
    private MBeanServer mbeanServer;
 
+   private ClientSession session;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
+   public void testAttributes() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      SimpleString filter = new SimpleString("color = 'blue'");
+      boolean durable = randomBoolean();
+      boolean temporary = false;
+      
+      session.createQueue(address, queue, filter, durable, temporary);
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      assertEquals(queue.toString(), queueControl.getName());
+      assertEquals(filter.toString(), queueControl.getFilter());
+      assertEquals(durable, queueControl.isDurable());
+      assertEquals(temporary, queueControl.isTemporary());
+
+      session.deleteQueue(queue);
+   }
+   
+   public void testGetNullFilter() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      assertEquals(queue.toString(), queueControl.getName());
+      assertEquals(null, queueControl.getFilter());
+
+      session.deleteQueue(queue);
+   }
+   
+   public void testGetDeadLetterAddress() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      final SimpleString deadLetterAddress = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      assertNull(queueControl.getDeadLetterAddress());
+
+      service.getServer().getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
+      {
+         @Override
+         public SimpleString getDeadLetterAddress()
+         {
+            return deadLetterAddress;
+         }
+      });
+      
+      assertEquals(deadLetterAddress.toString(), queueControl.getDeadLetterAddress());
+      
+      session.deleteQueue(queue);
+   }
+   
+   public void testSetDeadLetterAddress() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      String deadLetterAddress = randomString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      queueControl.setDeadLetterAddress(deadLetterAddress);
+
+      assertEquals(deadLetterAddress, queueControl.getDeadLetterAddress());
+      
+      session.deleteQueue(queue);
+   }
+
+   public void testGetExpiryAddress() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      final SimpleString expiryAddress = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      assertNull(queueControl.getExpiryAddress());
+
+      service.getServer().getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
+      {
+         @Override
+         public SimpleString getExpiryAddress()
+         {
+            return expiryAddress;
+         }
+      });
+      
+      assertEquals(expiryAddress.toString(), queueControl.getExpiryAddress());
+      
+      session.deleteQueue(queue);
+   }
+   
+   public void testSetExpiryAddress() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      String expiryAddress = randomString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      queueControl.setExpiryAddress(expiryAddress);
+
+      assertEquals(expiryAddress, queueControl.getExpiryAddress());
+      
+      session.deleteQueue(queue);
+   }
+   
    /**
     * <ol>
     * <li>send a message to queue</li>
@@ -82,12 +203,6 @@ public class QueueControlTest extends UnitTestCase
     */
    public void testMoveAllMessages() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnNonPersistentSend(true);
-      
-      ClientSession session = sf.createSession(false, true, true);
-
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
       SimpleString otherAddress = randomSimpleString();
@@ -129,7 +244,6 @@ public class QueueControlTest extends UnitTestCase
       session.deleteQueue(queue);
       otherConsumer.close();
       session.deleteQueue(otherQueue);
-      session.close();
    }
 
    /**
@@ -146,11 +260,6 @@ public class QueueControlTest extends UnitTestCase
       SimpleString key = new SimpleString("key");
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
-      ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -196,7 +305,6 @@ public class QueueControlTest extends UnitTestCase
       session.deleteQueue(queue);
       otherConsumer.close();
       session.deleteQueue(otherQueue);
-      session.close();
    }
 
    /**
@@ -209,11 +317,6 @@ public class QueueControlTest extends UnitTestCase
     */
    public void testRemoveAllMessages() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnNonPersistentSend(true);
-      ClientSession session = sf.createSession(false, true, true);
-
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
@@ -240,7 +343,6 @@ public class QueueControlTest extends UnitTestCase
 
       consumer.close();
       session.deleteQueue(queue);
-      session.close();
    }
    
    /**
@@ -256,11 +358,6 @@ public class QueueControlTest extends UnitTestCase
       SimpleString key = new SimpleString("key");
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnNonPersistentSend(true);
-      ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -300,7 +397,43 @@ public class QueueControlTest extends UnitTestCase
 
       consumer.close();
       session.deleteQueue(queue);
-      session.close();
+   }
+   
+   public void testRemoveMessage() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      // send 2 messages on queue
+      producer.send(session.createClientMessage(false));
+      producer.send(session.createClientMessage(false));
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      assertEquals(2, queueControl.getMessageCount());
+
+      // the message IDs are set on the server
+      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
+      assertEquals(2, messageInfos.length);
+      long messageID = messageInfos[0].getID();
+
+      // delete 1st message
+      boolean deleted = queueControl.removeMessage(messageID);
+      assertTrue(deleted);
+      assertEquals(1, queueControl.getMessageCount());
+
+      // check there is a single message to consume from queue
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage m = consumer.receive(500);
+      assertNotNull(m);
+      m = consumer.receive(500);
+      assertNull(m);
+
+      consumer.close();
+      session.deleteQueue(queue);
    }
    
    public void testCountMessagesWithFilter() throws Exception
@@ -308,11 +441,6 @@ public class QueueControlTest extends UnitTestCase
       SimpleString key = new SimpleString("key");
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnNonPersistentSend(true);
-      ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -337,7 +465,6 @@ public class QueueControlTest extends UnitTestCase
       assertEquals(1, queueControl.countMessages(key + " =" + unmatchingValue));
 
       session.deleteQueue(queue);
-      session.close();
    }
    
    public void testExpireMessagesWithFilter() throws Exception
@@ -345,11 +472,6 @@ public class QueueControlTest extends UnitTestCase
       SimpleString key = new SimpleString("key");
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnNonPersistentSend(true);
-      ClientSession session = sf.createSession(false, true, true);
 
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -407,11 +529,18 @@ public class QueueControlTest extends UnitTestCase
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
+      
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnNonPersistentSend(true);
+      session = sf.createSession(false, true, true);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      session.close();
+      
       service.stop();
 
       super.tearDown();

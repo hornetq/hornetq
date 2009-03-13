@@ -112,6 +112,11 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.getName();
    }
 
+   public String getAddress()
+   {
+      return localQueueControl.getAddress();
+   }
+   
    public long getPersistenceID()
    {
       return localQueueControl.getPersistenceID();

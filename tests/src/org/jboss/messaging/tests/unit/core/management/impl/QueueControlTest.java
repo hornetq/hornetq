@@ -73,6 +73,8 @@ public class QueueControlTest extends UnitTestCase
 
    private Queue queue;
 
+   private String address;
+   
    private StorageManager storageManager;
 
    private PostOffice postOffice;
@@ -602,7 +604,8 @@ public class QueueControlTest extends UnitTestCase
       super.setUp();
 
       queueName = randomSimpleString();
-      queue = createMock(Queue.class);
+      address = randomString();
+      queue = createMock(Queue.class);      
       storageManager = createMock(StorageManager.class);
       postOffice = createMock(PostOffice.class);
       repository = createMock(HierarchicalRepository.class);
@@ -635,7 +638,7 @@ public class QueueControlTest extends UnitTestCase
 
    private QueueControl createControl() throws Exception
    {
-      return new QueueControl(queue, postOffice, repository, messageCounter);
+      return new QueueControl(queue, address, postOffice, repository, messageCounter);
    }
 
    // Inner classes -------------------------------------------------

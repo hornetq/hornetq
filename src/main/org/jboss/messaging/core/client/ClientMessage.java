@@ -34,8 +34,6 @@ import org.jboss.messaging.core.message.Message;
  */
 public interface ClientMessage extends Message
 {
-   long getMessageID();
-
    int getDeliveryCount();
    
    void setDeliveryCount(int deliveryCount);
