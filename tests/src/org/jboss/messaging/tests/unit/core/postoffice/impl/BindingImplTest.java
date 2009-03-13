@@ -68,7 +68,7 @@ public class BindingImplTest extends UnitTestCase
    public void testRemoveWhileRouting() throws Exception
    {
       // It would require many iterations before getting a failure
-      for (int i = 0; i < 100; i++)
+      for (int i = 0; i < 2000; i++)
       {
          internalTestRoute();
       }
@@ -77,9 +77,6 @@ public class BindingImplTest extends UnitTestCase
    private void internalTestRoute() throws Exception
    {
 
-      final CountDownLatch latchAlign = new CountDownLatch(1);
-      final CountDownLatch latchStart = new CountDownLatch(1);
-
       final FakeBinding fake = new FakeBinding(new SimpleString("a"));
 
       final BindingsImpl bind = new BindingsImpl();
@@ -94,8 +91,6 @@ public class BindingImplTest extends UnitTestCase
          {
             try
             {
-               latchAlign.countDown();
-               latchStart.await();
                bind.removeBinding(fake);
             }
             catch (Exception e)
@@ -106,9 +101,6 @@ public class BindingImplTest extends UnitTestCase
       };
 
       t.start();
-
-      latchAlign.await();
-      latchStart.countDown();
 
       bind.route(new FakeMessage(), new FakeTransaction());
    }
@@ -116,7 +108,7 @@ public class BindingImplTest extends UnitTestCase
    public void testRemoveWhileRedistributing() throws Exception
    {
       // It would require many iterations before getting a failure
-      for (int i = 0; i < 100; i++)
+      for (int i = 0; i < 2000; i++)
       {
          internalTestRedistribute();
       }
@@ -124,10 +116,6 @@ public class BindingImplTest extends UnitTestCase
 
    private void internalTestRedistribute() throws Exception
    {
-
-      final CountDownLatch latchAlign = new CountDownLatch(1);
-      final CountDownLatch latchStart = new CountDownLatch(1);
-
       final FakeBinding fake = new FakeBinding(new SimpleString("a"));
 
       final BindingsImpl bind = new BindingsImpl();
@@ -142,8 +130,6 @@ public class BindingImplTest extends UnitTestCase
          {
             try
             {
-               latchAlign.countDown();
-               latchStart.await();
                bind.removeBinding(fake);
             }
             catch (Exception e)
@@ -154,9 +140,6 @@ public class BindingImplTest extends UnitTestCase
       };
 
       t.start();
-
-      latchAlign.await();
-      latchStart.countDown();
 
       bind.redistribute(new FakeMessage(), new SimpleString("a"), new FakeTransaction());
    }
