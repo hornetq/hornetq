@@ -1001,6 +1001,16 @@ public class BridgeImpl implements MessagingComponent, Bridge
    
    private void cleanup()
    {
+      //Stop the source connection
+      try
+      {
+         sourceConn.stop();
+      }
+      catch (Throwable ignore)
+      {            
+         if (trace) { log.trace("Failed to stop source connection", ignore); }
+      }
+      
       if (tx != null)
       {
          try
