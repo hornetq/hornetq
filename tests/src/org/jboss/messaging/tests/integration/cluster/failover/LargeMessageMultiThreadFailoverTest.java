@@ -63,6 +63,13 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
 
    // Protected -----------------------------------------------------
 
+   protected int getLatchWait()
+   {
+      return 60000;
+   }
+
+
+   
    protected ClientSessionFactoryInternal createSessionFactory()
    {
       ClientSessionFactoryInternal sf = super.createSessionFactory();

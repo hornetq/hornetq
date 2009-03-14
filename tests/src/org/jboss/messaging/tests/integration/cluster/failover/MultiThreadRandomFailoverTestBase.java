@@ -70,6 +70,8 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
    // Constants -----------------------------------------------------
 
    private static final int RECEIVE_TIMEOUT = 30000;
+   
+   private final int LATCH_WAIT = getLatchWait();
 
    private static final int NUM_THREADS = 10;
 
@@ -301,7 +303,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
       consumer.setMessageHandler(handler);
 
-      boolean ok = handler.latch.await(20000, TimeUnit.MILLISECONDS);
+      boolean ok = handler.latch.await(LATCH_WAIT, TimeUnit.MILLISECONDS);
 
       if (!ok)
       {
@@ -376,7 +378,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(20000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(LATCH_WAIT, TimeUnit.MILLISECONDS);
 
          if (!ok)
          {
@@ -464,7 +466,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(LATCH_WAIT, TimeUnit.MILLISECONDS);
 
          if (!ok)
          {
@@ -556,7 +558,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(LATCH_WAIT, TimeUnit.MILLISECONDS);
 
          if (!ok)
          {
@@ -580,7 +582,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(LATCH_WAIT, TimeUnit.MILLISECONDS);
 
          assertTrue(ok);
       }
@@ -668,7 +670,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(LATCH_WAIT, TimeUnit.MILLISECONDS);
 
          if (!ok)
          {
@@ -708,7 +710,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
       for (MyHandler handler : handlers)
       {
-         boolean ok = handler.latch.await(50000, TimeUnit.MILLISECONDS);
+         boolean ok = handler.latch.await(LATCH_WAIT, TimeUnit.MILLISECONDS);
 
          if (!ok)
          {
@@ -1289,6 +1291,11 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       sessCreate.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
 
       sessCreate.close();
+   }
+   
+   protected int getLatchWait()
+   {
+      return 20000;
    }
 
    protected int getNumIterations()
