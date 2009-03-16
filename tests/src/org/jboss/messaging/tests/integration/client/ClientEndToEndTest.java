@@ -37,6 +37,7 @@ import org.jboss.messaging.utils.SimpleString;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -1215,26 +1216,85 @@ public class ClientEndToEndTest extends ServiceTestBase
       }
    }
 
-   /* public void testTempQueueGetsDeleted() throws Exception
+   public void testMultipleConsumersMessageOrder() throws Exception
    {
       MessagingService messagingService = createService(false);
       try
       {
          messagingService.start();
          ClientSessionFactory cf = createInVMFactory();
-         ClientSession session = cf.createSession(false, true, true);
-         session.createQueue(addressA, queueA, false, true);
-         session.close();
-         assertNull(messagingService.getServer().getPostOffice().getBinding(queueA));
+         ClientSession sendSession = cf.createSession(false, true, true);
+         ClientSession recSession = cf.createSession(false, true, true);
+         sendSession.createQueue(addressA, queueA, false);
+         int numReceivers = 100;
+         AtomicInteger count = new AtomicInteger(0);
+         int numMessage = 10000;
+         ClientConsumer[] clientConsumers = new ClientConsumer[numReceivers];
+         Receiver[] receivers = new Receiver[numReceivers];
+         CountDownLatch latch = new CountDownLatch(numMessage);
+         for(int i = 0; i < numReceivers; i++)
+         {
+            clientConsumers[i] = recSession.createConsumer(queueA);
+            receivers[i] = new Receiver(latch);
+            clientConsumers[i].setMessageHandler(receivers[i]);
+         }
+         recSession.start();
+         ClientProducer clientProducer = sendSession.createProducer(addressA);
+         for(int i = 0; i < numMessage; i++)
+         {
+            ClientMessage cm = sendSession.createClientMessage(false);
+            cm.getBody().writeInt(count.getAndIncrement());
+            clientProducer.send(cm);   
+         }
+         assertTrue(latch.await(10, TimeUnit.SECONDS));
+         for (Receiver receiver : receivers)
+         {
+            assertFalse("" + receiver.lastMessage, receiver.failed);
+         }
+         sendSession.close();
+         recSession.close();
       }
       finally
       {
-         if(messagingService.isStarted())
+         if (messagingService.isStarted())
          {
             messagingService.stop();
          }
       }
-   }*/
+   }
+
+
+   class Receiver implements MessageHandler
+   {
+      final CountDownLatch latch;
+      int lastMessage = -1;
+      boolean failed = false;
+      public Receiver(CountDownLatch latch)
+      {
+         this.latch = latch;
+      }
+
+      public void onMessage(ClientMessage message)
+      {
+         int i = message.getBody().readInt();
+         try
+         {
+            message.acknowledge();
+         }
+         catch (MessagingException e)
+         {
+            e.printStackTrace();
+         }
+         if( i <= lastMessage)
+         {
+            failed = true;
+         }
+         lastMessage = i;
+         latch.countDown();
+      }
+
+   }
+
 
    private static class MyMessageHandler implements MessageHandler
    {
