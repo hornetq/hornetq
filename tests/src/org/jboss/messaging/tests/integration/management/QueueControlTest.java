@@ -22,14 +22,18 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createMessagingServerControl;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -40,8 +44,11 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.MessageInfo;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
@@ -53,10 +60,7 @@ import org.jboss.messaging.utils.SimpleString;
 /**
  * A QueueControlTest
  *
- * @author jmesnil
- * 
- * Created 26 nov. 2008 14:18:48
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
 public class QueueControlTest extends UnitTestCase
@@ -67,10 +71,10 @@ public class QueueControlTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    private MessagingService service;
-   
-   private MBeanServer mbeanServer;
 
-   private ClientSession session;
+   protected MBeanServer mbeanServer;
+
+   protected ClientSession session;
 
    // Static --------------------------------------------------------
 
@@ -85,33 +89,34 @@ public class QueueControlTest extends UnitTestCase
       SimpleString filter = new SimpleString("color = 'blue'");
       boolean durable = randomBoolean();
       boolean temporary = false;
-      
+
       session.createQueue(address, queue, filter, durable, temporary);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(queue.toString(), queueControl.getName());
       assertEquals(address.toString(), queueControl.getAddress());
       assertEquals(filter.toString(), queueControl.getFilter());
       assertEquals(durable, queueControl.isDurable());
       assertEquals(temporary, queueControl.isTemporary());
+      assertEquals(false, queueControl.isBackup());
 
       session.deleteQueue(queue);
    }
-   
+
    public void testGetNullFilter() throws Exception
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
-      
+
       session.createQueue(address, queue, null, false, false);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(queue.toString(), queueControl.getName());
       assertEquals(null, queueControl.getFilter());
 
       session.deleteQueue(queue);
    }
-   
+
    public void testGetDeadLetterAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -120,7 +125,7 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, false);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertNull(queueControl.getDeadLetterAddress());
 
       service.getServer().getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
@@ -131,12 +136,12 @@ public class QueueControlTest extends UnitTestCase
             return deadLetterAddress;
          }
       });
-      
+
       assertEquals(deadLetterAddress.toString(), queueControl.getDeadLetterAddress());
-      
+
       session.deleteQueue(queue);
    }
-   
+
    public void testSetDeadLetterAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -145,11 +150,11 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, false);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       queueControl.setDeadLetterAddress(deadLetterAddress);
 
       assertEquals(deadLetterAddress, queueControl.getDeadLetterAddress());
-      
+
       session.deleteQueue(queue);
    }
 
@@ -161,7 +166,7 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, false);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertNull(queueControl.getExpiryAddress());
 
       service.getServer().getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
@@ -172,12 +177,12 @@ public class QueueControlTest extends UnitTestCase
             return expiryAddress;
          }
       });
-      
+
       assertEquals(expiryAddress.toString(), queueControl.getExpiryAddress());
-      
+
       session.deleteQueue(queue);
    }
-   
+
    public void testSetExpiryAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -186,14 +191,225 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, false);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       queueControl.setExpiryAddress(expiryAddress);
 
       assertEquals(expiryAddress, queueControl.getExpiryAddress());
-      
+
       session.deleteQueue(queue);
    }
-   
+
+   public void testGetConsumerCount() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+
+      assertEquals(0, queueControl.getConsumerCount());
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      assertEquals(1, queueControl.getConsumerCount());
+
+      consumer.close();
+      assertEquals(0, queueControl.getConsumerCount());
+
+      session.deleteQueue(queue);
+   }
+
+   public void testGetMessageCount() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      assertEquals(0, queueControl.getMessageCount());
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createClientMessage(false));
+      assertEquals(1, queueControl.getMessageCount());
+
+      consumeMessages(1, session, queue);
+
+      assertEquals(0, queueControl.getMessageCount());
+
+      session.deleteQueue(queue);
+   }
+
+   public void testGetMessagesAdded() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      assertEquals(0, queueControl.getMessagesAdded());
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createClientMessage(false));
+      assertEquals(1, queueControl.getMessagesAdded());
+      producer.send(session.createClientMessage(false));
+      assertEquals(2, queueControl.getMessagesAdded());
+
+      consumeMessages(2, session, queue);
+
+      assertEquals(2, queueControl.getMessagesAdded());
+
+      session.deleteQueue(queue);
+   }
+
+   public void testGetScheduledCount() throws Exception
+   {
+      long delay = 2000;
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      assertEquals(0, queueControl.getScheduledCount());
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createClientMessage(false);
+      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
+      producer.send(message);
+
+      assertEquals(1, queueControl.getScheduledCount());
+      consumeMessages(0, session, queue);
+
+      Thread.sleep(delay);
+
+      assertEquals(0, queueControl.getScheduledCount());
+      consumeMessages(1, session, queue);
+
+      session.deleteQueue(queue);
+   }
+
+   public void testListScheduledCount() throws Exception
+   {
+      long delay = 2000;
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      int intValue = randomInt();
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createClientMessage(false);
+      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
+      message.putIntProperty(new SimpleString("key"), intValue);
+      producer.send(message);
+      // unscheduled message
+      producer.send(session.createClientMessage(false));
+
+      TabularData tabularData = queueControl.listScheduledMessages();
+      assertEquals(1, tabularData.size());
+      MessageInfo[] messageInfos = MessageInfo.from(tabularData);
+      assertEquals(Integer.toString(intValue), messageInfos[0].getProperties().get("key"));
+
+      Thread.sleep(delay);
+
+      tabularData = queueControl.listScheduledMessages();
+      assertEquals(0, tabularData.size());
+
+      consumeMessages(2, session, queue);
+
+      session.deleteQueue(queue);
+   }
+
+   public void testGetDeliveringCount() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createClientMessage(false));
+
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      assertEquals(0, queueControl.getDeliveringCount());
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage message = consumer.receive(500);
+      assertNotNull(message);
+      assertEquals(1, queueControl.getDeliveringCount());
+
+      message.acknowledge();
+      session.commit();
+      assertEquals(0, queueControl.getDeliveringCount());
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
+
+   public void testListMessages() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      int intValue = randomInt();
+      session.createQueue(address, queue, null, false, false);
+
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createClientMessage(false);
+      message.putIntProperty(new SimpleString("key"), intValue);
+      producer.send(message);
+
+      TabularData tabularData = queueControl.listAllMessages();
+      assertEquals(1, tabularData.size());
+      MessageInfo[] messageInfos = MessageInfo.from(tabularData);
+      assertEquals(Integer.toString(intValue), messageInfos[0].getProperties().get("key"));
+
+      consumeMessages(1, session, queue);
+
+      tabularData = queueControl.listAllMessages();
+      assertEquals(0, tabularData.size());
+
+      session.deleteQueue(queue);
+   }
+
+   public void testListMessagesWithFilter() throws Exception
+   {
+      SimpleString key = new SimpleString("key");
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+      String filter = key + " =" + matchingValue;
+
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage matchingMessage = session.createClientMessage(false);
+      matchingMessage.putLongProperty(key, matchingValue);
+      producer.send(matchingMessage);
+      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      unmatchingMessage.putLongProperty(key, unmatchingValue);
+      producer.send(unmatchingMessage);
+
+      TabularData tabularData = queueControl.listMessages(filter);
+      assertEquals(1, tabularData.size());
+      MessageInfo[] messageInfos = MessageInfo.from(tabularData);
+      assertEquals(Long.toString(matchingValue), messageInfos[0].getProperties().get("key"));
+
+      consumeMessages(2, session, queue);
+
+      tabularData = queueControl.listMessages(filter);
+      assertEquals(0, tabularData.size());
+
+      session.deleteQueue(queue);
+   }
+
    /**
     * <ol>
     * <li>send a message to queue</li>
@@ -212,7 +428,6 @@ public class QueueControlTest extends UnitTestCase
       session.createQueue(address, queue, null, false, true);
       session.createQueue(otherAddress, otherQueue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send on queue
       ClientMessage message = session.createClientMessage(false);
@@ -221,7 +436,7 @@ public class QueueControlTest extends UnitTestCase
       message.putLongProperty(key, value);
       producer.send(message);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // moved all messages to otherQueue
@@ -243,7 +458,7 @@ public class QueueControlTest extends UnitTestCase
       otherConsumer.close();
       session.deleteQueue(otherQueue);
    }
-   
+
    public void testMoveAllMessagesToUnknownQueue() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -252,7 +467,6 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send on queue
       ClientMessage message = session.createClientMessage(false);
@@ -261,7 +475,7 @@ public class QueueControlTest extends UnitTestCase
       message.putLongProperty(key, value);
       producer.send(message);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // moved all messages to unknown queue
@@ -274,7 +488,7 @@ public class QueueControlTest extends UnitTestCase
       {
       }
       assertEquals(1, queueControl.getMessageCount());
-      
+
       consumeMessages(1, session, queue);
 
       session.deleteQueue(queue);
@@ -303,7 +517,6 @@ public class QueueControlTest extends UnitTestCase
       session.createQueue(address, queue, null, false, true);
       session.createQueue(otherAddress, otherQueue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send on queue
       ClientMessage matchingMessage = session.createClientMessage(false);
@@ -313,11 +526,12 @@ public class QueueControlTest extends UnitTestCase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       // moved matching messages to otherQueue
-      int movedMatchedMessagesCount = queueControl.moveMatchingMessages(key + " =" + matchingValue, otherQueue.toString());
+      int movedMatchedMessagesCount = queueControl.moveMatchingMessages(key + " =" + matchingValue,
+                                                                        otherQueue.toString());
       assertEquals(1, movedMatchedMessagesCount);
       assertEquals(1, queueControl.getMessageCount());
 
@@ -326,7 +540,7 @@ public class QueueControlTest extends UnitTestCase
       ClientMessage m = consumer.receive(500);
       assertNotNull(m);
       assertEquals(unmatchingValue, m.getProperty(key));
-      
+
       // consume the matched message from otherQueue
       ClientConsumer otherConsumer = session.createConsumer(otherQueue);
       m = otherConsumer.receive(500);
@@ -340,7 +554,7 @@ public class QueueControlTest extends UnitTestCase
       otherConsumer.close();
       session.deleteQueue(otherQueue);
    }
-   
+
    public void testMoveMessage() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -351,14 +565,13 @@ public class QueueControlTest extends UnitTestCase
       session.createQueue(address, queue, null, false, true);
       session.createQueue(otherAddress, otherQueue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send 2 messages on queue
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
-      QueueControlMBean otherQueueControl = createQueueControl(otherAddress, otherQueue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControlMBean otherQueueControl = createManagementControl(otherAddress, otherQueue);
       assertEquals(2, queueControl.getMessageCount());
       assertEquals(0, otherQueueControl.getMessageCount());
 
@@ -374,11 +587,11 @@ public class QueueControlTest extends UnitTestCase
 
       consumeMessages(1, session, queue);
       consumeMessages(1, session, otherQueue);
-      
+
       session.deleteQueue(queue);
       session.deleteQueue(otherQueue);
    }
-   
+
    public void testMoveMessageToUnknownQueue() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -387,19 +600,17 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send 2 messages on queue
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
       MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
       assertEquals(1, messageInfos.length);
       long messageID = messageInfos[0].getID();
-
 
       // moved all messages to unknown queue
       try
@@ -413,7 +624,7 @@ public class QueueControlTest extends UnitTestCase
       assertEquals(1, queueControl.getMessageCount());
 
       consumeMessages(1, session, queue);
-      
+
       session.deleteQueue(queue);
    }
 
@@ -432,13 +643,12 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send 2 messages on queue
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       // delete all messages
@@ -451,7 +661,7 @@ public class QueueControlTest extends UnitTestCase
 
       session.deleteQueue(queue);
    }
-   
+
    /**
     * <ol>
     * <li>send 2 message to queue</li>
@@ -471,7 +681,6 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send on queue
       ClientMessage matchingMessage = session.createClientMessage(false);
@@ -481,7 +690,7 @@ public class QueueControlTest extends UnitTestCase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       // removed matching messages to otherQueue
@@ -501,11 +710,10 @@ public class QueueControlTest extends UnitTestCase
       m = consumer.receive(500);
       assertNull(m);
 
-
       consumer.close();
       session.deleteQueue(queue);
    }
-   
+
    public void testRemoveMessage() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -513,13 +721,12 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send 2 messages on queue
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
@@ -537,7 +744,7 @@ public class QueueControlTest extends UnitTestCase
 
       session.deleteQueue(queue);
    }
-   
+
    public void testCountMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -549,7 +756,6 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send on queue
       ClientMessage matchingMessage = session.createClientMessage(false);
@@ -560,7 +766,7 @@ public class QueueControlTest extends UnitTestCase
       producer.send(unmatchingMessage);
       producer.send(matchingMessage);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(3, queueControl.getMessageCount());
 
       assertEquals(2, queueControl.countMessages(key + " =" + matchingValue));
@@ -568,7 +774,7 @@ public class QueueControlTest extends UnitTestCase
 
       session.deleteQueue(queue);
    }
-   
+
    public void testExpireMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -580,7 +786,6 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send on queue
       ClientMessage matchingMessage = session.createClientMessage(false);
@@ -590,7 +795,7 @@ public class QueueControlTest extends UnitTestCase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       int expiredMessagesCount = queueControl.expireMessages(key + " =" + matchingValue);
@@ -613,7 +818,7 @@ public class QueueControlTest extends UnitTestCase
       session.deleteQueue(queue);
       session.close();
    }
-   
+
    public void testExpireMessage() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -624,13 +829,12 @@ public class QueueControlTest extends UnitTestCase
       session.createQueue(address, queue, null, false, true);
       session.createQueue(expiryAddress, expiryQueue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send on queue
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
-      QueueControlMBean expiryQueueControl = createQueueControl(expiryAddress, expiryQueue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControlMBean expiryQueueControl = createManagementControl(expiryAddress, expiryQueue);
       assertEquals(1, queueControl.getMessageCount());
       assertEquals(0, expiryQueueControl.getMessageCount());
 
@@ -652,7 +856,7 @@ public class QueueControlTest extends UnitTestCase
       session.deleteQueue(expiryQueue);
       session.close();
    }
-   
+
    public void testSendMessageToDeadLetterAddress() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -663,14 +867,13 @@ public class QueueControlTest extends UnitTestCase
       session.createQueue(address, queue, null, false, true);
       session.createQueue(deadLetterAddress, deadLetterQueue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       // send 2 messages on queue
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
-      QueueControlMBean deadLetterQueueControl = createQueueControl(deadLetterAddress, deadLetterQueue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControlMBean deadLetterQueueControl = createManagementControl(deadLetterAddress, deadLetterQueue);
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
@@ -695,7 +898,7 @@ public class QueueControlTest extends UnitTestCase
       session.deleteQueue(queue);
       session.deleteQueue(deadLetterQueue);
    }
-   
+
    public void testChangeMessagePriority() throws Exception
    {
       byte originalPriority = (byte)1;
@@ -706,13 +909,12 @@ public class QueueControlTest extends UnitTestCase
 
       session.createQueue(address, queue, null, false, true);
       ClientProducer producer = session.createProducer(address);
-      session.start();
 
       ClientMessage message = session.createClientMessage(false);
       message.setPriority(originalPriority);
       producer.send(message);
 
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
@@ -727,8 +929,137 @@ public class QueueControlTest extends UnitTestCase
       ClientMessage m = consumer.receive(500);
       assertNotNull(m);
       assertEquals(newPriority, m.getPriority());
-      
+
       consumer.close();
+      session.deleteQueue(queue);
+   }
+
+   public void testChangeMessagePriorityWithInvalidValue() throws Exception
+   {
+      byte invalidPriority = (byte)23;
+
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true);
+      ClientProducer producer = session.createProducer(address);
+
+      ClientMessage message = session.createClientMessage(false);
+      producer.send(message);
+
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      assertEquals(1, queueControl.getMessageCount());
+
+      // the message IDs are set on the server
+      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
+      assertEquals(1, messageInfos.length);
+      long messageID = messageInfos[0].getID();
+
+      try
+      {
+         queueControl.changeMessagePriority(messageID, invalidPriority);
+         fail("operation fails when priority value is < 0 or > 9");
+      }
+      catch (Exception e)
+      {
+      }
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage m = consumer.receive(500);
+      assertNotNull(m);
+      assertTrue(invalidPriority != m.getPriority());
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
+
+   public void testListMessageCounter() throws Exception
+   {
+      long counterPeriod = 1000;
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      
+      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      serverControl.enableMessageCounters();
+      serverControl.setMessageCounterSamplePeriod(counterPeriod);
+
+      CompositeData compositeData = queueControl.listMessageCounter();
+      MessageCounterInfo info = MessageCounterInfo.from(compositeData);
+      assertEquals(0, info.getDepth());
+      assertEquals(0, info.getCount());
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createClientMessage(false));
+
+      Thread.sleep(counterPeriod * 2);
+      compositeData = queueControl.listMessageCounter();
+      info = MessageCounterInfo.from(compositeData);
+      assertEquals(1, info.getDepth());
+      assertEquals(1, info.getCount());
+
+      consumeMessages(1, session, queue);
+
+      Thread.sleep(counterPeriod * 2);      
+      compositeData = queueControl.listMessageCounter();
+      info = MessageCounterInfo.from(compositeData);
+      assertEquals(0, info.getDepth());
+      assertEquals(1, info.getCount());
+
+      session.deleteQueue(queue);
+   }
+   
+   public void testListMessageCounterAsHTML() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      
+      String history = queueControl.listMessageCounterAsHTML();
+      assertNotNull(history);
+      
+      session.deleteQueue(queue);
+   }
+
+   public void testListMessageCounterHistory() throws Exception
+   {
+      long counterPeriod = 1000;
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      
+      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      serverControl.enableMessageCounters();
+      serverControl.setMessageCounterSamplePeriod(counterPeriod);
+
+      TabularData tabularData = queueControl.listMessageCounterHistory();
+      assertEquals(1, tabularData.size());
+
+      session.deleteQueue(queue);
+   }
+
+   public void testListMessageCounterHistoryAsHTML() throws Exception
+   {
+      long counterPeriod = 1000;
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      
+      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      serverControl.enableMessageCounters();
+      serverControl.setMessageCounterSamplePeriod(counterPeriod);
+
+      String history = queueControl.listMessageCounterHistoryAsHTML();
+      assertNotNull(history);
+
       session.deleteQueue(queue);
    }
    
@@ -740,30 +1071,37 @@ public class QueueControlTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       mbeanServer = MBeanServerFactory.createMBeanServer();
-      
+
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
-      
+
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       sf.setBlockOnNonPersistentSend(true);
       sf.setBlockOnNonPersistentSend(true);
-      session = sf.createSession(false, true, true);
+      session = sf.createSession(false, true, false);
+      session.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       session.close();
-      
+
       service.stop();
 
       super.tearDown();
+   }
+
+   protected QueueControlMBean createManagementControl(SimpleString address, SimpleString queue) throws Exception
+   {
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      return queueControl;
    }
 
    // Private -------------------------------------------------------
@@ -778,19 +1116,22 @@ public class QueueControlTest extends UnitTestCase
          for (int i = 0; i < expected; i++)
          {
             m = consumer.receive(500);
-            assertNotNull("expected to received " + expected + " messages, got only " + (i + 1), m);  
+            assertNotNull("expected to received " + expected + " messages, got only " + (i + 1), m);
             m.acknowledge();
          }
+         session.commit();
          m = consumer.receive(500);
          assertNull("received one more message than expected (" + expected + ")", m);
-      } finally {
+      }
+      finally
+      {
          if (consumer != null)
          {
             consumer.close();
          }
       }
    }
-   
+
    // Inner classes -------------------------------------------------
 
 }

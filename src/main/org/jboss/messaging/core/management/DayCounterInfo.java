@@ -22,6 +22,10 @@
 
 package org.jboss.messaging.core.management;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.messaging.core.logging.Logger;
 
 import static javax.management.openmbean.SimpleType.INTEGER;
@@ -122,6 +126,25 @@ public class DayCounterInfo
          data.put(info.toCompositeData());
       }
       return data;
+   }
+   
+   public static DayCounterInfo[] from(TabularData data)
+   {
+      Collection values = data.values();
+      List<DayCounterInfo> infos = new ArrayList<DayCounterInfo>();
+      for (Object object : values)
+      {
+         CompositeData compositeData = (CompositeData)object;
+         String date = (String)compositeData.get("date");
+         int[] counters = new int[24];
+         for (int i = 0; i < counters.length; i++)
+         {
+            counters[i] = (Integer)compositeData.get(String.format("%02d", i));
+         }
+         infos.add(new DayCounterInfo(date, counters));
+      }
+      
+      return (DayCounterInfo[])infos.toArray(new DayCounterInfo[infos.size()]);
    }
 
    // Constructors --------------------------------------------------

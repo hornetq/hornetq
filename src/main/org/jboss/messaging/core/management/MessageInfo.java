@@ -53,33 +53,58 @@ public class MessageInfo
    // Constants -----------------------------------------------------
 
    public static final CompositeType TYPE;
+
    private static final String MESSAGE_TYPE_NAME = "MessageInfo";
+
    private static final String MESSAGE_TABULAR_TYPE_NAME = "MessageTabularInfo";
+
    private static final String[] ITEM_NAMES = new String[] { "id",
-         "destination", "durable", "timestamp", "type", "size", "priority",
-         "expired", "expiration", "properties" };
-   private static final String[] ITEM_DESCRIPTIONS = new String[] {
-         "Message ID", "destination of the message", "Is the message durable?",
-         "Timestamp of the message", "Type of the message",
-         "Size of the encoded messag", "Priority of the message",
-         "Is the message expired?", "Expiration of the message",
-         "Properties of the message" };
+                                                            "destination",
+                                                            "durable",
+                                                            "timestamp",
+                                                            "type",
+                                                            "size",
+                                                            "priority",
+                                                            "expired",
+                                                            "expiration",
+                                                            "properties" };
+
+   private static final String[] ITEM_DESCRIPTIONS = new String[] { "Message ID",
+                                                                   "destination of the message",
+                                                                   "Is the message durable?",
+                                                                   "Timestamp of the message",
+                                                                   "Type of the message",
+                                                                   "Size of the encoded messag",
+                                                                   "Priority of the message",
+                                                                   "Is the message expired?",
+                                                                   "Expiration of the message",
+                                                                   "Properties of the message" };
+
    private static final OpenType[] TYPES;
+
    private static final TabularType TABULAR_TYPE;
 
    static
    {
       try
       {
-         TYPES = new OpenType[] { LONG, STRING, BOOLEAN, LONG, BYTE, INTEGER,
-               BYTE, BOOLEAN, LONG, PropertiesInfo.TABULAR_TYPE };
-         TYPE = new CompositeType(MESSAGE_TYPE_NAME,
-               "Information for a Message", ITEM_NAMES, ITEM_DESCRIPTIONS,
-               TYPES);
+         TYPES = new OpenType[] { LONG,
+                                 STRING,
+                                 BOOLEAN,
+                                 LONG,
+                                 BYTE,
+                                 INTEGER,
+                                 BYTE,
+                                 BOOLEAN,
+                                 LONG,
+                                 PropertiesInfo.TABULAR_TYPE };
+         TYPE = new CompositeType(MESSAGE_TYPE_NAME, "Information for a Message", ITEM_NAMES, ITEM_DESCRIPTIONS, TYPES);
          TABULAR_TYPE = new TabularType(MESSAGE_TABULAR_TYPE_NAME,
-               "Information for tabular MessageInfo", TYPE,
-               new String[] { "id" });
-      } catch (OpenDataException e)
+                                        "Information for tabular MessageInfo",
+                                        TYPE,
+                                        new String[] { "id" });
+      }
+      catch (OpenDataException e)
       {
          e.printStackTrace();
          throw new IllegalStateException(e);
@@ -89,20 +114,28 @@ public class MessageInfo
    // Attributes ----------------------------------------------------
 
    private final long id;
+
    private final String destination;
+
    private final boolean durable;
+
    private final long timestamp;
+
    private final byte type;
+
    private final int size;
+
    private final byte priority;
+
    private final boolean expired;
+
    private final long expiration;
+
    private PropertiesInfo properties;
 
    // Static --------------------------------------------------------
 
-   public static TabularData toTabularData(final MessageInfo[] infos)
-         throws OpenDataException
+   public static TabularData toTabularData(final MessageInfo[] infos) throws OpenDataException
    {
       TabularData data = new TabularDataSupport(TABULAR_TYPE);
       for (MessageInfo messageInfo : infos)
@@ -118,30 +151,36 @@ public class MessageInfo
       List<MessageInfo> infos = new ArrayList<MessageInfo>();
       for (Object object : values)
       {
-         CompositeData compositeData = (CompositeData) object;
-         long id = (Long) compositeData.get("id");
-         String destination = (String) compositeData.get("destination");
-         boolean durable = (Boolean) compositeData.get("durable");
-         long timestamp = (Long) compositeData.get("timestamp");
-         byte type = (Byte) compositeData.get("type");
-         int size = (Integer) compositeData.get("size");
-         byte priority = (Byte) compositeData.get("priority");
-         boolean expired = (Boolean) compositeData.get("expired");
-         long expiration = (Long) compositeData.get("expiration");
+         CompositeData compositeData = (CompositeData)object;
+         long id = (Long)compositeData.get("id");
+         String destination = (String)compositeData.get("destination");
+         boolean durable = (Boolean)compositeData.get("durable");
+         long timestamp = (Long)compositeData.get("timestamp");
+         byte type = (Byte)compositeData.get("type");
+         int size = (Integer)compositeData.get("size");
+         byte priority = (Byte)compositeData.get("priority");
+         boolean expired = (Boolean)compositeData.get("expired");
+         long expiration = (Long)compositeData.get("expiration");
 
-         infos.add(new MessageInfo(id, destination, durable, timestamp, type,
-               size, priority, expired, expiration));
+         TabularData properties = (TabularData)compositeData.get("properties");
+         PropertiesInfo propertiesInfo = PropertiesInfo.from(properties);
+         infos.add(new MessageInfo(id, destination, durable, timestamp, type, size, priority, expired, expiration, propertiesInfo));
       }
 
-      return (MessageInfo[]) infos.toArray(new MessageInfo[infos.size()]);
+      return (MessageInfo[])infos.toArray(new MessageInfo[infos.size()]);
    }
 
    // Constructors --------------------------------------------------
 
-   public MessageInfo(final long id, final String destination,
-         final boolean durable, final long timestamp, final byte type,
-         final int size, final byte priority, final boolean expired,
-         final long expiration)
+   public MessageInfo(final long id,
+                      final String destination,
+                      final boolean durable,
+                      final long timestamp,
+                      final byte type,
+                      final int size,
+                      final byte priority,
+                      final boolean expired,
+                      final long expiration)
    {
       this.id = id;
       this.destination = destination;
@@ -153,6 +192,29 @@ public class MessageInfo
       this.expired = expired;
       this.expiration = expiration;
       this.properties = new PropertiesInfo();
+   }
+
+   public MessageInfo(final long id,
+                      final String destination,
+                      final boolean durable,
+                      final long timestamp,
+                      final byte type,
+                      final int size,
+                      final byte priority,
+                      final boolean expired,
+                      final long expiration,
+                      final PropertiesInfo properties)
+   {
+      this.id = id;
+      this.destination = destination;
+      this.durable = durable;
+      this.timestamp = timestamp;
+      this.type = type;
+      this.size = size;
+      this.priority = priority;
+      this.expired = expired;
+      this.expiration = expiration;
+      this.properties = properties;
    }
 
    // Public --------------------------------------------------------
@@ -218,9 +280,17 @@ public class MessageInfo
       {
 
          return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { id,
-               destination, durable, timestamp, type, size, priority, expired,
-               expiration, properties.toTabularData() });
-      } catch (OpenDataException e)
+                                                                         destination,
+                                                                         durable,
+                                                                         timestamp,
+                                                                         type,
+                                                                         size,
+                                                                         priority,
+                                                                         expired,
+                                                                         expiration,
+                                                                         properties.toTabularData() });
+      }
+      catch (OpenDataException e)
       {
          e.printStackTrace();
          return null;
@@ -230,9 +300,23 @@ public class MessageInfo
    @Override
    public String toString()
    {
-      return "MessageInfo[id=" + id + ", destination=" + destination
-            + ", durable=" + durable + ", timestamp=" + timestamp + ", type="
-            + type + ", size=" + size + ", priority=" + priority + ", expired="
-            + expired + ", expiration=" + expiration + "]";
+      return "MessageInfo[id=" + id +
+             ", destination=" +
+             destination +
+             ", durable=" +
+             durable +
+             ", timestamp=" +
+             timestamp +
+             ", type=" +
+             type +
+             ", size=" +
+             size +
+             ", priority=" +
+             priority +
+             ", expired=" +
+             expired +
+             ", expiration=" +
+             expiration +
+             "]";
    }
 }
