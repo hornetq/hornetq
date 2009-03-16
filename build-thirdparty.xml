@@ -85,7 +85,7 @@
            Dependencies required to build the transport jar
       -->
 
-      <componentref name="netty" version="3.1.0.ALPHA4"/>
+      <componentref name="netty" version="3.1.0.BETA1"/>
 
       <!--
            Dependencies needed to build the security.jar

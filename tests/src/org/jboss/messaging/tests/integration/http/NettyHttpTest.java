@@ -21,11 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.http;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -36,6 +31,11 @@ import org.jboss.messaging.integration.transports.netty.NettyAcceptor;
 import org.jboss.messaging.integration.transports.netty.NettyConnector;
 import org.jboss.messaging.integration.transports.netty.TransportConstants;
 import org.jboss.messaging.tests.util.UnitTestCase;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -50,305 +50,305 @@ public class NettyHttpTest extends UnitTestCase
    {      
    }
 
-//   public void testSendAndReceiveAtSameTime() throws Exception
-//   {
-//
-//      int numPackets = 1000;
-//      CountDownLatch connCreatedLatch = new CountDownLatch(1);
-//      CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
-//      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
-//      HashMap<String, Object> conf = new HashMap<String, Object>();
-//      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-//      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-//      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
-//      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-//      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
-//      acceptor.start();
-//
-//      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-//      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
-//      connector.start();
-//      Connection conn = connector.createConnection();
-//      connCreatedLatch.await(5, TimeUnit.SECONDS);
-//      for (int i = 0; i < numPackets; i++)
-//      {
-//         MessagingBuffer buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         conn.write(buff);
-//         buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         acceptorListener.connection.write(buff);
-//      }
-//      acceptorLatch.await(10, TimeUnit.SECONDS);
-//      connectorLatch.await(10, TimeUnit.SECONDS);
-//      conn.close();
-//      assertEquals(acceptorHandler.messagesReceieved, numPackets);
-//      assertEquals(connectorHandler.messagesReceieved, numPackets);
-//      int i = 0;
-//      for (Integer j : acceptorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//       i = 0;
-//      for (Integer j : connectorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//   }
-//
-//   public void testSendThenReceive() throws Exception
-//   {
-//
-//      int numPackets = 1000;
-//      CountDownLatch connCreatedLatch = new CountDownLatch(1);
-//      CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
-//      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
-//      HashMap<String, Object> conf = new HashMap<String, Object>();
-//      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-//      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-//      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
-//      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-//      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
-//      acceptor.start();
-//
-//      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-//      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
-//      connector.start();
-//      Connection conn = connector.createConnection();
-//      connCreatedLatch.await(5, TimeUnit.SECONDS);
-//      for (int i = 0; i < numPackets; i++)
-//      {
-//         MessagingBuffer buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         conn.write(buff);
-//      }
-//      for (int i = 0; i < numPackets; i++)
-//      {
-//         MessagingBuffer buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         acceptorListener.connection.write(buff);
-//      }
-//      acceptorLatch.await(10, TimeUnit.SECONDS);
-//      connectorLatch.await(10, TimeUnit.SECONDS);
-//      conn.close();
-//      assertEquals(acceptorHandler.messagesReceieved, numPackets);
-//      assertEquals(connectorHandler.messagesReceieved, numPackets);
-//      int i = 0;
-//      for (Integer j : acceptorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//       i = 0;
-//      for (Integer j : connectorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//   }
-//
-//   public void testReceiveThenSend() throws Exception
-//   {
-//
-//      int numPackets = 1000;
-//      CountDownLatch connCreatedLatch = new CountDownLatch(1);
-//      CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
-//      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
-//      HashMap<String, Object> conf = new HashMap<String, Object>();
-//      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-//      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-//      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
-//      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-//      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
-//      acceptor.start();
-//
-//      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-//      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
-//      connector.start();
-//      Connection conn = connector.createConnection();
-//      connCreatedLatch.await(5, TimeUnit.SECONDS);
-//      for (int i = 0; i < numPackets; i++)
-//      {
-//         MessagingBuffer buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         acceptorListener.connection.write(buff);
-//      }
-//
-//      for (int i = 0; i < numPackets; i++)
-//      {
-//         MessagingBuffer buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         conn.write(buff);
-//      }
-//      acceptorLatch.await(10, TimeUnit.SECONDS);
-//      connectorLatch.await(10, TimeUnit.SECONDS);
-//      conn.close();
-//      assertEquals(acceptorHandler.messagesReceieved, numPackets);
-//      assertEquals(connectorHandler.messagesReceieved, numPackets);
-//      int i = 0;
-//      for (Integer j : acceptorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//       i = 0;
-//      for (Integer j : connectorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//   }
-//
-//   public void testReceivePiggyBackOnOneResponse() throws Exception
-//   {
-//
-//      int numPackets = 1000;
-//      CountDownLatch connCreatedLatch = new CountDownLatch(1);
-//      CountDownLatch acceptorLatch = new CountDownLatch(1);
-//      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
-//      HashMap<String, Object> conf = new HashMap<String, Object>();
-//      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-//      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-//      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
-//      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-//      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
-//      acceptor.start();
-//
-//      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-//      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
-//      connector.start();
-//      Connection conn = connector.createConnection();
-//      connCreatedLatch.await(5, TimeUnit.SECONDS);
-//      for (int i = 0; i < numPackets; i++)
-//      {
-//         MessagingBuffer buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         acceptorListener.connection.write(buff);
-//      }
-//
-//
-//      MessagingBuffer buff = conn.createBuffer(8);
-//      buff.writeInt(4);
-//      buff.writeInt(0);
-//      conn.write(buff);
-//
-//      acceptorLatch.await(10, TimeUnit.SECONDS);
-//      connectorLatch.await(10, TimeUnit.SECONDS);
-//      conn.close();
-//      assertEquals(acceptorHandler.messagesReceieved, 1);
-//      assertEquals(connectorHandler.messagesReceieved, numPackets);
-//      int i = 0;
-//      for (Integer j : acceptorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//       i = 0;
-//      for (Integer j : connectorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//   }
-//
-//   public void testReceivePiggyBackOnIdleClient() throws Exception
-//   {
-//
-//      int numPackets = 1000;
-//      CountDownLatch connCreatedLatch = new CountDownLatch(1);
-//      CountDownLatch acceptorLatch = new CountDownLatch(0);
-//      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
-//      HashMap<String, Object> conf = new HashMap<String, Object>();
-//      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-//      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, 500l);
-//      conf.put(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME, 500l);
-//      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
-//      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-//      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
-//      acceptor.start();
-//
-//      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-//      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
-//      connector.start();
-//      Connection conn = connector.createConnection();
-//      connCreatedLatch.await(5, TimeUnit.SECONDS);
-//      for (int i = 0; i < numPackets; i++)
-//      {
-//         MessagingBuffer buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         acceptorListener.connection.write(buff);
-//      }
-//
-//      acceptorLatch.await(10, TimeUnit.SECONDS);
-//      connectorLatch.await(10, TimeUnit.SECONDS);
-//      conn.close();
-//      assertEquals(acceptorHandler.messagesReceieved, 0);
-//      assertEquals(connectorHandler.messagesReceieved, numPackets);
-//      int i = 0;
-//      for (Integer j : acceptorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//       i = 0;
-//      for (Integer j : connectorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//   }
-//
-//   public void testSendWithNoReceive() throws Exception
-//   {
-//
-//      int numPackets = 1000;
-//      CountDownLatch connCreatedLatch = new CountDownLatch(1);
-//      CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
-//      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
-//      HashMap<String, Object> conf = new HashMap<String, Object>();
-//      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
-//      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-//      conf.put(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME, 500l);
-//      conf.put(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, 5000l);
-//      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
-//      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-//      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
-//      acceptor.start();
-//
-//      BogusResponseHandler connectorHandler = new BogusResponseHandler(connectorLatch);
-//      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
-//      connector.start();
-//      Connection conn = connector.createConnection();
-//      connCreatedLatch.await(5, TimeUnit.SECONDS);
-//      for (int i = 0; i < numPackets; i++)
-//      {
-//         MessagingBuffer buff = conn.createBuffer(8);
-//         buff.writeInt(4);
-//         buff.writeInt(i);
-//         conn.write(buff);
-//      }
-//      acceptorLatch.await(100, TimeUnit.SECONDS);
-//      connectorLatch.await(0, TimeUnit.SECONDS);
-//      conn.close();
-//      assertEquals(acceptorHandler.messagesReceieved, numPackets);
-//      assertEquals(connectorHandler.messagesReceieved, 0);
-//      int i = 0;
-//      for (Integer j : acceptorHandler.messages)
-//      {
-//         assertTrue(i == j);
-//         i++;
-//      }
-//   }
+   public void testSendAndReceiveAtSameTime() throws Exception
+   {
+
+      int numPackets = 1000;
+      CountDownLatch connCreatedLatch = new CountDownLatch(1);
+      CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
+      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
+      HashMap<String, Object> conf = new HashMap<String, Object>();
+      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
+      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
+      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
+      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor.start();
+
+      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector.start();
+      Connection conn = connector.createConnection();
+      connCreatedLatch.await(5, TimeUnit.SECONDS);
+      for (int i = 0; i < numPackets; i++)
+      {
+         MessagingBuffer buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         conn.write(buff);
+         buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         acceptorListener.connection.write(buff);
+      }
+      acceptorLatch.await(10, TimeUnit.SECONDS);
+      connectorLatch.await(10, TimeUnit.SECONDS);
+      conn.close();
+      assertEquals(acceptorHandler.messagesReceieved, numPackets);
+      assertEquals(connectorHandler.messagesReceieved, numPackets);
+      int i = 0;
+      for (Integer j : acceptorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+       i = 0;
+      for (Integer j : connectorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+   }
+
+   public void testSendThenReceive() throws Exception
+   {
+
+      int numPackets = 1000;
+      CountDownLatch connCreatedLatch = new CountDownLatch(1);
+      CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
+      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
+      HashMap<String, Object> conf = new HashMap<String, Object>();
+      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
+      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
+      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
+      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor.start();
+
+      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector.start();
+      Connection conn = connector.createConnection();
+      connCreatedLatch.await(5, TimeUnit.SECONDS);
+      for (int i = 0; i < numPackets; i++)
+      {
+         MessagingBuffer buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         conn.write(buff);
+      }
+      for (int i = 0; i < numPackets; i++)
+      {
+         MessagingBuffer buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         acceptorListener.connection.write(buff);
+      }
+      acceptorLatch.await(10, TimeUnit.SECONDS);
+      connectorLatch.await(10, TimeUnit.SECONDS);
+      conn.close();
+      assertEquals(acceptorHandler.messagesReceieved, numPackets);
+      assertEquals(connectorHandler.messagesReceieved, numPackets);
+      int i = 0;
+      for (Integer j : acceptorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+       i = 0;
+      for (Integer j : connectorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+   }
+
+   public void testReceiveThenSend() throws Exception
+   {
+
+      int numPackets = 1000;
+      CountDownLatch connCreatedLatch = new CountDownLatch(1);
+      CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
+      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
+      HashMap<String, Object> conf = new HashMap<String, Object>();
+      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
+      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
+      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
+      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor.start();
+
+      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector.start();
+      Connection conn = connector.createConnection();
+      connCreatedLatch.await(5, TimeUnit.SECONDS);
+      for (int i = 0; i < numPackets; i++)
+      {
+         MessagingBuffer buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         acceptorListener.connection.write(buff);
+      }
+
+      for (int i = 0; i < numPackets; i++)
+      {
+         MessagingBuffer buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         conn.write(buff);
+      }
+      acceptorLatch.await(10, TimeUnit.SECONDS);
+      connectorLatch.await(10, TimeUnit.SECONDS);
+      conn.close();
+      assertEquals(acceptorHandler.messagesReceieved, numPackets);
+      assertEquals(connectorHandler.messagesReceieved, numPackets);
+      int i = 0;
+      for (Integer j : acceptorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+       i = 0;
+      for (Integer j : connectorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+   }
+
+   public void testReceivePiggyBackOnOneResponse() throws Exception
+   {
+
+      int numPackets = 1000;
+      CountDownLatch connCreatedLatch = new CountDownLatch(1);
+      CountDownLatch acceptorLatch = new CountDownLatch(1);
+      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
+      HashMap<String, Object> conf = new HashMap<String, Object>();
+      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
+      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
+      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
+      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor.start();
+
+      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector.start();
+      Connection conn = connector.createConnection();
+      connCreatedLatch.await(5, TimeUnit.SECONDS);
+      for (int i = 0; i < numPackets; i++)
+      {
+         MessagingBuffer buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         acceptorListener.connection.write(buff);
+      }
+
+
+      MessagingBuffer buff = conn.createBuffer(8);
+      buff.writeInt(4);
+      buff.writeInt(0);
+      conn.write(buff);
+
+      acceptorLatch.await(10, TimeUnit.SECONDS);
+      connectorLatch.await(10, TimeUnit.SECONDS);
+      conn.close();
+      assertEquals(acceptorHandler.messagesReceieved, 1);
+      assertEquals(connectorHandler.messagesReceieved, numPackets);
+      int i = 0;
+      for (Integer j : acceptorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+       i = 0;
+      for (Integer j : connectorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+   }
+
+   public void testReceivePiggyBackOnIdleClient() throws Exception
+   {
+
+      int numPackets = 1000;
+      CountDownLatch connCreatedLatch = new CountDownLatch(1);
+      CountDownLatch acceptorLatch = new CountDownLatch(0);
+      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
+      HashMap<String, Object> conf = new HashMap<String, Object>();
+      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
+      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, 500l);
+      conf.put(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME, 500l);
+      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
+      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor.start();
+
+      SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector.start();
+      Connection conn = connector.createConnection();
+      connCreatedLatch.await(5, TimeUnit.SECONDS);
+      for (int i = 0; i < numPackets; i++)
+      {
+         MessagingBuffer buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         acceptorListener.connection.write(buff);
+      }
+
+      acceptorLatch.await(10, TimeUnit.SECONDS);
+      connectorLatch.await(10, TimeUnit.SECONDS);
+      conn.close();
+      assertEquals(acceptorHandler.messagesReceieved, 0);
+      assertEquals(connectorHandler.messagesReceieved, numPackets);
+      int i = 0;
+      for (Integer j : acceptorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+       i = 0;
+      for (Integer j : connectorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+   }
+
+   public void testSendWithNoReceive() throws Exception
+   {
+
+      int numPackets = 1000;
+      CountDownLatch connCreatedLatch = new CountDownLatch(1);
+      CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
+      CountDownLatch connectorLatch = new CountDownLatch(numPackets);
+      HashMap<String, Object> conf = new HashMap<String, Object>();
+      conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
+      conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
+      conf.put(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME, 500l);
+      conf.put(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, 5000l);
+      DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
+      SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor.start();
+
+      BogusResponseHandler connectorHandler = new BogusResponseHandler(connectorLatch);
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector.start();
+      Connection conn = connector.createConnection();
+      connCreatedLatch.await(5, TimeUnit.SECONDS);
+      for (int i = 0; i < numPackets; i++)
+      {
+         MessagingBuffer buff = conn.createBuffer(8);
+         buff.writeInt(4);
+         buff.writeInt(i);
+         conn.write(buff);
+      }
+      acceptorLatch.await(100, TimeUnit.SECONDS);
+      connectorLatch.await(0, TimeUnit.SECONDS);
+      conn.close();
+      assertEquals(acceptorHandler.messagesReceieved, numPackets);
+      assertEquals(connectorHandler.messagesReceieved, 0);
+      int i = 0;
+      for (Integer j : acceptorHandler.messages)
+      {
+         assertTrue(i == j);
+         i++;
+      }
+   }
 
    @Override
    protected void tearDown() throws Exception
