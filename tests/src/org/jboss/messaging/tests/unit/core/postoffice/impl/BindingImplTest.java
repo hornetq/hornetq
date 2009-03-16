@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 import javax.transaction.xa.Xid;
 
@@ -68,53 +67,22 @@ public class BindingImplTest extends UnitTestCase
    public void testRemoveWhileRouting() throws Exception
    {
       // It would require many iterations before getting a failure
-      for (int i = 0; i < 2000; i++)
+      for (int i = 0; i < 500; i++)
       {
-         internalTestRoute();
+         internalTest(true);
       }
-   }
-
-   private void internalTestRoute() throws Exception
-   {
-
-      final FakeBinding fake = new FakeBinding(new SimpleString("a"));
-
-      final BindingsImpl bind = new BindingsImpl();
-      bind.addBinding(fake);
-      bind.addBinding(new FakeBinding(new SimpleString("a")));
-      bind.addBinding(new FakeBinding(new SimpleString("a")));
-
-      Thread t = new Thread()
-      {
-         @Override
-         public void run()
-         {
-            try
-            {
-               bind.removeBinding(fake);
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-         }
-      };
-
-      t.start();
-
-      bind.route(new FakeMessage(), new FakeTransaction());
    }
 
    public void testRemoveWhileRedistributing() throws Exception
    {
       // It would require many iterations before getting a failure
-      for (int i = 0; i < 2000; i++)
+      for (int i = 0; i < 500; i++)
       {
-         internalTestRedistribute();
+         internalTest(false);
       }
    }
 
-   private void internalTestRedistribute() throws Exception
+   private void internalTest(final boolean route) throws Exception
    {
       final FakeBinding fake = new FakeBinding(new SimpleString("a"));
 
@@ -141,7 +109,17 @@ public class BindingImplTest extends UnitTestCase
 
       t.start();
 
-      bind.redistribute(new FakeMessage(), new SimpleString("a"), new FakeTransaction());
+      for (int i = 0; i < 100; i++)
+      {
+         if (route)
+         {
+            bind.route(new FakeMessage(), new FakeTransaction());
+         }
+         else
+         {
+            bind.redistribute(new FakeMessage(), new SimpleString("a"), new FakeTransaction());
+         }
+      }
    }
 
    class FakeTransaction implements Transaction
