@@ -62,7 +62,7 @@ public interface QueueControlMBean
    
    String getExpiryAddress();
    
-   void setExpiryAddress(@Parameter(name = "expiryAddres", desc = "Expiry address of the queue") 
+   void setExpiryAddress(@Parameter(name = "expiryAddress", desc = "Expiry address of the queue") 
                          String expiryAddres) 
    throws Exception;
    

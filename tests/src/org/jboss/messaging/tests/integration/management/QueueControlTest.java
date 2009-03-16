@@ -90,6 +90,7 @@ public class QueueControlTest extends UnitTestCase
 
       QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
       assertEquals(queue.toString(), queueControl.getName());
+      assertEquals(address.toString(), queueControl.getAddress());
       assertEquals(filter.toString(), queueControl.getFilter());
       assertEquals(durable, queueControl.isDurable());
       assertEquals(temporary, queueControl.isTemporary());
@@ -229,21 +230,54 @@ public class QueueControlTest extends UnitTestCase
       assertEquals(0, queueControl.getMessageCount());
 
       // check there is no message to consume from queue
-      ClientConsumer consumer = session.createConsumer(queue);
-      ClientMessage m = consumer.receive(500);
-      assertNull(m);
+      consumeMessages(0, session, queue);
 
       // consume the message from otherQueue
       ClientConsumer otherConsumer = session.createConsumer(otherQueue);
-      m = otherConsumer.receive(500);
+      ClientMessage m = otherConsumer.receive(500);
       assertEquals(value, m.getProperty(key));
 
       m.acknowledge();
 
-      consumer.close();
       session.deleteQueue(queue);
       otherConsumer.close();
       session.deleteQueue(otherQueue);
+   }
+   
+   public void testMoveAllMessagesToUnknownQueue() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      SimpleString unknownQueue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      // send on queue
+      ClientMessage message = session.createClientMessage(false);
+      SimpleString key = randomSimpleString();
+      long value = randomLong();
+      message.putLongProperty(key, value);
+      producer.send(message);
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      assertEquals(1, queueControl.getMessageCount());
+
+      // moved all messages to unknown queue
+      try
+      {
+         queueControl.moveAllMessages(unknownQueue.toString());
+         fail("operation must fail if the other queue does not exist");
+      }
+      catch (Exception e)
+      {
+      }
+      assertEquals(1, queueControl.getMessageCount());
+      
+      consumeMessages(1, session, queue);
+
+      session.deleteQueue(queue);
    }
 
    /**
@@ -306,6 +340,82 @@ public class QueueControlTest extends UnitTestCase
       otherConsumer.close();
       session.deleteQueue(otherQueue);
    }
+   
+   public void testMoveMessage() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      SimpleString otherAddress = randomSimpleString();
+      SimpleString otherQueue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true);
+      session.createQueue(otherAddress, otherQueue, null, false, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      // send 2 messages on queue
+      producer.send(session.createClientMessage(false));
+      producer.send(session.createClientMessage(false));
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean otherQueueControl = createQueueControl(otherAddress, otherQueue, mbeanServer);
+      assertEquals(2, queueControl.getMessageCount());
+      assertEquals(0, otherQueueControl.getMessageCount());
+
+      // the message IDs are set on the server
+      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
+      assertEquals(2, messageInfos.length);
+      long messageID = messageInfos[0].getID();
+
+      boolean moved = queueControl.moveMessage(messageID, otherQueue.toString());
+      assertTrue(moved);
+      assertEquals(1, queueControl.getMessageCount());
+      assertEquals(1, otherQueueControl.getMessageCount());
+
+      consumeMessages(1, session, queue);
+      consumeMessages(1, session, otherQueue);
+      
+      session.deleteQueue(queue);
+      session.deleteQueue(otherQueue);
+   }
+   
+   public void testMoveMessageToUnknownQueue() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      SimpleString unknownQueue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      // send 2 messages on queue
+      producer.send(session.createClientMessage(false));
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      assertEquals(1, queueControl.getMessageCount());
+
+      // the message IDs are set on the server
+      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
+      assertEquals(1, messageInfos.length);
+      long messageID = messageInfos[0].getID();
+
+
+      // moved all messages to unknown queue
+      try
+      {
+         queueControl.moveMessage(messageID, unknownQueue.toString());
+         fail("operation must fail if the other queue does not exist");
+      }
+      catch (Exception e)
+      {
+      }
+      assertEquals(1, queueControl.getMessageCount());
+
+      consumeMessages(1, session, queue);
+      
+      session.deleteQueue(queue);
+   }
 
    /**
     * <ol>
@@ -337,11 +447,8 @@ public class QueueControlTest extends UnitTestCase
       assertEquals(0, queueControl.getMessageCount());
 
       // check there is no message to consume from queue
-      ClientConsumer consumer = session.createConsumer(queue);
-      ClientMessage m = consumer.receive(500);
-      assertNull(m);
+      consumeMessages(0, session, queue);
 
-      consumer.close();
       session.deleteQueue(queue);
    }
    
@@ -426,13 +533,8 @@ public class QueueControlTest extends UnitTestCase
       assertEquals(1, queueControl.getMessageCount());
 
       // check there is a single message to consume from queue
-      ClientConsumer consumer = session.createConsumer(queue);
-      ClientMessage m = consumer.receive(500);
-      assertNotNull(m);
-      m = consumer.receive(500);
-      assertNull(m);
+      consumeMessages(1, session, queue);
 
-      consumer.close();
       session.deleteQueue(queue);
    }
    
@@ -512,6 +614,124 @@ public class QueueControlTest extends UnitTestCase
       session.close();
    }
    
+   public void testExpireMessage() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      SimpleString expiryAddress = randomSimpleString();
+      SimpleString expiryQueue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true);
+      session.createQueue(expiryAddress, expiryQueue, null, false, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      // send on queue
+      producer.send(session.createClientMessage(false));
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean expiryQueueControl = createQueueControl(expiryAddress, expiryQueue, mbeanServer);
+      assertEquals(1, queueControl.getMessageCount());
+      assertEquals(0, expiryQueueControl.getMessageCount());
+
+      // the message IDs are set on the server
+      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
+      assertEquals(1, messageInfos.length);
+      long messageID = messageInfos[0].getID();
+
+      queueControl.setExpiryAddress(expiryAddress.toString());
+      boolean expired = queueControl.expireMessage(messageID);
+      assertTrue(expired);
+      assertEquals(0, queueControl.getMessageCount());
+      assertEquals(1, expiryQueueControl.getMessageCount());
+
+      consumeMessages(0, session, queue);
+      consumeMessages(1, session, expiryQueue);
+
+      session.deleteQueue(queue);
+      session.deleteQueue(expiryQueue);
+      session.close();
+   }
+   
+   public void testSendMessageToDeadLetterAddress() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      SimpleString deadLetterAddress = randomSimpleString();
+      SimpleString deadLetterQueue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true);
+      session.createQueue(deadLetterAddress, deadLetterQueue, null, false, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      // send 2 messages on queue
+      producer.send(session.createClientMessage(false));
+      producer.send(session.createClientMessage(false));
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControlMBean deadLetterQueueControl = createQueueControl(deadLetterAddress, deadLetterQueue, mbeanServer);
+      assertEquals(2, queueControl.getMessageCount());
+
+      // the message IDs are set on the server
+      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
+      assertEquals(2, messageInfos.length);
+      long messageID = messageInfos[0].getID();
+
+      queueControl.setDeadLetterAddress(deadLetterAddress.toString());
+
+      assertEquals(0, deadLetterQueueControl.getMessageCount());
+      boolean movedToDeadLetterAddress = queueControl.sendMessageToDeadLetterAddress(messageID);
+      assertTrue(movedToDeadLetterAddress);
+      assertEquals(1, queueControl.getMessageCount());
+      assertEquals(1, deadLetterQueueControl.getMessageCount());
+
+      // check there is a single message to consume from queue
+      consumeMessages(1, session, queue);
+
+      // check there is a single message to consume from deadletter queue
+      consumeMessages(1, session, deadLetterQueue);
+
+      session.deleteQueue(queue);
+      session.deleteQueue(deadLetterQueue);
+   }
+   
+   public void testChangeMessagePriority() throws Exception
+   {
+      byte originalPriority = (byte)1;
+      byte newPriority = (byte)8;
+
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, true);
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+
+      ClientMessage message = session.createClientMessage(false);
+      message.setPriority(originalPriority);
+      producer.send(message);
+
+      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      assertEquals(1, queueControl.getMessageCount());
+
+      // the message IDs are set on the server
+      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
+      assertEquals(1, messageInfos.length);
+      long messageID = messageInfos[0].getID();
+
+      boolean priorityChanged = queueControl.changeMessagePriority(messageID, newPriority);
+      assertTrue(priorityChanged);
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage m = consumer.receive(500);
+      assertNotNull(m);
+      assertEquals(newPriority, m.getPriority());
+      
+      consumer.close();
+      session.deleteQueue(queue);
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -548,6 +768,29 @@ public class QueueControlTest extends UnitTestCase
 
    // Private -------------------------------------------------------
 
+   private void consumeMessages(int expected, ClientSession session, SimpleString queue) throws Exception
+   {
+      ClientConsumer consumer = null;
+      try
+      {
+         consumer = session.createConsumer(queue);
+         ClientMessage m = null;
+         for (int i = 0; i < expected; i++)
+         {
+            m = consumer.receive(500);
+            assertNotNull("expected to received " + expected + " messages, got only " + (i + 1), m);  
+            m.acknowledge();
+         }
+         m = consumer.receive(500);
+         assertNull("received one more message than expected (" + expected + ")", m);
+      } finally {
+         if (consumer != null)
+         {
+            consumer.close();
+         }
+      }
+   }
+   
    // Inner classes -------------------------------------------------
 
 }
