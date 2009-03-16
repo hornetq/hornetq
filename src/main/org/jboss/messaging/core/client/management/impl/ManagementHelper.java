@@ -171,6 +171,16 @@ public class ManagementHelper
       throw new IllegalArgumentException(key + " property is not a valid TabularData");
    }
    
+   public static Object[] getArrayProperty(final Message message, final String key)
+   {
+      Object object = message.getProperty(new SimpleString(key));
+      if (object instanceof byte[])
+      {
+         return (Object[])from((byte[])object);
+      }
+      throw new IllegalArgumentException(key + " property is not a valid array");
+   }
+   
    public static CompositeData getCompositeDataProperty(final Message message, final String key)
    {
       Object object = message.getProperty(new SimpleString(key));
@@ -244,6 +254,10 @@ public class ManagementHelper
       else if (typedProperty instanceof TabularData || typedProperty instanceof CompositeData)
       {
          storePropertyAsBytes(message, key, typedProperty);
+      }
+      else if (typedProperty != null && typedProperty.getClass().isArray())
+      {
+         storePropertyAsBytes(message, key, typedProperty);         
       }
       // serialize as a SimpleString
       else

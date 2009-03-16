@@ -349,7 +349,7 @@ public class QueueControlTest extends UnitTestCase
       session.deleteQueue(queue);
    }
 
-   public void testListMessages() throws Exception
+   public void testListAllMessages() throws Exception
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();

@@ -22,15 +22,11 @@
 
 package org.jboss.messaging.tests.integration.management.core;
 
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
+import static org.jboss.messaging.tests.integration.management.core.CoreMessagingProxy.fromNullableSimpleString;
 
-import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientRequestor;
-import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.tests.integration.management.QueueControlTest;
@@ -52,18 +48,6 @@ public class CoreQueueControlTest extends QueueControlTest
 
    // Static --------------------------------------------------------
 
-   private static String fromNullableSimpleString(SimpleString sstring)
-   {
-      if (sstring == null)
-      {
-         return null;
-      }
-      else
-      {
-         return sstring.toString();
-      }
-   }
-
    // Constructors --------------------------------------------------
 
    // QueueControlTestBase overrides --------------------------------
@@ -72,232 +56,180 @@ public class CoreQueueControlTest extends QueueControlTest
    protected QueueControlMBean createManagementControl(final SimpleString address, final SimpleString queue) throws Exception
    {
 
-      final ClientRequestor requestor = new ClientRequestor(session, DEFAULT_MANAGEMENT_ADDRESS);
-
       return new QueueControlMBean()
       {
 
-         private ObjectName queueON = ObjectNames.getQueueObjectName(address, queue);
+         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
+                                                                         ObjectNames.getQueueObjectName(address, queue));
 
          public boolean changeMessagePriority(long messageID, int newPriority) throws Exception
          {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, "changeMessagePriority", messageID, newPriority);
-            ClientMessage reply = requestor.request(m);
-            return (Boolean)reply.getProperty(new SimpleString("changeMessagePriority"));
+            return (Boolean)proxy.invokOperation("changeMessagePriority", messageID, newPriority);
          }
 
          public int countMessages(String filter) throws Exception
          {
-            return (Integer)invokOperation("countMessages", filter);
+            return (Integer)proxy.invokOperation("countMessages", filter);
          }
 
          public boolean expireMessage(long messageID) throws Exception
          {
-            return (Boolean)invokOperation("expireMessage", messageID);
+            return (Boolean)proxy.invokOperation("expireMessage", messageID);
          }
 
          public int expireMessages(String filter) throws Exception
          {
-            return (Integer)invokOperation("expireMessages", filter);
+            return (Integer)proxy.invokOperation("expireMessages", filter);
          }
 
          public String getAddress()
          {
-            return fromNullableSimpleString((SimpleString)retriveAttributeValue("Address"));
+            return fromNullableSimpleString((SimpleString)proxy.retriveAttributeValue("Address"));
          }
 
          public int getConsumerCount()
          {
-            return (Integer)retriveAttributeValue("ConsumerCount");
+            return (Integer)proxy.retriveAttributeValue("ConsumerCount");
          }
 
          public String getDeadLetterAddress()
          {
-            return fromNullableSimpleString((SimpleString)retriveAttributeValue("DeadLetterAddress"));
+            return fromNullableSimpleString((SimpleString)proxy.retriveAttributeValue("DeadLetterAddress"));
          }
 
          public int getDeliveringCount()
          {
-            return (Integer)retriveAttributeValue("DeliveringCount");
+            return (Integer)proxy.retriveAttributeValue("DeliveringCount");
          }
 
          public String getExpiryAddress()
          {
-            return fromNullableSimpleString((SimpleString)retriveAttributeValue("ExpiryAddress"));
+            return fromNullableSimpleString((SimpleString)proxy.retriveAttributeValue("ExpiryAddress"));
          }
 
          public String getFilter()
          {
-            return fromNullableSimpleString((SimpleString)retriveAttributeValue("Filter"));
+            return fromNullableSimpleString((SimpleString)proxy.retriveAttributeValue("Filter"));
          }
 
          public int getMessageCount()
          {
-            return (Integer)retriveAttributeValue("MessageCount");
+            return (Integer)proxy.retriveAttributeValue("MessageCount");
          }
 
          public int getMessagesAdded()
          {
-            return (Integer)retriveAttributeValue("MessagesAdded");
+            return (Integer)proxy.retriveAttributeValue("MessagesAdded");
          }
 
          public String getName()
          {
-            return fromNullableSimpleString((SimpleString)retriveAttributeValue("Name"));
+            return fromNullableSimpleString((SimpleString)proxy.retriveAttributeValue("Name"));
          }
 
          public long getPersistenceID()
          {
-            return (Long)retriveAttributeValue("PersistenceID");
+            return (Long)proxy.retriveAttributeValue("PersistenceID");
          }
 
          public long getScheduledCount()
          {
-            return (Long)retriveAttributeValue("ScheduledCount");
+            return (Long)proxy.retriveAttributeValue("ScheduledCount");
          }
 
          public boolean isBackup()
          {
-            return (Boolean)retriveAttributeValue("Backup");
+            return (Boolean)proxy.retriveAttributeValue("Backup");
          }
 
          public boolean isDurable()
          {
-            return (Boolean)retriveAttributeValue("Durable");
+            return (Boolean)proxy.retriveAttributeValue("Durable");
          }
 
          public boolean isTemporary()
          {
-            return (Boolean)retriveAttributeValue("Temporary");
+            return (Boolean)proxy.retriveAttributeValue("Temporary");
          }
 
          public TabularData listAllMessages() throws Exception
          {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, "listAllMessages");
-            ClientMessage reply = requestor.request(m);
-            return (TabularData)ManagementHelper.getTabularDataProperty(reply, "listAllMessages");
+            return proxy.invokeTabularOperation("listAllMessages");
          }
 
          public CompositeData listMessageCounter() throws Exception
          {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, "listMessageCounter");
-            ClientMessage reply = requestor.request(m);
-            return (CompositeData)ManagementHelper.getCompositeDataProperty(reply, "listMessageCounter");
+            return proxy.invokeCompositeOperation("listMessageCounter");
          }
 
          public String listMessageCounterAsHTML() throws Exception
          {
-            return fromNullableSimpleString((SimpleString)invokOperation("listMessageCounterAsHTML"));
+            return fromNullableSimpleString((SimpleString)proxy.invokOperation("listMessageCounterAsHTML"));
          }
 
          public TabularData listMessageCounterHistory() throws Exception
          {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, "listMessageCounterHistory");
-            ClientMessage reply = requestor.request(m);
-            return (TabularData)ManagementHelper.getTabularDataProperty(reply, "listMessageCounterHistory");
+            return proxy.invokeTabularOperation("listMessageCounterHistory");
          }
 
          public String listMessageCounterHistoryAsHTML() throws Exception
          {
-            return fromNullableSimpleString((SimpleString)invokOperation("listMessageCounterHistoryAsHTML"));
+            return fromNullableSimpleString((SimpleString)proxy.invokOperation("listMessageCounterHistoryAsHTML"));
          }
 
          public TabularData listMessages(String filter) throws Exception
          {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, "listMessages", filter);
-            ClientMessage reply = requestor.request(m);
-            return (TabularData)ManagementHelper.getTabularDataProperty(reply, "listMessages");
+            return proxy.invokeTabularOperation("listMessages", filter);
          }
 
          public TabularData listScheduledMessages() throws Exception
          {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, "listScheduledMessages");
-            ClientMessage reply = requestor.request(m);
-            return (TabularData)ManagementHelper.getTabularDataProperty(reply, "listScheduledMessages");
+            return proxy.invokeTabularOperation("listScheduledMessages");
          }
 
          public int moveAllMessages(String otherQueueName) throws Exception
          {
-            return (Integer)invokOperation("moveAllMessages", otherQueueName);
+            return (Integer)proxy.invokOperation("moveAllMessages", otherQueueName);
          }
 
          public int moveMatchingMessages(String filter, String otherQueueName) throws Exception
          {
-            return (Integer)invokOperation("moveMatchingMessages", filter, otherQueueName);
+            return (Integer)proxy.invokOperation("moveMatchingMessages", filter, otherQueueName);
          }
 
          public boolean moveMessage(long messageID, String otherQueueName) throws Exception
          {
-            return (Boolean)invokOperation("moveMessage", messageID, otherQueueName);
+            return (Boolean)proxy.invokOperation("moveMessage", messageID, otherQueueName);
          }
 
          public int removeAllMessages() throws Exception
          {
-            return (Integer)invokOperation("removeAllMessages");
+            return (Integer)proxy.invokOperation("removeAllMessages");
          }
 
          public int removeMatchingMessages(String filter) throws Exception
          {
-            return (Integer)invokOperation("removeMatchingMessages", filter);
+            return (Integer)proxy.invokOperation("removeMatchingMessages", filter);
          }
 
          public boolean removeMessage(long messageID) throws Exception
          {
-            return (Boolean)invokOperation("removeMessage", messageID);
+            return (Boolean)proxy.invokOperation("removeMessage", messageID);
          }
 
          public boolean sendMessageToDeadLetterAddress(long messageID) throws Exception
          {
-            return (Boolean)invokOperation("sendMessageToDeadLetterAddress", messageID);
+            return (Boolean)proxy.invokOperation("sendMessageToDeadLetterAddress", messageID);
          }
 
          public void setDeadLetterAddress(String deadLetterAddress) throws Exception
          {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, "setDeadLetterAddress", deadLetterAddress);
-            requestor.request(m);
+            proxy.invokOperation("setDeadLetterAddress", deadLetterAddress);
          }
 
          public void setExpiryAddress(String expiryAddres) throws Exception
          {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, "setExpiryAddress", expiryAddres);
-            requestor.request(m);
-         }
-
-         private Object retriveAttributeValue(String attributeName)
-         {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putAttributes(m, queueON, attributeName);
-            ClientMessage reply;
-            try
-            {
-               reply = requestor.request(m);
-               Object attributeValue = reply.getProperty(new SimpleString(attributeName));
-               if (attributeValue.equals(new SimpleString("null")))
-               {
-                  return null;
-               }
-               return attributeValue;
-            }
-            catch (Exception e)
-            {
-               throw new IllegalStateException(e);
-            }
-         }
-
-         public Object invokOperation(String operationName, Object... args) throws Exception
-         {
-            ClientMessage m = session.createClientMessage(false);
-            ManagementHelper.putOperationInvocation(m, queueON, operationName, args);
-            ClientMessage reply = requestor.request(m);
-            return reply.getProperty(new SimpleString(operationName));
+            proxy.invokOperation("setExpiryAddress", expiryAddres);
          }
       };
    }

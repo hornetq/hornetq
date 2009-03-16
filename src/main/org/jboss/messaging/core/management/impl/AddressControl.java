@@ -99,11 +99,6 @@ public class AddressControl implements AddressControlMBean
 
    public TabularData getRoles() throws Exception
    {
-      return RoleInfo.toTabularData(getRoleInfos());
-   }
-
-   public RoleInfo[] getRoleInfos() throws Exception
-   {
       Set<Role> roles = securityRepository.getMatch(address.toString());
       RoleInfo[] roleInfos = new RoleInfo[roles.size()];
       int i = 0;
@@ -114,7 +109,7 @@ public class AddressControl implements AddressControlMBean
                                        role.isCheckType(CheckType.READ),
                                        role.isCheckType(CheckType.WRITE));
       }
-      return roleInfos;
+      return RoleInfo.toTabularData(roleInfos);
    }
 
    public synchronized void addRole(final String name, final boolean create, final boolean read, final boolean write) throws Exception

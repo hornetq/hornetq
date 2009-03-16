@@ -72,11 +72,6 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
       return localAddressControl.getQueueNames();
    }
 
-   public RoleInfo[] getRoleInfos() throws Exception
-   {
-      return localAddressControl.getRoleInfos();
-   }
-
    public TabularData getRoles() throws Exception
    {
       return localAddressControl.getRoles();

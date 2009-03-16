@@ -38,8 +38,6 @@ public interface AddressControlMBean
 
    TabularData getRoles() throws Exception;
    
-   RoleInfo[] getRoleInfos() throws Exception;
-
    String[] getQueueNames() throws Exception;
 
    // Operations ----------------------------------------------------

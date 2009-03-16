@@ -27,12 +27,13 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import javax.management.openmbean.TabularData;
+
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.AddressControlMBean;
-import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -62,14 +63,13 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
       AddressControlMBean liveAddressControl = createAddressControl(address, liveMBeanServer);
       AddressControlMBean backupAddressControl = createAddressControl(address, backupMBeanServer);
 
-      RoleInfo[] roles = liveAddressControl.getRoleInfos();
-      assertEquals(roles.length, backupAddressControl.getRoleInfos().length);
+      TabularData roles = liveAddressControl.getRoles();
+      assertEquals(roles.size(), backupAddressControl.getRoles().size());
 
       // add a role
       liveAddressControl.addRole(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
 
-      assertEquals(roles.length + 1, liveAddressControl.getRoleInfos().length);
-      assertEquals(roles.length + 1, backupAddressControl.getRoleInfos().length);
+      assertEquals(roles.size() + 1, liveAddressControl.getRoles().size());
    }
 
    public void testRemoveRole() throws Exception
@@ -79,20 +79,20 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
       AddressControlMBean liveAddressControl = createAddressControl(address, liveMBeanServer);
       AddressControlMBean backupAddressControl = createAddressControl(address, backupMBeanServer);
 
-      RoleInfo[] roles = liveAddressControl.getRoleInfos();
-      assertEquals(roles.length, backupAddressControl.getRoleInfos().length);
+      TabularData roles = liveAddressControl.getRoles();
+      assertEquals(roles.size(), backupAddressControl.getRoles().size());
 
       // add a role
       liveAddressControl.addRole(roleName, randomBoolean(), randomBoolean(), randomBoolean());
 
-      assertEquals(roles.length + 1, liveAddressControl.getRoleInfos().length);
-      assertEquals(roles.length + 1, backupAddressControl.getRoleInfos().length);
+      assertEquals(roles.size() + 1, liveAddressControl.getRoles().size());
+      assertEquals(roles.size() + 1, backupAddressControl.getRoles().size());
 
       // and remove it
       liveAddressControl.removeRole(roleName);
 
-      assertEquals(roles.length, liveAddressControl.getRoleInfos().length);
-      assertEquals(roles.length, backupAddressControl.getRoleInfos().length);
+      assertEquals(roles.size(), liveAddressControl.getRoles().size());
+      assertEquals(roles.size(), backupAddressControl.getRoles().size());
    }
 
    // Package protected ---------------------------------------------
