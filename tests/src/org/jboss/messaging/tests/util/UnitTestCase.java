@@ -55,8 +55,10 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  *
@@ -117,7 +119,6 @@ public class UnitTestCase extends TestCase
       return str.toString();
    }
    
-
    public static String dumpBytes(byte[] bytes)
    {
       StringBuffer buff = new StringBuffer();
@@ -224,7 +225,7 @@ public class UnitTestCase extends TestCase
 
    // Constructors --------------------------------------------------
 
-   // Public --------------------------------------------------------
+   // Protected -----------------------------------------------------
 
    /**
     * @return the testDir
@@ -668,6 +669,12 @@ public class UnitTestCase extends TestCase
       message.getBody().writeString(s);
       return message;
    }
+   
+   protected XidImpl newXID()
+   {
+      return new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+   }
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
