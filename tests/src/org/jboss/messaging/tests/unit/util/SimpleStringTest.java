@@ -24,6 +24,8 @@ package org.jboss.messaging.tests.unit.util;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
@@ -323,4 +325,76 @@ public class SimpleStringTest extends UnitTestCase
          
       }
    }
+   
+   
+   public void testMultithreadHashCode() throws Exception
+   {
+      for (int repeat = 0; repeat < 10; repeat++)
+      {
+         
+         StringBuffer buffer = new StringBuffer();
+         
+         for (int i = 0 ; i < 100; i++)
+         {
+            buffer.append("Some Big String " + i);
+         }
+         String strvalue = buffer.toString();
+
+         final int initialhash = new SimpleString(strvalue).hashCode();
+         
+         final SimpleString value = new SimpleString(strvalue);
+         
+         
+         int nThreads = 100;
+         final CountDownLatch latch = new CountDownLatch(nThreads);
+         final CountDownLatch start = new CountDownLatch(1);
+
+         class T extends Thread
+         {
+            boolean failed = false;
+
+            public void run()
+            {
+               try
+               {
+                  latch.countDown();
+                  start.await();
+
+                  int newhash = value.hashCode();
+                  
+                  if (newhash != initialhash)
+                  {
+                     failed = true;
+                  }
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+                  failed = true;
+               }
+            }
+         }
+
+         T x[] = new T[nThreads];
+         for (int i = 0; i < nThreads; i++)
+         {
+            x[i] = new T();
+            x[i].start();
+         }
+
+         latch.await();
+         start.countDown();
+
+         for (T t : x)
+         {
+            t.join();
+         }
+
+         for (T t : x)
+         {
+            assertFalse(t.failed);
+         }
+      }
+   }
+   
 }

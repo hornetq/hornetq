@@ -237,10 +237,12 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    {
       if (hash == 0)
       {
+         int tmphash = 0;
          for (int i = 0; i < data.length; i++)
          {
-            hash = (hash << 5) - hash + data[i]; // (hash << 5) - hash is same as hash * 31
+            tmphash = (tmphash << 5) - tmphash + data[i]; // (hash << 5) - hash is same as hash * 31
          }
+         hash = tmphash;
       }
 
       return hash;

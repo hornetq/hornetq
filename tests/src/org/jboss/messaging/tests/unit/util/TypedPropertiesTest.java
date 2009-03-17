@@ -240,6 +240,15 @@ public class TypedPropertiesTest extends UnitTestCase
       char cc = (Character) props.getProperty(key);
       assertEquals(c, cc);
    }
+   
+   public void testSimpleString() throws Exception
+   {
+      props = new TypedProperties();
+      SimpleString value = randomSimpleString();
+      props.putStringProperty(key, value);
+      SimpleString vv = (SimpleString)props.getProperty(key);
+      assertEquals(value, vv);
+   }
 
    public void testTypedProperties() throws Exception
    {
