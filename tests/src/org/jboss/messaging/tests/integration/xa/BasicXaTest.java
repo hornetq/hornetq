@@ -26,13 +26,9 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -40,7 +36,6 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -134,7 +129,7 @@ public class BasicXaTest extends ServiceTestBase
       validateRM(nettyFactory, sessionFactory);
    }
 
-   private void validateRM(ClientSessionFactory factory1, ClientSessionFactory factory2) throws Exception
+   private void validateRM(final ClientSessionFactory factory1, final ClientSessionFactory factory2) throws Exception
    {
       ClientSession session1 = factory1.createSession(true, false, false);
       ClientSession session2 = factory2.createSession(true, false, false);
@@ -331,6 +326,37 @@ public class BasicXaTest extends ServiceTestBase
 
       session.close();
    }
+   
+   public void testEmptyXID() throws Exception
+   {
+      Xid xid = newXID();
+      ClientSession session = sessionFactory.createSession(true, false, false);
+      session.start(xid, XAResource.TMNOFLAGS);
+      session.end(xid, XAResource.TMSUCCESS);
+      session.rollback(xid);
+
+      session.close();
+      
+      messagingService.stop();
+      
+      // Enable this when https://jira.jboss.org/jira/browse/JBMESSAGING-1548 is done
+      
+//      // do the same test with a file persistence now
+//      messagingService = createService(true, configuration, addressSettings);
+//      
+//      messagingService.start();
+//      
+//      sessionFactory = createInVMFactory();
+//      
+//      xid = newXID();
+//      session = sessionFactory.createSession(true, false, false);
+//      session.start(xid, XAResource.TMNOFLAGS);
+//      session.end(xid, XAResource.TMSUCCESS);
+//      session.rollback(xid);
+      
+
+   }
+
 
    public void testForget() throws Exception
    {
@@ -339,8 +365,6 @@ public class BasicXaTest extends ServiceTestBase
 
    public void testSimpleJoin() throws Exception
    {
-      sessionFactory.setBlockOnPersistentSend(true);
-
       SimpleString ADDRESS1 = new SimpleString("Address-1");
       SimpleString ADDRESS2 = new SimpleString("Address-2");
 
@@ -408,11 +432,11 @@ public class BasicXaTest extends ServiceTestBase
     * @throws MessagingException
     * @throws XAException
     */
-   protected void multipleQueuesInternalTest(boolean createQueues,
-                                             boolean suspend,
-                                             boolean recreateSession,
-                                             boolean isJoinSession,
-                                             boolean onePhase) throws Exception
+   protected void multipleQueuesInternalTest(final boolean createQueues,
+                                             final boolean suspend,
+                                             final boolean recreateSession,
+                                             final boolean isJoinSession,
+                                             final boolean onePhase) throws Exception
    {
       int NUMBER_OF_MSGS = 100;
       int NUMBER_OF_QUEUES = 10;
@@ -603,23 +627,15 @@ public class BasicXaTest extends ServiceTestBase
       }
    }
 
-   /**
-    * @return
-    */
-   private XidImpl newXID()
-   {
-      return new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-   }
-
    class TxMessageHandler implements MessageHandler
    {
       boolean failedToAck = false;
 
       final ClientSession session;
 
-      private CountDownLatch latch;
+      private final CountDownLatch latch;
 
-      public TxMessageHandler(ClientSession session, CountDownLatch latch)
+      public TxMessageHandler(final ClientSession session, final CountDownLatch latch)
       {
          this.latch = latch;
          this.session = session;
