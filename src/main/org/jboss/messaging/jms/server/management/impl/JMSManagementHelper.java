@@ -28,17 +28,9 @@ import static org.jboss.messaging.core.client.management.impl.ManagementHelper.H
 import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_JMX_OPERATION_PREFIX;
 import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.management.ObjectName;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -87,36 +79,6 @@ public class JMSManagementHelper
    public static boolean isAttributesResult(final Message message) throws JMSException
    {
       return !(isOperationResult(message));
-   }
-
-   public static TabularData getTabularDataProperty(final Message message, final String key) throws JMSException
-   {
-      Object object = message.getObjectProperty(key);
-      if (object instanceof byte[])
-      {
-         return (TabularData)from((byte[])object);
-      }
-      throw new IllegalArgumentException(key + " property is not a valid TabularData");
-   }
-
-   public static Object[] getArrayProperty(final Message message, final String key) throws JMSException
-   {
-      Object object = message.getObjectProperty(key);
-      if (object instanceof byte[])
-      {
-         return (Object[])from((byte[])object);
-      }
-      throw new IllegalArgumentException(key + " property is not a valid array");
-   }
-
-   public static CompositeData getCompositeDataProperty(final Message message, final String key) throws JMSException
-   {
-      Object object = message.getObjectProperty(key);
-      if (object instanceof byte[])
-      {
-         return (CompositeData)from((byte[])object);
-      }
-      throw new IllegalArgumentException(key + " property is not a valid CompositeData");
    }
 
    public static boolean hasOperationSucceeded(final Message message) throws JMSException
@@ -179,33 +141,10 @@ public class JMSManagementHelper
       {
          message.setStringProperty(key, (String)typedProperty);
       }
-      else if (typedProperty instanceof TabularData || typedProperty instanceof CompositeData)
-      {
-         storePropertyAsBytes(message, key, typedProperty);
-      }
-      else if (typedProperty != null && typedProperty.getClass().isArray())
-      {
-         storePropertyAsBytes(message, key, typedProperty);
-      }
       // serialize as a SimpleString
       else
       {
          message.setStringProperty(key, typedProperty.toString());
-      }
-   }
-
-   public static Object from(final byte[] bytes)
-   {
-      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-      ObjectInputStream ois;
-      try
-      {
-         ois = new ObjectInputStream(bais);
-         return ois.readObject();
-      }
-      catch (Exception e)
-      {
-         throw new IllegalStateException(e);
       }
    }
 
@@ -219,19 +158,5 @@ public class JMSManagementHelper
 
    // Private -------------------------------------------------------
 
-   private static void storePropertyAsBytes(final Message message, final String key, final Object property)
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      try
-      {
-         ObjectOutputStream oos = new ObjectOutputStream(baos);
-         oos.writeObject(property);
-      }
-      catch (IOException e)
-      {
-         throw new IllegalStateException(property + " can not be written to a byte array");
-      }
-      //message.setBytesProperty(key, baos.toByteArray());
-   }
    // Inner classes -------------------------------------------------
 }
