@@ -286,31 +286,50 @@
       <path refid="jboss.jbossxb.classpath"/>
    </path>
 
-   <path id="unit.test.execution.classpath">
-      <!-- ensure that the core client jar is included for
-           tests security tests which needs to read version.properties
-           from inside this jar
-      -->
-      <fileset dir="${build.jars.dir}">
-         <include name="${core.client.jar.name}"/>
-      </fileset>
-      <pathelement location="${test.dir}/config"/>
-      <pathelement location="${test.dir}/tmpfiles"/>
-      <pathelement location="${test.classes.dir}"/>
-      <pathelement location="${src.config.dir}"/>
-      <pathelement location="${src.schemas.dir}"/>
-      <path refid="test.compilation.classpath"/>
-      <path refid="oswego.concurrent.classpath"/>
-      <path refid="apache.log4j.classpath"/>
-      <path refid="cglib.classpath"/>
-      <path refid="jboss.common.core.classpath"/>
-      <path refid="jboss.aop.classpath"/>
-      <path refid="trove.trove.classpath"/>
-      <path refid="javassist.classpath"/>
-      <path refid="jboss.jbossxb.classpath"/>
-      <path refid="apache.xerces.classpath"/>
-      <path refid="apache.logging.classpath"/>
-   </path>
+	   <path id="unit.test.execution.classpath">
+	      <!-- ensure that the core client jar is included for
+	           tests security tests which needs to read version.properties
+	           from inside this jar
+	      -->
+	      <fileset dir="${build.jars.dir}">
+	         <include name="${core.client.jar.name}"/>
+	      </fileset>
+	      <pathelement location="${test.dir}/config"/>
+	      <pathelement location="${test.dir}/tmpfiles"/>
+	      <pathelement location="${test.classes.dir}"/>
+	      <pathelement location="${src.config.dir}"/>
+	      <pathelement location="${src.schemas.dir}"/>
+	      <path refid="test.compilation.classpath"/>
+	      <path refid="oswego.concurrent.classpath"/>
+	      <path refid="apache.log4j.classpath"/>
+	      <path refid="cglib.classpath"/>
+	      <path refid="jboss.common.core.classpath"/>
+	      <path refid="jboss.aop.classpath"/>
+	      <path refid="trove.trove.classpath"/>
+	      <path refid="javassist.classpath"/>
+	      <path refid="jboss.jbossxb.classpath"/>
+	      <path refid="apache.xerces.classpath"/>
+	      <path refid="apache.logging.classpath"/>
+	   </path>
+
+	   <path id="emma.unit.test.execution.classpath">
+	      <pathelement location="${test.dir}/config"/>
+	      <pathelement location="${test.dir}/tmpfiles"/>
+	      <pathelement location="${test.classes.dir}"/>
+	      <pathelement location="${src.config.dir}"/>
+	      <pathelement location="${src.schemas.dir}"/>
+	      <path refid="test.compilation.classpath"/>
+	      <path refid="oswego.concurrent.classpath"/>
+	      <path refid="apache.log4j.classpath"/>
+	      <path refid="cglib.classpath"/>
+	      <path refid="jboss.common.core.classpath"/>
+	      <path refid="jboss.aop.classpath"/>
+	      <path refid="trove.trove.classpath"/>
+	      <path refid="javassist.classpath"/>
+	      <path refid="jboss.jbossxb.classpath"/>
+	      <path refid="apache.xerces.classpath"/>
+	      <path refid="apache.logging.classpath"/>
+	   </path>
 
    <path id="jms.test.execution.classpath">
       <pathelement location="${test.dir}/config"/>
@@ -1372,7 +1391,7 @@
 
       <path id="emma.execution.classpath">
          <path refid="emma.lib"/>
-         <path refid="unit.test.execution.classpath"/>
+         <path refid="emma.unit.test.execution.classpath"/>
       </path>
 
       <echo message=""/>

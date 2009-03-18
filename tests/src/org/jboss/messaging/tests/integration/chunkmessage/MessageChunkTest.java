@@ -26,6 +26,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import junit.framework.AssertionFailedError;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
@@ -284,32 +287,62 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testMessageChunkFilePersistence() throws Exception
    {
-      testChunks(true, false, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceXA() throws Exception
+   {
+      testChunks(true, true, false, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlocked() throws Exception
    {
-      testChunks(true, false, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceBlockedXA() throws Exception
+   {
+      testChunks(true, true, false, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedPreACK() throws Exception
    {
-      testChunks(true, false, true, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceBlockedPreACKXA() throws Exception
+   {
+      testChunks(true, true, false, true, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceDelayed() throws Exception
    {
-      testChunks(true, false, false, false, false, 1, 50000, RECEIVE_WAIT_TIME, 2000);
+      testChunks(false, true, false, false, false, false, 1, 50000, RECEIVE_WAIT_TIME, 2000);
+   }
+
+   public void testMessageChunkFilePersistenceDelayedXA() throws Exception
+   {
+      testChunks(true, true, false, false, false, false, 1, 50000, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkNullPersistence() throws Exception
    {
-      testChunks(false, false, false, false, true, 1, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, false, false, false, true, 1, 50000, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkNullPersistenceXA() throws Exception
+   {
+      testChunks(true, false, false, false, false, true, 1, 50000, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, false, false, 100, 50000, RECEIVE_WAIT_TIME, 100);
+      testChunks(false, false, false, false, false, false, 100, 50000, RECEIVE_WAIT_TIME, 100);
+   }
+
+   public void testMessageChunkNullPersistenceDelayedXA() throws Exception
+   {
+      testChunks(true, false, false, false, false, false, 100, 50000, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testPageOnLargeMessage() throws Exception
@@ -325,44 +358,83 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testSendfileMessage() throws Exception
    {
-      testChunks(true, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
+   }
 
+
+   public void testSendfileMessageXA() throws Exception
+   {
+      testChunks(true, true, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendfileMessageOnNullPersistence() throws Exception
    {
-      testChunks(false, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testSendfileMessageOnNullPersistenceXA() throws Exception
+   {
+      testChunks(true, false, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendfileMessageOnNullPersistenceSmallMessage() throws Exception
    {
-      testChunks(false, true, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, true, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testSendfileMessageOnNullPersistenceSmallMessageXA() throws Exception
+   {
+      testChunks(true, false, true, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendfileMessageSmallMessage() throws Exception
    {
-      testChunks(true, true, false, false, true, 100, 4, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, true, false, false, true, 100, 4, RECEIVE_WAIT_TIME, 0);
+   }
 
+   public void testSendfileMessageSmallMessageXA() throws Exception
+   {
+      testChunks(true, true, true, false, false, true, 100, 4, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessageNullPersistence() throws Exception
    {
-      testChunks(false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testSendRegularMessageNullPersistenceXA() throws Exception
+   {
+      testChunks(true, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+   }
+
+   public void testSendRegularMessageNullPersistenceDelayedXA() throws Exception
+   {
+      testChunks(true, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessagePersistence() throws Exception
    {
-      testChunks(true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testSendRegularMessagePersistenceXA() throws Exception
+   {
+      testChunks(true, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceDelayed() throws Exception
    {
-      testChunks(true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+   }
+
+   public void testSendRegularMessagePersistenceDelayedXA() throws Exception
+   {
+      testChunks(false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testTwoBindingsTwoStartedConsumers() throws Exception
@@ -521,8 +593,76 @@ public class MessageChunkTest extends ChunkTestBase
       }
 
    }
+   
+   public void testSendRollback() throws Exception
+   {
+      clearData();
+      
+      boolean isXA = false;
+      
+      messagingService = createService(true);
 
+      messagingService.start();
+
+      ClientSessionFactory sf = createInVMFactory();
+     
+      ClientSession session = sf.createSession(isXA, false, false);
+      
+      session.createQueue(ADDRESS, ADDRESS, true);
+      
+      Xid xid = null;
+      
+      if (isXA)
+      {
+         xid = newXID();
+         session.start(xid, XAResource.TMNOFLAGS);
+      }
+      
+      
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      
+      Message clientFile = createLargeClientMessage(session, 50000, false);
+
+      for (int i = 0; i < 1; i++)
+      {
+         producer.send(clientFile);
+      }
+      
+      
+
+      if (isXA)
+      {
+         session.end(xid, XAResource.TMSUCCESS);
+         session.prepare(xid);
+         session.rollback(xid);
+      }
+      else
+      {
+         session.rollback();
+      }
+      
+      session.close();
+      
+      validateNoFilesOnLargeDir();
+      
+      messagingService.stop();
+
+   }
+
+   
    public void testSimpleRollback() throws Exception
+   {
+      simpleRollbackInternalTest(false);
+   }
+   
+   public void testSimpleRollbackXA() throws Exception
+   {
+      simpleRollbackInternalTest(true);
+   }
+   
+   
+   public void simpleRollbackInternalTest(boolean isXA) throws Exception
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
       // The other binding is acked... The file must be deleted
@@ -538,13 +678,19 @@ public class MessageChunkTest extends ChunkTestBase
 
          ClientSessionFactory sf = createInVMFactory();
 
-         ClientSession session = sf.createSession(false, false, false);
+         ClientSession session = sf.createSession(isXA, false, false);
+         
+         Xid xid = null;
+         
+         if (isXA)
+         {
+            xid = newXID();
+            session.start(xid, XAResource.TMNOFLAGS);
+         }
 
          session.createQueue(ADDRESS, ADDRESS, null, true, false);
 
-         int numberOfIntegers = 100;
-
-         Message clientFile = createLargeClientMessage(session, numberOfIntegers);
+         int numberOfIntegers = 50000;
 
          session.start();
 
@@ -556,11 +702,39 @@ public class MessageChunkTest extends ChunkTestBase
          
          for (int n = 0; n < 10; n++)
          {
+            Message clientFile = createLargeClientMessage(session, numberOfIntegers, n%2 == 0);
+
             producer.send(clientFile);
 
             assertNull(consumer.receiveImmediate());
 
-            session.commit();
+            if (isXA)
+            {
+               session.end(xid, XAResource.TMSUCCESS);
+               session.rollback(xid);
+               xid = newXID();
+               session.start(xid, XAResource.TMNOFLAGS);
+            }
+            else
+            {
+               session.rollback();
+            }
+
+            producer.send(clientFile);
+
+            assertNull(consumer.receiveImmediate());
+
+            if (isXA)
+            {
+               session.end(xid, XAResource.TMSUCCESS);
+               session.commit(xid, true);
+               xid = newXID();
+               session.start(xid, XAResource.TMNOFLAGS);
+            }
+            else
+            {
+               session.commit();
+            }
 
             for (int i = 0; i < 2; i++)
             {
@@ -573,13 +747,34 @@ public class MessageChunkTest extends ChunkTestBase
 
                clientMessage.acknowledge();
 
-               if (i == 0)
+               if (isXA)
                {
-                  session.rollback();
+                  if (i == 0)
+                  {
+                     session.end(xid, XAResource.TMSUCCESS);
+                     session.prepare(xid);
+                     session.rollback(xid);
+                     xid = newXID();
+                     session.start(xid, XAResource.TMNOFLAGS);
+                  }
+                  else
+                  {
+                     session.end(xid, XAResource.TMSUCCESS);
+                     session.commit(xid, true);
+                     xid = newXID();
+                     session.start(xid, XAResource.TMNOFLAGS);
+                  }
                }
                else
                {
-                  session.commit();
+                  if (i == 0)
+                  {
+                     session.rollback();
+                  }
+                  else
+                  {
+                     session.commit();
+                  }
                }
             }
          }

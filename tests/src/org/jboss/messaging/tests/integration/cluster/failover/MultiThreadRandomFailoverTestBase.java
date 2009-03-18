@@ -22,14 +22,11 @@
 
 package org.jboss.messaging.tests.integration.cluster.failover;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -41,17 +38,13 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -62,7 +55,7 @@ import org.jboss.messaging.utils.SimpleString;
  * 
  *
  */
-public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
+public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailoverSupport
 {
 
    private final Logger log = Logger.getLogger(getClass());
@@ -73,7 +66,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
    
    private final int LATCH_WAIT = getLatchWait();
 
-   private static final int NUM_THREADS = 10;
+   private int NUM_THREADS = getNumThreads();
 
    // Attributes ----------------------------------------------------
    protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
@@ -233,7 +226,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          {
             doTestL(sf);
          }
-      }, NUM_THREADS, false, true, 10);
+      }, NUM_THREADS, true, 10);
    }
 
    // public void testM() throws Exception
@@ -268,6 +261,11 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
    protected abstract void setBody(ClientMessage message) throws Exception;
 
    protected abstract boolean checkSize(ClientMessage message);
+   
+   protected int getNumThreads()
+   {
+      return 10;
+   }
 
    protected ClientSession createAutoCommitSession(ClientSessionFactory sf) throws Exception
    {
@@ -1333,126 +1331,20 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    // Private -------------------------------------------------------
 
-   private void runTestMultipleThreads(final RunnableT runnable, final int numThreads, final boolean fileBased) throws Exception
-   {
-      runTestMultipleThreads(runnable, numThreads, fileBased, false);
-   }
-
    private void runTestMultipleThreads(final RunnableT runnable,
                                        final int numThreads,
-                                       final boolean fileBased,
                                        final boolean failOnCreateConnection) throws Exception
    {
-      this.runTestMultipleThreads(runnable, numThreads, fileBased, failOnCreateConnection, 1000);
+      this.runTestMultipleThreads(runnable, numThreads, failOnCreateConnection, 1000);
    }
 
    private void runTestMultipleThreads(final RunnableT runnable,
                                        final int numThreads,
-                                       final boolean fileBased,
                                        final boolean failOnCreateConnection,
                                        final long failDelay) throws Exception
    {
-      final int numIts = getNumIterations();
-
-      for (int its = 0; its < numIts; its++)
-      {
-         log.info("************ ITERATION: " + its);
-
-         start();
-
-         final ClientSessionFactoryInternal sf = createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true);
-
-         Failer failer = startFailer(failDelay, session, failOnCreateConnection);
-
-         class Runner extends Thread
-         {
-            private volatile Throwable throwable;
-
-            private final RunnableT test;
-
-            private final int threadNum;
-
-            Runner(final RunnableT test, final int threadNum)
-            {
-               this.test = test;
-
-               this.threadNum = threadNum;
-            }
-
-            @Override
-            public void run()
-            {
-               try
-               {
-                  test.run(sf, threadNum);
-               }
-               catch (Throwable t)
-               {
-                  throwable = t;
-                  // Case a failure happened here, it should print the Thread dump
-                  // Sending it to System.out, as it would show on the Tests report
-                  System.out.println(threadDump(" - fired by MultiThreadRandomFailoverTestBase::runTestMultipleThreads"));
-
-                  log.error("Failed to run test", t);
-               }
-            }
-         }
-
-         do
-         {
-            List<Runner> threads = new ArrayList<Runner>();
-
-            for (int i = 0; i < numThreads; i++)
-            {
-               Runner runner = new Runner(runnable, i);
-
-               threads.add(runner);
-
-               runner.start();
-            }
-
-            for (Runner thread : threads)
-            {
-               thread.join();
-
-               if (thread.throwable != null)
-               {
-                  throw new Exception("Exception on thread " + thread, thread.throwable);
-               }
-            }
-
-            log.info("completed loop");
-
-            runnable.checkFail();
-
-         }
-         while (!failer.isExecuted());
-
-         InVMConnector.resetFailures();
-
-         log.info("closing session");
-         session.close();
-         log.info("closed session");
-
-         assertEquals(0, sf.numSessions());
-
-         assertEquals(0, sf.numConnections());
-
-         log.info("stopping");
-         stop();
-         log.info("stopped");
-      }
-   }
-
-   private Failer startFailer(final long time, final ClientSession session, final boolean failOnCreateConnection)
-   {
-      Failer failer = new Failer(session, failOnCreateConnection);
-
-      timer.schedule(failer, (long)(time * Math.random()), 100);
-
-      return failer;
+      
+      runMultipleThreadsFailoverTest(runnable, numThreads, getNumIterations(), failOnCreateConnection, failDelay);
    }
 
    /**
@@ -1472,7 +1364,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
       return sf;
    }
 
-   private void stop() throws Exception
+   protected void stop() throws Exception
    {
       backupService.stop();
 
@@ -1552,79 +1444,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
 
    // Inner classes -------------------------------------------------
 
-   private class Failer extends TimerTask
-   {
-      private final ClientSession session;
-
-      private boolean executed;
-
-      private final boolean failOnCreateConnection;
-
-      public Failer(final ClientSession session, final boolean failOnCreateConnection)
-      {
-         this.session = session;
-
-         this.failOnCreateConnection = failOnCreateConnection;
-      }
-
-      @Override
-      public synchronized void run()
-      {
-         log.info("** Failing connection");
-
-         RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
-
-         if (failOnCreateConnection)
-         {
-            InVMConnector.numberOfFailures = 1;
-            InVMConnector.failOnCreateConnection = true;
-         }
-         else
-         {
-            conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
-         }
-
-         log.info("** Fail complete");
-
-         cancel();
-
-         executed = true;
-      }
-
-      public synchronized boolean isExecuted()
-      {
-         log.info("executed??" + executed);
-         return executed;
-      }
-   }
-
-   private abstract class RunnableT extends Thread
-   {
-      private volatile String failReason;
-
-      private volatile Throwable throwable;
-
-      public void setFailed(final String reason, final Throwable throwable)
-      {
-         failReason = reason;
-         this.throwable = throwable;
-      }
-
-      public void checkFail()
-      {
-         if (throwable != null)
-         {
-            log.error("Test failed: " + failReason, throwable);
-         }
-         if (failReason != null)
-         {
-            fail(failReason);
-         }
-      }
-
-      public abstract void run(final ClientSessionFactory sf, final int threadNum) throws Exception;
-   }
-
    private class MyHandler implements MessageHandler
    {
       CountDownLatch latch = new CountDownLatch(1);
@@ -1647,7 +1466,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends UnitTestCase
          
          failure = null;
          
-         latch = new CountDownLatch(1);;
+         latch = new CountDownLatch(1);
       }
 
       MyHandler(final int threadNum, final int numMessages)

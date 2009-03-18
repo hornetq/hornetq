@@ -1560,6 +1560,7 @@ public class QueueImpl implements Queue
             if (!msgs.contains(msg))
             {
                store.addSize(-msg.getMemoryEstimate());
+               msg.decrementRefCount();
             }
 
             msgs.add(msg);

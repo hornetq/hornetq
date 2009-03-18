@@ -49,7 +49,8 @@ public class MessageChunkSoakTest extends ChunkTestBase
 
    public void testMessageChunkFilePersistence1G() throws Exception
    {
-      testChunks(true,
+      testChunks(false, 
+                 true,
                  true,
                  false,
                  true,

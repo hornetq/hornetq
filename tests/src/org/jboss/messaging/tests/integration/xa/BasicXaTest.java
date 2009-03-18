@@ -326,7 +326,7 @@ public class BasicXaTest extends ServiceTestBase
 
       session.close();
    }
-   
+
    public void testEmptyXID() throws Exception
    {
       Xid xid = newXID();
@@ -336,27 +336,54 @@ public class BasicXaTest extends ServiceTestBase
       session.rollback(xid);
 
       session.close();
-      
+
       messagingService.stop();
+
+      // do the same test with a file persistence now
+      messagingService = createService(true, configuration, addressSettings);
+
+      messagingService.start();
+
+      sessionFactory = createInVMFactory();
+
+      xid = newXID();
+      session = sessionFactory.createSession(true, false, false);
+      session.start(xid, XAResource.TMNOFLAGS);
+      session.end(xid, XAResource.TMSUCCESS);
+      session.rollback(xid);
+
+      xid = newXID();
+      session.start(xid, XAResource.TMNOFLAGS);
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      session.commit(xid, false);
+
+
+      xid = newXID();
+      session = sessionFactory.createSession(true, false, false);
+      session.start(xid, XAResource.TMNOFLAGS);
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      session.rollback(xid);
+
       
-      // Enable this when https://jira.jboss.org/jira/browse/JBMESSAGING-1548 is done
-      
-//      // do the same test with a file persistence now
-//      messagingService = createService(true, configuration, addressSettings);
-//      
-//      messagingService.start();
-//      
-//      sessionFactory = createInVMFactory();
-//      
-//      xid = newXID();
-//      session = sessionFactory.createSession(true, false, false);
-//      session.start(xid, XAResource.TMNOFLAGS);
-//      session.end(xid, XAResource.TMSUCCESS);
-//      session.rollback(xid);
-      
+      session.close();
+
+      messagingService.stop();
+      messagingService.start();
+
+      // This is not really necessary... But since the server has stopped, I would prefer to keep recreating the factory
+      sessionFactory = createInVMFactory();
+
+      session = sessionFactory.createSession(true, false, false);
+
+      Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
+
+      assertEquals(0, xids.length);
+
+      session.close();
 
    }
-
 
    public void testForget() throws Exception
    {

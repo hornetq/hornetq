@@ -195,7 +195,7 @@ public class TransactionImpl implements Transaction
             }
          }
 
-         if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || xid != null)
+         if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED) )
          {
             storageManager.commit(id);
          }
@@ -336,7 +336,7 @@ public class TransactionImpl implements Transaction
 
    private void doRollback() throws Exception
    {
-      if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || xid != null)
+      if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED))
       {
          storageManager.rollback(id);
       }
