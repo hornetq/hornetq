@@ -38,6 +38,8 @@ import java.util.Set;
 
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
 import javax.naming.InitialContext;
 
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
@@ -55,7 +57,6 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -440,11 +441,12 @@ public class LocalTestServer implements Server, Runnable
                                                                                                  objectName,
                                                                                                  TopicControlMBean.class,
                                                                                                  false);
-      SubscriptionInfo[] subInfos = topic.listAllSubscriptionInfos();
+      TabularData subInfos = topic.listAllSubscriptions();
       List<String> subs = new ArrayList<String>();
-      for (SubscriptionInfo info : subInfos)
+      for (Object o: subInfos.values())
       {
-         subs.add(info.getName());
+         CompositeData data = (CompositeData)o;
+         subs.add((String)data.get("name"));
       }
       return subs;
    }

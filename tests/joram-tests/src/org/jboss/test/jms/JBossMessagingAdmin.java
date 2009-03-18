@@ -42,9 +42,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Hashtable;
 
@@ -65,8 +63,8 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
+import org.jboss.messaging.tests.integration.management.core.CoreMessagingProxy;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
-import org.jboss.messaging.utils.SimpleString;
 import org.objectweb.jtests.jms.admin.Admin;
 
 /**
@@ -126,31 +124,13 @@ public class JBossMessagingAdmin implements Admin
       try
       {
          invokeSyncOperation(ObjectNames.getJMSServerObjectName(),
-                             "createSimpleConnectionFactory",
+                             "createConnectionFactory",
                              name,
                              NettyConnectorFactory.class.getName(),
-                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                             DEFAULT_PING_PERIOD,
-                             DEFAULT_CONNECTION_TTL,
-                             DEFAULT_CALL_TIMEOUT,
-                             null,
-                             DEFAULT_ACK_BATCH_SIZE,
-                             DEFAULT_ACK_BATCH_SIZE,
-                             DEFAULT_CONSUMER_WINDOW_SIZE,
-                             DEFAULT_CONSUMER_MAX_RATE,
-                             DEFAULT_SEND_WINDOW_SIZE,
-                             DEFAULT_PRODUCER_MAX_RATE,
-                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              true,
                              true,
-                             DEFAULT_AUTO_GROUP,
-                             DEFAULT_MAX_CONNECTIONS,
-                             DEFAULT_PRE_ACKNOWLEDGE,
-                             DEFAULT_RETRY_INTERVAL,
-                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
+                             true,
+                             false,
                              name);
       }
       catch (Exception e)
@@ -351,14 +331,14 @@ public class JBossMessagingAdmin implements Admin
       }
       if (!ManagementHelper.hasOperationSucceeded(reply))
       {
-         throw new IllegalStateException("opertation failed when invoking " + operationName +
+         throw new IllegalStateException("operation failed when invoking " + operationName +
                                          " on " +
                                          objectName +
                                          ": " +
                                          ManagementHelper.getOperationExceptionMessage(reply));
 
       }
-      return reply.getProperty(new SimpleString(operationName));
+      return ManagementHelper.getResult(reply);
    }
 
    // Inner classes -------------------------------------------------

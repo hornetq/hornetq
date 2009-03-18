@@ -45,18 +45,38 @@ public interface ConnectionFactoryControlMBean
    
    int getDupsOKBatchSize();
 
-   int getDefaultConsumerMaxRate();
+   int getConsumerMaxRate();
 
-   int getDefaultConsumerWindowSize();
+   int getConsumerWindowSize();
 
-   int getDefaultProducerMaxRate();
+   int getProducerMaxRate();
 
-   int getDefaultProducerWindowSize();
+   int getProducerWindowSize();
 
-   boolean isDefaultBlockOnAcknowledge();
+   boolean isBlockOnAcknowledge();
 
-   boolean isDefaultBlockOnPersistentSend();
+   boolean isBlockOnPersistentSend();
 
-   boolean isDefaultBlockOnNonPersistentSend();
+   boolean isBlockOnNonPersistentSend();
+
+   boolean isPreAcknowledge();
+
+   long getConnectionTTL();
+
+   long getTransactionBatchSize();
+
+   long getMinLargeMessageSize();
+
+   boolean isAutoGroup();
+
+   int getMaxConnections();
+
+   long getRetryInterval();
+
+   double getRetryIntervalMultiplier();
+
+   int getMaxRetriesBeforeFailover();
+
+   int getMaxRetriesAfterFailover();
 
 }

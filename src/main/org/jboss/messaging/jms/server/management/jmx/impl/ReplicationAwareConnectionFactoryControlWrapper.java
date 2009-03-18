@@ -82,24 +82,24 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
       return localControl.getClientID();
    }
 
-   public int getDefaultConsumerMaxRate()
+   public int getConsumerMaxRate()
    {
-      return localControl.getDefaultConsumerMaxRate();
+      return localControl.getConsumerMaxRate();
    }
 
-   public int getDefaultConsumerWindowSize()
+   public int getConsumerWindowSize()
    {
-      return localControl.getDefaultConsumerWindowSize();
+      return localControl.getConsumerWindowSize();
    }
 
-   public int getDefaultProducerMaxRate()
+   public int getProducerMaxRate()
    {
-      return localControl.getDefaultProducerMaxRate();
+      return localControl.getProducerMaxRate();
    }
 
-   public int getDefaultProducerWindowSize()
+   public int getProducerWindowSize()
    {
-      return localControl.getDefaultProducerWindowSize();
+      return localControl.getProducerWindowSize();
    }
 
    public int getDupsOKBatchSize()
@@ -112,21 +112,72 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
       return localControl.getPingPeriod();
    }
 
-   public boolean isDefaultBlockOnAcknowledge()
+   public boolean isBlockOnAcknowledge()
    {
-      return localControl.isDefaultBlockOnAcknowledge();
+      return localControl.isBlockOnAcknowledge();
    }
 
-   public boolean isDefaultBlockOnNonPersistentSend()
+   public boolean isBlockOnNonPersistentSend()
    {
-      return localControl.isDefaultBlockOnNonPersistentSend();
+      return localControl.isBlockOnNonPersistentSend();
    }
 
-   public boolean isDefaultBlockOnPersistentSend()
+   public boolean isBlockOnPersistentSend()
    {
-      return localControl.isDefaultBlockOnPersistentSend();
+      return localControl.isBlockOnPersistentSend();
+   }
+   
+   public boolean isPreAcknowledge()
+   {
+      return localControl.isPreAcknowledge();
    }
 
+   public long getConnectionTTL()
+   {
+      return localControl.getConnectionTTL();
+   }
+
+   public int getMaxConnections()
+   {
+      return localControl.getMaxConnections();
+   }
+
+   public int getMaxRetriesAfterFailover()
+   {
+      return localControl.getMaxRetriesAfterFailover();
+   }
+
+   public int getMaxRetriesBeforeFailover()
+   {
+      return localControl.getMaxRetriesBeforeFailover();
+   }
+
+   public long getMinLargeMessageSize()
+   {
+      return localControl.getMinLargeMessageSize();
+   }
+
+   public long getRetryInterval()
+   {
+      return localControl.getRetryInterval();
+   }
+
+   public double getRetryIntervalMultiplier()
+   {
+      return localControl.getRetryIntervalMultiplier();
+   }
+
+   public long getTransactionBatchSize()
+   {
+      return localControl.getTransactionBatchSize();
+   }
+
+   public boolean isAutoGroup()
+   {
+      return localControl.isAutoGroup();
+   }
+
+   
    // StandardMBean overrides ---------------------------------------
 
    @Override
@@ -141,6 +192,7 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
                            info.getNotifications());
    }
 
+ 
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

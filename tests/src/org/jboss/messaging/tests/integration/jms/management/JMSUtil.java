@@ -54,6 +54,8 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
+import junit.framework.Assert;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -122,8 +124,8 @@ public class JMSUtil
                                                              DEFAULT_SEND_WINDOW_SIZE,
                                                              DEFAULT_PRODUCER_MAX_RATE,
                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                             true,
+                                                             true,
                                                              true,
                                                              DEFAULT_AUTO_GROUP,
                                                              DEFAULT_MAX_CONNECTIONS,
@@ -149,12 +151,12 @@ public class JMSUtil
    {
       return createConsumer(destination,
                             startConnection,
-                            "org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
+                            InVMConnectorFactory.class.getName());
    }
 
    static TopicSubscriber createDurableSubscriber(Topic topic, String clientID, String subscriptionName) throws JMSException
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
                                                              null,
                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                              DEFAULT_PING_PERIOD,
@@ -187,24 +189,16 @@ public class JMSUtil
       return s.createDurableSubscriber(topic, subscriptionName);
    }
 
-   public static void sendMessages(Destination destination, int messagesToSend) throws Exception
+   public static String[] sendMessages(Destination destination, int messagesToSend) throws Exception
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      Connection conn = cf.createConnection();
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageProducer producer = s.createProducer(destination);
-
-      for (int i = 0; i < messagesToSend; i++)
-      {
-         producer.send(s.createTextMessage(randomString()));
-      }
-      
-      conn.close();
+      return sendMessages(cf, destination, messagesToSend);
    }
    
-   public static void sendMessages(ConnectionFactory cf, Destination destination, int messagesToSend) throws Exception
+   public static String[] sendMessages(ConnectionFactory cf, Destination destination, int messagesToSend) throws Exception
    {
+      String[] messageIDs = new String[messagesToSend];
+
       Connection conn = cf.createConnection();
 
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -212,10 +206,14 @@ public class JMSUtil
 
       for (int i = 0; i < messagesToSend; i++)
       {
-         producer.send(s.createTextMessage(randomString()));
+         Message m = s.createTextMessage(randomString());
+         producer.send(m);
+         messageIDs[i] = m.getJMSMessageID();
       }
       
       conn.close();
+
+      return messageIDs;
    }
 
    public static Message sendMessageWithProperty(Session session, Destination destination, String key, long value) throws JMSException
@@ -225,6 +223,33 @@ public class JMSUtil
       message.setLongProperty(key, value);
       producer.send(message);
       return message;
+   }
+
+   public static void consumeMessages(int expected, Destination dest) throws JMSException
+   {
+      Connection connection = createConnection(InVMConnectorFactory.class.getName());
+      try{
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer consumer = session.createConsumer(dest);
+
+         connection.start();
+
+         Message m = null;
+         for (int i = 0; i < expected; i++)
+         {
+            m = consumer.receive(500);
+            Assert.assertNotNull("expected to received " + expected + " messages, got only " + (i + 1), m);
+         }
+         m = consumer.receive(500);
+         Assert.assertNull("received one more message than expected (" + expected + ")", m);
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            connection.close();
+         }
+      }
    }
 
    // Constructors --------------------------------------------------

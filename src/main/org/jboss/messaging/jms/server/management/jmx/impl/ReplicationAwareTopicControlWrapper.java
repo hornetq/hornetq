@@ -29,7 +29,6 @@ import javax.management.openmbean.TabularData;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
-import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.jms.server.management.impl.TopicControl;
 
@@ -98,19 +97,9 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
       return localControl.getSubcriptionsCount();
    }
 
-   public SubscriptionInfo[] listAllSubscriptionInfos()
-   {
-      return localControl.listAllSubscriptionInfos();
-   }
-
    public TabularData listAllSubscriptions()
    {
       return localControl.listAllSubscriptions();
-   }
-
-   public SubscriptionInfo[] listDurableSubscriptionInfos()
-   {
-      return localControl.listDurableSubscriptionInfos();
    }
 
    public TabularData listDurableSubscriptions()
@@ -126,11 +115,6 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
    {
       return localControl.countMessagesForSubscription(clientID, subscriptionName, filterStr);
-   }
-
-   public SubscriptionInfo[] listNonDurableSubscriptionInfos()
-   {
-      return localControl.listNonDurableSubscriptionInfos();
    }
 
    public TabularData listNonDurableSubscriptions()

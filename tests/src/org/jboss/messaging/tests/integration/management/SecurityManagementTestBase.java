@@ -99,12 +99,12 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
          ClientRequestor requestor = new ClientRequestor(session, DEFAULT_MANAGEMENT_ADDRESS);
 
          ClientMessage mngmntMessage = session.createClientMessage(false);
-         ManagementHelper.putAttributes(mngmntMessage, ObjectNames.getMessagingServerObjectName(), "Started");
+         ManagementHelper.putAttribute(mngmntMessage, ObjectNames.getMessagingServerObjectName(), "Started");
          ClientMessage reply = requestor.request(mngmntMessage, 500);
          if (expectSuccess)
          {
-            assertNotNull(reply);
-            assertTrue((Boolean)reply.getProperty(new SimpleString("Started")));
+            assertNotNull(reply);            
+            assertTrue((Boolean)ManagementHelper.getResult(reply));
          }
          else
          {

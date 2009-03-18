@@ -85,22 +85,22 @@ public class ConnectionFactoryControl extends StandardMBean implements
       return cf.getCallTimeout();
    }
    
-   public int getDefaultConsumerMaxRate()
+   public int getConsumerMaxRate()
    {      
       return cf.getConsumerMaxRate();
    }
 
-   public int getDefaultConsumerWindowSize()
+   public int getConsumerWindowSize()
    {
       return cf.getConsumerWindowSize();
    }
 
-   public int getDefaultProducerMaxRate()
+   public int getProducerMaxRate()
    {
       return cf.getProducerMaxRate();
    }
 
-   public int getDefaultProducerWindowSize()
+   public int getProducerWindowSize()
    {
       return cf.getProducerWindowSize();
    }
@@ -110,25 +110,77 @@ public class ConnectionFactoryControl extends StandardMBean implements
       return cf.getDupsOKBatchSize();
    }
 
-   public boolean isDefaultBlockOnAcknowledge()
+   public boolean isBlockOnAcknowledge()
    {
       return cf.isBlockOnAcknowledge();
    }
 
-   public boolean isDefaultBlockOnNonPersistentSend()
+   public boolean isBlockOnNonPersistentSend()
    {
       return cf.isBlockOnNonPersistentSend();
    }
 
-   public boolean isDefaultBlockOnPersistentSend()
+   public boolean isBlockOnPersistentSend()
    {
       return cf.isBlockOnPersistentSend();
+   }
+   
+   public boolean isPreAcknowledge()
+   {
+      return cf.isPreAcknowledge();
    }
 
    public String getName()
    {
       return name;
    }
+
+   public long getConnectionTTL()
+   {
+      return cf.getConnectionTTL();
+   }
+
+   public int getMaxConnections()
+   {
+      return cf.getMaxConnections();
+   }
+
+   public int getMaxRetriesAfterFailover()
+   {
+      return cf.getMaxRetriesAfterFailover();
+   }
+
+   public int getMaxRetriesBeforeFailover()
+   {
+      return cf.getMaxRetriesBeforeFailover();
+   }
+
+   public long getMinLargeMessageSize()
+   {
+      return cf.getMinLargeMessageSize();
+   }
+
+   public long getRetryInterval()
+   {
+      return cf.getRetryInterval();
+   }
+
+   public double getRetryIntervalMultiplier()
+   {
+      return cf.getRetryIntervalMultiplier();
+   }
+
+   public long getTransactionBatchSize()
+   {
+      return cf.getTransactionBatchSize();
+   }
+
+   public boolean isAutoGroup()
+   {
+      return cf.isAutoGroup();
+   }
+   
+   
 
    // Package protected ---------------------------------------------
 

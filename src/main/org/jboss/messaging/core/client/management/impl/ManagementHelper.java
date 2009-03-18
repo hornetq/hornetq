@@ -50,9 +50,9 @@ public class ManagementHelper
 
    public static final SimpleString HDR_JMX_OBJECTNAME = new SimpleString("_JBM_JMX_ObjectName");
 
-   public static final SimpleString HDR_JMX_ATTRIBUTE_PREFIX = new SimpleString("_JBM_JMXAttribute.");
+   public static final SimpleString HDR_JMX_ATTRIBUTE = new SimpleString("_JBM_JMXAttribute");
 
-   public static final SimpleString HDR_JMX_OPERATION_PREFIX = new SimpleString("_JBM_JMXOperation.");
+   public static final SimpleString HDR_JMX_OPERATION_PREFIX = new SimpleString("_JBM_JMXOperation$");
 
    public static final SimpleString HDR_JMX_OPERATION_NAME = new SimpleString(HDR_JMX_OPERATION_PREFIX + "name");
 
@@ -63,35 +63,29 @@ public class ManagementHelper
    public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("_JBM_NotifType");
 
    public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("_JBM_NotifTimestamp");
-   
+
    public static final SimpleString HDR_ROUTING_NAME = new SimpleString("_JBM_RoutingName");
-   
+
    public static final SimpleString HDR_CLUSTER_NAME = new SimpleString("_JBM_ClusterName");
-   
+
    public static final SimpleString HDR_ADDRESS = new SimpleString("_JBM_Address");
-   
+
    public static final SimpleString HDR_BINDING_ID = new SimpleString("_JBM_Binding_ID");
-   
+
    public static final SimpleString HDR_BINDING_TYPE = new SimpleString("_JBM_Binding_Type");
-   
+
    public static final SimpleString HDR_FILTERSTRING = new SimpleString("_JBM_FilterString");
-   
+
    public static final SimpleString HDR_DISTANCE = new SimpleString("_JBM_Distance");
 
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
 
-   public static void putAttributes(final Message message,
-                                    final ObjectName objectName,
-                                    final String... attributes)
+   public static void putAttribute(final Message message, final ObjectName objectName, final String attribute)
    {
       message.putStringProperty(HDR_JMX_OBJECTNAME, new SimpleString(objectName.toString()));
-      for (int i = 0; i < attributes.length; i++)
-      {
-         message.putStringProperty(new SimpleString(HDR_JMX_ATTRIBUTE_PREFIX + Integer.toString(i)),
-                                   new SimpleString(attributes[i]));
-      }
+      message.putStringProperty(HDR_JMX_ATTRIBUTE, new SimpleString(attribute));
    }
 
    public static void putOperationInvocation(final Message message,
@@ -127,7 +121,7 @@ public class ManagementHelper
          {
             String s = propertyName.toString();
             // split by the dot
-            String[] ss = s.split("\\.");
+            String[] ss = s.split("\\$");
             try
             {
                int index = Integer.parseInt(ss[ss.length - 1]);
@@ -150,7 +144,7 @@ public class ManagementHelper
       }
       return params;
    }
-   
+
    public static boolean isOperationResult(final Message message)
    {
       return message.containsProperty(HDR_JMX_OPERATION_SUCCEEDED);
@@ -161,34 +155,29 @@ public class ManagementHelper
       return !(isOperationResult(message));
    }
 
-   public static TabularData getTabularDataProperty(final Message message, final String key)
+   public static void storeResult(final Message message, final Object result)
    {
-      Object object = message.getProperty(new SimpleString(key));
-      if (object instanceof byte[])
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try
       {
-         return (TabularData)from((byte[])object);
+         ObjectOutputStream oos = new ObjectOutputStream(baos);
+         oos.writeObject(result);
       }
-      throw new IllegalArgumentException(key + " property is not a valid TabularData");
+      catch (IOException e)
+      {
+         throw new IllegalStateException(result + " can not be written to a byte array");
+      }
+      byte[] data = baos.toByteArray();
+      message.getBody().writeInt(data.length);
+      message.getBody().writeBytes(data);
    }
-   
-   public static Object[] getArrayProperty(final Message message, final String key)
+
+   public static Object getResult(final Message message)
    {
-      Object object = message.getProperty(new SimpleString(key));
-      if (object instanceof byte[])
-      {
-         return (Object[])from((byte[])object);
-      }
-      throw new IllegalArgumentException(key + " property is not a valid array");
-   }
-   
-   public static CompositeData getCompositeDataProperty(final Message message, final String key)
-   {
-      Object object = message.getProperty(new SimpleString(key));
-      if (object instanceof byte[])
-      {
-         return (CompositeData)from((byte[])object);
-      }
-      throw new IllegalArgumentException(key + " property is not a valid CompositeData");
+      int len = message.getBody().readInt();
+      byte[] data = new byte[len];
+      message.getBody().readBytes(data);
+      return from(data);
    }
 
    public static boolean hasOperationSucceeded(final Message message)
@@ -215,6 +204,13 @@ public class ManagementHelper
 
    public static void storeTypedProperty(final Message message, final SimpleString key, final Object typedProperty)
    {
+      if (typedProperty == null)
+      {
+         return;
+      }
+      
+      checkSimpleType(typedProperty);
+
       if (typedProperty instanceof Void)
       {
          // do not put the returned value if the operation was a procedure
@@ -251,18 +247,25 @@ public class ManagementHelper
       {
          message.putStringProperty(key, new SimpleString((String)typedProperty));
       }
-      else if (typedProperty instanceof TabularData || typedProperty instanceof CompositeData)
-      {
-         storePropertyAsBytes(message, key, typedProperty);
-      }
-      else if (typedProperty != null && typedProperty.getClass().isArray())
-      {
-         storePropertyAsBytes(message, key, typedProperty);         
-      }
       // serialize as a SimpleString
       else
       {
          message.putStringProperty(key, new SimpleString("" + typedProperty));
+      }
+   }
+
+   private static void checkSimpleType(Object o)
+   {
+      if (!((o instanceof Void) || (o instanceof Boolean) ||
+            (o instanceof Byte) ||
+            (o instanceof Short) ||
+            (o instanceof Integer) ||
+            (o instanceof Long) ||
+            (o instanceof Float) ||
+            (o instanceof Double) ||
+            (o instanceof String) || (o instanceof SimpleString)))
+      {
+         throw new IllegalStateException("Can not store object as a message property: " + o);
       }
    }
 
@@ -291,19 +294,5 @@ public class ManagementHelper
 
    // Private -------------------------------------------------------
 
-   private static void storePropertyAsBytes(final Message message, final SimpleString key, final Object property)
-   {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      try
-      {
-         ObjectOutputStream oos = new ObjectOutputStream(baos);
-         oos.writeObject(property);
-      }
-      catch (IOException e)
-      {
-         throw new IllegalStateException(property + " can not be written to a byte array");
-      }
-      message.putBytesProperty(key, baos.toByteArray());
-   }
    // Inner classes -------------------------------------------------
 }

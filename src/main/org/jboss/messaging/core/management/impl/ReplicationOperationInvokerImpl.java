@@ -103,7 +103,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
       }
       if (ManagementHelper.hasOperationSucceeded(reply))
       {
-         return reply.getProperty(new SimpleString(operationName));
+         return ManagementHelper.getResult(reply);
       }
       else
       {

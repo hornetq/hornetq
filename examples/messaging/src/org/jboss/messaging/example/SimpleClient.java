@@ -30,7 +30,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.jms.client.JBossTextMessage;
 
 /**
  * Uses the core messaging API to send and receive a message to a queue.
@@ -49,7 +48,7 @@ public class SimpleClient
          clientSession = sessionFactory.createSession(false, true, true);
          SimpleString queue = new SimpleString("queuejms.testQueue");
          ClientProducer clientProducer = clientSession.createProducer(queue);
-         ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE, false);
+         ClientMessage message = clientSession.createClientMessage(false);
          message.getBody().writeString("Hello!");
          clientProducer.send(message);
          ClientConsumer clientConsumer = clientSession.createConsumer(queue);

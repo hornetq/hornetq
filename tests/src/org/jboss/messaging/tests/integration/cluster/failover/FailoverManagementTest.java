@@ -113,7 +113,7 @@ public class FailoverManagementTest extends UnitTestCase
       {
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
-         ManagementHelper.putAttributes(managementMessage,
+         ManagementHelper.putAttribute(managementMessage,
                                         ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
@@ -132,7 +132,7 @@ public class FailoverManagementTest extends UnitTestCase
       {
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
-         ManagementHelper.putAttributes(managementMessage,
+         ManagementHelper.putAttribute(managementMessage,
                                         ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
@@ -202,7 +202,7 @@ public class FailoverManagementTest extends UnitTestCase
       {
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
-         ManagementHelper.putAttributes(managementMessage,
+         ManagementHelper.putAttribute(managementMessage,
                                         ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);

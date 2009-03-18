@@ -104,9 +104,9 @@ public class ManagementServiceImplTest extends UnitTestCase
                                               role.isCheckType(READ),
                                               role.isCheckType(WRITE));
 
-      managementService.handleMessage(message);
+      ServerMessage reply = managementService.handleMessage(message);
 
-      boolean success = (Boolean)message.getProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED);
+      boolean success = (Boolean)reply.getProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED);
       assertTrue(success);
 
       verify(resource);
@@ -145,11 +145,11 @@ public class ManagementServiceImplTest extends UnitTestCase
                                               role.isCheckType(READ),
                                               role.isCheckType(WRITE));
 
-      managementService.handleMessage(message);
+      ServerMessage reply = managementService.handleMessage(message);
 
-      boolean success = (Boolean)message.getProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED);
+      boolean success = (Boolean)reply.getProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED);
       assertFalse(success);
-      SimpleString exceptionMsg = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_OPERATION_EXCEPTION);
+      SimpleString exceptionMsg = (SimpleString)reply.getProperty(ManagementHelper.HDR_JMX_OPERATION_EXCEPTION);
       assertNotNull(exceptionMsg);
       assertEquals(exceptionMessage, exceptionMsg.toString());
 

@@ -143,7 +143,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
       // moved all messages to otherQueue
-      int movedMessagesCount = liveQueueControl.moveAllMessages(otherQueue.getAddress());
+      int movedMessagesCount = liveQueueControl.moveAllMessages(otherQueue.getName());
       assertEquals(1, movedMessagesCount);
       
       assertEquals(0, liveQueueControl.getMessageCount());
@@ -168,7 +168,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
       // moved matching messages to otherQueue
-      int movedMatchedMessagesCount = liveQueueControl.moveMatchingMessages(key + " =" + matchingValue, otherQueue.getAddress());
+      int movedMatchedMessagesCount = liveQueueControl.moveMatchingMessages(key + " =" + matchingValue, otherQueue.getName());
       assertEquals(1, movedMatchedMessagesCount);
 
       assertEquals(1, liveQueueControl.getMessageCount());
@@ -190,7 +190,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       assertEquals(0, liveOtherQueueControl.getMessageCount());
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
-      assertTrue(liveQueueControl.moveMessage(message.getJMSMessageID(), otherQueue.getAddress()));
+      assertTrue(liveQueueControl.moveMessage(message.getJMSMessageID(), otherQueue.getName()));
       
       // check the message is no longer in the queue on both live & backup nodes
       assertEquals(0, liveQueueControl.getMessageCount());

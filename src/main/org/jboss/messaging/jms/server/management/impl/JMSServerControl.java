@@ -142,6 +142,52 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
    }
    
    public void createConnectionFactory(String name,
+                                             String connectorFactoryClassName,
+                                             String jndiBinding) throws Exception
+   {
+      List<String> bindings = new ArrayList<String>();
+      bindings.add(jndiBinding);
+
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
+
+      boolean created = server.createConnectionFactory(name,
+                                                       connectorConfigs,
+                                                       bindings);
+      if (created)
+      {
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+   }
+   
+   public void createConnectionFactory(String name,
+                                             String connectorFactoryClassName,
+                                             boolean blockOnAcknowledge,
+                                             boolean blockOnNonPersistentSend,
+                                             boolean blockOnPersistentSend,
+                                             boolean preAcknowledge,
+                                             String jndiBinding) throws Exception
+   {
+      List<String> bindings = new ArrayList<String>();
+      bindings.add(jndiBinding);
+
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
+
+      boolean created = server.createConnectionFactory(name,
+                                                       connectorConfigs,
+                                                       blockOnAcknowledge,
+                                                       blockOnNonPersistentSend,
+                                                       blockOnPersistentSend,
+                                                       preAcknowledge,
+                                                       bindings);
+      if (created)
+      {
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+   }
+
+   public void createConnectionFactory(String name,
                                        List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                        String connectionLoadBalancingPolicyClassName,
                                        long pingPeriod,   

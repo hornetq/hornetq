@@ -51,16 +51,14 @@ public interface TopicControlMBean extends DestinationControlMBean
 
    // Operations ----------------------------------------------------
 
-   // Open Type API
-
    @Operation(desc = "List all subscriptions")
-   TabularData listAllSubscriptions();
+   TabularData listAllSubscriptions() throws Exception;
 
    @Operation(desc = "List only the durable subscriptions")
-   TabularData listDurableSubscriptions();
+   TabularData listDurableSubscriptions() throws Exception;
 
    @Operation(desc = "List only the non durable subscriptions")
-   TabularData listNonDurableSubscriptions();
+   TabularData listNonDurableSubscriptions() throws Exception;
 
    @Operation(desc = "List all the message for the given subscription")
    public TabularData listMessagesForSubscription(
@@ -73,17 +71,6 @@ public interface TopicControlMBean extends DestinationControlMBean
          @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName,
          @Parameter(name = "filter", desc = "a JMS filter") String filter)
          throws Exception;
-
-   // Specific API
-
-   @Operation(desc = "List all subscriptions")
-   SubscriptionInfo[] listAllSubscriptionInfos();
-
-   @Operation(desc = "List only the durable subscriptions")
-   SubscriptionInfo[] listDurableSubscriptionInfos();
-
-   @Operation(desc = "List only the non durable subscriptions")
-   SubscriptionInfo[] listNonDurableSubscriptionInfos();
 
    @Operation(desc = "Drop a durable subscription", impact = ACTION)
    void dropDurableSubscription(

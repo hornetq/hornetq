@@ -132,32 +132,17 @@ public class TopicControl implements TopicControlMBean
 
    public TabularData listAllSubscriptions()
    {
-      return SubscriptionInfo.toTabularData(listAllSubscriptionInfos());
+      return SubscriptionInfo.toTabularData(listSubscribersInfos(DurabilityType.ALL));
    }
 
    public TabularData listDurableSubscriptions()
    {
-      return SubscriptionInfo.toTabularData(listDurableSubscriptionInfos());
+      return SubscriptionInfo.toTabularData(listSubscribersInfos(DurabilityType.DURABLE));
    }
 
    public TabularData listNonDurableSubscriptions()
    {
-      return SubscriptionInfo.toTabularData(listNonDurableSubscriptionInfos());
-   }
-
-   public SubscriptionInfo[] listAllSubscriptionInfos()
-   {
-      return listSubscribersInfos(DurabilityType.ALL);
-   }
-
-   public SubscriptionInfo[] listDurableSubscriptionInfos()
-   {
-      return listSubscribersInfos(DurabilityType.DURABLE);
-   }
-
-   public SubscriptionInfo[] listNonDurableSubscriptionInfos()
-   {
-      return listSubscribersInfos(DurabilityType.NON_DURABLE);
+      return SubscriptionInfo.toTabularData(listSubscribersInfos(DurabilityType.NON_DURABLE));
    }
 
    public TabularData listMessagesForSubscription(final String queueName) throws Exception

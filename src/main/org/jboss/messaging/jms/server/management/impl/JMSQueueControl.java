@@ -22,9 +22,7 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.management.openmbean.CompositeData;
@@ -34,10 +32,8 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.DayCounterInfo;
 import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
-import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -325,7 +321,8 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public boolean moveMessage(String messageID, String otherQueueName) throws Exception
    {
-      Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
+      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      Binding binding = postOffice.getBinding(otherQueue.getSimpleAddress());
       if (binding == null)
       {
          throw new IllegalArgumentException("No queue found for " + otherQueueName);
@@ -342,7 +339,8 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
    {
-      Binding otherBinding = postOffice.getBinding(new SimpleString(otherQueueName));
+      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      Binding otherBinding = postOffice.getBinding(otherQueue.getSimpleAddress());
       if (otherBinding == null)
       {
          throw new IllegalArgumentException("No queue found for " + otherQueueName);
@@ -369,19 +367,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public TabularData listMessageCounterHistory() throws Exception
    {
-      List<DayCounter> history = counter.getHistory();
-      DayCounterInfo[] infos = new DayCounterInfo[history.size()];
-      for (int i = 0; i < infos.length; i++)
-      {
-         DayCounter dayCounter = history.get(i);
-         int[] counters = dayCounter.getCounters();
-         GregorianCalendar date = dayCounter.getDate();
-
-         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-         String strData = dateFormat.format(date.getTime());
-         infos[i] = new DayCounterInfo(strData, counters);
-      }
-      return DayCounterInfo.toTabularData(infos);
+      return MessageCounterHelper.listMessageCounterHistory(counter);
    }
 
    public String listMessageCounterHistoryAsHTML()

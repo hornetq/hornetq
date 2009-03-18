@@ -274,6 +274,40 @@ public class JMSServerManagerImpl implements JMSServerManager
    }
 
    public synchronized boolean createConnectionFactory(final String name,
+                                                       final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                                       final List<String> jndiBindings) throws Exception
+   {
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
+      {
+         cf = new JBossConnectionFactory(connectorConfigs);
+      }
+
+      bindConnectionFactory(cf, name, jndiBindings);
+
+      return true;
+   }
+   
+   public synchronized boolean createConnectionFactory(String name,
+                                          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                          boolean blockOnAcknowledge,
+                                          boolean blockOnNonPersistentSend,
+                                          boolean blockOnPersistentSend,
+                                          boolean preAcknowledge,
+                                          List<String> jndiBindings) throws Exception
+   {
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
+      {
+         cf = new JBossConnectionFactory(connectorConfigs, blockOnAcknowledge, blockOnNonPersistentSend, blockOnPersistentSend, preAcknowledge);
+      }
+
+      bindConnectionFactory(cf, name, jndiBindings);
+
+      return true;
+   }
+
+   public synchronized boolean createConnectionFactory(final String name,
                                           final DiscoveryGroupConfiguration discoveryGroupConfig,
                                           final long discoveryInitialWait,
                                           final String connectionLoadBalancingPolicyClassName,

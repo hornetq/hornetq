@@ -43,18 +43,20 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.jms.Connection;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
+import javax.naming.Context;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -63,11 +65,15 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
+import org.jboss.messaging.tests.unit.util.InVMContext;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A QueueControlTest
@@ -88,9 +94,11 @@ public class JMSQueueControlTest extends UnitTestCase
 
    private JMSServerManagerImpl serverManager;
 
-   private Queue queue;
+   protected JBossQueue queue;
 
    private MBeanServer mbeanServer;
+
+   protected Context context;
 
    // Static --------------------------------------------------------
 
@@ -98,9 +106,18 @@ public class JMSQueueControlTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   public void testGetAttributes() throws Exception
+   {
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      assertEquals(queue.getName(), queueControl.getName());
+      assertEquals(queue.getAddress(), queueControl.getAddress());
+      assertEquals(queue.isTemporary(), queueControl.isTemporary());
+   }
+
    public void testGetXXXCount() throws Exception
    {
-      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(0, queueControl.getConsumerCount());
@@ -127,7 +144,7 @@ public class JMSQueueControlTest extends UnitTestCase
 
    public void testRemoveMessage() throws Exception
    {
-      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
 
@@ -147,9 +164,27 @@ public class JMSQueueControlTest extends UnitTestCase
       assertEquals(1, queueControl.getMessageCount());
    }
 
+   public void testRemoveMessageWithUnknownMessage() throws Exception
+   {
+      String unknownMessageID = randomString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      assertEquals(0, queueControl.getMessageCount());
+
+      try
+      {
+         queueControl.removeMessage(unknownMessageID);
+         fail("should throw an exception is the message ID is unknown");
+      }
+      catch (Exception e)
+      {
+      }
+   }
+
    public void testRemoveAllMessages() throws Exception
    {
-      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
 
@@ -167,37 +202,11 @@ public class JMSQueueControlTest extends UnitTestCase
 
    public void testRemoveMatchingMessages() throws Exception
    {
-      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
 
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
-                                                             null,
-                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                             DEFAULT_PING_PERIOD,
-                                                             DEFAULT_CONNECTION_TTL,
-                                                             DEFAULT_CALL_TIMEOUT,
-                                                             null,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             DEFAULT_CONSUMER_MAX_RATE,
-                                                             DEFAULT_SEND_WINDOW_SIZE,
-                                                             DEFAULT_PRODUCER_MAX_RATE,
-                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                             true,
-                                                             DEFAULT_AUTO_GROUP,
-                                                             DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                        
-                                                             DEFAULT_RETRY_INTERVAL,
-                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
-
-      Connection conn = cf.createConnection();
-
+      Connection conn = createConnection();
       Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer producer = s.createProducer(queue);
 
@@ -224,7 +233,7 @@ public class JMSQueueControlTest extends UnitTestCase
 
    public void testChangeMessagePriority() throws Exception
    {
-      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createManagementControl();
 
       JMSUtil.sendMessages(queue, 1);
 
@@ -247,9 +256,82 @@ public class JMSQueueControlTest extends UnitTestCase
       assertEquals(newPriority, message.getJMSPriority());
    }
 
+   public void testChangeMessagePriorityWithInvalidPriority() throws Exception
+   {
+      byte invalidPriority = (byte)23;
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      String[] messageIDs = JMSUtil.sendMessages(queue, 1);
+
+      assertEquals(1, queueControl.getMessageCount());
+
+      try
+      {
+         queueControl.changeMessagePriority(messageIDs[0], invalidPriority);
+         fail("must throw an exception if the new priority is not a valid value");
+      }
+      catch (Exception e)
+      {
+      }
+
+      MessageConsumer consumer = JMSUtil.createConsumer(queue, true);
+      Message message = consumer.receive(500);
+      assertNotNull(message);
+      assertTrue(message.getJMSPriority() != invalidPriority);
+   }
+
+   public void testChangeMessagePriorityWithUnknownMessageID() throws Exception
+   {
+      String unkownMessageID = randomString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      try
+      {
+         queueControl.changeMessagePriority(unkownMessageID, 7);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+   }
+
+   public void testGetExpiryAddress() throws Exception
+   {
+      final SimpleString expiryAddress = randomSimpleString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      assertNull(queueControl.getExpiryAddress());
+
+      service.getServer().getAddressSettingsRepository().addMatch(queue.getAddress(), new AddressSettings()
+      {
+         @Override
+         public SimpleString getExpiryAddress()
+         {
+            return expiryAddress;
+         }
+      });
+
+      assertEquals(expiryAddress.toString(), queueControl.getExpiryAddress());
+   }
+
+   public void testSetExpiryAddress() throws Exception
+   {
+      final String expiryAddress = randomString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      assertNull(queueControl.getExpiryAddress());
+
+      queueControl.setExpiryAddress(expiryAddress);
+      assertEquals(expiryAddress, queueControl.getExpiryAddress());
+   }
+
    public void testExpireMessage() throws Exception
    {
-      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createManagementControl();
       String expiryQueueName = randomString();
       JBossQueue expiryQueue = new JBossQueue(expiryQueueName);
       serverManager.createQueue(expiryQueueName, expiryQueueName);
@@ -257,17 +339,12 @@ public class JMSQueueControlTest extends UnitTestCase
 
       JMSQueueControlMBean expiryQueueControl = createJMSQueueControl(expiryQueue, mbeanServer);
 
-      JMSUtil.sendMessages(queue, 1);
+      String[] messageIDs = JMSUtil.sendMessages(queue, 1);
 
       assertEquals(1, queueControl.getMessageCount());
       assertEquals(0, expiryQueueControl.getMessageCount());
 
-      TabularData data = queueControl.listAllMessages();
-      // retrieve the first message info
-      CompositeData compositeData = (CompositeData)data.values().iterator().next();
-      String messageID = (String)compositeData.get("JMSMessageID");
-
-      assertTrue(queueControl.expireMessage(messageID));
+      assertTrue(queueControl.expireMessage(messageIDs[0]));
 
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(1, expiryQueueControl.getMessageCount());
@@ -275,7 +352,50 @@ public class JMSQueueControlTest extends UnitTestCase
       MessageConsumer consumer = JMSUtil.createConsumer(expiryQueue, true);
       Message message = consumer.receive(500);
       assertNotNull(message);
-      assertEquals(messageID, message.getJMSMessageID());
+      assertEquals(messageIDs[0], message.getJMSMessageID());
+   }
+
+   public void testExpireMessageWithUnknownMessageID() throws Exception
+   {
+      String unknownMessageID = randomString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      try
+      {
+         queueControl.expireMessage(unknownMessageID);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+   }
+
+   public void testExpireMessagesWithFilter() throws Exception
+   {
+      String key = new String("key");
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+      String filter = key + " =" + matchingValue;
+
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      // send on queue
+      JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
+
+      connection.close();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+      assertEquals(2, queueControl.getMessageCount());
+
+      int expiredMessagesCount = queueControl.expireMessages(filter);
+      assertEquals(1, expiredMessagesCount);
+      assertEquals(1, queueControl.getMessageCount());
+
+      // consume the unmatched message from queue
+      JMSUtil.consumeMessages(1, queue);
    }
 
    public void testCountMessagesWithFilter() throws Exception
@@ -284,7 +404,7 @@ public class JMSQueueControlTest extends UnitTestCase
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
 
-      JMSQueueControlMBean queueControl = createJMSQueueControl(queue, mbeanServer);
+      JMSQueueControlMBean queueControl = createManagementControl();
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -297,8 +417,243 @@ public class JMSQueueControlTest extends UnitTestCase
 
       assertEquals(2, queueControl.countMessages(key + " =" + matchingValue));
       assertEquals(1, queueControl.countMessages(key + " =" + unmatchingValue));
-      
+
       session.close();
+   }
+
+   public void testGetDeadLetterAddress() throws Exception
+   {
+      final SimpleString deadLetterAddress = randomSimpleString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      assertNull(queueControl.getDeadLetterAddress());
+
+      service.getServer().getAddressSettingsRepository().addMatch(queue.getAddress(), new AddressSettings()
+      {
+         @Override
+         public SimpleString getDeadLetterAddress()
+         {
+            return deadLetterAddress;
+         }
+      });
+
+      assertEquals(deadLetterAddress.toString(), queueControl.getDeadLetterAddress());
+   }
+
+   public void testSetDeadLetterAddress() throws Exception
+   {
+      final String deadLetterAddress = randomString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      assertNull(queueControl.getDeadLetterAddress());
+
+      queueControl.setDeadLetterAddress(deadLetterAddress);
+      assertEquals(deadLetterAddress, queueControl.getDeadLetterAddress());
+   }
+
+   public void testSendMessageToDLQ() throws Exception
+   {
+      String deadLetterQueue = randomString();
+      serverManager.createQueue(deadLetterQueue, deadLetterQueue);
+      JBossQueue dlq = new JBossQueue(deadLetterQueue);
+
+      Connection conn = createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = sess.createProducer(queue);
+
+      // send 2 messages on queue
+      Message message = sess.createMessage();
+      producer.send(message);
+      producer.send(sess.createMessage());
+
+      conn.close();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControlMBean dlqControl = ManagementControlHelper.createJMSQueueControl(dlq, mbeanServer);
+
+      assertEquals(2, queueControl.getMessageCount());
+      assertEquals(0, dlqControl.getMessageCount());
+
+      queueControl.setDeadLetterAddress(dlq.getAddress());
+
+      boolean movedToDeadLetterAddress = queueControl.sendMessageToDLQ(message.getJMSMessageID());
+      assertTrue(movedToDeadLetterAddress);
+      assertEquals(1, queueControl.getMessageCount());
+      assertEquals(1, dlqControl.getMessageCount());
+
+      // check there is a single message to consume from queue
+      JMSUtil.consumeMessages(1, queue);
+
+      // check there is a single message to consume from deadletter queue
+      JMSUtil.consumeMessages(1, dlq);
+
+      serverManager.destroyQueue(deadLetterQueue);
+   }
+
+   public void testSendMessageToDLQWithUnknownMessageID() throws Exception
+   {
+      String unknownMessageID = randomString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      try
+      {
+         queueControl.sendMessageToDLQ(unknownMessageID);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+
+   }
+
+   public void testMoveAllMessages() throws Exception
+   {
+      String otherQueueName = randomString();
+
+      serverManager.createQueue(otherQueueName, otherQueueName);
+      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+
+      // send on queue
+      JMSUtil.sendMessages(queue, 2);
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+      assertEquals(2, queueControl.getMessageCount());
+
+      // moved all messages to otherQueue
+      int movedMessagesCount = queueControl.moveAllMessages(otherQueueName);
+      assertEquals(2, movedMessagesCount);
+      assertEquals(0, queueControl.getMessageCount());
+
+      // check there is no message to consume from queue
+      JMSUtil.consumeMessages(0, queue);
+
+      // consume the message from otherQueue
+      JMSUtil.consumeMessages(2, otherQueue);
+
+      serverManager.destroyQueue(otherQueueName);
+   }
+
+   public void testMoveAllMessagesToUknownQueue() throws Exception
+   {
+      String unknownQueue = randomString();
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+
+      try
+      {
+         queueControl.moveAllMessages(unknownQueue);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+   }
+
+   public void testMoveMatchingMessages() throws Exception
+   {
+      String key = "key";
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+      String filter = "key = " + matchingValue;
+      String otherQueueName = randomString();
+
+      serverManager.createQueue(otherQueueName, otherQueueName);
+      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      // send on queue
+      JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
+      JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+      assertEquals(2, queueControl.getMessageCount());
+
+      // moved matching messages to otherQueue
+      int movedMessagesCount = queueControl.moveMatchingMessages(filter, otherQueueName);
+      assertEquals(1, movedMessagesCount);
+      assertEquals(1, queueControl.getMessageCount());
+
+      connection.start();
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(500);
+      assertNotNull(message);
+      assertEquals(unmatchingValue, message.getLongProperty(key));
+      assertNull(consumer.receive(500));
+
+      JMSUtil.consumeMessages(1, otherQueue);
+
+      serverManager.destroyQueue(otherQueueName);
+
+      connection.close();
+   }
+
+   public void testMoveMessage() throws Exception
+   {
+      String otherQueueName = randomString();
+
+      serverManager.createQueue(otherQueueName, otherQueueName);
+      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+
+      String[] messageIDs = JMSUtil.sendMessages(queue, 1);
+      
+      JMSQueueControlMBean queueControl = createManagementControl();
+      assertEquals(1, queueControl.getMessageCount());
+
+      boolean moved = queueControl.moveMessage(messageIDs[0], otherQueueName);
+      assertTrue(moved);
+      assertEquals(0, queueControl.getMessageCount());
+
+      JMSUtil.consumeMessages(0, queue);
+      JMSUtil.consumeMessages(1, otherQueue);
+
+      serverManager.destroyQueue(otherQueueName);
+   }
+   
+   public void testMoveMessageWithUnknownMessageID() throws Exception
+   {
+      String unknownMessageID = randomString();
+      String otherQueueName = randomString();
+
+      serverManager.createQueue(otherQueueName, otherQueueName);
+
+      JMSQueueControlMBean queueControl = createManagementControl();
+      assertEquals(0, queueControl.getMessageCount());
+
+      try
+      {
+         queueControl.moveMessage(unknownMessageID, otherQueueName);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+
+      serverManager.destroyQueue(otherQueueName);
+   }
+   
+   public void testMoveMessageToUnknownQueue() throws Exception
+   {
+      String unknwonQueue = randomString();
+
+      String[] messageIDs = JMSUtil.sendMessages(queue, 1);
+      
+      JMSQueueControlMBean queueControl = createManagementControl();
+      assertEquals(1, queueControl.getMessageCount());
+
+      try
+      {
+         queueControl.moveMessage(messageIDs[0], unknwonQueue);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+
+      JMSUtil.consumeMessages(1, queue);
    }
    
    // Package protected ---------------------------------------------
@@ -309,19 +664,19 @@ public class JMSQueueControlTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations()
-          .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
       service.start();
 
       serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
       serverManager.start();
-      serverManager.setContext(new NullInitialContext());
+      context = new InVMContext();
+      serverManager.setContext(context);
 
       String queueName = randomString();
       serverManager.createQueue(queueName, queueName);
@@ -336,7 +691,42 @@ public class JMSQueueControlTest extends UnitTestCase
       super.tearDown();
    }
 
+   protected JMSQueueControlMBean createManagementControl() throws Exception
+   {
+      return createJMSQueueControl(queue, mbeanServer);
+   }
+
    // Private -------------------------------------------------------
+
+   private Connection createConnection() throws JMSException
+   {
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
+                                                             null,
+                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                             DEFAULT_PING_PERIOD,
+                                                             DEFAULT_CONNECTION_TTL,
+                                                             DEFAULT_CALL_TIMEOUT,
+                                                             null,
+                                                             DEFAULT_ACK_BATCH_SIZE,
+                                                             DEFAULT_ACK_BATCH_SIZE,
+                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                             DEFAULT_CONSUMER_MAX_RATE,
+                                                             DEFAULT_SEND_WINDOW_SIZE,
+                                                             DEFAULT_PRODUCER_MAX_RATE,
+                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                                             true,
+                                                             DEFAULT_AUTO_GROUP,
+                                                             DEFAULT_MAX_CONNECTIONS,
+                                                             DEFAULT_PRE_ACKNOWLEDGE,
+                                                             DEFAULT_RETRY_INTERVAL,
+                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
+                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+
+      return cf.createConnection();
+   }
 
    // Inner classes -------------------------------------------------
 

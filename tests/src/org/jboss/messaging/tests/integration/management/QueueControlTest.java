@@ -70,7 +70,7 @@ public class QueueControlTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   protected MessagingService service;
 
    protected MBeanServer mbeanServer;
 
@@ -290,7 +290,7 @@ public class QueueControlTest extends UnitTestCase
       session.deleteQueue(queue);
    }
 
-   public void testListScheduledCount() throws Exception
+   public void testListScheduledMessages() throws Exception
    {
       long delay = 2000;
       SimpleString address = randomSimpleString();

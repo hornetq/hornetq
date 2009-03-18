@@ -67,6 +67,44 @@ public interface JMSServerControlMBean
    @Operation(desc = "Destroy a JMS Topic", impact = ACTION)
    boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy") String name) throws Exception;
 
+   void createConnectionFactory(String name,
+                                String connectorFactoryClassName,
+                                String jndiBinding) throws Exception;
+
+   void createConnectionFactory(String name,
+                                      String connectorFactoryClassName,
+                                      boolean blockOnAcknowledge,
+                                      boolean blockOnNonPersistentSend,
+                                      boolean blockOnPersistentSend,
+                                      boolean preAcknowledge,
+                                      String jndiBinding) throws Exception;
+
+   void createSimpleConnectionFactory(String name,
+                                String connectorFactoryClassName,
+                                String connectionLoadBalancingPolicyClassName,
+                                long pingPeriod,
+                                long connectionTTL,
+                                long callTimeout,
+                                String clientID,
+                                int dupsOKBatchSize,
+                                int transactionBatchSize,
+                                int consumerWindowSize,
+                                int consumerMaxRate,
+                                int producerWindowSize,
+                                int producerMaxRate,
+                                int minLargeMessageSize,
+                                boolean blockOnAcknowledge,
+                                boolean blockOnNonPersistentSend,
+                                boolean blockOnPersistentSend,
+                                boolean autoGroup,
+                                int maxConnections,
+                                boolean preAcknowledge,
+                                long retryInterval,
+                                double retryIntervalMultiplier,
+                                int maxRetriesBeforeFailover,
+                                int maxRetriesAfterFailover,
+                                String jndiBinding) throws Exception;
+
    @Operation(desc = "Create a JMS ConnectionFactory with a static list of servers", impact = ACTION)
    void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create") 
                                 String name,
@@ -119,6 +157,7 @@ public interface JMSServerControlMBean
                                 String jndiBinding) 
    throws Exception;
 
+   
    @Operation(desc = "Create a JMS ConnectionFactory specifying a discovery group to obtain list of servers from", impact = ACTION)
    void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create") 
                                 String name,
@@ -184,44 +223,17 @@ public interface JMSServerControlMBean
    void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create") String name) throws Exception;
 
    @Operation(desc = "List the client addresses", impact = INFO)
-   String[] listRemoteAddresses();
+   String[] listRemoteAddresses() throws Exception;
 
    @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
-   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress);
+   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
    boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    @Operation(desc = "List all the connection IDs", impact = INFO)
-   String[] listConnectionIDs();
+   String[] listConnectionIDs() throws Exception;
 
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
-   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID);
-
- void createSimpleConnectionFactory(String name,
-                                String connectorFactoryClassName,
-                                String connectionLoadBalancingPolicyClassName,
-                                long pingPeriod,
-                                long connectionTTL,
-                                long callTimeout,
-                                String clientID,
-                                int dupsOKBatchSize,
-                                int transactionBatchSize,
-                                int consumerWindowSize,
-                                int consumerMaxRate,
-                                int producerWindowSize,
-                                int producerMaxRate,
-                                int minLargeMessageSize,
-                                boolean blockOnAcknowledge,
-                                boolean blockOnNonPersistentSend,
-                                boolean blockOnPersistentSend,
-                                boolean autoGroup,
-                                int maxConnections,
-                                boolean preAcknowledge,
-                                long retryInterval,
-                                double retryIntervalMultiplier,
-                                int maxRetriesBeforeFailover,
-                                int maxRetriesAfterFailover,
-                                String jndiBinding) throws Exception;
-
+   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 }

@@ -135,7 +135,7 @@ public interface ManagementService extends MessagingComponent
 
    Object getResource(ObjectName objectName);
 
-   void handleMessage(ServerMessage message);  
+   ServerMessage handleMessage(ServerMessage message);  
 
    // Notfication
    

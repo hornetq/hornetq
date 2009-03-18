@@ -57,12 +57,12 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationListener;
-import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -298,8 +298,14 @@ public class ManagementServiceImpl implements ManagementService
       unregisterResource(objectName);
    }
 
-   public void handleMessage(final ServerMessage message)
+   public ServerMessage handleMessage(final ServerMessage message)
    {
+      // a reply message is sent with the result stored in the message body.
+      // we set its type to MessageImpl.OBJECT_TYPE so that I can be received
+      // as an ObjectMessage when using JMS to send management message
+      ServerMessageImpl reply = new ServerMessageImpl(message);
+      reply.setType(MessageImpl.OBJECT_TYPE);
+      
       SimpleString objectName = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_OBJECTNAME);
       if (log.isDebugEnabled())
       {
@@ -322,13 +328,14 @@ public class ManagementServiceImpl implements ManagementService
             try
             {
                Object result = invokeOperation(objectName.toString(), operation.toString(), operationParameters);
-               message.putBooleanProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED, true);
-               ManagementHelper.storeTypedProperty(message, operation, result);
+               reply.putBooleanProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED, true);
+               ManagementHelper.storeResult(reply, result);
             }
             catch (Exception e)
             {
+               e.printStackTrace(System.err);
                log.warn("exception while invoking " + operation + " on " + objectName, e);
-               message.putBooleanProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED, false);
+               reply.putBooleanProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED, false);
                String exceptionMessage = e.getMessage();
                if (e instanceof InvocationTargetException)
                {
@@ -336,7 +343,7 @@ public class ManagementServiceImpl implements ManagementService
                }
                if (e != null)
                {
-                  message.putStringProperty(ManagementHelper.HDR_JMX_OPERATION_EXCEPTION,
+                  reply.putStringProperty(ManagementHelper.HDR_JMX_OPERATION_EXCEPTION,
                                             new SimpleString(exceptionMessage));
                }
             }
@@ -346,14 +353,16 @@ public class ManagementServiceImpl implements ManagementService
       {
          for (SimpleString propertyName : propNames)
          {
-            if (propertyName.startsWith(ManagementHelper.HDR_JMX_ATTRIBUTE_PREFIX))
+            if (propertyName.equals(ManagementHelper.HDR_JMX_ATTRIBUTE))
             {
                SimpleString attribute = (SimpleString)message.getProperty(propertyName);
                Object result = getAttribute(objectName.toString(), attribute.toString());
-               ManagementHelper.storeTypedProperty(message, attribute, result);
+               ManagementHelper.storeResult(reply, result);
             }
          }
       }
+      
+      return reply;
    }
 
    public void registerResource(final ObjectName objectName, final Object resource) throws Exception

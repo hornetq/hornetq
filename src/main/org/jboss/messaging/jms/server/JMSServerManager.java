@@ -109,6 +109,18 @@ public interface JMSServerManager
 
    boolean createConnectionFactory(String name,
                                    List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                   List<String> jndiBindings) throws Exception;
+   
+   boolean createConnectionFactory(String name,
+                                   List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                   boolean blockOnAcknowledge,
+                                   boolean blockOnNonPersistentSend,
+                                   boolean blockOnPersistentSend,
+                                   boolean preAcknowledge,
+                                   List<String> bindings) throws Exception;
+
+   boolean createConnectionFactory(String name,
+                                   List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                    String connectionLoadBalancingPolicyClassName,
                                    long pingPeriod,
                                    long connectionTTL,
@@ -180,5 +192,6 @@ public interface JMSServerManager
    String[] listConnectionIDs();
 
    String[] listSessions(String connectionID);
+
 
 }

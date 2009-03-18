@@ -74,6 +74,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       super(other);
    }
 
+   public ServerMessageImpl(final ServerMessage other)
+   {
+      super(other);
+   }
+
    /**
     * Only used in testing
     */
@@ -91,7 +96,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       messageID = id;
    }
-
+   
+   public void setType(byte type)
+   {
+      this.type = type;
+   }
+   
    public MessageReference createReference(final Queue queue)
    {
       MessageReference ref = new MessageReferenceImpl(this, queue);
@@ -178,4 +188,5 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
              getDestination() +
              "]";
    }
+
 }

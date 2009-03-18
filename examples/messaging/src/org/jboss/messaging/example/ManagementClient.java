@@ -113,19 +113,17 @@ public class ManagementClient
          }
       }
 
-      // create a message to retrieve one or many attributes
+      // create a message to retrieve an attribute
       mngmntMessage = clientSession.createClientMessage(false);
-      ManagementHelper.putAttributes(mngmntMessage,
+      ManagementHelper.putAttribute(mngmntMessage,
                                      ObjectNames.getQueueObjectName(queue, queue),
-                                     "MessageCount",
-                                     "Durable");
+                                     "MessageCount");
       reply = requestor.request(mngmntMessage);
       System.out.println("sent management message to retrieve attributes");
       if (reply != null)
       {
          System.out.println("\tattributes:");
-         System.out.println("\t- MessageCount=" + reply.getProperty(new SimpleString("MessageCount")));
-         System.out.println("\t- Durable=" + reply.getProperty(new SimpleString("Durable")));
+         System.out.println("\t- MessageCount=" + ManagementHelper.getResult(reply));
       }
 
       // create a message to invoke the operation sendMessageToDeadLetterAddress(long) on the
@@ -133,10 +131,10 @@ public class ManagementClient
       mngmntMessage = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(mngmntMessage,
                                               ObjectNames.getQueueObjectName(queue, queue),
-                                              "sendMessageToDLQ",
+                                              "sendMessageToDeadLetterAddress",
                                               (long)6161);
       reply = requestor.request(mngmntMessage);
-      System.out.println("sent management message to retrieve attributes");
+      System.out.println("sent management message to invoke operation");
       if (reply != null)
       {
          if (ManagementHelper.isOperationResult(reply))
@@ -144,7 +142,7 @@ public class ManagementClient
             System.out.println("\toperation succeeded:" + ManagementHelper.hasOperationSucceeded(reply));
             if (ManagementHelper.hasOperationSucceeded(reply))
             {
-               System.out.println("\t- result=" + reply.getProperty(new SimpleString("sendMessageToDLQ")));
+               System.out.println("\t- result=" + ManagementHelper.getResult(reply));
             }
             else
             {

@@ -361,6 +361,42 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.maxRetriesAfterFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
    }
    
+   
+   public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                 final boolean blockOnAcknowledge,
+                                 final boolean blockOnNonPersistentSend,
+                                 final boolean blockOnPersistentSend,
+                                 final boolean preAcknowledge)
+   {
+      this.discoveryGroupAddress = null;
+      this.discoveryGroupPort = -1;
+      this.discoveryRefreshTimeout = -1;
+      this.discoveryInitialWaitTimeout = -1;
+      this.connectorConfigs = connectorConfigs;
+      this.connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+      this.clientID = null;
+      this.dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+      this.transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+      this.pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+      this.connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+      this.callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
+      this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+      this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+      this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+      this.sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+      this.blockOnAcknowledge = blockOnAcknowledge;
+      this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+      this.blockOnPersistentSend = blockOnPersistentSend;
+      this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+      this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+      this.preAcknowledge = preAcknowledge;
+      this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;      
+      this.maxRetriesBeforeFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+      this.maxRetriesAfterFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+   }
+   
    public JBossConnectionFactory(final TransportConfiguration connectorConfig)
    {
       this.discoveryGroupAddress = null;
@@ -499,6 +535,16 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       return dupsOKBatchSize;
    }
+   
+   public int getTransactionBatchSize()
+   {
+      return transactionBatchSize;
+   }
+   
+   public long getConnectionTTL()
+   {
+      return connectionTTL;
+   }
 
    public int getConsumerWindowSize()
    {
@@ -520,6 +566,26 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       return producerMaxRate;
    }
 
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
+   
+   public int getMaxConnections()
+   {
+      return maxConnections;
+   }
+   
+   public int getMaxRetriesBeforeFailover()
+   {
+      return maxRetriesBeforeFailover;
+   }
+   
+   public int getMaxRetriesAfterFailover()
+   {
+      return maxRetriesAfterFailover;
+   }
+   
    public boolean isBlockOnAcknowledge()
    {
       return blockOnAcknowledge;
@@ -535,9 +601,24 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       return blockOnPersistentSend;
    }
 
+   public boolean isPreAcknowledge()
+   {
+      return preAcknowledge;
+   }
+
    public boolean isAutoGroup()
    {
       return autoGroup;
+   }
+
+   public long getRetryInterval()
+   {
+      return retryInterval;
+   }
+   
+   public double getRetryIntervalMultiplier()
+   {
+      return retryIntervalMultiplier;
    }
 
    // Package protected ----------------------------------------------------------------------------

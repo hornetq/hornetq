@@ -20,68 +20,49 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.management.core;
+package org.jboss.messaging.tests.integration.jms.management;
 
-import javax.management.openmbean.TabularData;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueRequestor;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.management.ObjectName;
 
-import org.jboss.messaging.core.management.AddressControlMBean;
-import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.tests.integration.management.AddressControlTest;
-import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;
 
 /**
- * A JMXQueueControlTest
+ * A MBeanUsingCoreMessage
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  *
  */
-public class CoreAddressControlTest extends AddressControlTest
+public class JMSMessagingProxy
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
+   private final ObjectName on;
+
+   private Session session;
+
+   private QueueRequestor requestor;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   // AddressControlTest overrides --------------------------------
-
-   @Override
-   protected AddressControlMBean createManagementControl(final SimpleString address) throws Exception
+   public JMSMessagingProxy(QueueSession session, Queue managementQueue, ObjectName objectName) throws Exception
    {
-      return new AddressControlMBean()
-      {
-         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                                         ObjectNames.getAddressObjectName(address));
+      this.session = session;
 
-         public void addRole(String name, boolean create, boolean read, boolean write) throws Exception
-         {
-            proxy.invokOperation("addRole", name, create, read, write);
-         }
+      this.on = objectName;
 
-         public String getAddress()
-         {
-            return (String)proxy.retriveAttributeValue("Address");
-         }
-
-         public String[] getQueueNames() throws Exception
-         {
-            return (String[])proxy.retriveAttributeValue("QueueNames");
-         }
-
-         public TabularData getRoles() throws Exception
-         {
-            return (TabularData)proxy.retriveAttributeValue("Roles");
-         }
-
-         public void removeRole(String name) throws Exception
-         {
-            proxy.invokOperation("removeRole", name);
-         }
-      };
+      this.requestor = new QueueRequestor(session, managementQueue);
    }
 
    // Public --------------------------------------------------------
@@ -89,6 +70,36 @@ public class CoreAddressControlTest extends AddressControlTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   public Object retriveAttributeValue(String attributeName)
+   {
+      try
+      {
+         Message m = session.createMessage();
+         JMSManagementHelper.putAttribute(m, on, attributeName);
+         ObjectMessage reply = (ObjectMessage)requestor.request(m);
+         return reply.getObject();
+      }
+      catch (Exception e)
+      {
+         throw new IllegalStateException(e);
+      }
+   }
+
+   public Object invokOperation(String operationName, Object... args) throws Exception
+   {
+      Message m = session.createMessage();
+      JMSManagementHelper.putOperationInvocation(m, on, operationName, args);
+      ObjectMessage reply = (ObjectMessage)requestor.request(m);
+      if (JMSManagementHelper.hasOperationSucceeded(reply))
+      {
+         return reply.getObject();
+      }
+      else
+      {
+         throw new Exception(JMSManagementHelper.getOperationExceptionMessage(reply));
+      }
+   }
 
    // Private -------------------------------------------------------
 

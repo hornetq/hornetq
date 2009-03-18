@@ -73,6 +73,8 @@ public abstract class MessageImpl implements Message
    public static final SimpleString HDR_FROM_CLUSTER = new SimpleString("_JBM_FROM_CLUSTER");
 
    public static final SimpleString HDR_SOLE_MESSAGE = new SimpleString("_JBM_SOLO_MESSAGE");
+
+   public static final byte OBJECT_TYPE = 2;
       
    // Attributes ----------------------------------------------------
 
@@ -80,7 +82,7 @@ public abstract class MessageImpl implements Message
 
    private SimpleString destination;
 
-   private byte type;
+   protected byte type;
 
    protected boolean durable;
 
@@ -142,6 +144,23 @@ public abstract class MessageImpl implements Message
       this.priority = other.priority;
       this.properties = new TypedProperties(other.properties);
       this.body = other.body;
+   }
+   
+   /*
+    * Copy constructor
+    */
+   protected MessageImpl(final Message other)
+   {
+      this();
+      this.messageID = other.getMessageID();
+      this.destination = other.getDestination();
+      this.type = other.getType();
+      this.durable = other.isDurable();
+      this.expiration = other.getExpiration();
+      this.timestamp = other.getTimestamp();
+      this.priority = other.getPriority();
+      this.properties = new TypedProperties(other.getProperties());
+      this.body = other.getBody();
    }
    
 

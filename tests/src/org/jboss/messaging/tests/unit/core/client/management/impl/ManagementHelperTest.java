@@ -27,13 +27,14 @@ import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
-import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -109,46 +110,24 @@ public class ManagementHelperTest extends UnitTestCase
       verify(msg);
    }
 
-   public void testGetTabularDataProperty() throws Exception
+   public void testStoreInvalidPropertyType() throws Exception
    {
       SimpleString key = randomSimpleString();
-      RoleInfo[] roles = new RoleInfo[] { new RoleInfo(randomString(),
-                                                       randomBoolean(),
-                                                       randomBoolean(),
-                                                       randomBoolean()),
-                                         new RoleInfo(randomString(), randomBoolean(), randomBoolean(), randomBoolean()) };
-
-      TabularData tabularData = RoleInfo.toTabularData(roles);
-
+      Map invalidType = new HashMap();
+      
       Message msg = new ClientMessageImpl();
-      ManagementHelper.storeTypedProperty(msg, key, tabularData);
-
-      assertTrue(msg.containsProperty(key));
-      TabularData data = ManagementHelper.getTabularDataProperty(msg, key.toString());
-      assertNotNull(data);
-      assertEquals(2, data.size());
-   }
-
-   public void testGetTabularDataPropertyOnAnotherPropertyType() throws Exception
-   {
-      SimpleString key = randomSimpleString();
-      SimpleString value = randomSimpleString();
-
-      Message msg = createMock(Message.class);
-      expect(msg.getProperty(key)).andReturn(value);
-      replay(msg);
-
       try
       {
-         ManagementHelper.getTabularDataProperty(msg, key.toString());
-         fail("IllegalArgumentException");
+         ManagementHelper.storeTypedProperty(msg, key, invalidType);
+         fail();
       }
-      catch (IllegalArgumentException e)
+      catch (Exception e)
       {
       }
 
-      verify(msg);
+      assertFalse(msg.containsProperty(key));
    }
+
 
    // Package protected ---------------------------------------------
 

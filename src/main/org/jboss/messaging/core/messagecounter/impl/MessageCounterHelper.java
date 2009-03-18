@@ -24,9 +24,15 @@ package org.jboss.messaging.core.messagecounter.impl;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.management.openmbean.TabularData;
+
+import org.jboss.messaging.core.management.DayCounterInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
+import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -44,6 +50,23 @@ public class MessageCounterHelper
 
    // Static --------------------------------------------------------
 
+   public static TabularData listMessageCounterHistory(final MessageCounter counter) throws Exception
+   {
+      List<DayCounter> history = counter.getHistory();
+      DayCounterInfo[] infos = new DayCounterInfo[history.size()];
+      for (int i = 0; i < infos.length; i++)
+      {
+         DayCounter dayCounter = history.get(i);
+         int[] counters = dayCounter.getCounters();
+         GregorianCalendar date = dayCounter.getDate();
+
+         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+         String strData = dateFormat.format(date.getTime());
+         infos[i] = new DayCounterInfo(strData, counters);
+      }
+      return DayCounterInfo.toTabularData(infos);
+   }
+   
    public static String listMessageCounterAsHTML(MessageCounter[] counters)
    {
       if (counters == null)
