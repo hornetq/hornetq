@@ -1356,8 +1356,6 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numSessions; i++)
       {
-         log.info("i " + i);
-         
          ClientSession session = sf.createSession(false, false, false);
 
          session.close();
