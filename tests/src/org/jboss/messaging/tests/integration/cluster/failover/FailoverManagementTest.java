@@ -152,7 +152,7 @@ public class FailoverManagementTest extends UnitTestCase
          
          assertTrue(ManagementHelper.isAttributesResult(message));
          
-         assertEquals(numMessages, message.getProperty(new SimpleString("MessageCount")));
+         assertEquals(numMessages, ManagementHelper.getResult(message));
       }
       
       session1.close();
@@ -233,7 +233,7 @@ public class FailoverManagementTest extends UnitTestCase
          
          assertTrue(ManagementHelper.isAttributesResult(message));
          
-         assertEquals(numMessages, message.getProperty(new SimpleString("MessageCount")));
+         assertEquals(numMessages, ManagementHelper.getResult(message));
       }
       
       session1.close();
