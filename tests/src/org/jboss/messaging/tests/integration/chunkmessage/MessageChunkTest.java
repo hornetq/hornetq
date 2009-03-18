@@ -361,7 +361,6 @@ public class MessageChunkTest extends ChunkTestBase
       testChunks(false, true, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
    }
 
-
    public void testSendfileMessageXA() throws Exception
    {
       testChunks(true, true, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
@@ -593,43 +592,47 @@ public class MessageChunkTest extends ChunkTestBase
       }
 
    }
-   
+
+   public void testSendRollbackXA() throws Exception
+   {
+      internalTestSendRollback(true);
+   }
+
    public void testSendRollback() throws Exception
    {
+      internalTestSendRollback(false);
+   }
+
+   private void internalTestSendRollback(final boolean isXA) throws Exception
+   {
       clearData();
-      
-      boolean isXA = false;
-      
+
       messagingService = createService(true);
 
       messagingService.start();
 
       ClientSessionFactory sf = createInVMFactory();
-     
+
       ClientSession session = sf.createSession(isXA, false, false);
-      
+
       session.createQueue(ADDRESS, ADDRESS, true);
-      
+
       Xid xid = null;
-      
+
       if (isXA)
       {
          xid = newXID();
          session.start(xid, XAResource.TMNOFLAGS);
       }
-      
-      
+
       ClientProducer producer = session.createProducer(ADDRESS);
 
-      
       Message clientFile = createLargeClientMessage(session, 50000, false);
 
       for (int i = 0; i < 1; i++)
       {
          producer.send(clientFile);
       }
-      
-      
 
       if (isXA)
       {
@@ -641,27 +644,25 @@ public class MessageChunkTest extends ChunkTestBase
       {
          session.rollback();
       }
-      
+
       session.close();
-      
+
       validateNoFilesOnLargeDir();
-      
+
       messagingService.stop();
 
    }
 
-   
    public void testSimpleRollback() throws Exception
    {
       simpleRollbackInternalTest(false);
    }
-   
+
    public void testSimpleRollbackXA() throws Exception
    {
       simpleRollbackInternalTest(true);
    }
-   
-   
+
    public void simpleRollbackInternalTest(boolean isXA) throws Exception
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
@@ -679,9 +680,9 @@ public class MessageChunkTest extends ChunkTestBase
          ClientSessionFactory sf = createInVMFactory();
 
          ClientSession session = sf.createSession(isXA, false, false);
-         
+
          Xid xid = null;
-         
+
          if (isXA)
          {
             xid = newXID();
@@ -694,15 +695,15 @@ public class MessageChunkTest extends ChunkTestBase
 
          session.start();
 
-         log.info ("Session started");
-         
+         log.info("Session started");
+
          ClientProducer producer = session.createProducer(ADDRESS);
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
-         
+
          for (int n = 0; n < 10; n++)
          {
-            Message clientFile = createLargeClientMessage(session, numberOfIntegers, n%2 == 0);
+            Message clientFile = createLargeClientMessage(session, numberOfIntegers, n % 2 == 0);
 
             producer.send(clientFile);
 
@@ -901,7 +902,7 @@ public class MessageChunkTest extends ChunkTestBase
          for (int i = 0; i < 100; i++)
          {
             ClientMessage message2 = consumer.receive(RECEIVE_WAIT_TIME);
-            
+
             log.info("got message " + i);
 
             assertNotNull(message2);
