@@ -75,25 +75,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final boolean DEFAULT_AUTO_GROUP = false;
 
-    public static final long DEFAULT_CALL_TIMEOUT;
-   
-   static
-   {
-      long value;
-      try
-      {
-         // This system-variable is used on tests.
-         value = Long.parseLong(System.getProperty("org.jboss.messaging.default-call-timeout", "30000"));
-      }
-      catch (Exception e)
-      {
-         
-         // Security Managemen is probably in use on the VM
-         value = 30000;
-      }
-
-      DEFAULT_CALL_TIMEOUT = value;
-   }
+   public static final long DEFAULT_CALL_TIMEOUT = 30000;
 
    public static final int DEFAULT_MAX_CONNECTIONS = 8;
 

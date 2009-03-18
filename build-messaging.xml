@@ -1153,7 +1153,6 @@
              timeout="${junit.timeout}">
          <sysproperty key="user.home" value="${user.home}"/>
          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
-      	 <sysproperty key="org.jboss.messaging.default-call-timeout" value="60000"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
          <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
