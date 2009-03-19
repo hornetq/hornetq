@@ -110,6 +110,47 @@ public class ClusterTestBase extends ServiceTestBase
    private MessagingService[] services = new MessagingService[MAX_SERVERS];
 
    private ClientSessionFactory[] sfs = new ClientSessionFactory[MAX_SERVERS];
+   
+   protected void waitForMessages(int node,
+                                  final String address,
+                                  final int count) throws Exception
+   {
+      MessagingService service = this.services[node];
+
+      if (service == null)
+      {
+         throw new IllegalArgumentException("No service at " + node);
+      }
+
+      PostOffice po = service.getServer().getPostOffice();
+
+      long start = System.currentTimeMillis();
+
+      int messageCount = 0;
+
+
+      do
+      {
+         messageCount = getMessageCounter(po, address);
+
+         log.info(node + " messageCount " + messageCount);
+
+         if (messageCount == count)
+         {
+            log.info("Waited " + (System.currentTimeMillis() - start));
+            return;
+         }
+
+         Thread.sleep(100);
+      }
+      while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
+      
+      System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
+
+      throw new IllegalStateException("Timed out waiting for messages (messageCount = " + messageCount + ", expecting = " + count);
+   }
+
+
 
    protected void waitForBindings(int node,
                                   final String address,
@@ -137,13 +178,18 @@ public class ClusterTestBase extends ServiceTestBase
 
       long start = System.currentTimeMillis();
 
+      int bindingCount = 0;
+
+      int totConsumers = 0;
+
+
       do
       {
+         bindingCount = 0;
+
+         totConsumers = 0;
+
          Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
-
-         int bindingCount = 0;
-
-         int totConsumers = 0;
 
          for (Binding binding : bindings.getBindings())
          {
@@ -171,7 +217,7 @@ public class ClusterTestBase extends ServiceTestBase
       
       System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
-      throw new IllegalStateException("Timed out waiting for bindings");
+      throw new IllegalStateException("Timed out waiting for bindings (bindingCount = " + bindingCount + ", totConsumers = " + totConsumers);
    }
 
    protected void createQueue(int node, String address, String queueName, String filterVal, boolean durable) throws Exception
@@ -356,6 +402,7 @@ public class ClusterTestBase extends ServiceTestBase
    
    protected void verifyReceiveAllInRangeNotBefore(long firstReceiveTime, int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
+      boolean outOfOrder = false;
       for (int i = 0; i < consumerIDs.length; i++)
       {
          ConsumerHolder holder = consumers[consumerIDs[i]];
@@ -376,9 +423,15 @@ public class ClusterTestBase extends ServiceTestBase
                assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
             }
 
-            assertEquals(j, message.getProperty(COUNT_PROP));
+            if (j != (Integer)(message.getProperty(COUNT_PROP)))
+            {
+               outOfOrder = true;
+               System.out.println("Message j=" + j + " was received out of order = " + message.getProperty(COUNT_PROP));
+            }
          }
       }
+      
+      assertFalse("Messages were consumed out of order, look at System.out for more information", outOfOrder);
    }
 
    protected void verifyReceiveAll(int numMessages, int... consumerIDs) throws Exception

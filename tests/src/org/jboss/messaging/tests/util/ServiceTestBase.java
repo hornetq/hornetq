@@ -36,6 +36,11 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.QueueBinding;
+import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.JournalType;
@@ -46,6 +51,7 @@ import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 
@@ -299,6 +305,33 @@ public class ServiceTestBase extends UnitTestCase
       message.getBody().writeBytes(b);
       return message;
    }
+   
+   /**
+    * @param address
+    * @param postOffice
+    * @return
+    * @throws Exception
+    */
+   protected int getMessageCounter(final PostOffice postOffice, final String address) throws Exception
+   {
+      int messageCount;
+      messageCount = 0;
+
+      Bindings bindings = postOffice.getBindingsForAddress(new SimpleString(address));
+
+      for (Binding binding : bindings.getBindings())
+      {
+         if ((binding instanceof LocalQueueBinding))
+         {
+            QueueBinding qBinding = (QueueBinding)binding;
+            
+            messageCount += qBinding.getQueue().getMessageCount();
+
+         }
+      }
+      return messageCount;
+   }
+
 
    // Private -------------------------------------------------------
 

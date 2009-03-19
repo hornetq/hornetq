@@ -30,22 +30,18 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class ClientConsumerTest extends UnitTestCase
+public class ClientConsumerTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ClientConsumerTest.class);
 
@@ -57,15 +53,8 @@ public class ClientConsumerTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
-      Configuration conf = new ConfigurationImpl();
 
-      conf.setSecurityEnabled(false);
-
-      conf.getAcceptorConfigurations()
-          .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-
-      messagingService = Messaging.newNullStorageMessagingService(conf);
+      messagingService = createService(false);
 
       messagingService.start();
    }
@@ -96,7 +85,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -126,10 +115,56 @@ public class ClientConsumerTest extends UnitTestCase
 
    }
 
+   public void testMessageCounter() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
+      
+      ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
+
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         producer.send(message);
+      }
+      
+      session.commit();
+      session.start();
+      
+      assertEquals(100, getMessageCounter(messagingService.getServer().getPostOffice(), QUEUE.toString()));
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         assertNotNull(message);
+         message.acknowledge();
+
+         session.commit();
+
+         assertEquals("m" + i, message.getBody().readString());
+      }
+
+      session.close();
+
+      assertEquals(0, getMessageCounter(messagingService.getServer().getPostOffice(), QUEUE.toString()));
+
+   }
+
    public void testConsumerBrowserWithSelector() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -141,7 +176,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          message.putIntProperty(new SimpleString("x"), i);
          producer.send(message);
       }
@@ -175,7 +210,7 @@ public class ClientConsumerTest extends UnitTestCase
    public void testConsumerBrowserWithStringSelector() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -187,7 +222,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          if (i % 2 == 0)
          {
             message.putStringProperty(new SimpleString("color"), new SimpleString("RED"));
@@ -211,7 +246,7 @@ public class ClientConsumerTest extends UnitTestCase
    public void testConsumerMultipleBrowser() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -223,7 +258,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -248,7 +283,7 @@ public class ClientConsumerTest extends UnitTestCase
    public void testConsumerMultipleBrowserWithSelector() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -260,7 +295,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          message.putIntProperty(new SimpleString("x"), i);
          producer.send(message);
       }
@@ -293,16 +328,15 @@ public class ClientConsumerTest extends UnitTestCase
    {
       testConsumerBrowserMessagesArentAcked(false);
    }
-   
+
    public void testConsumerBrowserMessagesPreACK() throws Exception
    {
       testConsumerBrowserMessagesArentAcked(false);
    }
-   
 
    private void testConsumerBrowserMessagesArentAcked(boolean preACK) throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(null, null, false, true, true, preACK, 0);
 
@@ -314,7 +348,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -337,7 +371,7 @@ public class ClientConsumerTest extends UnitTestCase
 
    public void testConsumerBrowserMessageAckDoesNothing() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -349,7 +383,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -374,7 +408,7 @@ public class ClientConsumerTest extends UnitTestCase
 
    public void testSetMessageHandlerWithMessagesPending() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -386,7 +420,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -435,7 +469,7 @@ public class ClientConsumerTest extends UnitTestCase
 
    public void testStopConsumer() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -447,14 +481,14 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
       final ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
 
       session.start();
-      
+
       final CountDownLatch latch = new CountDownLatch(10);
 
       // Message should be in consumer
@@ -462,20 +496,21 @@ public class ClientConsumerTest extends UnitTestCase
       class MyHandler implements MessageHandler
       {
          boolean failed;
+
          boolean started = true;
-         
+
          public void onMessage(final ClientMessage message)
          {
-            
+
             try
             {
                if (!started)
                {
                   failed = true;
                }
-               
+
                latch.countDown();
-               
+
                if (latch.getCount() == 0)
                {
                   session.stop(); // Shouldn't this alone prevent messages being delivered to this Handler?
@@ -490,36 +525,35 @@ public class ClientConsumerTest extends UnitTestCase
             }
          }
       }
-      
+
       MyHandler handler = new MyHandler();
 
       consumer.setMessageHandler(handler);
 
       latch.await();
-      
+
       Thread.sleep(100);
 
       assertFalse(handler.failed);
 
       // Make sure no exceptions were thrown from onMessage
       assertNull(consumer.getLastException());
-      
+
       for (int i = 0; i < 90; i++)
       {
          ClientMessage msg = consumer.receive(1000);
          assertNotNull(msg);
          msg.acknowledge();
       }
-      
+
       assertNull(consumer.receiveImmediate());
 
       session.close();
    }
 
-
    public void testConsumerAckImmediateAutoCommitTrue() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true, true);
 
@@ -531,7 +565,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -555,7 +589,7 @@ public class ClientConsumerTest extends UnitTestCase
    public void testConsumerAckImmediateAutoCommitFalse() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, false, true);
 
@@ -567,7 +601,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -591,7 +625,7 @@ public class ClientConsumerTest extends UnitTestCase
    public void testConsumerAckImmediateAckIgnored() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true, true);
 
@@ -603,7 +637,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -631,7 +665,7 @@ public class ClientConsumerTest extends UnitTestCase
    public void testConsumerAckImmediateCloseSession() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactory sf = createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true, true);
 
@@ -643,7 +677,7 @@ public class ClientConsumerTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createMessage(session, "m" + i);
+         ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -673,14 +707,4 @@ public class ClientConsumerTest extends UnitTestCase
                    ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
    }
 
-   private ClientMessage createMessage(final ClientSession session, final String msg)
-   {
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
-                                                          false,
-                                                          0,
-                                                          System.currentTimeMillis(),
-                                                          (byte)1);
-      message.getBody().writeString(msg);
-      return message;
-   }
 }

@@ -363,65 +363,82 @@ public class MessageRedistributionTest extends ClusterTestBase
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
+      
+      final String ADDRESS = "queues.testaddress";
+      final String QUEUE = "queue0";
 
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-      createQueue(1, "queues.testaddress", "queue0", null, false);
-      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-      addConsumer(0, 0, "queue0", null);
+      createQueue(0, ADDRESS, QUEUE, null, false);
+      createQueue(1, ADDRESS, QUEUE, null, false);
+      createQueue(2, ADDRESS, QUEUE, null, false);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 0, true);
-      waitForBindings(2, "queues.testaddress", 1, 0, true);
+      addConsumer(0, 0, QUEUE, null);
 
-      waitForBindings(0, "queues.testaddress", 2, 0, false);
-      waitForBindings(1, "queues.testaddress", 2, 1, false);
-      waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(0, ADDRESS, 1, 1, true);
+      waitForBindings(1, ADDRESS, 1, 0, true);
+      waitForBindings(2, ADDRESS, 1, 0, true);
 
-      send(0, "queues.testaddress", 20, false, null);
+      waitForBindings(0, ADDRESS, 2, 0, false);
+      waitForBindings(1, ADDRESS, 2, 1, false);
+      waitForBindings(2, ADDRESS, 2, 1, false);
+
+      send(0, ADDRESS, 20, false, null);
+      
+      waitForMessages(0, ADDRESS, 20);
 
       removeConsumer(0);
       
-      waitForBindings(0, "queues.testaddress", 1, 0, true);
-      waitForBindings(1, "queues.testaddress", 1, 0, true);
-      waitForBindings(2, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, ADDRESS, 1, 0, true);
+      waitForBindings(1, ADDRESS, 1, 0, true);
+      waitForBindings(2, ADDRESS, 1, 0, true);
 
-      waitForBindings(0, "queues.testaddress", 2, 0, false);
-      waitForBindings(1, "queues.testaddress", 2, 0, false);
-      waitForBindings(2, "queues.testaddress", 2, 0, false);
+      waitForBindings(0, ADDRESS, 2, 0, false);
+      waitForBindings(1, ADDRESS, 2, 0, false);
+      waitForBindings(2, ADDRESS, 2, 0, false);
 
-      addConsumer(1, 1, "queue0", null);
+      addConsumer(1, 1, QUEUE, null);
       
-      waitForBindings(0, "queues.testaddress", 1, 0, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, ADDRESS, 1, 0, true);
+      waitForBindings(1, ADDRESS, 1, 1, true);
+      waitForBindings(2, ADDRESS, 1, 0, true);
+      
+      waitForMessages(1, ADDRESS, 20);
+      waitForMessages(0, ADDRESS, 0);
+      
 
-      waitForBindings(0, "queues.testaddress", 2, 1, false);
-      waitForBindings(1, "queues.testaddress", 2, 0, false);
-      waitForBindings(2, "queues.testaddress", 2, 1, false);
+      waitForBindings(0, ADDRESS, 2, 1, false);
+      waitForBindings(1, ADDRESS, 2, 0, false);
+      waitForBindings(2, ADDRESS, 2, 1, false);
       
       removeConsumer(1);
       
-      waitForBindings(0, "queues.testaddress", 1, 0, true);
-      waitForBindings(1, "queues.testaddress", 1, 0, true);
-      waitForBindings(2, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, ADDRESS, 1, 0, true);
+      waitForBindings(1, ADDRESS, 1, 0, true);
+      waitForBindings(2, ADDRESS, 1, 0, true);
 
-      waitForBindings(0, "queues.testaddress", 2, 0, false);
-      waitForBindings(1, "queues.testaddress", 2, 0, false);
-      waitForBindings(2, "queues.testaddress", 2, 0, false);
+      waitForBindings(0, ADDRESS, 2, 0, false);
+      waitForBindings(1, ADDRESS, 2, 0, false);
+      waitForBindings(2, ADDRESS, 2, 0, false);
 
-      addConsumer(0, 0, "queue0", null);
+      addConsumer(0, 0, QUEUE, null);
       
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 0, true);
-      waitForBindings(2, "queues.testaddress", 1, 0, true);
+      waitForBindings(0, ADDRESS, 1, 1, true);
+      waitForBindings(1, ADDRESS, 1, 0, true);
+      waitForBindings(2, ADDRESS, 1, 0, true);
+      
+      waitForBindings(0, ADDRESS, 2, 0, false);
+      waitForBindings(1, ADDRESS, 2, 1, false);
+      waitForBindings(2, ADDRESS, 2, 1, false);
 
-      waitForBindings(0, "queues.testaddress", 2, 0, false);
-      waitForBindings(1, "queues.testaddress", 2, 1, false);
-      waitForBindings(2, "queues.testaddress", 2, 1, false);
-
+      waitForMessages(0, ADDRESS, 20);
+      
       verifyReceiveAll(20, 0);
       verifyNotReceive(0);
+      
+      addConsumer(1, 1, QUEUE, null);
+      verifyNotReceive(1);
+      removeConsumer(1);
+      
    }
    
    public void testRedistributionToQueuesWhereNotAllMessagesMatch() throws Exception
