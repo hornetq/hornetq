@@ -1350,26 +1350,6 @@
       </junitreport>
    </target>
 
-   <property name="test.execution.classpath.file" value=".test.execution.classpath"/>
-
-   <target name="get-unit-test-execution-classpath" depends="init">
-      <pathconvert refid="unit.test.execution.classpath"
-                   property="test.execution.classpath.unix"/>
-      <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
-   </target>
-
-   <target name="get-jms-test-execution-classpath" depends="init">
-      <pathconvert refid="jms.test.execution.classpath"
-                   property="test.execution.classpath.unix"/>
-      <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
-   </target>
-
-   <target name="get-joram-test-execution-classpath" depends="init">
-      <pathconvert refid="joram.test.execution.classpath"
-                   property="test.execution.classpath.unix"/>
-      <echo message="${test.execution.classpath.unix}" file="${test.execution.classpath.file}"/>
-   </target>
-
    <target name="emma" depends="jar, compile-unit-tests">
       <property name="emma.dir" location="${build.dir}/emma"/>
 
