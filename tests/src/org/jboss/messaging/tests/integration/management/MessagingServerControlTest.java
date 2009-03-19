@@ -28,17 +28,23 @@ import java.util.HashMap;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.management.TransportConfigurationInfo;
+import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A QueueControlTest
@@ -58,42 +64,259 @@ public class MessagingServerControlTest extends UnitTestCase
 
    private MessagingService service;
 
+   private MBeanServer mbeanServer;
+
+   private Configuration conf;
+
+   private TransportConfiguration connectorConfig;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
+   public void testGetAttributes() throws Exception
+   {
+      MessagingServerControlMBean serverControl = createManagementControl();
+
+      assertEquals(service.getServer().getVersion().getFullVersion(), serverControl.getVersion());
+
+      assertEquals(conf.isClustered(), serverControl.isClustered());
+      assertEquals(conf.isAllowRouteWhenNoBindings(), serverControl.isAllowRouteWhenNoBindings());
+      assertEquals(conf.isPersistDeliveryCountBeforeDelivery(), serverControl.isPersistDeliveryCountBeforeDelivery());
+      assertEquals(conf.isBackup(), serverControl.isBackup());
+      assertEquals(conf.getQueueActivationTimeout(), serverControl.getQueueActivationTimeout());
+      assertEquals(conf.getScheduledThreadPoolMaxSize(), serverControl.getScheduledThreadPoolMaxSize());
+      assertEquals(conf.getSecurityInvalidationInterval(), serverControl.getSecurityInvalidationInterval());
+      assertEquals(conf.isSecurityEnabled(), serverControl.isSecurityEnabled());
+      assertEquals(conf.getInterceptorClassNames(), serverControl.getInterceptorClassNames());
+      assertEquals(conf.getConnectionScanPeriod(), serverControl.getConnectionScanPeriod());
+      assertEquals(conf.getConnectionTTLOverride(), serverControl.getConnectionTTLOverride());
+
+      // TODO
+      // assertEquals(conf.getBroadcastGroupConfigurations(), serverControl.getBroadcastGroupConfigurations());
+      // assertEquals(conf.getDiscoveryGroupConfigurations(), serverControl.getDiscoveryGroupConfigurations());
+      // assertEquals(conf.getBridgeConfigurations(), serverControl.getBridgeConfigurations());
+      // assertEquals(conf.getDivertConfigurations(), serverControl.getDivertConfigurations());
+      // assertEquals(conf.getClusterConfigurations(), serverControl.getClusterConfigurations());
+      // assertEquals(conf.getQueueConfigurations(), serverControl.getQueueConfigurations());
+
+      assertEquals(conf.getBackupConnectorName(), serverControl.getBackupConnectorName());
+      assertEquals(conf.getManagementAddress().toString(), serverControl.getManagementAddress());
+      assertEquals(conf.getManagementNotificationAddress().toString(), serverControl.getManagementNotificationAddress());
+      assertEquals(conf.getManagementRequestTimeout(), serverControl.getManagementRequestTimeout());
+      assertEquals(conf.getIDCacheSize(), serverControl.getIDCacheSize());
+      assertEquals(conf.isPersistIDCache(), serverControl.isPersistIDCache());
+      assertEquals(conf.getBindingsDirectory(), serverControl.getBindingsDirectory());
+      assertEquals(conf.getJournalDirectory(), serverControl.getJournalDirectory());
+      assertEquals(conf.getJournalType().toString(), serverControl.getJournalType());
+      assertEquals(conf.isJournalSyncTransactional(), serverControl.isJournalSyncTransactional());
+      assertEquals(conf.isJournalSyncNonTransactional(), serverControl.isJournalSyncNonTransactional());
+      assertEquals(conf.getJournalFileSize(), serverControl.getJournalFileSize());
+      assertEquals(conf.getJournalMinFiles(), serverControl.getJournalMinFiles());
+      assertEquals(conf.getJournalMaxAIO(), serverControl.getJournalMaxAIO());
+      assertEquals(conf.getJournalBufferReuseSize(), serverControl.getJournalBufferReuseSize());
+      assertEquals(conf.isCreateBindingsDir(), serverControl.isCreateBindingsDir());
+      assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());
+      assertEquals(conf.getPagingMaxThreads(), serverControl.getPagingMaxThreads());
+      assertEquals(conf.getPagingDirectory(), serverControl.getPagingDirectory());
+      assertEquals(conf.getPagingMaxGlobalSizeBytes(), serverControl.getPagingMaxGlobalSizeBytes());
+      assertEquals(conf.getPagingGlobalWatermarkSize(), serverControl.getPagingGlobalWatermarkSize());
+      assertEquals(conf.getLargeMessagesDirectory(), serverControl.getLargeMessagesDirectory());
+      assertEquals(conf.isWildcardRoutingEnabled(), serverControl.isWildcardRoutingEnabled());
+      assertEquals(conf.getTransactionTimeout(), serverControl.getTransactionTimeout());
+      assertEquals(conf.isMessageCounterEnabled(), serverControl.isMessageCounterEnabled());
+      assertEquals(conf.getTransactionTimeoutScanPeriod(), serverControl.getTransactionTimeoutScanPeriod());
+      assertEquals(conf.getMessageExpiryScanPeriod(), serverControl.getMessageExpiryScanPeriod());
+      assertEquals(conf.getMessageExpiryThreadPriority(), serverControl.getMessageExpiryThreadPriority());
+   }
+
    public void testGetConnectors() throws Exception
    {
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-      
-      TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                          new HashMap<String, Object>(),
-                                                                          randomString());
+      MessagingServerControlMBean serverControl = createManagementControl();
 
-      Configuration conf = new ConfigurationImpl();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
+      TabularData connectorData = serverControl.getConnectors();
+      assertNotNull(connectorData);
+      assertEquals(1, connectorData.size());
 
-      MessagingServerControlMBean serverControl = ManagementControlHelper.createMessagingServerControl(mbeanServer);
-
-      TabularData acceptorData = serverControl.getConnectors();
-      assertNotNull(acceptorData);
-      assertEquals(1, acceptorData.size());
-
-      TransportConfiguration[] connectorConfigurations = TransportConfigurationInfo.from(acceptorData);
+      TransportConfiguration[] connectorConfigurations = TransportConfigurationInfo.from(connectorData);
       assertEquals(1, connectorConfigurations.length);
 
       assertEquals(connectorConfig.getName(), connectorConfigurations[0].getName());
    }
 
+   public void testCreateAndDestroyQueue() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString name = RandomUtil.randomSimpleString();
+
+      MessagingServerControlMBean serverControl = createManagementControl();
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+
+      serverControl.createQueue(address.toString(), name.toString());
+
+      checkResource(ObjectNames.getQueueObjectName(address, name));
+      QueueControlMBean queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
+      assertEquals(address.toString(), queueControl.getAddress());
+      assertEquals(name.toString(), queueControl.getName());
+      assertNull(queueControl.getFilter());
+      assertEquals(true, queueControl.isDurable());
+      assertEquals(false, queueControl.isTemporary());
+
+      serverControl.destroyQueue(name.toString());
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+   }
+
+   public void testCreateAndDestroyQueue_2() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString name = RandomUtil.randomSimpleString();
+      String filter = "color = 'green'";
+      boolean durable = true;
+
+      MessagingServerControlMBean serverControl = createManagementControl();
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+
+      serverControl.createQueue(address.toString(), name.toString(), filter, durable);
+
+      checkResource(ObjectNames.getQueueObjectName(address, name));
+      QueueControlMBean queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
+      assertEquals(address.toString(), queueControl.getAddress());
+      assertEquals(name.toString(), queueControl.getName());
+      assertEquals(filter, queueControl.getFilter());
+      assertEquals(durable, queueControl.isDurable());
+      assertEquals(false, queueControl.isTemporary());
+
+      serverControl.destroyQueue(name.toString());
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+   }
+
+   public void testCreateAndDestroyQueueWithNullFilter() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString name = RandomUtil.randomSimpleString();
+      String filter = null;
+      boolean durable = true;
+
+      MessagingServerControlMBean serverControl = createManagementControl();
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+
+      serverControl.createQueue(address.toString(), name.toString(), filter, durable);
+
+      checkResource(ObjectNames.getQueueObjectName(address, name));
+      QueueControlMBean queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
+      assertEquals(address.toString(), queueControl.getAddress());
+      assertEquals(name.toString(), queueControl.getName());
+      assertNull(queueControl.getFilter());
+      assertEquals(durable, queueControl.isDurable());
+      assertEquals(false, queueControl.isTemporary());
+
+      serverControl.destroyQueue(name.toString());
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+   }
+
+   public void testMessageCounterMaxDayCount() throws Exception
+   {
+      MessagingServerControlMBean serverControl = createManagementControl();
+
+      assertEquals(MessageCounterManagerImpl.DEFAULT_MAX_DAY_COUNT, serverControl.getMessageCounterMaxDayCount());
+
+      int newCount = 100;
+      serverControl.setMessageCounterMaxDayCount(newCount);
+
+      assertEquals(newCount, serverControl.getMessageCounterMaxDayCount());
+
+      try
+      {
+         serverControl.setMessageCounterMaxDayCount(-1);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+
+      try
+      {
+         serverControl.setMessageCounterMaxDayCount(0);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+
+      assertEquals(newCount, serverControl.getMessageCounterMaxDayCount());
+   }
+
+   public void testGetMessageCounterSamplePeriod() throws Exception
+   {
+      MessagingServerControlMBean serverControl = createManagementControl();
+
+      assertEquals(MessageCounterManagerImpl.DEFAULT_SAMPLE_PERIOD, serverControl.getMessageCounterSamplePeriod());
+
+      long newSample = 20000;
+      serverControl.setMessageCounterSamplePeriod(newSample);
+
+      assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
+
+      try
+      {
+         serverControl.setMessageCounterSamplePeriod(-1);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+
+      try
+      {
+         serverControl.setMessageCounterSamplePeriod(0);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+
+      try
+      {
+         serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD - 1);
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+
+      assertEquals(newSample, serverControl.getMessageCounterSamplePeriod());
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      mbeanServer = MBeanServerFactory.createMBeanServer();
+
+      connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                          new HashMap<String, Object>(),
+                                                                          randomString());
+
+      conf = new ConfigurationImpl();
+      conf.setSecurityEnabled(false);
+      conf.setJMXManagementEnabled(true);
+      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
+      service.start();
+   }
 
    @Override
    protected void tearDown() throws Exception
@@ -106,7 +329,22 @@ public class MessagingServerControlTest extends UnitTestCase
       super.tearDown();
    }
 
+   protected MessagingServerControlMBean createManagementControl() throws Exception
+   {
+      return ManagementControlHelper.createMessagingServerControl(mbeanServer);
+   }
+
    // Private -------------------------------------------------------
+
+   private void checkNoResource(ObjectName on)
+   {
+      assertFalse(mbeanServer.isRegistered(on));
+   }
+
+   private void checkResource(ObjectName on)
+   {
+      assertTrue(mbeanServer.isRegistered(on));
+   }
 
    // Inner classes -------------------------------------------------
 

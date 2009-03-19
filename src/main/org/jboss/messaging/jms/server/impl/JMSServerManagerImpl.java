@@ -95,7 +95,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                                                        server.getResourceManager(),
                                                                        server.getRemotingService(),
                                                                        server,
-                                                                       new MessageCounterManagerImpl(1000),
+                                                                       new MessageCounterManagerImpl(),
                                                                        new NotificationBroadcasterSupport(),
                                                                        server.getQueueFactory());
       JMSManagementService jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
@@ -389,12 +389,12 @@ public class JMSServerManagerImpl implements JMSServerManager
       return true;
    }
 
-   public String[] listRemoteAddresses()
+   public String[] listRemoteAddresses() throws Exception
    {
       return messagingServer.listRemoteAddresses();
    }
 
-   public String[] listRemoteAddresses(final String ipAddress)
+   public String[] listRemoteAddresses(final String ipAddress) throws Exception
    {
       return messagingServer.listRemoteAddresses(ipAddress);
    }
@@ -404,12 +404,12 @@ public class JMSServerManagerImpl implements JMSServerManager
       return messagingServer.closeConnectionsForAddress(ipAddress);
    }
 
-   public String[] listConnectionIDs()
+   public String[] listConnectionIDs() throws Exception
    {
       return messagingServer.listConnectionIDs();
    }
 
-   public String[] listSessions(final String connectionID)
+   public String[] listSessions(final String connectionID) throws Exception
    {
       return messagingServer.listSessions(connectionID);
    }

@@ -52,6 +52,7 @@ import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
+import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
@@ -140,19 +141,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    // Public --------------------------------------------------------
 
-   public Queue getQueue(final String name) throws Exception
-   {
-      SimpleString sName = new SimpleString(name);
-      Binding binding = postOffice.getBinding(sName);
-      if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
-      {
-         throw new IllegalArgumentException("No queue with name " + sName);
-      }
-
-      return (Queue)binding.getBindable();
-   }
-
-   public Configuration getConfiguration()
+    public Configuration getConfiguration()
    {
       return configuration;
    }
@@ -369,9 +358,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    public synchronized void setMessageCounterSamplePeriod(final long newPeriod)
    {
-      if (newPeriod < 1000)
+      if (newPeriod < MessageCounterManagerImpl.MIN_SAMPLE_PERIOD)
       {
-         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < 1000 ms");
+         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < " + MessageCounterManagerImpl.MIN_SAMPLE_PERIOD + " ms");
       }
 
       if (messageCounterManager != null && newPeriod != messageCounterManager.getSamplePeriod())
@@ -524,7 +513,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations().values();
       return TransportConfigurationInfo.toTabularData(connectorConfigurations);
    }
-   
+
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {
       postOffice.sendQueueInfoToQueue(new SimpleString(queueName), new SimpleString(address));
@@ -598,5 +587,90 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       messageCounterManager.resetAllCounters();
 
       messageCounterManager.resetAllCounterHistories();
+   }
+
+   public long getConnectionTTLOverride()
+   {
+      return configuration.getConnectionTTLOverride();
+   }
+
+   public int getIDCacheSize()
+   {
+      return configuration.getIDCacheSize();
+   }
+
+   public String getLargeMessagesDirectory()
+   {
+      return configuration.getLargeMessagesDirectory();
+   }
+
+   public String getManagementAddress()
+   {
+      return configuration.getManagementAddress().toString();
+   }
+
+   public String getManagementNotificationAddress()
+   {
+      return configuration.getManagementNotificationAddress().toString();
+   }
+
+   public long getManagementRequestTimeout()
+   {
+      return configuration.getManagementRequestTimeout();
+   }
+
+   public long getMessageExpiryScanPeriod()
+   {
+      return configuration.getMessageExpiryScanPeriod();
+   }
+
+   public long getMessageExpiryThreadPriority()
+   {
+      return configuration.getMessageExpiryThreadPriority();
+   }
+
+   public int getPagingGlobalWatermarkSize()
+   {
+      return configuration.getPagingGlobalWatermarkSize();
+   }
+
+   public int getPagingMaxThreads()
+   {
+      return configuration.getPagingMaxThreads();
+   }
+
+   public long getQueueActivationTimeout()
+   {
+      return configuration.getQueueActivationTimeout();
+   }
+
+   public long getTransactionTimeout()
+   {
+      return configuration.getTransactionTimeout();
+   }
+
+   public long getTransactionTimeoutScanPeriod()
+   {
+      return configuration.getTransactionTimeoutScanPeriod();
+   }
+
+   public boolean isAllowRouteWhenNoBindings()
+   {
+      return configuration.isAllowRouteWhenNoBindings();
+   }
+
+   public boolean isPersistDeliveryCountBeforeDelivery()
+   {
+      return configuration.isPersistDeliveryCountBeforeDelivery();
+   }
+
+   public boolean isPersistIDCache()
+   {
+      return configuration.isPersistIDCache();
+   }
+
+   public boolean isWildcardRoutingEnabled()
+   {
+      return configuration.isWildcardRoutingEnabled();
    }
 }

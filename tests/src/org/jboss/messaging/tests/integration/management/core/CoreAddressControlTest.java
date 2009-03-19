@@ -59,27 +59,27 @@ public class CoreAddressControlTest extends AddressControlTest
 
          public void addRole(String name, boolean create, boolean read, boolean write) throws Exception
          {
-            proxy.invokOperation("addRole", name, create, read, write);
+            proxy.invokeOperation("addRole", name, create, read, write);
          }
 
          public String getAddress()
          {
-            return (String)proxy.retriveAttributeValue("Address");
+            return (String)proxy.retrieveAttributeValue("Address");
          }
 
          public String[] getQueueNames() throws Exception
          {
-            return (String[])proxy.retriveAttributeValue("QueueNames");
+            return (String[])proxy.retrieveAttributeValue("QueueNames");
          }
 
          public TabularData getRoles() throws Exception
          {
-            return (TabularData)proxy.retriveAttributeValue("Roles");
+            return (TabularData)proxy.retrieveAttributeValue("Roles");
          }
 
          public void removeRole(String name) throws Exception
          {
-            proxy.invokOperation("removeRole", name);
+            proxy.invokeOperation("removeRole", name);
          }
       };
    }

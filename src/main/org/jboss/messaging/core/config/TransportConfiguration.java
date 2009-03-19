@@ -21,7 +21,10 @@
   */
 package org.jboss.messaging.core.config;
 
+import static java.util.Collections.emptyMap;
+
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -193,7 +196,7 @@ public class TransportConfiguration implements Serializable
 
    public TransportConfiguration(final String className)
    {
-      this(className, null, UUID.randomUUID().toString());
+      this(className, new HashMap<String, Object>(), UUID.randomUUID().toString());
    }
 
    public String getName()

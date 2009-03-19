@@ -78,6 +78,8 @@ public class ManagementHelper
 
    public static final SimpleString HDR_DISTANCE = new SimpleString("_JBM_Distance");
 
+   private static final SimpleString NULL = new SimpleString("_JBM_NULL");
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -130,7 +132,7 @@ public class ManagementHelper
                {
                   value = value.toString();
                }
-               if ("null".equals(value))
+               if (NULL.toString().equals(value))
                {
                   value = null;
                }
@@ -206,6 +208,7 @@ public class ManagementHelper
    {
       if (typedProperty == null)
       {
+         message.putStringProperty(key, NULL);
          return;
       }
       

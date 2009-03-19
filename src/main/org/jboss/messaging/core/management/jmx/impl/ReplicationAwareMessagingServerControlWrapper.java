@@ -234,7 +234,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       return localControl.getConnectors();
    }
-
+   
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {
       localControl.sendQueueInfoToQueue(queueName, address);
@@ -308,6 +308,91 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    public void setMessageCounterSamplePeriod(final long newPeriod) throws Exception
    {
       replicationAwareInvoke("setMessageCounterSamplePeriod", newPeriod);
+   }
+   
+   public long getConnectionTTLOverride()
+   {
+      return localControl.getConnectionTTLOverride();
+   }
+
+   public int getIDCacheSize()
+   {
+      return localControl.getIDCacheSize();
+   }
+
+   public String getLargeMessagesDirectory()
+   {
+      return localControl.getLargeMessagesDirectory();
+   }
+
+   public String getManagementAddress()
+   {
+      return localControl.getManagementAddress().toString();
+   }
+
+   public String getManagementNotificationAddress()
+   {
+      return localControl.getManagementNotificationAddress().toString();
+   }
+
+   public long getManagementRequestTimeout()
+   {
+      return localControl.getManagementRequestTimeout();
+   }
+
+   public long getMessageExpiryScanPeriod()
+   {
+      return localControl.getMessageExpiryScanPeriod();
+   }
+
+   public long getMessageExpiryThreadPriority()
+   {
+      return localControl.getMessageExpiryThreadPriority();
+   }
+
+   public int getPagingGlobalWatermarkSize()
+   {
+      return localControl.getPagingGlobalWatermarkSize();
+   }
+
+   public int getPagingMaxThreads()
+   {
+      return localControl.getPagingMaxThreads();
+   }
+
+   public long getQueueActivationTimeout()
+   {
+      return localControl.getQueueActivationTimeout();
+   }
+
+   public long getTransactionTimeout()
+   {
+      return localControl.getTransactionTimeout();
+   }
+
+   public long getTransactionTimeoutScanPeriod()
+   {
+      return localControl.getTransactionTimeoutScanPeriod();
+   }
+
+   public boolean isAllowRouteWhenNoBindings()
+   {
+      return localControl.isAllowRouteWhenNoBindings();
+   }
+
+   public boolean isPersistDeliveryCountBeforeDelivery()
+   {
+      return localControl.isPersistDeliveryCountBeforeDelivery();
+   }
+
+   public boolean isPersistIDCache()
+   {
+      return localControl.isPersistIDCache();
+   }
+
+   public boolean isWildcardRoutingEnabled()
+   {
+      return localControl.isWildcardRoutingEnabled();
    }
 
    // StandardMBean overrides ---------------------------------------

@@ -127,7 +127,7 @@ public interface MessagingServerControlMBean
    void resetAllMessageCounterHistories() throws Exception;
 
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")
-   public String[] listPreparedTransactions();
+   public String[] listPreparedTransactions() throws Exception;
 
    @Operation(desc = "Commit a prepared transaction")
    boolean commitPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64")
@@ -138,25 +138,60 @@ public interface MessagingServerControlMBean
    String transactionAsBase64) throws Exception;
 
    @Operation(desc = "List the client addresses", impact = INFO)
-   String[] listRemoteAddresses();
+   String[] listRemoteAddresses() throws Exception;
 
    @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
    String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress")
-   String ipAddress);
+   String ipAddress) throws Exception;
 
    @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
    boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress")
    String ipAddress) throws Exception;
 
    @Operation(desc = "List all the connection IDs", impact = INFO)
-   String[] listConnectionIDs();
+   String[] listConnectionIDs() throws Exception;
 
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID")
-   String connectionID);
+   String connectionID) throws Exception;
 
    TabularData getConnectors() throws Exception;
    
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;
+
+   boolean isAllowRouteWhenNoBindings();
+
+   boolean isPersistDeliveryCountBeforeDelivery();
+
+   long getQueueActivationTimeout();
+
+   long getConnectionTTLOverride();
+   
+   String getManagementAddress();
+   
+   String getManagementNotificationAddress();
+   
+   long getManagementRequestTimeout();
+   
+   int getIDCacheSize();
+   
+   boolean isPersistIDCache();
+   
+   int getPagingMaxThreads();
+   
+   int getPagingGlobalWatermarkSize();
+   
+   String getLargeMessagesDirectory();
+   
+   boolean isWildcardRoutingEnabled();
+   
+   long getTransactionTimeout();
+   
+   long getTransactionTimeoutScanPeriod();
+
+   long getMessageExpiryScanPeriod();
+
+   long getMessageExpiryThreadPriority();
+
 
 }

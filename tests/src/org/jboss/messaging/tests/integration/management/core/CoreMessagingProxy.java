@@ -72,7 +72,7 @@ public class CoreMessagingProxy
 
    // Protected -----------------------------------------------------
 
-   public Object retriveAttributeValue(String attributeName)
+   public Object retrieveAttributeValue(String attributeName)
    {
       ClientMessage m = session.createClientMessage(false);
       ManagementHelper.putAttribute(m, on, attributeName);
@@ -88,7 +88,7 @@ public class CoreMessagingProxy
       }
    }
 
-   public Object invokOperation(String operationName, Object... args) throws Exception
+   public Object invokeOperation(String operationName, Object... args) throws Exception
    {
       ClientMessage m = session.createClientMessage(false);
       ManagementHelper.putOperationInvocation(m, on, operationName, args);

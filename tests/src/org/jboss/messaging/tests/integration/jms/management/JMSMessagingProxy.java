@@ -71,7 +71,7 @@ public class JMSMessagingProxy
 
    // Protected -----------------------------------------------------
 
-   public Object retriveAttributeValue(String attributeName)
+   public Object retrieveAttributeValue(String attributeName)
    {
       try
       {
@@ -86,7 +86,7 @@ public class JMSMessagingProxy
       }
    }
 
-   public Object invokOperation(String operationName, Object... args) throws Exception
+   public Object invokeOperation(String operationName, Object... args) throws Exception
    {
       Message m = session.createMessage();
       JMSManagementHelper.putOperationInvocation(m, on, operationName, args);

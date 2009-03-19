@@ -98,14 +98,14 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
          {
-            return (Boolean)proxy.invokOperation("closeConnectionsForAddress", ipAddress);
+            return (Boolean)proxy.invokeOperation("closeConnectionsForAddress", ipAddress);
          }
 
          public void createConnectionFactory(final String name,
                                              final String connectorFactoryClassName,
                                              final String jndiBinding) throws Exception
          {
-            proxy.invokOperation("createConnectionFactory", name, connectorFactoryClassName, jndiBinding);
+            proxy.invokeOperation("createConnectionFactory", name, connectorFactoryClassName, jndiBinding);
          }
 
          public void createConnectionFactory(final String name,
@@ -116,7 +116,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              final boolean preAcknowledge,
                                              final String jndiBinding) throws Exception
          {
-            proxy.invokOperation("createConnectionFactory",
+            proxy.invokeOperation("createConnectionFactory",
                                  name,
                                  connectorFactoryClassName,
                                  blockOnAcknowledge,
@@ -152,7 +152,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                                    final int maxRetriesAfterFailover,
                                                    final String jndiBinding) throws Exception
          {
-            proxy.invokOperation("createSimpleConnectionFactory",
+            proxy.invokeOperation("createSimpleConnectionFactory",
                                  name,
                                  connectorFactoryClassName,
                                  connectionLoadBalancingPolicyClassName,
@@ -206,7 +206,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              final int maxRetriesAfterFailover,
                                              final String jndiBinding) throws Exception
          {
-            proxy.invokOperation("createConnectionFactory",
+            proxy.invokeOperation("createConnectionFactory",
                                  name,
                                  connectorConfigs,
                                  connectionLoadBalancingPolicyClassName,
@@ -264,7 +264,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              final int maxRetriesAfterFailover,
                                              final String jndiBinding) throws Exception
          {
-            proxy.invokOperation("createConnectionFactory",
+            proxy.invokeOperation("createConnectionFactory",
                                  name,
                                  discoveryGroupName,
                                  discoveryGroupAddress,
@@ -298,57 +298,57 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public boolean createQueue(final String name, final String jndiBinding) throws Exception
          {
-            return (Boolean)proxy.invokOperation("createQueue", name, jndiBinding);
+            return (Boolean)proxy.invokeOperation("createQueue", name, jndiBinding);
          }
 
          public boolean createTopic(final String name, final String jndiBinding) throws Exception
          {
-            return (Boolean)proxy.invokOperation("createTopic", name, jndiBinding);
+            return (Boolean)proxy.invokeOperation("createTopic", name, jndiBinding);
          }
 
          public void destroyConnectionFactory(final String name) throws Exception
          {
-            proxy.invokOperation("destroyConnectionFactory", name);
+            proxy.invokeOperation("destroyConnectionFactory", name);
          }
 
          public boolean destroyQueue(final String name) throws Exception
          {
-            return (Boolean)proxy.invokOperation("destroyQueue", name);
+            return (Boolean)proxy.invokeOperation("destroyQueue", name);
          }
 
          public boolean destroyTopic(final String name) throws Exception
          {
-            return (Boolean)proxy.invokOperation("destroyTopic", name);
+            return (Boolean)proxy.invokeOperation("destroyTopic", name);
          }
 
          public String getVersion()
          {
-            return (String)proxy.retriveAttributeValue("Version");
+            return (String)proxy.retrieveAttributeValue("Version");
          }
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retriveAttributeValue("Started");
+            return (Boolean)proxy.retrieveAttributeValue("Started");
          }
 
          public String[] listConnectionIDs() throws Exception
          {
-            return (String[])proxy.invokOperation("listConnectionIDs");
+            return (String[])proxy.invokeOperation("listConnectionIDs");
          }
 
          public String[] listRemoteAddresses() throws Exception
          {
-            return (String[])proxy.invokOperation("listRemoteAddresses");
+            return (String[])proxy.invokeOperation("listRemoteAddresses");
          }
 
          public String[] listRemoteAddresses(final String ipAddress) throws Exception
          {
-            return (String[])proxy.invokOperation("listRemoteAddresses", ipAddress);
+            return (String[])proxy.invokeOperation("listRemoteAddresses", ipAddress);
          }
 
          public String[] listSessions(final String connectionID) throws Exception
          {
-            return (String[])proxy.invokOperation("listSessions", connectionID);
+            return (String[])proxy.invokeOperation("listSessions", connectionID);
          }
 
       };

@@ -300,22 +300,22 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
       return localControl.isStarted();
    }
 
-   public String[] listConnectionIDs()
+   public String[] listConnectionIDs() throws Exception
    {
       return localControl.listConnectionIDs();
    }
 
-   public String[] listRemoteAddresses()
+   public String[] listRemoteAddresses() throws Exception
    {
       return localControl.listRemoteAddresses();
    }
 
-   public String[] listRemoteAddresses(final String ipAddress)
+   public String[] listRemoteAddresses(final String ipAddress) throws Exception
    {
       return localControl.listRemoteAddresses(ipAddress);
    }
 
-   public String[] listSessions(final String connectionID)
+   public String[] listSessions(final String connectionID) throws Exception
    {
       return localControl.listSessions(connectionID);
    }

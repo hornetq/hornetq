@@ -92,92 +92,92 @@ public class TopicControlUsingJMSTest extends TopicControlTest
       {
          public int countMessagesForSubscription(String clientID, String subscriptionName, String filter) throws Exception
          {
-            return (Integer)proxy.invokOperation("countMessagesForSubscription", clientID, subscriptionName, filter);
+            return (Integer)proxy.invokeOperation("countMessagesForSubscription", clientID, subscriptionName, filter);
          }
 
          public void dropAllSubscriptions() throws Exception
          {
-            proxy.invokOperation("dropAllSubscriptions");
+            proxy.invokeOperation("dropAllSubscriptions");
          }
 
          public void dropDurableSubscription(String clientID, String subscriptionName) throws Exception
          {
-            proxy.invokOperation("dropDurableSubscription", clientID, subscriptionName);
+            proxy.invokeOperation("dropDurableSubscription", clientID, subscriptionName);
          }
 
          public int getDurableMessagesCount()
          {
-            return (Integer)proxy.retriveAttributeValue("DurableMessagesCount");
+            return (Integer)proxy.retrieveAttributeValue("DurableMessagesCount");
          }
 
          public int getDurableSubcriptionsCount()
          {
-            return (Integer)proxy.retriveAttributeValue("DurableSubcriptionsCount");
+            return (Integer)proxy.retrieveAttributeValue("DurableSubcriptionsCount");
          }
 
          public int getNonDurableMessagesCount()
          {
-            return (Integer)proxy.retriveAttributeValue("NonDurableMessagesCount");
+            return (Integer)proxy.retrieveAttributeValue("NonDurableMessagesCount");
          }
 
          public int getNonDurableSubcriptionsCount()
          {
-            return (Integer)proxy.retriveAttributeValue("NonDurableSubcriptionsCount");
+            return (Integer)proxy.retrieveAttributeValue("NonDurableSubcriptionsCount");
          }
 
          public int getSubcriptionsCount()
          {
-            return (Integer)proxy.retriveAttributeValue("SubcriptionsCount");
+            return (Integer)proxy.retrieveAttributeValue("SubcriptionsCount");
          }
 
          public TabularData listAllSubscriptions() throws Exception
          {
-            return (TabularData)proxy.invokOperation("listAllSubscriptions");
+            return (TabularData)proxy.invokeOperation("listAllSubscriptions");
          }
 
          public TabularData listDurableSubscriptions() throws Exception
          {
-            return (TabularData)proxy.invokOperation("listDurableSubscriptions");
+            return (TabularData)proxy.invokeOperation("listDurableSubscriptions");
          }
 
          public TabularData listMessagesForSubscription(String queueName) throws Exception
          {
-            return (TabularData)proxy.invokOperation("listMessagesForSubscription", queueName);
+            return (TabularData)proxy.invokeOperation("listMessagesForSubscription", queueName);
          }
 
          public TabularData listNonDurableSubscriptions() throws Exception
          {
-            return (TabularData)proxy.invokOperation("listNonDurableSubscriptions");
+            return (TabularData)proxy.invokeOperation("listNonDurableSubscriptions");
          }
 
          public String getAddress()
          {
-            return (String)proxy.retriveAttributeValue("Address");
+            return (String)proxy.retrieveAttributeValue("Address");
          }
 
          public String getJNDIBinding()
          {
-            return (String)proxy.retriveAttributeValue("JNDIBinding");
+            return (String)proxy.retrieveAttributeValue("JNDIBinding");
          }
 
          public int getMessageCount() throws Exception
          {
-            return (Integer)proxy.retriveAttributeValue("MessageCount");
+            return (Integer)proxy.retrieveAttributeValue("MessageCount");
          }
 
          public String getName()
          {
-            return (String)proxy.retriveAttributeValue("Name");
+            return (String)proxy.retrieveAttributeValue("Name");
          }
 
          public boolean isTemporary()
          {
-            return (Boolean)proxy.retriveAttributeValue("Temporary");
+            return (Boolean)proxy.retrieveAttributeValue("Temporary");
          }
 
          public int removeAllMessages() throws Exception
          {
-            return (Integer)proxy.invokOperation("removeAllMessages");
+            return (Integer)proxy.invokeOperation("removeAllMessages");
          }
 
       };

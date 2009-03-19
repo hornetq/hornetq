@@ -183,15 +183,15 @@ public interface JMSServerManager
     */
    boolean destroyConnectionFactory(String name) throws Exception;
 
-   String[] listRemoteAddresses();
+   String[] listRemoteAddresses() throws Exception;
 
-   String[] listRemoteAddresses(String ipAddress);
+   String[] listRemoteAddresses(String ipAddress) throws Exception;
 
    boolean closeConnectionsForAddress(String ipAddress) throws Exception;
 
-   String[] listConnectionIDs();
+   String[] listConnectionIDs() throws Exception;
 
-   String[] listSessions(String connectionID);
+   String[] listSessions(String connectionID) throws Exception;
 
 
 }

@@ -407,12 +407,12 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                                      "Notifications emitted by a JMS Server") };
    }
    
-   public String[] listRemoteAddresses()
+   public String[] listRemoteAddresses() throws Exception
    {
       return server.listRemoteAddresses();
    }
 
-   public String[] listRemoteAddresses(final String ipAddress)
+   public String[] listRemoteAddresses(final String ipAddress) throws Exception
    {
       return server.listRemoteAddresses(ipAddress);
    }
@@ -422,12 +422,12 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       return server.closeConnectionsForAddress(ipAddress);
    }
 
-   public String[] listConnectionIDs()
+   public String[] listConnectionIDs() throws Exception
    {
       return server.listConnectionIDs();
    }
 
-   public String[] listSessions(final String connectionID)
+   public String[] listSessions(final String connectionID) throws Exception
    {
       return server.listSessions(connectionID);
    }

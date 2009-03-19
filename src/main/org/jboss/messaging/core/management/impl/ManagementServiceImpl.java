@@ -115,7 +115,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private MessagingServerControl managedServer;
 
-   private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl(10000);
+   private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl();
 
    private SimpleString managementNotificationAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 

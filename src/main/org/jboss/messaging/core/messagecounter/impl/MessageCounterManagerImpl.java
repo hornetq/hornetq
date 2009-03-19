@@ -45,6 +45,13 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
  */
 public class MessageCounterManagerImpl implements MessageCounterManager
 {
+   
+   public static final long DEFAULT_SAMPLE_PERIOD = 10000;
+
+   public static final long MIN_SAMPLE_PERIOD = 1000;
+
+   public static final int DEFAULT_MAX_DAY_COUNT = 10;
+
    private static final Logger log = Logger.getLogger(MessageCounterManagerImpl.class);
    
    private Map<String, MessageCounter> messageCounters;
@@ -53,17 +60,15 @@ public class MessageCounterManagerImpl implements MessageCounterManager
    
    private Timer timer;
    
-   private long period;
+   private long period = DEFAULT_SAMPLE_PERIOD;
    
    private PingMessageCountersTask task;
 
-   private int maxDayCount = 10;
+   private int maxDayCount = DEFAULT_MAX_DAY_COUNT;
           
-   public MessageCounterManagerImpl(long period)
+   public MessageCounterManagerImpl()
    {
       messageCounters = new HashMap<String, MessageCounter>();
-      
-      this.period = period;
    }
 
    public synchronized void start()

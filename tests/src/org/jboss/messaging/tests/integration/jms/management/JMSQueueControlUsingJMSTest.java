@@ -92,157 +92,157 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
 
          public boolean changeMessagePriority(String messageID, int newPriority) throws Exception
          {
-            return (Boolean)proxy.invokOperation("changeMessagePriority", messageID, newPriority);
+            return (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);
          }
 
          public int countMessages(String filter) throws Exception
          {
-            return (Integer)proxy.invokOperation("countMessages", filter);
+            return (Integer)proxy.invokeOperation("countMessages", filter);
          }
 
          public boolean expireMessage(String messageID) throws Exception
          {
-            return (Boolean)proxy.invokOperation("expireMessage", messageID);
+            return (Boolean)proxy.invokeOperation("expireMessage", messageID);
          }
 
          public int expireMessages(String filter) throws Exception
          {
-            return (Integer)proxy.invokOperation("expireMessages", filter);
+            return (Integer)proxy.invokeOperation("expireMessages", filter);
          }
 
          public int getConsumerCount()
          {
-            return (Integer)proxy.retriveAttributeValue("ConsumerCount");
+            return (Integer)proxy.retrieveAttributeValue("ConsumerCount");
          }
 
          public String getDeadLetterAddress()
          {
-            return (String)proxy.retriveAttributeValue("DeadLetterAddress");
+            return (String)proxy.retrieveAttributeValue("DeadLetterAddress");
          }
 
          public int getDeliveringCount()
          {
-            return (Integer)proxy.retriveAttributeValue("DeliveringCount");
+            return (Integer)proxy.retrieveAttributeValue("DeliveringCount");
          }
 
          public String getExpiryAddress()
          {
-            return (String)proxy.retriveAttributeValue("ExpiryAddress");
+            return (String)proxy.retrieveAttributeValue("ExpiryAddress");
          }
 
          public int getMessageCount()
          {
-            return (Integer)proxy.retriveAttributeValue("MessageCount");
+            return (Integer)proxy.retrieveAttributeValue("MessageCount");
          }
 
          public int getMessagesAdded()
          {
-            return (Integer)proxy.retriveAttributeValue("MessagesAdded");
+            return (Integer)proxy.retrieveAttributeValue("MessagesAdded");
          }
 
          public String getName()
          {
-            return (String)proxy.retriveAttributeValue("Name");
+            return (String)proxy.retrieveAttributeValue("Name");
          }
 
          public long getScheduledCount()
          {
-            return (Long)proxy.retriveAttributeValue("ScheduledCount");
+            return (Long)proxy.retrieveAttributeValue("ScheduledCount");
          }
 
          public boolean isDurable()
          {
-            return (Boolean)proxy.retriveAttributeValue("Durable");
+            return (Boolean)proxy.retrieveAttributeValue("Durable");
          }
 
          public boolean isTemporary()
          {
-            return (Boolean)proxy.retriveAttributeValue("Temporary");
+            return (Boolean)proxy.retrieveAttributeValue("Temporary");
          }
 
          public TabularData listAllMessages() throws Exception
          {
-            return (TabularData)proxy.invokOperation("listAllMessages");
+            return (TabularData)proxy.invokeOperation("listAllMessages");
          }
 
          public CompositeData listMessageCounter() throws Exception
          {
-            return (CompositeData)proxy.invokOperation("listMessageCounter");
+            return (CompositeData)proxy.invokeOperation("listMessageCounter");
          }
 
          public String listMessageCounterAsHTML() throws Exception
          {
-            return (String)proxy.invokOperation("listMessageCounterAsHTML");
+            return (String)proxy.invokeOperation("listMessageCounterAsHTML");
          }
 
          public TabularData listMessageCounterHistory() throws Exception
          {
-            return (TabularData)proxy.invokOperation("listMessageCounterHistory");
+            return (TabularData)proxy.invokeOperation("listMessageCounterHistory");
          }
 
          public String listMessageCounterHistoryAsHTML() throws Exception
          {
-            return (String)proxy.invokOperation("listMessageCounterHistoryAsHTML");
+            return (String)proxy.invokeOperation("listMessageCounterHistoryAsHTML");
          }
 
          public TabularData listMessages(String filter) throws Exception
          {
-            return (TabularData)proxy.invokOperation("listMessages", filter);
+            return (TabularData)proxy.invokeOperation("listMessages", filter);
          }
 
          public int moveAllMessages(String otherQueueName) throws Exception
          {
-            return (Integer)proxy.invokOperation("moveAllMessages", otherQueueName);
+            return (Integer)proxy.invokeOperation("moveAllMessages", otherQueueName);
          }
 
          public int moveMatchingMessages(String filter, String otherQueueName) throws Exception
          {
-            return (Integer)proxy.invokOperation("moveMatchingMessages", filter, otherQueueName);
+            return (Integer)proxy.invokeOperation("moveMatchingMessages", filter, otherQueueName);
          }
 
          public boolean moveMessage(String messageID, String otherQueueName) throws Exception
          {
-            return (Boolean)proxy.invokOperation("moveMessage", messageID, otherQueueName);
+            return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName);
          }
 
          public int removeMatchingMessages(String filter) throws Exception
          {
-            return (Integer)proxy.invokOperation("removeMatchingMessages", filter);
+            return (Integer)proxy.invokeOperation("removeMatchingMessages", filter);
          }
 
          public boolean removeMessage(String messageID) throws Exception
          {
-            return (Boolean)proxy.invokOperation("removeMessage", messageID);
+            return (Boolean)proxy.invokeOperation("removeMessage", messageID);
          }
 
          public boolean sendMessageToDLQ(String messageID) throws Exception
          {
-            return (Boolean)proxy.invokOperation("sendMessageToDLQ", messageID);
+            return (Boolean)proxy.invokeOperation("sendMessageToDLQ", messageID);
          }
 
          public void setDeadLetterAddress(String deadLetterAddress) throws Exception
          {
-            proxy.invokOperation("setDeadLetterAddress", deadLetterAddress);
+            proxy.invokeOperation("setDeadLetterAddress", deadLetterAddress);
          }
 
          public void setExpiryAddress(String expiryAddress) throws Exception
          {
-            proxy.invokOperation("setExpiryAddress", expiryAddress);
+            proxy.invokeOperation("setExpiryAddress", expiryAddress);
          }
 
          public String getAddress()
          {
-            return (String)proxy.retriveAttributeValue("Address");
+            return (String)proxy.retrieveAttributeValue("Address");
          }
 
          public String getJNDIBinding()
          {
-            return (String)proxy.retriveAttributeValue("JNDIBinding");
+            return (String)proxy.retrieveAttributeValue("JNDIBinding");
          }
 
          public int removeAllMessages() throws Exception
          {
-            return (Integer)proxy.invokOperation("removeAllMessages");
+            return (Integer)proxy.invokeOperation("removeAllMessages");
          }
          
       };
