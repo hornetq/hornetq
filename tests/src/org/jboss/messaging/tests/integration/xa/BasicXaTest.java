@@ -385,6 +385,18 @@ public class BasicXaTest extends ServiceTestBase
 
    }
 
+   public void testFailXID() throws Exception
+   {
+      Xid xid = newXID();
+      ClientSession session = sessionFactory.createSession(true, false, false);
+      session.start(xid, XAResource.TMNOFLAGS);
+      session.end(xid, XAResource.TMFAIL);
+      session.rollback(xid);
+
+      session.close();
+
+   }
+
    public void testForget() throws Exception
    {
       clientSession.forget(newXID());
