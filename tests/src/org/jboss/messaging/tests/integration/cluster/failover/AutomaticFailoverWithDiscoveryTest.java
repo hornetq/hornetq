@@ -22,31 +22,17 @@
 
 package org.jboss.messaging.tests.integration.cluster.failover;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
-import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
-import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -59,7 +45,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
+public class AutomaticFailoverWithDiscoveryTest extends FailoverTestBase
 {
    private static final Logger log = Logger.getLogger(AutomaticFailoverWithDiscoveryTest.class);
 
@@ -69,16 +55,9 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService liveService;
-
-   private MessagingService backupService;
-
-   private final Map<String, Object> backupParams = new HashMap<String, Object>();
-   
    private final String groupAddress = "230.1.2.3";
 
    private final int groupPort = 8765;
-
 
    // Static --------------------------------------------------------
 
@@ -91,7 +70,7 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
       ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(groupAddress, groupPort);
 
       ClientSession session = sf.createSession(false, true, true);
-      
+
       log.info("Created session");
 
       session.createQueue(ADDRESS, ADDRESS, null, false, false);
@@ -121,13 +100,21 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
 
       session.start();
 
+      boolean outOfOrder = false;
+
       for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage message2 = consumer.receive();
 
          assertEquals("aardvarks", message2.getBody().readString());
 
-         assertEquals(i, message2.getProperty(new SimpleString("count")));
+         if (i != (Integer)message2.getProperty(new SimpleString("count")))
+         {
+            System.out.println("Messages received out of order, " + i +
+                               " != " +
+                               message2.getProperty(new SimpleString("count")));
+            outOfOrder = true;
+         }
 
          message2.acknowledge();
       }
@@ -146,16 +133,33 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
 
          assertEquals("aardvarks", message2.getBody().readString());
 
-         assertEquals(i, message2.getProperty(new SimpleString("count")));
+         if (i != (Integer)message2.getProperty(new SimpleString("count")))
+         {
+            System.out.println("Messages received out of order, " + i +
+                               " != " +
+                               message2.getProperty(new SimpleString("count")));
+            outOfOrder = true;
+         }
 
          message2.acknowledge();
       }
 
       ClientMessage message3 = consumer.receive(250);
 
+      if (message3 != null)
+      {
+         do
+         {
+            System.out.println("Message " + message3.getProperty(new SimpleString("count")) + " was duplicated");
+            message3 = consumer.receive(1000);
+         }
+         while (message3 != null);
+         fail("Duplicated messages received on test");
+      }
+
       session.close();
 
-      assertNull(message3);
+      assertFalse("Messages received out of order, look at System.out for more details", outOfOrder);
 
       assertEquals(0, sf.numSessions());
 
@@ -170,54 +174,7 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
-      Configuration backupConf = new ConfigurationImpl();
-      backupConf.setSecurityEnabled(false);
-      backupConf.setClustered(true);
-      backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      backupConf.getAcceptorConfigurations()
-                .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                backupParams));
-      backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
-      backupService.start();
-
-      Configuration liveConf = new ConfigurationImpl();
-      liveConf.setSecurityEnabled(false);
-      TransportConfiguration liveTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
-      liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-      TransportConfiguration backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                   backupParams);
-      connectors.put(backupTC.getName(), backupTC);
-      connectors.put(liveTC.getName(), liveTC);
-      liveConf.setConnectorConfigurations(connectors);
-      liveConf.setBackupConnectorName(backupTC.getName());
-      liveConf.setClustered(true);
-      
-      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
-      connectorNames.add(new Pair<String, String>(liveTC.getName(), backupTC.getName()));
-      
-      final long broadcastPeriod = 250;
-
-      final String bcGroupName = "bc1";
-
-      final int localBindPort = 5432;
-      
-      BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
-                                                                              localBindPort,
-                                                                              groupAddress,
-                                                                              groupPort,
-                                                                              broadcastPeriod,
-                                                                              connectorNames);
-      
-      List<BroadcastGroupConfiguration> bcConfigs1 = new ArrayList<BroadcastGroupConfiguration>();
-      bcConfigs1.add(bcConfig1);
-      liveConf.setBroadcastGroupConfigurations(bcConfigs1);
-      
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
-      liveService.start();
+      setupGroupServers(true, "bc1", 5432, groupAddress, groupPort);
    }
 
    @Override
@@ -228,7 +185,7 @@ public class AutomaticFailoverWithDiscoveryTest extends UnitTestCase
       liveService.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
-      
+
       super.tearDown();
    }
 
