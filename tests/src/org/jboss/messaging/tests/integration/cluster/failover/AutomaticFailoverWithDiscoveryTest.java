@@ -173,7 +173,7 @@ public class AutomaticFailoverWithDiscoveryTest extends FailoverTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      setupGroupServers(true, "bc1", 5432, groupAddress, groupPort);
+      setupGroupServers(false, "bc1", 5432, groupAddress, groupPort);
    }
 
    @Override
