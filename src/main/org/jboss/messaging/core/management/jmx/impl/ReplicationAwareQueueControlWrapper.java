@@ -151,6 +151,11 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
    {
       return localQueueControl.listMessageCounter();
    }
+   
+   public void resetMessageCounter() throws Exception
+   {
+      localQueueControl.resetMessageCounter();
+   }
 
    public String listMessageCounterAsHTML() throws Exception
    {

@@ -87,12 +87,9 @@ public class PairsInfo
       return pairs;
    }
    
-   public static TabularData toTabularData(Pair<String, String> pair)
+   public static CompositeData toCompositeData(Pair<String, String> pair) throws OpenDataException
    {
-      List<Pair<String, String>> list = new ArrayList<Pair<String, String>>();
-      list.add(pair);
-      PairsInfo info = new PairsInfo(list);
-      return info.toTabularData();
+      return new CompositeDataSupport(ROW_TYPE, new String[] { "a", "b" }, new Object[] { pair.a, pair.b });
    }
 
    public static TabularData toTabularData(List<Pair<String, String>> pairs)
@@ -125,7 +122,7 @@ public class PairsInfo
          TabularDataSupport data = new TabularDataSupport(TABULAR_TYPE);
          for (Pair<String, String> pair : pairs)
          {
-            data.put(new CompositeDataSupport(ROW_TYPE, new String[] { "a", "b" }, new Object[] { pair.a, pair.b }));
+            data.put(toCompositeData(pair));
          }
          return data;
       }

@@ -159,6 +159,11 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (CompositeData)proxy.invokeOperation("listMessageCounter");
          }
 
+         public void resetMessageCounter() throws Exception
+         {
+            proxy.invokeOperation("resetMessageCounter");
+         }
+         
          public String listMessageCounterAsHTML() throws Exception
          {
             return (String)proxy.invokeOperation("listMessageCounterAsHTML");

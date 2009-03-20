@@ -49,4 +49,5 @@ public interface MessageCounterManager
    int getMaxDayCount();
 
    void setMaxDayCount(int count);
+
 }

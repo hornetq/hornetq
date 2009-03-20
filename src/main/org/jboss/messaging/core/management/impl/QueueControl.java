@@ -374,6 +374,11 @@ public class QueueControl implements QueueControlMBean
    {
       return MessageCounterInfo.toCompositeData(counter);
    }
+   
+   public void resetMessageCounter()
+   {
+      counter.resetCounter();
+   }
 
    public String listMessageCounterAsHTML()
    {

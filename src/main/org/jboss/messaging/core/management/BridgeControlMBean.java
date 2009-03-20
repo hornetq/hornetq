@@ -22,22 +22,16 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.TabularData;
+import javax.management.openmbean.CompositeData;
 
 /**
- * A AcceptorMBean
+ * A BridgeControlMBean
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface BridgeControlMBean
+public interface BridgeControlMBean extends MessagingComponentControlMBean
 {
-   boolean isStarted();
-
-   void start() throws Exception;
-
-   void stop() throws Exception;
-   
    String getName();
    
    String getQueueName();
@@ -48,7 +42,7 @@ public interface BridgeControlMBean
 
    String getTransformerClassName();
 
-   TabularData getConnectorPair();
+   CompositeData getConnectorPair() throws Exception;
 
    String getDiscoveryGroupName();
 
@@ -59,4 +53,6 @@ public interface BridgeControlMBean
    int getMaxRetriesBeforeFailover();
 
    int getMaxRetriesAfterFailover();
+
+   boolean isUseDuplicateDetection();
 }

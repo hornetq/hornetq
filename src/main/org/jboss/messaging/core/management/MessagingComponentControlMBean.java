@@ -26,11 +26,7 @@ package org.jboss.messaging.core.management;
 /**
  * A MessagingComponentControlMBean
  *
- * @author jmesnil
- * 
- * Created 15 dec. 2008 11:31:28
- *
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface MessagingComponentControlMBean
 {

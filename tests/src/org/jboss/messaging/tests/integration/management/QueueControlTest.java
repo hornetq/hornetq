@@ -47,6 +47,7 @@ import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
@@ -970,7 +971,6 @@ public class QueueControlTest extends ManagementTestBase
 
    public void testListMessageCounter() throws Exception
    {
-      long counterPeriod = 1000;
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
@@ -979,7 +979,7 @@ public class QueueControlTest extends ManagementTestBase
       
       MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
-      serverControl.setMessageCounterSamplePeriod(counterPeriod);
+      serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
       CompositeData compositeData = queueControl.listMessageCounter();
       MessageCounterInfo info = MessageCounterInfo.from(compositeData);
@@ -989,20 +989,85 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
 
-      Thread.sleep(counterPeriod * 2);
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
       compositeData = queueControl.listMessageCounter();
       info = MessageCounterInfo.from(compositeData);
       assertEquals(1, info.getDepth());
+      assertEquals(1, info.getDepthDelta());
       assertEquals(1, info.getCount());
+      assertEquals(1, info.getCountDelta());
 
-      consumeMessages(1, session, queue);
+      producer.send(session.createClientMessage(false));
 
-      Thread.sleep(counterPeriod * 2);      
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
+      compositeData = queueControl.listMessageCounter();
+      info = MessageCounterInfo.from(compositeData);
+      assertEquals(2, info.getDepth());
+      assertEquals(1, info.getDepthDelta());
+      assertEquals(2, info.getCount());
+      assertEquals(1, info.getCountDelta());
+
+      consumeMessages(2, session, queue);
+
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
       compositeData = queueControl.listMessageCounter();
       info = MessageCounterInfo.from(compositeData);
       assertEquals(0, info.getDepth());
-      assertEquals(1, info.getCount());
+      assertEquals(-2, info.getDepthDelta());
+      assertEquals(2, info.getCount());
+      assertEquals(0, info.getCountDelta());
 
+      session.deleteQueue(queue);
+   }
+   
+   public void testResetMessageCounter() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false, false);
+      QueueControlMBean queueControl = createManagementControl(address, queue);
+      
+      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      serverControl.enableMessageCounters();
+      serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
+
+      CompositeData compositeData = queueControl.listMessageCounter();
+      MessageCounterInfo info = MessageCounterInfo.from(compositeData);
+      assertEquals(0, info.getDepth());
+      assertEquals(0, info.getCount());
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createClientMessage(false));
+
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
+      compositeData = queueControl.listMessageCounter();
+      info = MessageCounterInfo.from(compositeData);
+      assertEquals(1, info.getDepth());
+      assertEquals(1, info.getDepthDelta());
+      assertEquals(1, info.getCount());
+      assertEquals(1, info.getCountDelta());
+
+      consumeMessages(1, session, queue);
+
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
+      compositeData = queueControl.listMessageCounter();
+      info = MessageCounterInfo.from(compositeData);
+      assertEquals(0, info.getDepth());
+      assertEquals(-1, info.getDepthDelta());
+      assertEquals(1, info.getCount());
+      assertEquals(0, info.getCountDelta());
+
+      queueControl.resetMessageCounter();
+      
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
+      compositeData = queueControl.listMessageCounter();
+      info = MessageCounterInfo.from(compositeData);
+      assertEquals(0, info.getDepth());
+      assertEquals(0, info.getDepthDelta());
+      assertEquals(0, info.getCount());
+      assertEquals(0, info.getCountDelta());
+      
       session.deleteQueue(queue);
    }
    

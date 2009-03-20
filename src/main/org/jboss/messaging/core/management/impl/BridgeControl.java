@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
@@ -59,9 +61,9 @@ public class BridgeControl implements BridgeControlMBean
 
    // BridgeControlMBean implementation ---------------------------
 
-   public TabularData getConnectorPair()
+   public CompositeData getConnectorPair() throws Exception
    {
-      return PairsInfo.toTabularData(configuration.getConnectorPair());
+      return PairsInfo.toCompositeData(configuration.getConnectorPair());
    }
 
    public String getForwardingAddress()

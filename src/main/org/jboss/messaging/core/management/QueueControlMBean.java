@@ -145,9 +145,12 @@ public interface QueueControlMBean
 
    CompositeData listMessageCounter() throws Exception;
 
+   void resetMessageCounter() throws Exception;
+
    String listMessageCounterAsHTML() throws Exception;
 
    TabularData listMessageCounterHistory() throws Exception;
 
    String listMessageCounterHistoryAsHTML() throws Exception;
+
 }
