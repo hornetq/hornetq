@@ -31,7 +31,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -180,12 +179,6 @@ public class AutomaticFailoverWithDiscoveryTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      backupService.stop();
-
-      liveService.stop();
-
-      assertEquals(0, InVMRegistry.instance.size());
-
       super.tearDown();
    }
 
