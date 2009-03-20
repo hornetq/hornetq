@@ -398,7 +398,6 @@ public class NettyConnector implements Connector
       }
       else
       {
-         future.getCause().printStackTrace();
          return null;
       }
    }

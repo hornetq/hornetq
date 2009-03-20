@@ -305,7 +305,6 @@ public class TopicControl implements TopicControlMBean
       }
       catch (Exception e)
       {
-         e.printStackTrace();
          return Collections.emptyList();
       }
    }

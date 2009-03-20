@@ -40,6 +40,7 @@ import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -50,6 +51,8 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 public class TransportConfigurationInfo
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(TransportConfigurationInfo.class);
 
    public static final CompositeType TYPE;
 
@@ -84,7 +87,6 @@ public class TransportConfigurationInfo
       }
       catch (OpenDataException e)
       {
-         e.printStackTrace();
          throw new IllegalStateException(e);
       }
    }
@@ -146,7 +148,7 @@ public class TransportConfigurationInfo
       }
       catch (OpenDataException e)
       {
-         e.printStackTrace();
+         log.error("Exception when converting a TransportConfiguration to a CompositeData", e);
          return null;
       }
    }

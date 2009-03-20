@@ -37,6 +37,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -50,6 +51,8 @@ import org.jboss.messaging.utils.Pair;
 public class PairsInfo
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(PairsInfo.class);
 
    public static final TabularType TABULAR_TYPE;
 
@@ -68,7 +71,6 @@ public class PairsInfo
       }
       catch (OpenDataException e)
       {
-         e.printStackTrace();
          throw new IllegalStateException(e);
       }
    }
@@ -129,7 +131,7 @@ public class PairsInfo
       }
       catch (OpenDataException e)
       {
-         e.printStackTrace();
+         log.error("Exception when converting a collection of pairs to a TabularData", e);
          return null;
       }
    }

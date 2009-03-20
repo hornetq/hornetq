@@ -42,6 +42,8 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
+import org.jboss.messaging.core.logging.Logger;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
@@ -51,6 +53,8 @@ import javax.management.openmbean.TabularType;
 public class MessageInfo
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(MessageInfo.class);
 
    public static final CompositeType TYPE;
 
@@ -106,7 +110,6 @@ public class MessageInfo
       }
       catch (OpenDataException e)
       {
-         e.printStackTrace();
          throw new IllegalStateException(e);
       }
    }
@@ -292,7 +295,7 @@ public class MessageInfo
       }
       catch (OpenDataException e)
       {
-         e.printStackTrace();
+         log.error("Exception when converting a message to a CompositeData", e);
          return null;
       }
    }

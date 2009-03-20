@@ -24,10 +24,8 @@ package org.jboss.messaging.core.management;
 
 import static javax.management.openmbean.SimpleType.STRING;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -40,7 +38,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * Info for a Message property.
@@ -53,6 +51,8 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 public class PropertiesInfo
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(PropertiesInfo.class);
 
    public static final TabularType TABULAR_TYPE;
    private static CompositeType ROW_TYPE;
@@ -68,7 +68,6 @@ public class PropertiesInfo
                "Properties of the message", ROW_TYPE, new String[] { "key" });
       } catch (OpenDataException e)
       {
-         e.printStackTrace();
          throw new IllegalStateException(e);
       }
    }
@@ -118,7 +117,7 @@ public class PropertiesInfo
          return data;
       } catch (OpenDataException e)
       {
-         e.printStackTrace();
+         log.error("Exception when converting a collection of properties to a TabularData", e);
          return null;
       }
    }

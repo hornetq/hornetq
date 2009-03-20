@@ -38,6 +38,7 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.PropertiesInfo;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.jms.client.JBossMessage;
@@ -52,6 +53,8 @@ import org.jboss.messaging.utils.SimpleString;
 public class JMSMessageInfo
 {
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(JMSMessageInfo.class);
 
    public static final CompositeType TYPE;
    private static final String MESSAGE_TYPE_NAME = "JMSMessageInfo";
@@ -79,7 +82,6 @@ public class JMSMessageInfo
                new String[] { "JMSMessageID" });
       } catch (OpenDataException e)
       {
-         e.printStackTrace();
          throw new IllegalStateException(e);
       }
    }
@@ -227,7 +229,7 @@ public class JMSMessageInfo
                timestamp, jmsType, expiration, properties.toTabularData() });
       } catch (OpenDataException e)
       {
-         e.printStackTrace();
+         log.error("Exception when converting a JMS Message to a CompositeData", e);
          return null;
       }
    }
