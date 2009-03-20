@@ -22,88 +22,73 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import javax.management.openmbean.TabularData;
-
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
-import org.jboss.messaging.core.management.PairsInfo;
-import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.core.config.cluster.DivertConfiguration;
+import org.jboss.messaging.core.management.DivertControlMBean;
+import org.jboss.messaging.core.server.Divert;
 
 /**
- * A BroadcastGroupControl
+ * A DivertControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class BroadcastGroupControl implements BroadcastGroupControlMBean
+public class DivertControl implements DivertControlMBean
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final BroadcastGroup broadcastGroup;
+   private final Divert divert;
 
-   private final BroadcastGroupConfiguration configuration;
+   private final DivertConfiguration configuration;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public BroadcastGroupControl(final BroadcastGroup acceptor, final BroadcastGroupConfiguration configuration)
+   // DivertControlMBean implementation ---------------------------
+
+   public DivertControl(final Divert divert, final DivertConfiguration configuration)
    {
-      this.broadcastGroup = acceptor;
+      this.divert = divert;
       this.configuration = configuration;
    }
 
-   // BroadcastGroupControlMBean implementation ---------------------
-   
-   public String getName()
+   public String getAddress()
    {
-      return configuration.getName();
+      return configuration.getAddress();
    }
 
-   public long getBroadcastPeriod()
+   public String getFilter()
    {
-      return configuration.getBroadcastPeriod();
+      return configuration.getFilterString();
    }
 
-   public TabularData getConnectorPairs()
+   public String getForwardingAddress()
    {
-      return PairsInfo.toTabularData(configuration.getConnectorInfos());
+      return configuration.getForwardingAddress();
    }
 
-   public String getGroupAddress()
+   public String getRoutingName()
    {
-      return configuration.getGroupAddress();
+      return divert.getRoutingName().toString();
    }
 
-   public int getGroupPort()
+   public String getTransformerClassName()
    {
-      return configuration.getGroupPort();
+      return configuration.getTransformerClassName();
    }
 
-   public int getLocalBindPort()
+   public String getUniqueName()
    {
-      return configuration.getLocalBindPort();
+      return divert.getUniqueName().toString();
    }
 
-   // MessagingComponentControlMBean implementation -----------------
-
-   public boolean isStarted()
+   public boolean isExclusive()
    {
-      return broadcastGroup.isStarted();
-   }
-
-   public void start() throws Exception
-   {
-      broadcastGroup.start();
-   }
-
-   public void stop() throws Exception
-   {
-      broadcastGroup.stop();
+      return divert.isExclusive();
    }
 
    // Public --------------------------------------------------------

@@ -47,12 +47,15 @@ import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.management.BridgeControlMBean;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
+import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
+import org.jboss.messaging.core.management.DivertControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.Notification;
@@ -71,6 +74,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -241,6 +245,25 @@ public class ManagementServiceImpl implements ManagementService
       unregisterResource(objectName);
       messageCounterManager.unregisterMessageCounter(name.toString());
    }
+   
+   public void registerDivert(Divert divert, DivertConfiguration config) throws Exception
+   {
+      ObjectName objectName = ObjectNames.getDivertObjectName(divert.getUniqueName());
+      DivertControlMBean divertControl = new DivertControl(divert, config);
+      registerInJMX(objectName, new StandardMBean(divertControl, DivertControlMBean.class));
+      registerInRegistry(objectName, divertControl);
+
+      if (log.isDebugEnabled())
+      {
+         log.debug("registered divert " + objectName);
+      }
+   }
+
+   public void unregisterDivert(final SimpleString name) throws Exception
+   {
+      ObjectName objectName = ObjectNames.getDivertObjectName(name);
+      unregisterResource(objectName);
+   }
 
    public void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
    {
@@ -295,6 +318,20 @@ public class ManagementServiceImpl implements ManagementService
    public void unregisterBridge(String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getBridgeObjectName(name);
+      unregisterResource(objectName);
+   }
+   
+   public void registerCluster(final ClusterConnection cluster, final ClusterConnectionConfiguration configuration) throws Exception
+   {
+      ObjectName objectName = ObjectNames.getClusterConnectionObjectName(configuration.getName());
+      ClusterConnectionControlMBean control = new ClusterConnectionControl(cluster, configuration);
+      registerInJMX(objectName, new StandardMBean(control, ClusterConnectionControlMBean.class));
+      registerInRegistry(objectName, control);
+   }
+
+   public void unregisterCluster(final String name) throws Exception
+   {
+      ObjectName objectName = ObjectNames.getClusterConnectionObjectName(name);
       unregisterResource(objectName);
    }
 
@@ -375,16 +412,6 @@ public class ManagementServiceImpl implements ManagementService
    {
       unregisterFromRegistry(objectName);
       unregisterFromJMX(objectName);
-   }
-
-   public void registerCluster(final ClusterConnection cluster, final ClusterConnectionConfiguration configuration) throws Exception
-   {
-      // TODO
-   }
-
-   public void unregisterCluster(final String name) throws Exception
-   {
-      // TODO
    }
 
    public Object getResource(final ObjectName objectName)

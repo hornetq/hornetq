@@ -944,6 +944,8 @@ public class MessagingServerImpl implements MessagingServer
          Binding binding = new DivertBinding(sAddress, divert);
 
          postOffice.addBinding(binding);
+         
+         managementService.registerDivert(divert, config);
       }
    }
 

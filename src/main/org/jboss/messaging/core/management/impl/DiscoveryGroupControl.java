@@ -22,15 +22,9 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
-import org.jboss.messaging.core.management.PropertiesInfo;
-import org.jboss.messaging.core.remoting.spi.Acceptor;
 
 /**
  * A AcceptorControl

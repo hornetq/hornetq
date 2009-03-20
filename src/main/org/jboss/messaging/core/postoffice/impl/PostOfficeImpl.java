@@ -526,6 +526,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          {
             managementService.unregisterAddress(binding.getAddress());
          }
+      } else if (binding.getType() == BindingType.DIVERT)
+      {
+         managementService.unregisterDivert(uniqueName);
+         
+         if (addressManager.getBindings(binding.getAddress()) == null)
+         {
+            managementService.unregisterAddress(binding.getAddress());
+         }         
       }
 
       TypedProperties props = new TypedProperties();

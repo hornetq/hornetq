@@ -32,7 +32,9 @@ import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.BridgeControlMBean;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
+import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
+import org.jboss.messaging.core.management.DivertControlMBean;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
@@ -83,6 +85,20 @@ public class ManagementControlHelper
       return (BridgeControlMBean)createProxy(ObjectNames.getBridgeObjectName(name),
                                                   BridgeControlMBean.class,
                                                   mbeanServer);
+   }
+
+   public static DivertControlMBean createDivertControl(String name, MBeanServer mbeanServer) throws Exception
+   {
+      return (DivertControlMBean)createProxy(ObjectNames.getDivertObjectName(new SimpleString(name)),
+                                             DivertControlMBean.class,
+                                             mbeanServer);
+   }
+
+   public static ClusterConnectionControlMBean createClusterConnectionControl(String name, MBeanServer mbeanServer) throws Exception
+   {
+      return (ClusterConnectionControlMBean)createProxy(ObjectNames.getClusterConnectionObjectName(name),
+                                                        ClusterConnectionControlMBean.class,
+                                                        mbeanServer);
    }
 
    public static MessagingServerControlMBean createMessagingServerControl(MBeanServer mbeanServer) throws Exception

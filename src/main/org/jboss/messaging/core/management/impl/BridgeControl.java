@@ -23,8 +23,6 @@
 package org.jboss.messaging.core.management.impl;
 
 import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.management.BridgeControlMBean;

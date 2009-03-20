@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,25 +22,26 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.TabularData;
 
 /**
- * A BroadcastGroupControlMBean
- *
- * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
+ * @version <tt>$Revision$</tt>
+ * 
  */
-public interface BroadcastGroupControlMBean extends MessagingComponentControlMBean
+public interface DivertControlMBean
 {
-   String getName();
+   String getFilter();
 
-   int getLocalBindPort();
+   boolean isExclusive();
 
-   String getGroupAddress();
+   String getUniqueName();
 
-   int getGroupPort();
+   String getRoutingName();
 
-   long getBroadcastPeriod();
-   
-   TabularData getConnectorPairs();
+   String getAddress();
+
+   String getForwardingAddress();
+
+   String getTransformerClassName();
 }

@@ -24,86 +24,108 @@ package org.jboss.messaging.core.management.impl;
 
 import javax.management.openmbean.TabularData;
 
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
+import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
+import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
 import org.jboss.messaging.core.management.PairsInfo;
-import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.core.server.cluster.ClusterConnection;
 
 /**
- * A BroadcastGroupControl
+ * A ClusterConnectionControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * Created 11 dec. 2008 17:09:04
  */
-public class BroadcastGroupControl implements BroadcastGroupControlMBean
+public class ClusterConnectionControl implements ClusterConnectionControlMBean
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final BroadcastGroup broadcastGroup;
+   private final ClusterConnection clusterConnection;
 
-   private final BroadcastGroupConfiguration configuration;
+   private final ClusterConnectionConfiguration configuration;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public BroadcastGroupControl(final BroadcastGroup acceptor, final BroadcastGroupConfiguration configuration)
+   public ClusterConnectionControl(final ClusterConnection clusterConnection,
+                                   ClusterConnectionConfiguration configuration)
    {
-      this.broadcastGroup = acceptor;
+      this.clusterConnection = clusterConnection;
       this.configuration = configuration;
    }
 
-   // BroadcastGroupControlMBean implementation ---------------------
-   
+   // ClusterConnectionControlMBean implementation ---------------------------
+
+   public String getAddress()
+   {
+      return configuration.getAddress();
+   }
+
+   public String getDiscoveryGroupName()
+   {
+      return configuration.getDiscoveryGroupName();
+   }
+
+   public int getMaxHops()
+   {
+      return configuration.getMaxHops();
+   }
+
+   public int getMaxRetriesBeforeFailover()
+   {
+      return configuration.getMaxRetriesBeforeFailover();
+   }
+
+   public int getMaxRetriesAfterFailover()
+   {
+      return configuration.getMaxRetriesAfterFailover();
+   }
+
    public String getName()
    {
       return configuration.getName();
    }
 
-   public long getBroadcastPeriod()
+   public long getRetryInterval()
    {
-      return configuration.getBroadcastPeriod();
+      return configuration.getRetryInterval();
    }
 
-   public TabularData getConnectorPairs()
+   public double getRetryIntervalMultiplier()
    {
-      return PairsInfo.toTabularData(configuration.getConnectorInfos());
+      return configuration.getRetryIntervalMultiplier();
    }
 
-   public String getGroupAddress()
+   public TabularData getStaticConnectorNamePairs()
    {
-      return configuration.getGroupAddress();
+      return PairsInfo.toTabularData(configuration.getStaticConnectorNamePairs());
    }
 
-   public int getGroupPort()
+   public boolean isDuplicateDetection()
    {
-      return configuration.getGroupPort();
+      return configuration.isDuplicateDetection();
    }
 
-   public int getLocalBindPort()
+   public boolean isForwardWhenNoConsumers()
    {
-      return configuration.getLocalBindPort();
+      return configuration.isForwardWhenNoConsumers();
    }
-
-   // MessagingComponentControlMBean implementation -----------------
 
    public boolean isStarted()
    {
-      return broadcastGroup.isStarted();
+      return clusterConnection.isStarted();
    }
 
    public void start() throws Exception
    {
-      broadcastGroup.start();
+      clusterConnection.start();
    }
 
    public void stop() throws Exception
    {
-      broadcastGroup.stop();
+      clusterConnection.stop();
    }
 
    // Public --------------------------------------------------------

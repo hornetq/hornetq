@@ -76,6 +76,11 @@ public class ObjectNames
                                 quote(name.toString())));
    }
 
+   public static ObjectName getDivertObjectName(final SimpleString name) throws Exception
+   {
+      return createObjectName(CORE_MODULE, "Divert", name.toString());
+   }
+
    public static ObjectName getAcceptorObjectName(final String name) throws Exception
    {
       return createObjectName(CORE_MODULE, "Acceptor", name);
@@ -89,6 +94,11 @@ public class ObjectNames
    public static ObjectName getBridgeObjectName(final String name) throws Exception
    {
       return createObjectName(CORE_MODULE, "Bridge", name);
+   }
+   
+   public static ObjectName getClusterConnectionObjectName(String name) throws Exception
+   {
+      return createObjectName(CORE_MODULE, "ClusterConnection", name);
    }
 
    public static ObjectName getDiscoveryGroupObjectName(final String name) throws Exception

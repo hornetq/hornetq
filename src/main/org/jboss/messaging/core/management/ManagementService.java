@@ -34,14 +34,14 @@ import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.management.impl.AddressControl;
-import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
+import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -113,6 +113,10 @@ public interface ManagementService extends MessagingComponent
 
    void unregisterAcceptor(String name) throws Exception;
 
+   void registerDivert(Divert divert, DivertConfiguration config) throws Exception;
+
+   void unregisterDivert(SimpleString name) throws Exception;
+
    void registerBroadcastGroup(BroadcastGroup broadcastGroup, BroadcastGroupConfiguration configuration) throws Exception;
 
    void unregisterBroadcastGroup(String name) throws Exception;
@@ -158,5 +162,6 @@ public interface ManagementService extends MessagingComponent
    void addNotificationListener(NotificationListener listener);
    
    void removeNotificationListener(NotificationListener listener);
+
 
 }

@@ -695,17 +695,32 @@ public class BridgeImpl implements MessagingComponent, Bridge
       if (trace) { log.trace("Enlisted resources in tx"); }
    }
    
-   private void delistResources(Transaction tx) throws Exception
+   private void delistResources(Transaction tx)
    {
       if (trace) { log.trace("Delisting resources from tx"); }
       
       XAResource resSource = ((XASession)sourceSession).getXAResource();
-      
-      tx.delistResource(resSource, XAResource.TMSUCCESS);
+
+      try
+      {
+         tx.delistResource(resSource, XAResource.TMSUCCESS);
+      }
+      catch (Exception e)
+      {
+         if (trace) { log.trace("Failed to delist source resource", e); }
+      }
+
       
       XAResource resDest = ((XASession)targetSession).getXAResource();
       
-      tx.delistResource(resDest, XAResource.TMSUCCESS);
+      try
+      {
+         tx.delistResource(resDest, XAResource.TMSUCCESS);
+      }
+      catch (Exception e)
+      {
+         if (trace) { log.trace("Failed to delist target resource", e); }
+      }
       
       if (trace) { log.trace("Delisted resources from tx"); }
    }

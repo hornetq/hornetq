@@ -476,7 +476,7 @@ public class ClusterManagerImpl implements ClusterManager
             if (connector == null)
             {
                log.warn("No connector defined with name '" + connectorNamePair.a +
-                        "'. The bridge will not be deployed.");
+                        "'. The cluster connection will not be deployed.");
 
                return;
             }
@@ -490,7 +490,7 @@ public class ClusterManagerImpl implements ClusterManager
                if (backupConnector == null)
                {
                   log.warn("No connector defined with name '" + connectorNamePair.b +
-                           "'. The bridge will not be deployed.");
+                           "'. The cluster connection will not be deployed.");
 
                   return;
                }
@@ -529,7 +529,7 @@ public class ClusterManagerImpl implements ClusterManager
          if (dg == null)
          {
             log.warn("No discovery group with name '" + config.getDiscoveryGroupName() +
-                     "'. The bridge will not be deployed.");
+                     "'. The cluster connection will not be deployed.");
          }
 
          clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),

@@ -25,22 +25,32 @@ package org.jboss.messaging.core.management;
 import javax.management.openmbean.TabularData;
 
 /**
- * A BroadcastGroupControlMBean
+ * A ClusterConnectionControlMBean
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface BroadcastGroupControlMBean extends MessagingComponentControlMBean
+public interface ClusterConnectionControlMBean extends MessagingComponentControlMBean
 {
    String getName();
 
-   int getLocalBindPort();
+   String getAddress();
 
-   String getGroupAddress();
+   boolean isDuplicateDetection();
 
-   int getGroupPort();
+   boolean isForwardWhenNoConsumers();
 
-   long getBroadcastPeriod();
-   
-   TabularData getConnectorPairs();
+   int getMaxHops();
+
+   TabularData getStaticConnectorNamePairs();
+
+   String getDiscoveryGroupName();
+
+   long getRetryInterval();
+
+   double getRetryIntervalMultiplier();
+
+   int getMaxRetriesBeforeFailover();
+
+   int getMaxRetriesAfterFailover();
 }

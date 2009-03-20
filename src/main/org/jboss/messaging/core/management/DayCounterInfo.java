@@ -22,14 +22,12 @@
 
 package org.jboss.messaging.core.management;
 
+import static javax.management.openmbean.SimpleType.INTEGER;
+import static javax.management.openmbean.SimpleType.STRING;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.jboss.messaging.core.logging.Logger;
-
-import static javax.management.openmbean.SimpleType.INTEGER;
-import static javax.management.openmbean.SimpleType.STRING;
 
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
@@ -39,6 +37,8 @@ import javax.management.openmbean.OpenType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
+
+import org.jboss.messaging.core.logging.Logger;
 
 
 /**

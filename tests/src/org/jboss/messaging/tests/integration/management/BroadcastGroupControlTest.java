@@ -30,8 +30,8 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -41,7 +41,6 @@ import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -105,6 +104,15 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       assertEquals(broadcastGroupConfig.getGroupAddress(), broadcastGroupControl.getGroupAddress());
       assertEquals(broadcastGroupConfig.getGroupPort(), broadcastGroupControl.getGroupPort());
       assertEquals(broadcastGroupConfig.getLocalBindPort(), broadcastGroupControl.getLocalBindPort());
+      assertEquals(broadcastGroupConfig.getBroadcastPeriod(), broadcastGroupControl.getBroadcastPeriod());
+      
+      TabularData connectorPairs = broadcastGroupControl.getConnectorPairs();
+      assertEquals(1, connectorPairs.size());
+      CompositeData connectorPairData = (CompositeData)connectorPairs.values().iterator().next();
+      assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).a, connectorPairData.get("a"));
+      assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).b, connectorPairData.get("b"));
+      
+      assertTrue(broadcastGroupControl.isStarted());
    }
 
    public void testStartStop() throws Exception
