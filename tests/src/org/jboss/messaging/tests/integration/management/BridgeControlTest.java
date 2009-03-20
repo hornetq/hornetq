@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
@@ -29,8 +30,10 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.management.openmbean.CompositeData;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -40,9 +43,11 @@ import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.BridgeControlMBean;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -60,20 +65,17 @@ public class BridgeControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingService service_0;
 
    private BridgeConfiguration bridgeConfig;
+
+   private MessagingServiceImpl service_1;
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testFoo() throws Exception
-   {
-      
-   }
    
-   public void _testAttributes() throws Exception
+   public void testAttributes() throws Exception
    {
       checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
       BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
@@ -96,7 +98,7 @@ public class BridgeControlTest extends ManagementTestBase
       assertTrue(bridgeControl.isStarted());
    }
 
-   public void _testStartStop() throws Exception
+   public void testStartStop() throws Exception
    {
       checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
       BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
@@ -120,9 +122,14 @@ public class BridgeControlTest extends ManagementTestBase
    {
       super.setUp();
 
+      Map<String, Object> acceptorParams = new HashMap<String, Object>();
+      acceptorParams.put(SERVER_ID_PROP_NAME, 1);
+      TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(), acceptorParams, randomString());
+
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                          new HashMap<String, Object>(),
+                                                                          acceptorParams,
                                                                           randomString());
+      
       QueueConfiguration sourceQueueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
       QueueConfiguration targetQueueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
       Pair<String, String> connectorPair = new Pair<String, String>(connectorConfig.getName(), null);
@@ -138,23 +145,36 @@ public class BridgeControlTest extends ManagementTestBase
                                              randomBoolean(),
                                              connectorPair);
 
-      Configuration conf = new ConfigurationImpl();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.setClustered(true);
-      conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
-      conf.getQueueConfigurations().add(sourceQueueConfig);
-      conf.getQueueConfigurations().add(targetQueueConfig);
-      conf.getBridgeConfigurations().add(bridgeConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
-   }
+
+      Configuration conf_1 = new ConfigurationImpl();
+      conf_1.setSecurityEnabled(false);
+      conf_1.setJMXManagementEnabled(true);
+      conf_1.setClustered(true);      
+      conf_1.getAcceptorConfigurations().add(acceptorConfig);
+      conf_1.getQueueConfigurations().add(targetQueueConfig);
+
+      Configuration conf_0 = new ConfigurationImpl();
+      conf_0.setSecurityEnabled(false);
+      conf_0.setJMXManagementEnabled(true);
+      conf_0.setClustered(true);      
+      conf_0.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      conf_0.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
+      conf_0.getQueueConfigurations().add(sourceQueueConfig);
+      conf_0.getBridgeConfigurations().add(bridgeConfig);
+
+      service_1 = Messaging.newNullStorageMessagingService(conf_1, MBeanServerFactory.createMBeanServer());
+      service_1.start();
+
+      service_0 = Messaging.newNullStorageMessagingService(conf_0, mbeanServer);
+      service_0.start();
+}
 
    @Override
    protected void tearDown() throws Exception
-   {
-      service.stop();
-
+   {      
+      service_0.stop();
+      service_1.stop();
+      
       super.tearDown();
    }
 
