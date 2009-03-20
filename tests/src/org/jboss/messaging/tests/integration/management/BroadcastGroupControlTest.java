@@ -25,7 +25,6 @@ package org.jboss.messaging.tests.integration.management;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createBroadcastGroupControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPort;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
@@ -42,7 +41,6 @@ import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
-import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.Pair;
 
@@ -55,7 +53,7 @@ import org.jboss.messaging.utils.Pair;
  *
  *
  */
-public class BroadcastGroupControlTest extends UnitTestCase
+public class BroadcastGroupControlTest extends ManagementTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -72,7 +70,7 @@ public class BroadcastGroupControlTest extends UnitTestCase
                                              randomPort(),
                                              "231.7.7.7",
                                              randomPositiveInt(),
-                                             randomPositiveLong(),
+                                             1199,
                                              connectorInfos);
    }
 
@@ -92,7 +90,6 @@ public class BroadcastGroupControlTest extends UnitTestCase
       connectorInfos.add(new Pair<String, String>(connectorConfiguration.getName(), null));
       BroadcastGroupConfiguration broadcastGroupConfig = randomBroadcastGroupConfiguration(connectorInfos);
 
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -117,7 +114,6 @@ public class BroadcastGroupControlTest extends UnitTestCase
       connectorInfos.add(new Pair<String, String>(connectorConfiguration.getName(), null));
       BroadcastGroupConfiguration broadcastGroupConfig = randomBroadcastGroupConfiguration(connectorInfos);
 
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);

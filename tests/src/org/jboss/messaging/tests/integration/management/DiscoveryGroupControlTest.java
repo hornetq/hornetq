@@ -46,7 +46,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  *
  *
  */
-public class DiscoveryGroupControlTest extends UnitTestCase
+public class DiscoveryGroupControlTest extends ManagementTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -65,7 +65,6 @@ public class DiscoveryGroupControlTest extends UnitTestCase
    {
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
 
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -86,7 +85,6 @@ public class DiscoveryGroupControlTest extends UnitTestCase
    {
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(), "231.7.7.7", 2000, randomPositiveLong());
 
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);

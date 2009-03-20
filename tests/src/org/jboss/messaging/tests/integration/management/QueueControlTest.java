@@ -30,8 +30,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
@@ -54,7 +52,6 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -63,7 +60,7 @@ import org.jboss.messaging.utils.SimpleString;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class QueueControlTest extends UnitTestCase
+public class QueueControlTest extends ManagementTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -71,8 +68,6 @@ public class QueueControlTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    protected MessagingService service;
-
-   protected MBeanServer mbeanServer;
 
    protected ClientSession session;
 
@@ -1072,8 +1067,6 @@ public class QueueControlTest extends UnitTestCase
    {
       super.setUp();
 
-      mbeanServer = MBeanServerFactory.createMBeanServer();
-
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -1105,32 +1098,6 @@ public class QueueControlTest extends UnitTestCase
    }
 
    // Private -------------------------------------------------------
-
-   private void consumeMessages(int expected, ClientSession session, SimpleString queue) throws Exception
-   {
-      ClientConsumer consumer = null;
-      try
-      {
-         consumer = session.createConsumer(queue);
-         ClientMessage m = null;
-         for (int i = 0; i < expected; i++)
-         {
-            m = consumer.receive(500);
-            assertNotNull("expected to received " + expected + " messages, got only " + (i + 1), m);
-            m.acknowledge();
-         }
-         session.commit();
-         m = consumer.receive(500);
-         assertNull("received one more message than expected (" + expected + ")", m);
-      }
-      finally
-      {
-         if (consumer != null)
-         {
-            consumer.close();
-         }
-      }
-   }
 
    // Inner classes -------------------------------------------------
 

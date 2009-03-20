@@ -34,11 +34,8 @@ import static org.jboss.messaging.core.security.CheckType.WRITE;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.lang.management.ManagementFactory;
 import java.util.Set;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
@@ -53,7 +50,6 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.tests.util.RandomUtil;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
 /*
@@ -61,7 +57,7 @@ import org.jboss.messaging.utils.SimpleString;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class ManagementServiceImplTest extends UnitTestCase
+public class ManagementServiceImplTest extends ManagementTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -77,7 +73,6 @@ public class ManagementServiceImplTest extends UnitTestCase
 
    public void testHandleManagementMessageWithOperation() throws Exception
    {
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
       assertNotNull(managementService);
       managementService.start();
@@ -116,7 +111,6 @@ public class ManagementServiceImplTest extends UnitTestCase
 
    public void testHandleManagementMessageWithOperationWhichFails() throws Exception
    {
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
       ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
       assertNotNull(managementService);
       managementService.start();
@@ -166,8 +160,6 @@ public class ManagementServiceImplTest extends UnitTestCase
    {
       super.setUp();
 
-      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-
       Set set = mbeanServer.queryNames(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
 
       for (Object objectName : set)
@@ -179,8 +171,6 @@ public class ManagementServiceImplTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-
       Set set = mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
 
       for (Object obj : set)

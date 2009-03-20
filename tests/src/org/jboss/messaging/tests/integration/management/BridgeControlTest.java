@@ -28,9 +28,20 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import java.util.HashMap;
+
+import javax.management.MBeanServer;
+
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
+import org.jboss.messaging.core.config.cluster.QueueConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.management.BridgeControlMBean;
+import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -41,7 +52,7 @@ import org.jboss.messaging.utils.Pair;
  * Created 11 dec. 2008 17:38:58
  *
  */
-public class BridgeControlTest extends UnitTestCase
+public class BridgeControlTest extends ManagementTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -50,85 +61,35 @@ public class BridgeControlTest extends UnitTestCase
 
    private MessagingService service;
 
-   // Static --------------------------------------------------------
-
-   public static BridgeConfiguration randomBridgeConfigurationWithDiscoveryGroup(String discoveryGroupName)
-   {
-      Pair<String, String> connectorPair = new Pair<String, String>(randomString(), randomString());
-      
-      return new BridgeConfiguration(randomString(),
-                                     randomString(),
-                                     randomString(),
-                                     null,                             
-                                     null,
-                                     randomPositiveLong(),
-                                     randomDouble(),
-                                     randomPositiveInt(),
-                                     randomPositiveInt(),
-                                     randomBoolean(),                              
-                                     connectorPair);
-   }
+   private BridgeConfiguration bridgeConfig;
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-//   public void testAttributes() throws Exception
-//   {
-//      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(),
-//                                                                                         "231.7.7.7",
-//                                                                                         2000,
-//                                                                                         randomPositiveLong());
-//      BridgeConfiguration bridgeConfig = randomBridgeConfigurationWithDiscoveryGroup(discoveryGroupConfig.getName());
-//
-//      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-//      Configuration conf = new ConfigurationImpl();
-//      conf.setSecurityEnabled(false);
-//      conf.setJMXManagementEnabled(true);
-//      conf.setClustered(true);
-//      conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-//      conf.getBridgeConfigurations().add(bridgeConfig);
-//      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-//      service.start();
-//
-//      BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
-//
-//      assertEquals(bridgeConfig.getName(), bridgeControl.getName());
-//      assertEquals(bridgeConfig.getDiscoveryGroupName(), bridgeControl.getDiscoveryGroupName());
-//   }
-//
-//   public void testStartStop() throws Exception
-//   {
-//      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(randomString(),
-//                                                                                         "231.7.7.7",
-//                                                                                         2000,
-//                                                                                         randomPositiveLong());
-//      BridgeConfiguration bridgeConfig = randomBridgeConfigurationWithDiscoveryGroup(discoveryGroupConfig.getName());
-//
-//      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-//      Configuration conf = new ConfigurationImpl();
-//      conf.setSecurityEnabled(false);
-//      conf.setJMXManagementEnabled(true);
-//      conf.setClustered(true);
-//      conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-//      conf.getBridgeConfigurations().add(bridgeConfig);
-//      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-//      service.start();
-//
-//      BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
-//
-//      // started by the service
-//      assertTrue(bridgeControl.isStarted());
-//
-//      bridgeControl.stop();
-//      assertFalse(bridgeControl.isStarted());
-//
-//      bridgeControl.start();
-//      assertTrue(bridgeControl.isStarted());
-//   }
-   
-   public void testFoo()
-   {      
+   public void testAttributes() throws Exception
+   {
+      checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
+      BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
+
+      assertEquals(bridgeConfig.getName(), bridgeControl.getName());
+      assertEquals(bridgeConfig.getDiscoveryGroupName(), bridgeControl.getDiscoveryGroupName());
+      assertTrue(bridgeControl.isStarted());
+   }
+
+   public void testStartStop() throws Exception
+   {
+      checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
+      BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
+
+      // started by the service
+      assertTrue(bridgeControl.isStarted());
+
+      bridgeControl.stop();
+      assertFalse(bridgeControl.isStarted());
+
+      bridgeControl.start();
+      assertTrue(bridgeControl.isStarted());
    }
 
    // Package protected ---------------------------------------------
@@ -136,15 +97,53 @@ public class BridgeControlTest extends UnitTestCase
    // Protected -----------------------------------------------------
 
    @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                          new HashMap<String, Object>(),
+                                                                          randomString());
+      QueueConfiguration sourceQueueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
+      QueueConfiguration targetQueueConfig = new QueueConfiguration(randomString(), randomString(), null, false);
+      Pair<String, String> connectorPair = new Pair<String, String>(connectorConfig.getName(), null);
+      bridgeConfig = new BridgeConfiguration(randomString(),
+                                             sourceQueueConfig.getName(),
+                                             targetQueueConfig.getAddress(),
+                                             null,
+                                             null,
+                                             randomPositiveLong(),
+                                             randomDouble(),
+                                             randomPositiveInt(),
+                                             randomPositiveInt(),
+                                             randomBoolean(),
+                                             connectorPair);
+
+      Configuration conf = new ConfigurationImpl();
+      conf.setSecurityEnabled(false);
+      conf.setJMXManagementEnabled(true);
+      conf.setClustered(true);
+      conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
+      conf.getQueueConfigurations().add(sourceQueueConfig);
+      conf.getQueueConfigurations().add(targetQueueConfig);
+      conf.getBridgeConfigurations().add(bridgeConfig);
+      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      service.start();
+   }
+
+   @Override
    protected void tearDown() throws Exception
    {
-      if (service != null)
-      {
-         service.stop();
-      }
+      service.stop();
 
       super.tearDown();
    }
+
+   protected BridgeControlMBean createBridgeControl(String name, MBeanServer mbeanServer) throws Exception
+   {
+      return ManagementControlHelper.createBridgeControl(name, mbeanServer);
+   }
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

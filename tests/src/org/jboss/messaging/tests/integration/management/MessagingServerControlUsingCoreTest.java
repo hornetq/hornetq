@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.management.core;
+package org.jboss.messaging.tests.integration.management;
 
 import java.util.List;
 
@@ -34,7 +34,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.tests.integration.management.MessagingServerControlTest;
 
 /**
  * A MessagingServerControlUsingCoreTest

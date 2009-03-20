@@ -26,9 +26,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.HashMap;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -43,7 +40,6 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.RandomUtil;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -55,7 +51,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class MessagingServerControlTest extends UnitTestCase
+public class MessagingServerControlTest extends ManagementTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -63,8 +59,6 @@ public class MessagingServerControlTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    private MessagingService service;
-
-   private MBeanServer mbeanServer;
 
    private Configuration conf;
 
@@ -304,8 +298,6 @@ public class MessagingServerControlTest extends UnitTestCase
    {
       super.setUp();
 
-      mbeanServer = MBeanServerFactory.createMBeanServer();
-
       connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                           new HashMap<String, Object>(),
                                                                           randomString());
@@ -335,16 +327,6 @@ public class MessagingServerControlTest extends UnitTestCase
    }
 
    // Private -------------------------------------------------------
-
-   private void checkNoResource(ObjectName on)
-   {
-      assertFalse(mbeanServer.isRegistered(on));
-   }
-
-   private void checkResource(ObjectName on)
-   {
-      assertTrue(mbeanServer.isRegistered(on));
-   }
 
    // Inner classes -------------------------------------------------
 

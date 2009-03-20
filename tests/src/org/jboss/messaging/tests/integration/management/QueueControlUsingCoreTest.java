@@ -20,14 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.management.core;
+package org.jboss.messaging.tests.integration.management;
 
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
-import org.jboss.messaging.tests.integration.management.QueueControlTest;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -37,7 +36,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class CoreQueueControlTest extends QueueControlTest
+public class QueueControlUsingCoreTest extends QueueControlTest
 {
 
    // Constants -----------------------------------------------------

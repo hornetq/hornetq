@@ -29,8 +29,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.client.ClientSession;
@@ -47,7 +45,6 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -56,7 +53,7 @@ import org.jboss.messaging.utils.SimpleString;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class AddressControlTest extends UnitTestCase
+public class AddressControlTest extends ManagementTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -64,8 +61,6 @@ public class AddressControlTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    private MessagingService service;
-
-   protected MBeanServer mbeanServer;
 
    protected ClientSession session;
 
@@ -265,8 +260,6 @@ public class AddressControlTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-
-      mbeanServer = MBeanServerFactory.createMBeanServer();
 
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);

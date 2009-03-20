@@ -41,6 +41,7 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -52,7 +53,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  *
  *
  */
-public class TopicControlTest extends UnitTestCase
+public class TopicControlTest extends ManagementTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -68,8 +69,6 @@ public class TopicControlTest extends UnitTestCase
    private String subscriptionName;
 
    protected JBossTopic topic;
-
-   private MBeanServer mbeanServer;
 
    // Static --------------------------------------------------------
 
@@ -302,7 +301,6 @@ public class TopicControlTest extends UnitTestCase
    {
       super.setUp();
       
-      mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);

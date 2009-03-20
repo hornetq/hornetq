@@ -32,9 +32,6 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
@@ -50,8 +47,8 @@ import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
+import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
-import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A QueueControlTest
@@ -62,15 +59,13 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  *
  *
  */
-public class JMSServerControlTest extends UnitTestCase
+public class JMSServerControlTest extends ManagementTestBase
 {
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JMSServerControlTest.class);
 
    // Attributes ----------------------------------------------------
-
-   private MBeanServer mbeanServer;
 
    protected InVMContext context;
 
@@ -94,13 +89,13 @@ public class JMSServerControlTest extends UnitTestCase
       String queueJNDIBinding = randomString();
       String queueName = randomString();
 
-      checkNoBinding(queueJNDIBinding);
+      checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
 
       JMSServerControlMBean control = createManagementControl();
       control.createQueue(queueName, queueJNDIBinding);
 
-      Object o = checkBinding(queueJNDIBinding);
+      Object o = checkBinding(context, queueJNDIBinding);
       assertTrue(o instanceof Queue);
       Queue queue = (Queue)o;
       assertEquals(queueName, queue.getQueueName());
@@ -113,18 +108,18 @@ public class JMSServerControlTest extends UnitTestCase
       String queueJNDIBinding = randomString();
       String queueName = randomString();
 
-      checkNoBinding(queueJNDIBinding);
+      checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
 
       JMSServerControlMBean control = createManagementControl();
       control.createQueue(queueName, queueJNDIBinding);
 
-      checkBinding(queueJNDIBinding);
+      checkBinding(context, queueJNDIBinding);
       checkResource(ObjectNames.getJMSQueueObjectName(queueName));
 
       control.destroyQueue(queueName);
 
-      checkNoBinding(queueJNDIBinding);
+      checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
 
    }
@@ -134,13 +129,13 @@ public class JMSServerControlTest extends UnitTestCase
       String topicJNDIBinding = randomString();
       String topicName = randomString();
 
-      checkNoBinding(topicJNDIBinding);
+      checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
 
       JMSServerControlMBean control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
-      Object o = checkBinding(topicJNDIBinding);
+      Object o = checkBinding(context, topicJNDIBinding);
       assertTrue(o instanceof Topic);
       Topic topic = (Topic)o;
       assertEquals(topicName, topic.getTopicName());
@@ -152,18 +147,18 @@ public class JMSServerControlTest extends UnitTestCase
       String topicJNDIBinding = randomString();
       String topicName = randomString();
 
-      checkNoBinding(topicJNDIBinding);
+      checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
 
       JMSServerControlMBean control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
-      checkBinding(topicJNDIBinding);
+      checkBinding(context, topicJNDIBinding);
       checkResource(ObjectNames.getJMSTopicObjectName(topicName));
 
       control.destroyTopic(topicName);
 
-      checkNoBinding(topicJNDIBinding);
+      checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
    }
 
@@ -172,13 +167,13 @@ public class JMSServerControlTest extends UnitTestCase
       String cfJNDIBinding = randomString();
       String cfName = randomString();
 
-      checkNoBinding(cfJNDIBinding);
+      checkNoBinding(context, cfJNDIBinding);
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
       control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), cfJNDIBinding);
 
-      Object o = checkBinding(cfJNDIBinding);
+      Object o = checkBinding(context, cfJNDIBinding);
       assertTrue(o instanceof ConnectionFactory);
       ConnectionFactory cf = (ConnectionFactory)o;
       Connection connection = cf.createConnection();
@@ -195,7 +190,7 @@ public class JMSServerControlTest extends UnitTestCase
       boolean blockOnNonPersistentSend = randomBoolean();
       boolean blockOnPersistentSend = randomBoolean();
 
-      checkNoBinding(cfJNDIBinding);
+      checkNoBinding(context, cfJNDIBinding);
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
@@ -207,7 +202,7 @@ public class JMSServerControlTest extends UnitTestCase
                                       preAcknowledge,
                                       cfJNDIBinding);
 
-      Object o = checkBinding(cfJNDIBinding);
+      Object o = checkBinding(context, cfJNDIBinding);
       assertTrue(o instanceof ConnectionFactory);
       ConnectionFactory cf = (ConnectionFactory)o;
       Connection connection = cf.createConnection();
@@ -248,7 +243,7 @@ public class JMSServerControlTest extends UnitTestCase
       boolean blockOnNonPersistentSend = randomBoolean();
       boolean blockOnPersistentSend = randomBoolean();
 
-      checkNoBinding(cfJNDIBinding);
+      checkNoBinding(context, cfJNDIBinding);
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
@@ -279,7 +274,7 @@ public class JMSServerControlTest extends UnitTestCase
                                       maxRetriesAfterFailover,
                                       cfJNDIBinding);
 
-      Object o = checkBinding(cfJNDIBinding);
+      Object o = checkBinding(context, cfJNDIBinding);
       assertTrue(o instanceof ConnectionFactory);
       ConnectionFactory cf = (ConnectionFactory)o;
       Connection connection = cf.createConnection();
@@ -317,13 +312,13 @@ public class JMSServerControlTest extends UnitTestCase
       String cfJNDIBinding = randomString();
       String cfName = randomString();
 
-      checkNoBinding(cfJNDIBinding);
+      checkNoBinding(context, cfJNDIBinding);
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
       control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), cfJNDIBinding);
 
-      Object o = checkBinding(cfJNDIBinding);
+      Object o = checkBinding(context, cfJNDIBinding);
       assertTrue(o instanceof ConnectionFactory);
       ConnectionFactory cf = (ConnectionFactory)o;
       Connection connection = cf.createConnection();
@@ -332,7 +327,7 @@ public class JMSServerControlTest extends UnitTestCase
 
       control.destroyConnectionFactory(cfName);
 
-      checkNoBinding(cfJNDIBinding);
+      checkNoBinding(context, cfJNDIBinding);
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
    }
 
@@ -345,7 +340,6 @@ public class JMSServerControlTest extends UnitTestCase
    {
       super.setUp();
 
-      mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -373,35 +367,6 @@ public class JMSServerControlTest extends UnitTestCase
    }
 
    // Private -------------------------------------------------------
-
-   private void checkNoBinding(String binding)
-   {
-      try
-      {
-         context.lookup(binding);
-         fail("there must be no resource to look up for " + binding);
-      }
-      catch (Exception e)
-      {
-      }
-   }
-
-   private Object checkBinding(String binding) throws Exception
-   {
-      Object o = context.lookup(binding);
-      assertNotNull(o);
-      return o;
-   }
-
-   private void checkNoResource(ObjectName on)
-   {
-      assertFalse(mbeanServer.isRegistered(on));
-   }
-
-   private void checkResource(ObjectName on)
-   {
-      assertTrue(mbeanServer.isRegistered(on));
-   }
 
    // Inner classes -------------------------------------------------
 

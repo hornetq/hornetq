@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.integration.jms.management;
 
-import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSServerControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.concurrent.CountDownLatch;
@@ -33,9 +32,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Session;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
@@ -52,8 +48,8 @@ import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
+import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
-import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A QueueControlTest
@@ -64,7 +60,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  *
  *
  */
-public class JMSServerControl2Test extends UnitTestCase
+public class JMSServerControl2Test extends ManagementTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -72,15 +68,12 @@ public class JMSServerControl2Test extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MBeanServer mbeanServer;
-
    private InVMContext context;
 
    // Static --------------------------------------------------------
 
    private MessagingService startMessagingService(String acceptorFactory) throws Exception
    {
-      mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -98,7 +91,6 @@ public class JMSServerControl2Test extends UnitTestCase
 
    private MessagingService startMessagingService(int discoveryPort) throws Exception
    {
-      mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
@@ -133,7 +125,7 @@ public class JMSServerControl2Test extends UnitTestCase
 
          service = startMessagingService(8765);
 
-         checkNoBinding(cfJNDIBinding);
+         checkNoBinding(context, cfJNDIBinding);
 
          JMSServerControlMBean control = createManagementControl();
          control.createConnectionFactory(cfName,
@@ -166,7 +158,7 @@ public class JMSServerControl2Test extends UnitTestCase
                                          ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
                                          cfJNDIBinding);
 
-         Object o = checkBinding(cfJNDIBinding);
+         Object o = checkBinding(context, cfJNDIBinding);
          assertTrue(o instanceof ConnectionFactory);
          ConnectionFactory cf = (ConnectionFactory)o;
          Connection connection = cf.createConnection();
@@ -460,35 +452,7 @@ public class JMSServerControl2Test extends UnitTestCase
          }
       }
    }
-
-   private void checkNoBinding(String binding)
-   {
-      try
-      {
-         context.lookup(binding);
-         fail("there must be no resource to look up for " + binding);
-      }
-      catch (Exception e)
-      {
-      }
-   }
-
-   private Object checkBinding(String binding) throws Exception
-   {
-      Object o = context.lookup(binding);
-      assertNotNull(o);
-      return o;
-   }
-
-   private void checkNoResource(ObjectName on)
-   {
-      assertFalse(mbeanServer.isRegistered(on));
-   }
-
-   private void checkResource(ObjectName on)
-   {
-      assertTrue(mbeanServer.isRegistered(on));
-   }
+   
    // Inner classes -------------------------------------------------
 
 }

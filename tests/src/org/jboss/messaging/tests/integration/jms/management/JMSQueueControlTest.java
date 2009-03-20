@@ -52,8 +52,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import javax.naming.Context;
@@ -71,8 +69,8 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
+import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -84,7 +82,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class JMSQueueControlTest extends UnitTestCase
+public class JMSQueueControlTest extends ManagementTestBase
 {
    // Constants -----------------------------------------------------
 
@@ -95,8 +93,6 @@ public class JMSQueueControlTest extends UnitTestCase
    private JMSServerManagerImpl serverManager;
 
    protected JBossQueue queue;
-
-   private MBeanServer mbeanServer;
 
    protected Context context;
 
@@ -665,7 +661,6 @@ public class JMSQueueControlTest extends UnitTestCase
    {
       super.setUp();
 
-      mbeanServer = MBeanServerFactory.createMBeanServer();
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
