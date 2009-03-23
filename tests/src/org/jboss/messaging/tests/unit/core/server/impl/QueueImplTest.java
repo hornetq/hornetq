@@ -22,16 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.server.impl;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.filter.Filter;
@@ -50,6 +40,13 @@ import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * A QueueTest
@@ -170,14 +167,23 @@ public class QueueImplTest extends UnitTestCase
 
       assertNull(queue.getFilter());
 
-      Filter filter = createMock(Filter.class);
-      replay(filter);
+      Filter filter = new Filter()
+      {
+         public boolean match(ServerMessage message)
+         {
+            return false;
+         }
+
+         public SimpleString getFilterString()
+         {
+            return null;
+         }
+      };
 
       queue = new QueueImpl(1, address1, queue1, filter, false, true, scheduledExecutor, null, null, null);
 
       assertEquals(filter, queue.getFilter());
-      
-      verify(filter);
+
    }
 
    public void testSimpleadd()
