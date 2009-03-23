@@ -22,17 +22,6 @@
 
 package org.jboss.messaging.tests.integration.jms.management;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.Session;
-
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -50,6 +39,14 @@ import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A QueueControlTest
@@ -246,13 +243,11 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, control.listConnectionIDs().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
-         connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
 
          Connection connection2 = JMSUtil.createConnection(connectorFactory);
-         connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          assertEquals(2, control.listConnectionIDs().length);
 
          connection.close();
@@ -286,7 +281,6 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, control.listConnectionIDs().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
@@ -294,9 +288,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          String[] sessions = control.listSessions(connectionID);
          assertEquals(1, sessions.length);
-
-         session.close();
-
+         connection.close();
          sessions = control.listSessions(connectionID);
          assertEquals(0, sessions.length);
 
@@ -327,8 +319,6 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, control.listRemoteAddresses().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
-         // the connection won't connect to the server until a session is created
-         connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          String[] remoteAddresses = control.listRemoteAddresses();
          assertEquals(1, remoteAddresses.length);
@@ -369,8 +359,6 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, control.listRemoteAddresses().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
-         // the connection won't connect to the server until a session is created
-         connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          assertEquals(1, service.getServer().getConnectionCount());
 
@@ -389,7 +377,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertTrue(control.closeConnectionsForAddress(remoteAddress));
 
-         boolean gotException = exceptionLatch.await(1, TimeUnit.SECONDS);
+         boolean gotException = exceptionLatch.await(5, TimeUnit.SECONDS);
          assertTrue("did not received the expected JMSException", gotException);
          assertEquals(0, control.listRemoteAddresses().length);
          assertEquals(0, service.getServer().getConnectionCount());
@@ -419,8 +407,6 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, control.listRemoteAddresses().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
-         // the connection won't connect to the server until a session is created
-         connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          assertEquals(1, service.getServer().getConnectionCount());
          String[] remoteAddresses = control.listRemoteAddresses();

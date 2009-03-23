@@ -22,10 +22,12 @@
 
 package org.jboss.messaging.tests.unit.core.security;
 
-import static org.jboss.messaging.core.security.CheckType.CREATE;
-import static org.jboss.messaging.core.security.CheckType.READ;
-import static org.jboss.messaging.core.security.CheckType.WRITE;
-
+import static org.jboss.messaging.core.security.CheckType.CONSUME;
+import static org.jboss.messaging.core.security.CheckType.CREATE_DURABLE_QUEUE;
+import static org.jboss.messaging.core.security.CheckType.CREATE_TEMP_QUEUE;
+import static org.jboss.messaging.core.security.CheckType.DELETE_DURABLE_QUEUE;
+import static org.jboss.messaging.core.security.CheckType.DELETE_TEMP_QUEUE;
+import static org.jboss.messaging.core.security.CheckType.SEND;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -47,47 +49,48 @@ public class RoleTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   public void testDefaultRole() throws Exception
-   {
-      Role role = new Role("testDefaultRole");
-      assertEquals("testDefaultRole", role.getName());
-      assertFalse(role.isCheckType(READ));
-      assertFalse(role.isCheckType(WRITE));
-      assertFalse(role.isCheckType(CREATE));      
-   }
    
    public void testReadRole() throws Exception
    {
-      Role role = new Role("testReadRole", true, false, false);
-      assertTrue(role.isCheckType(READ));
-      assertFalse(role.isCheckType(WRITE));
-      assertFalse(role.isCheckType(CREATE));      
+      Role role = new Role("testReadRole", true, false, false, false, false, false, false);
+      assertTrue(SEND.hasRole(role));
+      assertFalse(CONSUME.hasRole(role));
+      assertFalse(CREATE_DURABLE_QUEUE.hasRole(role));
+      assertFalse(CREATE_TEMP_QUEUE.hasRole(role));
+      assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
+      assertFalse(DELETE_TEMP_QUEUE.hasRole(role));
    }
    
    public void testWriteRole() throws Exception
    {
-      Role role = new Role("testWriteRole", false, true, false);
-      assertFalse(role.isCheckType(READ));
-      assertTrue(role.isCheckType(WRITE));
-      assertFalse(role.isCheckType(CREATE));      
+      Role role = new Role("testWriteRole", false, true, false, false, false, false, false);
+      assertFalse(SEND.hasRole(role));
+      assertTrue(CONSUME.hasRole(role));
+      assertFalse(CREATE_DURABLE_QUEUE.hasRole(role));
+      assertFalse(CREATE_TEMP_QUEUE.hasRole(role));
+      assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
+      assertFalse(DELETE_TEMP_QUEUE.hasRole(role));
    }
 
    public void testCreateRole() throws Exception
    {
-      Role role = new Role("testWriteRole", false, false, true);
-      assertFalse(role.isCheckType(READ));
-      assertFalse(role.isCheckType(WRITE));
-      assertTrue(role.isCheckType(CREATE));      
+      Role role = new Role("testWriteRole", false, false, true, false, false, false, false);
+      assertFalse(SEND.hasRole(role));
+      assertFalse(CONSUME.hasRole(role));
+      assertTrue(CREATE_DURABLE_QUEUE.hasRole(role));
+      assertFalse(CREATE_TEMP_QUEUE.hasRole(role));
+      assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
+      assertFalse(DELETE_TEMP_QUEUE.hasRole(role));
    }
    
    public void testEqualsAndHashcode() throws Exception
    {
-      Role role = new Role("testEquals", true, true, true);
-      Role sameRole = new Role("testEquals", true, true, true);
-      Role roleWithDifferentName = new Role("notEquals", true, true, true);
-      Role roleWithDifferentRead = new Role("testEquals", false, true, true);
-      Role roleWithDifferentWrite = new Role("testEquals", true, false, true);
-      Role roleWithDifferentCreate = new Role("testEquals", true, true, false);
+      Role role = new Role("testEquals", true, true, true, false, false, false, false);
+      Role sameRole = new Role("testEquals", true, true, true, false, false, false, false);
+      Role roleWithDifferentName = new Role("notEquals", true, true, true, false, false, false, false);
+      Role roleWithDifferentRead = new Role("testEquals", false, true, true, false, false, false, false);
+      Role roleWithDifferentWrite = new Role("testEquals", true, false, true, false, false, false, false);
+      Role roleWithDifferentCreate = new Role("testEquals", true, true, false, false, false, false, false);
 
       assertTrue(role.equals(role));
 

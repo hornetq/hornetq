@@ -45,9 +45,13 @@ public interface AddressControlMBean
    @Operation(desc = "Add a Role to this address")
    void addRole(
          @Parameter(name = "name", desc = "Name of the role to add") String name,
-         @Parameter(name = "create", desc = "Can the user create resource?") boolean create,
-         @Parameter(name = "read", desc = "Can the user read from this address?") boolean read,
-         @Parameter(name = "write", desc = "Can the user write from this address?") boolean write)
+         @Parameter(name = "send", desc = "Can the user send to an address?") boolean send,
+         @Parameter(name = "consume", desc = "Can the user consume from this address?") boolean consume,
+         @Parameter(name = "createDurableQueue", desc = "Can the user create a durable queue?") boolean createDurableQueue,
+         @Parameter(name = "deleteDurableQueue", desc = "Can the user delete a durable queue?") boolean deleteDurableQueue,
+         @Parameter(name = "createTempQueue", desc = "Can the user create a temp queue?") boolean createTempQueue,
+         @Parameter(name = "deleteTempQueue", desc = "Can the user delete a temp queue?") boolean deleteTempQueue,
+         @Parameter(name = "manage", desc = "Can the user send management messages?") boolean manage)
          throws Exception;
 
    @Operation(desc = "Remove a Role from this address")

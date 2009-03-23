@@ -22,13 +22,6 @@
 
 package org.jboss.messaging.integration.security;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.security.Principal;
-
-import javax.naming.InitialContext;
-import javax.security.auth.Subject;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
@@ -37,6 +30,12 @@ import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
+
+import javax.naming.InitialContext;
+import javax.security.auth.Subject;
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This implementation delegates to the JBoss AS security interfaces (which in turn use JAAS)
@@ -127,9 +126,7 @@ public class JBossASSecurityManager implements JBMSecurityManager, MessagingComp
       Set<Principal> principals = new HashSet<Principal>();
       for (Role role : roles)
       {
-         if ((checkType.equals(CheckType.CREATE) && role.isCheckType(CheckType.CREATE)) ||
-                 (checkType.equals(CheckType.WRITE) && role.isCheckType(CheckType.WRITE)) ||
-                 (checkType.equals(CheckType.READ) && role.isCheckType(CheckType.READ)))
+         if (checkType.hasRole(role))
          {
             principals.add(new SimplePrincipal(role.getName()));
          }

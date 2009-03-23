@@ -55,4 +55,9 @@ public interface JBMUpdateableSecurityManager extends JBMSecurityManager
     * @param role the role to remove
     */
    void removeRole(String user, String role);
+
+   /*
+   * set the default user for null users
+   */
+   void setDefaultUser(String username);
 }

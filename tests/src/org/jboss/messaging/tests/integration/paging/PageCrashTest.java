@@ -22,13 +22,6 @@
 
 package org.jboss.messaging.tests.integration.paging;
 
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Executor;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -58,6 +51,13 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * This test will make sure that a failing depage won't cause duplicated messages
@@ -237,7 +237,7 @@ public class PageCrashTest extends ServiceTestBase
 
       RemotingService remotingService = new RemotingServiceImpl(configuration);
 
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
 
@@ -327,11 +327,6 @@ public class PageCrashTest extends ServiceTestBase
          {
 
             /**
-             * @param pagingManager
-             * @param storageManager
-             * @param postOffice
-             * @param fileFactory
-             * @param storeFactory
              * @param storeName
              * @param addressSettings
              * @param executor

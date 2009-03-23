@@ -22,11 +22,6 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import java.util.Iterator;
-import java.util.Set;
-
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.postoffice.Binding;
@@ -36,6 +31,10 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.utils.SimpleString;
+
+import javax.management.openmbean.TabularData;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -105,17 +104,28 @@ public class AddressControl implements AddressControlMBean
       for (Role role : roles)
       {
          roleInfos[i++] = new RoleInfo(role.getName(),
-                                       role.isCheckType(CheckType.CREATE),
-                                       role.isCheckType(CheckType.READ),
-                                       role.isCheckType(CheckType.WRITE));
+                                       CheckType.SEND.hasRole(role),
+                                       CheckType.CONSUME.hasRole(role),
+                                       CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
+                                       CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
+                                       CheckType.CREATE_TEMP_QUEUE.hasRole(role),
+                                       CheckType.DELETE_TEMP_QUEUE.hasRole(role),
+                                       CheckType.MANAGE.hasRole(role));
       }
       return RoleInfo.toTabularData(roleInfos);
    }
 
-   public synchronized void addRole(final String name, final boolean create, final boolean read, final boolean write) throws Exception
+   public synchronized void addRole(final String name,
+                                    final boolean send,
+                                    final boolean consume,
+                                    final boolean createDurableQueue,
+                                    final boolean deleteDurableQueue,
+                                    final boolean createTempQueue,
+                                    final boolean deleteTempQueue,
+                                    final boolean manage) throws Exception
    {
       Set<Role> roles = securityRepository.getMatch(address.toString());
-      Role newRole = new Role(name, read, write, create);
+      Role newRole = new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createTempQueue, deleteTempQueue, manage);
       boolean added = roles.add(newRole);
       if (!added)
       {

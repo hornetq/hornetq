@@ -18,20 +18,28 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.security;
 
 /**
- * 
  * @author Peter Antman
  * @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  * @version $Revision: 2925 $
- *
- * $Id: $
+ *          <p/>
+ *          $Id: $
  */
 public enum CheckType
-{	
-   READ, WRITE, CREATE;   
+{
+   SEND {public boolean hasRole(final Role role) { return role.isSend();}},
+   CONSUME {public boolean hasRole(final Role role) { return role.isConsume();}},
+   CREATE_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isCreateDurableQueue();}},
+   DELETE_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isDeleteDurableQueue();}},
+   CREATE_TEMP_QUEUE {public boolean hasRole(final Role role) { return role.isCreateTempQueue();}},
+   DELETE_TEMP_QUEUE {public boolean hasRole(final Role role) { return role.isDeleteTempQueue();}},
+   MANAGE {public boolean hasRole(final Role role) { return role.isManage();}};
+
+   public abstract boolean hasRole(final Role role);
 }

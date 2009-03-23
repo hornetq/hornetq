@@ -22,20 +22,19 @@
 
 package org.jboss.messaging.tests.integration.cluster.management;
 
-import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createAddressControl;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createAddressControl;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.utils.SimpleString;
+
+import javax.management.openmbean.TabularData;
 
 /**
  * A ReplicationAwareQueueControlWrapperTest
@@ -67,7 +66,7 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
       assertEquals(roles.size(), backupAddressControl.getRoles().size());
 
       // add a role
-      liveAddressControl.addRole(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
+      liveAddressControl.addRole(randomString(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
       assertEquals(roles.size() + 1, liveAddressControl.getRoles().size());
    }
@@ -83,7 +82,7 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
       assertEquals(roles.size(), backupAddressControl.getRoles().size());
 
       // add a role
-      liveAddressControl.addRole(roleName, randomBoolean(), randomBoolean(), randomBoolean());
+      liveAddressControl.addRole(roleName, randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
       assertEquals(roles.size() + 1, liveAddressControl.getRoles().size());
       assertEquals(roles.size() + 1, backupAddressControl.getRoles().size());

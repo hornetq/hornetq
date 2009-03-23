@@ -22,21 +22,19 @@
 
 package org.jboss.messaging.core.management;
 
-import static javax.management.openmbean.SimpleType.BOOLEAN;
-import static javax.management.openmbean.SimpleType.STRING;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
+import static javax.management.openmbean.SimpleType.BOOLEAN;
+import static javax.management.openmbean.SimpleType.STRING;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -52,13 +50,17 @@ public class RoleInfo
    private static final String ROLE_TYPE_NAME = "RoleInfo";
    private static final String ROLE_TABULAR_TYPE_NAME = "RoleTabularInfo";
    private static final TabularType TABULAR_TYPE;
-   private static final String[] ITEM_NAMES = new String[] { "name", "create",
-         "read", "write" };
+   private static final String[] ITEM_NAMES = new String[] { "name", "send",
+         "consume", "createDurableQueue", "deleteDurableQueue", "createTempQueue", "deleteTempQueue", "manage" };
    private static final String[] ITEM_DESCRIPTIONS = new String[] {
-         "Name of the role", "Can the role create?", "Can the role read?",
-         "Can the role write?" };
+         "Name of the role", "Can the role send messages?", "Can the role consume messages?",
+         "Can the role create a durable queue (needed for durable subscribers)?",
+         "Can the role delete a durable queue (needed for durable subscribers)?",
+         "Can the role create a temp queue?",
+         "Can the role create a temp queue?",
+         "Can the user send management messages"};
    private static final OpenType[] ITEM_TYPES = new OpenType[] { STRING,
-         BOOLEAN, BOOLEAN, BOOLEAN };
+         BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN };
 
    static
    {
@@ -77,9 +79,21 @@ public class RoleInfo
    // Attributes ----------------------------------------------------
 
    private final String name;
-   private final boolean create;
-   private final boolean read;
-   private final boolean write;
+
+   final private boolean send;
+
+   final private boolean consume;
+
+   final private boolean createDurableQueue;
+
+   final private boolean deleteDurableQueue;
+
+   final private boolean createTempQueue;
+
+   final private boolean deleteTempQueue;
+
+   final private boolean manage;
+
 
    // Static --------------------------------------------------------
 
@@ -101,10 +115,14 @@ public class RoleInfo
       {
          CompositeData compositeData = (CompositeData) object;
          String name = (String) compositeData.get("name");
-         boolean create = (Boolean) compositeData.get("create");
-         boolean read = (Boolean) compositeData.get("read");
-         boolean write = (Boolean) compositeData.get("write");
-         infos.add(new RoleInfo(name, create, read, write));
+         boolean send = (Boolean) compositeData.get("send");
+         boolean consume = (Boolean) compositeData.get("consume");
+         boolean createDurableQueue = (Boolean) compositeData.get("createDurableQueue");
+         boolean deleteDurableQueue = (Boolean) compositeData.get("deleteDurableQueue");
+         boolean createTempQueue = (Boolean) compositeData.get("createTempQueue");
+         boolean deleteTempQueue = (Boolean) compositeData.get("deleteTempQueue");
+         boolean manage = (Boolean) compositeData.get("manage");
+         infos.add(new RoleInfo(name, send, consume, createDurableQueue, deleteDurableQueue, createTempQueue, deleteTempQueue, manage));
       }
 
       return (RoleInfo[]) infos.toArray(new RoleInfo[infos.size()]);
@@ -112,12 +130,17 @@ public class RoleInfo
    
    // Constructors --------------------------------------------------
 
-   public RoleInfo(String name, boolean create, boolean read, boolean write)
+
+   public RoleInfo(String name, boolean send, boolean consume, boolean createDurableQueue, boolean deleteDurableQueue, boolean createTempQueue, boolean deleteTempQueue, boolean manage)
    {
       this.name = name;
-      this.create = create;
-      this.read = read;
-      this.write = write;
+      this.send = send;
+      this.consume = consume;
+      this.createDurableQueue = createDurableQueue;
+      this.deleteDurableQueue = deleteDurableQueue;
+      this.createTempQueue = createTempQueue;
+      this.deleteTempQueue = deleteTempQueue;
+      this.manage = manage;
    }
 
    // Public --------------------------------------------------------
@@ -127,19 +150,39 @@ public class RoleInfo
       return name;
    }
 
-   public boolean isCreate()
+   public boolean isSend()
    {
-      return create;
+      return send;
    }
 
-   public boolean isRead()
+   public boolean isConsume()
    {
-      return read;
+      return consume;
    }
 
-   public boolean isWrite()
+   public boolean isCreateDurableQueue()
    {
-      return write;
+      return createDurableQueue;
+   }
+
+   public boolean isDeleteDurableQueue()
+   {
+      return deleteDurableQueue;
+   }
+
+   public boolean isCreateTempQueue()
+   {
+      return createTempQueue;
+   }
+
+   public boolean isDeleteTempQueue()
+   {
+      return deleteTempQueue;
+   }
+
+   public boolean isManage()
+   {
+      return manage;
    }
 
    public CompositeData toCompositeData()
@@ -147,7 +190,7 @@ public class RoleInfo
       try
       {
          return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { name,
-               create, read, write });
+               send, consume, createDurableQueue, deleteDurableQueue, createTempQueue, deleteTempQueue, manage });
       } catch (OpenDataException e)
       {
          return null;
@@ -157,8 +200,14 @@ public class RoleInfo
    @Override
    public String toString()
    {
-      return "RoleInfo[name=" + name + ", create=" + create + ", read=" + read
-            + ", write=" + write + "]";
+       return "RolInfoe {name=" + name + ";" +
+             "read=" + send + ";" +
+             "write=" + consume + ";" +
+             "createDurableQueue=" + createDurableQueue + "}" +
+            "deleteDurableQueue=" + deleteDurableQueue + "}" +
+            "createTempQueue=" + createTempQueue + "}" +
+            "deleteTempQueue=" + deleteTempQueue + "}" +
+            "manage=" + manage + "}";
    }
 
    // Package protected ---------------------------------------------

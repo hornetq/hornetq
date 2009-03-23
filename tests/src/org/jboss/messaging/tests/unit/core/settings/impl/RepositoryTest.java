@@ -22,14 +22,14 @@
 
 package org.jboss.messaging.tests.unit.core.settings.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.Mergeable;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.tests.util.UnitTestCase;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -65,13 +65,13 @@ public class RepositoryTest extends UnitTestCase
    {
       securityRepository.addMatch("queues.another.aq.*", new HashSet<Role>());
       HashSet<Role> roles = new HashSet<Role>(2);
-      roles.add(new Role("test1"));
-      roles.add(new Role("test2"));
+      roles.add(new Role("test1", true, true, true, true, true, true, true));
+      roles.add(new Role("test2", true, true, true, true, true, true, true));
       securityRepository.addMatch("queues.aq", roles);
       HashSet<Role> roles2 = new HashSet<Role>(2);
-      roles2.add(new Role("test1"));
-      roles2.add(new Role("test2"));
-      roles2.add(new Role("test3"));
+      roles2.add(new Role("test1", true, true, true, true, true, true, true));
+      roles2.add(new Role("test2", true, true, true, true, true, true, true));
+      roles2.add(new Role("test3", true, true, true, true, true, true, true));
       securityRepository.addMatch("queues.another.andanother", roles2);
       
       HashSet<Role> hashSet = securityRepository.getMatch("queues.another.andanother");
@@ -82,8 +82,8 @@ public class RepositoryTest extends UnitTestCase
    {
       securityRepository.addMatch("queues.1.*", new HashSet<Role>());
       HashSet<Role> roles = new HashSet<Role>(2);
-      roles.add(new Role("test1"));
-      roles.add(new Role("test2"));
+      roles.add(new Role("test1", true, true, true, true, true, true, true));
+      roles.add(new Role("test2", true, true, true, true, true, true, true));
       securityRepository.addMatch("queues.2.aq", roles);
       HashSet<Role> hashSet = securityRepository.getMatch("queues.2.aq");
       assertEquals(hashSet.size(), 2);

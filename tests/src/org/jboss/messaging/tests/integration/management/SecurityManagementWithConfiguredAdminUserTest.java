@@ -22,14 +22,10 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
@@ -37,6 +33,9 @@ import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A SecurityManagementTest
@@ -110,10 +109,10 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       securityManager.addRole(invalidAdminUser, "guest");
 
       Set<Role> adminRole = new HashSet<Role>();
-      adminRole.add(new Role("admin", true, true, false));
+      adminRole.add(new Role("admin", true, true, false, true, true, true, true));
       securityRepository.addMatch(DEFAULT_MANAGEMENT_ADDRESS.toString(), adminRole);
       Set<Role> guestRole = new HashSet<Role>();
-      guestRole.add(new Role("guest", true, true, true));
+      guestRole.add(new Role("guest", true, true, true, true, true, true, true));
       securityRepository.addMatch("*", guestRole);
       
       return service;

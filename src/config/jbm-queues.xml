@@ -5,71 +5,78 @@
    <!--  manangement address -->
    <security match="jbm.admin.management">
       <!--  only the admin role can interact with the management address  -->
-      <permission type="read" roles="admin"/>
-      <permission type="write" roles="admin"/>
+      <permission type="consume" roles="admin"/>
+      <permission type="send" roles="admin"/>
    </security>
    
    <security match="topicjms.testTopic">
-      <permission type="create" roles="durpublisher"/>
-      <permission type="read" roles="guest,publisher,durpublisher"/>
-      <permission type="write" roles="guest,publisher,durpublisher"/>
+      <permission type="createDurableQueue" roles="durpublisher"/>
+      <permission type="deleteDurableQueue" roles="durpublisher"/>
+      <permission type="consume" roles="guest,publisher,durpublisher"/>
+      <permission type="send" roles="guest,publisher,durpublisher"/>
    </security>
 
    <security match="topicjms.securedTopic">
-      <permission type="write" roles="publisher"/>
-      <permission type="read" roles="publisher"/>
+      <permission type="send" roles="publisher"/>
+      <permission type="consume" roles="publisher"/>
    </security>
 
    <security match="topicjms.testDurableTopic">
-      <permission type="create" roles="durpublisher"/>
-      <permission type="read" roles="guest,publisher,durpublisher"/>
-      <permission type="write" roles="guest,publisher,durpublisher"/>
+      <permission type="createDurableQueue" roles="durpublisher"/>
+      <permission type="deleteDurableQueue" roles="durpublisher"/>
+      <permission type="consume" roles="guest,publisher,durpublisher"/>
+      <permission type="send" roles="guest,publisher,durpublisher"/>
    </security>
 
    <security match="queuejms.testQueue">
-      <permission type="read" roles="guest,publisher"/>
-      <permission type="write" roles="guest,publisher"/>
+      <permission type="consume" roles="guest,publisher"/>
+      <permission type="send" roles="guest,publisher"/>
    </security>
 
    <security match="queuejms.NoSuchQueue">
-      <permission type="read" roles="guest,publisher"/>
-      <permission type="write" roles="guest,publisher"/>
+      <permission type="consume" roles="guest,publisher"/>
+      <permission type="send" roles="guest,publisher"/>
    </security>
 
    <security match="topicjms.NoSuchTopic">
-      <permission type="read" roles="guest,publisher"/>
-      <permission type="write" roles="guest,publisher"/>
+      <permission type="consume" roles="guest,publisher"/>
+      <permission type="send" roles="guest,publisher"/>
    </security>
 
    <security match="queuetempjms.*">
-      <permission type="create" roles="guest,def"/>
-      <permission type="read" roles="guest,def"/>
-      <permission type="write" roles="guest,def"/>
+      <permission type="createTempQueue" roles="guest,def"/>
+      <permission type="deleteTempQueue" roles="guest,def"/>
+      <permission type="consume" roles="guest,def"/>
+      <permission type="send" roles="guest,def"/>
    </security>
 
    <security match="topictempjms.*">
-      <permission type="create" roles="guest,def"/>
-      <permission type="read" roles="guest,def"/>
-      <permission type="write" roles="guest,def"/>
+      <permission type="createTempQueue" roles="guest,def"/>
+      <permission type="deleteTempQueue" roles="guest,def"/>
+      <permission type="consume" roles="guest,def"/>
+      <permission type="send" roles="guest,def"/>
    </security>
 
    <!--this will catch any word i.e. queuejms.anything-->
    <!--<security match="queuejms.#">
-      <permission type="read" roles="guest,publisher"/>
-      <permission type="write" roles="guest,publisher"/>
+      <permission type="consume" roles="guest,publisher"/>
+      <permission type="send" roles="guest,publisher"/>
    </security>-->
 
    <!--this will catch any word i.e. queuejms.anything-->
    <!--<security match="topicjms.#">
-      <permission type="read" roles="guest,publisher"/>
-      <permission type="write" roles="guest,publisher"/>
+      <permission type="consume" roles="guest,publisher"/>
+      <permission type="send" roles="guest,publisher"/>
    </security>-->
 
    <!--default security to catch all-->
    <security match="#">
-      <permission type="create" roles="guest,def"/>
-      <permission type="read" roles="guest,def"/>
-      <permission type="write" roles="guest,def"/>
+      <permission type="createDurableQueue" roles="guest,def"/>
+      <permission type="deleteDurableQueue" roles="guest,def"/>
+      <permission type="createTempQueue" roles="guest,def"/>
+      <permission type="deleteTempQueue" roles="guest,def"/>
+      <permission type="consume" roles="guest,def"/>
+      <permission type="send" roles="guest,def"/>
    </security>
 
    <address-settings match="queuejms.QueueWithOwnDLQAndExpiryQueue">

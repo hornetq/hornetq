@@ -22,15 +22,6 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -45,7 +36,14 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.utils.SimpleString;
+
+import javax.management.openmbean.TabularData;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A QueueControlTest
@@ -114,7 +112,7 @@ public class AddressControlTest extends ManagementTestBase
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
-      Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
+      Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
       session.createQueue(address, queue, true);
 
@@ -130,9 +128,13 @@ public class AddressControlTest extends ManagementTestBase
       assertEquals(1, tabularData.size());
       RoleInfo[] roleInfos = RoleInfo.from(tabularData);
       assertEquals(role.getName(), roleInfos[0].getName());
-      assertEquals(role.isCheckType(CheckType.READ), roleInfos[0].isRead());
-      assertEquals(role.isCheckType(CheckType.WRITE), roleInfos[0].isWrite());
-      assertEquals(role.isCheckType(CheckType.CREATE), roleInfos[0].isCreate());
+      assertEquals(CheckType.CONSUME.hasRole(role), roleInfos[0].isConsume());
+      assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateDurableQueue());
+      assertEquals(CheckType.CREATE_TEMP_QUEUE.hasRole(role), roleInfos[0].isCreateTempQueue());
+      assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteDurableQueue());
+      assertEquals(CheckType.DELETE_TEMP_QUEUE.hasRole(role), roleInfos[0].isDeleteTempQueue());
+      assertEquals(CheckType.MANAGE.hasRole(role), roleInfos[0].isManage());
+      assertEquals(CheckType.SEND.hasRole(role), roleInfos[0].isSend());
 
       session.deleteQueue(queue);
    }
@@ -141,7 +143,7 @@ public class AddressControlTest extends ManagementTestBase
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
-      Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
+      Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
       session.createQueue(address, queue, true);
 
@@ -150,17 +152,26 @@ public class AddressControlTest extends ManagementTestBase
       assertEquals(0, tabularData.size());
 
       addressControl.addRole(role.getName(),
-                             role.isCheckType(CheckType.CREATE),
-                             role.isCheckType(CheckType.READ),
-                             role.isCheckType(CheckType.WRITE));
+                             CheckType.SEND.hasRole(role),
+                             CheckType.CONSUME.hasRole(role),
+                             CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
+                             CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
+                             CheckType.CREATE_TEMP_QUEUE.hasRole(role),
+                             CheckType.DELETE_TEMP_QUEUE.hasRole(role),
+                             CheckType.MANAGE.hasRole(role));
 
       tabularData = addressControl.getRoles();
       assertEquals(1, tabularData.size());
       RoleInfo[] roleInfos = RoleInfo.from(tabularData);
       assertEquals(role.getName(), roleInfos[0].getName());
-      assertEquals(role.isCheckType(CheckType.CREATE), roleInfos[0].isCreate());
-      assertEquals(role.isCheckType(CheckType.READ), roleInfos[0].isRead());
-      assertEquals(role.isCheckType(CheckType.WRITE), roleInfos[0].isWrite());
+      assertEquals(CheckType.CONSUME.hasRole(role), roleInfos[0].isConsume());
+      assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateDurableQueue());
+      assertEquals(CheckType.CREATE_TEMP_QUEUE.hasRole(role), roleInfos[0].isCreateTempQueue());
+      assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteDurableQueue());
+      assertEquals(CheckType.DELETE_TEMP_QUEUE.hasRole(role), roleInfos[0].isDeleteTempQueue());
+      assertEquals(CheckType.MANAGE.hasRole(role), roleInfos[0].isManage());
+      assertEquals(CheckType.SEND.hasRole(role), roleInfos[0].isSend());
+
 
       session.deleteQueue(queue);
    }
@@ -169,7 +180,7 @@ public class AddressControlTest extends ManagementTestBase
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
-      Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
+      Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
       session.createQueue(address, queue, true);
 
@@ -178,9 +189,13 @@ public class AddressControlTest extends ManagementTestBase
       assertEquals(0, tabularData.size());
 
       addressControl.addRole(role.getName(),
-                             role.isCheckType(CheckType.CREATE),
-                             role.isCheckType(CheckType.READ),
-                             role.isCheckType(CheckType.WRITE));
+                             CheckType.SEND.hasRole(role),
+                             CheckType.CONSUME.hasRole(role),
+                             CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
+                             CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
+                             CheckType.CREATE_TEMP_QUEUE.hasRole(role),
+                             CheckType.DELETE_TEMP_QUEUE.hasRole(role),
+                             CheckType.MANAGE.hasRole(role));
 
       tabularData = addressControl.getRoles();
       assertEquals(1, tabularData.size());
@@ -188,9 +203,13 @@ public class AddressControlTest extends ManagementTestBase
       try
       {
          addressControl.addRole(role.getName(),
-                                role.isCheckType(CheckType.CREATE),
-                                role.isCheckType(CheckType.READ),
-                                role.isCheckType(CheckType.WRITE));
+                             CheckType.SEND.hasRole(role),
+                             CheckType.CONSUME.hasRole(role),
+                             CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
+                             CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
+                             CheckType.CREATE_TEMP_QUEUE.hasRole(role),
+                             CheckType.DELETE_TEMP_QUEUE.hasRole(role),
+                             CheckType.MANAGE.hasRole(role));
          fail("can not add a role which already exists");
       }
       catch (Exception e)
@@ -215,7 +234,7 @@ public class AddressControlTest extends ManagementTestBase
       TabularData tabularData = addressControl.getRoles();
       assertEquals(0, tabularData.size());
 
-      addressControl.addRole(roleName, randomBoolean(), randomBoolean(), randomBoolean());
+      addressControl.addRole(roleName, randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
       tabularData = addressControl.getRoles();
       assertEquals(1, tabularData.size());

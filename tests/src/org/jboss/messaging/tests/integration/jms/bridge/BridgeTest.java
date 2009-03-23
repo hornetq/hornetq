@@ -21,9 +21,10 @@
  */
 package org.jboss.messaging.tests.integration.jms.bridge;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
+import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
+import org.jboss.messaging.jms.client.JBossMessage;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -34,11 +35,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
-import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
-import org.jboss.messaging.jms.client.JBossMessage;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A BridgeTest
@@ -998,7 +997,7 @@ public class BridgeTest extends BridgeTestBase
 
          prod.send(tm);
 
-         tm = (TextMessage)cons.receive(1000);
+         tm = (TextMessage)cons.receive(5000);
 
          assertNotNull(tm);
 

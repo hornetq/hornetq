@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.integration.jms.bridge;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
-// import org.jboss.test.messaging.tools.ServerManagement;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.unit.util.InVMContext;
 
@@ -176,7 +175,7 @@ public class BridgeReconnectionTest extends BridgeTestBase
          
          //Wait a while before starting up to simulate the dest being down for a while
          log.info("Waiting 5 secs before bringing server back up");
-         Thread.sleep(5000);
+         Thread.sleep(10000);
          log.info("Done wait");
          
          //Restart the server
@@ -261,7 +260,7 @@ public class BridgeReconnectionTest extends BridgeTestBase
          
          //Wait a while before starting up to simulate the dest being down for a while
          log.info("Waiting 5 secs before bringing server back up");
-         Thread.sleep(5000);
+         Thread.sleep(10000);
          log.info("Done wait");
          
          //Restart the server         

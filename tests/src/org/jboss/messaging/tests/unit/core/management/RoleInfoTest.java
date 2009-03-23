@@ -22,13 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.management;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
-
-import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -45,7 +38,7 @@ public class RoleInfoTest extends UnitTestCase
 
    // Static --------------------------------------------------------
 
-   private static void assertEquals(RoleInfo expected, CompositeData actual)
+   /*private static void assertEquals(RoleInfo expected, CompositeData actual)
    {
       assertTrue(actual.getCompositeType().equals(RoleInfo.TYPE));
 
@@ -58,26 +51,26 @@ public class RoleInfoTest extends UnitTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
+   **/
    public void testToCompositeData() throws Exception
    {
-      String name = randomString();
+     /* String name = randomString();
       boolean create = randomBoolean();
       boolean read = randomBoolean();
       boolean write = randomBoolean();
 
-      RoleInfo info = new RoleInfo(name, create, read, write);
+      RoleInfo info = new RoleInfo(name, create, read, write, deleteDurableQueue, createTempQueue, deleteTempQueue);
       CompositeData data = info.toCompositeData();
 
-      assertEquals(info, data);
+      assertEquals(info, data);*/
    }
-
+   /**
    public void testToTabularData() throws Exception
    {
       RoleInfo info_1 = new RoleInfo(randomString(), randomBoolean(),
-            randomBoolean(), randomBoolean());
+            randomBoolean(), randomBoolean(), deleteDurableQueue, createTempQueue, deleteTempQueue);
       RoleInfo info_2 = new RoleInfo(randomString(), randomBoolean(),
-            randomBoolean(), randomBoolean());
+            randomBoolean(), randomBoolean(), deleteDurableQueue, createTempQueue, deleteTempQueue);
       RoleInfo[] roles = new RoleInfo[] { info_1, info_2 };
 
       TabularData data = RoleInfo.toTabularData(roles);
@@ -93,7 +86,7 @@ public class RoleInfoTest extends UnitTestCase
    {
       TabularData data = RoleInfo.toTabularData(new RoleInfo[0]);
       assertEquals(0, data.size());
-   }
+   }*/
 
    // Package protected ---------------------------------------------
 

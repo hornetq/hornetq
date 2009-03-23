@@ -22,27 +22,22 @@
 
 package org.jboss.messaging.integration.security;
 
-import static org.jboss.messaging.core.security.CheckType.CREATE;
-import static org.jboss.messaging.core.security.CheckType.READ;
-import static org.jboss.messaging.core.security.CheckType.WRITE;
-
-import java.security.Principal;
-import java.security.acl.Group;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.security.CheckType;
+import org.jboss.messaging.core.security.JBMSecurityManager;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingComponent;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.security.JBMSecurityManager;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.MessagingComponent;
+import java.security.Principal;
+import java.security.acl.Group;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * This implementation delegates to the JAAS security interfaces.
@@ -181,7 +176,10 @@ public class JAASSecurityManager implements JBMSecurityManager, MessagingCompone
 
       Subject subject = new Subject();
 
-      subject.getPrincipals().add(principal);
+      if(user != null)
+      {
+         subject.getPrincipals().add(principal);
+      }
       subject.getPrivateCredentials().add(passwordChars);
 
       LoginContext lc = new LoginContext(configurationName, subject, callbackHandler, config);
@@ -211,9 +209,7 @@ public class JAASSecurityManager implements JBMSecurityManager, MessagingCompone
       Set<Principal> principals = new HashSet<Principal>();
       for (Role role : roles)
       {
-         if ((checkType.equals(CREATE) && role.isCheckType(CREATE))
-          || (checkType.equals(WRITE) && role.isCheckType(WRITE))
-          || (checkType.equals(READ) && role.isCheckType(READ)))
+         if (checkType.hasRole(role))
          {
             principals.add(new SimplePrincipal(role.getName()));
          }

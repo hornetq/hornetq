@@ -21,10 +21,11 @@
 */
 package org.jboss.test.messaging.thirdparty.jbosssx;
 
-import java.security.Principal;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.security.SecurityAssociation;
+import org.jboss.security.SimplePrincipal;
+import org.jboss.test.messaging.jms.JMSTestCase;
+import org.jboss.test.messaging.tools.container.MockJBossSecurityManager;
 
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
@@ -32,12 +33,10 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.security.auth.Subject;
-
-import org.jboss.messaging.core.security.Role;
-import org.jboss.security.SecurityAssociation;
-import org.jboss.security.SimplePrincipal;
-import org.jboss.test.messaging.jms.JMSTestCase;
-import org.jboss.test.messaging.tools.container.MockJBossSecurityManager;
+import java.security.Principal;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Set of tests to insure consistent behavior relative to the JBoss AS security infrastructure.
@@ -277,8 +276,8 @@ public class SecurityAssociationTest extends JMSTestCase
       super.setUp();
    
       Set<Role> roles = new HashSet<Role>();
-      roles.add(new Role("publisher", true, true, false));
-      roles.add(new Role("guest", true, true, false));
+      roles.add(new Role("publisher", true, true, false, true, true, true, true));
+      roles.add(new Role("guest", true, true, false, true, true, true, true));
       
       setSecurityConfigOnManager("Queue2", true, roles);
 

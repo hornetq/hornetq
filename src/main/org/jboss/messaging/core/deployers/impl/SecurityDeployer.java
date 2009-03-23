@@ -22,16 +22,16 @@
 
 package org.jboss.messaging.core.deployers.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Deploys the security settings into a security repository and adds them to the security store.
@@ -48,9 +48,13 @@ public class SecurityDeployer extends XmlDeployer
    private static final String MATCH = "match";
    private static final String SECURITY_ELEMENT_NAME = "security";
 
-   public static final String WRITE_NAME = "write";
-   public static final String READ_NAME = "read";
-   public static final String CREATE_NAME = "create";
+   public static final String SEND_NAME = "send";
+   public static final String CONSUME_NAME = "consume";
+   public static final String CREATEDURABLEQUEUE_NAME = "createDurableQueue";
+   public static final String DELETEDURABLEQUEUE_NAME = "deleteDurableQueue";
+   public static final String CREATETEMPQUEUE_NAME = "createTempQueue";
+   public static final String DELETETEMPQUEUE_NAME = "deleteTempQueue";
+   public static final String MANAGE_NAME = "manage";
 
    /**
     * The repository to add to
@@ -98,9 +102,13 @@ public class SecurityDeployer extends XmlDeployer
    public void deploy(final Node node) throws Exception
    {
       HashSet<Role> securityRoles = new HashSet<Role>();
-      ArrayList<String> create = new ArrayList<String>();
-      ArrayList<String> write = new ArrayList<String>();
-      ArrayList<String> read = new ArrayList<String>();
+      ArrayList<String> send = new ArrayList<String>();
+      ArrayList<String> consume = new ArrayList<String>();
+      ArrayList<String> createDurableQueue = new ArrayList<String>();
+      ArrayList<String> deleteDurableQueue = new ArrayList<String>();
+      ArrayList<String> createTempQueue = new ArrayList<String>();
+      ArrayList<String> deleteTempQueue = new ArrayList<String>();
+      ArrayList<String> manageRoles = new ArrayList<String>();
       ArrayList<String> allRoles = new ArrayList<String>();
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
       NodeList children = node.getChildNodes();
@@ -115,17 +123,33 @@ public class SecurityDeployer extends XmlDeployer
             String[] roles = roleString.split(",");
             for (String role : roles)
             {
-               if (CREATE_NAME.equals(type))
+               if (SEND_NAME.equals(type))
                {
-                  create.add(role.trim());
+                  send.add(role.trim());
                }
-               else if (WRITE_NAME.equals(type))
+               else if (CONSUME_NAME.equals(type))
                {
-                  write.add(role.trim());
+                  consume.add(role.trim());
                }
-               else if (READ_NAME.equals(type))
+               else if (CREATEDURABLEQUEUE_NAME.equals(type))
                {
-                  read.add(role);
+                  createDurableQueue.add(role);
+               }
+               else if (DELETEDURABLEQUEUE_NAME.equals(type))
+               {
+                  deleteDurableQueue.add(role);
+               }
+               else if (CREATETEMPQUEUE_NAME.equals(type))
+               {
+                  createTempQueue.add(role);
+               }
+               else if (DELETETEMPQUEUE_NAME.equals(type))
+               {
+                  deleteTempQueue.add(role);
+               }
+               else if (MANAGE_NAME.equals(type))
+               {
+                  manageRoles.add(role);
                }
                if (!allRoles.contains(role.trim()))
                {
@@ -137,7 +161,14 @@ public class SecurityDeployer extends XmlDeployer
       }
       for (String role : allRoles)
       {
-         securityRoles.add(new Role(role, read.contains(role), write.contains(role), create.contains(role)));
+         securityRoles.add(new Role(role,
+                                    send.contains(role),
+                                    consume.contains(role),
+                                    createDurableQueue.contains(role), 
+                                    deleteDurableQueue.contains(role),
+                                    createTempQueue.contains(role),
+                                    deleteTempQueue.contains(role),
+                                    manageRoles.contains(role)));
       }
       securityRepository.addMatch(match, securityRoles);
    }

@@ -22,8 +22,15 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
+import org.jboss.messaging.utils.VersionLoader;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
@@ -46,27 +53,19 @@ import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
-
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.utils.UUIDGenerator;
-import org.jboss.messaging.utils.VersionLoader;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt>
- *
- * $Id$
+ *          <p/>
+ *          $Id$
  */
 public class JBossConnection implements Connection, QueueConnection, TopicConnection, XAConnection, XAQueueConnection,
-         XATopicConnection
+                                        XATopicConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -119,6 +118,8 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    private final int dupsOKBatchSize;
 
    private final int transactionBatchSize;
+
+   private ClientSession initialSession;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -259,27 +260,29 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
          // TODO may be a better way of doing this that doesn't involve creating a new session
 
-         if (!tempQueues.isEmpty())
+         try
          {
-            ClientSession session = null;
-            try
+            if (!tempQueues.isEmpty())
             {
-               session = sessionFactory.createSession(username, password, false, true, true, false, 0);
+               if (initialSession == null)
+               {
+                  initialSession = sessionFactory.createSession(username, password, false, true, true, false, 0);
+               }
 
                // Remove any temporary queues
 
                for (SimpleString queueName : tempQueues)
                {
-                  session.deleteQueue(queueName);
+                  initialSession.deleteQueue(queueName);
                }
             }
-            finally
-            {
-               if (session != null)
+         }
+         finally
+         {
+            if (initialSession != null)
                {
-                  session.close();
+                  initialSession.close();
                }
-            }
          }
 
          closed = true;
@@ -416,6 +419,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    // Protected ------------------------------------------------------------------------------------
 
    // In case the user forgets to close the connection manually
+
    protected void finalize() throws Throwable
    {
       close();
@@ -490,6 +494,19 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
       if (closed)
       {
          throw new IllegalStateException("Connection is closed");
+      }
+   }
+
+   public void authorize() throws JMSException
+   {
+      try
+      {
+         initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0);
+         initialSession.addFailureListener(listener);
+      }
+      catch (MessagingException me)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(me);
       }
    }
 

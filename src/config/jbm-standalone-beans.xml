@@ -27,9 +27,6 @@
    <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBossASSecurityManager"/>-->
 
    <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
-      <constructor>
-         <parameter>false</parameter>  
-      </constructor>
    </bean>
 
    <bean name="BasicSecurityDeployer" class="org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer">

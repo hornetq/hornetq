@@ -23,9 +23,6 @@
 package org.jboss.messaging.core.security.impl;
 
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
-
-import java.util.Set;
-
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.CheckType;
@@ -35,7 +32,12 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
+import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * The JBM SecurityStore implementation
@@ -71,11 +73,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private JBMSecurityManager securityManager;
 
-   private final Set<SimpleString> readCache = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
-
-   private final Set<SimpleString> writeCache = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
-
-   private final Set<SimpleString> createCache = new org.jboss.messaging.utils.ConcurrentHashSet<SimpleString>();
+   private final ConcurrentMap<CheckType, ConcurrentHashSet<SimpleString>> cache = new ConcurrentHashMap<CheckType, ConcurrentHashSet<SimpleString>>();
 
    private final long invalidationInterval;
 
@@ -151,29 +149,14 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
              throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + session.getUsername());
          }
          // if we get here we're granted, add to the cache
-   
-         switch (checkType)
+         ConcurrentHashSet<SimpleString> set = new ConcurrentHashSet<SimpleString>();
+         ConcurrentHashSet<SimpleString> act = cache.putIfAbsent(checkType, set);
+         if(act != null)
          {
-            case READ:
-            {
-               readCache.add(address);
-               break;
-            }
-            case WRITE:
-            {
-               writeCache.add(address);
-               break;
-            }
-            case CREATE:
-            {
-               createCache.add(address);
-               break;
-            }
-            default:
-            {
-               throw new IllegalArgumentException("Invalid checkType:" + checkType);
-            }
+            set = act;
          }
+         set.add(address);
+
       }
    }
 
@@ -209,11 +192,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    // Private -------------------------------------------------------
    private void invalidateCache()
    {
-      readCache.clear();
-
-      writeCache.clear();
-
-      createCache.clear();
+      cache.clear();
    }
 
    private boolean checkCached(final SimpleString dest, final CheckType checkType)
@@ -228,27 +207,10 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       }
       else
       {
-         switch (checkType)
+         ConcurrentHashSet<SimpleString> act = cache.get(checkType);
+         if(act != null)
          {
-            case READ:
-            {
-               granted = readCache.contains(dest);
-               break;
-            }
-            case WRITE:
-            {
-               granted = writeCache.contains(dest);
-               break;
-            }
-            case CREATE:
-            {
-               granted = createCache.contains(dest);
-               break;
-            }
-            default:
-            {
-               throw new IllegalArgumentException("Invalid checkType:" + checkType);
-            }
+            granted = act.contains(dest);
          }
       }
 

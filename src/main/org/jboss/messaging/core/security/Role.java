@@ -33,53 +33,134 @@ public class Role implements Serializable
 {
    private static final long serialVersionUID = 3560097227776448872L;
 
-   private String name;
+   final private String name;
 
-   private boolean read = false;
+   final private boolean send;
 
-   private boolean write = false;
+   final private boolean consume;
 
-   private boolean create = false;
+   final private boolean createDurableQueue;
 
-   public Role(final String name)
+   final private boolean deleteDurableQueue;
+
+   final private boolean createTempQueue;
+
+   final private boolean deleteTempQueue;
+
+   final private boolean manage;
+
+   public Role(final String name,
+               final boolean send,
+               final boolean consume,
+               final boolean createDurableQueue,
+               final boolean deleteDurableQueue,
+               final boolean createTempQueue,
+               final boolean deleteTempQueue,
+               boolean manage)
    {
+      if(name == null)
+      {
+         throw new NullPointerException("name is null");
+      }
       this.name = name;
+      this.send = send;
+      this.consume = consume;
+      this.createDurableQueue = createDurableQueue;
+      this.deleteDurableQueue = deleteDurableQueue;
+      this.createTempQueue = createTempQueue;
+      this.deleteTempQueue = deleteTempQueue;
+      this.manage = manage;
    }
 
-   public Role(final String name, final boolean read, final boolean write, final boolean create)
-   {
-      this.name = name;
-      this.read = read;
-      this.write = write;
-      this.create = create;
-   }
 
    public String getName()
    {
       return name;
    }
 
-   public boolean isCheckType(final CheckType checkType)
+
+   public boolean isSend()
    {
-      return checkType.equals(CheckType.READ) ? read : checkType.equals(CheckType.WRITE) ? write : create;
+      return send;
+   }
+
+   public boolean isConsume()
+   {
+      return consume;
+   }
+
+   public boolean isCreateDurableQueue()
+   {
+      return createDurableQueue;
+   }
+
+   public boolean isDeleteDurableQueue()
+   {
+      return deleteDurableQueue;
+   }
+
+   public boolean isCreateTempQueue()
+   {
+      return createTempQueue;
+   }
+
+   public boolean isDeleteTempQueue()
+   {
+      return deleteTempQueue;
    }
 
    public String toString()
    {
-      return "Role {name=" + name + ";read=" + read + ";write=" + write + ";create=" + create + "}";
+      return "Role {name=" + name + ";" +
+             "read=" + send + ";" +
+             "write=" + consume + ";" +
+             "createDurableQueue=" + createDurableQueue + "}" +
+            "deleteDurableQueue=" + deleteDurableQueue + "}" +
+            "createTempQueue=" + createTempQueue + "}" +
+            "deleteTempQueue=" + deleteTempQueue + "}";
    }
 
    public boolean equals(Object o)
    {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o)
+      {
+         return true;
+      }
+      if (o == null || getClass() != o.getClass())
+      {
+         return false;
+      }
 
       Role role = (Role) o;
 
-      if (create != role.create) return false;
-      if (read != role.read) return false;
-      if (write != role.write) return false;
-      if (!name.equals(role.name)) return false;
+      if (consume != role.consume)
+      {
+         return false;
+      }
+      if (createDurableQueue != role.createDurableQueue)
+      {
+         return false;
+      }
+      if (createTempQueue != role.createTempQueue)
+      {
+         return false;
+      }
+      if (deleteDurableQueue != role.deleteDurableQueue)
+      {
+         return false;
+      }
+      if (deleteTempQueue != role.deleteTempQueue)
+      {
+         return false;
+      }
+      if (send != role.send)
+      {
+         return false;
+      }
+      if (!name.equals(role.name))
+      {
+         return false;
+      }
 
       return true;
    }
@@ -88,9 +169,17 @@ public class Role implements Serializable
    {
       int result;
       result = name.hashCode();
-      result = 31 * result + (read ? 1 : 0);
-      result = 31 * result + (write ? 1 : 0);
-      result = 31 * result + (create ? 1 : 0);
+      result = 31 * result + (send ? 1 : 0);
+      result = 31 * result + (consume ? 1 : 0);
+      result = 31 * result + (createDurableQueue ? 1 : 0);
+      result = 31 * result + (deleteDurableQueue ? 1 : 0);
+      result = 31 * result + (createTempQueue ? 1 : 0);
+      result = 31 * result + (deleteTempQueue ? 1 : 0);
       return result;
+   }
+
+   public boolean isManage()
+   {
+      return manage;
    }
 }

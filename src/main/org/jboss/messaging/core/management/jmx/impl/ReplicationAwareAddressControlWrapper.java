@@ -22,15 +22,14 @@
 
 package org.jboss.messaging.core.management.jmx.impl;
 
+import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.ReplicationOperationInvoker;
+import org.jboss.messaging.core.management.impl.AddressControl;
+import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
+
 import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 import javax.management.openmbean.TabularData;
-
-import org.jboss.messaging.core.management.AddressControlMBean;
-import org.jboss.messaging.core.management.ReplicationOperationInvoker;
-import org.jboss.messaging.core.management.RoleInfo;
-import org.jboss.messaging.core.management.impl.AddressControl;
-import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 
 /**
  * A ReplicationAwareAddressControlWrapper
@@ -82,9 +81,16 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
       replicationAwareInvoke("removeRole", name);
    }
 
-   public void addRole(final String name, final boolean create, final boolean read, final boolean write) throws Exception
+   public void addRole(final String name,
+                                    final boolean send,
+                                    final boolean consume,
+                                    final boolean createDurableQueue,
+                                    final boolean deleteDurableQueue,
+                                    final boolean createTempQueue,
+                                    final boolean deleteTempQueue,
+                                    final boolean manage) throws Exception
    {
-      replicationAwareInvoke("addRole", name, create, read, write);
+      replicationAwareInvoke("addRole", name, send, consume, createDurableQueue, deleteDurableQueue, createTempQueue, deleteTempQueue, manage);
    }
 
    // StandardMBean overrides ---------------------------------------

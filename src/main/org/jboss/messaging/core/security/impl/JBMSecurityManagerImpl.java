@@ -22,16 +22,16 @@
 
 package org.jboss.messaging.core.security.impl;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.security.CheckType;
+import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
+import org.jboss.messaging.core.security.Role;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
-import org.jboss.messaging.core.security.Role;
 
 /**
  * A basic implementation of the JBMUpdateableSecurityManager. This can be used within an appserver and be deployed by
@@ -52,41 +52,41 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
     */
    private Map<String, User> users = new HashMap<String, User>();
 
+   private String defaultUser = null;
+
    /**
     * the roles for the users
     */
    private Map<String, List<String>> roles = new HashMap<String, List<String>>();
 
-   public JBMSecurityManagerImpl(final boolean addGuestRole)
-   {
-      if (addGuestRole)
-      {
-         //add some default roles!!
-         users.put("guest", new User("guest", "guest"));
-         ArrayList<String> roles = new ArrayList<String>();
-         roles.add("guest");
-         this.roles.put("guest", roles);
-      }
-   }
 
    public boolean validateUser(final String user, final String password)
    {
-      User theUser = users.get(user == null ? "guest" : user);
-      return theUser != null && theUser.isValid(user == null ? "guest" : user, password == null ? "guest" : password);
+      if(user == null && defaultUser == null)
+      {
+         return false;
+      }
+      User theUser = users.get(user == null ? defaultUser : user);
+      return theUser != null && theUser.isValid(user == null ? defaultUser : user, password == null ? defaultUser : password);
+
    }
 
    public boolean validateUserAndRole(final String user, final String password, final Set<Role> roles, final CheckType checkType)
    {
       if (validateUser(user, password))
       {
-         List<String> availableRoles = this.roles.get(user == null ? "guest" : user);
+         List<String> availableRoles = this.roles.get(user == null ? defaultUser : user);
+         if(availableRoles == null)
+         {
+            return false;
+         }
          for (String availableRole : availableRoles)
          {
             if (roles != null)
             {
                for (Role role : roles)
                {
-                  if (role.getName().equals(availableRole) && role.isCheckType(checkType))
+                  if (role.getName().equals(availableRole) && checkType.hasRole(role))
                   {
                      return true;
                   }
@@ -134,6 +134,14 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
       roles.get(user).remove(role);
    }
 
+   /*
+   * set the default user for null users
+   */
+   public void setDefaultUser(String username)
+   {
+      defaultUser = username;
+   }
+
    static class User
    {
       final String user;
@@ -168,8 +176,7 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
          {
             return false;
          }
-         return user.equals(this.user) && password
-                 .equals(this.password);
+         return this.user.equals(user) && this.password.equals(password);
       }
    }
 }

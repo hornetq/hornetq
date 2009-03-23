@@ -1,5 +1,10 @@
-<deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-security.xsd ">
-      <user name="guest" password="guest">
-         <role name="guest"/>
-      </user>
+<deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-security.xsd ">
+   <!-- the default user.  this is used where username is null-->
+   <defaultuser name="guest" password="guest">
+      <role name="guest"/>
+   </defaultuser>
+   <!--<user name="user" password="pass">
+      <role name="role"/>
+   </user>-->
 </deployment>

@@ -38,6 +38,10 @@ public class BasicSecurityDeployer extends XmlDeployer
    private static final String ROLES_NODE = "role";
    private static final String ROLE_ATTR_NAME = "name";
 
+   private static  final String DEFAULT_USER = "defaultuser";
+
+   private static  final String USER = "user";
+
    public BasicSecurityDeployer(final DeploymentManager deploymentManager)
    {
       super(deploymentManager);
@@ -45,7 +49,7 @@ public class BasicSecurityDeployer extends XmlDeployer
 
    public String[] getElementTagName()
    {
-      return new String[]{"user"};
+      return new String[]{DEFAULT_USER, USER};
    }
 
    @Override
@@ -60,6 +64,11 @@ public class BasicSecurityDeployer extends XmlDeployer
       String password = node.getAttributes().getNamedItem(PASSWORD_ATTRIBUTE).getNodeValue();
       //add the user
       jbmSecurityManager.addUser(username, password);
+      String nodeName = node.getNodeName();
+      if (DEFAULT_USER.equalsIgnoreCase(nodeName))
+      {
+         jbmSecurityManager.setDefaultUser(username);
+      }
       NodeList children = node.getChildNodes();
       for (int i = 0; i < children.getLength(); i++)
       {

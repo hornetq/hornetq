@@ -22,6 +22,21 @@
 
 package org.jboss.messaging.tests.unit.core.security.impl;
 
+import org.jboss.messaging.core.security.CheckType;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.integration.security.JAASSecurityManager;
+import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.security.SimpleGroup;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
 import java.io.IOException;
 import java.security.Principal;
 import java.security.acl.Group;
@@ -30,22 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-import javax.security.auth.spi.LoginModule;
-
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.integration.security.JAASSecurityManager;
-import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.security.SimpleGroup;
 
 /**
  * tests the JAASSecurityManager
@@ -103,13 +102,13 @@ public class JAASSecurityManagerTest extends UnitTestCase
    public void testValidatingUserAndRole()
    {
       Set<Role> roles = new HashSet<Role>();
-      roles.add(new Role(ROLE, true, true, true));
+      roles.add(new Role(ROLE, true, true, true, true, true, true, true));
 
-      assertTrue(securityManager.validateUserAndRole(USER, PASSWORD, roles, CheckType.CREATE));
+      assertTrue(securityManager.validateUserAndRole(USER, PASSWORD, roles, CheckType.CREATE_DURABLE_QUEUE));
 
       roles.clear();
-      roles.add(new Role(INVALID_ROLE, true, true, true));
-      assertFalse(securityManager.validateUserAndRole(USER, PASSWORD, roles, CheckType.CREATE));
+      roles.add(new Role(INVALID_ROLE, true, true, true, true, true, true, true));
+      assertFalse(securityManager.validateUserAndRole(USER, PASSWORD, roles, CheckType.CREATE_DURABLE_QUEUE));
    }
 
    public static class SimpleLogingModule implements LoginModule

@@ -12,9 +12,15 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
+import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
+import org.jboss.messaging.utils.Pair;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -31,17 +37,9 @@ import javax.jms.XATopicConnection;
 import javax.jms.XATopicConnectionFactory;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
-import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
-import org.jboss.messaging.utils.Pair;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -641,43 +639,16 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       {
          throw JMSExceptionHelper.convertFromMessagingException(me);
       }
-
-      if (username != null)
-      {
-         // Since core has no connection concept, we need to create a session in order to authenticate at this time
-
-         ClientSession sess = null;
-
-         try
-         {
-            sess = sessionFactory.createSession(username, password, false, false, false, false, 0);
-         }
-         catch (MessagingException e)
-         {
-            throw JMSExceptionHelper.convertFromMessagingException(e);
-         }
-         finally
-         {
-            if (sess != null)
-            {
-               try
-               {
-                  sess.close();
-               }
-               catch (Throwable ignore)
-               {
-               }
-            }
-         }
-      }
-
-      return new JBossConnection(username,
+      JBossConnection connection = new JBossConnection(username,
                                  password,
                                  type,
                                  clientID,
                                  dupsOKBatchSize,
                                  transactionBatchSize,
                                  sessionFactory);
+
+      connection.authorize();
+      return connection;
    }
 
    private void createFactory() throws MessagingException

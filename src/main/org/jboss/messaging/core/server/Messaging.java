@@ -23,10 +23,6 @@
 
 package org.jboss.messaging.core.server;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.MBeanServer;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.ManagementService;
@@ -40,6 +36,9 @@ import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+
+import javax.management.MBeanServer;
+import java.lang.management.ManagementFactory;
 
 /**
  * A Messaging
@@ -63,7 +62,7 @@ public class Messaging
 
       RemotingService remotingService = new RemotingServiceImpl(config);
 
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
                                                                       config.isJMXManagementEnabled());
@@ -89,7 +88,7 @@ public class Messaging
    {
       RemotingService remotingService = new RemotingServiceImpl(config);
 
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
                                                                       config.isJMXManagementEnabled());
@@ -117,7 +116,7 @@ public class Messaging
 
       RemotingService remotingService = new RemotingServiceImpl(config);
 
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
       ManagementService managementService = new ManagementServiceImpl(mbeanServer,
                                                                       config.isJMXManagementEnabled());
@@ -145,7 +144,7 @@ public class Messaging
 
       RemotingService remotingService = new RemotingServiceImpl(config);
 
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl(true);
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
 
