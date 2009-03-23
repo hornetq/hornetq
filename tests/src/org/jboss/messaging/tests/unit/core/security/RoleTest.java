@@ -24,9 +24,9 @@ package org.jboss.messaging.tests.unit.core.security;
 
 import static org.jboss.messaging.core.security.CheckType.CONSUME;
 import static org.jboss.messaging.core.security.CheckType.CREATE_DURABLE_QUEUE;
-import static org.jboss.messaging.core.security.CheckType.CREATE_TEMP_QUEUE;
+import static org.jboss.messaging.core.security.CheckType.CREATE_NON_DURABLE_QUEUE;
 import static org.jboss.messaging.core.security.CheckType.DELETE_DURABLE_QUEUE;
-import static org.jboss.messaging.core.security.CheckType.DELETE_TEMP_QUEUE;
+import static org.jboss.messaging.core.security.CheckType.DELETE_NON_DURABLE_QUEUE;
 import static org.jboss.messaging.core.security.CheckType.SEND;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -56,9 +56,9 @@ public class RoleTest extends UnitTestCase
       assertTrue(SEND.hasRole(role));
       assertFalse(CONSUME.hasRole(role));
       assertFalse(CREATE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(CREATE_TEMP_QUEUE.hasRole(role));
+      assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
       assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_TEMP_QUEUE.hasRole(role));
+      assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
    
    public void testWriteRole() throws Exception
@@ -67,9 +67,9 @@ public class RoleTest extends UnitTestCase
       assertFalse(SEND.hasRole(role));
       assertTrue(CONSUME.hasRole(role));
       assertFalse(CREATE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(CREATE_TEMP_QUEUE.hasRole(role));
+      assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
       assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_TEMP_QUEUE.hasRole(role));
+      assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
 
    public void testCreateRole() throws Exception
@@ -78,9 +78,9 @@ public class RoleTest extends UnitTestCase
       assertFalse(SEND.hasRole(role));
       assertFalse(CONSUME.hasRole(role));
       assertTrue(CREATE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(CREATE_TEMP_QUEUE.hasRole(role));
+      assertFalse(CREATE_NON_DURABLE_QUEUE.hasRole(role));
       assertFalse(DELETE_DURABLE_QUEUE.hasRole(role));
-      assertFalse(DELETE_TEMP_QUEUE.hasRole(role));
+      assertFalse(DELETE_NON_DURABLE_QUEUE.hasRole(role));
    }
    
    public void testEqualsAndHashcode() throws Exception

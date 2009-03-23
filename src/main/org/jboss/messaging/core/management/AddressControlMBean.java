@@ -49,8 +49,8 @@ public interface AddressControlMBean
          @Parameter(name = "consume", desc = "Can the user consume from this address?") boolean consume,
          @Parameter(name = "createDurableQueue", desc = "Can the user create a durable queue?") boolean createDurableQueue,
          @Parameter(name = "deleteDurableQueue", desc = "Can the user delete a durable queue?") boolean deleteDurableQueue,
-         @Parameter(name = "createTempQueue", desc = "Can the user create a temp queue?") boolean createTempQueue,
-         @Parameter(name = "deleteTempQueue", desc = "Can the user delete a temp queue?") boolean deleteTempQueue,
+         @Parameter(name = "createNonDurableQueue", desc = "Can the user create a temp queue?") boolean createNonDurableQueue,
+         @Parameter(name = "deleteNonDurableQueue", desc = "Can the user delete a temp queue?") boolean deleteNonDurableQueue,
          @Parameter(name = "manage", desc = "Can the user send management messages?") boolean manage)
          throws Exception;
 

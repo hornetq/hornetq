@@ -83,9 +83,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateTempQueue());
+            assertFalse(role.isCreateNonDurableQueue());
             assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteTempQueue());
+            assertFalse(role.isDeleteNonDurableQueue());
             assertTrue(role.isManage());
             assertTrue(role.isSend());
          }
@@ -93,9 +93,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateTempQueue());
+            assertFalse(role.isCreateNonDurableQueue());
             assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteTempQueue());
+            assertFalse(role.isDeleteNonDurableQueue());
             assertTrue(role.isManage());
             assertTrue(role.isSend());
          }
@@ -103,9 +103,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertTrue(role.isCreateDurableQueue());
-            assertFalse(role.isCreateTempQueue());
+            assertFalse(role.isCreateNonDurableQueue());
             assertTrue(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteTempQueue());
+            assertFalse(role.isDeleteNonDurableQueue());
             assertTrue(role.isManage());
             assertTrue(role.isSend());
          }
@@ -129,9 +129,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateTempQueue());
+            assertFalse(role.isCreateNonDurableQueue());
             assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteTempQueue());
+            assertFalse(role.isDeleteNonDurableQueue());
             assertTrue(role.isManage());
             assertTrue(role.isSend());
          }
@@ -139,9 +139,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateTempQueue());
+            assertFalse(role.isCreateNonDurableQueue());
             assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteTempQueue());
+            assertFalse(role.isDeleteNonDurableQueue());
             assertTrue(role.isManage());
             assertTrue(role.isSend());
          }
@@ -149,9 +149,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertTrue(role.isCreateDurableQueue());
-            assertFalse(role.isCreateTempQueue());
+            assertFalse(role.isCreateNonDurableQueue());
             assertTrue(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteTempQueue());
+            assertFalse(role.isDeleteNonDurableQueue());
             assertTrue(role.isManage());
             assertTrue(role.isSend());
          }
@@ -169,9 +169,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateTempQueue());
+            assertFalse(role.isCreateNonDurableQueue());
             assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteTempQueue());
+            assertFalse(role.isDeleteNonDurableQueue());
             assertFalse(role.isManage());
             assertTrue(role.isSend());
          }
@@ -179,9 +179,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertFalse(role.isCreateDurableQueue());
-            assertFalse(role.isCreateTempQueue());
+            assertFalse(role.isCreateNonDurableQueue());
             assertFalse(role.isDeleteDurableQueue());
-            assertFalse(role.isDeleteTempQueue());
+            assertFalse(role.isDeleteNonDurableQueue());
             assertFalse(role.isManage());
             assertTrue(role.isSend());
          }
@@ -189,9 +189,9 @@ public class SecurityDeployerTest extends UnitTestCase
          {
             assertTrue(role.isConsume());
             assertFalse(role.isCreateDurableQueue());
-            assertTrue(role.isCreateTempQueue());
+            assertTrue(role.isCreateNonDurableQueue());
             assertFalse(role.isDeleteDurableQueue());
-            assertTrue(role.isDeleteTempQueue());
+            assertTrue(role.isDeleteNonDurableQueue());
             assertFalse(role.isManage());
             assertTrue(role.isSend());
          }

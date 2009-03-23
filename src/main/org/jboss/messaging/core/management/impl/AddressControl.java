@@ -108,8 +108,8 @@ public class AddressControl implements AddressControlMBean
                                        CheckType.CONSUME.hasRole(role),
                                        CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
                                        CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
-                                       CheckType.CREATE_TEMP_QUEUE.hasRole(role),
-                                       CheckType.DELETE_TEMP_QUEUE.hasRole(role),
+                                       CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
+                                       CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
                                        CheckType.MANAGE.hasRole(role));
       }
       return RoleInfo.toTabularData(roleInfos);
@@ -120,12 +120,12 @@ public class AddressControl implements AddressControlMBean
                                     final boolean consume,
                                     final boolean createDurableQueue,
                                     final boolean deleteDurableQueue,
-                                    final boolean createTempQueue,
-                                    final boolean deleteTempQueue,
+                                    final boolean createNonDurableQueue,
+                                    final boolean deleteNonDurableQueue,
                                     final boolean manage) throws Exception
    {
       Set<Role> roles = securityRepository.getMatch(address.toString());
-      Role newRole = new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createTempQueue, deleteTempQueue, manage);
+      Role newRole = new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
       boolean added = roles.add(newRole);
       if (!added)
       {

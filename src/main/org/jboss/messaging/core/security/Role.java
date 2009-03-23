@@ -43,9 +43,9 @@ public class Role implements Serializable
 
    final private boolean deleteDurableQueue;
 
-   final private boolean createTempQueue;
+   final private boolean createNonDurableQueue;
 
-   final private boolean deleteTempQueue;
+   final private boolean deleteNonDurableQueue;
 
    final private boolean manage;
 
@@ -54,8 +54,8 @@ public class Role implements Serializable
                final boolean consume,
                final boolean createDurableQueue,
                final boolean deleteDurableQueue,
-               final boolean createTempQueue,
-               final boolean deleteTempQueue,
+               final boolean createNonDurableQueue,
+               final boolean deleteNonDurableQueue,
                boolean manage)
    {
       if(name == null)
@@ -67,8 +67,8 @@ public class Role implements Serializable
       this.consume = consume;
       this.createDurableQueue = createDurableQueue;
       this.deleteDurableQueue = deleteDurableQueue;
-      this.createTempQueue = createTempQueue;
-      this.deleteTempQueue = deleteTempQueue;
+      this.createNonDurableQueue = createNonDurableQueue;
+      this.deleteNonDurableQueue = deleteNonDurableQueue;
       this.manage = manage;
    }
 
@@ -99,14 +99,14 @@ public class Role implements Serializable
       return deleteDurableQueue;
    }
 
-   public boolean isCreateTempQueue()
+   public boolean isCreateNonDurableQueue()
    {
-      return createTempQueue;
+      return createNonDurableQueue;
    }
 
-   public boolean isDeleteTempQueue()
+   public boolean isDeleteNonDurableQueue()
    {
-      return deleteTempQueue;
+      return deleteNonDurableQueue;
    }
 
    public String toString()
@@ -116,8 +116,8 @@ public class Role implements Serializable
              "write=" + consume + ";" +
              "createDurableQueue=" + createDurableQueue + "}" +
             "deleteDurableQueue=" + deleteDurableQueue + "}" +
-            "createTempQueue=" + createTempQueue + "}" +
-            "deleteTempQueue=" + deleteTempQueue + "}";
+            "createNonDurableQueue=" + createNonDurableQueue + "}" +
+            "deleteNonDurableQueue=" + deleteNonDurableQueue + "}";
    }
 
    public boolean equals(Object o)
@@ -141,7 +141,7 @@ public class Role implements Serializable
       {
          return false;
       }
-      if (createTempQueue != role.createTempQueue)
+      if (createNonDurableQueue != role.createNonDurableQueue)
       {
          return false;
       }
@@ -149,7 +149,7 @@ public class Role implements Serializable
       {
          return false;
       }
-      if (deleteTempQueue != role.deleteTempQueue)
+      if (deleteNonDurableQueue != role.deleteNonDurableQueue)
       {
          return false;
       }
@@ -173,8 +173,8 @@ public class Role implements Serializable
       result = 31 * result + (consume ? 1 : 0);
       result = 31 * result + (createDurableQueue ? 1 : 0);
       result = 31 * result + (deleteDurableQueue ? 1 : 0);
-      result = 31 * result + (createTempQueue ? 1 : 0);
-      result = 31 * result + (deleteTempQueue ? 1 : 0);
+      result = 31 * result + (createNonDurableQueue ? 1 : 0);
+      result = 31 * result + (deleteNonDurableQueue ? 1 : 0);
       return result;
    }
 

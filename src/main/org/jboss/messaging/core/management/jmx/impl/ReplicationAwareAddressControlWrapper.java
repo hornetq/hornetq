@@ -86,11 +86,11 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
                                     final boolean consume,
                                     final boolean createDurableQueue,
                                     final boolean deleteDurableQueue,
-                                    final boolean createTempQueue,
-                                    final boolean deleteTempQueue,
+                                    final boolean createNonDurableQueue,
+                                    final boolean deleteNonDurableQueue,
                                     final boolean manage) throws Exception
    {
-      replicationAwareInvoke("addRole", name, send, consume, createDurableQueue, deleteDurableQueue, createTempQueue, deleteTempQueue, manage);
+      replicationAwareInvoke("addRole", name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
    }
 
    // StandardMBean overrides ---------------------------------------

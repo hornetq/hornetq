@@ -1302,17 +1302,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-         if (temporary)
-         {
-            // make sure the user has privileges to create this queue
-            securityStore.check(address, CheckType.CREATE_TEMP_QUEUE, this);
-         }
          if (durable)
          {
             // make sure the user has privileges to create this queue
             securityStore.check(address, CheckType.CREATE_DURABLE_QUEUE, this);
          }
-
+         else
+         {
+            securityStore.check(address, CheckType.CREATE_NON_DURABLE_QUEUE, this);
+         }
          Binding binding = postOffice.getBinding(name);
 
          if (binding != null)
@@ -1411,10 +1409,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             // make sure the user has privileges to delete this queue
             securityStore.check(binding.getAddress(), CheckType.DELETE_DURABLE_QUEUE, this);
          }
-         if (queue.isTemporary())
+         else
          {
-            // make sure the user has privileges to delete this queue
-            securityStore.check(binding.getAddress(), CheckType.DELETE_TEMP_QUEUE, this);
+            securityStore.check(binding.getAddress(), CheckType.DELETE_NON_DURABLE_QUEUE, this);  
          }
          queue.deleteAllReferences();
 

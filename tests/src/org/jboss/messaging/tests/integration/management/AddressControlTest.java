@@ -130,9 +130,9 @@ public class AddressControlTest extends ManagementTestBase
       assertEquals(role.getName(), roleInfos[0].getName());
       assertEquals(CheckType.CONSUME.hasRole(role), roleInfos[0].isConsume());
       assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateDurableQueue());
-      assertEquals(CheckType.CREATE_TEMP_QUEUE.hasRole(role), roleInfos[0].isCreateTempQueue());
+      assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateNonDurableQueue());
       assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteDurableQueue());
-      assertEquals(CheckType.DELETE_TEMP_QUEUE.hasRole(role), roleInfos[0].isDeleteTempQueue());
+      assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteNonDurableQueue());
       assertEquals(CheckType.MANAGE.hasRole(role), roleInfos[0].isManage());
       assertEquals(CheckType.SEND.hasRole(role), roleInfos[0].isSend());
 
@@ -156,8 +156,8 @@ public class AddressControlTest extends ManagementTestBase
                              CheckType.CONSUME.hasRole(role),
                              CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
                              CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
-                             CheckType.CREATE_TEMP_QUEUE.hasRole(role),
-                             CheckType.DELETE_TEMP_QUEUE.hasRole(role),
+                             CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
+                             CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
                              CheckType.MANAGE.hasRole(role));
 
       tabularData = addressControl.getRoles();
@@ -166,9 +166,9 @@ public class AddressControlTest extends ManagementTestBase
       assertEquals(role.getName(), roleInfos[0].getName());
       assertEquals(CheckType.CONSUME.hasRole(role), roleInfos[0].isConsume());
       assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateDurableQueue());
-      assertEquals(CheckType.CREATE_TEMP_QUEUE.hasRole(role), roleInfos[0].isCreateTempQueue());
+      assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateNonDurableQueue());
       assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteDurableQueue());
-      assertEquals(CheckType.DELETE_TEMP_QUEUE.hasRole(role), roleInfos[0].isDeleteTempQueue());
+      assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteNonDurableQueue());
       assertEquals(CheckType.MANAGE.hasRole(role), roleInfos[0].isManage());
       assertEquals(CheckType.SEND.hasRole(role), roleInfos[0].isSend());
 
@@ -193,8 +193,8 @@ public class AddressControlTest extends ManagementTestBase
                              CheckType.CONSUME.hasRole(role),
                              CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
                              CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
-                             CheckType.CREATE_TEMP_QUEUE.hasRole(role),
-                             CheckType.DELETE_TEMP_QUEUE.hasRole(role),
+                             CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
+                             CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
                              CheckType.MANAGE.hasRole(role));
 
       tabularData = addressControl.getRoles();
@@ -207,8 +207,8 @@ public class AddressControlTest extends ManagementTestBase
                              CheckType.CONSUME.hasRole(role),
                              CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
                              CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
-                             CheckType.CREATE_TEMP_QUEUE.hasRole(role),
-                             CheckType.DELETE_TEMP_QUEUE.hasRole(role),
+                             CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
+                             CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
                              CheckType.MANAGE.hasRole(role));
          fail("can not add a role which already exists");
       }

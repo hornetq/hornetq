@@ -37,8 +37,8 @@ public enum CheckType
    CONSUME {public boolean hasRole(final Role role) { return role.isConsume();}},
    CREATE_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isCreateDurableQueue();}},
    DELETE_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isDeleteDurableQueue();}},
-   CREATE_TEMP_QUEUE {public boolean hasRole(final Role role) { return role.isCreateTempQueue();}},
-   DELETE_TEMP_QUEUE {public boolean hasRole(final Role role) { return role.isDeleteTempQueue();}},
+   CREATE_NON_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isCreateNonDurableQueue();}},
+   DELETE_NON_DURABLE_QUEUE {public boolean hasRole(final Role role) { return role.isDeleteNonDurableQueue();}},
    MANAGE {public boolean hasRole(final Role role) { return role.isManage();}};
 
    public abstract boolean hasRole(final Role role);

@@ -51,13 +51,13 @@ public class RoleInfo
    private static final String ROLE_TABULAR_TYPE_NAME = "RoleTabularInfo";
    private static final TabularType TABULAR_TYPE;
    private static final String[] ITEM_NAMES = new String[] { "name", "send",
-         "consume", "createDurableQueue", "deleteDurableQueue", "createTempQueue", "deleteTempQueue", "manage" };
+         "consume", "createDurableQueue", "deleteDurableQueue", "createNonDurableQueue", "deleteNonDurableQueue", "manage" };
    private static final String[] ITEM_DESCRIPTIONS = new String[] {
          "Name of the role", "Can the role send messages?", "Can the role consume messages?",
-         "Can the role create a durable queue (needed for durable subscribers)?",
-         "Can the role delete a durable queue (needed for durable subscribers)?",
-         "Can the role create a temp queue?",
-         "Can the role create a temp queue?",
+         "Can the role create a durable queue?",
+         "Can the role delete a durable queue?",
+         "Can the role create a non durable queue?",
+         "Can the role create a non durable queue?",
          "Can the user send management messages"};
    private static final OpenType[] ITEM_TYPES = new OpenType[] { STRING,
          BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN };
@@ -88,9 +88,9 @@ public class RoleInfo
 
    final private boolean deleteDurableQueue;
 
-   final private boolean createTempQueue;
+   final private boolean createNonDurableQueue;
 
-   final private boolean deleteTempQueue;
+   final private boolean deleteNonDurableQueue;
 
    final private boolean manage;
 
@@ -119,10 +119,10 @@ public class RoleInfo
          boolean consume = (Boolean) compositeData.get("consume");
          boolean createDurableQueue = (Boolean) compositeData.get("createDurableQueue");
          boolean deleteDurableQueue = (Boolean) compositeData.get("deleteDurableQueue");
-         boolean createTempQueue = (Boolean) compositeData.get("createTempQueue");
-         boolean deleteTempQueue = (Boolean) compositeData.get("deleteTempQueue");
+         boolean createNonDurableQueue = (Boolean) compositeData.get("createNonDurableQueue");
+         boolean deleteNonDurableQueue = (Boolean) compositeData.get("deleteNonDurableQueue");
          boolean manage = (Boolean) compositeData.get("manage");
-         infos.add(new RoleInfo(name, send, consume, createDurableQueue, deleteDurableQueue, createTempQueue, deleteTempQueue, manage));
+         infos.add(new RoleInfo(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage));
       }
 
       return (RoleInfo[]) infos.toArray(new RoleInfo[infos.size()]);
@@ -131,15 +131,15 @@ public class RoleInfo
    // Constructors --------------------------------------------------
 
 
-   public RoleInfo(String name, boolean send, boolean consume, boolean createDurableQueue, boolean deleteDurableQueue, boolean createTempQueue, boolean deleteTempQueue, boolean manage)
+   public RoleInfo(String name, boolean send, boolean consume, boolean createDurableQueue, boolean deleteDurableQueue, boolean createNonDurableQueue, boolean deleteNonDurableQueue, boolean manage)
    {
       this.name = name;
       this.send = send;
       this.consume = consume;
       this.createDurableQueue = createDurableQueue;
       this.deleteDurableQueue = deleteDurableQueue;
-      this.createTempQueue = createTempQueue;
-      this.deleteTempQueue = deleteTempQueue;
+      this.createNonDurableQueue = createNonDurableQueue;
+      this.deleteNonDurableQueue = deleteNonDurableQueue;
       this.manage = manage;
    }
 
@@ -170,14 +170,14 @@ public class RoleInfo
       return deleteDurableQueue;
    }
 
-   public boolean isCreateTempQueue()
+   public boolean isCreateNonDurableQueue()
    {
-      return createTempQueue;
+      return createNonDurableQueue;
    }
 
-   public boolean isDeleteTempQueue()
+   public boolean isDeleteNonDurableQueue()
    {
-      return deleteTempQueue;
+      return deleteNonDurableQueue;
    }
 
    public boolean isManage()
@@ -190,7 +190,7 @@ public class RoleInfo
       try
       {
          return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { name,
-               send, consume, createDurableQueue, deleteDurableQueue, createTempQueue, deleteTempQueue, manage });
+               send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage });
       } catch (OpenDataException e)
       {
          return null;
@@ -205,8 +205,8 @@ public class RoleInfo
              "write=" + consume + ";" +
              "createDurableQueue=" + createDurableQueue + "}" +
             "deleteDurableQueue=" + deleteDurableQueue + "}" +
-            "createTempQueue=" + createTempQueue + "}" +
-            "deleteTempQueue=" + deleteTempQueue + "}" +
+            "createNonDurableQueue=" + createNonDurableQueue + "}" +
+            "deleteNonDurableQueue=" + deleteNonDurableQueue + "}" +
             "manage=" + manage + "}";
    }
 
