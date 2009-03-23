@@ -23,21 +23,27 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_ADDRESS;
+import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_CONSUMER_COUNT;
+import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_NOTIFICATION_TYPE;
+import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_ROUTING_NAME;
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
+import static org.jboss.messaging.core.management.NotificationType.BINDING_ADDED;
+import static org.jboss.messaging.core.management.NotificationType.BINDING_REMOVED;
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CLOSED;
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-
-import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.NotificationType;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
@@ -59,134 +65,135 @@ public class NotificationTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    private MessagingService service;
+   private ClientSession session;
+   private ClientConsumer notifConsumer;
+   private SimpleString notifQueue;
 
    // Static --------------------------------------------------------
    
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void testNotification() throws Exception
+   
+   public void testBINDING_ADDED() throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      SimpleString queue = randomSimpleString();
+      SimpleString address = randomSimpleString();
+      boolean durable = randomBoolean();
       
-      ClientSession session = sf.createSession(false, true, true);
+      flush(notifConsumer);
+      
+      session.createQueue(address, queue, durable);
 
-      // create a queue to receive the management notifications
-      SimpleString notifQueue = randomSimpleString();
-      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true);
-      ClientConsumer notifConsumer = session.createConsumer(notifQueue);
-      session.start();
-      
-      // we've generated at least 2 notifications
-      // but there is more in the queue (e.g. the notification when the notifQueue was created)      
-      ClientMessage notifMessage = notifConsumer.receive(500);
-      assertNotNull(notifMessage);
-      Set<SimpleString> propertyNames = notifMessage.getPropertyNames();
+      ClientMessage[] notifications = consumeMessages(1, notifConsumer);
+      assertEquals(BINDING_ADDED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
 
-      for (SimpleString key : propertyNames)
-      {
-         System.out.println(key + "=" + notifMessage.getProperty(key));
-      }
-
-      notifMessage.acknowledge();
-      
-
-      notifMessage = notifConsumer.receive(500);
-      assertNotNull(notifMessage);
-      propertyNames = notifMessage.getPropertyNames();
-      for (SimpleString key : propertyNames)
-      {
-         System.out.println(key + "=" + notifMessage.getProperty(key));
-      }
-      notifMessage.acknowledge();
-      
-      // generate more notifications
-      session.createQueue(new SimpleString("testaddress"), new SimpleString("queue1"), false);
-      session.deleteQueue(new SimpleString("queue1"));
-
-      notifMessage = notifConsumer.receive(500);
-      assertNotNull(notifMessage);
-      propertyNames = notifMessage.getPropertyNames();
-      for (SimpleString key : propertyNames)
-      {
-         System.out.println(key + "=" + notifMessage.getProperty(key));
-      }
-      notifMessage.acknowledge();
-      
-      notifMessage = notifConsumer.receive(500);
-      assertNotNull(notifMessage);
-      propertyNames = notifMessage.getPropertyNames();
-      for (SimpleString key : propertyNames)
-      {
-         System.out.println(key + "=" + notifMessage.getProperty(key));
-      }
-      notifMessage.acknowledge();
-      
-      
-      notifConsumer.close();
-      session.deleteQueue(notifQueue);
-      session.close();
+      session.deleteQueue(queue);
    }
    
-   public void testNotificationWithFilter() throws Exception
+   public void testBINDING_ADDEDWithMatchingFilter() throws Exception
    {
-      SimpleString destinationName = randomSimpleString();
-      SimpleString unmatchedDestinationName = new SimpleString("this.destination.does.not.match.the.filter");
+      SimpleString queue = randomSimpleString();
+      SimpleString address = randomSimpleString();
+      boolean durable = randomBoolean();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      
-      ClientSession session = sf.createSession(false, true, true);
-
-      // create a queue to receive the management notifications only concerning the destination
-      SimpleString notifQueue = randomSimpleString();
-      SimpleString filter = new SimpleString(ManagementHelper.HDR_ADDRESS + " LIKE '%" + destinationName + "%'" );
-      System.out.println(filter);
-      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, filter, false, true);
-      ClientConsumer notifConsumer = session.createConsumer(notifQueue);
-      session.start();
-
-      // generate notifications that do NOT match the filter
-      session.createQueue(unmatchedDestinationName, unmatchedDestinationName, true);
-      session.deleteQueue(unmatchedDestinationName);
-      
-      assertNull(notifConsumer.receive(500));
-      
-      // generate notifications that match the filter
-      session.createQueue(destinationName, destinationName, true);
-      session.deleteQueue(destinationName);
-
-      ClientMessage notifMessage = notifConsumer.receive(500);
-      assertNotNull(notifMessage);
-      assertEquals(NotificationType.BINDING_ADDED.toString(), notifMessage.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
-      Set<SimpleString> propertyNames = notifMessage.getPropertyNames();
-
-      for (SimpleString key : propertyNames)
-      {
-         System.out.println(key + "=" + notifMessage.getProperty(key));
-      }
-
-      notifMessage.acknowledge();
-      
-
-      notifMessage = notifConsumer.receive(500);
-      assertNotNull(notifMessage);
-      assertEquals(NotificationType.BINDING_REMOVED.toString(), notifMessage.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE).toString());
-      propertyNames = notifMessage.getPropertyNames();
-      for (SimpleString key : propertyNames)
-      {
-         System.out.println(key + "=" + notifMessage.getProperty(key));
-      }
-      notifMessage.acknowledge();
-      
-      // no other notifications matching the filter
-      assertNull(notifConsumer.receive(500));
-      
+      System.out.println(queue);
       notifConsumer.close();
-      session.deleteQueue(notifQueue);
-      session.close();
+      notifConsumer = session.createConsumer(notifQueue.toString(), HDR_ROUTING_NAME + "= '" + queue + "'");
+      flush(notifConsumer);
+      
+      session.createQueue(address, queue, durable);
+
+      ClientMessage[] notifications = consumeMessages(1, notifConsumer);
+      assertEquals(BINDING_ADDED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
+
+      session.deleteQueue(queue);
    }
    
+   public void testBINDING_ADDEDWithNonMatchingFilter() throws Exception
+   {
+      SimpleString queue = randomSimpleString();
+      SimpleString address = randomSimpleString();
+      boolean durable = randomBoolean();
+
+      System.out.println(queue);
+      notifConsumer.close();
+      notifConsumer = session.createConsumer(notifQueue.toString(), HDR_ROUTING_NAME + " <> '" + queue + "'");
+      flush(notifConsumer);
+      
+      session.createQueue(address, queue, durable);
+
+      consumeMessages(0, notifConsumer);
+
+      session.deleteQueue(queue);
+   }
+   
+   public void testBINDING_REMOVED() throws Exception
+   {
+      SimpleString queue = randomSimpleString();
+      SimpleString address = randomSimpleString();
+      boolean durable = randomBoolean();
+
+      session.createQueue(address, queue, durable);
+
+      flush(notifConsumer);
+
+      session.deleteQueue(queue);
+
+      ClientMessage[] notifications = consumeMessages(1, notifConsumer);
+      assertEquals(BINDING_REMOVED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
+   }
+   
+   public void testCONSUMER_CREATED() throws Exception
+   {
+      SimpleString queue = randomSimpleString();
+      SimpleString address = randomSimpleString();
+      boolean durable = randomBoolean();
+
+      session.createQueue(address, queue, durable);
+
+      flush(notifConsumer);
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      
+      ClientMessage[] notifications = consumeMessages(1, notifConsumer);
+      assertEquals(CONSUMER_CREATED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
+      assertEquals(1, notifications[0].getProperty(HDR_CONSUMER_COUNT));
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
+
+   public void testCONSUMER_CLOSED() throws Exception
+   {
+      SimpleString queue = randomSimpleString();
+      SimpleString address = randomSimpleString();
+      boolean durable = randomBoolean();
+
+      session.createQueue(address, queue, durable);
+      ClientConsumer consumer = session.createConsumer(queue);
+      
+      flush(notifConsumer);
+
+      consumer.close();
+      
+      ClientMessage[] notifications = consumeMessages(1, notifConsumer);
+      assertEquals(CONSUMER_CLOSED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
+      assertEquals(0, notifications[0].getProperty(HDR_CONSUMER_COUNT));
+
+      session.deleteQueue(queue);
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -204,11 +211,26 @@ public class NotificationTest extends UnitTestCase
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       service = Messaging.newNullStorageMessagingService(conf);
       service.start();
+      
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      session = sf.createSession(false, true, true);
+      session.start();
+      
+      notifQueue = randomSimpleString();
+      
+      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true);
+
+      notifConsumer = session.createConsumer(notifQueue);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      notifConsumer.close();
+      
+      session.deleteQueue(notifQueue);
+      session.close();
+      
       service.stop();
 
       super.tearDown();
@@ -216,6 +238,50 @@ public class NotificationTest extends UnitTestCase
 
    // Private -------------------------------------------------------
 
+   
+   private static void flush(ClientConsumer notifConsumer) throws MessagingException
+   {
+      ClientMessage message = null;
+      do
+      {
+         message = notifConsumer.receive(500);
+      } while (message != null);
+   }
+
+   
+   protected static ClientMessage[] consumeMessages(int expected, ClientConsumer consumer) throws Exception
+   {
+      ClientMessage[] messages = new ClientMessage[expected];
+      
+      ClientMessage m = null;
+      for (int i = 0; i < expected; i++)
+      {
+         m = consumer.receive(500);
+         if (m != null)
+         {
+            for (SimpleString key : m.getPropertyNames())
+            {
+               System.out.println(key + "=" + m.getProperty(key));
+            }    
+         }
+         assertNotNull("expected to received " + expected + " messages, got only " + i, m);
+         messages[i] = m;
+         m.acknowledge();
+      }
+      m = consumer.receive(500);
+      if (m != null)
+      {
+         for (SimpleString key : m.getPropertyNames())
+
+         {
+            System.out.println(key + "=" + m.getProperty(key));
+         }
+      }    
+      assertNull("received one more message than expected (" + expected + ")", m);
+      
+      return messages;
+   }
+   
    // Inner classes -------------------------------------------------
 
 }

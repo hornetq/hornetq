@@ -24,6 +24,7 @@ package org.jboss.messaging.core.security;
 
 import java.util.Set;
 
+import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.utils.SimpleString;
@@ -47,4 +48,6 @@ public interface SecurityStore
    void setSecurityManager(JBMSecurityManager securityManager);
 
    void setManagementClusterPassword(String clusterAdminPassword);
+
+   void setNotificationService(NotificationService notificationService);
 }

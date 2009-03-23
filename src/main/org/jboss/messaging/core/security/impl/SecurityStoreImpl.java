@@ -23,8 +23,18 @@
 package org.jboss.messaging.core.security.impl;
 
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
+import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationService;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -34,10 +44,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import org.jboss.messaging.utils.TypedProperties;
 
 /**
  * The JBM SecurityStore implementation
@@ -82,6 +89,8 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    private final boolean securityEnabled;
    
    private String managementClusterPassword;
+
+   private NotificationService notificationService;
    
    // Constructors --------------------------------------------------
 
@@ -114,6 +123,17 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          {
             if (!securityManager.validateUser(user, password))
             {
+               if (notificationService != null)
+               {
+                  TypedProperties props = new TypedProperties();
+
+                  props.putStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(user));
+
+                  Notification notification = new Notification(SECURITY_AUTHENTICATION_VIOLATION, props);
+
+                  notificationService.sendNotification(notification);
+               }
+
                throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
             }
          }
@@ -146,7 +166,20 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          } 
          else if (!securityManager.validateUserAndRole(user, session.getPassword(), roles, checkType))
          {
-             throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + session.getUsername());
+            if (notificationService != null)
+            {
+               TypedProperties props = new TypedProperties();
+
+               props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
+               props.putStringProperty(ManagementHelper.HDR_CHECK_TYPE, new SimpleString(checkType.toString()));
+               props.putStringProperty(ManagementHelper.HDR_USER, new SimpleString(user));
+
+               Notification notification = new Notification(NotificationType.SECURITY_PERMISSION_VIOLATION, props);
+
+               notificationService.sendNotification(notification);
+            }
+
+            throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + session.getUsername());
          }
          // if we get here we're granted, add to the cache
          ConcurrentHashSet<SimpleString> set = new ConcurrentHashSet<SimpleString>();
@@ -173,6 +206,11 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       securityRepository.registerListener(this);
    }
 
+   public void setNotificationService(NotificationService notificationService)
+   {
+      this.notificationService = notificationService;
+   }
+   
    public void setSecurityManager(JBMSecurityManager securityManager)
    {
       this.securityManager = securityManager;

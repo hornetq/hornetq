@@ -61,7 +61,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_CONNECTION_SCAN_PERIOD = 1000;
 
-   public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
+   public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = 100000;;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
 

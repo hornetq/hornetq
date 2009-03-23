@@ -26,7 +26,6 @@ import java.util.Set;
 
 import javax.management.ObjectName;
 
-import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -61,7 +60,7 @@ import org.jboss.messaging.utils.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface ManagementService extends MessagingComponent
+public interface ManagementService extends NotificationService, MessagingComponent
 {
    // Configuration
    
@@ -140,28 +139,4 @@ public interface ManagementService extends MessagingComponent
    Object getResource(ObjectName objectName);
 
    ServerMessage handleMessage(ServerMessage message);  
-
-   // Notfication
-   
-   /** 
-    * the message corresponding to a notification will always contain the properties:
-    * <ul>
-    *   <li><code>ManagementHelper.HDR_NOTIFICATION_TYPE</code> - the type of notification (SimpleString)</li>
-    *   <li><code>ManagementHelper.HDR_NOTIFICATION_MESSAGE</code> - a message contextual to the notification (SimpleString)</li>
-    *   <li><code>ManagementHelper.HDR_NOTIFICATION_TIMESTAMP</code> - the timestamp when the notification occured (long)</li>
-    * </ul>
-    * 
-    * in addition to the properties defined in <code>props</code>
-    * 
-    * @see ManagementHelper
-    */
-   void sendNotification(Notification notification) throws Exception;
-
-   void enableNotifications(boolean enable);
-   
-   void addNotificationListener(NotificationListener listener);
-   
-   void removeNotificationListener(NotificationListener listener);
-
-
 }

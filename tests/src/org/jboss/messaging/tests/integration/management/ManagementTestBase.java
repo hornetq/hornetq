@@ -61,7 +61,7 @@ public abstract class ManagementTestBase extends UnitTestCase
          for (int i = 0; i < expected; i++)
          {
             m = consumer.receive(500);
-            assertNotNull("expected to received " + expected + " messages, got only " + (i + 1), m);
+            assertNotNull("expected to received " + expected + " messages, got only " + i, m);
             m.acknowledge();
          }
          session.commit();

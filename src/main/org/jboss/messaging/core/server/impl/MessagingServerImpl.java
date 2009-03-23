@@ -67,7 +67,6 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.core.server.cluster.impl.ClusterManagerImpl;
@@ -230,6 +229,8 @@ public class MessagingServerImpl implements MessagingServer
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(),
                                             configuration.isSecurityEnabled());
       securityStore.setManagementClusterPassword(configuration.getManagementClusterPassword());
+      securityStore.setNotificationService(managementService);
+      
       addressSettingsRepository.setDefault(new AddressSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
                                                           new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads"));

@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.management.ObjectName;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.utils.SimpleString;
@@ -79,6 +77,12 @@ public class ManagementHelper
    public static final SimpleString HDR_DISTANCE = new SimpleString("_JBM_Distance");
 
    private static final SimpleString NULL = new SimpleString("_JBM_NULL");
+
+   public static final SimpleString HDR_CONSUMER_COUNT = new SimpleString("_JBM_ConsumerCount");
+
+   public static final SimpleString HDR_USER = new SimpleString("_JBM_User");
+
+   public static final SimpleString HDR_CHECK_TYPE = new SimpleString("_JBM_CheckType");
 
    // Attributes ----------------------------------------------------
 

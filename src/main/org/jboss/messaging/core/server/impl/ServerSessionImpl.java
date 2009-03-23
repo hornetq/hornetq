@@ -1252,6 +1252,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
             props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
+            props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
+            
             if (filterString != null)
             {
                props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);

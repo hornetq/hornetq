@@ -20,77 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.management;
-
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="mailto:fox@redhat.com">Tim Fox</a>
- * 
- * @version <tt>$Revision$</tt>
  * 
  */
 public enum NotificationType
 {
-   BINDING_ADDED, BINDING_REMOVED, CONSUMER_CREATED, CONSUMER_CLOSED;
-   
-   public static final int BINDING_ADDED_INDEX = 0;
-   
-   public static final int BINDING_REMOVED_INDEX = 1;
-   
-   public static final int CONSUMER_CREATED_INDEX = 2;
-   
-   public static final int CONSUMER_CLOSED_INDEX = 3;
-      
-   public static NotificationType fromInt(final int index)
+   BINDING_ADDED(0),
+   BINDING_REMOVED(1),
+   CONSUMER_CREATED(2),
+   CONSUMER_CLOSED(3),
+   SECURITY_AUTHENTICATION_VIOLATION(6),
+   SECURITY_PERMISSION_VIOLATION(7);
+
+   private final int value;
+
+   private NotificationType(int value)
    {
-      switch (index)
-      {
-         case BINDING_ADDED_INDEX:
-         {
-            return NotificationType.BINDING_ADDED;
-         }
-         case BINDING_REMOVED_INDEX:
-         {
-            return NotificationType.BINDING_REMOVED;
-         }
-         case CONSUMER_CREATED_INDEX:
-         {
-            return NotificationType.CONSUMER_CREATED;
-         }
-         case CONSUMER_CLOSED_INDEX:
-         {
-            return NotificationType.CONSUMER_CLOSED;
-         }
-         default:
-         {
-            throw new IllegalArgumentException("Invalid index " + index);
-         }
-      }
+      this.value = value;
    }
-   
-   public int toInt()
+
+   public int intValue()
    {
-      if (this.equals(NotificationType.BINDING_ADDED))
-      {
-         return BINDING_ADDED_INDEX;
-      }
-      else if (this.equals(NotificationType.BINDING_REMOVED))
-      {
-         return BINDING_REMOVED_INDEX;
-      }     
-      else if (this.equals(NotificationType.CONSUMER_CREATED))
-      {
-         return CONSUMER_CREATED_INDEX;
-      }
-      else if (this.equals(NotificationType.CONSUMER_CLOSED))
-      {
-         return CONSUMER_CLOSED_INDEX;
-      }
-      else
-      {
-         throw new IllegalArgumentException("Cannot convert");
-      }
+      return value;
    }
 }

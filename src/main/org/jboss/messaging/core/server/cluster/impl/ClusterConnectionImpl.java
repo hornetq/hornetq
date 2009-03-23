@@ -24,6 +24,8 @@ package org.jboss.messaging.core.server.cluster.impl;
 
 import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
+import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
+import static org.jboss.messaging.core.management.NotificationType.SECURITY_PERMISSION_VIOLATION;
 import static org.jboss.messaging.core.postoffice.impl.PostOfficeImpl.HDR_RESET_QUEUE_DATA;
 
 import java.util.HashMap;
@@ -546,35 +548,38 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
             NotificationType ntype = NotificationType.valueOf(type.toString());
 
-            switch (ntype.toInt())
+            switch (ntype)
             {
-               case NotificationType.BINDING_ADDED_INDEX:
+               case BINDING_ADDED:
                {
                   doBindingAdded(message, replicatingChannel);
 
                   break;
                }
-               case NotificationType.BINDING_REMOVED_INDEX:
+               case BINDING_REMOVED:
                {
                   doBindingRemoved(message, replicatingChannel);
 
                   break;
                }
-               case NotificationType.CONSUMER_CREATED_INDEX:
+               case CONSUMER_CREATED:
                {
                   doConsumerCreated(message, replicatingChannel);
 
                   break;
                }
-               case NotificationType.CONSUMER_CLOSED_INDEX:
+               case CONSUMER_CLOSED:
                {
                   doConsumerClosed(message, replicatingChannel);
 
                   break;
                }
+               case SECURITY_AUTHENTICATION_VIOLATION:
+               case SECURITY_PERMISSION_VIOLATION:
+                  break;
                default:
                {
-                  throw new IllegalArgumentException("Invalid type " + ntype.toInt());
+                  throw new IllegalArgumentException("Invalid type " + ntype);
                }
             }
          }

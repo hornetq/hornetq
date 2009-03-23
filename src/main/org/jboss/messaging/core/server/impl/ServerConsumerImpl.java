@@ -251,6 +251,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
+         props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, messageQueue.getConsumerCount());
+
          Notification notification = new Notification(NotificationType.CONSUMER_CLOSED, props);
 
          managementService.sendNotification(notification);

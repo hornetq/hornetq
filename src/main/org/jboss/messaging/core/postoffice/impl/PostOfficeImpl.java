@@ -22,6 +22,17 @@
 
 package org.jboss.messaging.core.postoffice.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -50,24 +61,13 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
+import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.utils.ExecutorFactory;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A PostOfficeImpl
@@ -246,9 +246,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       {
          NotificationType type = notification.getType();
 
-         switch (type.toInt())
+         switch (type)
          {
-            case NotificationType.BINDING_ADDED_INDEX:
+            case BINDING_ADDED:
             {
                TypedProperties props = notification.getProperties();
 
@@ -283,7 +283,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                break;
             }
-            case NotificationType.BINDING_REMOVED_INDEX:
+            case BINDING_REMOVED:
             {
                TypedProperties props = notification.getProperties();
 
@@ -303,7 +303,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                break;
             }
-            case NotificationType.CONSUMER_CREATED_INDEX:
+            case CONSUMER_CREATED:
             {
                TypedProperties props = notification.getProperties();
 
@@ -376,7 +376,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                break;
             }
-            case NotificationType.CONSUMER_CLOSED_INDEX:
+            case CONSUMER_CLOSED:
             {
                TypedProperties props = notification.getProperties();
 
@@ -446,9 +446,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                break;
             }
+            case SECURITY_AUTHENTICATION_VIOLATION:
+            case SECURITY_PERMISSION_VIOLATION:
+               break;
             default:
             {
-               throw new IllegalArgumentException("Invalid type " + type.toInt());
+               throw new IllegalArgumentException("Invalid type " + type);
             }
 
          }
@@ -541,6 +544,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
 
       props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+
+      props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
       props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
