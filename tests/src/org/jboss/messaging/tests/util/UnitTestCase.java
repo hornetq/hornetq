@@ -22,6 +22,22 @@
 
 package org.jboss.messaging.tests.util;
 
+import junit.framework.TestCase;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
+
+import javax.transaction.xa.Xid;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -36,29 +52,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.transaction.xa.Xid;
-
-import junit.framework.TestCase;
-
-import org.easymock.EasyMock;
-import org.easymock.IArgumentMatcher;
-import org.jboss.messaging.core.buffers.ChannelBuffers;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.journal.EncodingSupport;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.jms.client.JBossTextMessage;
-import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  *
@@ -199,28 +192,6 @@ public class UnitTestCase extends TestCase
          assertEquals(expectedXid.getFormatId(), actualXid.getFormatId());
          UnitTestCase.assertEqualsByteArrays(expectedXid.getGlobalTransactionId(), actualXid.getGlobalTransactionId());
       }
-   }
-
-   public static MessagingException messagingExceptionMatch(final int errorID)
-   {
-      EasyMock.reportMatcher(new IArgumentMatcher()
-      {
-
-         public void appendTo(StringBuffer buffer)
-         {
-            buffer.append(errorID);
-         }
-
-         public boolean matches(Object argument)
-         {
-            MessagingException ex = (MessagingException)argument;
-
-            return ex.getCode() == errorID;
-         }
-
-      });
-
-      return null;
    }
 
    // Constructors --------------------------------------------------
@@ -452,90 +423,8 @@ public class UnitTestCase extends TestCase
       return buffer.array();
    }
 
-   protected ByteBuffer compareByteBuffer(final byte expectedArray[])
-   {
+   
 
-      EasyMock.reportMatcher(new IArgumentMatcher()
-      {
-
-         public void appendTo(StringBuffer buffer)
-         {
-            buffer.append("ByteArray");
-         }
-
-         public boolean matches(Object argument)
-         {
-            ByteBuffer buffer = (ByteBuffer)argument;
-
-            buffer.rewind();
-            byte[] compareArray = new byte[buffer.limit()];
-            buffer.get(compareArray);
-
-            if (compareArray.length != expectedArray.length)
-            {
-               return false;
-            }
-
-            for (int i = 0; i < expectedArray.length; i++)
-            {
-               if (expectedArray[i] != compareArray[i])
-               {
-                  return false;
-               }
-            }
-
-            return true;
-         }
-
-      });
-
-      return null;
-   }
-
-   protected EncodingSupport compareEncodingSupport(final byte expectedArray[])
-   {
-
-      EasyMock.reportMatcher(new IArgumentMatcher()
-      {
-
-         public void appendTo(StringBuffer buffer)
-         {
-            buffer.append("EncodingSupport buffer didn't match");
-         }
-
-         public boolean matches(Object argument)
-         {
-            EncodingSupport encoding = (EncodingSupport)argument;
-
-            final int size = encoding.getEncodeSize();
-
-            if (size != expectedArray.length)
-            {
-               System.out.println(size + " != " + expectedArray.length);
-               return false;
-            }
-
-            final byte[] compareArray = new byte[size];
-
-            MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(compareArray);
-            buffer.clear();
-            encoding.encode(buffer);
-
-            for (int i = 0; i < expectedArray.length; i++)
-            {
-               if (expectedArray[i] != compareArray[i])
-               {
-                  return false;
-               }
-            }
-
-            return true;
-         }
-
-      });
-
-      return null;
-   }
 
    protected boolean deleteDirectory(File directory)
    {

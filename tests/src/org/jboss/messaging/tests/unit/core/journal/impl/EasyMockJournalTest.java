@@ -22,11 +22,9 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
+import org.easymock.IArgumentMatcher;
 import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
@@ -34,6 +32,9 @@ import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.jboss.messaging.tests.util.UnitTestCase;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 public class EasyMockJournalTest extends UnitTestCase
 {
@@ -416,7 +417,46 @@ public class EasyMockJournalTest extends UnitTestCase
 
       return journalImpl;
    }
+   protected ByteBuffer compareByteBuffer(final byte expectedArray[])
+      {
 
+         EasyMock.reportMatcher(new IArgumentMatcher()
+         {
+
+            public void appendTo(StringBuffer buffer)
+            {
+               buffer.append("ByteArray");
+            }
+
+            public boolean matches(Object argument)
+            {
+               ByteBuffer buffer = (ByteBuffer)argument;
+
+               buffer.rewind();
+               byte[] compareArray = new byte[buffer.limit()];
+               buffer.get(compareArray);
+
+               if (compareArray.length != expectedArray.length)
+               {
+                  return false;
+               }
+
+               for (int i = 0; i < expectedArray.length; i++)
+               {
+                  if (expectedArray[i] != compareArray[i])
+                  {
+                     return false;
+                  }
+               }
+
+               return true;
+            }
+
+         });
+
+         return null;
+      }
+       
    private void stubValues() throws Exception
    {
       EasyMock.expect(mockFactory.getAlignment()).andStubReturn(1);

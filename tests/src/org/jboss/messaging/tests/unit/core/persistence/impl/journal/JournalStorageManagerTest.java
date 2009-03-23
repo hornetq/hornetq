@@ -21,12 +21,6 @@
  */
 package org.jboss.messaging.tests.unit.core.persistence.impl.journal;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.util.List;
-
-import javax.transaction.xa.Xid;
-
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.easymock.IArgumentMatcher;
@@ -47,6 +41,11 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
+
+import javax.transaction.xa.Xid;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.util.List;
 
 /**
  * 
@@ -238,6 +237,50 @@ public class JournalStorageManagerTest extends UnitTestCase
       EasyMock.verify(messageJournal, bindingsJournal, ref, msg, queue);
    }
 
+    protected EncodingSupport compareEncodingSupport(final byte expectedArray[])
+   {
+
+      EasyMock.reportMatcher(new IArgumentMatcher()
+      {
+
+         public void appendTo(StringBuffer buffer)
+         {
+            buffer.append("EncodingSupport buffer didn't match");
+         }
+
+         public boolean matches(Object argument)
+         {
+            EncodingSupport encoding = (EncodingSupport)argument;
+
+            final int size = encoding.getEncodeSize();
+
+            if (size != expectedArray.length)
+            {
+               System.out.println(size + " != " + expectedArray.length);
+               return false;
+            }
+
+            final byte[] compareArray = new byte[size];
+
+            MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(compareArray);
+            buffer.clear();
+            encoding.encode(buffer);
+
+            for (int i = 0; i < expectedArray.length; i++)
+            {
+               if (expectedArray[i] != compareArray[i])
+               {
+                  return false;
+               }
+            }
+
+            return true;
+         }
+
+      });
+
+      return null;
+   }
 //   public void testLoadMessages() throws Exception
 //   {
 //      Journal messageJournal = EasyMock.createStrictMock(Journal.class);
