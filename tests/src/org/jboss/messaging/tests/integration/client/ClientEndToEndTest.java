@@ -1387,6 +1387,56 @@ public class ClientEndToEndTest extends ServiceTestBase
       }
    }
 
+   public void testConsumersRoundRobinCorrectly() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession session = cf.createSession(false, true, true);
+         session.createQueue(addressA, queueA, false);
+
+         ClientConsumer[] consumers = new ClientConsumer[5];
+         //start the session before we create the consumers, this is because start is non blocking and we have to gaurantee
+         //all consumers have been started before sending messages
+         session.start();
+         consumers[0] = session.createConsumer(queueA);
+         consumers[1] = session.createConsumer(queueA);
+         consumers[2] = session.createConsumer(queueA);
+         consumers[3] = session.createConsumer(queueA);
+         consumers[4] = session.createConsumer(queueA);
+
+         ClientSession sendSession = cf.createSession(false, true, true);
+         ClientProducer cp = sendSession.createProducer(addressA);
+         int numMessage = 100;
+         for(int i = 0; i < numMessage; i++)
+         {
+            ClientMessage cm = sendSession.createClientMessage(false);
+            cm.getBody().writeInt(i);
+            cp.send(cm);
+         }
+         int currMessage = 0;
+         for(int i = 0; i < numMessage/5; i++)
+         {
+            for(int j = 0; j < 5;j++)
+            {
+               ClientMessage cm = consumers[j].receive(5000);
+               assertNotNull(cm);
+               assertEquals(currMessage++,cm.getBody().readInt());
+            }
+         }
+         sendSession.close();
+         session.close();
+      }
+      finally
+      {
+         if(messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }
 
    class Receiver implements MessageHandler
    {
