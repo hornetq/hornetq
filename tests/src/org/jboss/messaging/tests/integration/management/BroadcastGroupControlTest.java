@@ -68,8 +68,8 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       return new BroadcastGroupConfiguration(randomString(),
                                              randomPort(),
                                              "231.7.7.7",
-                                             randomPositiveInt(),
                                              1199,
+                                             randomPositiveInt(),
                                              connectorInfos);
    }
 
