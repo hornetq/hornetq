@@ -22,14 +22,13 @@
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
-import java.io.File;
-import java.net.URL;
-
-import org.easymock.classextension.EasyMock;
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.UnitTestCase;
+
+import java.io.File;
+import java.net.URL;
 
 /**
  * 
@@ -45,8 +44,18 @@ public class FileDeploymentManagerTest extends UnitTestCase
    public void testStartStop() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
-      
-      Deployer deployer = EasyMock.createStrictMock(Deployer.class);
+
+      String filename = "fdm_test_file.xml";
+
+      log.debug("Filename is " + filename);
+
+      File file = new File("tests/tmpfiles/" + filename);
+
+      log.debug(file.getAbsoluteFile());
+
+      file.createNewFile();
+
+      FakeDeployer deployer = new FakeDeployer(filename);
       
       try
       {
@@ -69,43 +78,16 @@ public class FileDeploymentManagerTest extends UnitTestCase
       }
       
       fdm.start();
-      
-      String filename = "fdm_test_file.xml";
-      
-      log.debug("Filename is " + filename);
-      
-      File file = new File("tests/tmpfiles/" + filename);
-      
-      log.debug(file.getAbsoluteFile());
-      
-      file.createNewFile();
+
 
       try
-      {      
-         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});
-         
-         URL url = file.toURL();
-         
-         deployer.deploy(url);
-         
-         EasyMock.replay(deployer);
-         
+      {
          fdm.registerDeployer(deployer);
-         
-         EasyMock.verify(deployer);
-         
-         //Start again should do nothing
-         
-         EasyMock.reset(deployer);
-         
-         EasyMock.replay(deployer);
-         
+         assertEquals(file.toURL(), deployer.deployedUrl);
+         deployer.deployedUrl = null;
          fdm.start();
-         
-         EasyMock.verify(deployer);
-         
+         assertNull(deployer.deployedUrl);
          fdm.stop();
-         
          try
          {
             fdm.registerDeployer(deployer);
@@ -131,14 +113,10 @@ public class FileDeploymentManagerTest extends UnitTestCase
          file.delete();
       }      
    }
-   
+
    public void testRegisterUnregister() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
-      
-      Deployer deployer1 = EasyMock.createStrictMock(Deployer.class);
-      Deployer deployer2 = EasyMock.createStrictMock(Deployer.class);
-      Deployer deployer3 = EasyMock.createStrictMock(Deployer.class);
       
       fdm.start();
       
@@ -153,86 +131,66 @@ public class FileDeploymentManagerTest extends UnitTestCase
       file1.createNewFile();
       file2.createNewFile();
       file3.createNewFile();
-      
+
+
+      FakeDeployer deployer1 = new FakeDeployer(filename1);
+      FakeDeployer deployer2 = new FakeDeployer(filename2);
+      FakeDeployer deployer3 = new FakeDeployer(filename3);
       try
-      {      
-         EasyMock.expect(deployer1.getConfigFileNames()).andReturn(new String[] {filename1});      
+      {
          URL url1 = file1.toURL();      
          deployer1.deploy(url1);
-         
-         EasyMock.expect(deployer2.getConfigFileNames()).andReturn(new String[] {filename2});      
+
          URL url2 = file2.toURL();      
          deployer2.deploy(url2);
-         
-         EasyMock.expect(deployer3.getConfigFileNames()).andReturn(new String[] {filename3});      
+
          URL url3 = file3.toURL();      
          deployer3.deploy(url3);
-   
-         EasyMock.replay(deployer1, deployer2, deployer3);
          
          fdm.registerDeployer(deployer1);
          fdm.registerDeployer(deployer2);
          fdm.registerDeployer(deployer3);
-         
-         EasyMock.verify(deployer1, deployer2, deployer3);
+
          
          assertEquals(3, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer1));
          assertTrue(fdm.getDeployers().contains(deployer2));
          assertTrue(fdm.getDeployers().contains(deployer3));
          assertEquals(3, fdm.getDeployed().size());
-         
+
+         assertEquals(file1.toURL(), deployer1.deployedUrl);
+         assertEquals(file2.toURL(), deployer2.deployedUrl);
+         assertEquals(file3.toURL(), deployer3.deployedUrl);
          //Registering same again should do nothing
-         
-         EasyMock.reset(deployer1, deployer2, deployer3);
-         EasyMock.replay(deployer1, deployer2, deployer3);
+
          
          fdm.registerDeployer(deployer1);
-         
-         EasyMock.verify(deployer1, deployer2, deployer3);
+
          
          assertEquals(3, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer1));
          assertTrue(fdm.getDeployers().contains(deployer2));
          assertTrue(fdm.getDeployers().contains(deployer3));
          assertEquals(3, fdm.getDeployed().size());
-         
-         EasyMock.reset(deployer1, deployer2, deployer3);
-         
-         EasyMock.expect(deployer1.getConfigFileNames()).andReturn(new String[] {filename1}); 
-                  
-         EasyMock.replay(deployer1, deployer2, deployer3);
+
          
          fdm.unregisterDeployer(deployer1);
-                  
-         EasyMock.verify(deployer1, deployer2, deployer3);
+
          
          assertEquals(2, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer2));
          assertTrue(fdm.getDeployers().contains(deployer3));
          assertEquals(2, fdm.getDeployed().size());
-         
-         EasyMock.reset(deployer1, deployer2, deployer3);
-         
-         EasyMock.expect(deployer2.getConfigFileNames()).andReturn(new String[] {filename2}); 
-         EasyMock.expect(deployer3.getConfigFileNames()).andReturn(new String[] {filename3}); 
-         
-         EasyMock.replay(deployer1, deployer2, deployer3);
-         
+
          fdm.unregisterDeployer(deployer2);
          fdm.unregisterDeployer(deployer3);
-                  
-         EasyMock.verify(deployer1, deployer2, deployer3);
          
          assertEquals(0, fdm.getDeployers().size());  
          assertEquals(0, fdm.getDeployed().size());
          
          //Now unregister again - should do nothing
-         
-         EasyMock.reset(deployer1, deployer2, deployer3);
-         EasyMock.replay(deployer1, deployer2, deployer3);
+
          fdm.unregisterDeployer(deployer1);
-         EasyMock.verify(deployer1, deployer2, deployer3);
          
          assertEquals(0, fdm.getDeployers().size());  
          assertEquals(0, fdm.getDeployed().size());         
@@ -244,12 +202,11 @@ public class FileDeploymentManagerTest extends UnitTestCase
          file3.delete();
       }
    }
-   
+
    public void testRedeploy() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
-      
-      Deployer deployer = EasyMock.createStrictMock(Deployer.class);
+
    
       fdm.start();
       
@@ -259,64 +216,45 @@ public class FileDeploymentManagerTest extends UnitTestCase
    
       file.createNewFile();
       long oldLastModified = file.lastModified();
- 
+
+      FakeDeployer deployer = new FakeDeployer(filename);
       try
-      {      
-         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});      
+      {
          URL url = file.toURL();      
          deployer.deploy(url);
          
-         EasyMock.replay(deployer);
-         
          fdm.registerDeployer(deployer);
-
-         EasyMock.verify(deployer);
-         
+         assertEquals(file.toURL(), deployer.deployedUrl);
          //Touch the file
          file.setLastModified(oldLastModified + 1000);
-         
-         EasyMock.reset(deployer);
-                           
-         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});          
+
          deployer.redeploy(url);
          
-         EasyMock.replay(deployer);
-         
          fdm.run();
-         
-         EasyMock.verify(deployer);
          
          assertEquals(1, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer));
          assertEquals(1, fdm.getDeployed().size());
-         
+         assertEquals(file.toURL(), deployer.reDeployedUrl);
          assertEquals(oldLastModified + 1000, fdm.getDeployed().get(url).lastModified);
-          
+         deployer.reDeployedUrl = null; 
          //Scanning again should not redeploy
-         
-         EasyMock.reset(deployer);
-         
-         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename}); 
-         
-         EasyMock.replay(deployer);
          
          fdm.run();
          
-         EasyMock.verify(deployer);
-         
          assertEquals(oldLastModified + 1000, fdm.getDeployed().get(url).lastModified);
+         assertNull(deployer.reDeployedUrl);
       }
       finally
       {
          file.delete();
       }
    }
-   
+
    public void testUndeployAndDeployAgain() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
-      
-      Deployer deployer = EasyMock.createStrictMock(Deployer.class);
+
    
       fdm.start();
       
@@ -325,38 +263,30 @@ public class FileDeploymentManagerTest extends UnitTestCase
       File file = new File("tests/tmpfiles/" + filename);
    
       file.createNewFile();
- 
+
+      FakeDeployer deployer = new FakeDeployer(filename);
       try
-      {      
-         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});      
+      {
          URL url = file.toURL();      
          deployer.deploy(url);
-         
-         EasyMock.replay(deployer);
+
          
          fdm.registerDeployer(deployer);
-
-         EasyMock.verify(deployer);
          
          assertEquals(1, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer));
          assertEquals(1, fdm.getDeployed().size());
-         
+         assertEquals(file.toURL(), deployer.deployedUrl);
+         deployer.deployedUrl = null;
          file.delete();
          
          //This should cause undeployment
-         
-         EasyMock.reset(deployer);
-         
-         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});   
-         
+
          deployer.undeploy(url);
-         
-         EasyMock.replay(deployer);
+         assertEquals(file.toURL(), deployer.unDeployedUrl);
          
          fdm.run();
-         
-         EasyMock.verify(deployer);
+
          
          assertEquals(1, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer));
@@ -365,26 +295,71 @@ public class FileDeploymentManagerTest extends UnitTestCase
          //Recreate file and it should be redeployed
          
          file.createNewFile();
-         
-         EasyMock.reset(deployer);
-         
-         EasyMock.expect(deployer.getConfigFileNames()).andReturn(new String[] {filename});  
+
          
          deployer.deploy(url);
-         
-         EasyMock.replay(deployer);
+
          
          fdm.run();
-         
-         EasyMock.verify(deployer);
          
          assertEquals(1, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer));
          assertEquals(1, fdm.getDeployed().size());
+
+         assertEquals(file.toURL(), deployer.deployedUrl);
       }
       finally
       {
          file.delete();
+      }
+   }
+
+   class FakeDeployer implements Deployer
+   {
+      URL deployedUrl;
+      URL unDeployedUrl;
+      URL reDeployedUrl;
+      boolean started;
+      private String file;
+
+      public FakeDeployer(String file)
+      {
+         this.file = file;
+      }
+
+      public String[] getConfigFileNames()
+      {
+         return new String[]{file};
+      }
+
+      public void deploy(URL url) throws Exception
+      {
+         deployedUrl = url;
+      }
+
+      public void redeploy(URL url) throws Exception
+      {
+         reDeployedUrl = url;
+      }
+
+      public void undeploy(URL url) throws Exception
+      {
+         unDeployedUrl = url;
+      }
+
+      public void start() throws Exception
+      {
+         started = true;
+      }
+
+      public void stop() throws Exception
+      {
+         started = false;
+      }
+
+      public boolean isStarted()
+      {
+         return started;
       }
    }
 }

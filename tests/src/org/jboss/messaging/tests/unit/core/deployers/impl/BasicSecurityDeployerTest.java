@@ -18,60 +18,70 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
-import org.easymock.EasyMock;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer;
+import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
+import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * tests BasicSecurityDeployer
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class BasicSecurityDeployerTest  extends UnitTestCase
+public class BasicSecurityDeployerTest extends UnitTestCase
 {
    private BasicSecurityDeployer deployer;
-   
+
    private static final String simpleSecurityXml = "<deployment>\n" +
-           "</deployment>";
+                                                   "<defaultuser name=\"guest\" password=\"guest\">\n" +
+                                                   "      <role name=\"guest\"/>\n" +
+                                                   "   </defaultuser>" +
+                                                   "</deployment>";
 
    private static final String singleUserXml = "<deployment>\n" +
-           "      <user name=\"guest\" password=\"guest\">\n" +
-           "         <role name=\"guest\"/>\n" +
-           "      </user>\n" +
-           "</deployment>";
+                                               "      <user name=\"guest\" password=\"guest\">\n" +
+                                               "         <role name=\"guest\"/>\n" +
+                                               "      </user>\n" +
+                                               "</deployment>";
 
    private static final String multipleUserXml = "<deployment>\n" +
-           "      <user name=\"guest\" password=\"guest\">\n" +
-           "         <role name=\"guest\"/>\n" +
-           "         <role name=\"foo\"/>\n" +
-           "      </user>\n" +
-           "    <user name=\"anotherguest\" password=\"anotherguest\">\n" +
-           "         <role name=\"anotherguest\"/>\n" +
-           "         <role name=\"foo\"/>\n" +
-           "         <role name=\"bar\"/>\n" +
-           "      </user>\n" +
-           "</deployment>";
+                                                 "      <user name=\"guest\" password=\"guest\">\n" +
+                                                 "         <role name=\"guest\"/>\n" +
+                                                 "         <role name=\"foo\"/>\n" +
+                                                 "      </user>\n" +
+                                                 "    <user name=\"anotherguest\" password=\"anotherguest\">\n" +
+                                                 "         <role name=\"anotherguest\"/>\n" +
+                                                 "         <role name=\"foo\"/>\n" +
+                                                 "         <role name=\"bar\"/>\n" +
+                                                 "      </user>\n" +
+                                                 "</deployment>";
 
    protected void setUp() throws Exception
    {
       super.setUp();
-      
-      DeploymentManager deploymentManager = EasyMock.createNiceMock(DeploymentManager.class);
+      DeploymentManager deploymentManager = new FakeDeploymentManager();
       deployer = new BasicSecurityDeployer(deploymentManager);
    }
 
    protected void tearDown() throws Exception
    {
       deployer = null;
-      
+
       super.tearDown();
    }
 
@@ -81,7 +91,7 @@ public class BasicSecurityDeployerTest  extends UnitTestCase
       for (int i = 0; i < children.getLength(); i++)
       {
          Node node = children.item(i);
-         if(node.getNodeName().equals("user"))
+         if (node.getNodeName().equals("user") || node.getNodeName().equals("defaultuser"))
          {
             deployer.deploy(node);
          }
@@ -94,7 +104,7 @@ public class BasicSecurityDeployerTest  extends UnitTestCase
       for (int i = 0; i < children.getLength(); i++)
       {
          Node node = children.item(i);
-         if(node.getNodeName().equals("user"))
+         if (node.getNodeName().equals("user"))
          {
             deployer.undeploy(node);
          }
@@ -103,50 +113,192 @@ public class BasicSecurityDeployerTest  extends UnitTestCase
 
    public void testSimpleDefaultSecurity() throws Exception
    {
-      JBMUpdateableSecurityManager securityManager = EasyMock.createStrictMock(JBMUpdateableSecurityManager.class);
+      FakeJBMUpdateableSecurityManager securityManager = new FakeJBMUpdateableSecurityManager();
       deployer.setJbmSecurityManager(securityManager);
-      EasyMock.replay(securityManager);
       deploy(simpleSecurityXml);
-      EasyMock.verify(securityManager);
+      assertEquals("guest", securityManager.defaultUser);
+      User user = securityManager.users.get("guest");
+      assertNotNull(user);
+      assertEquals("guest",user.user);
+      assertEquals("guest",user.password);
+      List<String> roles = securityManager.roles.get("guest");
+      assertNotNull(roles);
+      assertEquals(1, roles.size());
+      assertEquals("guest", roles.get(0));
    }
 
    public void testSingleUserDeploySecurity() throws Exception
    {
-      JBMUpdateableSecurityManager securityManager = EasyMock.createStrictMock(JBMUpdateableSecurityManager.class);
+      FakeJBMUpdateableSecurityManager securityManager = new FakeJBMUpdateableSecurityManager();
       deployer.setJbmSecurityManager(securityManager);
-      securityManager.addUser("guest", "guest");
-      securityManager.addRole("guest", "guest");
-      EasyMock.replay(securityManager);
       deploy(singleUserXml);
-      EasyMock.verify(securityManager);
+      assertNull(securityManager.defaultUser);
+      User user = securityManager.users.get("guest");
+      assertNotNull(user);
+      assertEquals("guest",user.user);
+      assertEquals("guest",user.password);
+      List<String> roles = securityManager.roles.get("guest");
+      assertNotNull(roles);
+      assertEquals(1, roles.size());
+      assertEquals("guest", roles.get(0));
    }
 
-    public void testMultipleUserDeploySecurity() throws Exception
+   public void testMultipleUserDeploySecurity() throws Exception
    {
-      JBMUpdateableSecurityManager securityManager = EasyMock.createStrictMock(JBMUpdateableSecurityManager.class);
+      FakeJBMUpdateableSecurityManager securityManager = new FakeJBMUpdateableSecurityManager();
       deployer.setJbmSecurityManager(securityManager);
-      securityManager.addUser("guest", "guest");
-      securityManager.addRole("guest", "guest");
-      securityManager.addRole("guest", "foo");
-      securityManager.addUser("anotherguest", "anotherguest");
-      securityManager.addRole("anotherguest", "anotherguest");
-      securityManager.addRole("anotherguest", "foo");
-      securityManager.addRole("anotherguest", "bar");
-
-      EasyMock.replay(securityManager);
       deploy(multipleUserXml);
-      EasyMock.verify(securityManager);
+      assertNull(securityManager.defaultUser);
+      User user = securityManager.users.get("guest");
+      assertNotNull(user);
+      assertEquals("guest",user.user);
+      assertEquals("guest",user.password);
+      List<String> roles = securityManager.roles.get("guest");
+      assertNotNull(roles);
+      assertEquals(2, roles.size());
+      assertEquals("guest", roles.get(0));
+      assertEquals("foo", roles.get(1));
+      user = securityManager.users.get("anotherguest");
+      assertNotNull(user);
+      assertEquals("anotherguest",user.user);
+      assertEquals("anotherguest",user.password);
+      roles = securityManager.roles.get("anotherguest");
+      assertNotNull(roles);
+      assertEquals(3, roles.size());
+      assertEquals("anotherguest", roles.get(0));
+      assertEquals("foo", roles.get(1));
+      assertEquals("bar", roles.get(2));
    }
 
    public void testUndeploy() throws Exception
    {
-      JBMUpdateableSecurityManager securityManager = EasyMock.createStrictMock(JBMUpdateableSecurityManager.class);
+      FakeJBMUpdateableSecurityManager securityManager = new FakeJBMUpdateableSecurityManager();
       deployer.setJbmSecurityManager(securityManager);
-      securityManager.removeUser("guest");
-      securityManager.removeUser("anotherguest");
+      deploy(multipleUserXml);
+      undeploy(singleUserXml);
+      assertNull(securityManager.defaultUser);
+      User user = securityManager.users.get("guest");
+      assertNull(user);
+      List<String> roles = securityManager.roles.get("guest");
+      assertNull(roles);
+      user = securityManager.users.get("anotherguest");
+      assertNotNull(user);
+      assertEquals("anotherguest",user.user);
+      assertEquals("anotherguest",user.password);
+      roles = securityManager.roles.get("anotherguest");
+      assertNotNull(roles);
+      assertEquals(3, roles.size());
+      assertEquals("anotherguest", roles.get(0));
+      assertEquals("foo", roles.get(1));
+      assertEquals("bar", roles.get(2));
+   }
 
-      EasyMock.replay(securityManager);
-      undeploy(multipleUserXml);
-      EasyMock.verify(securityManager);
+   class FakeJBMUpdateableSecurityManager implements JBMUpdateableSecurityManager
+   {
+      String defaultUser;
+
+      private Map<String, User> users = new HashMap<String, User>();
+
+      private Map<String, List<String>> roles = new HashMap<String, List<String>>();
+
+      public void addUser(final String user, final String password)
+      {
+         if (user == null)
+         {
+            throw new IllegalArgumentException("User cannot be null");
+         }
+         if (password == null)
+         {
+            throw new IllegalArgumentException("password cannot be null");
+         }
+         users.put(user, new User(user, password));
+      }
+
+      public void removeUser(final String user)
+      {
+         users.remove(user);
+         roles.remove(user);
+      }
+
+      public void addRole(final String user, final String role)
+      {
+         if (roles.get(user) == null)
+         {
+            roles.put(user, new ArrayList<String>());
+         }
+         roles.get(user).add(role);
+      }
+
+      public void removeRole(final String user, final String role)
+      {
+         if (roles.get(user) == null)
+         {
+            return;
+         }
+         roles.get(user).remove(role);
+      }
+
+      public void setDefaultUser(String username)
+      {
+         defaultUser = username;
+      }
+
+      public boolean validateUser(String user, String password)
+      {
+         return false;
+      }
+
+      public boolean validateUserAndRole(String user, String password, Set<Role> roles, CheckType checkType)
+      {
+         return false;
+      }
+   }
+
+   static class User
+   {
+      final String user;
+
+      final String password;
+
+      User(final String user, final String password)
+      {
+         this.user = user;
+         this.password = password;
+      }
+
+      public boolean equals(Object o)
+      {
+         if (this == o)
+         {
+            return true;
+         }
+         if (o == null || getClass() != o.getClass())
+         {
+            return false;
+         }
+
+         User user1 = (User) o;
+
+         if (!user.equals(user1.user))
+         {
+            return false;
+         }
+
+         return true;
+      }
+
+      public int hashCode()
+      {
+         return user.hashCode();
+      }
+
+      public boolean isValid(final String user, final String password)
+      {
+         if (user == null)
+         {
+            return false;
+         }
+         return this.user.equals(user) && this.password.equals(password);
+      }
    }
 }
