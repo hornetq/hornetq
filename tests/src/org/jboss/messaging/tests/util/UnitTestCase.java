@@ -425,6 +425,14 @@ public class UnitTestCase extends TestCase
 
    
 
+   
+   protected void recreateDirectory(String directory)
+   {
+      File file = new File(directory);
+      deleteDirectory(file);
+      file.mkdirs();
+   }
+
 
    protected boolean deleteDirectory(File directory)
    {

@@ -109,19 +109,12 @@ public class ServiceTestBase extends UnitTestCase
 
    protected void clearData(String testDir)
    {
-      deleteAndCreateDir(getJournalDir(testDir));
-      deleteAndCreateDir(getBindingsDir(testDir));
-      deleteAndCreateDir(getPageDir(testDir));
-      deleteAndCreateDir(getLargeMessagesDir(testDir));
-      deleteAndCreateDir(getClientLargeMessagesDir(testDir));
-      deleteAndCreateDir(getTemporaryDir(testDir));
-   }
-
-   protected void deleteAndCreateDir(String directory)
-   {
-      File file = new File(directory);
-      deleteDirectory(file);
-      file.mkdirs();
+      recreateDirectory(getJournalDir(testDir));
+      recreateDirectory(getBindingsDir(testDir));
+      recreateDirectory(getPageDir(testDir));
+      recreateDirectory(getLargeMessagesDir(testDir));
+      recreateDirectory(getClientLargeMessagesDir(testDir));
+      recreateDirectory(getTemporaryDir(testDir));
    }
 
    protected FileConfiguration createFileConfig()
