@@ -21,11 +21,26 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import static org.easymock.EasyMock.expect;
-
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashSet;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientFileMessage;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.SendAcknowledgementHandler;
+import org.jboss.messaging.core.client.impl.ClientMessageImpl;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.jms.client.JBossBytesMessage;
+import org.jboss.messaging.jms.client.JBossMapMessage;
+import org.jboss.messaging.jms.client.JBossMessage;
+import org.jboss.messaging.jms.client.JBossObjectMessage;
+import org.jboss.messaging.jms.client.JBossStreamMessage;
+import org.jboss.messaging.jms.client.JBossTextMessage;
+import org.jboss.messaging.utils.SimpleString;
 
 import javax.jms.BytesMessage;
 import javax.jms.DeliveryMode;
@@ -38,19 +53,13 @@ import javax.jms.MessageNotWriteableException;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-
-import org.easymock.EasyMock;
-import org.jboss.messaging.core.buffers.ChannelBuffers;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientMessageImpl;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.jms.client.JBossBytesMessage;
-import org.jboss.messaging.jms.client.JBossMapMessage;
-import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.jms.client.JBossObjectMessage;
-import org.jboss.messaging.jms.client.JBossStreamMessage;
-import org.jboss.messaging.jms.client.JBossTextMessage;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.io.File;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.HashSet;
 
 /**
  *
@@ -675,11 +684,9 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnJBossMessage() throws JMSException
    {
-      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      MessagingBuffer body = ChannelBuffers.buffer(1024); 
+      MessagingBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
-      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
-      EasyMock.replay(session);
+      ClientSession session = new FakeSession(clientMessage);
       JBossMessage jbossMessage = new JBossMessage();
 
       configureMessage(jbossMessage);
@@ -687,17 +694,14 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       JBossMessage copy = new JBossMessage(jbossMessage, session);
 
       ensureEquivalent(jbossMessage, copy);
-      EasyMock.verify(session);
    }
 
 
    public void testCopyOnForeignMessage() throws JMSException
    {
-      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      MessagingBuffer body = ChannelBuffers.buffer(1024); 
-      ClientMessage clientMessage = new ClientMessageImpl(JBossMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
-      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
-      EasyMock.replay(session);
+      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientSession session = new FakeSession(clientMessage);
 
       Message foreignMessage = new SimpleJMSMessage();
 
@@ -705,16 +709,13 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       ensureEquivalent(foreignMessage, copy);
 
-      EasyMock.verify(session);
    }
    
    public void testCopyOnForeignBytesMessage() throws JMSException
    {
-      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      MessagingBuffer body = ChannelBuffers.buffer(1024); 
-      ClientMessage clientMessage = new ClientMessageImpl(JBossBytesMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
-      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
-      EasyMock.replay(session);
+     MessagingBuffer body = ChannelBuffers.buffer(1024);
+      ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientSession session = new FakeSession(clientMessage);
 
       BytesMessage foreignBytesMessage = new SimpleJMSBytesMessage();
       for(int i = 0; i < 20; i++)
@@ -728,16 +729,13 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       copy.reset();
 
       ensureEquivalent(foreignBytesMessage, copy);
-      EasyMock.verify(session);
    }
   
    public void testCopyOnForeignMapMessage() throws JMSException
    {
-      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      MessagingBuffer body = ChannelBuffers.buffer(1024); 
-      ClientMessage clientMessage = new ClientMessageImpl(JBossMapMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
-      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
-      EasyMock.replay(session);
+      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientSession session = new FakeSession(clientMessage);
       MapMessage foreignMapMessage = new SimpleJMSMapMessage();
       foreignMapMessage.setInt("int", 1);
       foreignMapMessage.setString("string", "test");
@@ -745,17 +743,14 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       JBossMapMessage copy = new JBossMapMessage(foreignMapMessage, session);
 
       ensureEquivalent(foreignMapMessage, copy);
-      EasyMock.verify(session);
    }
 
 
    public void testCopyOnForeignObjectMessage() throws JMSException
    {
-      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      MessagingBuffer body = ChannelBuffers.buffer(1024); 
-      ClientMessage clientMessage = new ClientMessageImpl(JBossObjectMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
-      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
-      EasyMock.replay(session);
+      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientSession session = new FakeSession(clientMessage);
 
       ObjectMessage foreignObjectMessage = new SimpleJMSObjectMessage();
 
@@ -767,11 +762,9 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignStreamMessage() throws JMSException
    {
-      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      MessagingBuffer body = ChannelBuffers.buffer(1024); 
-      ClientMessage clientMessage = new ClientMessageImpl(JBossStreamMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
-      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
-      EasyMock.replay(session);
+      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
+      ClientSession session = new FakeSession(clientMessage);
 
       StreamMessage foreignStreamMessage = new SimpleJMSStreamMessage();
       foreignStreamMessage.writeByte((byte)1);
@@ -781,24 +774,19 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       JBossStreamMessage copy = new JBossStreamMessage(foreignStreamMessage, session);
 
       ensureEquivalent(foreignStreamMessage, copy);
-      EasyMock.verify(session);
    }
 
 
    public void testCopyOnForeignTextMessage() throws JMSException
    {
-      ClientSession session = EasyMock.createNiceMock(ClientSession.class);
-      MessagingBuffer body = ChannelBuffers.buffer(1024); 
+      MessagingBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(JBossTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
-      expect(session.createClientMessage(EasyMock.anyByte(), EasyMock.anyBoolean(), EasyMock.anyInt(), EasyMock.anyLong(), EasyMock.anyByte())).andReturn(clientMessage);
-      EasyMock.replay(session);
-
+      ClientSession session = new FakeSession(clientMessage);
       TextMessage foreignTextMessage = new SimpleJMSTextMessage();
 
       JBossTextMessage copy = new JBossTextMessage(foreignTextMessage, session);
 
       ensureEquivalent(foreignTextMessage, copy);
-      EasyMock.verify(session);
    }
    
    public void testForeignJMSDestination() throws JMSException
@@ -870,6 +858,310 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public int hashCode()
       {
          return 157;
+      }
+   }
+
+   class FakeSession implements ClientSession
+   {
+      private final ClientMessage message;
+
+      public FakeSession(ClientMessage message)
+      {
+         this.message = message;
+      }
+
+      public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws MessagingException
+      {
+      }
+
+      public void createQueue(String address, String queueName, boolean durable) throws MessagingException
+      {
+      }
+
+      public void createQueue(SimpleString address, SimpleString queueName, boolean durable, boolean temporary) throws MessagingException
+      {
+      }
+
+      public void createQueue(String address, String queueName, boolean durable, boolean temporary) throws MessagingException
+      {
+      }
+
+      public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable, boolean temporary) throws MessagingException
+      {
+      }
+
+      public void createQueue(String address, String queueName, String filterString, boolean durable, boolean temporary) throws MessagingException
+      {
+      }
+
+      public void deleteQueue(SimpleString queueName) throws MessagingException
+      {
+      }
+
+      public void deleteQueue(String queueName) throws MessagingException
+      {
+      }
+
+      public ClientConsumer createConsumer(SimpleString queueName) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createConsumer(String queueName) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createConsumer(String queueName, String filterString) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createFileConsumer(File directory, SimpleString queueName) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createFileConsumer(File directory, String queueName) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString, boolean browseOnly) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientProducer createProducer() throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientProducer createProducer(SimpleString address) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientProducer createProducer(SimpleString address, int rate) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientProducer createProducer(SimpleString address, int maxRate, boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientProducer createProducer(String address) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientProducer createProducer(String address, int rate) throws MessagingException
+      {
+         return null;
+      }
+
+      public ClientProducer createProducer(String address, int maxRate, boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws MessagingException
+      {
+         return null;
+      }
+
+      public SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException
+      {
+         return null;
+      }
+
+      public SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException
+      {
+         return null;
+      }
+
+      public XAResource getXAResource()
+      {
+         return null;
+      }
+
+      public void commit() throws MessagingException
+      {
+      }
+
+      public void rollback() throws MessagingException
+      {
+      }
+
+      public void rollback(boolean considerLastMessageAsDelivered) throws MessagingException
+      {
+      }
+
+      public void close() throws MessagingException
+      {
+      }
+
+      public boolean isClosed()
+      {
+         return false;
+      }
+
+      public boolean isAutoCommitSends()
+      {
+         return false;
+      }
+
+      public boolean isAutoCommitAcks()
+      {
+         return false;
+      }
+
+      public boolean isBlockOnAcknowledge()
+      {
+         return false;
+      }
+
+      public boolean isXA()
+      {
+         return false;
+      }
+
+      public ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority)
+      {
+         return message;
+      }
+
+      public ClientMessage createClientMessage(byte type, boolean durable)
+      {
+         return message;
+      }
+
+      public ClientMessage createClientMessage(boolean durable)
+      {
+         return message;
+      }
+
+      public ClientFileMessage createFileMessage(boolean durable)
+      {
+         return null;
+      }
+
+      public void start() throws MessagingException
+      {
+      }
+
+      public void stop() throws MessagingException
+      {
+      }
+
+      public void addFailureListener(FailureListener listener)
+      {
+      }
+
+      public boolean removeFailureListener(FailureListener listener)
+      {
+         return false;
+      }
+
+      public int getVersion()
+      {
+         return 0;
+      }
+
+      public void setSendAcknowledgementHandler(SendAcknowledgementHandler handler)
+      {
+      }
+
+      public void commit(Xid xid, boolean b) throws XAException
+      {
+      }
+
+      public void end(Xid xid, int i) throws XAException
+      {
+      }
+
+      public void forget(Xid xid) throws XAException
+      {
+      }
+
+      public int getTransactionTimeout() throws XAException
+      {
+         return 0;
+      }
+
+      public boolean isSameRM(XAResource xaResource) throws XAException
+      {
+         return false;
+      }
+
+      public int prepare(Xid xid) throws XAException
+      {
+         return 0;
+      }
+
+      public Xid[] recover(int i) throws XAException
+      {
+         return new Xid[0];
+      }
+
+      public void rollback(Xid xid) throws XAException
+      {
+      }
+
+      public boolean setTransactionTimeout(int i) throws XAException
+      {
+         return false;
+      }
+
+      public void start(Xid xid, int i) throws XAException
+      {
       }
    }
    
