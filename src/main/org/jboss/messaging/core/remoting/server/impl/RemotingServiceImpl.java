@@ -24,6 +24,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -160,7 +161,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             Class<?> clazz = loader.loadClass(info.getFactoryClassName());
 
             AcceptorFactory factory = (AcceptorFactory)clazz.newInstance();
-
+            
             Acceptor acceptor = factory.createAcceptor(info.getParams(), bufferHandler, this);
 
             acceptors.add(acceptor);
@@ -184,12 +185,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       failedConnectionTimer = new Timer(true);
 
       failedConnectionsTask = new FailedConnectionsTask();
-
+      
       failedConnectionTimer.schedule(failedConnectionsTask, connectionScanPeriod, connectionScanPeriod);
 
       started = true;
    }
-
+   
    public synchronized void stop()
    {
       if (!started)
@@ -327,7 +328,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             if (conn.isExpired(now))
             {
                failedConnections.add(conn);
-            }
+            } 
          }
 
          for (RemotingConnection conn : failedConnections)
@@ -346,13 +347,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          return super.cancel();
       }
-
    }
 
    private class DelegatingBufferHandler extends AbstractBufferHandler
    {
       public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
-      {
+      {         
          RemotingConnection conn = connections.get(connectionID);
 
          if (conn != null)

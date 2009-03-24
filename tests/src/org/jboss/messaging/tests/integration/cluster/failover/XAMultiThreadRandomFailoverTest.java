@@ -12,6 +12,9 @@
 
 package org.jboss.messaging.tests.integration.cluster.failover;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -643,8 +646,8 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
                                                                                                       backupParams),
                                                                            0,
                                                                            1,
-                                                                           ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                                           ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                                           DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                                           DEFAULT_RECONNECT_ATTEMPTS);
 
       sf.setSendWindowSize(32 * 1024);
       return sf;

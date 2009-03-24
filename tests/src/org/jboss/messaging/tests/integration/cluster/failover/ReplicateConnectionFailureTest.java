@@ -31,12 +31,12 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -115,24 +115,30 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
                                                                       DEFAULT_ACK_BATCH_SIZE,
                                                                       DEFAULT_RETRY_INTERVAL,
                                                                       DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                      DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                                      DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                                      DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                                      DEFAULT_RECONNECT_ATTEMPTS);
 
       sf1.setSendWindowSize(32 * 1024);
 
       assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
 
-      assertEquals(0, backupService.getServer().getRemotingService().getConnections().size());
+      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
 
       ClientSession session1 = sf1.createSession(false, true, true);
 
       // One connection
       assertEquals(1, liveService.getServer().getRemotingService().getConnections().size());
 
-      // One replicating connection per session
+      // One replicating connection
       assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
 
       session1.close();
+      
+      Thread.sleep(2000);
+      
+      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
+
+      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
 
       log.info("recreating");
 

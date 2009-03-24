@@ -181,7 +181,7 @@ public class InVMConnector implements Connector
       }
 
       public void connectionDestroyed(final Object connectionID)
-      {
+      {         
          if (connections.remove(connectionID) != null)
          {
             //Execute on different thread to avoid deadlocks

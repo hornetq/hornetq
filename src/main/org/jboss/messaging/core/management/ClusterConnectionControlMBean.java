@@ -50,7 +50,7 @@ public interface ClusterConnectionControlMBean extends MessagingComponentControl
 
    double getRetryIntervalMultiplier();
 
-   int getMaxRetriesBeforeFailover();
+   int getInitialConnectAttempts();
 
-   int getMaxRetriesAfterFailover();
+   int getReconnectAttempts();
 }

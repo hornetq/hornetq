@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
@@ -81,7 +82,6 @@ import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.utils.TimeAndCounterIDGenerator;
 import org.jboss.messaging.utils.UUID;
 import org.jboss.messaging.utils.UUIDGenerator;
 
@@ -97,14 +97,17 @@ import org.jboss.messaging.utils.UUIDGenerator;
 public class JournalStorageManager implements StorageManager
 {
    private static final Logger log = Logger.getLogger(JournalStorageManager.class);
+   
+   private static final long CHECKPOINT_BATCH_SIZE = 2 ^ 32;
+
 
    // Bindings journal record type
 
    public static final byte QUEUE_BINDING_RECORD = 21;
 
-  // public static final byte DESTINATION_RECORD = 22;
-   
    public static final byte PERSISTENT_ID_RECORD = 23;
+   
+   public static final byte ID_COUNTER_RECORD = 24;
 
    // type + expiration + timestamp + priority
    public static final int SIZE_FIELDS = SIZE_INT + SIZE_LONG + SIZE_LONG + SIZE_BYTE;
@@ -129,8 +132,7 @@ public class JournalStorageManager implements StorageManager
    
    private UUID persistentID;
 
-   // This will produce a unique id **for this node only**
-   private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
+   private final BatchingIDGenerator idGenerator = new BatchingIDGenerator(0, CHECKPOINT_BATCH_SIZE);
 
    private final Journal messageJournal;
 
@@ -216,8 +218,6 @@ public class JournalStorageManager implements StorageManager
       largeMessagesFactory = new NIOSequentialFileFactory(config.getLargeMessagesDirectory());
    }
 
-  
-
    /* This constructor is only used for testing */
    public JournalStorageManager(final Journal messageJournal,
                                 final Journal bindingsJournal,
@@ -233,10 +233,27 @@ public class JournalStorageManager implements StorageManager
    {
       return persistentID;
    }
+   
+   public void setPersistentID(UUID id) throws Exception
+   {
+      long recordID = generateUniqueID();
+      
+      if (id != null)
+      {
+         bindingsJournal.appendAddRecord(recordID, PERSISTENT_ID_RECORD, new PersistentIDEncoding(id), true);                       
+      }
+      
+      this.persistentID = id;
+   }
 
    public long generateUniqueID()
    {
       return idGenerator.generateID();
+   }
+   
+   public long getCurrentUniqueID()
+   {
+      return idGenerator.getCurrentID();
    }
 
    public LargeServerMessage createLargeMessage()
@@ -895,6 +912,8 @@ public class JournalStorageManager implements StorageManager
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
       bindingsJournal.load(records, preparedTransactions);
+      
+      long lastID = -1;
 
       for (RecordInfo record : records)
       {
@@ -922,19 +941,24 @@ public class JournalStorageManager implements StorageManager
             
             persistentID = encoding.uuid;
          }
+         else if (rec == ID_COUNTER_RECORD)
+         {
+            IDCounterEncoding encoding = new IDCounterEncoding();
+            
+            encoding.decode(buffer);
+            
+            lastID = encoding.id;
+         }
          else
          {
             throw new IllegalStateException("Invalid record type " + rec);
          }
       }
-      
-      if (persistentID == null)
-      {
-         persistentID = UUIDGenerator.getInstance().generateUUID();
-         
-         bindingsJournal.appendAddRecord(generateUniqueID(), PERSISTENT_ID_RECORD, new PersistentIDEncoding(persistentID), true);         
-      }
+
+      idGenerator.setID(lastID + 1);
    }
+      
+   
 
    // MessagingComponent implementation
    // ------------------------------------------------------
@@ -961,6 +985,9 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
+      
+      //Must call close to make sure last id is persisted
+      idGenerator.close();
 
       executor.shutdown();
 
@@ -1070,6 +1097,79 @@ public class JournalStorageManager implements StorageManager
    // Inner Classes
    // ----------------------------------------------------------------------------
 
+   private class BatchingIDGenerator implements IDGenerator
+   {
+      private final AtomicLong counter;
+
+      private final long checkpointSize;
+
+      private volatile long nextID;
+
+      public BatchingIDGenerator(final long start, final long checkpointSize)
+      {
+         this.counter = new AtomicLong(start);
+
+         this.checkpointSize = checkpointSize;
+
+         nextID = start + checkpointSize;
+      }
+      
+      public void setID(final long id)
+      {
+         this.counter.set(id);
+         
+         nextID = id + checkpointSize;
+      }
+
+      public long generateID()
+      {
+         long id = counter.getAndIncrement();
+
+         if (id >= nextID)
+         {
+            saveCheckPoint(id);
+
+            return id;
+         }
+         else
+         {
+            return id;
+         }
+      }
+
+      private synchronized void saveCheckPoint(final long id)
+      {
+         if (id >= nextID)
+         {
+            storeID(id);
+
+            nextID += checkpointSize;
+         }
+      }
+
+      public long getCurrentID()
+      {
+         return counter.get();
+      }
+      
+      public void close()
+      {
+         storeID(counter.get());
+      }
+      
+      private void storeID(final long id)
+      {
+         try
+         {
+            bindingsJournal.appendAddRecord(id, ID_COUNTER_RECORD, new IDCounterEncoding(id), true);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to store id", e);
+         }
+      }
+   }
+   
    private static class XidEncoding implements EncodingSupport
    {
       final Xid xid;
@@ -1229,6 +1329,36 @@ public class JournalStorageManager implements StorageManager
       public int getEncodeSize()
       {
          return 16;
+      }
+
+   }
+   
+   private static class IDCounterEncoding implements EncodingSupport
+   {
+      long id;
+
+      IDCounterEncoding(final long id)
+      {
+         this.id = id;
+      }
+
+      IDCounterEncoding()
+      {
+      }
+
+      public void decode(final MessagingBuffer buffer)
+      {
+         id = buffer.readLong();
+      }
+
+      public void encode(final MessagingBuffer buffer)
+      {
+         buffer.writeLong(id);
+      }
+
+      public int getEncodeSize()
+      {
+         return SIZE_LONG;
       }
 
    }

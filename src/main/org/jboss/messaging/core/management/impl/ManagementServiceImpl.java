@@ -165,12 +165,14 @@ public class ManagementServiceImpl implements ManagementService
                                                      final ResourceManager resourceManager,
                                                      final RemotingService remotingService,
                                                      final MessagingServer messagingServer,
-                                                     final QueueFactory queueFactory) throws Exception
+                                                     final QueueFactory queueFactory,
+                                                     final boolean backup) throws Exception
    {
       this.postOffice = postOffice;
       this.addressSettingsRepository = addressSettingsRepository;
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
+      
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
                                                  configuration,
@@ -369,8 +371,7 @@ public class ManagementServiceImpl implements ManagementService
                ManagementHelper.storeResult(reply, result);
             }
             catch (Exception e)
-            {
-               e.printStackTrace(System.err);
+            {               
                log.warn("exception while invoking " + operation + " on " + objectName, e);
                reply.putBooleanProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED, false);
                String exceptionMessage = e.getMessage();
@@ -553,9 +554,9 @@ public class ManagementServiceImpl implements ManagementService
          }
       }
    }
-
+   
    public void sendNotification(final Notification notification) throws Exception
-   {
+   {     
       if (managedServer != null && noticationsEnabled)
       {
          // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
@@ -578,6 +579,7 @@ public class ManagementServiceImpl implements ManagementService
             // Now send message
 
             ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
+   
             notificationMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
             // Notification messages are always durable so the user can choose whether to add a durable queue to consume
             // them in

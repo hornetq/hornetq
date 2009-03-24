@@ -25,7 +25,7 @@ public interface Channel
    long getID();
 
    void send(Packet packet);
-
+   
    Packet sendBlocking(Packet packet) throws MessagingException;
 
    void replicatePacket(Packet packet, long replicatedChannelID, Runnable action);

@@ -100,8 +100,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        boolean preAcknowledge,                                   
                                        long retryInterval,
                                        double retryIntervalMultiplier,                                       
-                                       int maxRetriesBeforeFailover,
-                                       int maxRetriesAfterFailover,
+                                       int initialConnectAttempts,
+                                       int reconnectAttempts,
                                        String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
@@ -132,8 +132,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        preAcknowledge,                                                 
                                                        retryInterval,
                                                        retryIntervalMultiplier,                                                       
-                                                       maxRetriesBeforeFailover,
-                                                       maxRetriesAfterFailover,
+                                                       initialConnectAttempts,
+                                                       reconnectAttempts,
                                                        bindings);
       if (created)
       {
@@ -209,8 +209,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        boolean preAcknowledge,                                   
                                        long retryInterval,
                                        double retryIntervalMultiplier,                                       
-                                       int maxRetriesBeforeFailover,
-                                       int maxRetriesAfterFailover,
+                                       int initialConnectAttempts,
+                                       int reconnectAttempts,
                                        String jndiBinding) throws Exception
    {
       List<String> bindings = new ArrayList<String>();
@@ -238,8 +238,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        preAcknowledge,                                                 
                                                        retryInterval,
                                                        retryIntervalMultiplier,                                                       
-                                                       maxRetriesBeforeFailover,
-                                                       maxRetriesAfterFailover,
+                                                       initialConnectAttempts,
+                                                       reconnectAttempts,
                                                        bindings);
       if (created)
       {
@@ -273,8 +273,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        final boolean preAcknowledge,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
-                                       final int maxRetriesBeforeFailover,
-                                       final int maxRetriesAfterFailover,
+                                       final int initialConnectAttempts,
+                                       final int reconnectAttempts,
                                        final String jndiBinding) throws Exception
    {      
       List<String> bindings = new ArrayList<String>();
@@ -305,8 +305,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        preAcknowledge,                                               
                                                        retryInterval,
                                                        retryIntervalMultiplier,                                                       
-                                                       maxRetriesBeforeFailover,
-                                                       maxRetriesAfterFailover,
+                                                       initialConnectAttempts,
+                                                       reconnectAttempts,
                                                        bindings);
       if (created)
       {

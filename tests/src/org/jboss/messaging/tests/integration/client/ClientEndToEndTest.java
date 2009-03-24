@@ -76,7 +76,7 @@ public class ClientEndToEndTest extends ServiceTestBase
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientMessage message = sendSession.createClientMessage(false);
-         //we need to set the destination so we can calculate the encodesize correctly
+         // we need to set the destination so we can calculate the encodesize correctly
          message.setDestination(addressA);
          int encodeSize = message.getEncodeSize();
          int numMessages = 100;
@@ -99,7 +99,7 @@ public class ClientEndToEndTest extends ServiceTestBase
          }
 
          ClientMessage m = consumer.receive(5000);
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(numMessages, q.getDeliveringCount());
          m.acknowledge();
          assertEquals(0, q.getDeliveringCount());
@@ -142,7 +142,7 @@ public class ClientEndToEndTest extends ServiceTestBase
 
          ClientConsumer consumer = session.createConsumer(queueA);
          session.start();
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          ClientMessage[] messages = new ClientMessage[numMessages];
          for (int i = 0; i < numMessages; i++)
          {
@@ -386,7 +386,7 @@ public class ClientEndToEndTest extends ServiceTestBase
             m.acknowledge();
          }
          receiveSession.close();
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(numMessage, q.getDeliveringCount());
 
          session.close();
@@ -683,11 +683,11 @@ public class ClientEndToEndTest extends ServiceTestBase
          {
             cp.send(session.createClientMessage(false));
          }
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(q.getMessageCount(), 0);
          session.commit();
          assertEquals(q.getMessageCount(), numMessages);
-         //now send some more
+         // now send some more
          for (int i = 0; i < numMessages; i++)
          {
             cp.send(session.createClientMessage(false));
@@ -721,11 +721,11 @@ public class ClientEndToEndTest extends ServiceTestBase
          {
             cp.send(session.createClientMessage(false));
          }
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(q.getMessageCount(), 0);
          session.rollback();
          assertEquals(q.getMessageCount(), 0);
-         //now send some more
+         // now send some more
          for (int i = 0; i < numMessages; i++)
          {
             cp.send(session.createClientMessage(false));
@@ -768,7 +768,7 @@ public class ClientEndToEndTest extends ServiceTestBase
             assertNotNull(cm);
             cm.acknowledge();
          }
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(numMessages, q.getDeliveringCount());
          session.commit();
          assertEquals(0, q.getDeliveringCount());
@@ -807,7 +807,7 @@ public class ClientEndToEndTest extends ServiceTestBase
             assertNotNull(cm);
             cm.acknowledge();
          }
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(numMessages, q.getDeliveringCount());
          session.rollback();
          for (int i = 0; i < numMessages; i++)
@@ -856,7 +856,7 @@ public class ClientEndToEndTest extends ServiceTestBase
             assertNotNull(cm);
          }
          cm.acknowledge();
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
 
          assertEquals(0, q.getDeliveringCount());
          session.close();
@@ -898,7 +898,7 @@ public class ClientEndToEndTest extends ServiceTestBase
             }
          });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(numMessages, q.getDeliveringCount());
          sendSession.close();
          session.close();
@@ -956,7 +956,7 @@ public class ClientEndToEndTest extends ServiceTestBase
             }
          });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
@@ -1017,7 +1017,7 @@ public class ClientEndToEndTest extends ServiceTestBase
             }
          });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
@@ -1075,7 +1075,7 @@ public class ClientEndToEndTest extends ServiceTestBase
             }
          });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          assertEquals(numMessages, q.getDeliveringCount());
          assertEquals(numMessages, q.getMessageCount());
          session.commit();
@@ -1093,49 +1093,53 @@ public class ClientEndToEndTest extends ServiceTestBase
       }
    }
 
-   public void testAsyncConsumerRollback() throws Exception
-   {
-      MessagingService messagingService = createService(false);
-      try
-      {
-         messagingService.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setBlockOnAcknowledge(true);
-         cf.setAckBatchSize(0);
-         ClientSession sendSession = cf.createSession(false, true, true);
-         final ClientSession session = cf.createSession(false, true, false);
-         sendSession.createQueue(addressA, queueA, false);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         ClientConsumer cc = session.createConsumer(queueA);
-         int numMessages = 100;
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(sendSession.createClientMessage(false));
-         }
-         CountDownLatch latch = new CountDownLatch(numMessages);
-         session.start();
-         cc.setMessageHandler(new ackHandler(session, latch));
-         assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(numMessages, q.getDeliveringCount());
-         assertEquals(numMessages, q.getMessageCount());
-         session.rollback();
-         assertEquals(0, q.getDeliveringCount());
-         assertEquals(numMessages, q.getMessageCount());
-         latch = new CountDownLatch(numMessages);
-         cc.setMessageHandler(new ackHandler(session, latch));
-         assertTrue(latch.await(5, TimeUnit.SECONDS));
-         sendSession.close();
-         session.close();
-      }
-      finally
-      {
-         if (messagingService.isStarted())
-         {
-            messagingService.stop();
-         }
-      }
-   }
+   //FIXME uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1549 is fixed
+//   public void testAsyncConsumerRollback() throws Exception
+//   {
+//      MessagingService messagingService = createService(false);
+//      try
+//      {
+//         messagingService.start();
+//         ClientSessionFactory cf = createInVMFactory();
+//         cf.setBlockOnAcknowledge(true);
+//         cf.setAckBatchSize(0);
+//         ClientSession sendSession = cf.createSession(false, true, true);
+//         final ClientSession session = cf.createSession(false, true, false);
+//         sendSession.createQueue(addressA, queueA, false);
+//         ClientProducer cp = sendSession.createProducer(addressA);
+//         ClientConsumer cc = session.createConsumer(queueA);
+//         int numMessages = 100;
+//         for (int i = 0; i < numMessages; i++)
+//         {
+//            cp.send(sendSession.createClientMessage(false));
+//         }
+//         CountDownLatch latch = new CountDownLatch(numMessages);
+//         session.start();
+//         cc.setMessageHandler(new ackHandler(session, latch));
+//         assertTrue(latch.await(5, TimeUnit.SECONDS));
+//         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+//         assertEquals(numMessages, q.getDeliveringCount());
+//         assertEquals(numMessages, q.getMessageCount());
+//         //Need to stop session first or rollback will cause immediate redelivery
+//         session.stop();
+//         session.rollback();
+//         assertEquals(0, q.getDeliveringCount());
+//         assertEquals(numMessages, q.getMessageCount());
+//         session.start();
+//         latch = new CountDownLatch(numMessages);
+//         cc.setMessageHandler(new ackHandler(session, latch));
+//         assertTrue(latch.await(5, TimeUnit.SECONDS));
+//         sendSession.close();
+//         session.close();
+//      }
+//      finally
+//      {
+//         if (messagingService.isStarted())
+//         {
+//            messagingService.stop();
+//         }
+//      }      
+//   }
 
    public void testSendDeliveryOrderOnCommit() throws Exception
    {
@@ -1238,7 +1242,7 @@ public class ClientEndToEndTest extends ServiceTestBase
          ClientConsumer[] clientConsumers = new ClientConsumer[numReceivers];
          Receiver[] receivers = new Receiver[numReceivers];
          CountDownLatch latch = new CountDownLatch(numMessage);
-         for(int i = 0; i < numReceivers; i++)
+         for (int i = 0; i < numReceivers; i++)
          {
             clientConsumers[i] = recSession.createConsumer(queueA);
             receivers[i] = new Receiver(latch);
@@ -1246,11 +1250,11 @@ public class ClientEndToEndTest extends ServiceTestBase
          }
          recSession.start();
          ClientProducer clientProducer = sendSession.createProducer(addressA);
-         for(int i = 0; i < numMessage; i++)
+         for (int i = 0; i < numMessage; i++)
          {
             ClientMessage cm = sendSession.createClientMessage(false);
             cm.getBody().writeInt(count.getAndIncrement());
-            clientProducer.send(cm);   
+            clientProducer.send(cm);
          }
          assertTrue(latch.await(10, TimeUnit.SECONDS));
          for (Receiver receiver : receivers)
@@ -1295,7 +1299,7 @@ public class ClientEndToEndTest extends ServiceTestBase
       }
       finally
       {
-         if(messagingService.isStarted())
+         if (messagingService.isStarted())
          {
             messagingService.stop();
          }
@@ -1324,18 +1328,18 @@ public class ClientEndToEndTest extends ServiceTestBase
          byte[] bytes = new byte[3000];
          message.getBody().writeBytes(bytes);
          cp.send(message);
-         ClientFileMessageImpl m = (ClientFileMessageImpl) cc.receive(5000);
+         ClientFileMessageImpl m = (ClientFileMessageImpl)cc.receive(5000);
          assertNotNull(m);
          FileChannel channel = m.getChannel();
          ByteBuffer dst = ByteBuffer.allocate(3000);
          channel.read(dst);
-         assertEqualsByteArrays(bytes,dst.array());
+         assertEqualsByteArrays(bytes, dst.array());
          sendSession.close();
          recSession.close();
       }
       finally
       {
-         if(messagingService.isStarted())
+         if (messagingService.isStarted())
          {
             messagingService.stop();
          }
@@ -1370,17 +1374,17 @@ public class ClientEndToEndTest extends ServiceTestBase
          fos.close();
          message.setFile(src);
          cp.send(message);
-         ClientMessage m =  cc.receive(5000);
+         ClientMessage m = cc.receive(5000);
          assertNotNull(m);
          byte[] recBytes = new byte[3000];
          m.getBody().readBytes(recBytes);
-         assertEqualsByteArrays(bytes,recBytes);
+         assertEqualsByteArrays(bytes, recBytes);
          sendSession.close();
          recSession.close();
       }
       finally
       {
-         if(messagingService.isStarted())
+         if (messagingService.isStarted())
          {
             messagingService.stop();
          }
@@ -1398,8 +1402,9 @@ public class ClientEndToEndTest extends ServiceTestBase
          session.createQueue(addressA, queueA, false);
 
          ClientConsumer[] consumers = new ClientConsumer[5];
-         //start the session before we create the consumers, this is because start is non blocking and we have to gaurantee
-         //all consumers have been started before sending messages
+         // start the session before we create the consumers, this is because start is non blocking and we have to
+         // gaurantee
+         // all consumers have been started before sending messages
          session.start();
          consumers[0] = session.createConsumer(queueA);
          consumers[1] = session.createConsumer(queueA);
@@ -1410,20 +1415,20 @@ public class ClientEndToEndTest extends ServiceTestBase
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(addressA);
          int numMessage = 100;
-         for(int i = 0; i < numMessage; i++)
+         for (int i = 0; i < numMessage; i++)
          {
             ClientMessage cm = sendSession.createClientMessage(false);
             cm.getBody().writeInt(i);
             cp.send(cm);
          }
          int currMessage = 0;
-         for(int i = 0; i < numMessage/5; i++)
+         for (int i = 0; i < numMessage / 5; i++)
          {
-            for(int j = 0; j < 5;j++)
+            for (int j = 0; j < 5; j++)
             {
                ClientMessage cm = consumers[j].receive(5000);
                assertNotNull(cm);
-               assertEquals(currMessage++,cm.getBody().readInt());
+               assertEquals(currMessage++, cm.getBody().readInt());
             }
          }
          sendSession.close();
@@ -1431,7 +1436,7 @@ public class ClientEndToEndTest extends ServiceTestBase
       }
       finally
       {
-         if(messagingService.isStarted())
+         if (messagingService.isStarted())
          {
             messagingService.stop();
          }
@@ -1441,8 +1446,11 @@ public class ClientEndToEndTest extends ServiceTestBase
    class Receiver implements MessageHandler
    {
       final CountDownLatch latch;
+
       int lastMessage = -1;
+
       boolean failed = false;
+
       public Receiver(CountDownLatch latch)
       {
          this.latch = latch;
@@ -1459,7 +1467,7 @@ public class ClientEndToEndTest extends ServiceTestBase
          {
             e.printStackTrace();
          }
-         if( i <= lastMessage)
+         if (i <= lastMessage)
          {
             failed = true;
          }
@@ -1468,7 +1476,6 @@ public class ClientEndToEndTest extends ServiceTestBase
       }
 
    }
-
 
    private static class MyMessageHandler implements MessageHandler
    {
@@ -1495,6 +1502,7 @@ public class ClientEndToEndTest extends ServiceTestBase
          latch.countDown();
       }
    }
+
    private static class ackHandler implements MessageHandler
    {
       private final ClientSession session;

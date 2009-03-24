@@ -624,7 +624,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          started = false;
       }
    }
-
+   
    public void addFailureListener(final FailureListener listener)
    {
       remotingConnection.addFailureListener(listener);
@@ -721,7 +721,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (consumer != null)
       {
          consumer.handleLargeMessage(message);
-
       }
    }
 
@@ -734,7 +733,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          consumer.handleLargeMessageContinuation(continuation);
       }
    }
-
+   
    public void close() throws MessagingException
    {
       if (closed)
@@ -822,6 +821,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                //
                // however if session re-attach fails and the session was not in a call to close, then we DO want to call
                // the session listeners so we return false
+               //
+               // Also session reattach will fail if the server is restarted - so the session is lost
                ok = true;
             }
             else

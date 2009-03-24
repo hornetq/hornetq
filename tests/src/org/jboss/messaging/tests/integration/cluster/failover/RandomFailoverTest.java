@@ -229,8 +229,8 @@ public class RandomFailoverTest extends UnitTestCase
                                                                                                backupParams),
                                                                     0,
                                                                     1,
-                                                                    ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                                    ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                                    ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                                    ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
 
          sf.setSendWindowSize(32 * 1024);
 
@@ -1454,10 +1454,6 @@ public class RandomFailoverTest extends UnitTestCase
       backupConf.setBackup(true);
       backupService = Messaging.newNullStorageMessagingService(backupConf);
       backupService.start();
-
-      // We need to sleep > 16 ms otherwise the id generators on live and backup could be initialised
-      // with the same time component
-      Thread.sleep(17);
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);

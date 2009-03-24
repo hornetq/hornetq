@@ -365,9 +365,19 @@ public class BasicXaTest extends ServiceTestBase
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
       session.rollback(xid);
-
       
       session.close();
+
+      messagingService.start();
+      
+      sessionFactory = createInVMFactory();
+      
+      xid = newXID();
+      session = sessionFactory.createSession(true, false, false);
+      session.start(xid, XAResource.TMNOFLAGS);
+      session.end(xid, XAResource.TMSUCCESS);
+      session.rollback(xid);
+      
 
       messagingService.stop();
       messagingService.start();

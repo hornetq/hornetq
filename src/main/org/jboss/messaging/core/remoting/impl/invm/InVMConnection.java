@@ -109,7 +109,12 @@ public class InVMConnection implements Connection
    }
 
    public void write(final MessagingBuffer buffer)
-   {
+   {  
+      write(buffer, false);
+   }
+   
+   public void write(final MessagingBuffer buffer, final boolean flush)
+   {     
       executor.execute(new Runnable()
       {
          public void run()
@@ -119,12 +124,9 @@ public class InVMConnection implements Connection
                if (!closed)
                {
                   buffer.readInt(); // read and discard
+                  
                   handler.bufferReceived(id, buffer);
-               }
-               else
-               {
-                  //Ignore - buffer came in after connection is closed
-               }               
+               }              
             }
             catch (Exception e)
             {

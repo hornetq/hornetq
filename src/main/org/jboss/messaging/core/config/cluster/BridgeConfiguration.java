@@ -57,9 +57,9 @@ public class BridgeConfiguration implements Serializable
 
    private final double retryIntervalMultiplier;
 
-   private final int maxRetriesBeforeFailover;
+   private final int initialConnectAttempts;
 
-   private final int maxRetriesAfterFailover;
+   private final int reconnectAttempts;
 
    private final boolean useDuplicateDetection;
 
@@ -70,8 +70,8 @@ public class BridgeConfiguration implements Serializable
                               final String transformerClassName,
                               final long retryInterval,
                               final double retryIntervalMultiplier,
-                              final int maxRetriesBeforeFailover,
-                              final int maxRetriesAfterFailover,
+                              final int initialConnectAttempts,
+                              final int reconnectAttempts,
                               final boolean useDuplicateDetection,
                               final Pair<String, String> connectorPair)
    {
@@ -82,8 +82,8 @@ public class BridgeConfiguration implements Serializable
       this.transformerClassName = transformerClassName;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
-      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+      this.initialConnectAttempts = initialConnectAttempts;
+      this.reconnectAttempts = reconnectAttempts;
       this.useDuplicateDetection = useDuplicateDetection;
       this.connectorPair = connectorPair;
       this.discoveryGroupName = null;
@@ -96,8 +96,8 @@ public class BridgeConfiguration implements Serializable
                               final String transformerClassName,
                               final long retryInterval,
                               final double retryIntervalMultiplier,
-                              final int maxRetriesBeforeFailover,
-                              final int maxRetriesAfterFailover,
+                              final int initialConnectAttempts,
+                              final int reconnectAttempts,
                               final boolean useDuplicateDetection,
                               final String discoveryGroupName)
    {
@@ -108,8 +108,8 @@ public class BridgeConfiguration implements Serializable
       this.transformerClassName = transformerClassName;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
-      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+      this.initialConnectAttempts = initialConnectAttempts;
+      this.reconnectAttempts = reconnectAttempts;
       this.useDuplicateDetection = useDuplicateDetection;
       this.connectorPair = null;
       this.discoveryGroupName = discoveryGroupName;
@@ -160,14 +160,14 @@ public class BridgeConfiguration implements Serializable
       return retryIntervalMultiplier;
    }
 
-   public int getMaxRetriesBeforeFailover()
+   public int getInitialConnectAttempts()
    {
-      return maxRetriesBeforeFailover;
+      return initialConnectAttempts;
    }
 
-   public int getMaxRetriesAfterFailover()
+   public int getReconnectAttempts()
    {
-      return maxRetriesAfterFailover;
+      return reconnectAttempts;
    }
 
    public boolean isUseDuplicateDetection()

@@ -161,7 +161,7 @@ public class LocalQueueBinding implements QueueBinding
    }
    
    public void willRoute(final ServerMessage message)
-   {      
+   {            
    }
      
    public boolean isQueueBinding()

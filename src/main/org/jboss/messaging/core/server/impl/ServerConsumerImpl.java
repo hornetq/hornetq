@@ -211,14 +211,12 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public void close() throws Exception
-   {
+   {    
       setStarted(false);
 
       messageQueue.removeConsumer(this);
 
       session.removeConsumer(this);
-
-      // log.info(System.identityHashCode(this) + " consumer close");
 
       LinkedList<MessageReference> refs = cancelRefs(false, null);
 
@@ -410,7 +408,7 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public void deliverReplicated(final long messageID) throws Exception
-   {
+   {      
       MessageReference ref = removeFirstReference(messageID);
 
       if (ref == null)
@@ -471,7 +469,7 @@ public class ServerConsumerImpl implements ServerConsumer
          // force a depage
          if (!store.readPage()) // This returns false if there are no pages
          {
-            throw new IllegalStateException("Cannot find page");
+            throw new IllegalStateException("Cannot find page " + id);
          }
          else
          {
@@ -689,21 +687,10 @@ public class ServerConsumerImpl implements ServerConsumer
          Packet replPacket = new SessionReplicateDeliveryMessage(id, message.getMessageID());
          replPacket.setChannelID(channel.getID());
 
-         // log.info("replicating delivery from live for queue " + messageQueue.getName() +
-         // " ref " +
-         // message.getMessageID() +
-         // " session name " +
-         // session.getName());
-
          replicatingChannel.replicatePacket(replPacket, replicatedSessionID, new Runnable()
          {
             public void run()
             {
-               // log.info("got replicate delivery response " + messageQueue.getName() +
-               // " ref " +
-               // message.getMessageID() +
-               // " session name " +
-               // session.getName());
                channel.send(packet);
             }
          });

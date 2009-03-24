@@ -87,17 +87,17 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int maxRetriesBeforeFailover = 3;
+      final int initialConnectAttempts = -1;
 
-      final int maxRetriesAfterFailover = 0;
+      final int reconnectAttempts = -1;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     maxRetriesBeforeFailover,
-                                                                     maxRetriesAfterFailover);
+                                                                     initialConnectAttempts,
+                                                                     reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -164,17 +164,17 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int maxRetriesBeforeFailover = 0;
+      final int initialConnectAttempts = -1;
 
-      final int maxRetriesAfterFailover = 3;
+      final int reconnectAttempts = -1;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     maxRetriesBeforeFailover,
-                                                                     maxRetriesAfterFailover);
+                                                                     initialConnectAttempts,
+                                                                     reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 

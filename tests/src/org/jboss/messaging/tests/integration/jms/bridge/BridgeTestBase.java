@@ -23,17 +23,18 @@ package org.jboss.messaging.tests.integration.jms.bridge;
 
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -90,17 +91,18 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 public abstract class BridgeTestBase extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(BridgeTestBase.class);
-   
+
    protected static ConnectionFactoryFactory cff0, cff1;
-   
+
    protected static ConnectionFactory cf0, cf1;
-   
-   protected static DestinationFactory sourceQueueFactory, targetQueueFactory, localTargetQueueFactory, sourceTopicFactory;
-   
+
+   protected static DestinationFactory sourceQueueFactory, targetQueueFactory, localTargetQueueFactory,
+            sourceTopicFactory;
+
    protected static Queue sourceQueue, targetQueue, localTargetQueue;
-   
+
    protected static Topic sourceTopic;
-   
+
    protected static boolean firstTime = true;
 
    protected MessagingServiceImpl server0;
@@ -117,22 +119,21 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    private HashMap<String, Object> params1;
 
-   
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      //Start the servers         
+      // Start the servers
       Configuration conf0 = new ConfigurationImpl();
       conf0.setSecurityEnabled(false);
       conf0.getAcceptorConfigurations()
-      .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
+           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       server0 = Messaging.newNullStorageMessagingService(conf0);
       server0.start();
 
       context0 = new InVMContext();
       jmsServer0 = JMSServerManagerImpl.newJMSServerManagerImpl(server0.getServer());
-      jmsServer0.start();         
+      jmsServer0.start();
       jmsServer0.setContext(context0);
 
       Configuration conf1 = new ConfigurationImpl();
@@ -140,9 +141,8 @@ public abstract class BridgeTestBase extends UnitTestCase
       params1 = new HashMap<String, Object>();
       params1.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       conf1.getAcceptorConfigurations()
-      .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                      params1));
-      conf1.setBackup(true);
+           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", params1));
+
       server1 = Messaging.newNullStorageMessagingService(conf1);
       server1.start();
 
@@ -161,9 +161,9 @@ public abstract class BridgeTestBase extends UnitTestCase
 
       setUpAdministeredObjects();
 
-      //We need a local transaction and recovery manager
-      //We must start this after the remote servers have been created or it won't
-      //have deleted the database and the recovery manager may attempt to recover transactions
+      // We need a local transaction and recovery manager
+      // We must start this after the remote servers have been created or it won't
+      // have deleted the database and the recovery manager may attempt to recover transactions
 
       firstTime = false;
 
@@ -176,67 +176,68 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          server = jmsServer1;
       }
-      server.createQueue(queueName, "/queue/" + queueName);         
+      server.createQueue(queueName, "/queue/" + queueName);
    }
 
-
    protected void tearDown() throws Exception
-   {       
+   {
       checkEmpty(sourceQueue, 0);
       checkEmpty(localTargetQueue, 0);
       checkEmpty(targetQueue, 1);
-      
+
       // Check no subscriptions left lying around
-            
+
       checkNoSubscriptions(sourceTopic, 0);
-      
+
       server1.stop();
       server0.stop();
-      
-      super.tearDown();       
+
+      super.tearDown();
    }
-   
+
    protected void setUpAdministeredObjects() throws Exception
    {
       cff0 = new ConnectionFactoryFactory()
       {
          public ConnectionFactory createConnectionFactory() throws Exception
          {
+            //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             return new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
-                                               null,
-                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                               DEFAULT_PING_PERIOD,
-                                               DEFAULT_CONNECTION_TTL,
-                                               DEFAULT_CALL_TIMEOUT,
-                                               null,
-                                               DEFAULT_ACK_BATCH_SIZE,
-                                               DEFAULT_ACK_BATCH_SIZE,
-                                               DEFAULT_CONSUMER_WINDOW_SIZE,
-                                               DEFAULT_CONSUMER_MAX_RATE,
-                                               DEFAULT_SEND_WINDOW_SIZE,
-                                               DEFAULT_PRODUCER_MAX_RATE,
-                                               DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                               true,
-                                               true,
-                                               true,
-                                               DEFAULT_AUTO_GROUP,
-                                               DEFAULT_MAX_CONNECTIONS,
-                                               DEFAULT_PRE_ACKNOWLEDGE,                                                                
-                                               DEFAULT_RETRY_INTERVAL,
-                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                               0,
-                                               0);
+                                              null,
+                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                              DEFAULT_PING_PERIOD,
+                                              DEFAULT_CONNECTION_TTL,
+                                              DEFAULT_CALL_TIMEOUT,
+                                              null,
+                                              DEFAULT_ACK_BATCH_SIZE,
+                                              DEFAULT_ACK_BATCH_SIZE,
+                                              DEFAULT_CONSUMER_WINDOW_SIZE,
+                                              DEFAULT_CONSUMER_MAX_RATE,
+                                              DEFAULT_SEND_WINDOW_SIZE,
+                                              DEFAULT_PRODUCER_MAX_RATE,
+                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                              true,
+                                              true,
+                                              true,
+                                              DEFAULT_AUTO_GROUP,
+                                              DEFAULT_MAX_CONNECTIONS,
+                                              DEFAULT_PRE_ACKNOWLEDGE,
+                                              DEFAULT_RETRY_INTERVAL,
+                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                              1,
+                                              0);
          }
-         
+
       };
-      
+
       cf0 = cff0.createConnectionFactory();
-      
+
       cff1 = new ConnectionFactoryFactory()
       {
 
          public ConnectionFactory createConnectionFactory() throws Exception
          {
+            //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             return new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(), params1),
                                               null,
                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -256,22 +257,22 @@ public abstract class BridgeTestBase extends UnitTestCase
                                               true,
                                               DEFAULT_AUTO_GROUP,
                                               DEFAULT_MAX_CONNECTIONS,
-                                              DEFAULT_PRE_ACKNOWLEDGE,                                                                
+                                              DEFAULT_PRE_ACKNOWLEDGE,
                                               DEFAULT_RETRY_INTERVAL,
                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                              0,
+                                              1,
                                               0);
-         }         
+         }
       };
-      
+
       cf1 = cff1.createConnectionFactory();
-      
+
       sourceQueueFactory = new DestinationFactory()
       {
          public Destination createDestination() throws Exception
          {
             return (Destination)context0.lookup("/queue/sourceQueue");
-         }            
+         }
       };
 
       sourceQueue = (Queue)sourceQueueFactory.createDestination();
@@ -281,7 +282,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          public Destination createDestination() throws Exception
          {
             return (Destination)context1.lookup("/queue/targetQueue");
-         }            
+         }
       };
 
       targetQueue = (Queue)targetQueueFactory.createDestination();
@@ -291,7 +292,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          public Destination createDestination() throws Exception
          {
             return (Destination)context0.lookup("/topic/sourceTopic");
-         }            
+         }
       };
 
       sourceTopic = (Topic)sourceTopicFactory.createDestination();
@@ -301,31 +302,30 @@ public abstract class BridgeTestBase extends UnitTestCase
          public Destination createDestination() throws Exception
          {
             return (Destination)context0.lookup("/queue/localTargetQueue");
-         }            
+         }
       };
 
       localTargetQueue = (Queue)localTargetQueueFactory.createDestination();
    }
-   
-   protected void sendMessages(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean persistent)
-      throws Exception
+
+   protected void sendMessages(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean persistent) throws Exception
    {
       Connection conn = null;
-      
+
       try
       {
          conn = cf.createConnection();
-         
+
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = sess.createProducer(dest);
-         
+
          prod.setDeliveryMode(persistent ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-         
+
          for (int i = start; i < start + numMessages; i++)
          {
             TextMessage tm = sess.createTextMessage("message" + i);
-            
+
             prod.send(tm);
          }
       }
@@ -337,71 +337,73 @@ public abstract class BridgeTestBase extends UnitTestCase
          }
       }
    }
-   
 
-   protected void checkMessagesReceived(ConnectionFactory cf, Destination dest, QualityOfServiceMode qosMode,
-   		                               int numMessages, boolean longWaitForFirst) throws Exception
+   protected void checkMessagesReceived(ConnectionFactory cf,
+                                        Destination dest,
+                                        QualityOfServiceMode qosMode,
+                                        int numMessages,
+                                        boolean longWaitForFirst) throws Exception
    {
       Connection conn = null;
-        
+
       try
       {
          conn = cf.createConnection();
-         
+
          conn.start();
-         
+
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageConsumer cons = sess.createConsumer(dest);
-         
+
          // Consume the messages
-         
+
          Set msgs = new HashSet();
-         
+
          int count = 0;
-                           
-         //We always wait longer for the first one - it may take some time to arrive especially if we are
-         //waiting for recovery to kick in
+
+         // We always wait longer for the first one - it may take some time to arrive especially if we are
+         // waiting for recovery to kick in
          while (true)
          {
             TextMessage tm = (TextMessage)cons.receive(count == 0 ? (longWaitForFirst ? 60000 : 10000) : 5000);
-              
+
             if (tm == null)
             {
                break;
             }
-            
-            //log.info("Got message " + tm.getText());
-            
+
+            // log.info("Got message " + tm.getText());
+
             msgs.add(tm.getText());
 
             count++;
-            
+
          }
-         
+
          if (qosMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE || qosMode == QualityOfServiceMode.DUPLICATES_OK)
-         {            
-            //All the messages should be received
-            
+         {
+            // All the messages should be received
+
             for (int i = 0; i < numMessages; i++)
             {
                assertTrue("" + i, msgs.contains("message" + i));
             }
-            
-            //Should be no more
+
+            // Should be no more
             if (qosMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE)
             {
                assertEquals(numMessages, msgs.size());
-            }         
+            }
          }
          else if (qosMode == QualityOfServiceMode.AT_MOST_ONCE)
          {
-            //No *guarantee* that any messages will be received
-            //but you still might get some depending on how/where the crash occurred                 
-         }      
+            // No *guarantee* that any messages will be received
+            // but you still might get some depending on how/where the crash occurred
+         }
 
          log.trace("Check complete");
-         
+
       }
       finally
       {
@@ -409,35 +411,34 @@ public abstract class BridgeTestBase extends UnitTestCase
          {
             conn.close();
          }
-      }  
+      }
    }
-   
-   
+
    protected void checkAllMessageReceivedInOrder(ConnectionFactory cf, Destination dest, int start, int numMessages) throws Exception
    {
-      Connection conn = null;     
+      Connection conn = null;
       try
       {
          conn = cf.createConnection();
-         
+
          conn.start();
-         
+
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageConsumer cons = sess.createConsumer(dest);
-         
+
          // Consume the messages
-           
+
          for (int i = 0; i < numMessages; i++)
-         {            
+         {
             TextMessage tm = (TextMessage)cons.receive(30000);
-            
+
             assertNotNull(tm);
-            
-            //log.info("Got message " + tm.getText());
-              
+
+            // log.info("Got message " + tm.getText());
+
             assertEquals("message" + (i + start), tm.getText());
-         } 
+         }
       }
       finally
       {
@@ -445,7 +446,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          {
             conn.close();
          }
-      }  
+      }
    }
 
    public boolean checkEmpty(Queue queue, int index) throws Exception
@@ -459,14 +460,14 @@ public abstract class BridgeTestBase extends UnitTestCase
       JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(objectName);
 
       Integer messageCount = queueControl.getMessageCount();
-      
+
       if (messageCount > 0)
       {
          queueControl.removeAllMessages();
       }
       return true;
    }
-   
+
    protected void checkNoSubscriptions(Topic topic, int index) throws Exception
    {
       ManagementService managementService = server0.getServer().getManagementService();
@@ -496,8 +497,7 @@ public abstract class BridgeTestBase extends UnitTestCase
    {
       return new TransactionManagerImple();
    }
-   
-   // Inner classes -------------------------------------------------------------------
-   
-}
 
+   // Inner classes -------------------------------------------------------------------
+
+}

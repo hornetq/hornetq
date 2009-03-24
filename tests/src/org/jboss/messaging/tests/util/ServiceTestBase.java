@@ -305,7 +305,7 @@ public class ServiceTestBase extends UnitTestCase
     * @return
     * @throws Exception
     */
-   protected int getMessageCounter(final PostOffice postOffice, final String address) throws Exception
+   protected int getMessageCount(final PostOffice postOffice, final String address) throws Exception
    {
       int messageCount;
       messageCount = 0;

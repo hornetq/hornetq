@@ -119,7 +119,7 @@ public class JBMResourceAdapter implements ResourceAdapter
     */
    public void endpointActivation(MessageEndpointFactory endpointFactory, ActivationSpec spec) throws ResourceException
    {
-      if(!configured.getAndSet(true))
+      if (!configured.getAndSet(true))
       {
          try
          {
@@ -135,7 +135,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("endpointActivation(" + endpointFactory + ", " + spec + ")");
       }
 
-      JBMActivation activation = new JBMActivation(this, endpointFactory, (JBMActivationSpec) spec);
+      JBMActivation activation = new JBMActivation(this, endpointFactory, (JBMActivationSpec)spec);
       activations.put(spec, activation);
       activation.start();
    }
@@ -153,7 +153,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("endpointDeactivation(" + endpointFactory + ", " + spec + ")");
       }
 
-      JBMActivation activation = (JBMActivation) activations.remove(spec);
+      JBMActivation activation = (JBMActivation)activations.remove(spec);
       if (activation != null)
       {
          activation.stop();
@@ -208,10 +208,10 @@ public class JBMResourceAdapter implements ResourceAdapter
 
       for (Iterator i = activations.entrySet().iterator(); i.hasNext();)
       {
-         Map.Entry entry = (Map.Entry) i.next();
+         Map.Entry entry = (Map.Entry)i.next();
          try
          {
-            JBMActivation activation = (JBMActivation) entry.getValue();
+            JBMActivation activation = (JBMActivation)entry.getValue();
             if (activation != null)
             {
                activation.stop();
@@ -274,7 +274,6 @@ public class JBMResourceAdapter implements ResourceAdapter
          }
       }
    }
-
 
    public String getBackUpTransportType()
    {
@@ -1014,63 +1013,63 @@ public class JBMResourceAdapter implements ResourceAdapter
    }
 
    /**
-    * Get max retries before failover
+    * Get max number of initial connect attempts
     *
     * @return The value
     */
-   public Integer getMaxRetriesBeforeFailover()
+   public Integer getInitialConnectAttempts()
    {
       if (trace)
       {
-         log.trace("getMaxRetriesBeforeFailover()");
+         log.trace("getInitialConnectAttempts()");
       }
 
-      return raProperties.getMaxRetriesBeforeFailover();
+      return raProperties.getInitialConnectAttempts();
    }
 
    /**
-    * Set max retries before failover
+    * Set max number of initial connect attempts
     *
-    * @param maxRetriesBeforeFailover The value
+    * @param initialConnectAttempts The value
     */
-   public void setMaxRetriesBeforeFailover(Integer maxRetriesBeforeFailover)
+   public void setInitialConnectAttempts(Integer initialConnectAttempts)
    {
       if (trace)
       {
-         log.trace("setMaxRetriesBeforeFailover(" + maxRetriesBeforeFailover + ")");
+         log.trace("setInitialConnectAttempts(" + initialConnectAttempts + ")");
       }
 
-      raProperties.setMaxRetriesBeforeFailover(maxRetriesBeforeFailover);
+      raProperties.setInitialConnectAttempts(initialConnectAttempts);
    }
 
    /**
-    * Get max retries after failover
+    * Get reconnect attempts
     *
     * @return The value
     */
-   public Integer getMaxRetriesAfterFailover()
+   public Integer getReconnectAttempts()
    {
       if (trace)
       {
-         log.trace("getMaxRetriesAfterFailover()");
+         log.trace("getReconnectAttempts()");
       }
 
-      return raProperties.getMaxRetriesAfterFailover();
+      return raProperties.getReconnectAttempts();
    }
 
    /**
-    * Set max retries after failover
+    * Set reconnect attempts
     *
-    * @param maxRetriesAfterFailover The value
+    * @param reconnectAttempts The value
     */
-   public void setMaxRetriesAfterFailover(Integer maxRetriesAfterFailover)
+   public void setReconnectAttempts(Integer reconnectAttempts)
    {
       if (trace)
       {
-         log.trace("setMaxRetriesAfterFailover(" + maxRetriesAfterFailover + ")");
+         log.trace("setReconnectAttempts(" + reconnectAttempts + ")");
       }
 
-      raProperties.setMaxRetriesAfterFailover(maxRetriesAfterFailover);
+      raProperties.setReconnectAttempts(reconnectAttempts);
    }
 
    /**
@@ -1213,7 +1212,7 @@ public class JBMResourceAdapter implements ResourceAdapter
 
       if (obj instanceof JBMResourceAdapter)
       {
-         return raProperties.equals(((JBMResourceAdapter) obj).getProperties());
+         return raProperties.equals(((JBMResourceAdapter)obj).getProperties());
       }
       else
       {
@@ -1256,30 +1255,68 @@ public class JBMResourceAdapter implements ResourceAdapter
       return ctx.getWorkManager();
    }
 
-   public ClientSession createSession(int ackMode, String user, String pass, Boolean preAck, Integer dupsOkBatchSize, Integer transactionBatchSize, boolean deliveryTransacted) throws Exception
+   public ClientSession createSession(int ackMode,
+                                      String user,
+                                      String pass,
+                                      Boolean preAck,
+                                      Integer dupsOkBatchSize,
+                                      Integer transactionBatchSize,
+                                      boolean deliveryTransacted) throws Exception
    {
 
       ClientSession result;
 
       boolean actPreAck = preAck != null ? preAck : ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-      int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+      int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize
+                                                      : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+      int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
+                                                       : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
       switch (ackMode)
       {
          case Session.SESSION_TRANSACTED:
-            result = sessionFactory.createSession(user, pass, deliveryTransacted, false, false, actPreAck, actTxBatchSize);
+            result = sessionFactory.createSession(user,
+                                                  pass,
+                                                  deliveryTransacted,
+                                                  false,
+                                                  false,
+                                                  actPreAck,
+                                                  actTxBatchSize);
             break;
          case Session.AUTO_ACKNOWLEDGE:
-            result = sessionFactory.createSession(user, pass, deliveryTransacted, true, false, actPreAck, actTxBatchSize);
+            result = sessionFactory.createSession(user,
+                                                  pass,
+                                                  deliveryTransacted,
+                                                  true,
+                                                  false,
+                                                  actPreAck,
+                                                  actTxBatchSize);
             break;
          case Session.DUPS_OK_ACKNOWLEDGE:
-            result = sessionFactory.createSession(user, pass, deliveryTransacted, true, false, actPreAck, actDupsOkBatchSize);
+            result = sessionFactory.createSession(user,
+                                                  pass,
+                                                  deliveryTransacted,
+                                                  true,
+                                                  false,
+                                                  actPreAck,
+                                                  actDupsOkBatchSize);
             break;
          case Session.CLIENT_ACKNOWLEDGE:
-            result = sessionFactory.createSession(user, pass, deliveryTransacted, false, false, actPreAck, actTxBatchSize);
+            result = sessionFactory.createSession(user,
+                                                  pass,
+                                                  deliveryTransacted,
+                                                  false,
+                                                  false,
+                                                  actPreAck,
+                                                  actTxBatchSize);
             break;
          case JBossSession.SERVER_ACKNOWLEDGE:
-            result = sessionFactory.createSession(user, pass, deliveryTransacted, false, true, actPreAck, actTxBatchSize);
+            result = sessionFactory.createSession(user,
+                                                  pass,
+                                                  deliveryTransacted,
+                                                  false,
+                                                  true,
+                                                  actPreAck,
+                                                  actTxBatchSize);
             break;
          default:
             throw new IllegalArgumentException("Invalid ackmode: " + ackMode);
@@ -1313,72 +1350,116 @@ public class JBMResourceAdapter implements ResourceAdapter
    {
       if (getTransportType() != null)
       {
-         TransportConfiguration transportConf = new TransportConfiguration(getTransportType(), getTransportConfiguration());
-         TransportConfiguration backup = getBackUpTransportType() == null ? null : new TransportConfiguration(getBackUpTransportType(), getBackupTransportConfiguration());
+         TransportConfiguration transportConf = new TransportConfiguration(getTransportType(),
+                                                                           getTransportConfiguration());
+         TransportConfiguration backup = getBackUpTransportType() == null ? null
+                                                                         : new TransportConfiguration(getBackUpTransportType(),
+                                                                                                      getBackupTransportConfiguration());
          jBossConnectionFactory = new JBossConnectionFactory(transportConf,
                                                              backup,
-                                                             getLoadBalancingPolicyClassName() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME : getLoadBalancingPolicyClassName(),
-                                                             getPingPeriod() == null ? ClientSessionFactoryImpl.DEFAULT_PING_PERIOD : getPingPeriod(),
-                                                             getConnectionTTL() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL : getConnectionTTL(),
-                                                             getCallTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT : getCallTimeout(),
+                                                             getLoadBalancingPolicyClassName() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME
+                                                                                                      : getLoadBalancingPolicyClassName(),
+                                                             getPingPeriod() == null ? ClientSessionFactoryImpl.DEFAULT_PING_PERIOD
+                                                                                    : getPingPeriod(),
+                                                             getConnectionTTL() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL
+                                                                                       : getConnectionTTL(),
+                                                             getCallTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT
+                                                                                     : getCallTimeout(),
                                                              getClientID(),
-                                                             getDupsOKBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getDupsOKBatchSize(),
-                                                             getTransactionBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getTransactionBatchSize(),
-                                                             getConsumerWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE : getConsumerWindowSize(),
-                                                             getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE : getConsumerMaxRate(),
-                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE : getSendWindowSize(),
-                                                             getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE : getProducerMaxRate(),
-                                                             getMinLargeMessageSize() == null ? ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE : getMinLargeMessageSize(),
-                                                             getBlockOnAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE : getBlockOnAcknowledge(),
-                                                             getBlockOnNonPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND : getBlockOnNonPersistentSend(),
-                                                             getBlockOnPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND : getBlockOnPersistentSend(),
-                                                             getAutoGroup() == null ? ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP : getAutoGroup(),
-                                                             getMaxConnections() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS : getMaxConnections(),
-                                                             getPreAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE : getPreAcknowledge(),
-                                                             getRetryInterval() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL : getRetryInterval(),
-                                                             getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER : getRetryIntervalMultiplier(),
-                                                             getMaxRetriesBeforeFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER : getMaxRetriesBeforeFailover(),
-                                                             getMaxRetriesAfterFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER : getMaxRetriesAfterFailover()
-         );
+                                                             getDupsOKBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE
+                                                                                         : getDupsOKBatchSize(),
+                                                             getTransactionBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE
+                                                                                              : getTransactionBatchSize(),
+                                                             getConsumerWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE
+                                                                                            : getConsumerWindowSize(),
+                                                             getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE
+                                                                                         : getConsumerMaxRate(),
+                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE
+                                                                                        : getSendWindowSize(),
+                                                             getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE
+                                                                                         : getProducerMaxRate(),
+                                                             getMinLargeMessageSize() == null ? ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE
+                                                                                             : getMinLargeMessageSize(),
+                                                             getBlockOnAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE
+                                                                                            : getBlockOnAcknowledge(),
+                                                             getBlockOnNonPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND
+                                                                                                  : getBlockOnNonPersistentSend(),
+                                                             getBlockOnPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND
+                                                                                               : getBlockOnPersistentSend(),
+                                                             getAutoGroup() == null ? ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP
+                                                                                   : getAutoGroup(),
+                                                             getMaxConnections() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS
+                                                                                        : getMaxConnections(),
+                                                             getPreAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE
+                                                                                        : getPreAcknowledge(),
+                                                             getRetryInterval() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL
+                                                                                       : getRetryInterval(),
+                                                             getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER
+                                                                                                 : getRetryIntervalMultiplier(),
+                                                             getInitialConnectAttempts() == null ? ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS
+                                                                                                : getInitialConnectAttempts(),
+                                                             getReconnectAttempts() == null ? ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS
+                                                                                           : getReconnectAttempts());
       }
       else if (getDiscoveryGroupAddress() != null && getDiscoveryGroupPort() != null)
       {
          jBossConnectionFactory = new JBossConnectionFactory(getDiscoveryGroupAddress(),
                                                              getDiscoveryGroupPort(),
-                                                             getDiscoveryRefreshTimeout() == null ? ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT : getDiscoveryRefreshTimeout(),
-                                                             getDiscoveryInitialWaitTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT : getDiscoveryInitialWaitTimeout(),
-                                                             getLoadBalancingPolicyClassName() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME : getLoadBalancingPolicyClassName(),
-                                                             getPingPeriod() == null ? ClientSessionFactoryImpl.DEFAULT_PING_PERIOD : getPingPeriod(),
-                                                             getConnectionTTL() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL : getConnectionTTL(),
-                                                             getCallTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT : getCallTimeout(),
+                                                             getDiscoveryRefreshTimeout() == null ? ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT
+                                                                                                 : getDiscoveryRefreshTimeout(),
+                                                             getDiscoveryInitialWaitTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT
+                                                                                                     : getDiscoveryInitialWaitTimeout(),
+                                                             getLoadBalancingPolicyClassName() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME
+                                                                                                      : getLoadBalancingPolicyClassName(),
+                                                             getPingPeriod() == null ? ClientSessionFactoryImpl.DEFAULT_PING_PERIOD
+                                                                                    : getPingPeriod(),
+                                                             getConnectionTTL() == null ? ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL
+                                                                                       : getConnectionTTL(),
+                                                             getCallTimeout() == null ? ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT
+                                                                                     : getCallTimeout(),
                                                              getClientID(),
-                                                             getDupsOKBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getDupsOKBatchSize(),
-                                                             getTransactionBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE : getTransactionBatchSize(),
-                                                             getConsumerWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE : getConsumerWindowSize(),
-                                                             getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE : getConsumerMaxRate(),
-                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE : getSendWindowSize(),
-                                                             getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE : getProducerMaxRate(),
-                                                             getMinLargeMessageSize() == null ? ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE : getMinLargeMessageSize(),
-                                                             getBlockOnAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE : getBlockOnAcknowledge(),
-                                                             getBlockOnNonPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND : getBlockOnNonPersistentSend(),
-                                                             getBlockOnPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND : getBlockOnPersistentSend(),
-                                                             getAutoGroup() == null ? ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP : getAutoGroup(),
-                                                             getMaxConnections() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS : getMaxConnections(),
-                                                             getPreAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE : getPreAcknowledge(),
-                                                             getRetryInterval() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL : getRetryInterval(),
-                                                             getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER : getRetryIntervalMultiplier(),
-                                                             getMaxRetriesBeforeFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER : getMaxRetriesBeforeFailover(),
-                                                             getMaxRetriesAfterFailover() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER : getMaxRetriesAfterFailover()
-         );
+                                                             getDupsOKBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE
+                                                                                         : getDupsOKBatchSize(),
+                                                             getTransactionBatchSize() == null ? ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE
+                                                                                              : getTransactionBatchSize(),
+                                                             getConsumerWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE
+                                                                                            : getConsumerWindowSize(),
+                                                             getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE
+                                                                                         : getConsumerMaxRate(),
+                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE
+                                                                                        : getSendWindowSize(),
+                                                             getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE
+                                                                                         : getProducerMaxRate(),
+                                                             getMinLargeMessageSize() == null ? ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE
+                                                                                             : getMinLargeMessageSize(),
+                                                             getBlockOnAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE
+                                                                                            : getBlockOnAcknowledge(),
+                                                             getBlockOnNonPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND
+                                                                                                  : getBlockOnNonPersistentSend(),
+                                                             getBlockOnPersistentSend() == null ? ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND
+                                                                                               : getBlockOnPersistentSend(),
+                                                             getAutoGroup() == null ? ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP
+                                                                                   : getAutoGroup(),
+                                                             getMaxConnections() == null ? ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS
+                                                                                        : getMaxConnections(),
+                                                             getPreAcknowledge() == null ? ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE
+                                                                                        : getPreAcknowledge(),
+                                                             getRetryInterval() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL
+                                                                                       : getRetryInterval(),
+                                                             getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER
+                                                                                                 : getRetryIntervalMultiplier(),
+                                                             getInitialConnectAttempts() == null ? ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS
+                                                                                                : getInitialConnectAttempts(),
+                                                             getReconnectAttempts() == null ? ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS
+                                                                                           : getReconnectAttempts());
       }
       else
       {
          log.fatal("must provide either TransportTyoe or DiscoveryGroupAddress and DiscoveryGroupPort for JBM ResourceAdapter");
       }
 
-         sessionFactory = jBossConnectionFactory.getCoreFactory();
+      sessionFactory = jBossConnectionFactory.getCoreFactory();
    }
-
 
    private Object getTransportParam(String[] conf)
    {
@@ -1390,7 +1471,7 @@ public class JBMResourceAdapter implements ResourceAdapter
             val = Integer.parseInt(conf[1]);
          }
          catch (NumberFormatException e)
-         {//ok warning at end wll pick up
+         {// ok warning at end wll pick up
          }
       }
       else if ("Long".equals(conf[2]))
@@ -1400,7 +1481,7 @@ public class JBMResourceAdapter implements ResourceAdapter
             val = Long.parseLong(conf[1]);
          }
          catch (NumberFormatException e)
-         {//ok warning at end wll pick up
+         {// ok warning at end wll pick up
          }
       }
       else if ("Boolean".equals(conf[2]))
@@ -1410,7 +1491,7 @@ public class JBMResourceAdapter implements ResourceAdapter
             val = Boolean.parseBoolean(conf[1]);
          }
          catch (NumberFormatException e)
-         {//ok warning at end wll pick up
+         {// ok warning at end wll pick up
          }
       }
       else if ("String".equals(conf[2]))

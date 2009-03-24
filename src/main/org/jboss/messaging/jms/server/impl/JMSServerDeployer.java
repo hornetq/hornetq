@@ -79,9 +79,9 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String RETRY_INTERVAL_MULTIPLIER = "retry-interval-multiplier";
 
-   private static final String MAX_RETRIES_BEFORE_FAILOVER = "max-retries-before-failover";
+   private static final String INITIAL_CONNECT_ATTEMPTS = "initial-connect-attempts";
    
-   private static final String MAX_RETRIES_AFTER_FAILOVER = "max-retries-after-failover";
+   private static final String RECONNECT_ATTEMPTS = "reconnect-attempts";
 
    private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
@@ -171,8 +171,8 @@ public class JMSServerDeployer extends XmlDeployer
          boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
          long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
          double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;         
-         int maxRetriesBeforeFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
-         int maxRetriesAfterFailover = ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
+         int initialConnectAttempts = ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+         int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 
          List<String> jndiBindings = new ArrayList<String>();
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
@@ -264,13 +264,13 @@ public class JMSServerDeployer extends XmlDeployer
             {
                retryIntervalMultiplier = org.jboss.messaging.utils.XMLUtil.parseDouble(child);
             }
-            else if (MAX_RETRIES_BEFORE_FAILOVER.equals(child.getNodeName()))
+            else if (INITIAL_CONNECT_ATTEMPTS.equals(child.getNodeName()))
             {
-               maxRetriesBeforeFailover = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
+               initialConnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
             }
-            else if (MAX_RETRIES_AFTER_FAILOVER.equals(child.getNodeName()))
+            else if (RECONNECT_ATTEMPTS.equals(child.getNodeName()))
             {
-               maxRetriesAfterFailover = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
+               reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
             }            
             else if (ENTRY_NODE_NAME.equals(child.getNodeName()))
             {
@@ -361,8 +361,8 @@ public class JMSServerDeployer extends XmlDeployer
                                                      preAcknowledge,                                                   
                                                      retryInterval,
                                                      retryIntervalMultiplier,                                                     
-                                                     maxRetriesBeforeFailover,
-                                                     maxRetriesAfterFailover,
+                                                     initialConnectAttempts,
+                                                     reconnectAttempts,
                                                      jndiBindings);
          }
          else
@@ -389,8 +389,8 @@ public class JMSServerDeployer extends XmlDeployer
                                                      preAcknowledge,                                                
                                                      retryInterval,
                                                      retryIntervalMultiplier,                                                     
-                                                     maxRetriesBeforeFailover,
-                                                     maxRetriesAfterFailover,
+                                                     initialConnectAttempts,
+                                                     reconnectAttempts,
                                                      jndiBindings);
          }
       }

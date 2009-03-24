@@ -518,7 +518,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-      
+
       log.info("** got to end");
    }
 
@@ -595,17 +595,17 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int maxRetriesBeforeFailover = 0;
+      final int initialConnectAttempts = -1;
 
-      final int maxRetriesAfterFailover = 0;
+      final int reconnectAttempts = 0;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     maxRetriesBeforeFailover,
-                                                                     maxRetriesAfterFailover);
+                                                                     initialConnectAttempts,
+                                                                     reconnectAttempts);
 
       sf.setSendWindowSize(32 * 1024);
 
@@ -696,14 +696,18 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
    public void testFailoverOnCreateSession() throws Exception
    {
       stopServers();
-      
+
       for (int j = 0; j < 10; j++)
       {
          startServers();
 
          ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                         new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                   backupParams));
+                                                                                                   backupParams),
+                                                                        100,
+                                                                        1,
+                                                                        -1,
+                                                                        -1);
 
          sf.setSendWindowSize(32 * 1024);
 
@@ -771,6 +775,57 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       }
    }
 
+   public void testFailoverWithNotifications() throws Exception
+   {
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
+
+      sf.setSendWindowSize(32 * 1024);
+
+      ClientSession sess = sf.createSession(false, true, true);
+
+      sess.createQueue("jbm.admin.notification", "notifqueue", false);
+
+      ClientConsumer cons = sess.createConsumer("notifqueue");
+
+      sess.start();
+
+      sess.createQueue("blah", "blah", false);
+      sess.createQueue("blah", "blah2", false);
+
+      ClientMessage msg = cons.receive(1000);
+      assertNotNull(msg);
+      msg.acknowledge();
+
+      msg = cons.receive(1000);
+      assertNotNull(msg);
+      msg.acknowledge();
+
+      sess.stop();
+
+      sess.createQueue("blah", "blah3", false);
+      sess.createQueue("blah", "blah4", false);
+
+      RemotingConnection conn = ((ClientSessionImpl)sess).getConnection();
+
+      // Simulate failure on connection
+      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      sess.start();
+
+      msg = cons.receive(1000);
+      assertNotNull(msg);
+      msg.acknowledge();
+
+      msg = cons.receive(1000);
+      assertNotNull(msg);
+      msg.acknowledge();
+
+      sess.close();
+
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -821,7 +876,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       startServers();
    }
 
@@ -829,7 +884,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       stopServers();
-      
+
       super.tearDown();
    }
 

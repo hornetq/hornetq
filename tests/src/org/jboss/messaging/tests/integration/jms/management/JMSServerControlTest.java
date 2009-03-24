@@ -121,7 +121,6 @@ public class JMSServerControlTest extends ManagementTestBase
 
       checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
-
    }
 
    public void testCreateTopic() throws Exception
@@ -236,8 +235,8 @@ public class JMSServerControlTest extends ManagementTestBase
       int maxConnections = randomPositiveInt();
       long retryInterval = randomPositiveLong();
       double retryIntervalMultiplier = randomDouble();
-      int maxRetriesBeforeFailover = randomPositiveInt();
-      int maxRetriesAfterFailover = randomPositiveInt();
+      int initialConnectAttempts = randomPositiveInt();
+      int reconnectAttempts = randomPositiveInt();
       boolean preAcknowledge = randomBoolean();
       boolean blockOnAcknowledge = randomBoolean();
       boolean blockOnNonPersistentSend = randomBoolean();
@@ -270,8 +269,8 @@ public class JMSServerControlTest extends ManagementTestBase
                                       preAcknowledge,
                                       retryInterval,
                                       retryIntervalMultiplier,
-                                      maxRetriesBeforeFailover,
-                                      maxRetriesAfterFailover,
+                                      initialConnectAttempts,
+                                      reconnectAttempts,
                                       cfJNDIBinding);
 
       Object o = checkBinding(context, cfJNDIBinding);
@@ -299,8 +298,8 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(maxConnections, cfControl.getMaxConnections());
       assertEquals(retryInterval, cfControl.getRetryInterval());
       assertEquals(retryIntervalMultiplier, cfControl.getRetryIntervalMultiplier());
-      assertEquals(maxRetriesBeforeFailover, cfControl.getMaxRetriesBeforeFailover());
-      assertEquals(maxRetriesAfterFailover, cfControl.getMaxRetriesAfterFailover());
+      assertEquals(initialConnectAttempts, cfControl.getInitialConnectAttempts());
+      assertEquals(reconnectAttempts, cfControl.getReconnectAttempts());
       assertEquals(preAcknowledge, cfControl.isPreAcknowledge());
       assertEquals(blockOnAcknowledge, cfControl.isBlockOnAcknowledge());
       assertEquals(blockOnNonPersistentSend, cfControl.isBlockOnNonPersistentSend());

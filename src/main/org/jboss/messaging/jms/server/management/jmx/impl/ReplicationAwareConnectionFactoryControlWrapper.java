@@ -52,7 +52,7 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareConnectionFactoryControlWrapper(final ObjectName objectName, 
+   public ReplicationAwareConnectionFactoryControlWrapper(final ObjectName objectName,
                                                           final ConnectionFactoryControl localControl,
                                                           final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
@@ -126,7 +126,7 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
    {
       return localControl.isBlockOnPersistentSend();
    }
-   
+
    public boolean isPreAcknowledge()
    {
       return localControl.isPreAcknowledge();
@@ -142,14 +142,14 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
       return localControl.getMaxConnections();
    }
 
-   public int getMaxRetriesAfterFailover()
+   public int getInitialConnectAttempts()
    {
-      return localControl.getMaxRetriesAfterFailover();
+      return localControl.getInitialConnectAttempts();
    }
 
-   public int getMaxRetriesBeforeFailover()
+   public int getReconnectAttempts()
    {
-      return localControl.getMaxRetriesBeforeFailover();
+      return localControl.getReconnectAttempts();
    }
 
    public long getMinLargeMessageSize()
@@ -177,7 +177,6 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
       return localControl.isAutoGroup();
    }
 
-   
    // StandardMBean overrides ---------------------------------------
 
    @Override
@@ -192,7 +191,6 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
                            info.getNotifications());
    }
 
- 
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

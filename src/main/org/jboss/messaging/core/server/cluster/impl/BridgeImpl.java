@@ -27,6 +27,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
@@ -63,6 +64,7 @@ import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
@@ -81,7 +83,6 @@ import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
-import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * A BridgeImpl
@@ -136,9 +137,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private final double retryIntervalMultiplier;
 
-   private final int maxRetriesBeforeFailover;
+   private final int initialConnectAttempts;
 
-   private final int maxRetriesAfterFailover;
+   private final int reconnectAttempts;
 
    private final SimpleString idsHeaderName;
 
@@ -146,12 +147,14 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private final SimpleString managementAddress;
 
-   private final SimpleString managementNotificationAddres;
+   private final SimpleString managementNotificationAddress;
 
    private final String clusterPassword;
 
+   private final StorageManager storageManager;
+
    private Channel replicatingChannel;
-   
+
    private boolean activated;
 
    // Static --------------------------------------------------------
@@ -171,14 +174,15 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final Transformer transformer,
                      final long retryInterval,
                      final double retryIntervalMultiplier,
-                     final int maxRetriesBeforeFailover,
-                     final int maxRetriesAfterFailover,
+                     final int initialConnectAttempts,
+                     final int reconnectAttempts,
                      final boolean useDuplicateDetection,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
                      final String clusterPassword,
                      final Channel replicatingChannel,
-                     final boolean activated) throws Exception
+                     final boolean activated,
+                     final StorageManager storageManager) throws Exception
    {
       this(nodeUUID,
            name,
@@ -191,15 +195,16 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
            transformer,
            retryInterval,
            retryIntervalMultiplier,
-           maxRetriesBeforeFailover,
-           maxRetriesAfterFailover,
+           initialConnectAttempts,
+           reconnectAttempts,
            useDuplicateDetection,
            managementAddress,
            managementNotificationAddress,
            clusterPassword,
            null,
            replicatingChannel,
-           activated);
+           activated,
+           storageManager);
    }
 
    public BridgeImpl(final UUID nodeUUID,
@@ -213,15 +218,16 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final Transformer transformer,
                      final long retryInterval,
                      final double retryIntervalMultiplier,
-                     final int maxRetriesBeforeFailover,
-                     final int maxRetriesAfterFailover,
+                     final int initialConnectAttempts,
+                     final int reconnectAttempts,
                      final boolean useDuplicateDetection,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
                      final String clusterPassword,
                      final MessageFlowRecord flowRecord,
                      final Channel replicatingChannel,
-                     final boolean activated) throws Exception
+                     final boolean activated,
+                     final StorageManager storageManager) throws Exception
    {
       this.nodeUUID = nodeUUID;
 
@@ -254,23 +260,25 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       this.retryIntervalMultiplier = retryIntervalMultiplier;
 
-      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
+      this.initialConnectAttempts = initialConnectAttempts;
 
-      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+      this.reconnectAttempts = reconnectAttempts;
 
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
 
       this.managementAddress = managementAddress;
 
-      this.managementNotificationAddres = managementNotificationAddress;
+      this.managementNotificationAddress = managementNotificationAddress;
 
       this.clusterPassword = clusterPassword;
 
       this.flowRecord = flowRecord;
 
       this.replicatingChannel = replicatingChannel;
-      
-      this.activated = activated;            
+
+      this.activated = activated;
+
+      this.storageManager = storageManager;   
    }
 
    public synchronized void start() throws Exception
@@ -321,7 +329,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       executor.execute(new StopRunnable());
 
-      this.waitForRunnablesToComplete();
+      waitForRunnablesToComplete();
    }
 
    public boolean isStarted()
@@ -332,7 +340,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    public synchronized void activate()
    {
       replicatingChannel = null;
-      
+
       activated = true;
 
       executor.execute(new CreateObjectsRunnable());
@@ -400,7 +408,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             {
                Packet packet = new ReplicateAcknowledgeMessage(name, ref.getMessage().getMessageID());
 
-               replicatingChannel.replicatePacket(packet, 2, new Runnable()
+               replicatingChannel.replicatePacket(packet, 1, new Runnable()
                {
                   public void run()
                   {
@@ -410,7 +418,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      }
                      catch (Exception e)
                      {
-                        log.info("Failed to ack", e);
+                        log.error("Failed to ack", e);
                      }
                   }
                });
@@ -419,7 +427,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       }
       catch (Exception e)
       {
-         log.info("Failed to ack", e);
+         log.error("Failed to ack", e);
       }
    }
 
@@ -431,7 +439,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       {
          return HandleStatus.NO_MATCH;
       }
-
+      
       if (!active)
       {
          return HandleStatus.BUSY;
@@ -543,7 +551,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       if (!ok)
       {
-         log.warn("Timed out waiting for batch to be sent");
+         log.warn("Timed out waiting to stop");
       }
    }
 
@@ -561,7 +569,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       {
          return false;
       }
-
+      
       try
       {
          queue.addConsumer(BridgeImpl.this);
@@ -571,7 +579,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                             DEFAULT_PING_PERIOD,
                                             DEFAULT_CONNECTION_TTL,
-                                            5000,
+                                            DEFAULT_CALL_TIMEOUT,
                                             DEFAULT_CONSUMER_WINDOW_SIZE,
                                             DEFAULT_CONSUMER_MAX_RATE,
                                             DEFAULT_SEND_WINDOW_SIZE,
@@ -586,8 +594,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                             DEFAULT_ACK_BATCH_SIZE,
                                             retryInterval,
                                             retryIntervalMultiplier,
-                                            maxRetriesBeforeFailover,
-                                            maxRetriesAfterFailover);
+                                            initialConnectAttempts,
+                                            reconnectAttempts);
 
          session = (ClientSessionInternal)csf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER,
                                                             clusterPassword,
@@ -596,7 +604,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                                             true,
                                                             false,
                                                             1);
-
+         
          if (session == null)
          {
             // This can happen if the bridge is shutdown
@@ -616,10 +624,14 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          {
             // Get the queue data
 
-            SimpleString notifQueueName = new SimpleString("notif-").concat(UUIDGenerator.getInstance()
-                                                                                         .generateSimpleStringUUID());
+            // Create a queue to catch the notifications - the name must be deterministic on live and backup, but
+            // different each time this is called
+            // Otherwise it may already exist if server is restarted before it has been deleted on backup
 
-            // TODO - simplify this
+            String qName = "notif-" + nodeUUID.toString() + "-" + name.toString();
+            
+            SimpleString notifQueueName = new SimpleString(qName);
+
             SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
                                                    BindingType.DIVERT.toInt() +
                                                    " AND " +
@@ -642,7 +654,25 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                                    flowRecord.getAddress() +
                                                    "%')");
 
-            session.createQueue(managementNotificationAddres, notifQueueName, filter, false, true);
+            //The queue can't be temporary, since if the node with the bridge crashes then is restarted quickly
+            //it might get deleted on the target when it does connection cleanup
+            
+            //When the backup activates the queue might already exist, so we catch this and ignore
+            try
+            {
+               session.createQueue(managementNotificationAddress, notifQueueName, filter, false, false);
+            }
+            catch (MessagingException me)
+            {
+               if (me.getCode() == MessagingException.QUEUE_EXISTS)
+               {
+                  //Ok
+               }
+               else
+               {
+                  throw me;
+               }
+            }
 
             ClientConsumer notifConsumer = session.createConsumer(notifQueueName);
 

@@ -141,8 +141,8 @@ public interface JMSServerManager
                                    boolean preAcknowledge,                               
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,                                   
-                                   final int maxRetriesBeforeFailover,
-                                   final int maxRetriesAfterFailover,
+                                   final int initialConnectAttempts,
+                                   final int reconnectAttempts,
                                    List<String> jndiBindings) throws Exception;
    
    boolean createConnectionFactory(String name,
@@ -168,8 +168,8 @@ public interface JMSServerManager
                                    boolean preAcknowledge,                            
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,                                   
-                                   final int maxRetriesBeforeFailover,
-                                   final int maxRetriesAfterFailover,
+                                   final int initialConnectAttempts,
+                                   final int reconnectAttempts,
                                    List<String> jndiBindings) throws Exception;
 
    /**

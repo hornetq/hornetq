@@ -89,8 +89,8 @@ public class BridgeTest extends ServiceTestBase
                                                                         null,
                                                                         1000,
                                                                         1d,
-                                                                        0,
-                                                                        0,
+                                                                        -1,
+                                                                        -1,
                                                                         false,                                                                        
                                                                         connectorPair);
 
@@ -199,8 +199,8 @@ public class BridgeTest extends ServiceTestBase
                                                                         null,
                                                                         1000,
                                                                         1d,
-                                                                        0,
-                                                                        0,
+                                                                        -1,
+                                                                        -1,
                                                                         false,                                                                        
                                                                         connectorPair);
 
@@ -323,8 +323,8 @@ public class BridgeTest extends ServiceTestBase
                                                                         SimpleTransformer.class.getName(),
                                                                         1000,
                                                                         1d,
-                                                                        0,
-                                                                        0,
+                                                                        -1,
+                                                                        -1,
                                                                         false,                                                                        
                                                                         connectorPair);
 

@@ -75,8 +75,7 @@ public interface ConnectionFactoryControlMBean
 
    double getRetryIntervalMultiplier();
 
-   int getMaxRetriesBeforeFailover();
+   int getInitialConnectAttempts();
 
-   int getMaxRetriesAfterFailover();
-
+   int getReconnectAttempts();
 }

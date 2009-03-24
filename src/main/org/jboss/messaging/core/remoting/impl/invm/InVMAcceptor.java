@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
@@ -40,6 +41,8 @@ import org.jboss.messaging.utils.ConfigurationHelper;
  */
 public class InVMAcceptor implements Acceptor
 {
+   private static final Logger log = Logger.getLogger(InVMAcceptor.class);
+
    private final int id;
 
    private final BufferHandler handler;
@@ -71,7 +74,7 @@ public class InVMAcceptor implements Acceptor
       InVMRegistry registry = InVMRegistry.instance;
 
       registry.registerAcceptor(id, this);
-
+      
       started = true;
    }
 

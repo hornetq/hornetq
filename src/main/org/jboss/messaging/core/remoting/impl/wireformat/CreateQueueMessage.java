@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
@@ -37,17 +37,24 @@ public class CreateQueueMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString address;
+
    private SimpleString queueName;
+
    private SimpleString filterString;
+
    private boolean durable;
+
    private boolean temporary;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateQueueMessage(final SimpleString address, final SimpleString queueName,
-   		final SimpleString filterString, final boolean durable, final boolean temporary)
+   public CreateQueueMessage(final SimpleString address,
+                             final SimpleString queueName,
+                             final SimpleString filterString,
+                             final boolean durable,
+                             final boolean temporary)
    {
       super(CREATE_QUEUE);
 
@@ -57,7 +64,7 @@ public class CreateQueueMessage extends PacketImpl
       this.durable = durable;
       this.temporary = temporary;
    }
-   
+
    public CreateQueueMessage()
    {
       super(CREATE_QUEUE);
@@ -77,7 +84,7 @@ public class CreateQueueMessage extends PacketImpl
       buff.append("]");
       return buff.toString();
    }
-   
+
    public SimpleString getAddress()
    {
       return address;
@@ -97,12 +104,12 @@ public class CreateQueueMessage extends PacketImpl
    {
       return durable;
    }
-   
+
    public boolean isTemporary()
    {
       return temporary;
    }
-    
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(address);
@@ -111,7 +118,7 @@ public class CreateQueueMessage extends PacketImpl
       buffer.writeBoolean(durable);
       buffer.writeBoolean(temporary);
    }
-   
+
    public void decodeBody(final MessagingBuffer buffer)
    {
       address = buffer.readSimpleString();
@@ -120,17 +127,17 @@ public class CreateQueueMessage extends PacketImpl
       durable = buffer.readBoolean();
       temporary = buffer.readBoolean();
    }
-   
+
    public boolean equals(Object other)
    {
       if (other instanceof CreateQueueMessage == false)
       {
          return false;
       }
-            
+
       CreateQueueMessage r = (CreateQueueMessage)other;
-      
-      return super.equals(other) && r.address.equals(this.address) && 
+
+      return super.equals(other) && r.address.equals(this.address) &&
              r.queueName.equals(this.queueName) &&
              (r.filterString == null ? this.filterString == null : r.filterString.equals(this.filterString)) &&
              r.durable == this.durable &&

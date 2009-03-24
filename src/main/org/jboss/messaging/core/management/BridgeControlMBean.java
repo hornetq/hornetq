@@ -50,9 +50,9 @@ public interface BridgeControlMBean extends MessagingComponentControlMBean
 
    double getRetryIntervalMultiplier();
 
-   int getMaxRetriesBeforeFailover();
+   int getInitialConnectAttempts();
 
-   int getMaxRetriesAfterFailover();
+   int getReconnectAttempts();
 
    boolean isUseDuplicateDetection();
 }

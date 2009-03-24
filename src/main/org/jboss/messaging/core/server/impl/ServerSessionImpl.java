@@ -11,6 +11,20 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
@@ -20,7 +34,6 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
-import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
@@ -82,17 +95,6 @@ import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 
 /*
  * Session implementation 
@@ -314,7 +316,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          throw new IllegalStateException("Cannot find consumer with id " + consumer.getID() + " to remove");
       }
    }
-
+   
    public void close() throws Exception
    {
       if (tx != null && tx.getXid() == null)
@@ -868,7 +870,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void handleCloseConsumer(final SessionConsumerCloseMessage packet)
    {
       final ServerConsumer consumer = consumers.get(packet.getConsumerID());
-
+           
       if (replicatingChannel == null)
       {
          doHandleCloseConsumer(packet, consumer);
@@ -913,14 +915,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void handleSendLargeMessage(final SessionSendMessage packet)
    {
-      if (packet.getMessageID() <= 0L)
-      {
-         // must generate message id here, so we know they are in sync on live and backup
-         long id = storageManager.generateUniqueID();
-
-         packet.setMessageID(id);
-      }
-
       // need to create the LargeMessage before continue
       final LargeServerMessage msg = doCreateLargeMessage(packet);
 
@@ -961,29 +955,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                }
 
                currentLargeMessage = msg;
+               
                doSendLargeMessage(packet);
             }
          });
-
       }
-
    }
 
    public void handleSend(final SessionSendMessage packet)
    {
-      // With a send we must make sure it is replicated to backup before being processed on live
-      // or can end up with delivery being processed on backup before original send
-
-      if (packet.getMessageID() <= 0L)
-      {
-         // must generate message id here, so we know they are in sync on live and backup
-         long id = storageManager.generateUniqueID();
-
-         packet.setMessageID(id);
-      }
-
       if (replicatingChannel == null)
-      {
+      {                  
          doSend(packet);
       }
       else
@@ -995,7 +977,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                doSend(packet);
             }
          });
-
       }
    }
 
@@ -1020,7 +1001,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
    {
       ServerConsumer consumer = consumers.get(packet.getConsumerID());
-
+      
       if (consumer == null)
       {
          throw new IllegalStateException("Cannot handle replicated delivery, consumer is closed " + packet.getConsumerID() +
@@ -1066,7 +1047,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          
          backup = false;
       }
-
+      
       remotingConnection.removeFailureListener(this);
 
       channel.transferConnection(newConnection, this.id, replicatingChannel);
@@ -1137,7 +1118,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       return tx;
    }
-
+   
    // Private
    // ----------------------------------------------------------------------------
 
@@ -1167,7 +1148,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       channel.confirm(packet);
 
-      channel.send(response);
+      channel.send(response);           
    }
    
    private void doHandleCreateConsumer(final SessionCreateConsumerMessage packet)
@@ -1290,7 +1271,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       SimpleString address = packet.getAddress();
 
-      SimpleString name = packet.getQueueName();
+      final SimpleString name = packet.getQueueName();
 
       SimpleString filterString = packet.getFilterString();
 
@@ -1311,32 +1292,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             securityStore.check(address, CheckType.CREATE_NON_DURABLE_QUEUE, this);
          }
-         Binding binding = postOffice.getBinding(name);
-
-         if (binding != null)
-         {
-            throw new MessagingException(MessagingException.QUEUE_EXISTS);
-         }
-
-         Filter filter = null;
-
-         if (filterString != null)
-         {
-            filter = new FilterImpl(filterString);
-         }
-
-         final Queue queue = queueFactory.createQueue(-1, address, name, filter, durable, temporary);
-
-         // The unique name is given by the concatenation of the node id and the queue name - this is because it must be
-         // unique *across the entire cluster*
-         binding = new LocalQueueBinding(address, queue, nodeID);
-
-         if (durable)
-         {
-            storageManager.addQueueBinding(binding);
-         }
-
-         postOffice.addBinding(binding);
+         server.createQueue(address, name, filterString, durable, temporary);
 
          if (temporary)
          {
@@ -1352,11 +1308,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                {
                   try
                   {
-                     postOffice.removeBinding(queue.getName());
+                     postOffice.removeBinding(name);
                   }
                   catch (Exception e)
                   {
-                     log.error("Failed to remove temporary queue " + queue.getName());
+                     log.error("Failed to remove temporary queue " + name);
                   }
                }
             });
@@ -1391,6 +1347,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
+         //server.deleteQueue(name);
+         
          Binding binding = postOffice.removeBinding(name);
 
          if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
@@ -1404,6 +1362,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
          }
+         
          if (queue.isDurable())
          {
             // make sure the user has privileges to delete this queue
@@ -1413,18 +1372,19 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             securityStore.check(binding.getAddress(), CheckType.DELETE_NON_DURABLE_QUEUE, this);  
          }
+         
          queue.deleteAllReferences();
 
          if (queue.isDurable())
          {
             storageManager.deleteQueueBinding(queue.getPersistenceID());
-         }
+         } 
 
          response = new NullResponseMessage();
       }
       catch (Exception e)
       {
-         log.error("Failed to delete consumer", e);
+         log.error("Failed to delete queue", e);
 
          if (e instanceof MessagingException)
          {
@@ -2200,6 +2160,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       channel.confirm(packet);
 
+      //We flush the confirmations to make sure any send confirmations get handled on the client side
       channel.flushConfirmations();
 
       channel.send(response);
@@ -2278,6 +2239,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             response = new NullResponseMessage();
          }
+         
+         long id = storageManager.generateUniqueID();
+                 
+         currentLargeMessage.setMessageID(id);
       }
       catch (Exception e)
       {
@@ -2311,6 +2276,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       try
       {
          ServerMessage message = packet.getServerMessage();
+         
+         long id = storageManager.generateUniqueID();
+         
+         message.setMessageID(id);
 
          if (message.getDestination().equals(managementAddress))
          {
@@ -2362,7 +2331,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-
          if (currentLargeMessage == null)
          {
             throw new MessagingException(MessagingException.ILLEGAL_STATE, "large-message not initialized on server");
@@ -2377,7 +2345,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             currentLargeMessage = null;
 
             message.complete();
-
+                       
             send(message);
          }
 

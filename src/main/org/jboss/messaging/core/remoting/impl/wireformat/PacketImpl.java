@@ -158,6 +158,8 @@ public class PacketImpl implements Packet
    
    public static final byte REPLICATE_ACKNOWLEDGE = 95;
    
+   public static final byte REPLICATE_STARTUP_INFO = 96;
+   
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)
@@ -167,7 +169,7 @@ public class PacketImpl implements Packet
 
    // Public --------------------------------------------------------
 
-   
+
    public byte getType()
    {
       return type;

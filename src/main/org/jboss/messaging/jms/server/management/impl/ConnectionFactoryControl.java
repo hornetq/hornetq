@@ -36,24 +36,23 @@ import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class ConnectionFactoryControl extends StandardMBean implements
-      ConnectionFactoryControlMBean
+public class ConnectionFactoryControl extends StandardMBean implements ConnectionFactoryControlMBean
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private final JBossConnectionFactory cf;
+
    private final List<String> bindings;
+
    private final String name;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ConnectionFactoryControl(final JBossConnectionFactory cf,
-         final String name, final List<String> bindings)
-         throws NotCompliantMBeanException
+   public ConnectionFactoryControl(final JBossConnectionFactory cf, final String name, final List<String> bindings) throws NotCompliantMBeanException
    {
       super(ConnectionFactoryControlMBean.class);
       this.cf = cf;
@@ -74,19 +73,19 @@ public class ConnectionFactoryControl extends StandardMBean implements
    {
       return cf.getClientID();
    }
-   
+
    public long getPingPeriod()
    {
       return cf.getPingPeriod();
    }
-   
+
    public long getCallTimeout()
    {
       return cf.getCallTimeout();
    }
-   
+
    public int getConsumerMaxRate()
-   {      
+   {
       return cf.getConsumerMaxRate();
    }
 
@@ -124,7 +123,7 @@ public class ConnectionFactoryControl extends StandardMBean implements
    {
       return cf.isBlockOnPersistentSend();
    }
-   
+
    public boolean isPreAcknowledge()
    {
       return cf.isPreAcknowledge();
@@ -145,14 +144,14 @@ public class ConnectionFactoryControl extends StandardMBean implements
       return cf.getMaxConnections();
    }
 
-   public int getMaxRetriesAfterFailover()
+   public int getInitialConnectAttempts()
    {
-      return cf.getMaxRetriesAfterFailover();
+      return cf.getInitialConnectAttempts();
    }
 
-   public int getMaxRetriesBeforeFailover()
+   public int getReconnectAttempts()
    {
-      return cf.getMaxRetriesBeforeFailover();
+      return cf.getReconnectAttempts();
    }
 
    public long getMinLargeMessageSize()
@@ -179,8 +178,6 @@ public class ConnectionFactoryControl extends StandardMBean implements
    {
       return cf.isAutoGroup();
    }
-   
-   
 
    // Package protected ---------------------------------------------
 

@@ -21,15 +21,12 @@
   */
 package org.jboss.messaging.core.config;
 
-import static java.util.Collections.emptyMap;
-
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * A TransportConfiguration
@@ -191,12 +188,12 @@ public class TransportConfiguration implements Serializable
 
    public TransportConfiguration(final String className, final Map<String, Object> params)
    {
-      this(className, params, UUID.randomUUID().toString());
+      this(className, params, UUIDGenerator.getInstance().generateStringUUID());
    }
 
    public TransportConfiguration(final String className)
    {
-      this(className, new HashMap<String, Object>(), UUID.randomUUID().toString());
+      this(className, new HashMap<String, Object>(), UUIDGenerator.getInstance().generateStringUUID());
    }
 
    public String getName()

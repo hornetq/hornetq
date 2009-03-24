@@ -92,7 +92,8 @@ public interface ManagementService extends NotificationService, MessagingCompone
                                               ResourceManager resourceManager,
                                               RemotingService remotingService,
                                               MessagingServer messagingServer,
-                                              QueueFactory queueFactory) throws Exception;
+                                              QueueFactory queueFactory,
+                                              boolean backup) throws Exception;
 
    void unregisterServer() throws Exception;
 

@@ -308,11 +308,11 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1); 
       
       stopServers(2);
-
+      
       startServers(2);
 
       Thread.sleep(2000);
-      
+        
       send(0, "queues.testaddress", 10, false, null);
        
       verifyReceiveRoundRobin(10, 0, 1);

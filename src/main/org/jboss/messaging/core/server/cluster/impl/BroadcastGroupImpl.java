@@ -86,8 +86,6 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.groupPort = groupPort;
       
       this.active = active;
-      
-      log.info("created broadcast group active "+ active);
    }
 
    public synchronized void start() throws Exception

@@ -116,8 +116,8 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final boolean preAcknowledge,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
-                                       final int maxRetriesBeforeFailover,
-                                       final int maxRetriesAfterFailover,
+                                       final int initialConnectAttempts,
+                                       final int reconnectAttempts,
                                        final String jndiBinding) throws Exception
    {
       replicationAwareInvoke("createSimpleConnectionFactory",
@@ -143,8 +143,8 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                              preAcknowledge,
                              retryInterval,
                              retryIntervalMultiplier,
-                             maxRetriesBeforeFailover,
-                             maxRetriesAfterFailover,
+                             initialConnectAttempts,
+                             reconnectAttempts,
                              jndiBinding);
    }
 
@@ -170,8 +170,8 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final boolean preAcknowledge,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
-                                       final int maxRetriesBeforeFailover,
-                                       final int maxRetriesAfterFailover,
+                                       final int initialConnectAttempts,
+                                       final int reconnectAttempts,
                                        final String jndiBinding) throws Exception
    {
       // FIXME need to store correctly the connector configs
@@ -198,8 +198,8 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                              preAcknowledge,
                              retryInterval,
                              retryIntervalMultiplier,
-                             maxRetriesBeforeFailover,
-                             maxRetriesAfterFailover,
+                             initialConnectAttempts,
+                             reconnectAttempts,
                              jndiBinding);
    }
 
@@ -229,8 +229,8 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final boolean preAcknowledge,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
-                                       final int maxRetriesBeforeFailover,
-                                       final int maxRetriesAfterFailover,
+                                       final int initialConnectAttempts,
+                                       final int reconnectAttempts,
                                        final String jndiBinding) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
@@ -260,8 +260,8 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                              preAcknowledge,
                              retryInterval,
                              retryIntervalMultiplier,
-                             maxRetriesBeforeFailover,
-                             maxRetriesAfterFailover,
+                             initialConnectAttempts,
+                             reconnectAttempts,
                              jndiBinding);
    }
 

@@ -43,10 +43,6 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
       backupService = Messaging.newNullStorageMessagingService(backupConf);
       backupService.start();
 
-      // We need to sleep > 16 ms otherwise the id generators on live and backup could be initialised
-      // with the same time component
-      Thread.sleep(17);
-
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()

@@ -298,8 +298,7 @@ public class NettyAcceptor implements Acceptor
          SocketAddress address;
          if (useInvm)
          {
-            address = new LocalAddress(h);
-            System.out.println("address = " + address);
+            address = new LocalAddress(h);            
          }
          else
          {

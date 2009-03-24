@@ -236,8 +236,8 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    }
    
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
-   {
-      localControl.sendQueueInfoToQueue(queueName, address);
+   {      
+      replicationAwareInvoke("sendQueueInfoToQueue", queueName, address);
    }
 
    public boolean addAddress(String address) throws Exception

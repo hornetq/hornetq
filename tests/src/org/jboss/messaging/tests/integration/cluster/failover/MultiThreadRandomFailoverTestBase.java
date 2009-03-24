@@ -293,8 +293,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
       sendMessages(session, producer, numMessages, threadNum);
 
-      // log.info("sent messages");
-
       session.start();
 
       MyHandler handler = new MyHandler(threadNum, numMessages);
@@ -322,8 +320,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       session.deleteQueue(subName);
 
       session.close();
-
-      log.info("** done");
    }
 
    protected void doTestA(final ClientSessionFactory sf, final int threadNum) throws Exception
@@ -1056,8 +1052,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       sessCreate.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
 
       sessCreate.close();
-
-      log.info("completed testi");
    }
 
    protected void doTestJ(final ClientSessionFactory sf, final int threadNum) throws Exception
@@ -1087,9 +1081,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
       message2.acknowledge();
 
-      log.info("** closing session");
       sess.close();
-      log.info("** closed session");
 
       sessCreate.deleteQueue(new SimpleString(threadNum + ADDRESS.toString()));
 
@@ -1357,8 +1349,8 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
                                                                                                       backupParams),
                                                                            0,
                                                                            1,
-                                                                           ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                                           ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                                           ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                                           ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
 
       sf.setSendWindowSize(32 * 1024);
       return sf;
@@ -1478,7 +1470,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
       public synchronized void onMessage(final ClientMessage message)
       {
-         // log.info("*** handler got message");
          try
          {
             message.acknowledge();
@@ -1501,8 +1492,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
          {
             c = new Integer(cnt);
          }
-
-         // log.info(System.identityHashCode(this) + " consumed message " + threadNum + ":" + cnt);
 
          if (tn == threadNum && cnt != c.intValue())
          {

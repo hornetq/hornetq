@@ -127,7 +127,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
    
    private final boolean allowRouteWhenNoBindings;
-
+   
    public PostOfficeImpl(final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory bindableFactory,
@@ -381,7 +381,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                TypedProperties props = notification.getProperties();
 
                SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
+               
                if (clusterName == null)
                {
                   throw new IllegalStateException("No distance");
@@ -573,12 +573,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       return addressManager.getBinding(name);
    }
    
-   public Set<Long> idsAdded = new HashSet<Long>();
-
    public void route(final ServerMessage message, Transaction tx) throws Exception
-   {            
+   {                      
       SimpleString address = message.getDestination();
-
+      
       byte[] duplicateID = (byte[])message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
@@ -730,7 +728,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    }
 
    public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
-   {
+   {            
       // We send direct to the queue so we can send it to the same queue that is bound to the notifications adress -
       // this is crucial for ensuring
       // that queue infos and notifications are received in a contiguous consistent stream

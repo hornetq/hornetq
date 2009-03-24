@@ -571,8 +571,8 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                                                              null,
                                                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
                                                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                             ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                             ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
 
       try
       {

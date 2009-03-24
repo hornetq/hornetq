@@ -31,13 +31,13 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -102,8 +102,8 @@ public class JMSUtil
                                                              DEFAULT_PRE_ACKNOWLEDGE,                                                  
                                                              DEFAULT_RETRY_INTERVAL,
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                             DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                             DEFAULT_RECONNECT_ATTEMPTS);
 
       return cf.createConnection();
    }
@@ -132,8 +132,8 @@ public class JMSUtil
                                                              DEFAULT_PRE_ACKNOWLEDGE,                                                
                                                              DEFAULT_RETRY_INTERVAL,
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                             DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                             DEFAULT_RECONNECT_ATTEMPTS);
 
       Connection conn = cf.createConnection();
 
@@ -178,8 +178,8 @@ public class JMSUtil
                                                              DEFAULT_PRE_ACKNOWLEDGE,                                                       
                                                              DEFAULT_RETRY_INTERVAL,
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                             DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                                             DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                             DEFAULT_RECONNECT_ATTEMPTS);
 
       Connection conn = cf.createConnection();
 

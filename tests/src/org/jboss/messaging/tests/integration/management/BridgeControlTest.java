@@ -87,8 +87,8 @@ public class BridgeControlTest extends ManagementTestBase
       assertEquals(bridgeConfig.getFilterString(), bridgeControl.getFilterString());
       assertEquals(bridgeConfig.getRetryInterval(), bridgeControl.getRetryInterval());
       assertEquals(bridgeConfig.getRetryIntervalMultiplier(), bridgeControl.getRetryIntervalMultiplier());
-      assertEquals(bridgeConfig.getMaxRetriesBeforeFailover(), bridgeControl.getMaxRetriesBeforeFailover());
-      assertEquals(bridgeConfig.getMaxRetriesAfterFailover(), bridgeControl.getMaxRetriesAfterFailover());
+      assertEquals(bridgeConfig.getInitialConnectAttempts(), bridgeControl.getInitialConnectAttempts());
+      assertEquals(bridgeConfig.getReconnectAttempts(), bridgeControl.getReconnectAttempts());
       assertEquals(bridgeConfig.isUseDuplicateDetection(), bridgeControl.isUseDuplicateDetection());
       
       CompositeData connectorPairData = bridgeControl.getConnectorPair();

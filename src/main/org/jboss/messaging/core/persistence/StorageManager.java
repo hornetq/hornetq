@@ -55,8 +55,12 @@ public interface StorageManager extends MessagingComponent
    // Message related operations
    
    UUID getPersistentID();
+   
+   void setPersistentID(UUID id) throws Exception;
 
    long generateUniqueID();
+   
+   long getCurrentUniqueID();
 
    void storeMessage(ServerMessage message) throws Exception;
    

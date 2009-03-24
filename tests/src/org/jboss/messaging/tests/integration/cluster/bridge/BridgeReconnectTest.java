@@ -101,8 +101,8 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int retriesBeforeFailover = 3;
-      final int maxRetriesAfterFailover = -1;
+      final int initalConnectAttempts = 3;
+      final int reconnectAttempts = -1;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), server2tc.getName());
 
@@ -113,8 +113,8 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
-                                                                        retriesBeforeFailover,
-                                                                        maxRetriesAfterFailover,
+                                                                        initalConnectAttempts,
+                                                                        reconnectAttempts,
                                                                         false,
                                                                         connectorPair);
 
@@ -156,7 +156,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
+      InVMConnector.numberOfFailures = initalConnectAttempts - 1;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       final int numMessages = 10;
@@ -231,8 +231,8 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int retriesBeforeFailover = 3;
-      final int maxRetriesAfterFailover = -1;
+      final int initalConnectAttempts = 3;
+      final int reconnectAttempts = -1;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), server2tc.getName());
 
@@ -243,8 +243,8 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
-                                                                        retriesBeforeFailover,
-                                                                        maxRetriesAfterFailover,
+                                                                        initalConnectAttempts,
+                                                                        reconnectAttempts,
                                                                         false,
                                                                         connectorPair);
 
@@ -281,12 +281,9 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       log.info("Simulating failure");
 
-      // Now we will simulate a failure of the bridge connection between server1 and server2
-      // And prevent reconnection for a few tries, then it will reconnect without failing over
+      // Now we will simulate a failure of the bridge connection between server0 and server1
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
-      InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = retriesBeforeFailover;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       final int numMessages = 10;
@@ -381,8 +378,8 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int retriesBeforeFailover = 3;
-      final int maxRetriesAfterFailover = 3;
+      final int initalConnectAttempts = 3;
+      final int reconnectAttempts = 3;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), server2tc.getName());
 
@@ -393,8 +390,8 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
-                                                                        retriesBeforeFailover,
-                                                                        maxRetriesAfterFailover,
+                                                                        initalConnectAttempts,
+                                                                        reconnectAttempts,
                                                                         false,
                                                                         connectorPair);
 
@@ -431,19 +428,13 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       log.info("Simulating failure");
 
-      // Now we will simulate a failure of the bridge connection between server1 and server2
-      // And prevent reconnection for a few tries, then it will reconnect without failing over
+      // Now we will simulate a failure of the bridge connection between server0 and server1
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
-      InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = retriesBeforeFailover;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       // Now we should be failed over so fail again and should reconnect
-      forwardingConnection = getForwardingConnection(bridge);
-      InVMConnector.resetFailures();
-      InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
+      forwardingConnection = getForwardingConnection(bridge);      
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       final int numMessages = 10;
@@ -506,8 +497,8 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int retriesBeforeFailover = 3;
-      final int maxRetriesAfterFailover = -1;
+      final int initalConnectAttempts = 3;
+      final int reconnectAttempts = -1;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
@@ -518,8 +509,8 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
-                                                                        retriesBeforeFailover,
-                                                                        maxRetriesAfterFailover,
+                                                                        initalConnectAttempts,
+                                                                        reconnectAttempts,
                                                                         false,
                                                                         connectorPair);
 
@@ -559,7 +550,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = retriesBeforeFailover - 1;
+      InVMConnector.numberOfFailures = initalConnectAttempts - 1;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       final int numMessages = 10;
@@ -619,8 +610,8 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int retriesBeforeFailover = 3;
-      final int maxRetriesAfterFailover = -1;
+      final int initalConnectAttempts = 3;
+      final int reconnectAttempts = -1;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
@@ -631,8 +622,8 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
-                                                                        retriesBeforeFailover,
-                                                                        maxRetriesAfterFailover,
+                                                                        initalConnectAttempts,
+                                                                        reconnectAttempts,
                                                                         false,
                                                                         connectorPair);
 
@@ -672,7 +663,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = retriesBeforeFailover * 2;
+      InVMConnector.numberOfFailures = initalConnectAttempts * 2;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       final int numMessages = 10;
@@ -696,7 +687,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       
       forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
       InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = retriesBeforeFailover * 2;
+      InVMConnector.numberOfFailures = initalConnectAttempts * 2;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
       
       for (int i = 0; i < numMessages; i++)

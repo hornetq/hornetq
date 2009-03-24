@@ -130,8 +130,6 @@ public class NettyConnection implements Connection
 
    public String getRemoteAddress()
    {
-      log.info("channel is " + channel);
-      log.info("channel remote address " + channel.getRemoteAddress());
       return channel.getRemoteAddress().toString();
    }
    

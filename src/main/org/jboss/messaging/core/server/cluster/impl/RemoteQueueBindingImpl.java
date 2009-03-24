@@ -71,7 +71,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
    private int consumerCount;
 
-   private final boolean duplicateDetection;
+  // private final boolean duplicateDetection;
    
    private final SimpleString idsHeaderName;
    
@@ -85,7 +85,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
                                  final int remoteQueueID,
                                  final SimpleString filterString,
                                  final Queue storeAndForwardQueue,
-                                 final boolean duplicateDetection,                      
+                              //   final boolean duplicateDetection,                      
                                  final SimpleString bridgeName,
                                  final int distance) throws Exception
    {
@@ -99,7 +99,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       
       this.remoteQueueID = remoteQueueID;
 
-      this.duplicateDetection = duplicateDetection;
+    //  this.duplicateDetection = duplicateDetection;
 
       if (filterString != null)
       {
@@ -201,7 +201,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    }
    
    public void willRoute(final ServerMessage message)
-   {      
+   {          
       //We add a header with the name of the queue, holding a list of the transient ids of the queues to route to
       
       //TODO - this can be optimised
@@ -227,14 +227,18 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       
       message.putBytesProperty(idsHeaderName, ids);           
       
-      //Now add a duplicate detection header, if required.
-      //We use a GUID for this
-      if (duplicateDetection)
-      {
-         byte[] guid = UUIDGenerator.getInstance().generateUUID().asBytes();
-         
-         message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, guid);
-      }
+      //TODO we can't use a GUID for duplicate detection, since this is not deterministic on live and backup
+      //So we just use bridge duplicate detection
+      
+//      //Now add a duplicate detection header, if required.
+//      //This MUST be deterministic on live and backup, and globally unique
+//      xx
+//      if (duplicateDetection)
+//      {
+//         byte[] guid = UUIDGenerator.getInstance().generateUUID().asBytes();
+//         
+//         message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, guid);
+//      }
    }
 
    public synchronized void addConsumer(final SimpleString filterString) throws Exception

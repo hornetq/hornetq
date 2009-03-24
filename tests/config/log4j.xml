@@ -14,12 +14,6 @@
    | owebsite: http://jakarta.apache.org/log4j
  -->
 
- <!--
- Only to be used for stress tests
- Stress tests cannot be run using TRACE or DEBUG level since they produce too much output
- hence they have their own log4j config
- -->
-
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
 
    <!-- ================================= -->

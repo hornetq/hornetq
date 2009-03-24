@@ -306,8 +306,6 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       {
          ClientMessage m = pageConsumer.receive(10000);
          
-         log.info("got message " + i);
-         
          assertNotNull(m);
          m.acknowledge();
          clientSession.commit();

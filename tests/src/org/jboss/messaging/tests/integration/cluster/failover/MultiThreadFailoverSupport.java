@@ -170,8 +170,6 @@ public abstract class MultiThreadFailoverSupport extends UnitTestCase
                }
             }
 
-            log.info("completed loop");
-
             runnable.checkFail();
 
          }
@@ -179,17 +177,13 @@ public abstract class MultiThreadFailoverSupport extends UnitTestCase
 
          InVMConnector.resetFailures();
 
-         log.info("closing session");
          session.close();
-         log.info("closed session");
 
          assertEquals(0, sf.numSessions());
 
          assertEquals(0, sf.numConnections());
 
-         log.info("stopping");
          stop();
-         log.info("stopped");
       }
    }
 
@@ -283,7 +277,6 @@ public abstract class MultiThreadFailoverSupport extends UnitTestCase
 
       public synchronized boolean isExecuted()
       {
-         log.info("executed??" + executed);
          return executed;
       }
    }

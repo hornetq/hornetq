@@ -50,10 +50,12 @@ import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.postoffice.impl.PostOfficeImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateStartupInfoMessage;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
@@ -76,9 +78,11 @@ import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
+import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.messaging.utils.VersionLoader;
 
 /**
@@ -146,6 +150,10 @@ public class MessagingServerImpl implements MessagingServer
    private Channel replicatingChannel;
 
    private Object replicatingChannelLock = new Object();
+   
+   private final Object initialiseLock = new Object();
+      
+   private boolean initialised;   
 
    // plugins
 
@@ -166,19 +174,14 @@ public class MessagingServerImpl implements MessagingServer
    {
       // We need to hard code the version information into a source file
 
-      version = VersionLoader.getVersion();
+      version = VersionLoader.getVersion();            
    }
 
    // lifecycle methods
    // ----------------------------------------------------------------
-
-   public synchronized void start() throws Exception
-   {
-      if (started)
-      {
-         return;
-      }
-
+   
+   private void doStart() throws Exception
+   {         
       asyncDeliveryPool = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("JBM-async-session-delivery-threads"));
 
       executorFactory = new org.jboss.messaging.utils.OrderedExecutorFactory(asyncDeliveryPool);
@@ -225,6 +228,8 @@ public class MessagingServerImpl implements MessagingServer
 
       // The rest of the components are not pluggable and created and started
       // here
+      
+      initialised = !configuration.isBackup();
 
       securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(),
                                             configuration.isSecurityEnabled());
@@ -271,10 +276,35 @@ public class MessagingServerImpl implements MessagingServer
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
       storageManager.loadBindingJournal(queueBindingInfos);
-
-      uuid = storageManager.getPersistentID();
-
-      nodeID = new SimpleString(uuid.toString());
+             
+      //TODO - this logic could be simplified
+      if (uuid == null)
+      {
+         uuid = storageManager.getPersistentID();
+          
+         if (uuid == null && !configuration.isBackup())
+         {         
+            uuid = UUIDGenerator.getInstance().generateUUID();   
+            
+            storageManager.setPersistentID(uuid);         
+         }
+              
+         if (uuid != null)
+         {
+            nodeID = new SimpleString(uuid.toString());
+         }
+      }
+      else
+      {
+         UUID theUUID = storageManager.getPersistentID();
+         
+         if (theUUID == null)
+         {
+            //Backup being initialised
+            storageManager.setPersistentID(uuid);
+         }
+         
+      }
 
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
@@ -284,8 +314,9 @@ public class MessagingServerImpl implements MessagingServer
                                                           resourceManager,
                                                           remotingService,
                                                           this,
-                                                          queueFactory);
-
+                                                          queueFactory,
+                                                          configuration.isBackup());
+      
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
       for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
@@ -341,7 +372,7 @@ public class MessagingServerImpl implements MessagingServer
       deployDiverts();
 
       String backupConnectorName = configuration.getBackupConnectorName();
-
+      
       if (backupConnectorName != null)
       {
          TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
@@ -369,20 +400,28 @@ public class MessagingServerImpl implements MessagingServer
             backupConnectorParams = backupConnector.getParams();
          }
       }
-
-      remotingService.setMessagingServer(this);
+    
+      Channel replicatingChannel = getReplicatingChannel();
+            
+      if (replicatingChannel == null && backupConnectorFactory != null)
+      {
+         log.warn("Please start backup server before starting live server");
+         
+         remotingService.stop();
+         
+         return;
+      }
 
       if (configuration.isClustered())
       {
          clusterManager = new ClusterManagerImpl(executorFactory,
-                                                 storageManager,
+                                                 this,                               
                                                  postOffice,
                                                  scheduledExecutor,
                                                  managementService,
-                                                 configuration,
-                                                 queueFactory,
+                                                 configuration,                            
                                                  uuid,
-                                                 getReplicatingChannel(),
+                                                 replicatingChannel,
                                                  configuration.isBackup());
 
          clusterManager.start();
@@ -392,8 +431,29 @@ public class MessagingServerImpl implements MessagingServer
       // during last stop
       // This is the last thing done at the start, after everything else is up and running
       pagingManager.startGlobalDepage();
-
+      
       started = true;
+   }
+
+   public synchronized void start() throws Exception
+   {
+      if (started)
+      {
+         return;
+      }
+       
+      //Need to start remoting service otherwise live node will never be able to connect to backup
+      remotingService.setMessagingServer(this);
+      
+      if (configuration.isBackup())
+      {
+         //We defer actually initialisation until the live node has contacted the backup
+         log.info("Backup server will await live server before becoming operational");
+      }
+      else
+      {
+         doStart();
+      }      
    }
 
    public synchronized void stop() throws Exception
@@ -435,7 +495,7 @@ public class MessagingServerImpl implements MessagingServer
          replicatingConnection = null;
          replicatingChannel = null;
       }
-
+      
       pagingManager.stop();
       pagingManager = null;
       securityStore = null;
@@ -583,7 +643,7 @@ public class MessagingServerImpl implements MessagingServer
          configuration.setBackup(false);
 
          remotingService.setBackup(false);
-         
+
          if (clusterManager != null)
          {
             clusterManager.activate();
@@ -743,6 +803,52 @@ public class MessagingServerImpl implements MessagingServer
    {
       return new HashSet<ServerSession>(sessions.values());
    }
+   
+   public boolean isInitialised()
+   {
+      synchronized (initialiseLock)
+      {
+         return initialised;
+      }
+   }
+
+   public void initialiseBackup(final UUID theUUID, final long currentMessageID) throws Exception
+   {
+      synchronized (initialiseLock)
+      {
+         if (initialised)
+         {
+            throw new IllegalStateException("Server is already initialised");
+         }
+               
+         if (uuid != null && !uuid.toString().equals(theUUID.toString()))
+         {
+            throw new IllegalStateException("Backup node already has a unique id but it's not the same as the live node id");
+         }
+         
+         if (theUUID == null)
+         {
+            throw new IllegalArgumentException("node id is null");
+         }         
+         
+         this.uuid = theUUID;
+   
+         this.nodeID = new SimpleString(uuid.toString());
+               
+         doStart();
+      
+         if (currentMessageID != this.storageManager.getCurrentUniqueID())
+         {
+            throw new IllegalStateException("Backup node current unique id != live node current unique id " + this.storageManager.getCurrentUniqueID() +
+                                            ", " +
+                                            currentMessageID);
+         }
+         
+         initialised = true;      
+         
+         log.info("Backup server is now operational");
+      }
+   }
 
    public Channel getReplicatingChannel()
    {
@@ -759,6 +865,11 @@ public class MessagingServerImpl implements MessagingServer
                                                                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                                                                                                     scheduledExecutor,
                                                                                                     listener);
+            
+            if (replicatingConnection == null)
+            {
+               return null;
+            }
 
             listener.conn = replicatingConnection;
 
@@ -775,6 +886,28 @@ public class MessagingServerImpl implements MessagingServer
             });
 
             replicatingConnection.startPinger();
+
+            // First time we get channel we send a message down it informing the backup of our node id -
+            // backup and live must have the same node id
+
+            Packet packet = new ReplicateStartupInfoMessage(uuid, storageManager.getCurrentUniqueID());
+
+            final Future future = new Future();
+            
+            replicatingChannel.replicatePacket(packet, 1, new Runnable()
+            {
+               public void run()
+               {
+                  future.run();
+               }
+            });
+            
+            boolean ok = future.await(10000);
+            
+            if (!ok)
+            {
+               throw new IllegalStateException("Timed out waiting for response from backup for initialisation");
+            }
          }
       }
 
@@ -805,12 +938,39 @@ public class MessagingServerImpl implements MessagingServer
    {
       return nodeID;
    }
-
-   public UUID getUUID()
+   
+   public Queue createQueue(final SimpleString address, final SimpleString queueName, final SimpleString filterString, final boolean durable, final boolean temporary) throws Exception
    {
-      return uuid;
-   }
+      Binding binding = postOffice.getBinding(queueName);
 
+      if (binding != null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_EXISTS);
+      }
+
+      Filter filter = null;
+
+      if (filterString != null)
+      {
+         filter = new FilterImpl(filterString);
+      }
+
+      final Queue queue = queueFactory.createQueue(-1, address, queueName, filter, durable, temporary);
+
+      // The unique name is given by the concatenation of the node id and the queue name - this is because it must be
+      // unique *across the entire cluster*
+      binding = new LocalQueueBinding(address, queue, nodeID);
+
+      if (durable)
+      {
+         storageManager.addQueueBinding(binding);
+      }
+
+      postOffice.addBinding(binding);
+      
+      return queue;     
+   }
+     
    // Public
    // ---------------------------------------------------------------------------------------
 

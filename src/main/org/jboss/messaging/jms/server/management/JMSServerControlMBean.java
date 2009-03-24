@@ -149,10 +149,10 @@ public interface JMSServerControlMBean
                                 long retryInterval,
                                 @Parameter(name = "retryIntervalMultiplier", desc = "The retry interval multiplier when retrying connecting to same server") 
                                 double retryIntervalMultiplier,
-                                @Parameter(name = "maxRetriesBeforeFailover", desc = "The maximum number of connection attempts to a server before failover. -1 means no maximum") 
-                                int maxRetriesBeforeFailover,
-                                @Parameter(name = "maxRetriesAfterFailover", desc = "The maximum number of connection attempts to a server after failover. -1 means no maximum")
-                                int maxRetriesAfterFailover,
+                                @Parameter(name = "initialConnectAttempts", desc = "The maximum number of attempts to make to establish a first connection. -1 means no maximum") 
+                                int initialConnectAttempts,
+                                @Parameter(name = "reconnectAttempts", desc = "The maximum number of re-connection attempts to a server after failure has been detected. -1 means no maximum")
+                                int reconnectAttempts,
                                 @Parameter(name = "jndiBinding", desc = "JNDI Binding") 
                                 String jndiBinding) 
    throws Exception;
@@ -211,10 +211,10 @@ public interface JMSServerControlMBean
                                 long retryInterval,
                                 @Parameter(name = "retryIntervalMultiplier", desc = "The retry interval multiplier when retrying connecting to same server") 
                                 double retryIntervalMultiplier,
-                                @Parameter(name = "maxRetriesBeforeFailover", desc = "The maximum number of connection attempts to a server before failover. -1 means no maximum")
-                                int maxRetriesBeforeFailover,
-                                @Parameter(name = "maxRetriesAfterFailover", desc = "The maximum number of connection attempts to a server after failover. -1 means no maximum") 
-                                int maxRetriesAfterFailover,
+                                @Parameter(name = "initialConnectAttempts", desc = "The maximum number of attempts to make to establish a first connection. -1 means no maximum") 
+                                int initialConnectAttempts,
+                                @Parameter(name = "reconnectAttempts", desc = "The maximum number of re-connection attempts to a server after failure has been detected. -1 means no maximum")
+                                int reconnectAttempts,
                                 @Parameter(name = "jndiBinding", desc = "JNDI Binding") 
                                 String jndiBinding) 
    throws Exception;
@@ -235,5 +235,6 @@ public interface JMSServerControlMBean
    String[] listConnectionIDs() throws Exception;
 
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
+
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 }

@@ -92,7 +92,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         null,
                                                                         1000,
                                                                         1d,
-                                                                        0,
+                                                                        1,
                                                                         0,
                                                                         true,
                                                                         connectorPair);
@@ -415,7 +415,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         null,
                                                                         1000,
                                                                         1d,
-                                                                        0,
+                                                                        1,
                                                                         0,
                                                                         false,
                                                                         connectorPair);
@@ -543,7 +543,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         null,
                                                                         1000,
                                                                         1d,
-                                                                        0,
+                                                                        1,
                                                                         0,
                                                                         false,
                                                                         connectorPair);

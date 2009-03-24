@@ -139,7 +139,7 @@ public class ClientConsumerTest extends ServiceTestBase
       session.commit();
       session.start();
       
-      assertEquals(100, getMessageCounter(messagingService.getServer().getPostOffice(), QUEUE.toString()));
+      assertEquals(100, getMessageCount(messagingService.getServer().getPostOffice(), QUEUE.toString()));
 
       ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
 
@@ -157,7 +157,7 @@ public class ClientConsumerTest extends ServiceTestBase
 
       session.close();
 
-      assertEquals(0, getMessageCounter(messagingService.getServer().getPostOffice(), QUEUE.toString()));
+      assertEquals(0, getMessageCount(messagingService.getServer().getPostOffice(), QUEUE.toString()));
 
    }
 

@@ -24,6 +24,7 @@ package org.jboss.messaging.integration.transports.netty;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -70,6 +71,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
    {
       ChannelBuffer buffer = (ChannelBuffer)e.getMessage();
+      
       handler.bufferReceived(e.getChannel().getId(), new ChannelBufferWrapper(buffer));
    }
 
@@ -102,7 +104,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
          {
             return;
          }
-
+         
          MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Netty exception");
          me.initCause(e.getCause());
          try

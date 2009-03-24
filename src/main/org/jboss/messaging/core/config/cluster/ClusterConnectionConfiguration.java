@@ -48,9 +48,9 @@ public class ClusterConnectionConfiguration implements Serializable
 
    private final double retryIntervalMultiplier;
 
-   private final int maxRetriesBeforeFailover;
+   private final int initialConnectAttempts;
 
-   private final int maxRetriesAfterFailover;
+   private final int reconnectAttempts;
 
    private final boolean duplicateDetection;
    
@@ -66,8 +66,8 @@ public class ClusterConnectionConfiguration implements Serializable
                                          final String address,
                                          final long retryInterval,
                                          final double retryIntervalMultiplier,
-                                         final int maxRetriesBeforeFailover,
-                                         final int maxRetriesAfterFailover,
+                                         final int initialConnectAttempts,
+                                         final int reconnectAttempts,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
@@ -77,8 +77,8 @@ public class ClusterConnectionConfiguration implements Serializable
       this.address = address;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
-      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+      this.initialConnectAttempts = initialConnectAttempts;
+      this.reconnectAttempts = reconnectAttempts;
       this.staticConnectorNamePairs = staticConnectorNamePairs;
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
@@ -90,8 +90,8 @@ public class ClusterConnectionConfiguration implements Serializable
                                          final String address,
                                          final long retryInterval,
                                          final double retryIntervalMultiplier,
-                                         final int maxRetriesBeforeFailover,
-                                         final int maxRetriesAfterFailover,
+                                         final int initialConnectAttempts,
+                                         final int reconnectAttempts,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
@@ -101,8 +101,8 @@ public class ClusterConnectionConfiguration implements Serializable
       this.address = address;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.maxRetriesBeforeFailover = maxRetriesBeforeFailover;
-      this.maxRetriesAfterFailover = maxRetriesAfterFailover;
+      this.initialConnectAttempts = initialConnectAttempts;
+      this.reconnectAttempts = reconnectAttempts;
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
@@ -155,14 +155,14 @@ public class ClusterConnectionConfiguration implements Serializable
       return retryIntervalMultiplier;
    }
 
-   public int getMaxRetriesBeforeFailover()
+   public int getInitialConnectAttempts()
    {
-      return maxRetriesBeforeFailover;
+      return initialConnectAttempts;
    }
 
-   public int getMaxRetriesAfterFailover()
+   public int getReconnectAttempts()
    {
-      return maxRetriesAfterFailover;
+      return reconnectAttempts;
    }
 
 }

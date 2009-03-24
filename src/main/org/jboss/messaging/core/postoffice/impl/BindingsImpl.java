@@ -148,7 +148,7 @@ public class BindingsImpl implements Bindings
          if (binding == null)
          {
             // The binding has been closed - we need to route the message somewhere else...............
-            throw new IllegalStateException("Binding not found when routing from cluster - it must have closed");
+            throw new IllegalStateException("Binding not found when routing from cluster - it must have closed " + bindingID);
 
             // FIXME need to deal with this better
          }

@@ -48,6 +48,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
@@ -81,8 +82,8 @@ public class ClusterManagerImpl implements ClusterManager
    private final Map<String, ClusterConnection> clusters = new HashMap<String, ClusterConnection>();
 
    private final org.jboss.messaging.utils.ExecutorFactory executorFactory;
-
-   private final StorageManager storageManager;
+   
+   private final MessagingServer server;
 
    private final PostOffice postOffice;
 
@@ -91,8 +92,6 @@ public class ClusterManagerImpl implements ClusterManager
    private final ManagementService managementService;
 
    private final Configuration configuration;
-
-   private final QueueFactory queueFactory;
 
    private final UUID nodeUUID;
    
@@ -103,19 +102,23 @@ public class ClusterManagerImpl implements ClusterManager
    private boolean backup;
 
    public ClusterManagerImpl(final org.jboss.messaging.utils.ExecutorFactory executorFactory,
-                             final StorageManager storageManager,
+                             final MessagingServer server,
                              final PostOffice postOffice,
                              final ScheduledExecutorService scheduledExecutor,
                              final ManagementService managementService,
                              final Configuration configuration,
-                             final QueueFactory queueFactory,
                              final UUID nodeUUID,
                              final Channel replicatingChannel,
                              final boolean backup)
    {
+      if (nodeUUID == null)
+      {
+         throw new IllegalArgumentException("Node uuid is null");
+      }
+      
       this.executorFactory = executorFactory;
-
-      this.storageManager = storageManager;
+      
+      this.server = server;
 
       this.postOffice = postOffice;
 
@@ -124,8 +127,6 @@ public class ClusterManagerImpl implements ClusterManager
       this.managementService = managementService;
 
       this.configuration = configuration;
-
-      this.queueFactory = queueFactory;
 
       this.nodeUUID = nodeUUID;
       
@@ -225,7 +226,7 @@ public class ClusterManagerImpl implements ClusterManager
    }
    
    public synchronized void activate()
-   {
+   {      
       for (BroadcastGroup bg: broadcastGroups.values())
       {
          bg.activate();
@@ -417,8 +418,6 @@ public class ClusterManagerImpl implements ClusterManager
          Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
                                                                                                                               backupConnector);
 
-         log.info("deploying bridge, backup is " + backup);
-         
          bridge = new BridgeImpl(nodeUUID,
                                  new SimpleString(config.getName()),
                                  queue,
@@ -430,14 +429,15 @@ public class ClusterManagerImpl implements ClusterManager
                                  transformer,
                                  config.getRetryInterval(),
                                  config.getRetryIntervalMultiplier(),
-                                 config.getMaxRetriesBeforeFailover(),
-                                 config.getMaxRetriesAfterFailover(),
+                                 config.getInitialConnectAttempts(),
+                                 config.getReconnectAttempts(),
                                  config.isUseDuplicateDetection(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
                                  managementService.getClusterPassword(),
                                  replicatingChannel,
-                                 !backup);
+                                 !backup,
+                                 server.getStorageManager());
 
          bridges.put(config.getName(), bridge);
 
@@ -506,16 +506,15 @@ public class ClusterManagerImpl implements ClusterManager
                                                        new SimpleString(config.getAddress()),
                                                        config.getRetryInterval(),
                                                        config.getRetryIntervalMultiplier(),
-                                                       config.getMaxRetriesBeforeFailover(),
-                                                       config.getMaxRetriesAfterFailover(),
+                                                       config.getInitialConnectAttempts(),
+                                                       config.getReconnectAttempts(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        executorFactory,
-                                                       storageManager,
+                                                       server,                                         
                                                        postOffice,
                                                        managementService,
-                                                       scheduledExecutor,
-                                                       queueFactory,
+                                                       scheduledExecutor,                                            
                                                        connectors,
                                                        config.getMaxHops(),
                                                        nodeUUID,
@@ -536,16 +535,15 @@ public class ClusterManagerImpl implements ClusterManager
                                                        new SimpleString(config.getAddress()),
                                                        config.getRetryInterval(),
                                                        config.getRetryIntervalMultiplier(),
-                                                       config.getMaxRetriesBeforeFailover(),
-                                                       config.getMaxRetriesAfterFailover(),
+                                                       config.getInitialConnectAttempts(),
+                                                       config.getReconnectAttempts(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        executorFactory,
-                                                       storageManager,
+                                                       server,                                             
                                                        postOffice,
                                                        managementService,
-                                                       scheduledExecutor,
-                                                       queueFactory,
+                                                       scheduledExecutor,                                               
                                                        dg,
                                                        config.getMaxHops(),
                                                        nodeUUID,

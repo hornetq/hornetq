@@ -31,12 +31,12 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -83,7 +83,7 @@ public class ClientCrashTest extends ClientTestBase
    // Attributes ----------------------------------------------------
 
    private ClientSessionFactory sf;
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -91,26 +91,26 @@ public class ClientCrashTest extends ClientTestBase
    public void testCrashClient() throws Exception
    {
       assertActiveConnections(0);
-      
+
       // spawn a JVM that creates a JMS client, which waits to receive a test
       // message
       Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName());
-      
+
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(QUEUE, QUEUE, null, false, false);
       ClientConsumer consumer = session.createConsumer(QUEUE);
       ClientProducer producer = session.createProducer(QUEUE);
-      
+
       session.start();
-      
+
       // send the message to the queue
       Message messageFromClient = consumer.receive(5000);
       assertNotNull("no message received", messageFromClient);
       assertEquals(MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBody().readString());
-      
+
       assertActiveConnections(1 + 1); // One local and one from the other vm
       assertActiveSession(1 + 1);
-      
+
       ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
                                                           false,
                                                           0,
@@ -118,19 +118,19 @@ public class ClientCrashTest extends ClientTestBase
                                                           (byte)1);
       message.getBody().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_SERVER);
       producer.send(message);
-      
+
       log.debug("waiting for the client VM to crash ...");
       p.waitFor();
-      
+
       assertEquals(9, p.exitValue());
-      
+
       System.out.println("VM Exited");
 
       Thread.sleep(1000);
-      
+
       assertActiveConnections(1);
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-      // assertActiveSession(1);      
+      // assertActiveSession(1);
 
       session.close();
 
@@ -139,7 +139,7 @@ public class ClientCrashTest extends ClientTestBase
       // the crash must have been detected and the resources cleaned up
       assertActiveConnections(0);
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-      // assertActiveSession(0);      
+      // assertActiveSession(0);
    }
 
    // Package protected ---------------------------------------------
@@ -166,19 +166,19 @@ public class ClientCrashTest extends ClientTestBase
                                         DEFAULT_AUTO_GROUP,
                                         DEFAULT_MAX_CONNECTIONS,
                                         DEFAULT_PRE_ACKNOWLEDGE,
-                                        DEFAULT_ACK_BATCH_SIZE,                                 
+                                        DEFAULT_ACK_BATCH_SIZE,
                                         DEFAULT_RETRY_INTERVAL,
-                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,                                        
-                                        DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                        DEFAULT_MAX_RETRIES_AFTER_FAILOVER);
+                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                        DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                        DEFAULT_RECONNECT_ATTEMPTS);
 
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-    //  sf.close();
-      
+      // sf.close();
+
       super.tearDown();
    }
 

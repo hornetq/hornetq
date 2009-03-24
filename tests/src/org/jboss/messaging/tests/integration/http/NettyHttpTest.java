@@ -45,9 +45,9 @@ public class NettyHttpTest extends UnitTestCase
    private NettyAcceptor acceptor;
 
    private NettyConnector connector;
-   
+
    public void testFoo()
-   {      
+   {
    }
 
    public void testSendAndReceiveAtSameTime() throws Exception
@@ -92,7 +92,7 @@ public class NettyHttpTest extends UnitTestCase
          assertTrue(i == j);
          i++;
       }
-       i = 0;
+      i = 0;
       for (Integer j : connectorHandler.messages)
       {
          assertTrue(i == j);
@@ -100,9 +100,24 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
+   public void testFail() throws Exception
+   {
+      tearDown();
+
+      for (int k = 0; k < 1000; k++)
+      {
+         setUp();  
+         testSendAndReceiveAtSameTime();
+         tearDown();
+         
+         setUp();         
+         testSendThenReceive();         
+         tearDown();
+      }
+   }
+
    public void testSendThenReceive() throws Exception
    {
-
       int numPackets = 1000;
       CountDownLatch connCreatedLatch = new CountDownLatch(1);
       CountDownLatch acceptorLatch = new CountDownLatch(numPackets);
@@ -145,7 +160,7 @@ public class NettyHttpTest extends UnitTestCase
          assertTrue(i == j);
          i++;
       }
-       i = 0;
+      i = 0;
       for (Integer j : connectorHandler.messages)
       {
          assertTrue(i == j);
@@ -199,7 +214,7 @@ public class NettyHttpTest extends UnitTestCase
          assertTrue(i == j);
          i++;
       }
-       i = 0;
+      i = 0;
       for (Integer j : connectorHandler.messages)
       {
          assertTrue(i == j);
@@ -235,7 +250,6 @@ public class NettyHttpTest extends UnitTestCase
          acceptorListener.connection.write(buff);
       }
 
-
       MessagingBuffer buff = conn.createBuffer(8);
       buff.writeInt(4);
       buff.writeInt(0);
@@ -252,7 +266,7 @@ public class NettyHttpTest extends UnitTestCase
          assertTrue(i == j);
          i++;
       }
-       i = 0;
+      i = 0;
       for (Integer j : connectorHandler.messages)
       {
          assertTrue(i == j);
@@ -300,7 +314,7 @@ public class NettyHttpTest extends UnitTestCase
          assertTrue(i == j);
          i++;
       }
-       i = 0;
+      i = 0;
       for (Integer j : connectorHandler.messages)
       {
          assertTrue(i == j);
@@ -353,17 +367,17 @@ public class NettyHttpTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      if(connector != null)
+      if (connector != null)
       {
          connector.close();
          connector = null;
       }
-      if(acceptor != null)
+      if (acceptor != null)
       {
          acceptor.stop();
          acceptor = null;
       }
-      
+
       super.tearDown();
    }
 
@@ -372,13 +386,13 @@ public class NettyHttpTest extends UnitTestCase
       int messagesReceieved = 0;
 
       ArrayList<Integer> messages = new ArrayList<Integer>();
+
       private CountDownLatch latch;
 
       public SimpleBufferHandler(CountDownLatch latch)
       {
          this.latch = latch;
       }
-
 
       public void bufferReceived(Object connectionID, MessagingBuffer buffer)
       {
@@ -394,6 +408,7 @@ public class NettyHttpTest extends UnitTestCase
       int messagesReceieved = 0;
 
       ArrayList<Integer> messages = new ArrayList<Integer>();
+
       private CountDownLatch latch;
 
       public BogusResponseHandler(CountDownLatch latch)
@@ -428,7 +443,7 @@ public class NettyHttpTest extends UnitTestCase
 
       public void connectionCreated(Connection connection)
       {
-        this.connection = connection;
+         this.connection = connection;
          if (latch != null)
          {
             latch.countDown();

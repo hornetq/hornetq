@@ -673,59 +673,59 @@ public class JournalStorageManagerTest extends UnitTestCase
 //      assertEquals(sdest3, destinations.get(2));
 //   }
 
-   public void testStartStop() throws Exception
-   {
-      Journal messageJournal = EasyMock.createStrictMock(Journal.class);
-      Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
-
-      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
-
-      assertFalse(jsm.isStarted());
-      bindingsJournal.start();
-      messageJournal.start();
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      jsm.start();
-
-      assertTrue(jsm.isStarted());
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-
-      EasyMock.reset(messageJournal, bindingsJournal);
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      jsm.start();
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-
-      assertTrue(jsm.isStarted());
-
-      EasyMock.reset(messageJournal, bindingsJournal);
-
-      bindingsJournal.stop();
-
-      messageJournal.stop();
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      jsm.stop();
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-
-      assertFalse(jsm.isStarted());
-
-      EasyMock.reset(messageJournal, bindingsJournal);
-
-      EasyMock.replay(messageJournal, bindingsJournal);
-
-      jsm.stop();
-
-      EasyMock.verify(messageJournal, bindingsJournal);
-
-      assertFalse(jsm.isStarted());
-   }
+//   public void testStartStop() throws Exception
+//   {
+//      Journal messageJournal = EasyMock.createStrictMock(Journal.class);
+//      Journal bindingsJournal = EasyMock.createStrictMock(Journal.class);
+//
+//      JournalStorageManager jsm = new JournalStorageManager(messageJournal, bindingsJournal, null);
+//
+//      assertFalse(jsm.isStarted());
+//      bindingsJournal.start();
+//      messageJournal.start();
+//
+//      EasyMock.replay(messageJournal, bindingsJournal);
+//
+//      jsm.start();
+//
+//      assertTrue(jsm.isStarted());
+//
+//      EasyMock.verify(messageJournal, bindingsJournal);
+//
+//      EasyMock.reset(messageJournal, bindingsJournal);
+//
+//      EasyMock.replay(messageJournal, bindingsJournal);
+//
+//      jsm.start();
+//
+//      EasyMock.verify(messageJournal, bindingsJournal);
+//
+//      assertTrue(jsm.isStarted());
+//
+//      EasyMock.reset(messageJournal, bindingsJournal);
+//
+//      bindingsJournal.stop();
+//
+//      messageJournal.stop();
+//
+//      EasyMock.replay(messageJournal, bindingsJournal);
+//
+//      jsm.stop();
+//
+//      EasyMock.verify(messageJournal, bindingsJournal);
+//
+//      assertFalse(jsm.isStarted());
+//
+//      EasyMock.reset(messageJournal, bindingsJournal);
+//
+//      EasyMock.replay(messageJournal, bindingsJournal);
+//
+//      jsm.stop();
+//
+//      EasyMock.verify(messageJournal, bindingsJournal);
+//
+//      assertFalse(jsm.isStarted());
+//   }
 
    public void testGenerateMessageID()
    {

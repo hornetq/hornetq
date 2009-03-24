@@ -12,13 +12,17 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CLOSED;
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATE_CREATESESSION;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATE_STARTUP_INFO;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
@@ -35,6 +39,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRe
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteBindingRemovedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerAddedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerRemovedMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateStartupInfoMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -57,7 +62,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
    private final Channel channel1;
 
    private final RemotingConnection connection;
-
+   
    public MessagingServerPacketHandler(final MessagingServer server,
                                        final Channel channel1,
                                        final RemotingConnection connection)
@@ -72,11 +77,31 @@ public class MessagingServerPacketHandler implements ChannelHandler
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
+      
+      if (!server.isInitialised() && type != PacketImpl.REPLICATE_STARTUP_INFO)
+      {
+         throw new IllegalStateException("First packet must be startup info for backup " + type);        
+      }
 
       // All these operations need to be idempotent since they are outside of the session
       // reliability replay functionality
       switch (type)
       {
+         case REPLICATE_STARTUP_INFO:
+         {          
+            ReplicateStartupInfoMessage msg = (ReplicateStartupInfoMessage)packet;
+            
+            try
+            {
+               server.initialiseBackup(msg.getNodeID(), msg.getCurrentMessageID());
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to initialise", e);
+            }
+            
+            break;
+         }
          case CREATESESSION:
          {
             CreateSessionMessage request = (CreateSessionMessage)packet;
@@ -282,11 +307,11 @@ public class MessagingServerPacketHandler implements ChannelHandler
    {
       try
       {
-         server.getServerManagement().createQueue(request.getAddress().toString(), request.getQueueName().toString());
+         server.createQueue(request.getAddress(), request.getQueueName(), request.getFilterString(), request.isDurable(), request.isTemporary());
       }
       catch (Exception e)
       {
-         log.error("Failed to handle cluster connection update", e);
+         log.error("Failed to handle create queue", e);
       }
    }
 
@@ -350,6 +375,18 @@ public class MessagingServerPacketHandler implements ChannelHandler
       {
          log.error("Failed to handle add remote consumer", e);
       }
+      
+      // Need to propagate the consumer add
+      Notification notification = new Notification(CONSUMER_CREATED, request.getProperties());
+
+      try
+      {
+         server.getManagementService().sendNotification(notification);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle add remote consumer", e);
+      }
    }
 
    private void handleRemoveRemoteConsumer(final ReplicateRemoteConsumerRemovedMessage request)
@@ -365,6 +402,18 @@ public class MessagingServerPacketHandler implements ChannelHandler
       try
       {
          binding.removeConsumer(request.getFilterString());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle remove remote consumer", e);
+      }
+      
+      // Need to propagate the consumer close
+      Notification notification = new Notification(CONSUMER_CLOSED, request.getProperties());
+
+      try
+      {
+         server.getManagementService().sendNotification(notification);
       }
       catch (Exception e)
       {

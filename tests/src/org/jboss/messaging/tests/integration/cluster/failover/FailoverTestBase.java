@@ -136,8 +136,6 @@ public class FailoverTestBase extends ServiceTestBase
       }
 
       backupService.start();
-
-      Thread.sleep(20);
       
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -222,8 +220,6 @@ public class FailoverTestBase extends ServiceTestBase
       }
       
       backupService.start();
-
-      Thread.sleep(20);
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);

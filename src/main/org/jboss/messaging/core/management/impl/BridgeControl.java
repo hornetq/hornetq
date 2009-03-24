@@ -84,14 +84,14 @@ public class BridgeControl implements BridgeControlMBean
       return configuration.getFilterString();
    }
 
-   public int getMaxRetriesAfterFailover()
+   public int getReconnectAttempts()
    {
-      return configuration.getMaxRetriesAfterFailover();
+      return configuration.getReconnectAttempts();
    }
 
-   public int getMaxRetriesBeforeFailover()
+   public int getInitialConnectAttempts()
    {
-      return configuration.getMaxRetriesBeforeFailover();
+      return configuration.getInitialConnectAttempts();
    }
 
    public String getName()

@@ -15,6 +15,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat.replication;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TypedProperties;
 
 /**
  * 
@@ -36,17 +37,21 @@ public class ReplicateRemoteConsumerAddedMessage extends PacketImpl
    
    private SimpleString filterString;
    
+   private TypedProperties properties;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicateRemoteConsumerAddedMessage(SimpleString uniqueBindingName, SimpleString filterString)
+   public ReplicateRemoteConsumerAddedMessage(SimpleString uniqueBindingName, SimpleString filterString, TypedProperties properties)
    {
       super(REPLICATE_ADD_REMOTE_CONSUMER);
 
       this.uniqueBindingName = uniqueBindingName;
       
       this.filterString = filterString;
+      
+      this.properties = properties;
    }
 
    // Public --------------------------------------------------------
@@ -61,6 +66,8 @@ public class ReplicateRemoteConsumerAddedMessage extends PacketImpl
       buffer.writeSimpleString(uniqueBindingName);
       
       buffer.writeNullableSimpleString(filterString);
+      
+      properties.encode(buffer);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
@@ -68,6 +75,10 @@ public class ReplicateRemoteConsumerAddedMessage extends PacketImpl
       uniqueBindingName = buffer.readSimpleString();
       
       filterString = buffer.readNullableSimpleString();
+      
+      properties = new TypedProperties();
+      
+      properties.decode(buffer);
    }
 
    public SimpleString getUniqueBindingName()
@@ -78,6 +89,11 @@ public class ReplicateRemoteConsumerAddedMessage extends PacketImpl
    public SimpleString getFilterString()
    {
       return filterString;
+   }
+   
+   public TypedProperties getProperties()
+   {
+      return properties;
    }
 
    // Package protected ---------------------------------------------

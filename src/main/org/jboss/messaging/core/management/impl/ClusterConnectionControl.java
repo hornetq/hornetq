@@ -73,14 +73,14 @@ public class ClusterConnectionControl implements ClusterConnectionControlMBean
       return configuration.getMaxHops();
    }
 
-   public int getMaxRetriesBeforeFailover()
+   public int getInitialConnectAttempts()
    {
-      return configuration.getMaxRetriesBeforeFailover();
+      return configuration.getInitialConnectAttempts();
    }
 
-   public int getMaxRetriesAfterFailover()
+   public int getReconnectAttempts()
    {
-      return configuration.getMaxRetriesAfterFailover();
+      return configuration.getReconnectAttempts();
    }
 
    public String getName()

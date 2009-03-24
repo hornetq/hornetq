@@ -22,8 +22,8 @@
 package org.jboss.test.messaging.tools.container;
 
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_AFTER_FAILOVER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRIES_BEFORE_FAILOVER;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
@@ -98,7 +98,7 @@ public class LocalTestServer implements Server, Runnable
 
    // Constructors ---------------------------------------------------------------------------------
 
-    public LocalTestServer()
+   public LocalTestServer()
    {
       super();
 
@@ -306,15 +306,15 @@ public class LocalTestServer implements Server, Runnable
    {
       log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
 
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = 
-         new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"), null));
-           
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+
+      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
+                                                                                    null));
+
       getJMSServerManager().createConnectionFactory(objectName,
                                                     connectorConfigs,
                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,        
+                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                     DEFAULT_CONNECTION_TTL,
                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                     clientId,
@@ -324,17 +324,17 @@ public class LocalTestServer implements Server, Runnable
                                                     -1,
                                                     -1,
                                                     ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                                    ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,                                                    
+                                                    ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                     blockOnAcknowledge,
                                                     true,
                                                     true,
                                                     false,
                                                     8,
-                                                    false,                                                  
+                                                    false,
                                                     DEFAULT_RETRY_INTERVAL,
                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                    DEFAULT_MAX_RETRIES_BEFORE_FAILOVER,
-                                                    DEFAULT_MAX_RETRIES_AFTER_FAILOVER,
+                                                    DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                    DEFAULT_RECONNECT_ATTEMPTS,
                                                     jndiBindings);
    }
 
@@ -419,7 +419,7 @@ public class LocalTestServer implements Server, Runnable
          return -1;
       }
    }
-   
+
    public void removeAllMessages(String destination, boolean isQueue) throws Exception
    {
       SimpleString address = JBossQueue.createAddressFromName(destination);

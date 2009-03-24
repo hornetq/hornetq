@@ -24,9 +24,11 @@ package org.jboss.messaging.core.persistence.impl.nullpm;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -39,12 +41,9 @@ import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.utils.TimeAndCounterIDGenerator;
 import org.jboss.messaging.utils.UUID;
-import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * 
@@ -56,15 +55,22 @@ import org.jboss.messaging.utils.UUIDGenerator;
  */
 public class NullStorageManager implements StorageManager
 {
-   private final IDGenerator idGenerator = new TimeAndCounterIDGenerator();
+   private static final Logger log = Logger.getLogger(NullStorageManager.class);
    
-   private final UUID id = UUIDGenerator.getInstance().generateUUID();
+   private final AtomicLong idGenerator = new AtomicLong(0);
+   
+   private UUID id;
 
    private volatile boolean started;
    
    public UUID getPersistentID()
    {
       return id;
+   }
+   
+   public void setPersistentID(final UUID id)
+   {
+      this.id = id;
    }
 
    public void addQueueBinding(final Binding queueBinding) throws Exception
@@ -177,10 +183,17 @@ public class NullStorageManager implements StorageManager
    {
       return new NullStorageLargeServerMessage();
    }
-
+   
    public long generateUniqueID()
    {
-      return idGenerator.generateID();
+      long id = idGenerator.getAndIncrement();
+      
+      return id;
+   }
+   
+   public long getCurrentUniqueID()
+   {
+      return idGenerator.get();
    }
 
    public synchronized void start() throws Exception

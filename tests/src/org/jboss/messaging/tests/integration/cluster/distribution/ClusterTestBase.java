@@ -38,6 +38,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
@@ -110,10 +111,26 @@ public class ClusterTestBase extends ServiceTestBase
    private MessagingService[] services = new MessagingService[MAX_SERVERS];
 
    private ClientSessionFactory[] sfs = new ClientSessionFactory[MAX_SERVERS];
-   
-   protected void waitForMessages(int node,
-                                  final String address,
-                                  final int count) throws Exception
+
+   protected void failNode(TransportConfiguration conf)
+   {
+      // MessagingService service = this.services[node];
+      //
+      // if (service == null)
+      // {
+      // throw new IllegalArgumentException("No service at " + node);
+      // }
+      //
+      // RemotingConnection conn = ((ClientSessionInternal)this.consumers[node].session).getConnection();
+      //      
+      // conn.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
+      //      
+      // //Also fail any cluster connections
+
+      ConnectionManagerImpl.failAllConnectionsForConnector(conf);
+   }
+
+   protected void waitForMessages(int node, final String address, final int count) throws Exception
    {
       MessagingService service = this.services[node];
 
@@ -128,10 +145,9 @@ public class ClusterTestBase extends ServiceTestBase
 
       int messageCount = 0;
 
-
       do
       {
-         messageCount = getMessageCounter(po, address);
+         messageCount = getMessageCount(po, address);
 
          log.info(node + " messageCount " + messageCount);
 
@@ -144,13 +160,13 @@ public class ClusterTestBase extends ServiceTestBase
          Thread.sleep(100);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
-      
+
       System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
-      throw new IllegalStateException("Timed out waiting for messages (messageCount = " + messageCount + ", expecting = " + count);
+      throw new IllegalStateException("Timed out waiting for messages (messageCount = " + messageCount +
+                                      ", expecting = " +
+                                      count);
    }
-
-
 
    protected void waitForBindings(int node,
                                   final String address,
@@ -158,15 +174,15 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-//      log.info("waiting for bindings on node " + node +
-//               " address " +
-//               address +
-//               " count " +
-//               count +
-//               " consumerCount " +
-//               consumerCount +
-//               " local " +
-//               local);
+      log.info("waiting for bindings on node " + node +
+               " address " +
+               address +
+               " count " +
+               count +
+               " consumerCount " +
+               consumerCount +
+               " local " +
+               local);
       MessagingService service = this.services[node];
 
       if (service == null)
@@ -181,7 +197,6 @@ public class ClusterTestBase extends ServiceTestBase
       int bindingCount = 0;
 
       int totConsumers = 0;
-
 
       do
       {
@@ -203,7 +218,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-        // log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
+         log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -214,10 +229,12 @@ public class ClusterTestBase extends ServiceTestBase
          Thread.sleep(100);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
-      
+
       System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
-      throw new IllegalStateException("Timed out waiting for bindings (bindingCount = " + bindingCount + ", totConsumers = " + totConsumers);
+      throw new IllegalStateException("Timed out waiting for bindings (bindingCount = " + bindingCount +
+                                      ", totConsumers = " +
+                                      totConsumers);
    }
 
    protected void createQueue(int node, String address, String queueName, String filterVal, boolean durable) throws Exception
@@ -267,27 +284,27 @@ public class ClusterTestBase extends ServiceTestBase
          {
             throw new IllegalArgumentException("Already a consumer at " + node);
          }
-   
+
          ClientSessionFactory sf = this.sfs[node];
-   
+
          if (sf == null)
          {
             throw new IllegalArgumentException("No sf at " + node);
          }
-   
+
          ClientSession session = sf.createSession(false, true, true);
-   
+
          String filterString = null;
-   
+
          if (filterVal != null)
          {
             filterString = FILTER_PROP.toString() + "='" + filterVal + "'";
          }
-   
+
          ClientConsumer consumer = session.createConsumer(queueName, filterString);
-   
+
          session.start();
-   
+
          consumers[consumerID] = new ConsumerHolder(consumer, session);
       }
       catch (Exception e)
@@ -295,7 +312,7 @@ public class ClusterTestBase extends ServiceTestBase
          // Proxy the faliure and print a dump into System.out, so it is captured by Hudson reports
          e.printStackTrace();
          System.out.println(threadDump(" - fired by ClusterTestBase::addConsumer"));
-         
+
          throw e;
       }
    }
@@ -399,7 +416,7 @@ public class ClusterTestBase extends ServiceTestBase
    {
       verifyReceiveAllInRangeNotBefore(-1, msgStart, msgEnd, consumerIDs);
    }
-   
+
    protected void verifyReceiveAllInRangeNotBefore(long firstReceiveTime, int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
       boolean outOfOrder = false;
@@ -415,9 +432,9 @@ public class ClusterTestBase extends ServiceTestBase
          for (int j = msgStart; j < msgEnd; j++)
          {
             ClientMessage message = holder.consumer.receive(2000);
-            
+
             assertNotNull("consumer " + consumerIDs[i] + " did not receive message " + j, message);
-            
+
             if (firstReceiveTime != -1)
             {
                assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
@@ -430,7 +447,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
       }
-      
+
       assertFalse("Messages were consumed out of order, look at System.out for more information", outOfOrder);
    }
 
@@ -438,7 +455,7 @@ public class ClusterTestBase extends ServiceTestBase
    {
       verifyReceiveAllInRange(0, numMessages, consumerIDs);
    }
-   
+
    protected void verifyReceiveAllNotBefore(long firstReceiveTime, int numMessages, int... consumerIDs) throws Exception
    {
       verifyReceiveAllInRangeNotBefore(firstReceiveTime, 0, numMessages, consumerIDs);
@@ -462,7 +479,11 @@ public class ClusterTestBase extends ServiceTestBase
 
             if (message != null)
             {
-               //log.info("Consumer " + consumerIDs[i] + " received message " + message.getProperty(COUNT_PROP));
+               log.info("check receive Consumer " + consumerIDs[i] + " received message " + message.getProperty(COUNT_PROP));
+            }
+            else
+            {
+               log.info("check receive Consumer " + consumerIDs[i] + " null message");
             }
          }
          while (message != null);
@@ -587,7 +608,7 @@ public class ClusterTestBase extends ServiceTestBase
             {
                int count = (Integer)message.getProperty(COUNT_PROP);
 
-              // log.info("consumer " + consumerIDs[i] + " received message " + count);
+               // log.info("consumer " + consumerIDs[i] + " received message " + count);
 
                assertFalse(counts.contains(count));
 
@@ -637,7 +658,7 @@ public class ClusterTestBase extends ServiceTestBase
 
          assertEquals(messageCounts[i], elem);
 
-         //log.info("got elem " + messageCounts[i] + " at pos " + index);
+         // log.info("got elem " + messageCounts[i] + " at pos " + index);
 
          index++;
 
@@ -675,7 +696,7 @@ public class ClusterTestBase extends ServiceTestBase
          {
             int count = (Integer)message.getProperty(COUNT_PROP);
 
-            //log.info("consumer " + consumerID + " received message " + count);
+            // log.info("consumer " + consumerID + " received message " + count);
 
             ints.add(count);
          }
@@ -737,6 +758,52 @@ public class ClusterTestBase extends ServiceTestBase
       sfs[node] = sf;
    }
 
+   protected void setupSessionFactory(int node, int backupNode, boolean netty, boolean blocking)
+   {
+      if (sfs[node] != null)
+      {
+         throw new IllegalArgumentException("Already a service at " + node);
+      }
+
+      Map<String, Object> params = generateParams(node, netty);
+
+      TransportConfiguration serverTotc;
+
+      if (netty)
+      {
+         serverTotc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
+      }
+      else
+      {
+         serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
+      }
+
+      Map<String, Object> backupParams = generateParams(backupNode, netty);
+
+      TransportConfiguration serverBackuptc;
+
+      if (netty)
+      {
+         serverBackuptc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, backupParams);
+      }
+      else
+      {
+         serverBackuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
+      }
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc, serverBackuptc);
+
+      sf.setBlockOnNonPersistentSend(blocking);
+      sf.setBlockOnPersistentSend(blocking);
+
+      sfs[node] = sf;
+   }
+
+   protected void setupSessionFactory(int node, int backupNode, boolean netty)
+   {
+      this.setupSessionFactory(node, backupNode, netty, true);
+   }
+
    protected MessagingService getService(int node)
    {
       if (services[node] == null)
@@ -748,6 +815,21 @@ public class ClusterTestBase extends ServiceTestBase
    }
 
    protected void setupServer(int node, boolean fileStorage, boolean netty)
+   {
+      setupServer(node, fileStorage, netty, false, -1);
+   }
+
+   protected void setupServer(int node, boolean fileStorage, boolean netty, boolean backup)
+   {
+      setupServer(node, fileStorage, netty, backup, -1);
+   }
+
+   protected void setupServer(int node, boolean fileStorage, boolean netty, int backupNode)
+   {
+      setupServer(node, fileStorage, netty, false, backupNode);
+   }
+
+   protected void setupServer(int node, boolean fileStorage, boolean netty, boolean backup, int backupNode)
    {
       if (services[node] != null)
       {
@@ -764,6 +846,31 @@ public class ClusterTestBase extends ServiceTestBase
       configuration.setPagingDirectory(getPageDir(node));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(node));
       configuration.setClustered(true);
+      configuration.setBackup(backup);
+
+      log.info("setting up server " + node + " backup " + backup);
+
+      if (backupNode != -1)
+      {
+         Map<String, Object> backupParams = generateParams(backupNode, netty);
+
+         if (netty)
+         {
+            TransportConfiguration nettyBackuptc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, backupParams);
+
+            configuration.getConnectorConfigurations().put(nettyBackuptc.getName(), nettyBackuptc);
+
+            configuration.setBackupConnectorName(nettyBackuptc.getName());
+         }
+         else
+         {
+            TransportConfiguration invmBackuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
+
+            configuration.getConnectorConfigurations().put(invmBackuptc.getName(), invmBackuptc);
+
+            configuration.setBackupConnectorName(invmBackuptc.getName());
+         }
+      }
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -1031,6 +1138,8 @@ public class ClusterTestBase extends ServiceTestBase
 
       List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
 
+      log.info("creating cluster connection from node " + nodeFrom);
+
       for (int i = 0; i < nodesTo.length; i++)
       {
          Map<String, Object> params = generateParams(nodesTo[i], netty);
@@ -1045,6 +1154,8 @@ public class ClusterTestBase extends ServiceTestBase
          {
             serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
          }
+
+         log.info("to " + nodesTo[i]);
 
          connectors.put(serverTotc.getName(), serverTotc);
 
@@ -1066,7 +1177,85 @@ public class ClusterTestBase extends ServiceTestBase
 
       serviceFrom.getServer().getConfiguration().getClusterConfigurations().add(clusterConf);
    }
-      
+
+   protected void setupClusterConnectionWithBackups(String name,
+                                                    String address,
+                                                    boolean forwardWhenNoConsumers,
+                                                    int maxHops,
+                                                    boolean netty,
+                                                    int nodeFrom,
+                                                    int[] nodesTo,
+                                                    int[] backupsTo)
+   {
+      MessagingService serviceFrom = services[nodeFrom];
+
+      if (serviceFrom == null)
+      {
+         throw new IllegalStateException("No service at node " + nodeFrom);
+      }
+
+      Map<String, TransportConfiguration> connectors = serviceFrom.getServer()
+                                                                  .getConfiguration()
+                                                                  .getConnectorConfigurations();
+
+      List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
+
+      log.info("creating cluster connection from node " + nodeFrom);
+
+      for (int i = 0; i < nodesTo.length; i++)
+      {
+         Map<String, Object> params = generateParams(nodesTo[i], netty);
+
+         TransportConfiguration serverTotc;
+
+         if (netty)
+         {
+            serverTotc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
+         }
+         else
+         {
+            serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
+         }
+
+         log.info("to " + nodesTo[i]);
+
+         connectors.put(serverTotc.getName(), serverTotc);
+
+         Map<String, Object> backupParams = generateParams(backupsTo[i], netty);
+
+         TransportConfiguration serverBackupTotc;
+
+         if (netty)
+         {
+            serverBackupTotc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, backupParams);
+         }
+         else
+         {
+            serverBackupTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
+         }
+
+         connectors.put(serverBackupTotc.getName(), serverBackupTotc);
+
+         Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), serverBackupTotc.getName());
+
+         // Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), null);
+
+         pairs.add(connectorPair);
+      }
+
+      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
+                                                                                      address,
+                                                                                      250,
+                                                                                      1d,
+                                                                                      -1,
+                                                                                      -1,
+                                                                                      true,
+                                                                                      forwardWhenNoConsumers,
+                                                                                      maxHops,
+                                                                                      pairs);
+
+      serviceFrom.getServer().getConfiguration().getClusterConfigurations().add(clusterConf);
+   }
 
    protected void setupDiscoveryClusterConnection(String name,
                                                   int node,
@@ -1104,31 +1293,39 @@ public class ClusterTestBase extends ServiceTestBase
    {
       for (int i = 0; i < nodes.length; i++)
       {
+         log.info("starting server " + nodes[i]);
+
          services[nodes[i]].start();
+
+         log.info("started server " + nodes[i]);
       }
    }
-   
+
    protected void stopClusterConnections(int... nodes) throws Exception
    {
       for (int i = 0; i < nodes.length; i++)
       {
          if (services[nodes[i]].isStarted())
          {
-            for (ClusterConnection cc: services[nodes[i]].getServer().getClusterManager().getClusterConnections())
+            log.info("stopping cluster connections on node " + nodes[i]);
+            for (ClusterConnection cc : services[nodes[i]].getServer().getClusterManager().getClusterConnections())
             {
                cc.stop();
             }
+            log.info("stopped");
          }
       }
    }
 
    protected void stopServers(int... nodes) throws Exception
-   {      
+   {
       for (int i = 0; i < nodes.length; i++)
       {
          if (services[nodes[i]].isStarted())
          {
+            log.info("stopping server " + nodes[i]);
             services[nodes[i]].stop();
+            log.info("server stopped");
          }
       }
    }

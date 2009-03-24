@@ -89,10 +89,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       assertEquals(clusterConnectionConfig.getRetryInterval(), clusterConnectionControl.getRetryInterval());
       assertEquals(clusterConnectionConfig.getRetryIntervalMultiplier(),
                    clusterConnectionControl.getRetryIntervalMultiplier());
-      assertEquals(clusterConnectionConfig.getMaxRetriesBeforeFailover(),
-                   clusterConnectionControl.getMaxRetriesBeforeFailover());
-      assertEquals(clusterConnectionConfig.getMaxRetriesAfterFailover(),
-                   clusterConnectionControl.getMaxRetriesAfterFailover());
+      assertEquals(clusterConnectionConfig.getInitialConnectAttempts(),
+                   clusterConnectionControl.getInitialConnectAttempts());
+      assertEquals(clusterConnectionConfig.getReconnectAttempts(),
+                   clusterConnectionControl.getReconnectAttempts());
       assertEquals(clusterConnectionConfig.isDuplicateDetection(), clusterConnectionControl.isDuplicateDetection());
       assertEquals(clusterConnectionConfig.isForwardWhenNoConsumers(),
                    clusterConnectionControl.isForwardWhenNoConsumers());

@@ -89,6 +89,8 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public static JMSServerManagerImpl newJMSServerManagerImpl(final MessagingServer server) throws Exception
    {
+      log.info("Creating new msc with po " + server.getPostOffice());
+      
       MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(),
                                                                        server.getStorageManager(),
                                                                        server.getConfiguration(),                                                                    
@@ -236,8 +238,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           final boolean preAcknowledge,                                        
                                           final long retryInterval,
                                           final double retryIntervalMultiplier,                                          
-                                          final int maxRetriesBeforeFailover,
-                                          final int maxRetriesAfterFailover,
+                                          final int initialConnectAttempts,
+                                          final int reconnectAttempts,
                                           final List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -264,8 +266,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          preAcknowledge,                                     
                                          retryInterval,
                                          retryIntervalMultiplier,                                         
-                                         maxRetriesBeforeFailover,
-                                         maxRetriesAfterFailover);
+                                         initialConnectAttempts,
+                                         reconnectAttempts);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -330,8 +332,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                                           final boolean preAcknowledge,                                 
                                           final long retryInterval,
                                           final double retryIntervalMultiplier,                                          
-                                          final int maxRetriesBeforeFailover,
-                                          final int maxRetriesAfterFailover,
+                                          final int initialConnectAttempts,
+                                          final int reconnectAttempts,
                                           final List<String> jndiBindings) throws Exception
    {
       JBossConnectionFactory cf = connectionFactories.get(name);
@@ -361,8 +363,8 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          preAcknowledge,                                   
                                          retryInterval,
                                          retryIntervalMultiplier,                                         
-                                         maxRetriesBeforeFailover,
-                                         maxRetriesAfterFailover);
+                                         initialConnectAttempts,
+                                         reconnectAttempts);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
