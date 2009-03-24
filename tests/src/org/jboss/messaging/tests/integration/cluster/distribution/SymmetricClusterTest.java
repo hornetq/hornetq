@@ -1385,7 +1385,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(4, "queues.testaddress", 7, 7, true);
 
       waitForBindings(0, "queues.testaddress", 23, 23, false);
-      waitForBindings(1, "queues.testaddress", 23, 23, false);
+      waitForBindings(1, "queues.testaddress", 23, 23, false); 
       waitForBindings(2, "queues.testaddress", 23, 23, false);
       waitForBindings(3, "queues.testaddress", 22, 22, false);
       waitForBindings(4, "queues.testaddress", 21, 21, false);
