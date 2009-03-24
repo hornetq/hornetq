@@ -43,5 +43,4 @@ public class NettySymmetricClusterTest extends SymmetricClusterTest
    {
       return false;
    }
-
 }

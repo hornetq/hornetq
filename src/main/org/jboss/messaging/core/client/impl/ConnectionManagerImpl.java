@@ -200,7 +200,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       this.initialConnectAttempts = initialConnectAttempts;
 
-      this.reconnectAttempts = reconnectAttempts;
+      this.reconnectAttempts = reconnectAttempts;          
    }
 
    // ConnectionLifeCycleListener implementation --------------------
@@ -431,9 +431,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    private boolean handleConnectionFailed(final MessagingException me, final Object connectionID)
-   {
+   {     
       boolean callNext = !failoverOrReconnect(me, connectionID);
-
+      
       return callNext;
    }
 
@@ -573,7 +573,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             connectAttempts = backupConnectorFactory == null ? reconnectAttempts : 0;
          }
-
+         
          if (backupConnectorFactory != null || connectAttempts != 0)
          {
             lockAllChannel1s();
@@ -638,7 +638,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             else
             {
                // Now try failing over to backup
-
+               
                connectorFactory = backupConnectorFactory;
 
                transportParams = backupTransportParams;
@@ -778,8 +778,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          if (closed)
          {
-            log.warn("ConnectionManager is now closed");
-
             return null;
          }
 

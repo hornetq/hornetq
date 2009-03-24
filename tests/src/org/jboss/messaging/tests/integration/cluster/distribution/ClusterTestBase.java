@@ -149,11 +149,11 @@ public class ClusterTestBase extends ServiceTestBase
       {
          messageCount = getMessageCount(po, address);
 
-         log.info(node + " messageCount " + messageCount);
+        // log.info(node + " messageCount " + messageCount);
 
          if (messageCount == count)
          {
-            log.info("Waited " + (System.currentTimeMillis() - start));
+            //log.info("Waited " + (System.currentTimeMillis() - start));
             return;
          }
 
@@ -174,15 +174,15 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-      log.info("waiting for bindings on node " + node +
-               " address " +
-               address +
-               " count " +
-               count +
-               " consumerCount " +
-               consumerCount +
-               " local " +
-               local);
+//      log.info("waiting for bindings on node " + node +
+//               " address " +
+//               address +
+//               " count " +
+//               count +
+//               " consumerCount " +
+//               consumerCount +
+//               " local " +
+//               local);
       MessagingService service = this.services[node];
 
       if (service == null)
@@ -218,7 +218,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
+       //  log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -848,8 +848,6 @@ public class ClusterTestBase extends ServiceTestBase
       configuration.setClustered(true);
       configuration.setBackup(backup);
 
-      log.info("setting up server " + node + " backup " + backup);
-
       if (backupNode != -1)
       {
          Map<String, Object> backupParams = generateParams(backupNode, netty);
@@ -1033,8 +1031,6 @@ public class ClusterTestBase extends ServiceTestBase
 
       serviceFrom.getServer().getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
 
-      // serviceFrom.getServer().getConfiguration().setConnectorConfigurations(connectors);
-
       Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), null);
 
       List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
@@ -1138,8 +1134,6 @@ public class ClusterTestBase extends ServiceTestBase
 
       List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
 
-      log.info("creating cluster connection from node " + nodeFrom);
-
       for (int i = 0; i < nodesTo.length; i++)
       {
          Map<String, Object> params = generateParams(nodesTo[i], netty);
@@ -1154,8 +1148,6 @@ public class ClusterTestBase extends ServiceTestBase
          {
             serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
          }
-
-         log.info("to " + nodesTo[i]);
 
          connectors.put(serverTotc.getName(), serverTotc);
 
@@ -1200,8 +1192,6 @@ public class ClusterTestBase extends ServiceTestBase
 
       List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
 
-      log.info("creating cluster connection from node " + nodeFrom);
-
       for (int i = 0; i < nodesTo.length; i++)
       {
          Map<String, Object> params = generateParams(nodesTo[i], netty);
@@ -1216,8 +1206,6 @@ public class ClusterTestBase extends ServiceTestBase
          {
             serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
          }
-
-         log.info("to " + nodesTo[i]);
 
          connectors.put(serverTotc.getName(), serverTotc);
 
@@ -1306,13 +1294,11 @@ public class ClusterTestBase extends ServiceTestBase
       for (int i = 0; i < nodes.length; i++)
       {
          if (services[nodes[i]].isStarted())
-         {
-            log.info("stopping cluster connections on node " + nodes[i]);
+         {            
             for (ClusterConnection cc : services[nodes[i]].getServer().getClusterManager().getClusterConnections())
             {
                cc.stop();
             }
-            log.info("stopped");
          }
       }
    }

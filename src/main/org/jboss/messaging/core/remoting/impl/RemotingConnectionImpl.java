@@ -438,6 +438,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       callListeners(me);
 
       internalClose();
+
+      for (ChannelImpl channel : channels.values())
+      {
+         channel.lock.lock();
+         try
+         {
+            channel.sendCondition.signalAll();
+         }
+         finally
+         {
+            channel.lock.unlock();
+         }
+      }
    }
 
    public void destroy()
@@ -503,7 +516,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          if (!frozen)
          {
             final ChannelImpl channel = channels.get(packet.getChannelID());
-            
+
             if (channel != null)
             {
                channel.handlePacket(packet);
@@ -1126,6 +1139,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   {
                   }
 
+                  if (closed)
+                  {
+                     break;
+                  }
+
                   final long now = System.currentTimeMillis();
 
                   toWait -= now - start;
@@ -1631,7 +1649,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             long connectionTTLToUse = connectionTTL != -1 ? connectionTTL : ((Ping)packet).getExpirePeriod();
 
             expireTime = System.currentTimeMillis() + connectionTTLToUse;
-            
+
             // Parameter is placeholder for future
             final Packet pong = new Pong(-1);
 
