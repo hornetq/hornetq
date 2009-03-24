@@ -21,8 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
-import java.util.concurrent.CountDownLatch;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -36,6 +34,9 @@ import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -466,8 +467,7 @@ public class ClientConsumerTest extends ServiceTestBase
 
       session.close();
    }
-
-   public void testStopConsumer() throws Exception
+   public void testStopStartConsumerSyncReceiveImmediate() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
 
@@ -482,10 +482,91 @@ public class ClientConsumerTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, session);
+         message.putIntProperty(new SimpleString("i"), i);
          producer.send(message);
       }
 
-      final ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
+      final ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      session.start();
+
+
+      for(int i = 0; i < numMessages/2; i++)
+      {
+         ClientMessage cm = consumer.receive(5000);
+         assertNotNull(cm);
+         cm.acknowledge();
+      }
+      session.stop();
+      ClientMessage cm = consumer.receiveImmediate();
+      assertNull(cm);
+
+      session.close();
+   }
+
+   public void testStopStartConsumerSyncReceive() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      final ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         message.putIntProperty(new SimpleString("i"), i);
+         producer.send(message);
+      }
+
+      final ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      session.start();
+
+
+      for(int i = 0; i < numMessages/2; i++)
+      {
+         ClientMessage cm = consumer.receive(5000);
+         assertNotNull(cm);
+         cm.acknowledge();
+      }
+      session.stop();
+      long time = System.currentTimeMillis();
+      ClientMessage cm = consumer.receive(1000);
+      long taken = System.currentTimeMillis() - time;
+      assertTrue(taken >= 1000);
+      assertNull(cm);
+
+      session.close();
+   }
+
+   public void testStopStartConsumerAsyncSync() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      final ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         message.putIntProperty(new SimpleString("i"), i);
+         producer.send(message);
+      }
+
+      final ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable();
+         int ccount = q.getConsumerCount();
 
       session.start();
 
@@ -513,12 +594,13 @@ public class ClientConsumerTest extends ServiceTestBase
 
                if (latch.getCount() == 0)
                {
+
+                  message.acknowledge();
                   session.stop(); // Shouldn't this alone prevent messages being delivered to this Handler?
                   started = false;
-                  consumer.setMessageHandler(null); // If we comment out this line, the test will fail
+                  //consumer.setMessageHandler(null); // If we comment out this line, the test will fail
                }
 
-               message.acknowledge();
             }
             catch (Exception e)
             {
@@ -538,16 +620,224 @@ public class ClientConsumerTest extends ServiceTestBase
 
       // Make sure no exceptions were thrown from onMessage
       assertNull(consumer.getLastException());
-
+      consumer.setMessageHandler(null);
+      session.start();
       for (int i = 0; i < 90; i++)
       {
          ClientMessage msg = consumer.receive(1000);
-         assertNotNull(msg);
+         ccount = q.getConsumerCount();
+         if(msg == null)
+         {
+            System.out.println("ClientConsumerTest.testStopConsumer");
+         }
+         assertNotNull("message " + i, msg);
          msg.acknowledge();
       }
 
       assertNull(consumer.receiveImmediate());
 
+      session.close();
+   }
+
+   public void testStopStartConsumerAsyncASync() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      final ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         message.putIntProperty(new SimpleString("i"), i);
+         producer.send(message);
+      }
+
+      final ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable();
+         int ccount = q.getConsumerCount();
+
+      session.start();
+
+      CountDownLatch latch = new CountDownLatch(10);
+
+      // Message should be in consumer
+
+      class MyHandler implements MessageHandler
+      {
+         int messageReceived = 0;
+         boolean failed;
+
+         boolean started = true;
+
+         private final CountDownLatch latch;
+
+         private boolean stop = true;
+
+         public MyHandler(CountDownLatch latch)
+         {
+            this.latch = latch;
+         }
+
+         public MyHandler(CountDownLatch latch, boolean stop)
+         {
+            this(latch);
+            this.stop = stop;
+         }
+
+         public void onMessage(final ClientMessage message)
+         {
+
+            try
+            {
+               if (!started)
+               {
+                  failed = true;
+               }
+               messageReceived++;
+               latch.countDown();
+
+               if (stop && latch.getCount() == 0)
+               {
+
+                  message.acknowledge();
+                  session.stop(); // Shouldn't this alone prevent messages being delivered to this Handler?
+                  started = false;
+                  //consumer.setMessageHandler(null); // If we comment out this line, the test will fail
+               }
+
+            }
+            catch (Exception e)
+            {
+            }
+         }
+      }
+
+      MyHandler handler = new MyHandler(latch);
+
+      consumer.setMessageHandler(handler);
+
+      latch.await();
+
+      Thread.sleep(100);
+
+      assertFalse(handler.failed);
+
+      // Make sure no exceptions were thrown from onMessage
+      assertNull(consumer.getLastException());
+      latch = new CountDownLatch(90);
+      handler = new MyHandler(latch, false);
+      consumer.setMessageHandler(handler);
+      session.start();
+      assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
+
+      Thread.sleep(100);
+
+      assertFalse(handler.failed);
+      assertNull(consumer.getLastException());
+      session.close();
+   }
+
+
+   public void testSetUnsetMessageHandler() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      final ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         message.putIntProperty(new SimpleString("i"), i);
+         producer.send(message);
+      }
+
+      final ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable();
+         int ccount = q.getConsumerCount();
+
+      session.start();
+
+      CountDownLatch latch = new CountDownLatch(50);
+
+      // Message should be in consumer
+
+      class MyHandler implements MessageHandler
+      {
+         int messageReceived = 0;
+         boolean failed;
+
+         boolean started = true;
+
+         private final CountDownLatch latch;
+
+         public MyHandler(CountDownLatch latch)
+         {
+            this.latch = latch;
+         }
+
+         public void onMessage(final ClientMessage message)
+         {
+
+            try
+            {
+               if (!started)
+               {
+                  failed = true;
+               }
+               messageReceived++;
+               latch.countDown();
+
+               if (latch.getCount() == 0)
+               {
+
+                  message.acknowledge();
+                  started = false;
+                  consumer.setMessageHandler(null);
+               }
+
+            }
+            catch (Exception e)
+            {
+            }
+         }
+      }
+
+      MyHandler handler = new MyHandler(latch);
+
+      consumer.setMessageHandler(handler);
+
+      latch.await();
+
+      Thread.sleep(100);
+
+      assertFalse(handler.failed);
+
+      // Make sure no exceptions were thrown from onMessage
+      assertNull(consumer.getLastException());
+      latch = new CountDownLatch(50);
+      handler = new MyHandler(latch);
+      consumer.setMessageHandler(handler);
+      session.start();
+      assertTrue("message received " + handler.messageReceived, latch.await(5, TimeUnit.SECONDS));
+
+      Thread.sleep(100);
+
+      assertFalse(handler.failed);
+      assertNull(consumer.getLastException());
       session.close();
    }
 

@@ -1093,53 +1093,51 @@ public class ClientEndToEndTest extends ServiceTestBase
       }
    }
 
-   //FIXME uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1549 is fixed
-//   public void testAsyncConsumerRollback() throws Exception
-//   {
-//      MessagingService messagingService = createService(false);
-//      try
-//      {
-//         messagingService.start();
-//         ClientSessionFactory cf = createInVMFactory();
-//         cf.setBlockOnAcknowledge(true);
-//         cf.setAckBatchSize(0);
-//         ClientSession sendSession = cf.createSession(false, true, true);
-//         final ClientSession session = cf.createSession(false, true, false);
-//         sendSession.createQueue(addressA, queueA, false);
-//         ClientProducer cp = sendSession.createProducer(addressA);
-//         ClientConsumer cc = session.createConsumer(queueA);
-//         int numMessages = 100;
-//         for (int i = 0; i < numMessages; i++)
-//         {
-//            cp.send(sendSession.createClientMessage(false));
-//         }
-//         CountDownLatch latch = new CountDownLatch(numMessages);
-//         session.start();
-//         cc.setMessageHandler(new ackHandler(session, latch));
-//         assertTrue(latch.await(5, TimeUnit.SECONDS));
-//         Queue q = (Queue)messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
-//         assertEquals(numMessages, q.getDeliveringCount());
-//         assertEquals(numMessages, q.getMessageCount());
-//         //Need to stop session first or rollback will cause immediate redelivery
-//         session.stop();
-//         session.rollback();
-//         assertEquals(0, q.getDeliveringCount());
-//         assertEquals(numMessages, q.getMessageCount());
-//         session.start();
-//         latch = new CountDownLatch(numMessages);
-//         cc.setMessageHandler(new ackHandler(session, latch));
-//         assertTrue(latch.await(5, TimeUnit.SECONDS));
-//         sendSession.close();
-//         session.close();
-//      }
-//      finally
-//      {
-//         if (messagingService.isStarted())
-//         {
-//            messagingService.stop();
-//         }
-//      }      
-//   }
+   public void testAsyncConsumerRollback() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         cf.setBlockOnAcknowledge(true);
+         cf.setAckBatchSize(0);
+         ClientSession sendSession = cf.createSession(false, true, true);
+         final ClientSession session = cf.createSession(false, true, false);
+         sendSession.createQueue(addressA, queueA, false);
+         ClientProducer cp = sendSession.createProducer(addressA);
+         ClientConsumer cc = session.createConsumer(queueA);
+         int numMessages = 100;
+         for (int i = 0; i < numMessages; i++)
+         {
+            cp.send(sendSession.createClientMessage(false));
+         }
+         CountDownLatch latch = new CountDownLatch(numMessages);
+         session.start();
+         cc.setMessageHandler(new ackHandler(session, latch));
+         assertTrue(latch.await(5, TimeUnit.SECONDS));
+         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         assertEquals(numMessages, q.getDeliveringCount());
+         assertEquals(numMessages, q.getMessageCount());
+         session.stop();
+         session.rollback();
+         assertEquals(0, q.getDeliveringCount());
+         assertEquals(numMessages, q.getMessageCount());
+         latch = new CountDownLatch(numMessages);
+         cc.setMessageHandler(new ackHandler(session, latch));
+         session.start();
+         assertTrue(latch.await(5, TimeUnit.SECONDS));
+         sendSession.close();
+         session.close();
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }
 
    public void testSendDeliveryOrderOnCommit() throws Exception
    {
@@ -1412,12 +1410,12 @@ public class ClientEndToEndTest extends ServiceTestBase
          consumers[3] = session.createConsumer(queueA);
          consumers[4] = session.createConsumer(queueA);
 
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientProducer cp = sendSession.createProducer(addressA);
+         //ClientSession sendSession = cf.createSession(false, true, true);
+         ClientProducer cp = session.createProducer(addressA);
          int numMessage = 100;
          for (int i = 0; i < numMessage; i++)
          {
-            ClientMessage cm = sendSession.createClientMessage(false);
+            ClientMessage cm = session.createClientMessage(false);
             cm.getBody().writeInt(i);
             cp.send(cm);
          }
@@ -1431,7 +1429,7 @@ public class ClientEndToEndTest extends ServiceTestBase
                assertEquals(currMessage++, cm.getBody().readInt());
             }
          }
-         sendSession.close();
+         //sendSession.close();
          session.close();
       }
       finally

@@ -60,4 +60,8 @@ public interface ClientConsumerInternal extends ClientConsumer
    void flushAcks() throws MessagingException;
    
    boolean isFileConsumer();
+
+   void stop() throws MessagingException;
+
+   void start();
 }

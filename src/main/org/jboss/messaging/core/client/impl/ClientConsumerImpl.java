@@ -12,14 +12,6 @@
 
 package org.jboss.messaging.core.client.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.Executor;
-
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -33,6 +25,14 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuat
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.Future;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.Executor;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -94,6 +94,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private volatile ClientMessage lastAckedMessage;
 
+   private boolean stopped = false;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -153,7 +155,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             synchronized (this)
             {
-               while ((m = buffer.poll()) == null && !closed && toWait > 0)
+               while ((stopped || (m = buffer.poll()) == null) &&
+                      !closed && toWait > 0 )
                {
                   if (start == -1)
                   {
@@ -251,10 +254,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (queueUp)
       {
+         stopped = false;
          for (int i = 0; i < buffer.size(); i++)
          {
             queueExecutor();
          }
+      }
+      else
+      {
+         stopped = true;
+         waitForOnMessageToComplete();
       }
    }
 
@@ -286,6 +295,25 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public boolean isFileConsumer()
    {
       return directory != null;
+   }
+
+   public synchronized void stop() throws MessagingException
+   {
+      if(stopped)
+      {
+         return;
+      }
+      stopped = true;
+      waitForOnMessageToComplete();
+   }
+
+   public synchronized void start()
+   {
+      stopped = false;
+      for (int i = 0; i < buffer.size(); i++)
+      {
+         queueExecutor();
+      }
    }
 
    public Exception getLastException()
@@ -322,9 +350,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          // Execute using executor
 
-         buffer.add(messageToHandle);
-
-         queueExecutor();
+       buffer.add(messageToHandle);
+       if(!stopped)
+       {
+          queueExecutor();
+       }
       }
       else
       {
@@ -529,11 +559,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void callOnMessage() throws Exception
    {
-      if (closing)
+      if (closing || stopped)
       {
          return;
       }
-
       // We pull the message from the buffer from inside the Runnable so we can ensure priority
       // ordering. If we just added a Runnable with the message to the executor immediately as we get it
       // we could not do that

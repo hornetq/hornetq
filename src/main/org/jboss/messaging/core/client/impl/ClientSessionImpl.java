@@ -21,21 +21,6 @@
  */
 package org.jboss.messaging.core.client.impl;
 
-import static org.jboss.messaging.utils.SimpleString.toSimpleString;
-
-import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientFileMessage;
@@ -87,7 +72,20 @@ import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
+import static org.jboss.messaging.utils.SimpleString.toSimpleString;
 import org.jboss.messaging.utils.TokenBucketLimiterImpl;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -607,6 +605,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (!started)
       {
+         for (ClientConsumerInternal clientConsumerInternal : consumers.values())
+         {
+            clientConsumerInternal.start();
+         }
+
          channel.send(new PacketImpl(PacketImpl.SESS_START));
 
          started = true;
@@ -619,6 +622,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (started)
       {
+         for (ClientConsumerInternal clientConsumerInternal : consumers.values())
+         {
+            clientConsumerInternal.stop();
+         }
+
          channel.sendBlocking(new PacketImpl(PacketImpl.SESS_STOP));
 
          started = false;
