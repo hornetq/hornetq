@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.paging;
+package org.jboss.messaging.tests.unit.core.paging.impl;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -48,7 +48,7 @@ import org.jboss.messaging.utils.SimpleString;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class PagingManagerIntegrationTest extends UnitTestCase
+public class PagingManagerITest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

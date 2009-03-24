@@ -23,15 +23,19 @@
 package org.jboss.messaging.tests.unit.core.paging.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.easymock.classextension.EasyMock;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.SequentialFile;
@@ -47,16 +51,28 @@ import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.paging.impl.PagedMessageImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
+import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
+import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.server.LargeServerMessage;
+import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUID;
 
 /**
  * 
@@ -127,7 +143,6 @@ public class PagingStoreImplTest extends UnitTestCase
 
    }
 
-
    public void testDoubleStart() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
@@ -162,14 +177,11 @@ public class PagingStoreImplTest extends UnitTestCase
       }
    }
 
-
    public void testStore() throws Exception
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
-      PagingStoreFactory storeFactory = EasyMock.createNiceMock(PagingStoreFactory.class);
-
-      EasyMock.replay(storeFactory);
+      PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
       PagingStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                   createStorageManagerMock(),
@@ -226,9 +238,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       SimpleString destination = new SimpleString("test");
 
-      PagingStoreFactory storeFactory = EasyMock.createMock(PagingStoreFactory.class);
-
-      EasyMock.replay(storeFactory);
+      PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
       TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                            createStorageManagerMock(),
@@ -280,8 +290,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         assertEquals(0, (msg.get(i).getMessage(null)).getMessageID());
-         assertEqualsByteArrays(buffers.get(i).array(), (msg.get(i).getMessage(null)).getBody().array());
+         assertEquals(0, msg.get(i).getMessage(null).getMessageID());
+         assertEqualsByteArrays(buffers.get(i).array(), msg.get(i).getMessage(null).getBody().array());
       }
 
    }
@@ -291,11 +301,7 @@ public class PagingStoreImplTest extends UnitTestCase
       SequentialFileFactory factory = new FakeSequentialFileFactory();
       SimpleString destination = new SimpleString("test");
 
-      PagingStoreFactory storeFactory = EasyMock.createNiceMock(PagingStoreFactory.class);
-
-      EasyMock.expect(storeFactory.newFileFactory(destination)).andReturn(factory);
-
-      EasyMock.replay(storeFactory);
+      PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
       TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                            createStorageManagerMock(),
@@ -351,8 +357,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
          for (int i = 0; i < 5; i++)
          {
-            assertEquals(0, (msg.get(i).getMessage(null)).getMessageID());
-            assertEqualsByteArrays(buffers.get(pageNr * 5 + i).array(), (msg.get(i).getMessage(null)).getBody().array());
+            assertEquals(0, msg.get(i).getMessage(null).getMessageID());
+            assertEqualsByteArrays(buffers.get(pageNr * 5 + i).array(), msg.get(i).getMessage(null).getBody().array());
          }
       }
 
@@ -394,9 +400,9 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(1, msgs.size());
 
-      assertEquals(0l, (msgs.get(0).getMessage(null)).getMessageID());
+      assertEquals(0l, msgs.get(0).getMessage(null).getMessageID());
 
-      assertEqualsByteArrays(buffers.get(0).array(), (msgs.get(0).getMessage(null)).getBody().array());
+      assertEqualsByteArrays(buffers.get(0).array(), msgs.get(0).getMessage(null).getBody().array());
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
@@ -417,17 +423,11 @@ public class PagingStoreImplTest extends UnitTestCase
       testConcurrentPaging(factory, 10);
    }
 
-   public void testFoo()
-   {
-   }
-
    protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads) throws Exception,
                                                                                                       InterruptedException
    {
 
-      PagingStoreFactory storeFactory = EasyMock.createNiceMock(PagingStoreFactory.class);
-
-      EasyMock.replay(storeFactory);
+      PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
       final int MAX_SIZE = 1024 * 10;
 
@@ -676,36 +676,22 @@ public class PagingStoreImplTest extends UnitTestCase
    */
    protected PagingManager createMockManager()
    {
-      PagingManager mockManager = EasyMock.createNiceMock(PagingManager.class);
-      org.easymock.EasyMock.expect(mockManager.getGlobalDepageWatermarkBytes())
-                           .andStubReturn(ConfigurationImpl.DEFAULT_PAGE_WATERMARK_SIZE);
-      EasyMock.replay(mockManager);
-      return mockManager;
+      return new FakePagingManager();
    }
 
    private StorageManager createStorageManagerMock()
    {
-      StorageManager storageManager = EasyMock.createNiceMock(StorageManager.class);
-      EasyMock.replay(storageManager);
-      return storageManager;
+      return new FakeStorageManager();
    }
 
    private PostOffice createPostOfficeMock()
    {
-      PostOffice postOffice = EasyMock.createNiceMock(PostOffice.class);
-      EasyMock.replay(postOffice);
-      return postOffice;
+      return new FakePostOffice();
    }
-
 
    private PagedMessageImpl createMessage(final SimpleString destination, final MessagingBuffer buffer)
    {
-      ServerMessage msg = new ServerMessageImpl((byte)1,
-                                                true,
-                                                0,
-                                                System.currentTimeMillis(),
-                                                (byte)0,
-                                                buffer);
+      ServerMessage msg = new ServerMessageImpl((byte)1, true, 0, System.currentTimeMillis(), (byte)0, buffer);
 
       msg.setDestination(destination);
       return new PagedMessageImpl(msg);
@@ -740,9 +726,640 @@ public class PagingStoreImplTest extends UnitTestCase
       super.tearDown();
    }
 
-
-   
-
    // Inner classes -------------------------------------------------
+
+   class FakePagingManager implements PagingManager
+   {
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#activate()
+       */
+      public void activate()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#addGlobalSize(long)
+       */
+      public long addGlobalSize(final long size)
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#addTransaction(org.jboss.messaging.core.paging.PageTransactionInfo)
+       */
+      public void addTransaction(final PageTransactionInfo pageTransaction)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#createPageStore(org.jboss.messaging.utils.SimpleString)
+       */
+      public PagingStore createPageStore(final SimpleString destination) throws Exception
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#getGlobalDepageWatermarkBytes()
+       */
+      public long getGlobalDepageWatermarkBytes()
+      {
+         return ConfigurationImpl.DEFAULT_PAGE_WATERMARK_SIZE;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#getGlobalSize()
+       */
+      public long getGlobalSize()
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#getMaxGlobalSize()
+       */
+      public long getMaxGlobalSize()
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#getPageStore(org.jboss.messaging.utils.SimpleString)
+       */
+      public PagingStore getPageStore(final SimpleString address) throws Exception
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#getTransaction(long)
+       */
+      public PageTransactionInfo getTransaction(final long transactionID)
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#isBackup()
+       */
+      public boolean isBackup()
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#isGlobalPageMode()
+       */
+      public boolean isGlobalPageMode()
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#isPaging(org.jboss.messaging.utils.SimpleString)
+       */
+      public boolean isPaging(final SimpleString destination) throws Exception
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#page(org.jboss.messaging.core.server.ServerMessage, boolean)
+       */
+      public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#page(org.jboss.messaging.core.server.ServerMessage, long, boolean)
+       */
+      public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection) throws Exception
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#reloadStores()
+       */
+      public void reloadStores() throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#removeTransaction(long)
+       */
+      public void removeTransaction(final long transactionID)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#setGlobalPageMode(boolean)
+       */
+      public void setGlobalPageMode(final boolean globalMode)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#setPostOffice(org.jboss.messaging.core.postoffice.PostOffice)
+       */
+      public void setPostOffice(final PostOffice postOffice)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#startGlobalDepage()
+       */
+      public void startGlobalDepage()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#sync(java.util.Collection)
+       */
+      public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#isStarted()
+       */
+      public boolean isStarted()
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#start()
+       */
+      public void start() throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#stop()
+       */
+      public void stop() throws Exception
+      {
+      }
+
+   }
+
+   class FakeStorageManager implements StorageManager
+   {
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#addQueueBinding(org.jboss.messaging.core.postoffice.Binding)
+       */
+      public void addQueueBinding(final Binding binding) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#commit(long)
+       */
+      public void commit(final long txID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#createLargeMessage()
+       */
+      public LargeServerMessage createLargeMessage()
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#deleteDuplicateID(long)
+       */
+      public void deleteDuplicateID(final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#deleteDuplicateIDTransactional(long, long)
+       */
+      public void deleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#deleteMessage(long)
+       */
+      public void deleteMessage(final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#deleteMessageTransactional(long, long, long)
+       */
+      public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#deletePageTransactional(long, long)
+       */
+      public void deletePageTransactional(final long txID, final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#deleteQueueBinding(long)
+       */
+      public void deleteQueueBinding(final long queueBindingID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#generateUniqueID()
+       */
+      public long generateUniqueID()
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#getCurrentUniqueID()
+       */
+      public long getCurrentUniqueID()
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#getPersistentID()
+       */
+      public UUID getPersistentID()
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#loadBindingJournal(java.util.List)
+       */
+      public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#loadMessageJournal(org.jboss.messaging.core.postoffice.PostOffice, org.jboss.messaging.core.persistence.StorageManager, org.jboss.messaging.core.settings.HierarchicalRepository, java.util.Map, org.jboss.messaging.core.transaction.ResourceManager, java.util.Map)
+       */
+      public void loadMessageJournal(final PostOffice postOffice,
+                                     final StorageManager storageManager,
+                                     final HierarchicalRepository<AddressSettings> addressSettingsRepository,
+                                     final Map<Long, Queue> queues,
+                                     final ResourceManager resourceManager,
+                                     final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#prepare(long, javax.transaction.xa.Xid)
+       */
+      public void prepare(final long txID, final Xid xid) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#rollback(long)
+       */
+      public void rollback(final long txID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#setPersistentID(org.jboss.messaging.utils.UUID)
+       */
+      public void setPersistentID(final UUID id) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storeAcknowledge(long, long)
+       */
+      public void storeAcknowledge(final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storeAcknowledgeTransactional(long, long, long)
+       */
+      public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storeDuplicateID(org.jboss.messaging.utils.SimpleString, byte[], long)
+       */
+      public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storeDuplicateIDTransactional(long, org.jboss.messaging.utils.SimpleString, byte[], long)
+       */
+      public void storeDuplicateIDTransactional(final long txID,
+                                                final SimpleString address,
+                                                final byte[] duplID,
+                                                final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storeMessage(org.jboss.messaging.core.server.ServerMessage)
+       */
+      public void storeMessage(final ServerMessage message) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storeMessageTransactional(long, org.jboss.messaging.core.server.ServerMessage)
+       */
+      public void storeMessageTransactional(final long txID, final ServerMessage message) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storePageTransaction(long, org.jboss.messaging.core.paging.PageTransactionInfo)
+       */
+      public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storeReference(long, long)
+       */
+      public void storeReference(final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#storeReferenceTransactional(long, long, long)
+       */
+      public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#updateDeliveryCount(org.jboss.messaging.core.server.MessageReference)
+       */
+      public void updateDeliveryCount(final MessageReference ref) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#updateDuplicateID(org.jboss.messaging.utils.SimpleString, byte[], long)
+       */
+      public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#updateDuplicateIDTransactional(long, org.jboss.messaging.utils.SimpleString, byte[], long)
+       */
+      public void updateDuplicateIDTransactional(final long txID,
+                                                 final SimpleString address,
+                                                 final byte[] duplID,
+                                                 final long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#updateScheduledDeliveryTime(org.jboss.messaging.core.server.MessageReference)
+       */
+      public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.persistence.StorageManager#updateScheduledDeliveryTimeTransactional(long, org.jboss.messaging.core.server.MessageReference)
+       */
+      public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#isStarted()
+       */
+      public boolean isStarted()
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#start()
+       */
+      public void start() throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#stop()
+       */
+      public void stop() throws Exception
+      {
+      }
+
+   }
+
+   class FakePostOffice implements PostOffice
+   {
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#activate()
+       */
+      public List<Queue> activate()
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#addBinding(org.jboss.messaging.core.postoffice.Binding)
+       */
+      public void addBinding(final Binding binding) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#getBinding(org.jboss.messaging.utils.SimpleString)
+       */
+      public Binding getBinding(final SimpleString uniqueName)
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#getBindingsForAddress(org.jboss.messaging.utils.SimpleString)
+       */
+      public Bindings getBindingsForAddress(final SimpleString address) throws Exception
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#getDuplicateIDCache(org.jboss.messaging.utils.SimpleString)
+       */
+      public DuplicateIDCache getDuplicateIDCache(final SimpleString address)
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#getPagingManager()
+       */
+      public PagingManager getPagingManager()
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#redistribute(org.jboss.messaging.core.server.ServerMessage, org.jboss.messaging.utils.SimpleString, org.jboss.messaging.core.transaction.Transaction)
+       */
+      public boolean redistribute(final ServerMessage message, final SimpleString routingName, final Transaction tx) throws Exception
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#removeBinding(org.jboss.messaging.utils.SimpleString)
+       */
+      public Binding removeBinding(final SimpleString uniqueName) throws Exception
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#route(org.jboss.messaging.core.server.ServerMessage)
+       */
+      public void route(final ServerMessage message) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#route(org.jboss.messaging.core.server.ServerMessage, org.jboss.messaging.core.transaction.Transaction)
+       */
+      public void route(final ServerMessage message, final Transaction tx) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.postoffice.PostOffice#sendQueueInfoToQueue(org.jboss.messaging.utils.SimpleString, org.jboss.messaging.utils.SimpleString)
+       */
+      public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#isStarted()
+       */
+      public boolean isStarted()
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#start()
+       */
+      public void start() throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.MessagingComponent#stop()
+       */
+      public void stop() throws Exception
+      {
+
+      }
+
+   }
+
+   class FakeStoreFactory implements PagingStoreFactory
+   {
+
+      final SequentialFileFactory factory;
+
+      public FakeStoreFactory()
+      {
+         factory = new FakeSequentialFileFactory();
+      }
+
+      public FakeStoreFactory(final SequentialFileFactory factory)
+      {
+         this.factory = factory;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingStoreFactory#getGlobalDepagerExecutor()
+       */
+      public Executor getGlobalDepagerExecutor()
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingStoreFactory#newFileFactory(org.jboss.messaging.utils.SimpleString)
+       */
+      public SequentialFileFactory newFileFactory(final SimpleString destinationName) throws Exception
+      {
+         return factory;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingStoreFactory#newStore(org.jboss.messaging.utils.SimpleString, org.jboss.messaging.core.settings.impl.AddressSettings)
+       */
+      public PagingStore newStore(final SimpleString destinationName, final AddressSettings addressSettings) throws Exception
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingStoreFactory#reloadStores(org.jboss.messaging.core.settings.HierarchicalRepository)
+       */
+      public List<PagingStore> reloadStores(final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingStoreFactory#setPagingManager(org.jboss.messaging.core.paging.PagingManager)
+       */
+      public void setPagingManager(final PagingManager manager)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingStoreFactory#setPostOffice(org.jboss.messaging.core.postoffice.PostOffice)
+       */
+      public void setPostOffice(final PostOffice office)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingStoreFactory#setStorageManager(org.jboss.messaging.core.persistence.StorageManager)
+       */
+      public void setStorageManager(final StorageManager storageManager)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingStoreFactory#stop()
+       */
+      public void stop() throws InterruptedException
+      {
+      }
+
+   }
 
 }
