@@ -33,6 +33,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
@@ -124,7 +125,7 @@ public class MessageExpirationTest extends UnitTestCase
       ClientConsumer expiryConsumer = session.createConsumer(expiryQueue);
       ClientMessage expiredMessage = expiryConsumer.receive(500);
       assertNotNull(expiredMessage);
-
+      assertNotNull(expiredMessage.getProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME));
       consumer.close();
       expiryConsumer.close();
       session.deleteQueue(queue);
