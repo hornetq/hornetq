@@ -38,6 +38,7 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -375,7 +376,8 @@ public class PagingFailoverTest extends FailoverTestBase
 
          if (fail)
          {
-            Thread.sleep(1000);
+            // Fail after some time
+            Thread.sleep((long)(1000 * RandomUtil.randomDouble()));
             while (store.getNumberOfPages() == initialNumberOfPages)
             {
                Thread.sleep(100);

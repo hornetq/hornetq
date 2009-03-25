@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -76,8 +75,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    protected MessagingService backupService;
 
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
-
-   protected Timer timer;
 
    // Static --------------------------------------------------------
 
@@ -1299,8 +1296,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       super.setUp();
 
       log.info("************ Starting test " + getName());
-
-      timer = new Timer();
    }
 
    @Override
@@ -1316,7 +1311,6 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       {
          backupService.stop();
       }
-      timer.cancel();
 
       super.tearDown();
    }

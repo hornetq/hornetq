@@ -36,7 +36,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
-import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
  * A MultiThreadFailoverSupport
@@ -48,7 +48,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  *
  *
  */
-public abstract class MultiThreadFailoverSupport extends UnitTestCase
+public abstract class MultiThreadFailoverSupport extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -57,7 +57,7 @@ public abstract class MultiThreadFailoverSupport extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected Timer timer;
+   private Timer timer;
 
    // Static --------------------------------------------------------
 

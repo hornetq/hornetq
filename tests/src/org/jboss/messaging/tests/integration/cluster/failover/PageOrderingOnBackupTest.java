@@ -28,10 +28,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingManager;
@@ -63,22 +65,44 @@ public class PageOrderingOnBackupTest extends FailoverTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   public void testPageOrderingLiveAndBackup() throws Exception
+   public void testPageOrderingLiveAndBackupProducerOnly() throws Exception
+   {
+      internalTestPageOrderingLiveAndBackup(false);
+   }
+
+   public void testPageOrderingLiveAndBackupConsume() throws Exception
+   {
+      internalTestPageOrderingLiveAndBackup(true);
+   }
+
+   private void internalTestPageOrderingLiveAndBackup(boolean consumeMessages) throws Exception
    {
       final SimpleString threadIDKey = new SimpleString("THREAD_ID");
       final SimpleString sequenceIDKey = new SimpleString("SEQUENCE_ID");
       final SimpleString ADDRESS = new SimpleString("SOME_QUEUE");
 
       final int NUMBER_OF_THREADS = 100;
+      final int NUMBER_OF_MESSAGES = 200;
+
+      final int NUMBER_OF_HANDLERS = consumeMessages ? NUMBER_OF_THREADS : 0;
 
       setUpFailoverServers(true, 100 * 1024, 50 * 1024);
 
       final ClientSessionFactory factory = createFailoverFactory();
 
       ClientSession session = factory.createSession(false, true, true);
-      session.createQueue(ADDRESS, ADDRESS, true);
+      for (int i = 0; i < NUMBER_OF_THREADS; i++)
+      {
+         session.createQueue(ADDRESS, ADDRESS.concat("-" + i), true);
+      }
       session.close();
+
+      MyHandler handlers[] = new MyHandler[NUMBER_OF_HANDLERS];
+
+      for (int i = 0; i < handlers.length; i++)
+      {
+         handlers[i] = new MyHandler(factory, ADDRESS.concat("-" + i), NUMBER_OF_MESSAGES * 10);
+      }
 
       final CountDownLatch flagAlign = new CountDownLatch(NUMBER_OF_THREADS);
       final CountDownLatch flagStart = new CountDownLatch(1);
@@ -105,7 +129,7 @@ public class PageOrderingOnBackupTest extends FailoverTestBase
                flagAlign.countDown();
                flagStart.await();
 
-               for (int i = 0; i < 200; i++)
+               for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
                {
                   ClientMessage msg = session.createClientMessage(true);
                   msg.setBody(ChannelBuffers.wrappedBuffer(new byte[512]));
@@ -152,11 +176,36 @@ public class PageOrderingOnBackupTest extends FailoverTestBase
          }
       }
 
+      Thread.sleep(5000);
+
+      for (MyHandler handler : handlers)
+      {
+         handler.close();
+         if (handler.failure != null)
+         {
+            throw new Exception("Failure on consumer", handler.failure);
+         }
+      }
+
       PagingManager livePagingManager = liveService.getServer().getPostOffice().getPagingManager();
       PagingManager backupPagingManager = backupService.getServer().getPostOffice().getPagingManager();
 
       TestSupportPageStore livePagingStore = (TestSupportPageStore)livePagingManager.getPageStore(ADDRESS);
       TestSupportPageStore backupPagingStore = (TestSupportPageStore)backupPagingManager.getPageStore(ADDRESS);
+
+      System.out.println("Pages: " + livePagingStore.getNumberOfPages() +
+                         " on backup: " +
+                         backupPagingStore.getNumberOfPages());
+
+
+      if (consumeMessages)
+      {
+         if (livePagingStore.getNumberOfPages() == backupPagingStore.getNumberOfPages() - 1)
+         {
+            // The live node may have one extra page in front of the backup
+            backupPagingStore.depage();
+         }
+      }
 
       assertEquals(livePagingStore.getNumberOfPages(), backupPagingStore.getNumberOfPages());
 
@@ -169,6 +218,7 @@ public class PageOrderingOnBackupTest extends FailoverTestBase
 
          if (livePage == null)
          {
+            assertNull(backupPagingStore.depage());
             break;
          }
 
@@ -193,7 +243,7 @@ public class PageOrderingOnBackupTest extends FailoverTestBase
          {
             PagedMessage backupMsg = backupIterator.next();
             assertNotNull(backupMsg);
-            
+
             ServerMessage liveSrvMsg = liveMsg.getMessage(null);
             ServerMessage backupSrvMsg = liveMsg.getMessage(null);
 
@@ -213,4 +263,69 @@ public class PageOrderingOnBackupTest extends FailoverTestBase
 
    // Inner classes -------------------------------------------------
 
+   class MyHandler implements MessageHandler
+   {
+      final ClientSession session;
+
+      final ClientConsumer consumer;
+
+      volatile boolean started = true;
+
+      final int msgs;
+
+      volatile int receivedMsgs = 0;
+
+      final CountDownLatch latch;
+
+      Throwable failure;
+
+      MyHandler(ClientSessionFactory sf, SimpleString address, final int msgs) throws Exception
+      {
+         this.session = sf.createSession(null, null, false, true, true, false, 0);
+         this.consumer = session.createConsumer(address);
+         consumer.setMessageHandler(this);
+         this.session.start();
+         this.msgs = msgs;
+         latch = new CountDownLatch(msgs);
+      }
+
+      public synchronized void close() throws Exception
+      {
+         session.close();
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.client.MessageHandler#onMessage(org.jboss.messaging.core.client.ClientMessage)
+       */
+      public synchronized void onMessage(ClientMessage message)
+      {
+         try
+         {
+            if (!started)
+            {
+               throw new IllegalStateException("Stopped Handler received message");
+            }
+
+            if (receivedMsgs++ == msgs)
+            {
+               System.out.println("done");
+               started = false;
+               session.stop();
+            }
+
+            message.acknowledge();
+
+            if (!started)
+            {
+               latch.countDown();
+            }
+
+         }
+         catch (Throwable e)
+         {
+            this.failure = e;
+         }
+      }
+
+   }
 }
