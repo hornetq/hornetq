@@ -18,12 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -35,13 +35,13 @@ public class SessionXAResponseMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private boolean error;
-   
+
    private int responseCode;
-   
+
    private String message;
-      
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -49,14 +49,14 @@ public class SessionXAResponseMessage extends PacketImpl
    public SessionXAResponseMessage(final boolean isError, final int responseCode, final String message)
    {
       super(SESS_XA_RESP);
-      
-      this.error = isError;
-      
+
+      error = isError;
+
       this.responseCode = responseCode;
-      
+
       this.message = message;
    }
-   
+
    public SessionXAResponseMessage()
    {
       super(SESS_XA_RESP);
@@ -64,51 +64,61 @@ public class SessionXAResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_BOOLEAN +
+             DataConstants.SIZE_INT +
+             nullableStringEncodeSize(message);
+   }
+
+   @Override
    public boolean isResponse()
    {
       return true;
    }
-   
+
    public boolean isError()
    {
       return error;
    }
-   
+
    public int getResponseCode()
    {
-      return this.responseCode;
+      return responseCode;
    }
-   
+
    public String getMessage()
    {
       return message;
    }
-   
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.writeBoolean(error);      
-      buffer.writeInt(responseCode);      
+      buffer.writeBoolean(error);
+      buffer.writeInt(responseCode);
       buffer.writeNullableString(message);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      error = buffer.readBoolean();      
-      responseCode = buffer.readInt();      
+      error = buffer.readBoolean();
+      responseCode = buffer.readInt();
       message = buffer.readNullableString();
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXAResponseMessage == false)
       {
          return false;
       }
-            
+
       SessionXAResponseMessage r = (SessionXAResponseMessage)other;
-      
-      return super.equals(other) && this.error == r.error && this.responseCode == r.responseCode &&
-         this.message.equals(r.message);
+
+      return super.equals(other) && error == r.error && responseCode == r.responseCode && message.equals(r.message);
    }
 
    // Package protected ---------------------------------------------
@@ -119,4 +129,3 @@ public class SessionXAResponseMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

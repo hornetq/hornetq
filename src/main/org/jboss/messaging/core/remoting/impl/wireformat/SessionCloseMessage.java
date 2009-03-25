@@ -12,7 +12,6 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -33,7 +32,12 @@ public class SessionCloseMessage extends PacketImpl
    }
 
    // Public --------------------------------------------------------
- 
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE;
+   }
+
    @Override
    public boolean equals(final Object other)
    {
@@ -42,11 +46,9 @@ public class SessionCloseMessage extends PacketImpl
          return false;
       }
 
-      SessionCloseMessage r = (SessionCloseMessage)other;
-
       return super.equals(other);
-   }     
-   
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

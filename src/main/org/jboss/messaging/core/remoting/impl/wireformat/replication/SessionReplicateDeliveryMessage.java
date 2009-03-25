@@ -14,6 +14,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat.replication;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -59,6 +60,12 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
       return messageID;
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + DataConstants.SIZE_LONG;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeLong(consumerID);
@@ -66,19 +73,22 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
       buffer.writeLong(messageID);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       consumerID = buffer.readLong();
 
       messageID = buffer.readLong();
    }
-   
+
+   @Override
    public boolean isRequiresConfirmations()
-   {      
+   {
       return false;
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionReplicateDeliveryMessage == false)
       {
@@ -87,9 +97,9 @@ public class SessionReplicateDeliveryMessage extends PacketImpl
 
       SessionReplicateDeliveryMessage r = (SessionReplicateDeliveryMessage)other;
 
-      return super.equals(other) && this.consumerID == r.consumerID && this.messageID == r.messageID;
+      return super.equals(other) && consumerID == r.consumerID && messageID == r.messageID;
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

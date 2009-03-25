@@ -13,6 +13,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -29,7 +30,7 @@ public class SessionAcknowledgeMessage extends PacketImpl
    private long messageID;
 
    private boolean requiresResponse;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -67,6 +68,12 @@ public class SessionAcknowledgeMessage extends PacketImpl
       return requiresResponse;
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + DataConstants.SIZE_LONG + DataConstants.SIZE_BOOLEAN;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeLong(consumerID);
@@ -76,6 +83,7 @@ public class SessionAcknowledgeMessage extends PacketImpl
       buffer.writeBoolean(requiresResponse);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       consumerID = buffer.readLong();
@@ -85,7 +93,8 @@ public class SessionAcknowledgeMessage extends PacketImpl
       requiresResponse = buffer.readBoolean();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionAcknowledgeMessage == false)
       {
@@ -94,9 +103,9 @@ public class SessionAcknowledgeMessage extends PacketImpl
 
       SessionAcknowledgeMessage r = (SessionAcknowledgeMessage)other;
 
-      return super.equals(other) && this.consumerID == r.consumerID &&
-             this.messageID == r.messageID &&
-             this.requiresResponse == r.requiresResponse;
+      return super.equals(other) && consumerID == r.consumerID &&
+             messageID == r.messageID &&
+             requiresResponse == r.requiresResponse;
    }
    // Package protected ---------------------------------------------
 

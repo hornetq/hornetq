@@ -31,14 +31,14 @@ public class ReplicateRemoteBindingRemovedMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-      
+
    private SimpleString uniqueName;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicateRemoteBindingRemovedMessage(SimpleString uniqueName)
+   public ReplicateRemoteBindingRemovedMessage(final SimpleString uniqueName)
    {
       super(REPLICATE_REMOVE_REMOTE_QUEUE_BINDING);
 
@@ -52,11 +52,18 @@ public class ReplicateRemoteBindingRemovedMessage extends PacketImpl
       super(REPLICATE_REMOVE_REMOTE_QUEUE_BINDING);
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + uniqueName.sizeof();
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(uniqueName);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       uniqueName = buffer.readSimpleString();

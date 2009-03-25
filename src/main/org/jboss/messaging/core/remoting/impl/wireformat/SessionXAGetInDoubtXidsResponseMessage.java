@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
@@ -28,7 +28,7 @@ import java.util.List;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -40,9 +40,9 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private List<Xid> xids;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -50,61 +50,75 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    public SessionXAGetInDoubtXidsResponseMessage(final List<Xid> xids)
    {
       super(SESS_XA_INDOUBT_XIDS_RESP);
-      
+
       this.xids = xids;
    }
-   
+
    public SessionXAGetInDoubtXidsResponseMessage()
    {
       super(SESS_XA_INDOUBT_XIDS_RESP);
    }
 
    // Public --------------------------------------------------------
-  
+
+   @Override
    public boolean isResponse()
    {
       return true;
    }
-   
+
    public List<Xid> getXids()
    {
       return xids;
    }
 
+   public int getRequiredBufferSize()
+   {
+      int size = BASIC_PACKET_SIZE + DataConstants.SIZE_INT;
+      for (Xid xid : xids)
+      {
+         size += XidCodecSupport.getXidEncodeLength(xid);
+      }
+      return size;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeInt(xids.size());
 
-      for (Xid xid: xids)
+      for (Xid xid : xids)
       {
          XidCodecSupport.encodeXid(xid, buffer);
-      }    
+      }
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       int len = buffer.readInt();
-      xids = new ArrayList<Xid>(len);      
+      xids = new ArrayList<Xid>(len);
       for (int i = 0; i < len; i++)
       {
          Xid xid = XidCodecSupport.decodeXid(buffer);
-         
+
          xids.add(xid);
-      }      
+      }
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXAGetInDoubtXidsResponseMessage == false)
       {
          return false;
       }
-            
+
       SessionXAGetInDoubtXidsResponseMessage r = (SessionXAGetInDoubtXidsResponseMessage)other;
-      
+
       if (super.equals(other))
       {
-         if (this.xids.size() == r.xids.size())
+         if (xids.size() == r.xids.size())
          {
             for (int i = 0; i < xids.size(); i++)
             {
@@ -121,7 +135,7 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
       }
       return true;
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -130,5 +144,3 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-
-

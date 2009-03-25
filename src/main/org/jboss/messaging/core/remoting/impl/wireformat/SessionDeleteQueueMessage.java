@@ -18,11 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -37,7 +38,7 @@ public class SessionDeleteQueueMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString queueName;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -48,7 +49,7 @@ public class SessionDeleteQueueMessage extends PacketImpl
 
       this.queueName = queueName;
    }
-   
+
    public SessionDeleteQueueMessage()
    {
       super(DELETE_QUEUE);
@@ -64,17 +65,22 @@ public class SessionDeleteQueueMessage extends PacketImpl
       buff.append("]");
       return buff.toString();
    }
-   
+
    public SimpleString getQueueName()
    {
       return queueName;
    }
-      
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + queueName.sizeof();
+   }
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(queueName);
    }
-   
+
    public void decodeBody(final MessagingBuffer buffer)
    {
       queueName = buffer.readSimpleString();
@@ -86,9 +92,9 @@ public class SessionDeleteQueueMessage extends PacketImpl
       {
          return false;
       }
-            
+
       SessionDeleteQueueMessage r = (SessionDeleteQueueMessage)other;
-      
+
       return super.equals(other) && r.queueName.equals(this.queueName);
    }
 

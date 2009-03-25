@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * 
@@ -60,6 +61,11 @@ public class PacketsConfirmedMessage extends PacketImpl
    public int getCommandID()
    {
       return this.commandID;
+   }
+   
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT;
    }
    
    public void encodeBody(final MessagingBuffer buffer)

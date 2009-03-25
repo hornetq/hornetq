@@ -18,11 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,9 +38,9 @@ public class SessionConsumerFlowCreditMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private long consumerID;
-   
+
    private int credits;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -49,10 +50,10 @@ public class SessionConsumerFlowCreditMessage extends PacketImpl
       super(SESS_FLOWTOKEN);
 
       this.consumerID = consumerID;
-      
+
       this.credits = credits;
    }
-   
+
    public SessionConsumerFlowCreditMessage()
    {
       super(SESS_FLOWTOKEN);
@@ -64,18 +65,25 @@ public class SessionConsumerFlowCreditMessage extends PacketImpl
    {
       return consumerID;
    }
-   
+
    public int getCredits()
    {
       return credits;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeLong(consumerID);
       buffer.writeInt(credits);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       consumerID = buffer.readLong();
@@ -87,18 +95,18 @@ public class SessionConsumerFlowCreditMessage extends PacketImpl
    {
       return getParentString() + ", consumerID=" + consumerID + ", credits=" + credits + "]";
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionConsumerFlowCreditMessage == false)
       {
          return false;
       }
-            
+
       SessionConsumerFlowCreditMessage r = (SessionConsumerFlowCreditMessage)other;
-      
-      return super.equals(other) && this.credits == r.credits
-       && this.consumerID == r.consumerID;
+
+      return super.equals(other) && credits == r.credits && consumerID == r.consumerID;
    }
    // Package protected ---------------------------------------------
 

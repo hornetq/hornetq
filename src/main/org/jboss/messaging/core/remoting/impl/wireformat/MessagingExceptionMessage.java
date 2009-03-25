@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -67,6 +68,12 @@ public class MessagingExceptionMessage extends PacketImpl
    {
       return exception;
    }
+   
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT + nullableStringEncodeSize(exception.getMessage());
+   }
+
 
    public void encodeBody(final MessagingBuffer buffer)
    {

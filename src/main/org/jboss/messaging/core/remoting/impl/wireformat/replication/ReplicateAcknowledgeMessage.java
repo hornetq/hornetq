@@ -14,6 +14,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat.replication;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -31,10 +32,10 @@ public class ReplicateAcknowledgeMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-      
-   //TODO - use queue id not name for smaller packet size
+
+   // TODO - use queue id not name for smaller packet size
    private SimpleString uniqueName;
-   
+
    private long messageID;
 
    // Static --------------------------------------------------------
@@ -46,7 +47,7 @@ public class ReplicateAcknowledgeMessage extends PacketImpl
       super(REPLICATE_ACKNOWLEDGE);
 
       this.uniqueName = uniqueName;
-      
+
       this.messageID = messageID;
    }
 
@@ -57,12 +58,19 @@ public class ReplicateAcknowledgeMessage extends PacketImpl
       super(REPLICATE_ACKNOWLEDGE);
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + uniqueName.sizeof() + DataConstants.SIZE_LONG;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(uniqueName);
       buffer.writeLong(messageID);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       uniqueName = buffer.readSimpleString();
@@ -73,7 +81,7 @@ public class ReplicateAcknowledgeMessage extends PacketImpl
    {
       return uniqueName;
    }
-   
+
    public long getMessageID()
    {
       return messageID;

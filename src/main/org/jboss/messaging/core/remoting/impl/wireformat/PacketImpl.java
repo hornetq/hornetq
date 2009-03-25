@@ -27,8 +27,6 @@ public class PacketImpl implements Packet
    // Constants -------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PacketImpl.class);
-
-   public static final int DEFAULT_PACKET_SIZE = 1024;
    
    // The minimal size for all the packets, Common data for all the packets (look at PacketImpl.encode)
    protected static final int BASIC_PACKET_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE + DataConstants.SIZE_LONG;
@@ -220,7 +218,7 @@ public class PacketImpl implements Packet
    
    public int getRequiredBufferSize()
    {
-      return DEFAULT_PACKET_SIZE;
+      return BASIC_PACKET_SIZE;
    }
 
    public boolean isResponse()
@@ -274,6 +272,15 @@ public class PacketImpl implements Packet
 
    // Protected -----------------------------------------------------
 
+   protected int stringEncodeSize(String str)
+   {
+      return DataConstants.SIZE_INT + str.length() * 2;
+   }
+   
+   protected int nullableStringEncodeSize(String str)
+   {
+      return DataConstants.SIZE_BOOLEAN + (str != null ? stringEncodeSize(str) : 0);
+   }
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

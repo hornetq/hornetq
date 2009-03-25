@@ -18,14 +18,14 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,9 +37,9 @@ public class SessionXAPrepareMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private Xid xid;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -47,41 +47,46 @@ public class SessionXAPrepareMessage extends PacketImpl
    public SessionXAPrepareMessage(final Xid xid)
    {
       super(SESS_XA_PREPARE);
-      
+
       this.xid = xid;
    }
-   
+
    public SessionXAPrepareMessage()
    {
       super(SESS_XA_PREPARE);
    }
 
    // Public --------------------------------------------------------
-   
+
    public Xid getXid()
    {
       return xid;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + XidCodecSupport.getXidEncodeLength(xid);
+   }
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
    }
-   
+
    public void decodeBody(final MessagingBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }
-   
+
    public boolean equals(Object other)
    {
       if (other instanceof SessionXAPrepareMessage == false)
       {
          return false;
       }
-            
+
       SessionXAPrepareMessage r = (SessionXAPrepareMessage)other;
-      
+
       return super.equals(other) && this.xid.equals(r.xid);
    }
 
@@ -93,4 +98,3 @@ public class SessionXAPrepareMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

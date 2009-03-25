@@ -18,13 +18,13 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
-
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -43,13 +43,13 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    private boolean browseOnly;
 
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(final SimpleString queueName, final SimpleString filterString,
-   		                              final boolean browseOnly)
+   public SessionCreateConsumerMessage(final SimpleString queueName,
+                                       final SimpleString filterString,
+                                       final boolean browseOnly)
    {
       super(SESS_CREATECONSUMER);
 
@@ -90,6 +90,14 @@ public class SessionCreateConsumerMessage extends PacketImpl
       return browseOnly;
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + queueName.sizeof() +
+             SimpleString.sizeofNullableString(filterString) +
+             DataConstants.SIZE_BOOLEAN;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(queueName);
@@ -97,6 +105,7 @@ public class SessionCreateConsumerMessage extends PacketImpl
       buffer.writeBoolean(browseOnly);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       queueName = buffer.readSimpleString();
@@ -104,20 +113,20 @@ public class SessionCreateConsumerMessage extends PacketImpl
       browseOnly = buffer.readBoolean();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionCreateConsumerMessage == false)
       {
          return false;
       }
-            
+
       SessionCreateConsumerMessage r = (SessionCreateConsumerMessage)other;
-      
-      return super.equals(other) && 
-             this.queueName.equals(r.queueName) &&
-             this.filterString == null ? r.filterString == null : this.filterString.equals(r.filterString);                           
+
+      return super.equals(other) && queueName.equals(r.queueName) && filterString == null ? r.filterString == null
+                                                                                         : filterString.equals(r.filterString);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

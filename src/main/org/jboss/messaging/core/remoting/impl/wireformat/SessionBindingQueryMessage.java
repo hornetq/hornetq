@@ -18,13 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.SimpleString;
-
 
 /**
  * 
@@ -41,39 +40,47 @@ public class SessionBindingQueryMessage extends PacketImpl
    {
       super(SESS_BINDINGQUERY);
 
-      this.address = address;            
+      this.address = address;
    }
-   
+
    public SessionBindingQueryMessage()
    {
-      super(SESS_BINDINGQUERY);          
+      super(SESS_BINDINGQUERY);
    }
 
    public SimpleString getAddress()
    {
       return address;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + address.sizeof();
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(address);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       address = buffer.readSimpleString();
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionBindingQueryMessage == false)
       {
          return false;
       }
-            
+
       SessionBindingQueryMessage r = (SessionBindingQueryMessage)other;
-      
-      return super.equals(other) && this.address.equals(r.address);
+
+      return super.equals(other) && address.equals(r.address);
    }
-   
+
 }

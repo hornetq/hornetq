@@ -34,23 +34,25 @@ public class ReplicateRemoteConsumerAddedMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString uniqueBindingName;
-   
+
    private SimpleString filterString;
-   
+
    private TypedProperties properties;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicateRemoteConsumerAddedMessage(SimpleString uniqueBindingName, SimpleString filterString, TypedProperties properties)
+   public ReplicateRemoteConsumerAddedMessage(final SimpleString uniqueBindingName,
+                                              final SimpleString filterString,
+                                              final TypedProperties properties)
    {
       super(REPLICATE_ADD_REMOTE_CONSUMER);
 
       this.uniqueBindingName = uniqueBindingName;
-      
+
       this.filterString = filterString;
-      
+
       this.properties = properties;
    }
 
@@ -61,23 +63,33 @@ public class ReplicateRemoteConsumerAddedMessage extends PacketImpl
       super(REPLICATE_ADD_REMOTE_CONSUMER);
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + 
+             uniqueBindingName.sizeof() + // buffer.writeSimpleString(uniqueBindingName);
+             SimpleString.sizeofNullableString(filterString) + // buffer.writeNullableSimpleString(filterString);
+             properties.getEncodeSize(); // properties.encode(buffer);
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(uniqueBindingName);
-      
+
       buffer.writeNullableSimpleString(filterString);
-      
+
       properties.encode(buffer);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       uniqueBindingName = buffer.readSimpleString();
-      
+
       filterString = buffer.readNullableSimpleString();
-      
+
       properties = new TypedProperties();
-      
+
       properties.decode(buffer);
    }
 
@@ -85,12 +97,12 @@ public class ReplicateRemoteConsumerAddedMessage extends PacketImpl
    {
       return uniqueBindingName;
    }
-   
+
    public SimpleString getFilterString()
    {
       return filterString;
    }
-   
+
    public TypedProperties getProperties()
    {
       return properties;

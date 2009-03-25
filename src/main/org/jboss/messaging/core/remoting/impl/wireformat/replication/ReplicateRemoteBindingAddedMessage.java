@@ -14,6 +14,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat.replication;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -33,11 +34,11 @@ public class ReplicateRemoteBindingAddedMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString clusterConnectionName;
-   
+
    private SimpleString address;
 
    private SimpleString uniqueName;
-   
+
    private SimpleString routingName;
 
    private int remoteQueueID;
@@ -52,14 +53,14 @@ public class ReplicateRemoteBindingAddedMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public ReplicateRemoteBindingAddedMessage(SimpleString clusterConnectionName,
-                                             SimpleString address,
-                                             SimpleString uniqueName,
-                                             SimpleString routingName,
-                                             int remoteQueueID,
-                                             SimpleString filterString,
-                                             SimpleString sfQueueName,                                       
-                                             int distance)
+   public ReplicateRemoteBindingAddedMessage(final SimpleString clusterConnectionName,
+                                             final SimpleString address,
+                                             final SimpleString uniqueName,
+                                             final SimpleString routingName,
+                                             final int remoteQueueID,
+                                             final SimpleString filterString,
+                                             final SimpleString sfQueueName,
+                                             final int distance)
    {
       super(REPLICATE_ADD_REMOTE_QUEUE_BINDING);
 
@@ -80,6 +81,20 @@ public class ReplicateRemoteBindingAddedMessage extends PacketImpl
       super(REPLICATE_ADD_REMOTE_QUEUE_BINDING);
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE +
+             clusterConnectionName.sizeof() + // buffer.writeSimpleString(clusterConnectionName);
+             address.sizeof() + // buffer.writeSimpleString(address);
+             uniqueName.sizeof() + // buffer.writeSimpleString(uniqueName);
+             routingName.sizeof() + //  buffer.writeSimpleString(routingName);
+             DataConstants.SIZE_INT + // buffer.writeInt(remoteQueueID);
+             SimpleString.sizeofNullableString(filterString) + // buffer.writeNullableSimpleString(filterString);
+             sfQueueName.sizeof() + // buffer.writeSimpleString(sfQueueName);
+             DataConstants.SIZE_INT; // buffer.writeInt(distance);
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(clusterConnectionName);
@@ -92,6 +107,7 @@ public class ReplicateRemoteBindingAddedMessage extends PacketImpl
       buffer.writeInt(distance);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       clusterConnectionName = buffer.readSimpleString();
@@ -103,7 +119,7 @@ public class ReplicateRemoteBindingAddedMessage extends PacketImpl
       sfQueueName = buffer.readSimpleString();
       distance = buffer.readInt();
    }
-   
+
    public SimpleString getClusterConnectionName()
    {
       return clusterConnectionName;
@@ -118,7 +134,7 @@ public class ReplicateRemoteBindingAddedMessage extends PacketImpl
    {
       return uniqueName;
    }
-   
+
    public SimpleString getRoutingName()
    {
       return routingName;

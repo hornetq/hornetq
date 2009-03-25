@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -115,6 +116,18 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
    public SimpleString getAddress()
    {
       return address;
+   }
+   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + 
+      DataConstants.SIZE_BOOLEAN + // buffer.writeBoolean(exists);
+      DataConstants.SIZE_BOOLEAN + // buffer.writeBoolean(durable);
+      DataConstants.SIZE_INT + // buffer.writeInt(consumerCount);
+      DataConstants.SIZE_INT + // buffer.writeInt(messageCount);
+      SimpleString.sizeofNullableString(filterString) + // buffer.writeNullableSimpleString(filterString);
+      SimpleString.sizeofNullableString(address); // buffer.writeNullableSimpleString(address);
    }
 
    public void encodeBody(final MessagingBuffer buffer)

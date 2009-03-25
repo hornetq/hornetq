@@ -18,14 +18,14 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,11 +37,11 @@ public class SessionXACommitMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private boolean onePhase;
-   
+
    private Xid xid;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -49,34 +49,41 @@ public class SessionXACommitMessage extends PacketImpl
    public SessionXACommitMessage(final Xid xid, final boolean onePhase)
    {
       super(SESS_XA_COMMIT);
-      
+
       this.xid = xid;
       this.onePhase = onePhase;
    }
-   
+
    public SessionXACommitMessage()
    {
       super(SESS_XA_COMMIT);
    }
 
    // Public --------------------------------------------------------
- 
+
    public Xid getXid()
    {
       return xid;
    }
-   
+
    public boolean isOnePhase()
    {
       return onePhase;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + XidCodecSupport.getXidEncodeLength(xid) + DataConstants.SIZE_BOOLEAN;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
       buffer.writeBoolean(onePhase);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
@@ -88,20 +95,20 @@ public class SessionXACommitMessage extends PacketImpl
    {
       return getParentString() + ", xid=" + xid + ", onePhase=" + onePhase + "]";
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXACommitMessage == false)
       {
          return false;
       }
-            
+
       SessionXACommitMessage r = (SessionXACommitMessage)other;
-      
-      return super.equals(other) && this.xid.equals(r.xid) &&
-             this.onePhase == r.onePhase;
+
+      return super.equals(other) && xid.equals(r.xid) && onePhase == r.onePhase;
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -110,4 +117,3 @@ public class SessionXACommitMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

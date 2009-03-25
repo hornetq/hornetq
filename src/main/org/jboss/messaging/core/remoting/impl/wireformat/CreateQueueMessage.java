@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -142,6 +143,18 @@ public class CreateQueueMessage extends PacketImpl
              (r.filterString == null ? this.filterString == null : r.filterString.equals(this.filterString)) &&
              r.durable == this.durable &&
              r.temporary == this.temporary;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.Packet#getRequiredBufferSize()
+    */
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + address.sizeof() +
+             queueName.sizeof() +
+             SimpleString.sizeofNullableString(filterString) +
+             DataConstants.SIZE_BOOLEAN +
+             DataConstants.SIZE_BOOLEAN;
    }
 
    // Package protected ---------------------------------------------

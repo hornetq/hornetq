@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -153,12 +154,12 @@ public class ReplicateCreateSessionMessage extends PacketImpl
 
    public boolean isAutoCommitSends()
    {
-      return this.autoCommitSends;
+      return autoCommitSends;
    }
 
    public boolean isAutoCommitAcks()
    {
-      return this.autoCommitAcks;
+      return autoCommitAcks;
    }
 
    public boolean isPreAcknowledge()
@@ -168,9 +169,27 @@ public class ReplicateCreateSessionMessage extends PacketImpl
 
    public int getWindowSize()
    {
-      return this.windowSize;
+      return windowSize;
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + 
+             stringEncodeSize(name) + // buffer.writeString(name);
+             DataConstants.SIZE_LONG + // buffer.writeLong(originalSessionChannelID);
+             DataConstants.SIZE_LONG + // buffer.writeLong(replicatedSessionChannelID);
+             DataConstants.SIZE_INT + // buffer.writeInt(version);
+             nullableStringEncodeSize(username) + // buffer.writeNullableString(username);
+             nullableStringEncodeSize(password) + // buffer.writeNullableString(password);
+             DataConstants.SIZE_INT + // buffer.writeInt(minLargeMessageSize);
+             DataConstants.SIZE_BOOLEAN + // buffer.writeBoolean(xa);
+             DataConstants.SIZE_BOOLEAN + // buffer.writeBoolean(autoCommitSends);
+             DataConstants.SIZE_BOOLEAN + // buffer.writeBoolean(autoCommitAcks);
+             DataConstants.SIZE_INT + // buffer.writeInt(windowSize);
+             DataConstants.SIZE_BOOLEAN; // buffer.writeBoolean(preAcknowledge);
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeString(name);
@@ -187,6 +206,7 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       buffer.writeBoolean(preAcknowledge);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       name = buffer.readString();
@@ -203,7 +223,8 @@ public class ReplicateCreateSessionMessage extends PacketImpl
       preAcknowledge = buffer.readBoolean();
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof ReplicateCreateSessionMessage == false)
       {
@@ -212,21 +233,22 @@ public class ReplicateCreateSessionMessage extends PacketImpl
 
       ReplicateCreateSessionMessage r = (ReplicateCreateSessionMessage)other;
 
-      boolean matches = super.equals(other) && this.name.equals(r.name) &&
-                        this.originalSessionChannelID == r.originalSessionChannelID &&
-                        this.replicatedSessionChannelID == r.replicatedSessionChannelID &&
-                        this.version == r.version &&
-                        this.xa == r.xa &&
-                        this.autoCommitSends == r.autoCommitSends &&
-                        this.autoCommitAcks == r.autoCommitAcks &&
-                        (this.username == null ? r.username == null : this.username.equals(r.username)) &&
-                        (this.password == null ? r.password == null : this.password.equals(r.password)) &&
-                        this.minLargeMessageSize == r.minLargeMessageSize &&
-                        this.windowSize == r.windowSize;
+      boolean matches = super.equals(other) && name.equals(r.name) &&
+                        originalSessionChannelID == r.originalSessionChannelID &&
+                        replicatedSessionChannelID == r.replicatedSessionChannelID &&
+                        version == r.version &&
+                        xa == r.xa &&
+                        autoCommitSends == r.autoCommitSends &&
+                        autoCommitAcks == r.autoCommitAcks &&
+                        (username == null ? r.username == null : username.equals(r.username)) &&
+                        (password == null ? r.password == null : password.equals(r.password)) &&
+                        minLargeMessageSize == r.minLargeMessageSize &&
+                        windowSize == r.windowSize;
 
       return matches;
    }
 
+   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;

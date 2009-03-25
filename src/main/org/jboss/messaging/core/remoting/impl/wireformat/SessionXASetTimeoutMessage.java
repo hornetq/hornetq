@@ -18,13 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-
-
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -36,9 +35,9 @@ public class SessionXASetTimeoutMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private int timeoutSeconds;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -46,42 +45,50 @@ public class SessionXASetTimeoutMessage extends PacketImpl
    public SessionXASetTimeoutMessage(final int timeoutSeconds)
    {
       super(SESS_XA_SET_TIMEOUT);
-      
+
       this.timeoutSeconds = timeoutSeconds;
    }
-   
+
    public SessionXASetTimeoutMessage()
    {
       super(SESS_XA_SET_TIMEOUT);
    }
-   
+
    // Public --------------------------------------------------------
-   
+
    public int getTimeoutSeconds()
    {
-      return this.timeoutSeconds;
+      return timeoutSeconds;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeInt(timeoutSeconds);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       timeoutSeconds = buffer.readInt();
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXASetTimeoutMessage == false)
       {
          return false;
       }
-            
+
       SessionXASetTimeoutMessage r = (SessionXASetTimeoutMessage)other;
-      
-      return super.equals(other) && this.timeoutSeconds == r.timeoutSeconds;
+
+      return super.equals(other) && timeoutSeconds == r.timeoutSeconds;
    }
 
    // Package protected ---------------------------------------------
@@ -92,4 +99,3 @@ public class SessionXASetTimeoutMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

@@ -25,6 +25,7 @@ package org.jboss.messaging.core.remoting.impl.wireformat;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 
 /**
@@ -62,7 +63,12 @@ public class SessionXAForgetMessage extends PacketImpl
    {
       return xid;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + XidCodecSupport.getXidEncodeLength(xid);
+   }
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);

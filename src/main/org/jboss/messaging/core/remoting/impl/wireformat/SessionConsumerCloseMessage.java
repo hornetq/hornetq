@@ -18,11 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -36,7 +37,7 @@ public class SessionConsumerCloseMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private long consumerID;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -45,9 +46,9 @@ public class SessionConsumerCloseMessage extends PacketImpl
    {
       super(SESS_CONSUMER_CLOSE);
 
-      this.consumerID = objectID;
+      consumerID = objectID;
    }
-   
+
    public SessionConsumerCloseMessage()
    {
       super(SESS_CONSUMER_CLOSE);
@@ -59,33 +60,41 @@ public class SessionConsumerCloseMessage extends PacketImpl
    {
       return consumerID;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG;
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeLong(consumerID);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       consumerID = buffer.readLong();
    }
-   
+
    @Override
    public String toString()
    {
       return getParentString() + ", consumerID=" + consumerID + "]";
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionConsumerCloseMessage == false)
       {
          return false;
       }
-            
+
       SessionConsumerCloseMessage r = (SessionConsumerCloseMessage)other;
-      
-      return super.equals(other) && this.consumerID == r.consumerID;
+
+      return super.equals(other) && consumerID == r.consumerID;
    }
    // Package protected ---------------------------------------------
 

@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.DataConstants;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 
@@ -39,10 +39,8 @@ import org.jboss.messaging.utils.DataConstants;
 public class SessionBindingQueryResponseMessage extends PacketImpl
 {
    private boolean exists;
-   
-   private List<SimpleString> queueNames;
 
-   private static final int BASIC_SIZE = DataConstants.SIZE_BOOLEAN + DataConstants.SIZE_INT;
+   private List<SimpleString> queueNames;
 
    public SessionBindingQueryResponseMessage(final boolean exists, final List<SimpleString> queueNames)
    {
@@ -52,12 +50,13 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
 
       this.queueNames = queueNames;
    }
-   
+
    public SessionBindingQueryResponseMessage()
    {
       super(SESS_BINDINGQUERY_RESP);
    }
-   
+
+   @Override
    public boolean isResponse()
    {
       return true;
@@ -70,56 +69,59 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
 
    public List<SimpleString> getQueueNames()
    {
-      return this.queueNames;
+      return queueNames;
    }
-   
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeBoolean(exists);
-      buffer.writeInt(queueNames.size());      
-      for (SimpleString queueName: queueNames)
+      buffer.writeInt(queueNames.size());
+      for (SimpleString queueName : queueNames)
       {
          buffer.writeSimpleString(queueName);
-      }      
+      }
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      exists = buffer.readBoolean();      
-      int numQueues = buffer.readInt();      
-      queueNames = new ArrayList<SimpleString>(numQueues);      
+      exists = buffer.readBoolean();
+      int numQueues = buffer.readInt();
+      queueNames = new ArrayList<SimpleString>(numQueues);
       for (int i = 0; i < numQueues; i++)
       {
          queueNames.add(buffer.readSimpleString());
-      }          
+      }
    }
 
    public int getRequiredBufferSize()
    {
-      int size = BASIC_PACKET_SIZE + BASIC_SIZE;
+      int size = BASIC_PACKET_SIZE + DataConstants.SIZE_BOOLEAN + DataConstants.SIZE_INT;
       for (SimpleString queueName : queueNames)
       {
-         size += queueName.length() * 2 + DataConstants.SIZE_INT;
+         size += queueName.sizeof();
       }
-      return size; 
+      return size;
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionBindingQueryResponseMessage == false)
       {
          return false;
       }
-            
+
       SessionBindingQueryResponseMessage r = (SessionBindingQueryResponseMessage)other;
-      
-      if (super.equals(other) && this.exists == r.exists)
+
+      if (super.equals(other) && exists == r.exists)
       {
-         if (this.queueNames.size() == r.queueNames.size())
+         if (queueNames.size() == r.queueNames.size())
          {
             for (int i = 0; i < queueNames.size(); i++)
             {
-               if (!this.queueNames.get(i).equals(r.queueNames.get(i)))
+               if (!queueNames.get(i).equals(r.queueNames.get(i)))
                {
                   return false;
                }
@@ -134,8 +136,8 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
       {
          return false;
       }
-      
+
       return true;
    }
-   
+
 }

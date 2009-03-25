@@ -53,7 +53,13 @@ public class SessionQueueQueryMessage extends PacketImpl
    {
       return queueName;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + queueName.sizeof();
+   }
+
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(queueName);

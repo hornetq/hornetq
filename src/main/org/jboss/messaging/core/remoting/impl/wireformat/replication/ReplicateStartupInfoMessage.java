@@ -12,12 +12,11 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat.replication;
 
-
 import static org.jboss.messaging.utils.UUID.TYPE_TIME_BASED;
 
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.UUID;
 
 /**
@@ -35,9 +34,9 @@ public class ReplicateStartupInfoMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-       
+
    private UUID nodeID;
-   
+
    private long currentMessageID;
 
    // Static --------------------------------------------------------
@@ -49,7 +48,7 @@ public class ReplicateStartupInfoMessage extends PacketImpl
       super(REPLICATE_STARTUP_INFO);
 
       this.nodeID = nodeID;
-      
+
       this.currentMessageID = currentMessageID;
    }
 
@@ -60,12 +59,21 @@ public class ReplicateStartupInfoMessage extends PacketImpl
       super(REPLICATE_STARTUP_INFO);
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + 
+             nodeID.asBytes().length + // buffer.writeBytes(nodeID.asBytes());
+             DataConstants.SIZE_LONG; // buffer.writeLong(currentMessageID);
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeBytes(nodeID.asBytes());
       buffer.writeLong(currentMessageID);
    }
 
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       byte[] bytes = new byte[16];
@@ -78,7 +86,7 @@ public class ReplicateStartupInfoMessage extends PacketImpl
    {
       return nodeID;
    }
-   
+
    public long getCurrentMessageID()
    {
       return currentMessageID;

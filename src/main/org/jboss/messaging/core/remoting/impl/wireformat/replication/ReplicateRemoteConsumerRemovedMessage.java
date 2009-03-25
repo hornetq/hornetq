@@ -61,6 +61,14 @@ public class ReplicateRemoteConsumerRemovedMessage extends PacketImpl
       super(REPLICATE_REMOVE_REMOTE_CONSUMER);
    }
 
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + 
+             uniqueBindingName.sizeof() + // buffer.writeSimpleString(uniqueBindingName);
+             SimpleString.sizeofNullableString(filterString) + // buffer.writeNullableSimpleString(filterString);
+             properties.getEncodeSize(); // properties.encode(buffer);
+   }
+
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(uniqueBindingName);

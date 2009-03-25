@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * 
@@ -72,6 +73,12 @@ public class ReattachSessionResponseMessage extends PacketImpl
       return removed;
    }
    
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT + DataConstants.SIZE_BOOLEAN;
+   }
+   
+
    public void encodeBody(final MessagingBuffer buffer)
    { 
       buffer.writeInt(lastReceivedCommandID);

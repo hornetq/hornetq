@@ -218,7 +218,6 @@ public class SessionSendMessage extends PacketImpl
       }
    }
 
-   @Override
    public int getRequiredBufferSize()
    {
       int size;

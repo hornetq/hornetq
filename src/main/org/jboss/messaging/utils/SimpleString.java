@@ -314,9 +314,14 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       return new SimpleString(bytes);
    }
 
+   public int sizeof()
+   {
+      return SIZE_INT + data.length;
+   }
+   
    public static int sizeofString(final SimpleString str)
    {
-      return SIZE_INT + str.data.length;
+      return str.sizeof();
    }
 
    public static int sizeofNullableString(final SimpleString str)
@@ -327,7 +332,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
       else
       {
-         return 1 + sizeofString(str);
+         return 1 + str.sizeof();
       }
    }
 

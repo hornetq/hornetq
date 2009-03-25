@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
@@ -38,7 +38,7 @@ public class SessionFailoverCompleteMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private String name;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -49,7 +49,7 @@ public class SessionFailoverCompleteMessage extends PacketImpl
 
       this.name = name;
    }
-   
+
    public SessionFailoverCompleteMessage()
    {
       super(SESS_FAILOVER_COMPLETE);
@@ -61,34 +61,43 @@ public class SessionFailoverCompleteMessage extends PacketImpl
    {
       return name;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + stringEncodeSize(name);
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeString(name);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       name = buffer.readString();
    }
-   
+
+   @Override
    public boolean isRequiresConfirmations()
    {
       return false;
    }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionFailoverCompleteMessage == false)
       {
          return false;
       }
-            
+
       SessionFailoverCompleteMessage r = (SessionFailoverCompleteMessage)other;
-      
-      return super.equals(other) && this.name.equals(r.name);
+
+      return super.equals(other) && name.equals(r.name);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -97,4 +106,3 @@ public class SessionFailoverCompleteMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

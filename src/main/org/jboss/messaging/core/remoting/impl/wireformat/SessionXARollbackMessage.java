@@ -18,14 +18,13 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,9 +36,9 @@ public class SessionXARollbackMessage extends PacketImpl
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private Xid xid;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -47,44 +46,52 @@ public class SessionXARollbackMessage extends PacketImpl
    public SessionXARollbackMessage(final Xid xid)
    {
       super(SESS_XA_ROLLBACK);
-      
+
       this.xid = xid;
    }
-   
+
    public SessionXARollbackMessage()
    {
       super(SESS_XA_ROLLBACK);
    }
 
    // Public --------------------------------------------------------
-   
+
    public Xid getXid()
    {
       return xid;
    }
-   
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + XidCodecSupport.getXidEncodeLength(xid);
+   }
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }
-   
-   public boolean equals(Object other)
+
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof SessionXARollbackMessage == false)
       {
          return false;
       }
-            
+
       SessionXARollbackMessage r = (SessionXARollbackMessage)other;
-      
-      return super.equals(other) && this.xid.equals(r.xid);
+
+      return super.equals(other) && xid.equals(r.xid);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -93,4 +100,3 @@ public class SessionXARollbackMessage extends PacketImpl
 
    // Inner classes -------------------------------------------------
 }
-

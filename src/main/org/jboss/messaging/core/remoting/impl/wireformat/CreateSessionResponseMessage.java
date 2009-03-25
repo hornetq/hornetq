@@ -18,11 +18,12 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,7 +38,7 @@ public class CreateSessionResponseMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int serverVersion;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -48,49 +49,58 @@ public class CreateSessionResponseMessage extends PacketImpl
 
       this.serverVersion = serverVersion;
    }
-   
+
    public CreateSessionResponseMessage()
    {
       super(CREATESESSION_RESP);
    }
 
    // Public --------------------------------------------------------
-   
+
+   @Override
    public boolean isResponse()
    {
       return true;
    }
-   
+
    public int getServerVersion()
    {
       return serverVersion;
    }
-   
+
+   @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.writeInt(serverVersion);      
+      buffer.writeInt(serverVersion);
    }
-   
+
+   @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
       serverVersion = buffer.readInt();
    }
+   
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT; 
+   }
 
-   public boolean equals(Object other)
+   @Override
+   public boolean equals(final Object other)
    {
       if (other instanceof CreateSessionResponseMessage == false)
       {
          return false;
       }
-            
+
       CreateSessionResponseMessage r = (CreateSessionResponseMessage)other;
-      
-      boolean matches = super.equals(other) &&     
-                        this.serverVersion == r.serverVersion;
-      
+
+      boolean matches = super.equals(other) && serverVersion == r.serverVersion;
+
       return matches;
    }
-   
+
+   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;

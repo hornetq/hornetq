@@ -48,7 +48,7 @@ public class RollbackMessage extends PacketImpl
    public RollbackMessage(final boolean considerLastMessageAsDelivered)
    {
       super(SESS_ROLLBACK);
-      
+
       this.considerLastMessageAsDelivered = considerLastMessageAsDelivered;
    }
 
@@ -71,7 +71,12 @@ public class RollbackMessage extends PacketImpl
     */
    public void setConsiderLastMessageAsDelivered(final boolean isLastMessageAsDelived)
    {
-      this.considerLastMessageAsDelivered = isLastMessageAsDelived;
+      considerLastMessageAsDelivered = isLastMessageAsDelived;
+   }
+
+   public int getRequiredBufferSize()
+   {
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_BOOLEAN;
    }
 
    @Override
@@ -83,7 +88,7 @@ public class RollbackMessage extends PacketImpl
    @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      this.considerLastMessageAsDelivered = buffer.readBoolean();
+      considerLastMessageAsDelivered = buffer.readBoolean();
    }
 
    // Static --------------------------------------------------------
