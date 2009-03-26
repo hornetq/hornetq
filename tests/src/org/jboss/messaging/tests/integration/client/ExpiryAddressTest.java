@@ -276,18 +276,25 @@ public class ExpiryAddressTest extends UnitTestCase
       m.acknowledge();
    }
    
-   public void testExpireWithSublevelAddressSettings() throws Exception
+   public void testExpireWithOverridenSublevelAddressSettings() throws Exception
    {
       SimpleString address = new SimpleString("prefix.address");
       SimpleString queue = randomSimpleString();
-      SimpleString expiryAddress = randomSimpleString();
-      SimpleString exipryQueue = randomSimpleString();
+      SimpleString defaultExpiryAddress = randomSimpleString();
+      SimpleString defaultExpiryQueue = randomSimpleString();
+      SimpleString specificExpiryAddress = randomSimpleString();
+      SimpleString specificExpiryQueue = randomSimpleString();
 
-      AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setExpiryAddress(expiryAddress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch("prefix.*", addressSettings);
+      AddressSettings defaultAddressSettings = new AddressSettings();
+      defaultAddressSettings.setExpiryAddress(defaultExpiryAddress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("prefix.*", defaultAddressSettings);
+      AddressSettings specificAddressSettings = new AddressSettings();
+      specificAddressSettings.setExpiryAddress(specificExpiryAddress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("prefix.address", specificAddressSettings);
+
       clientSession.createQueue(address, queue, false);
-      clientSession.createQueue(expiryAddress, exipryQueue, false);
+      clientSession.createQueue(defaultExpiryAddress, defaultExpiryQueue, false);
+      clientSession.createQueue(specificExpiryAddress, specificExpiryQueue, false);
       
       ClientProducer producer = clientSession.createProducer(address);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
@@ -300,7 +307,12 @@ public class ExpiryAddressTest extends UnitTestCase
       assertNull(m);
       clientConsumer.close();
 
-      clientConsumer = clientSession.createConsumer(exipryQueue);
+      clientConsumer = clientSession.createConsumer(defaultExpiryQueue);
+      m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
+
+      clientConsumer = clientSession.createConsumer(specificExpiryQueue);
       m = clientConsumer.receive(500);
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "heyho!");
