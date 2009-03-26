@@ -21,6 +21,14 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -38,11 +46,6 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -234,6 +237,154 @@ public class DeadLetterAddressTest extends UnitTestCase
 
    }
 
+   public void testDeadlLetterAddressWithDefaultAddressSettings() throws Exception
+   {
+      int deliveryAttempt = 3;
+      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
+
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      SimpleString deadLetterAdress = randomSimpleString();
+      SimpleString deadLetterQueue = randomSimpleString();
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
+      addressSettings.setDeadLetterAddress(deadLetterAdress);
+      messagingService.getServer().getAddressSettingsRepository().setDefault(addressSettings);
+      
+      clientSession.createQueue(address, queue, false);
+      clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
+      
+      ClientProducer producer = clientSession.createProducer(address);
+      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      producer.send(clientMessage);
+      
+      clientSession.start();
+      ClientConsumer clientConsumer = clientSession.createConsumer(queue);
+      for (int i = 0; i < deliveryAttempt; i++)
+      {
+         clientSession.start(xid, XAResource.TMNOFLAGS);
+         ClientMessage m = clientConsumer.receive(500);
+         assertNotNull(m);
+         assertEquals(i + 1, m.getDeliveryCount());
+         m.acknowledge();
+         clientSession.end(xid, XAResource.TMSUCCESS);
+         clientSession.rollback(xid);
+      }
+      ClientMessage m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
+
+      clientConsumer = clientSession.createConsumer(deadLetterQueue);
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals(m.getBody().readString(), "heyho!");
+   }
+
+   public void testDeadlLetterAddressWithWildcardAddressSettings() throws Exception
+   {
+      int deliveryAttempt = 3;
+      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
+
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      SimpleString deadLetterAdress = randomSimpleString();
+      SimpleString deadLetterQueue = randomSimpleString();
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
+      addressSettings.setDeadLetterAddress(deadLetterAdress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("*", addressSettings);
+      
+      clientSession.createQueue(address, queue, false);
+      clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
+      
+      ClientProducer producer = clientSession.createProducer(address);
+      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      producer.send(clientMessage);
+      
+      clientSession.start();
+      ClientConsumer clientConsumer = clientSession.createConsumer(queue);
+      for (int i = 0; i < deliveryAttempt; i++)
+      {
+         clientSession.start(xid, XAResource.TMNOFLAGS);
+         ClientMessage m = clientConsumer.receive(500);
+         assertNotNull(m);
+         assertEquals(i + 1, m.getDeliveryCount());
+         m.acknowledge();
+         clientSession.end(xid, XAResource.TMSUCCESS);
+         clientSession.rollback(xid);
+      }
+      ClientMessage m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
+
+      clientConsumer = clientSession.createConsumer(deadLetterQueue);
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals(m.getBody().readString(), "heyho!");
+   }
+      
+   public void testDeadLetterAddressWithOverridenSublevelAddressSettings() throws Exception
+   {
+      int defaultDeliveryAttempt = 3;
+      int specificeDeliveryAttempt = defaultDeliveryAttempt + 1;
+      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
+
+      SimpleString address = new SimpleString("prefix.address");
+      SimpleString queue = randomSimpleString();
+      SimpleString defaultDeadLetterAddress = randomSimpleString();
+      SimpleString defaultDeadLetterQueue = randomSimpleString();
+      SimpleString specificDeadLetterAddress = randomSimpleString();
+      SimpleString specificDeadLetterQueue = randomSimpleString();
+
+      AddressSettings defaultAddressSettings = new AddressSettings();
+      defaultAddressSettings.setMaxDeliveryAttempts(defaultDeliveryAttempt);
+      defaultAddressSettings.setDeadLetterAddress(defaultDeadLetterAddress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("*", defaultAddressSettings);
+      AddressSettings specificAddressSettings = new AddressSettings();
+      specificAddressSettings.setMaxDeliveryAttempts(specificeDeliveryAttempt);
+      specificAddressSettings.setDeadLetterAddress(specificDeadLetterAddress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch(address.toString(), specificAddressSettings);
+      
+      clientSession.createQueue(address, queue, false);
+      clientSession.createQueue(defaultDeadLetterAddress, defaultDeadLetterQueue, false);
+      clientSession.createQueue(specificDeadLetterAddress, specificDeadLetterQueue, false);
+      
+      ClientProducer producer = clientSession.createProducer(address);
+      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      producer.send(clientMessage);
+      
+      clientSession.start();
+      ClientConsumer clientConsumer = clientSession.createConsumer(queue);
+      ClientConsumer defaultDeadLetterConsumer = clientSession.createConsumer(defaultDeadLetterQueue);
+      ClientConsumer specificDeadLetterConsumer = clientSession.createConsumer(specificDeadLetterQueue);
+
+      for (int i = 0; i < defaultDeliveryAttempt; i++)
+      {
+         clientSession.start(xid, XAResource.TMNOFLAGS);
+         ClientMessage m = clientConsumer.receive(500);
+         assertNotNull(m);
+         assertEquals(i + 1, m.getDeliveryCount());
+         m.acknowledge();
+         clientSession.end(xid, XAResource.TMSUCCESS);
+         clientSession.rollback(xid);
+      }
+      
+      assertNull(defaultDeadLetterConsumer.receive(500));
+      assertNull(specificDeadLetterConsumer.receive(500));
+
+      // one more redelivery attempt:
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      ClientMessage m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals(specificeDeliveryAttempt, m.getDeliveryCount());
+      m.acknowledge();
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.rollback(xid);
+
+      assertNull(defaultDeadLetterConsumer.receive(500));
+      assertNotNull(specificDeadLetterConsumer.receive(500));
+   }
+   
    @Override
    protected void setUp() throws Exception
    {
