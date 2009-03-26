@@ -26,6 +26,8 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientConsumerImpl;
+import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -45,8 +47,6 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
    public final SimpleString queueC = new SimpleString("queueC");
 
    private final SimpleString groupTestQ = new SimpleString("testGroupQueue");
-
-
 
    /*
    * tests send window size. we do this by having 2 receivers on the q. since we roundrobin the consumer for delivery we
@@ -98,6 +98,161 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          if (messagingService.isStarted())
          {
             messagingService.stop();
+         }
+      }
+   }
+
+   public void testSlowConsumer() throws Exception
+   {
+      MessagingService service = createService(false);
+
+      ClientSession sessionNotUsed = null;
+      ClientSession session = null;
+
+      try
+      {
+         final int numberOfMessages = 100;
+
+         service.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+         sf.setConsumerWindowSize(1);
+
+         session = sf.createSession(false, true, true);
+
+         SimpleString ADDRESS = new SimpleString("some-queue");
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+         sessionNotUsed = sf.createSession(false, true, true);
+         sessionNotUsed.start();
+
+         session.start();
+
+         ClientConsumer consNeverUsed = sessionNotUsed.createConsumer(ADDRESS);
+
+         ClientConsumer cons1 = session.createConsumer(ADDRESS);
+
+         ClientProducer prod = session.createProducer(ADDRESS);
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            prod.send(createTextMessage(session, "Msg" + i));
+         }
+
+         session.commit();
+
+         for (int i = 0; i < numberOfMessages -1; i++)
+         {
+            ClientMessage msg = cons1.receive(1000);
+            assertNotNull("expected message at i = " + i, msg);
+            msg.acknowledge();
+         }
+         
+         ClientMessage msg = consNeverUsed.receive(500);
+         assertNotNull(msg);
+         msg.acknowledge();
+         sessionNotUsed.commit();
+
+         session.commit();
+
+         assertEquals(0, getMessageCount(service, ADDRESS.toString()));
+
+      }
+      finally
+      {
+         try
+         {
+            if (session != null)
+               session.close();
+            if (sessionNotUsed != null)
+               sessionNotUsed.close();
+         }
+         catch (Exception ignored)
+         {
+         }
+
+         if (service.isStarted())
+         {
+            service.stop();
+         }
+      }
+   }
+
+   public void testDeleteme() throws Exception
+   {
+      MessagingService service = createService(false);
+
+      ClientSession sessionNotUsed = null;
+      ClientSession session = null;
+
+      try
+      {
+         final int numberOfMessages = 100;
+
+         service.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+         sf.setConsumerWindowSize(1);
+
+         session = sf.createSession(false, true, true);
+
+         SimpleString ADDRESS = new SimpleString("some-queue");
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+         sessionNotUsed = sf.createSession(false, true, true);
+         sessionNotUsed.start();
+
+         session.start();
+
+         ClientConsumerInternal consNeverUsed = (ClientConsumerInternal)sessionNotUsed.createConsumer(ADDRESS);
+         // ClientConsumer consNeverUsed = sessionNotUsed.createConsumer(ADDRESS, null, -1, -1, false);
+
+         ClientConsumerInternal cons1 = (ClientConsumerInternal)session.createConsumer(ADDRESS);
+
+         ClientProducer prod = session.createProducer(ADDRESS);
+         
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            prod.send(createTextMessage(session, "Msg" + i));
+         }
+         
+         session.commit();
+         
+         Thread.sleep(1000);
+         
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            System.out.println("cons1:" + cons1.getBufferSize());
+            System.out.println("consNeverUsed:" + consNeverUsed.getBufferSize());
+
+            ClientMessage msg = cons1.receive(1000);
+            assertNotNull("expected message at i = " + i, msg);
+            msg.acknowledge();
+         }
+
+         session.commit();
+
+         // assertEquals(0, getMessageCount(service, ADDRESS.toString()));
+
+      }
+      finally
+      {
+         try
+         {
+            if (session != null)
+               session.close();
+            if (sessionNotUsed != null)
+               sessionNotUsed.close();
+         }
+         catch (Exception ignored)
+         {
+         }
+
+         if (service.isStarted())
+         {
+            service.stop();
          }
       }
    }
