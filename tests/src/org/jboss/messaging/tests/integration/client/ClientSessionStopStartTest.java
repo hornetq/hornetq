@@ -545,7 +545,11 @@ public class ClientSessionStopStartTest extends ServiceTestBase
    public void testStopStartMultipleConsumers() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
-      sf.setConsumerWindowSize(10);
+      ClientSession tempSess = sf.createSession(false, true, true);
+      ClientMessage tempMessage = tempSess.createClientMessage(false);
+      tempMessage.setDestination(QUEUE);
+      int size = tempMessage.getEncodeSize();
+      sf.setConsumerWindowSize(size * 33);
       final ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -553,7 +557,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
       ClientProducer producer = session.createProducer(QUEUE);
 
       final int numMessages = 100;
-
+      
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, session);
