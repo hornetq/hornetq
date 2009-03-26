@@ -102,17 +102,6 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
-   public void testFail() throws Exception
-   {
-      tearDown();
-
-      for (int k = 0; k < 20000; k++)
-      {
-         setUp();
-         testSendOnly();
-         tearDown();
-      }
-   }
 
    public void testSendThenReceive() throws Exception
    {
