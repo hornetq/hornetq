@@ -68,7 +68,7 @@ public class ClientSessionCreateAndDeleteQueueTest extends ServiceTestBase
    public void testTemporaryFalse() throws Exception
    {
       ClientSession session = createInVMFactory().createSession(false, true, true);
-      session.createQueue(address, queueName, false, false);
+      session.createQueue(address, queueName, false);
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       Queue q = (Queue) binding.getBindable();
       assertFalse(q.isTemporary());
@@ -79,7 +79,7 @@ public class ClientSessionCreateAndDeleteQueueTest extends ServiceTestBase
    public void testTemporaryTrue() throws Exception
    {
       ClientSession session = createInVMFactory().createSession(false, true, true);
-      session.createQueue(address, queueName, true, true);
+      session.createTemporaryQueue(address, queueName);
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       Queue q = (Queue) binding.getBindable();
       assertTrue(q.isTemporary());
@@ -91,7 +91,7 @@ public class ClientSessionCreateAndDeleteQueueTest extends ServiceTestBase
    {
       ClientSession session = createInVMFactory().createSession(false, true, true);
       SimpleString filterString = new SimpleString("x=y");
-      session.createQueue(address, queueName, filterString, false, false);
+      session.createQueue(address, queueName, filterString, false);
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       Queue q = (Queue) binding.getBindable();
       assertEquals(q.getFilter().getFilterString(), filterString);
@@ -106,7 +106,7 @@ public class ClientSessionCreateAndDeleteQueueTest extends ServiceTestBase
       messagingService.getServer().getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       ClientSession session = createInVMFactory().createSession(false, true, true);
       SimpleString filterString = new SimpleString("x=y");
-      session.createQueue(address, queueName, filterString, false, false);
+      session.createQueue(address, queueName, filterString, false);
       Binding binding = messagingService.getServer().getPostOffice().getBinding(queueName);
       assertTrue(binding.getBindable() instanceof SoloQueueImpl);
 

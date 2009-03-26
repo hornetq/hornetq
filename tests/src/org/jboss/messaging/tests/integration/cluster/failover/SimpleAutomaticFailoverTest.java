@@ -90,7 +90,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -145,7 +145,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -223,7 +223,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -304,7 +304,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -372,7 +372,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -452,7 +452,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
          SimpleString queueName = new SimpleString("subscription" + i);
 
-         sess.createQueue(ADDRESS, queueName, null, false, false);
+         sess.createQueue(ADDRESS, queueName, null, false);
 
          ClientConsumer consumer = sess.createConsumer(queueName);
 
@@ -611,7 +611,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -677,7 +677,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       try
       {
-         session.createQueue(new SimpleString("blah"), new SimpleString("blah"), null, false, false);
+         session.createQueue(new SimpleString("blah"), new SimpleString("blah"), null, false);
 
          fail("Should throw exception");
       }
@@ -725,7 +725,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
             ClientSession session = sf.createSession(false, true, true);
 
-            session.createQueue(ADDRESS, ADDRESS, null, false, false);
+            session.createQueue(ADDRESS, ADDRESS, null, false);
 
             ClientProducer producer = session.createProducer(ADDRESS);
 

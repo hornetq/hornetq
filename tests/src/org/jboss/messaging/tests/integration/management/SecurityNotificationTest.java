@@ -119,7 +119,7 @@ public class SecurityNotificationTest extends UnitTestCase
 
       try
       {
-         guestSession.createQueue(address, queue, true, false);
+         guestSession.createQueue(address, queue, true);
          fail("session creation must fail and a notification of security violation must be sent");
       }
       catch (Exception e)
@@ -169,7 +169,7 @@ public class SecurityNotificationTest extends UnitTestCase
       adminSession = sf.createSession("admin", "admin", false, true, true, false, 1);
       adminSession.start();
       
-      adminSession.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true);
+      adminSession.createTemporaryQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue);
 
       notifConsumer = adminSession.createConsumer(notifQueue);
    }

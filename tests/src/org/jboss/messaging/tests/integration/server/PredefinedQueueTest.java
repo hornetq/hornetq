@@ -93,7 +93,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       try
       {
-         session.createQueue(testAddress, queueName1, null, false, false);
+         session.createQueue(testAddress, queueName1, null, false);
          
          fail("Should throw exception");
       }
@@ -103,7 +103,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       }
       try
       {
-         session.createQueue(testAddress, queueName2, null, false, false);
+         session.createQueue(testAddress, queueName2, null, false);
          
          fail("Should throw exception");
       }
@@ -113,7 +113,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       }
       try
       {
-         session.createQueue(testAddress, queueName3, null, false, false);
+         session.createQueue(testAddress, queueName3, null, false);
          
          fail("Should throw exception");
       }
@@ -229,11 +229,11 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
       
-      session.createQueue(testAddress, queueName1, null, true, false);
+      session.createQueue(testAddress, queueName1, null, true);
         
-      session.createQueue(testAddress, queueName2, null, true, false);
+      session.createQueue(testAddress, queueName2, null, true);
          
-      session.createQueue(testAddress, queueName3, null, true, false);
+      session.createQueue(testAddress, queueName3, null, true);
       
       session.close();
       

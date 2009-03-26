@@ -90,7 +90,7 @@ public class FailBackupServerTest extends UnitTestCase
 
       ClientSession session1 = sf1.createSession(false, true, true);
 
-      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session1.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session1.createProducer(ADDRESS);
 

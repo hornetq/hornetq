@@ -83,7 +83,7 @@ public class CoreClientTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
       
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
       
       ClientProducer producer = session.createProducer(QUEUE);     
       

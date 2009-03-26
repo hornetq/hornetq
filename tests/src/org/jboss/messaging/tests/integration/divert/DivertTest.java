@@ -84,9 +84,9 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName2 = new SimpleString("queue2");
       
-      session.createQueue(new SimpleString(forwardAddress), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress), queueName1, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName2, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName2, null, false);
 
       session.start();
 
@@ -176,13 +176,13 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress), queueName1, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName2, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName2, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName3, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName3, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName4, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, false);
 
       session.start();
 
@@ -296,7 +296,7 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName1 = new SimpleString("queue1");
  
-      session.createQueue(new SimpleString(forwardAddress), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress), queueName1, null, false);
       
       session.start();
 
@@ -371,11 +371,11 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress), queueName1, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName2, null, false, false);
-      session.createQueue(new SimpleString(testAddress), queueName3, null, false, false);
-      session.createQueue(new SimpleString(testAddress), queueName4, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName2, null, false);
+      session.createQueue(new SimpleString(testAddress), queueName3, null, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, false);
 
       session.start();
 
@@ -470,13 +470,13 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName4, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, false);
 
       session.start();
 
@@ -604,13 +604,13 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName4, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, false);
 
       session.start();
 
@@ -727,13 +727,13 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName4, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, false);
 
       session.start();
 
@@ -839,13 +839,13 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName4, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, false);
       
       session.start();
 
@@ -983,13 +983,13 @@ public class DivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, false);
       
-      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false, false);
+      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, false);
       
-      session.createQueue(new SimpleString(testAddress), queueName4, null, false, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, false);
       
       session.start();
 

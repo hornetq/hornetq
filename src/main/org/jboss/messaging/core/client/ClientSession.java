@@ -54,17 +54,17 @@ public interface ClientSession extends XAResource
     */
    void createQueue(String address, String queueName, boolean durable) throws MessagingException;
 
-   void createQueue(SimpleString address, SimpleString queueName, boolean durable, boolean temporary) throws MessagingException;
+   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws MessagingException;
 
-   void createQueue(String address, String queueName, boolean durable, boolean temporary) throws MessagingException;
+   void createQueue(String address, String queueName, String filterString, boolean durable) throws MessagingException;
 
-   void createQueue(SimpleString address,
-                    SimpleString queueName,
-                    SimpleString filterString,
-                    boolean durable,
-                    boolean temporary) throws MessagingException;
+   void createTemporaryQueue(SimpleString address, SimpleString queueName) throws MessagingException;
 
-   void createQueue(String address, String queueName, String filterString, boolean durable, boolean temporary) throws MessagingException;
+   void createTemporaryQueue(String address, String queueName) throws MessagingException;
+
+   void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws MessagingException;
+
+   void createTemporaryQueue(String address, String queueName, String filter) throws MessagingException;
 
    void deleteQueue(SimpleString queueName) throws MessagingException;
 

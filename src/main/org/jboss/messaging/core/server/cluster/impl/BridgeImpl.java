@@ -660,7 +660,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             //When the backup activates the queue might already exist, so we catch this and ignore
             try
             {
-               session.createQueue(managementNotificationAddress, notifQueueName, filter, false, false);
+               session.createQueue(managementNotificationAddress, notifQueueName, filter, false);
             }
             catch (MessagingException me)
             {

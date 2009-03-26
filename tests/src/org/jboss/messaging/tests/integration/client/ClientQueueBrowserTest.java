@@ -74,7 +74,7 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(QUEUE, QUEUE, null, false, false);
+         session.createQueue(QUEUE, QUEUE, null, false);
 
          ClientProducer producer = session.createProducer(QUEUE);
 
@@ -120,7 +120,7 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(QUEUE, QUEUE, null, false, false);
+         session.createQueue(QUEUE, QUEUE, null, false);
 
          ClientProducer producer = session.createProducer(QUEUE);
 
@@ -166,7 +166,7 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(QUEUE, QUEUE, null, false, false);
+         session.createQueue(QUEUE, QUEUE, null, false);
 
          ClientProducer producer = session.createProducer(QUEUE);
 
@@ -202,7 +202,7 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(QUEUE, QUEUE, null, false, false);
+         session.createQueue(QUEUE, QUEUE, null, false);
 
          ClientProducer producer = session.createProducer(QUEUE);
 
@@ -239,7 +239,7 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(QUEUE, QUEUE, null, false, false);
+         session.createQueue(QUEUE, QUEUE, null, false);
 
          ClientProducer producer = session.createProducer(QUEUE);
 
@@ -292,7 +292,7 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, preACK, 0);
 
-         session.createQueue(QUEUE, QUEUE, null, false, false);
+         session.createQueue(QUEUE, QUEUE, null, false);
 
          ClientProducer producer = session.createProducer(QUEUE);
 
@@ -327,7 +327,7 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(QUEUE, QUEUE, null, false, false);
+         session.createQueue(QUEUE, QUEUE, null, false);
 
          ClientProducer producer = session.createProducer(QUEUE);
 

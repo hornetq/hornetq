@@ -109,7 +109,7 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
                                                                                                 backupParams));
 
       session = sf.createSession(false, true, true);
-      session.createQueue(address, address, null, false, false);
+      session.createQueue(address, address, null, false);
    }
 
    @Override

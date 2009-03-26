@@ -92,7 +92,7 @@ public class PreserveOrderDuringFailoverTest extends FailoverTestBase
 
       final RemotingConnection conn1 = ((ClientSessionImpl)session).getConnection();
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       Interceptor failInterceptor = new Interceptor()
       {

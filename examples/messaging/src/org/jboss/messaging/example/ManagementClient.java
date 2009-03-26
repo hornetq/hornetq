@@ -60,10 +60,10 @@ public class ManagementClient
       sendMessages(clientSession, queue);
 
       // add temporary queue
-      clientSession.createQueue(replytoQueue, replytoQueue, null, false, true);
+      clientSession.createTemporaryQueue(replytoQueue, replytoQueue);
 
       SimpleString notifQueue = new SimpleString("notifQueue");
-      clientSession.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true);
+      clientSession.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, false);
       ClientConsumer notifConsumer = clientSession.createConsumer(notifQueue);
       notifConsumer.setMessageHandler(new MessageHandler()
       {

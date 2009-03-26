@@ -94,7 +94,7 @@ public class SplitBrainTest extends UnitTestCase
 
       ClientSession session = sf1.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 

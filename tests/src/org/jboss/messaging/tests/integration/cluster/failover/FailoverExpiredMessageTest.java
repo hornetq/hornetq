@@ -92,7 +92,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
   
       ClientSession session1 = sf1.createSession(false, true, true);
       
-      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session1.createQueue(ADDRESS, ADDRESS, null, false);
        
       session1.start();
 
@@ -193,7 +193,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
       
       log.info("created session");
 
-      session1.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session1.createQueue(ADDRESS, ADDRESS, null, false);
       
       log.info("created queue");
       

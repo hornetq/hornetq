@@ -21,6 +21,21 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.utils.SimpleString.toSimpleString;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientFileMessage;
@@ -72,20 +87,7 @@ import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
-import static org.jboss.messaging.utils.SimpleString.toSimpleString;
 import org.jboss.messaging.utils.TokenBucketLimiterImpl;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /*
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -237,7 +239,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws MessagingException
    {
-      createQueue(address, queueName, durable, false);
+      internalCreateQueue(address, queueName, null, durable, false);
    }
 
    public void createQueue(final String address, final String queueName, final boolean durable) throws MessagingException
@@ -245,42 +247,37 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       createQueue(toSimpleString(address), toSimpleString(queueName), durable);
    }
 
-   public void createQueue(final SimpleString address,
-                           final SimpleString queueName,
-                           final boolean durable,
-                           final boolean temporary) throws MessagingException
+   public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws MessagingException
    {
-      createQueue(address, queueName, null, durable, temporary);
+      internalCreateQueue(address, queueName, filterString, durable, false);
    }
 
-   public void createQueue(final String address, final String queueName, final boolean durable, final boolean temporary) throws MessagingException
+   public void createQueue(String address, String queueName, String filterString, boolean durable) throws MessagingException
    {
-      createQueue(toSimpleString(address), toSimpleString(queueName), durable, temporary);
+      createQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filterString), durable);
+   }
+   
+   public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws MessagingException
+   {
+      internalCreateQueue(address, queueName, null, false, true);
    }
 
-   public void createQueue(final SimpleString address,
-                           final SimpleString queueName,
-                           final SimpleString filterString,
-                           final boolean durable,
-                           final boolean temp) throws MessagingException
+   public void createTemporaryQueue(String address, String queueName) throws MessagingException
    {
-      checkClosed();
-
-      CreateQueueMessage request = new CreateQueueMessage(address, queueName, filterString, durable, temp);
-
-      channel.sendBlocking(request);
+      internalCreateQueue(toSimpleString(address), toSimpleString(queueName), null, false, true);
+   }
+   
+   public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws MessagingException
+   {
+      internalCreateQueue(address, queueName, filter, false, true);
    }
 
-   public void createQueue(final String address,
-                           final String queueName,
-                           final String filterString,
-                           final boolean durable,
-                           final boolean temporary) throws MessagingException
+   public void createTemporaryQueue(String address, String queueName, String filter) throws MessagingException
    {
-      createQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filterString), durable, temporary);
+      internalCreateQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filter), false, true);
    }
 
-   public void deleteQueue(final SimpleString queueName) throws MessagingException
+public void deleteQueue(final SimpleString queueName) throws MessagingException
    {
       checkClosed();
 
@@ -1278,6 +1275,26 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return producer;
    }
+
+   private void internalCreateQueue(final SimpleString address,
+                            final SimpleString queueName,
+                            final SimpleString filterString,
+                            final boolean durable,
+                            final boolean temp) throws MessagingException
+                            {
+      checkClosed();
+
+
+      if (durable && temp)
+      {
+         throw new MessagingException(MessagingException.INTERNAL_ERROR,
+         "Queue can not be both durable and temporay");
+      }
+
+      CreateQueueMessage request = new CreateQueueMessage(address, queueName, filterString, durable, temp);
+
+      channel.sendBlocking(request);
+                            }
 
    private void checkXA() throws XAException
    {

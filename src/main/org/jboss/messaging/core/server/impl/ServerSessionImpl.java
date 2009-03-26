@@ -1292,6 +1292,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          {
             securityStore.check(address, CheckType.CREATE_NON_DURABLE_QUEUE, this);
          }
+
          server.createQueue(address, name, filterString, durable, temporary);
 
          if (temporary)

@@ -82,9 +82,9 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       ClientSession session2 = sf.createSession(false, false, false);
 
-      session1.createQueue(testAddress, queue1, null, true, false);
+      session1.createQueue(testAddress, queue1, null, true);
       
-      session1.createQueue(testAddress, queue2, null, true, false);
+      session1.createQueue(testAddress, queue2, null, true);
 
       ClientProducer producer = session1.createProducer(testAddress);
 

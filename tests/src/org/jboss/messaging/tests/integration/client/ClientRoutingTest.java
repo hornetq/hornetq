@@ -179,7 +179,7 @@ public class ClientRoutingTest extends ServiceTestBase
          messagingService.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false, false);
+         sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false);
          int numMessages = 300;
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
@@ -219,9 +219,9 @@ public class ClientRoutingTest extends ServiceTestBase
          messagingService.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false, false);
-         sendSession.createQueue(addressA, queueB, new SimpleString("x = 1"), false, false);
-         sendSession.createQueue(addressA, queueC, new SimpleString("b = false"), false, false);
+         sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false);
+         sendSession.createQueue(addressA, queueB, new SimpleString("x = 1"), false);
+         sendSession.createQueue(addressA, queueC, new SimpleString("b = false"), false);
          int numMessages = 300;
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
@@ -282,7 +282,7 @@ public class ClientRoutingTest extends ServiceTestBase
          messagingService.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, false, true);
+         sendSession.createTemporaryQueue(addressA, queueA);
          int numMessages = 300;
          ClientProducer p = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)

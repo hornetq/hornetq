@@ -579,6 +579,6 @@ public class SoloQueueTest extends UnitTestCase
       clientSession = sessionFactory.createSession(false, true, true);
       clientSessionTxReceives = sessionFactory.createSession(false, true, false);
       clientSessionTxSends = sessionFactory.createSession(false, false, true);
-      clientSession.createQueue(address, qName1, null, true, false);
+      clientSession.createQueue(address, qName1, null, true);
    }
 }

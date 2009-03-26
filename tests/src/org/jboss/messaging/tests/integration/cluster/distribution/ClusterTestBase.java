@@ -255,7 +255,7 @@ public class ClusterTestBase extends ServiceTestBase
          filterString = FILTER_PROP.toString() + "='" + filterVal + "'";
       }
 
-      session.createQueue(address, queueName, filterString, durable, false);
+      session.createQueue(address, queueName, filterString, durable);
 
       session.close();
    }

@@ -84,16 +84,15 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
       SimpleString filter = new SimpleString("color = 'blue'");
       boolean durable = randomBoolean();
-      boolean temporary = false;
 
-      session.createQueue(address, queue, filter, durable, temporary);
+      session.createQueue(address, queue, filter, durable);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(queue.toString(), queueControl.getName());
       assertEquals(address.toString(), queueControl.getAddress());
       assertEquals(filter.toString(), queueControl.getFilter());
       assertEquals(durable, queueControl.isDurable());
-      assertEquals(temporary, queueControl.isTemporary());
+      assertEquals(false, queueControl.isTemporary());
       assertEquals(false, queueControl.isBackup());
 
       session.deleteQueue(queue);
@@ -104,7 +103,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(queue.toString(), queueControl.getName());
@@ -119,7 +118,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
       final SimpleString deadLetterAddress = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertNull(queueControl.getDeadLetterAddress());
@@ -144,7 +143,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
       String deadLetterAddress = randomString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       queueControl.setDeadLetterAddress(deadLetterAddress);
@@ -160,7 +159,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
       final SimpleString expiryAddress = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertNull(queueControl.getExpiryAddress());
@@ -185,7 +184,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
       String expiryAddress = randomString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       queueControl.setExpiryAddress(expiryAddress);
@@ -200,7 +199,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
 
@@ -220,7 +219,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(0, queueControl.getMessageCount());
@@ -241,7 +240,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(0, queueControl.getMessagesAdded());
@@ -265,7 +264,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertEquals(0, queueControl.getScheduledCount());
@@ -292,7 +291,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
       int intValue = randomInt();
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
 
@@ -324,7 +323,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
@@ -350,7 +349,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
       int intValue = randomInt();
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
 
       QueueControlMBean queueControl = createManagementControl(address, queue);
 
@@ -382,7 +381,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
       QueueControlMBean queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
@@ -421,8 +420,8 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString otherAddress = randomSimpleString();
       SimpleString otherQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
-      session.createQueue(otherAddress, otherQueue, null, false, true);
+      session.createQueue(address, queue, null, false);
+      session.createQueue(otherAddress, otherQueue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
@@ -461,7 +460,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
       SimpleString unknownQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
@@ -510,8 +509,8 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString otherAddress = randomSimpleString();
       SimpleString otherQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
-      session.createQueue(otherAddress, otherQueue, null, false, true);
+      session.createQueue(address, queue, null, false);
+      session.createQueue(otherAddress, otherQueue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
@@ -558,8 +557,8 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString otherAddress = randomSimpleString();
       SimpleString otherQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
-      session.createQueue(otherAddress, otherQueue, null, false, true);
+      session.createQueue(address, queue, null, false);
+      session.createQueue(otherAddress, otherQueue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
@@ -594,7 +593,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
       SimpleString unknownQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
@@ -637,7 +636,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
@@ -675,7 +674,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
@@ -715,7 +714,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
@@ -750,7 +749,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
@@ -780,7 +779,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
@@ -822,8 +821,8 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString expiryAddress = randomSimpleString();
       SimpleString expiryQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
-      session.createQueue(expiryAddress, expiryQueue, null, false, true);
+      session.createQueue(address, queue, null, false);
+      session.createQueue(expiryAddress, expiryQueue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send on queue
@@ -860,8 +859,8 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString deadLetterAddress = randomSimpleString();
       SimpleString deadLetterQueue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
-      session.createQueue(deadLetterAddress, deadLetterQueue, null, false, true);
+      session.createQueue(address, queue, null, false);
+      session.createQueue(deadLetterAddress, deadLetterQueue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       // send 2 messages on queue
@@ -903,7 +902,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       ClientMessage message = session.createClientMessage(false);
@@ -937,7 +936,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, true);
+      session.createQueue(address, queue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       ClientMessage message = session.createClientMessage(false);
@@ -974,7 +973,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
       QueueControlMBean queueControl = createManagementControl(address, queue);
       
       MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
@@ -1025,7 +1024,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
       QueueControlMBean queueControl = createManagementControl(address, queue);
       
       MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
@@ -1076,7 +1075,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
       QueueControlMBean queueControl = createManagementControl(address, queue);
       
       String history = queueControl.listMessageCounterAsHTML();
@@ -1091,7 +1090,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
       QueueControlMBean queueControl = createManagementControl(address, queue);
       
       MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
@@ -1110,7 +1109,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      session.createQueue(address, queue, null, false, false);
+      session.createQueue(address, queue, null, false);
       QueueControlMBean queueControl = createManagementControl(address, queue);
       
       MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);

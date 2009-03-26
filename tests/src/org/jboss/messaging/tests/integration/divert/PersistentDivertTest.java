@@ -98,13 +98,13 @@ public class PersistentDivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, true, false);
+      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, true);
       
-      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, true, false);
+      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, true);
       
-      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, true, false);
+      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, true);
       
-      session.createQueue(new SimpleString(testAddress), queueName4, null, true, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, true);
 
       session.start();
 
@@ -236,13 +236,13 @@ public class PersistentDivertTest extends ServiceTestBase
       
       final SimpleString queueName4 = new SimpleString("queue4");
       
-      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, true, false);
+      session.createQueue(new SimpleString(forwardAddress1), queueName1, null, true);
       
-      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, true, false);
+      session.createQueue(new SimpleString(forwardAddress2), queueName2, null, true);
       
-      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, true, false);
+      session.createQueue(new SimpleString(forwardAddress3), queueName3, null, true);
       
-      session.createQueue(new SimpleString(testAddress), queueName4, null, true, false);
+      session.createQueue(new SimpleString(testAddress), queueName4, null, true);
 
       ClientProducer producer = session.createProducer(new SimpleString(testAddress));
            

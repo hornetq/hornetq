@@ -280,7 +280,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, subName, null, false, false);
+      session.createQueue(ADDRESS, subName, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -340,7 +340,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -424,7 +424,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
          ClientSession sessConsume = createAutoCommitSession(sf);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -515,7 +515,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -622,7 +622,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
          ClientSession sessConsume = sf.createSession(false, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -764,7 +764,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -820,7 +820,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
          ClientSession sessConsume = sf.createSession(false, true, true);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -883,7 +883,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -957,7 +957,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
          ClientSession sessConsume = sf.createSession(false, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -1021,7 +1021,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
+      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
@@ -1055,7 +1055,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
+      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 
@@ -1089,7 +1089,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    {
       ClientSession s = sf.createSession(false, false, false);
 
-      s.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
+      s.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false);
 
       final int numConsumers = 100;
 
@@ -1240,7 +1240,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    {
       ClientSession sessCreate = sf.createSession(false, true, true);
 
-      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false, false);
+      sessCreate.createQueue(ADDRESS, new SimpleString(threadNum + ADDRESS.toString()), null, false);
 
       ClientSession sess = sf.createSession(false, true, true);
 

@@ -76,7 +76,7 @@ public class ClientRequestorTest extends UnitTestCase
 
       session.start();
      
-      session.createQueue(requestAddress, requestQueue, null, false, true);
+      session.createTemporaryQueue(requestAddress, requestQueue);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
       requestConsumer.setMessageHandler(new SimpleMessageHandler(key, session));
@@ -104,7 +104,7 @@ public class ClientRequestorTest extends UnitTestCase
 
       session.start();
       
-      session.createQueue(requestAddress, requestQueue, null, false, true);
+      session.createTemporaryQueue(requestAddress, requestQueue);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
       requestConsumer.setMessageHandler(new SimpleMessageHandler(key, session));
@@ -137,7 +137,7 @@ public class ClientRequestorTest extends UnitTestCase
 
       session.start();
       
-      session.createQueue(requestAddress, requestQueue, null, false, true);
+      session.createTemporaryQueue(requestAddress, requestQueue);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
       requestConsumer.setMessageHandler(new MessageHandler()
@@ -189,7 +189,7 @@ public class ClientRequestorTest extends UnitTestCase
 
       session.start();
       
-      session.createQueue(requestAddress, requestQueue, null, false, true);
+      session.createTemporaryQueue(requestAddress, requestQueue);
 
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
       requestConsumer.setMessageHandler(new SimpleMessageHandler(key, session));

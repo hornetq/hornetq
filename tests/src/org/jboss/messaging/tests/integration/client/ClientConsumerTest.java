@@ -72,7 +72,7 @@ public class ClientConsumerTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -108,7 +108,7 @@ public class ClientConsumerTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, false, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -144,7 +144,7 @@ public class ClientConsumerTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -184,7 +184,7 @@ public class ClientConsumerTest extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 

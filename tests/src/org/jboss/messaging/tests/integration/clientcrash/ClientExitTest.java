@@ -112,7 +112,7 @@ public class ClientExitTest extends ClientTestBase
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
       consumer = session.createConsumer(QUEUE);
       session.start();
    }

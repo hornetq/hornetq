@@ -193,7 +193,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
    {
       SimpleString otherQueue = randomSimpleString();
 
-      session.createQueue(otherQueue, otherQueue, null, false, true);
+      session.createQueue(otherQueue, otherQueue, null, false);
       ClientProducer producer = session.createProducer(address);
 
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
@@ -239,7 +239,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       SimpleString otherQueue = randomSimpleString();
 
-      session.createQueue(otherQueue, otherQueue, null, false, true);
+      session.createQueue(otherQueue, otherQueue, null, false);
 
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
       QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
@@ -276,7 +276,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
    {
       SimpleString otherQueue = randomSimpleString();
 
-      session.createQueue(otherQueue, otherQueue, null, false, true);
+      session.createQueue(otherQueue, otherQueue, null, false);
 
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
       QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
@@ -497,7 +497,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       session = sf.createSession(false, true, true);
 
-      session.createQueue(address, address, null, false, false);
+      session.createQueue(address, address, null, false);
    }
 
    @Override

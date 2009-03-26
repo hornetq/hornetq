@@ -167,7 +167,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
          if (!CREATE_AT_START)
          {
-            sessConsume.createQueue(ADDRESS, subName, null, true, false);
+            sessConsume.createQueue(ADDRESS, subName, null, true);
          }
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
@@ -356,7 +356,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
             for (int i = 0; i < NUM_SESSIONS; i++)
             {
                SimpleString subName = createSubName(threadNum, i);
-               session.createQueue(ADDRESS, subName, null, true, false);
+               session.createQueue(ADDRESS, subName, null, true);
             }
          }
          session.close();

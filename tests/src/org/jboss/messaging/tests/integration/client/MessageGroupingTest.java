@@ -564,7 +564,7 @@ public class MessageGroupingTest extends UnitTestCase
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);
-      clientSession.createQueue(qName, qName, null, false, false);
+      clientSession.createQueue(qName, qName, null, false);
    }
 
    private static class DummyMessageHandler implements MessageHandler

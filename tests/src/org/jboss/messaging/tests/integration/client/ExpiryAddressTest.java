@@ -57,8 +57,8 @@ public class ExpiryAddressTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(ea);
       messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
-      clientSession.createQueue(ea, eq, null, false, false);
-      clientSession.createQueue(qName, qName, null, false, false);
+      clientSession.createQueue(ea, eq, null, false);
+      clientSession.createQueue(qName, qName, null, false);
       
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
@@ -92,9 +92,9 @@ public class ExpiryAddressTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(ea);
       messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
-      clientSession.createQueue(ea, eq, null, false, false);
-      clientSession.createQueue(ea, eq2, null, false, false);
-      clientSession.createQueue(qName, qName, null, false, false);
+      clientSession.createQueue(ea, eq, null, false);
+      clientSession.createQueue(ea, eq2, null, false);
+      clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
@@ -153,9 +153,9 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString qName = new SimpleString("q1");
       SimpleString eq = new SimpleString("EQ1");
       SimpleString eq2 = new SimpleString("EQ2");
-      clientSession.createQueue(ea, eq, null, false, false);
-      clientSession.createQueue(ea, eq2, null, false, false);
-      clientSession.createQueue(qName, qName, null, false, false);
+      clientSession.createQueue(ea, eq, null, false);
+      clientSession.createQueue(ea, eq2, null, false);
+      clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
@@ -176,8 +176,8 @@ public class ExpiryAddressTest extends UnitTestCase
       addressSettings.setExpiryAddress(ea);
       messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       SimpleString eq = new SimpleString("EA1");
-      clientSession.createQueue(ea, eq, null, false, false);
-      clientSession.createQueue(qName, qName, null, false, false);
+      clientSession.createQueue(ea, eq, null, false);
+      clientSession.createQueue(qName, qName, null, false);
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
       ClientProducer producer = sendSession.createProducer(qName);

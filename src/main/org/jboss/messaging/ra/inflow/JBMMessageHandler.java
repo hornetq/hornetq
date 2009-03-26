@@ -117,7 +117,7 @@ public class JBMMessageHandler implements MessageHandler
 
          if (!subResponse.isExists())
          {
-            session.createQueue(activation.getAddress(), queueName, selectorString, true, false);
+            session.createQueue(activation.getAddress(), queueName, selectorString, true);
          }
          else
          {
@@ -142,7 +142,7 @@ public class JBMMessageHandler implements MessageHandler
                session.deleteQueue(queueName);
 
                // Create the new one
-               session.createQueue(activation.getAddress(), queueName, selectorString, true, false);
+               session.createQueue(activation.getAddress(), queueName, selectorString, true);
             }
          }
          consumer = session.createConsumer(queueName, null, false);
@@ -153,7 +153,7 @@ public class JBMMessageHandler implements MessageHandler
          if (activation.isTopic())
          {
             queueName = new SimpleString(UUID.randomUUID().toString());
-            session.createQueue(activation.getAddress(), queueName, selectorString, false, false);
+            session.createQueue(activation.getAddress(), queueName, selectorString, false);
          }
          else
          {

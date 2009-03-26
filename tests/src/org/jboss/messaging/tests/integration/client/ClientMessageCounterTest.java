@@ -72,7 +72,7 @@ public class ClientMessageCounterTest extends ServiceTestBase
 
             ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
 
-            session.createQueue(QUEUE, QUEUE, null, false, false);
+            session.createQueue(QUEUE, QUEUE, null, false);
 
             ClientProducer producer = session.createProducer(QUEUE);
 

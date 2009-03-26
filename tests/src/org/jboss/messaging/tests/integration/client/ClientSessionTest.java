@@ -191,7 +191,7 @@ public class ClientSessionTest extends ServiceTestBase
          service.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         clientSession.createQueue("a1", queueName, "foo=bar", false, false);
+         clientSession.createQueue("a1", queueName, "foo=bar", false);
          clientSession.createConsumer(queueName);
          clientSession.createConsumer(queueName);
          SessionQueueQueryResponseMessage resp = clientSession.queueQuery(new SimpleString(queueName));

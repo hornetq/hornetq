@@ -345,7 +345,7 @@ public class SecurityTest extends ServiceTestBase
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, false, true);
+         session.createQueue(addressA, queueA, false);
          session.close();
       }
       finally
@@ -379,7 +379,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
          try
          {
-            session.createQueue(addressA, queueA, false, true);
+            session.createQueue(addressA, queueA, false);
             fail("should throw exception");
          }
          catch (MessagingException e)
@@ -416,7 +416,7 @@ public class SecurityTest extends ServiceTestBase
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, false, true);
+         session.createQueue(addressA, queueA, false);
          session.deleteQueue(queueA);
          session.close();
       }
@@ -448,7 +448,7 @@ public class SecurityTest extends ServiceTestBase
          securityManager.addRole("auser", "arole");
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(addressA, queueA, false, true);
+         session.createQueue(addressA, queueA, false);
          try
          {
             session.deleteQueue(queueA);

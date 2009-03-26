@@ -157,7 +157,7 @@ public class ChunkTestBase extends ServiceTestBase
             session.start(xid, XAResource.TMNOFLAGS);
          }
          
-         session.createQueue(ADDRESS, ADDRESS, null, true, false);
+         session.createQueue(ADDRESS, ADDRESS, null, true);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 

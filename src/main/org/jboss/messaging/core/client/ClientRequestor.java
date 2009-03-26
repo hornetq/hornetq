@@ -49,7 +49,7 @@ public class ClientRequestor
 
       requestProducer = queueSession.createProducer(requestAddress);
       replyQueue = new SimpleString(UUID.randomUUID().toString());
-      queueSession.createQueue(replyQueue, replyQueue, null, false, true);
+      queueSession.createTemporaryQueue(replyQueue, replyQueue);
       replyConsumer = queueSession.createConsumer(replyQueue);
    }
 

@@ -162,7 +162,7 @@ public class PageCrashTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false);
+         session.createQueue(ADDRESS, ADDRESS, null, true);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 

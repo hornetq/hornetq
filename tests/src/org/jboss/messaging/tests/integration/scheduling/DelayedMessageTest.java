@@ -93,7 +93,7 @@ public class DelayedMessageTest extends ServiceTestBase
          ClientSessionFactory sessionFactory = createInVMFactory();
          ClientSession session = sessionFactory.createSession(false, false, false);
 
-         session.createQueue(qName, qName, null, true, false);
+         session.createQueue(qName, qName, null, true);
          session.close();
          
          ClientSession session1 = sessionFactory.createSession(false, true, true);
@@ -162,7 +162,7 @@ public class DelayedMessageTest extends ServiceTestBase
          ClientSession session = sessionFactory.createSession(false, false, false);
 
 
-         session.createQueue(qName, qName, null, true, false);
+         session.createQueue(qName, qName, null, true);
          session.close();
          
          ClientSession session1 = sessionFactory.createSession(false, true, true);         

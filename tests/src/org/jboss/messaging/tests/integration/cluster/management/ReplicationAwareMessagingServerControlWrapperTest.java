@@ -224,7 +224,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
 
       session = sf.createSession(false, true, true);
 
-      session.createQueue(address, address, null, false, false);
+      session.createQueue(address, address, null, false);
    }
 
    @Override

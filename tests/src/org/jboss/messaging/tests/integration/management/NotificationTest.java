@@ -218,7 +218,7 @@ public class NotificationTest extends UnitTestCase
       
       notifQueue = randomSimpleString();
       
-      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false, true);
+      session.createQueue(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, notifQueue, null, false);
 
       notifConsumer = session.createConsumer(notifQueue);
    }

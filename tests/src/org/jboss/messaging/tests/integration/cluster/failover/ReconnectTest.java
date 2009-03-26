@@ -92,7 +92,7 @@ public class ReconnectTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
       
       final int numIterations = 100;
       
@@ -173,7 +173,7 @@ public class ReconnectTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -262,7 +262,7 @@ public class ReconnectTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -341,7 +341,7 @@ public class ReconnectTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -411,7 +411,7 @@ public class ReconnectTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -505,7 +505,7 @@ public class ReconnectTest extends UnitTestCase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(ADDRESS, ADDRESS, null, false, false);
+      session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 

@@ -71,7 +71,7 @@ public class ClientAutogroupIdTest extends ServiceTestBase
          sf.setAutoGroup(true);
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(groupTestQ, groupTestQ, null, false, false);
+         session.createQueue(groupTestQ, groupTestQ, null, false);
 
          ClientProducer producer = session.createProducer(groupTestQ);
 
@@ -127,7 +127,7 @@ public class ClientAutogroupIdTest extends ServiceTestBase
          sf.setAutoGroup(true);
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(groupTestQ, groupTestQ, null, false, false);
+         session.createQueue(groupTestQ, groupTestQ, null, false);
 
          ClientProducer producer = session.createProducer(groupTestQ);
          ClientProducer producer2 = session.createProducer(groupTestQ);
@@ -193,7 +193,7 @@ public class ClientAutogroupIdTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(groupTestQ, groupTestQ, null, false, false);
+         session.createQueue(groupTestQ, groupTestQ, null, false);
 
          ClientProducer producer = session.createProducer(groupTestQ);
 

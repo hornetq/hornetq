@@ -870,6 +870,10 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          this.message = message;
       }
 
+      public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws MessagingException
+      {
+      }
+      
       public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws MessagingException
       {
       }
@@ -886,11 +890,23 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       {
       }
 
-      public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable, boolean temporary) throws MessagingException
+      public void createQueue(String address, String queueName, String filterString, boolean durable) throws MessagingException
       {
       }
 
-      public void createQueue(String address, String queueName, String filterString, boolean durable, boolean temporary) throws MessagingException
+      public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws MessagingException
+      {
+      }
+
+      public void createTemporaryQueue(String address, String queueName) throws MessagingException
+      {
+      }
+
+      public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws MessagingException
+      {
+      }
+
+      public void createTemporaryQueue(String address, String queueName, String filter) throws MessagingException
       {
       }
 

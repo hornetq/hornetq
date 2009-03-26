@@ -211,7 +211,7 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       sessionFactory.setAckBatchSize(0);
       clientSession = sessionFactory.createSession(false, true, true);
       clientSessionXa = sessionFactory.createSession(true, false, false);
-      clientSession.createQueue(address, qName1, null, true, false);
+      clientSession.createQueue(address, qName1, null, true);
    }
 
    private void restartServer() throws Exception

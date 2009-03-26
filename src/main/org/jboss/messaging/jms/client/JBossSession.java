@@ -528,7 +528,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
                queueName = new SimpleString(UUID.randomUUID().toString());
 
-               session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, false, true);
+               session.createTemporaryQueue(dest.getSimpleAddress(), queueName, coreFilterString);
 
                consumer = session.createConsumer(queueName, null, false);
 
@@ -555,7 +555,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
                if (!subResponse.isExists())
                {
-                  session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true, false);
+                  session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true);
                }
                else
                {
@@ -589,7 +589,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
                      session.deleteQueue(queueName);
 
                      // Create the new one
-                     session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true, false);
+                     session.createQueue(dest.getSimpleAddress(), queueName, coreFilterString, true);
                   }
                }
 
@@ -682,7 +682,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
          SimpleString simpleAddress = queue.getSimpleAddress();
 
-         session.createQueue(simpleAddress, simpleAddress, null, false, true);
+         session.createTemporaryQueue(simpleAddress, simpleAddress);
 
          connection.addTemporaryQueue(simpleAddress);
 
@@ -713,7 +713,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          //We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS checks when routing messages to a topic that
          //does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no subscriptions - core has no notion of a topic
          
-         session.createQueue(simpleAddress, simpleAddress, REJECTING_FILTER, false, true);
+         session.createQueue(simpleAddress, simpleAddress, REJECTING_FILTER, false);
 
          connection.addTemporaryQueue(simpleAddress);
          

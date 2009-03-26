@@ -87,7 +87,7 @@ public class BasicXaTest extends ServiceTestBase
       sessionFactory = createInVMFactory();
       clientSession = sessionFactory.createSession(true, false, false);
 
-      clientSession.createQueue(atestq, atestq, null, true, true);
+      clientSession.createQueue(atestq, atestq, null, true);
    }
 
    @Override

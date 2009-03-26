@@ -130,7 +130,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
          session = sf1.createSession(null, null, false, true, true, false, 0);
 
-         session.createQueue(ADDRESS, ADDRESS, null, true, false);
+         session.createQueue(ADDRESS, ADDRESS, null, true);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -439,7 +439,7 @@ public class PagingFailoverTest extends FailoverTestBase
       ClientSession session = factory.createSession(false, true, true, false);
       try
       {
-         session.createQueue(ADDRESS, ADDRESS, null, true, false);
+         session.createQueue(ADDRESS, ADDRESS, null, true);
 
          final CountDownLatch startFlag = new CountDownLatch(1);
          final CountDownLatch alignSemaphore = new CountDownLatch(numberOfThreads);

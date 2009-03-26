@@ -72,7 +72,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -117,7 +117,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -165,7 +165,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -254,7 +254,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -344,7 +344,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -446,7 +446,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -548,7 +548,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
       sf.setConsumerWindowSize(10);
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
@@ -602,7 +602,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
          final ClientSession session = sf.createSession(false, true, true);
 
-         session.createQueue(QUEUE, QUEUE, null, false, false);
+         session.createQueue(QUEUE, QUEUE, null, false);
 
          ClientProducer producer = session.createProducer(QUEUE);
 
@@ -644,7 +644,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
       final ClientSession session = sf.createSession(false, true, true);
 
-      session.createQueue(QUEUE, QUEUE, null, false, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 

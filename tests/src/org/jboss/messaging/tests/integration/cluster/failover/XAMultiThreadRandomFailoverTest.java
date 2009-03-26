@@ -171,7 +171,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
 
          ClientSession sessConsume = createTransactionalSession(sf);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -265,7 +265,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
 
          ClientSession sessConsume = createTransactionalSession(sf);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -377,7 +377,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
 
          sessConsume.start();
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
@@ -450,7 +450,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
 
          ClientSession sessConsume = sf.createSession(true, false, false);
 
-         sessConsume.createQueue(ADDRESS, subName, null, false, false);
+         sessConsume.createQueue(ADDRESS, subName, null, false);
 
          ClientConsumer consumer = sessConsume.createConsumer(subName);
 
