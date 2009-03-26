@@ -146,7 +146,34 @@ public class Messaging
 
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), config.isJMXManagementEnabled());
+
+      remotingService.setManagementService(managementService);
+      
+      MessagingServer server = new MessagingServerImpl();
+
+      server.setConfiguration(config);
+
+      server.setStorageManager(storageManager);
+
+      server.setRemotingService(remotingService);
+
+      server.setSecurityManager(securityManager);
+
+      server.setManagementService(managementService);
+
+      return new MessagingServiceImpl(server, storageManager, remotingService);
+   }
+
+   public static MessagingServiceImpl newMessagingService(final Configuration config, final MBeanServer mbeanService)
+   {      
+      StorageManager storageManager = new JournalStorageManager(config);
+
+      RemotingService remotingService = new RemotingServiceImpl(config);
+
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
+
+      ManagementService managementService = new ManagementServiceImpl(mbeanService, config.isJMXManagementEnabled());
 
       remotingService.setManagementService(managementService);
       

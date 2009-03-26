@@ -20,9 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.paging;
+package org.jboss.messaging.tests.integration.client;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.AssertionFailedError;
 
@@ -44,7 +45,7 @@ import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
- * A PagingServiceIntegrationTest
+ * A PagingTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -52,11 +53,11 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class PagingServiceIntegrationTest extends ServiceTestBase
+public class PagingTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(PagingServiceIntegrationTest.class);
+   private static final Logger log = Logger.getLogger(PagingTest.class);
    
    private static final int RECEIVE_TIMEOUT = 30000;
 
@@ -921,6 +922,395 @@ public class PagingServiceIntegrationTest extends ServiceTestBase
       }
 
    }
+   
+   public void testPagingOneDestinationOnly() throws Exception
+   {
+      SimpleString PAGED_ADDRESS = new SimpleString("paged");
+      SimpleString NON_PAGED_ADDRESS = new SimpleString("non-paged");
+
+      Configuration configuration = createDefaultConfig();
+
+      configuration.setPagingMaxGlobalSizeBytes(0);
+      configuration.setPagingGlobalWatermarkSize(0);
+
+      Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
+
+      addresses.put("#", new AddressSettings());
+
+      AddressSettings pagedDestination = new AddressSettings();
+      pagedDestination.setPageSizeBytes(1024);
+      pagedDestination.setMaxSizeBytes(10 * 1024);
+
+      addresses.put(PAGED_ADDRESS.toString(), pagedDestination);
+
+      MessagingService service = createService(true, configuration, addresses);
+
+      try
+      {
+         service.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         ClientSession session = sf.createSession(false, true, false);
+
+         session.createQueue(PAGED_ADDRESS, PAGED_ADDRESS, true);
+
+         session.createQueue(NON_PAGED_ADDRESS, NON_PAGED_ADDRESS, true);
+
+         ClientProducer producerPaged = session.createProducer(PAGED_ADDRESS);
+         ClientProducer producerNonPaged = session.createProducer(NON_PAGED_ADDRESS);
+
+         int NUMBER_OF_MESSAGES = 100;
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = session.createClientMessage(true);
+            msg.getBody().writeBytes(new byte[512]);
+
+            producerPaged.send(msg);
+            producerNonPaged.send(msg);
+         }
+
+         session.close();
+
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
+
+         session = sf.createSession(false, true, false);
+
+         session.start();
+
+         ClientConsumer consumerNonPaged = session.createConsumer(NON_PAGED_ADDRESS);
+         ClientConsumer consumerPaged = session.createConsumer(PAGED_ADDRESS);
+
+         ClientMessage ackList[] = new ClientMessage[NUMBER_OF_MESSAGES];
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = consumerNonPaged.receive(5000);
+            assertNotNull(msg);
+            ackList[i] = msg;
+         }
+
+         assertNull(consumerNonPaged.receiveImmediate());
+
+         consumerNonPaged.close();
+
+         for (ClientMessage ack : ackList)
+         {
+            ack.acknowledge();
+         }
+
+         session.commit();
+
+         ackList = null;
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = consumerPaged.receive(5000);
+            assertNotNull(msg);
+            msg.acknowledge();
+            session.commit();
+         }
+
+         assertNull(consumerPaged.receiveImmediate());
+
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
+
+         session.close();
+
+      }
+      finally
+      {
+         if (service.isStarted())
+         {
+            service.stop();
+         }
+      }
+   }
+
+   public void testPagingDifferentSizes() throws Exception
+   {
+      SimpleString PAGED_ADDRESS_A = new SimpleString("paged-a");
+      SimpleString PAGED_ADDRESS_B = new SimpleString("paged-b");
+
+      Configuration configuration = createDefaultConfig();
+
+      configuration.setPagingMaxGlobalSizeBytes(0);
+      configuration.setPagingGlobalWatermarkSize(0);
+
+      Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
+
+      addresses.put("#", new AddressSettings());
+
+      AddressSettings pagedDestinationA = new AddressSettings();
+      pagedDestinationA.setPageSizeBytes(1024);
+      pagedDestinationA.setMaxSizeBytes(10 * 1024);
+
+      int NUMBER_MESSAGES_BEFORE_PAGING = 20;
+
+      addresses.put(PAGED_ADDRESS_A.toString(), pagedDestinationA);
+
+      AddressSettings pagedDestinationB = new AddressSettings();
+      pagedDestinationB.setPageSizeBytes(2024);
+      pagedDestinationB.setMaxSizeBytes(20 * 1024);
+
+      addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
+
+      MessagingService service = createService(true, configuration, addresses);
+
+      try
+      {
+         service.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         ClientSession session = sf.createSession(false, true, false);
+
+         session.createQueue(PAGED_ADDRESS_A, PAGED_ADDRESS_A, true);
+
+         session.createQueue(PAGED_ADDRESS_B, PAGED_ADDRESS_B, true);
+
+         ClientProducer producerA = session.createProducer(PAGED_ADDRESS_A);
+         ClientProducer producerB = session.createProducer(PAGED_ADDRESS_B);
+
+         int NUMBER_OF_MESSAGES = 100;
+
+         for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
+         {
+            ClientMessage msg = session.createClientMessage(true);
+            msg.getBody().writeBytes(new byte[512]);
+
+            producerA.send(msg);
+            producerB.send(msg);
+         }
+
+         session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
+
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
+         {
+            ClientMessage msg = session.createClientMessage(true);
+            msg.getBody().writeBytes(new byte[512]);
+
+            producerA.send(msg);
+            producerB.send(msg);
+         }
+
+         session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
+
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         for (int i = NUMBER_MESSAGES_BEFORE_PAGING * 2; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = session.createClientMessage(true);
+            msg.getBody().writeBytes(new byte[512]);
+
+            producerA.send(msg);
+            producerB.send(msg);
+         }
+
+         session.close();
+
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         session = sf.createSession(null, null, false, true, true, false, 0);
+
+         session.start();
+
+         ClientConsumer consumerA = session.createConsumer(PAGED_ADDRESS_A);
+
+         ClientConsumer consumerB = session.createConsumer(PAGED_ADDRESS_B);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = consumerA.receive(5000);
+            assertNotNull("Couldn't receive a message on consumerA, iteration = " + i, msg);
+            msg.acknowledge();
+         }
+
+         assertNull(consumerA.receiveImmediate());
+
+         consumerA.close();
+
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = consumerB.receive(5000);
+            assertNotNull(msg);
+            msg.acknowledge();
+            session.commit();
+         }
+
+         assertNull(consumerB.receiveImmediate());
+
+         consumerB.close();
+
+         session.close();
+
+      }
+      finally
+      {
+         if (service.isStarted())
+         {
+            service.stop();
+         }
+      }
+   }
+
+
+   public void testPagingDifferentSizesAndGlobal() throws Exception
+   {
+      SimpleString PAGED_ADDRESS_A = new SimpleString("paged-a");
+      SimpleString PAGED_ADDRESS_B = new SimpleString("paged-b");
+      SimpleString PAGED_ADDRESS_GLOBAL = new SimpleString("paged-global");
+      
+
+      Configuration configuration = createDefaultConfig();
+
+      configuration.setPagingMaxGlobalSizeBytes(30 * 1024);
+      configuration.setPagingGlobalWatermarkSize(1024);
+
+      Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
+
+      addresses.put("#", new AddressSettings());
+
+      AddressSettings pagedDestinationA = new AddressSettings();
+      pagedDestinationA.setPageSizeBytes(1024);
+      pagedDestinationA.setMaxSizeBytes(10 * 1024);
+
+      int NUMBER_MESSAGES_BEFORE_PAGING = 20;
+
+      addresses.put(PAGED_ADDRESS_A.toString(), pagedDestinationA);
+
+      AddressSettings pagedDestinationB = new AddressSettings();
+      pagedDestinationB.setPageSizeBytes(2024);
+      pagedDestinationB.setMaxSizeBytes(20 * 1024);
+
+      addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
+
+      MessagingService service = createService(true, configuration, addresses);
+
+      try
+      {
+         service.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         ClientSession session = sf.createSession(false, true, false);
+
+         session.createQueue(PAGED_ADDRESS_A, PAGED_ADDRESS_A, true);
+
+         session.createQueue(PAGED_ADDRESS_B, PAGED_ADDRESS_B, true);
+
+         session.createQueue(PAGED_ADDRESS_GLOBAL, PAGED_ADDRESS_GLOBAL, true);
+
+         ClientProducer producerA = session.createProducer(PAGED_ADDRESS_A);
+         ClientProducer producerB = session.createProducer(PAGED_ADDRESS_B);
+
+         int NUMBER_OF_MESSAGES = 100;
+
+         for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
+         {
+            ClientMessage msg = session.createClientMessage(true);
+            msg.getBody().writeBytes(new byte[512]);
+
+            producerA.send(msg);
+            producerB.send(msg);
+         }
+
+         session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
+
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
+         {
+            ClientMessage msg = session.createClientMessage(true);
+            msg.getBody().writeBytes(new byte[512]);
+
+            producerA.send(msg);
+            producerB.send(msg);
+         }
+
+         session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
+
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         for (int i = NUMBER_MESSAGES_BEFORE_PAGING * 2; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = session.createClientMessage(true);
+            msg.getBody().writeBytes(new byte[512]);
+
+            producerA.send(msg);
+            producerB.send(msg);
+         }
+
+         session.close();
+
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         session = sf.createSession(null, null, false, true, true, false, 0);
+
+         session.start();
+
+         ClientConsumer consumerA = session.createConsumer(PAGED_ADDRESS_A);
+
+         ClientConsumer consumerB = session.createConsumer(PAGED_ADDRESS_B);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = consumerA.receive(5000);
+            assertNotNull("Couldn't receive a message on consumerA, iteration = " + i, msg);
+            msg.acknowledge();
+         }
+
+         assertNull(consumerA.receiveImmediate());
+
+         consumerA.close();
+         
+         session.commit();
+
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = consumerB.receive(5000);
+            assertNotNull(msg);
+            msg.acknowledge();
+            session.commit();
+         }
+
+         assertNull(consumerB.receiveImmediate());
+
+         consumerB.close();
+
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+
+         session.close();
+
+      }
+      finally
+      {
+         if (service.isStarted())
+         {
+            service.stop();
+         }
+      }
+   }
+
+
 
    // Package protected ---------------------------------------------
 

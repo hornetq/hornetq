@@ -27,6 +27,8 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.management.MBeanServer;
+
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
@@ -131,7 +133,6 @@ public class ServiceTestBase extends UnitTestCase
                                             final Configuration configuration,
                                             final Map<String, AddressSettings> settings)
    {
-
       MessagingService service;
 
       if (realFiles)
@@ -141,6 +142,37 @@ public class ServiceTestBase extends UnitTestCase
       else
       {
          service = Messaging.newNullStorageMessagingService(configuration);
+      }
+
+      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+      {
+         service.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+      }
+      
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
+      
+      service.getServer().getAddressSettingsRepository().addMatch("#", defaultSetting);
+
+      return service;
+   }
+
+   
+   protected MessagingService createService(final boolean realFiles,
+                                            final Configuration configuration,
+                                            final MBeanServer mbeanServer,
+                                            final Map<String, AddressSettings> settings)
+   {
+
+      MessagingService service;
+
+      if (realFiles)
+      {
+         service = Messaging.newMessagingService(configuration, mbeanServer);
+      }
+      else
+      {
+         service = Messaging.newNullStorageMessagingService(configuration, mbeanServer);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -230,6 +262,7 @@ public class ServiceTestBase extends UnitTestCase
    {
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
+      configuration.setJMXManagementEnabled(false);
       configuration.setBindingsDirectory(getBindingsDir());
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir());

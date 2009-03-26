@@ -92,6 +92,13 @@ public abstract class ManagementTestBase extends UnitTestCase
 
       mbeanServer = MBeanServerFactory.createMBeanServer();
    }
+   
+   protected void tearDown() throws Exception
+   {
+      MBeanServerFactory.releaseMBeanServer(mbeanServer);
+      
+      super.tearDown();
+   }
 
    protected void checkNoResource(ObjectName on)
    {

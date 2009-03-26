@@ -71,7 +71,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
    public void testSelfExpandingBuffer(boolean netty) throws Exception
    {
 
-      setUpService(true);
+      setUpService(netty);
 
       ClientSessionFactory factory;
 
