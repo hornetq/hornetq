@@ -32,9 +32,12 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -213,7 +216,97 @@ public class ExpiryAddressTest extends UnitTestCase
       }
 
    }
+   
+   public void testExpireWithDefaultAddressSettings() throws Exception
+   {
+      SimpleString ea = new SimpleString("EA");
+      SimpleString qName = new SimpleString("q1");
+      SimpleString eq = new SimpleString("EA1");
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(ea);
+      messagingService.getServer().getAddressSettingsRepository().setDefault(addressSettings);
+      clientSession.createQueue(ea, eq, null, false);
+      clientSession.createQueue(qName, qName, null, false);
+      
+      ClientProducer producer = clientSession.createProducer(qName);
+      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      clientMessage.setExpiration(System.currentTimeMillis());
+      producer.send(clientMessage);
+      
+      clientSession.start();
+      ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+      ClientMessage m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
 
+      clientConsumer = clientSession.createConsumer(eq);
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals(m.getBody().readString(), "heyho!");
+      m.acknowledge();
+   }
+
+
+   public void testExpireWithWildcardAddressSettings() throws Exception
+   {
+      SimpleString ea = new SimpleString("EA");
+      SimpleString qName = new SimpleString("q1");
+      SimpleString eq = new SimpleString("EA1");
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(ea);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("*", addressSettings);
+      clientSession.createQueue(ea, eq, null, false);
+      clientSession.createQueue(qName, qName, null, false);
+      
+      ClientProducer producer = clientSession.createProducer(qName);
+      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      clientMessage.setExpiration(System.currentTimeMillis());
+      producer.send(clientMessage);
+      
+      clientSession.start();
+      ClientConsumer clientConsumer = clientSession.createConsumer(qName);
+      ClientMessage m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
+
+      clientConsumer = clientSession.createConsumer(eq);
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals(m.getBody().readString(), "heyho!");
+      m.acknowledge();
+   }
+   
+   public void testExpireWithSublevelAddressSettings() throws Exception
+   {
+      SimpleString address = new SimpleString("prefix.address");
+      SimpleString queue = randomSimpleString();
+      SimpleString expiryAddress = randomSimpleString();
+      SimpleString exipryQueue = randomSimpleString();
+
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress);
+      messagingService.getServer().getAddressSettingsRepository().addMatch("prefix.*", addressSettings);
+      clientSession.createQueue(address, queue, false);
+      clientSession.createQueue(expiryAddress, exipryQueue, false);
+      
+      ClientProducer producer = clientSession.createProducer(address);
+      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      clientMessage.setExpiration(System.currentTimeMillis());
+      producer.send(clientMessage);
+      
+      clientSession.start();
+      ClientConsumer clientConsumer = clientSession.createConsumer(queue);
+      ClientMessage m = clientConsumer.receive(500);
+      assertNull(m);
+      clientConsumer.close();
+
+      clientConsumer = clientSession.createConsumer(exipryQueue);
+      m = clientConsumer.receive(500);
+      assertNotNull(m);
+      assertEquals(m.getBody().readString(), "heyho!");
+      m.acknowledge();
+   }
+   
    @Override
    protected void setUp() throws Exception
    {
