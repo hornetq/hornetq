@@ -29,10 +29,13 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptor;
 import org.jboss.messaging.integration.transports.netty.NettyConnector;
+import org.jboss.messaging.integration.transports.netty.TransportConstants;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -49,7 +52,7 @@ public class NettyHttpTest extends UnitTestCase
 
    // Commented out until https://jira.jboss.org/jira/browse/JBMESSAGING-1555 is fixed
    
-   /*public void testSendAndReceiveAtSameTime() throws Exception
+   public void testSendAndReceiveAtSameTime() throws Exception
    {
 
       int numPackets = 1000;
@@ -103,12 +106,8 @@ public class NettyHttpTest extends UnitTestCase
    {
       tearDown();
 
-      for (int k = 0; k < 2000; k++)
+      for (int k = 0; k < 20000; k++)
       {
-         System.out.println("-----------------------------------------------------");
-         System.out.println("-----------------------------------------------------");
-         System.out.println("-----------------------------------------------------");
-         System.out.println("-----------------------------------------------------");
          setUp();
          testSendOnly();
          tearDown();
@@ -403,7 +402,7 @@ public class NettyHttpTest extends UnitTestCase
          assertTrue(i == j);
          i++;
       }
-   }*/
+   }
 
    @Override
    protected void tearDown() throws Exception
@@ -524,6 +523,7 @@ public class NettyHttpTest extends UnitTestCase
 
       public void connectionException(Object connectionID, MessagingException me)
       {
+         me.printStackTrace();
       }
    }
 }
