@@ -156,7 +156,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             synchronized (this)
             {
                while ((stopped || (m = buffer.poll()) == null) &&
-                      !closed && toWait > 0 )
+                      !closed && toWait > 0)
                {
                   if (start == -1)
                   {
@@ -247,22 +247,21 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                                       "Cannot set MessageHandler - consumer is in receive(...)");
       }
 
-      // If no handler before then need to queue them up
-      boolean queueUp = handler == null;
+      boolean noPreviousHandler = handler == null;
 
       handler = theHandler;
 
-      if (queueUp)
+      //if no previous handler existed queue up messages for delivery
+      if (handler != null && noPreviousHandler)
       {
-         stopped = false;
          for (int i = 0; i < buffer.size(); i++)
          {
             queueExecutor();
          }
       }
-      else
+      //if unsetting a previous handler may be in onMessage so wait for completion
+      else if (handler == null && !noPreviousHandler)
       {
-         stopped = true;
          waitForOnMessageToComplete();
       }
    }
@@ -299,7 +298,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public synchronized void stop() throws MessagingException
    {
-      if(stopped)
+      if (stopped)
       {
          return;
       }
@@ -336,7 +335,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // This is ok - we just ignore the message
          return;
       }
-      
+
       ClientMessageInternal messageToHandle = message;
 
       if (isFileConsumer())
@@ -350,11 +349,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          // Execute using executor
 
-       buffer.add(messageToHandle);
-       if(!stopped)
-       {
-          queueExecutor();
-       }
+         buffer.add(messageToHandle);
+         if (!stopped)
+         {
+            queueExecutor();
+         }
       }
       else
       {
@@ -393,7 +392,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (isFileConsumer())
       {
-         ClientFileMessageInternal fileMessage = (ClientFileMessageInternal)currentChunkMessage;
+         ClientFileMessageInternal fileMessage = (ClientFileMessageInternal) currentChunkMessage;
          addBytesBody(fileMessage, chunk.getBody());
       }
       else
@@ -413,7 +412,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Close the file that was being generated
          if (isFileConsumer())
          {
-            ((ClientFileMessageInternal)currentChunkMessage).closeChannel();
+            ((ClientFileMessageInternal) currentChunkMessage).closeChannel();
          }
 
          currentChunkMessage.setFlowControlSize(chunk.getPacketSize());
@@ -432,7 +431,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          buffer.clear();
       }
-           
+
       waitForOnMessageToComplete();
    }
 
@@ -574,7 +573,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       MessageHandler theHandler = handler;
 
       if (theHandler != null)
-      {         
+      {
          synchronized (this)
          {
             message = buffer.poll();
@@ -665,7 +664,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             if (message instanceof ClientFileMessage)
             {
-               ((ClientFileMessage)message).getFile().delete();
+               ((ClientFileMessage) message).getFile().delete();
             }
          }
       }
@@ -692,7 +691,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          int propertiesSize = message.getPropertiesEncodeSize();
 
-         MessagingBuffer bufferProperties = session.createBuffer(propertiesSize); 
+         MessagingBuffer bufferProperties = session.createBuffer(propertiesSize);
 
          // FIXME: Find a better way to clone this ClientMessageImpl as ClientFileMessageImpl without using the
          // MessagingBuffer.
@@ -729,7 +728,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private ClientMessageInternal createFileMessage(final byte[] header) throws Exception
    {
 
-      MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header); 
+      MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
 
       if (isFileConsumer())
       {
@@ -771,7 +770,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       public void run()
       {
-         
+
          try
          {
             callOnMessage();
