@@ -590,11 +590,11 @@ public class ClientSessionStopStartTest extends ServiceTestBase
       assertNull(cm);
 
       session.start();
-      cm = consumer.receiveImmediate();
+      cm = consumer.receive(5000);
       assertNotNull(cm);
-      cm = consumer2.receiveImmediate();
+      cm = consumer2.receive(5000);
       assertNotNull(cm);
-      cm = consumer3.receiveImmediate();
+      cm = consumer3.receive(5000);
       assertNotNull(cm);
       session.close();
    }
