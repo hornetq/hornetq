@@ -29,7 +29,11 @@ import javax.management.MBeanServerFactory;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.messaging.core.client.*;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.server.MessagingService;
@@ -38,7 +42,7 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.utils.*;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A HeuristicXATest
@@ -64,6 +68,34 @@ public class HeuristicXATest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   public void testInvalidCall() throws Exception
+   {
+      Configuration configuration = createDefaultConfig();
+      configuration.setJMXManagementEnabled(true);
+
+      MessagingService service = createService(false,
+                                               configuration,
+                                               mbeanServer,
+                                               new HashMap<String, AddressSettings>());
+
+      try
+      {
+         service.start();
+
+         MessagingServerControlMBean jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
+
+         assertFalse(jmxServer.commitPreparedTransaction("Nananananana"));
+      }
+      finally
+      {
+         if (service.isStarted())
+         {
+            service.stop();
+         }
+      }
+
+   }
+
    public void testHerusticCommit() throws Exception
    {
       internalTest(true);
@@ -74,7 +106,7 @@ public class HeuristicXATest extends ServiceTestBase
       internalTest(false);
    }
 
-   private void internalTest(boolean isCommit) throws Exception
+   private void internalTest(final boolean isCommit) throws Exception
    {
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
@@ -147,11 +179,9 @@ public class HeuristicXATest extends ServiceTestBase
             session.commit();
             session.close();
          }
-         else
-         {
-            assertEquals(0,
-                         ((Queue)service.getServer().getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
-         }
+
+         assertEquals(0,
+                      ((Queue)service.getServer().getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
@@ -168,12 +198,14 @@ public class HeuristicXATest extends ServiceTestBase
 
    // Protected -----------------------------------------------------
 
+   @Override
    protected void tearDown() throws Exception
    {
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
       super.tearDown();
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
