@@ -21,15 +21,185 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.tests.util.ServiceTestBase;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class ClientReceiveTest extends ServiceTestBase
 {
-   public void testReceive()
-   {
+   SimpleString addressA = new SimpleString("addressA");
 
+   SimpleString queueA = new SimpleString("queueA");
+
+   public void testBasicReceive() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession sendSession = cf.createSession(false, true, true);
+         ClientProducer cp = sendSession.createProducer(addressA);
+         ClientSession session = cf.createSession(false, true, true);
+         session.createQueue(addressA, queueA, false);
+         ClientConsumer cc = session.createConsumer(queueA);
+         session.start();
+         cp.send(sendSession.createClientMessage(false));
+         assertNotNull(cc.receive());
+         session.close();
+         sendSession.close();
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }
+
+   public void testReceiveTimesoutCorrectly() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession session = cf.createSession(false, true, true);
+         session.createQueue(addressA, queueA, false);
+         ClientConsumer cc = session.createConsumer(queueA);
+         session.start();
+         long time = System.currentTimeMillis();
+         cc.receive(1000);
+         assertTrue(System.currentTimeMillis() - time >= 1000);
+         session.close();
+
+
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }
+
+   public void testReceiveOnClosedException() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession session = cf.createSession(false, true, true);
+         session.createQueue(addressA, queueA, false);
+         ClientConsumer cc = session.createConsumer(queueA);
+         session.start();
+         session.close();
+         try
+         {
+            cc.receive();
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+         }
+         session.close();
+
+
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }
+
+   public void testReceiveThrowsExceptionWhenHandlerSet() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession session = cf.createSession(false, true, true);
+         session.createQueue(addressA, queueA, false);
+         ClientConsumer cc = session.createConsumer(queueA);
+         session.start();
+         cc.setMessageHandler(new MessageHandler()
+         {
+            public void onMessage(ClientMessage message)
+            {
+            }
+         });
+         try
+         {
+            cc.receive();
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            assertEquals(MessagingException.ILLEGAL_STATE, e.getCode());
+         }
+         session.close();
+
+
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }
+
+   public void testReceiveImmediate() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         //forces perfect round robin
+         cf.setConsumerWindowSize(1);
+         ClientSession sendSession = cf.createSession(false, true, true);
+         ClientProducer cp = sendSession.createProducer(addressA);
+         ClientSession session = cf.createSession(false, true, true);
+         session.createQueue(addressA, queueA, false);
+         ClientConsumer cc = session.createConsumer(queueA);
+         ClientConsumer cc2 = session.createConsumer(queueA);
+         session.start();
+         cp.send(sendSession.createClientMessage(false));
+         cp.send(sendSession.createClientMessage(false));
+         cp.send(sendSession.createClientMessage(false));
+         //at this point we know that the first consumer has a messge in ites buffer
+         assertNotNull(cc2.receive(5000));
+         assertNotNull(cc2.receive(5000));
+         assertNotNull(cc.receiveImmediate());
+         session.close();
+         sendSession.close();
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
    }
 }

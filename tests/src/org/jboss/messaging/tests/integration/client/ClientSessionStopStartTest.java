@@ -248,7 +248,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
-      public void testStopStartConsumerAsyncSync() throws Exception
+   public void testStopStartConsumerAsyncSync() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
 
@@ -542,7 +542,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
       session.close();
    }
 
-    public void testStopStartMultipleConsumers() throws Exception
+   public void testStopStartMultipleConsumers() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
       sf.setConsumerWindowSize(10);
@@ -597,48 +597,48 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
 
    public void testStopStartAlreadyStartedSession() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      final ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
       {
-         ClientSessionFactory sf = createInVMFactory();
-
-         final ClientSession session = sf.createSession(false, true, true);
-
-         session.createQueue(QUEUE, QUEUE, null, false);
-
-         ClientProducer producer = session.createProducer(QUEUE);
-
-         final int numMessages = 100;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = createTextMessage("m" + i, session);
-            message.putIntProperty(new SimpleString("i"), i);
-            producer.send(message);
-         }
-
-         final ClientConsumer consumer = session.createConsumer(QUEUE);
-
-         session.start();
-
-
-         for (int i = 0; i < numMessages / 2; i++)
-         {
-            ClientMessage cm = consumer.receive(5000);
-            assertNotNull(cm);
-            cm.acknowledge();
-         }
-
-         session.start();
-         for (int i = 0; i < numMessages / 2; i++)
-         {
-            ClientMessage cm = consumer.receive(5000);
-            assertNotNull(cm);
-            cm.acknowledge();
-         }
-
-         session.close();
+         ClientMessage message = createTextMessage("m" + i, session);
+         message.putIntProperty(new SimpleString("i"), i);
+         producer.send(message);
       }
 
-     public void testStopAlreadyStoppedSession() throws Exception
+      final ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      session.start();
+
+
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage cm = consumer.receive(5000);
+         assertNotNull(cm);
+         cm.acknowledge();
+      }
+
+      session.start();
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage cm = consumer.receive(5000);
+         assertNotNull(cm);
+         cm.acknowledge();
+      }
+
+      session.close();
+   }
+
+   public void testStopAlreadyStoppedSession() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
 
@@ -675,7 +675,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
       session.stop();
       cm = consumer.receiveImmediate();
       assertNull(cm);
-      
+
       session.start();
       for (int i = 0; i < numMessages / 2; i++)
       {
