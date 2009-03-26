@@ -90,12 +90,13 @@ public class ServiceTestBase extends UnitTestCase
          try
          {
             Thread.sleep(500);
-         } catch (InterruptedException e)
+         }
+         catch (InterruptedException e)
          {
          }
       }
    }
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -148,16 +149,15 @@ public class ServiceTestBase extends UnitTestCase
       {
          service.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
-      
+
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
-      
+
       service.getServer().getAddressSettingsRepository().addMatch("#", defaultSetting);
 
       return service;
    }
 
-   
    protected MessagingService createService(final boolean realFiles,
                                             final Configuration configuration,
                                             final MBeanServer mbeanServer,
@@ -179,10 +179,10 @@ public class ServiceTestBase extends UnitTestCase
       {
          service.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
-      
+
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
-      
+
       service.getServer().getAddressSettingsRepository().addMatch("#", defaultSetting);
 
       return service;
@@ -269,7 +269,7 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setJournalFileSize(100 * 1024);
       configuration.setPagingDirectory(getPageDir());
       configuration.setLargeMessagesDirectory(getLargeMessagesDir());
-      
+
       configuration.setJournalType(JournalType.NIO);
 
       configuration.getAcceptorConfigurations().clear();
@@ -303,7 +303,7 @@ public class ServiceTestBase extends UnitTestCase
    {
       return createTextMessage(session, s, true);
    }
-   
+
    public String getTextMessage(ClientMessage m)
    {
       m.getBody().resetReaderIndex();
@@ -331,7 +331,12 @@ public class ServiceTestBase extends UnitTestCase
       message.getBody().writeBytes(b);
       return message;
    }
-   
+
+   protected int getMessageCount(final MessagingService service, final String address) throws Exception
+   {
+      return getMessageCount(service.getServer().getPostOffice(), address);
+   }
+
    /**
     * @param address
     * @param postOffice
@@ -350,14 +355,13 @@ public class ServiceTestBase extends UnitTestCase
          if ((binding instanceof LocalQueueBinding))
          {
             QueueBinding qBinding = (QueueBinding)binding;
-            
+
             messageCount += qBinding.getQueue().getMessageCount();
 
          }
       }
       return messageCount;
    }
-
 
    // Private -------------------------------------------------------
 
