@@ -382,9 +382,17 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
             assertEquals("A slow consumer shouldn't buffer anything on the client side!", 0, cons2.getBufferSize());
          }
 
-         session1.commit(); // just to make sure everything is flushed and no pending packets on the sending buffer, or
-         // the getMessageCount would fail
-         session2.commit();
+         session1.close(); // just to make sure everything is flushed and no pending packets on the sending buffer, or
+                           // the getMessageCount would fail
+         session2.close();
+
+         session1 = sf.createSession(false, true, true);
+         session1.start();
+         session2 = sf.createSession(false, true, true);
+         session2.start();
+         
+         prod = session1.createProducer(ADDRESS);
+
 
          assertEquals(0, getMessageCount(service, ADDRESS.toString()));
 
@@ -438,10 +446,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
             assertEquals("A slow consumer shouldn't buffer anything on the client side!", 0, cons1.getBufferSize());
          }
 
-         session1.commit(); // just to make sure everything is flushed and no pending packets on the sending buffer, or
-         // the getMessageCount would fail
-         session2.commit();
-
+         session1.close();
+         session1 = null;
+         session2.close();
+         session2 = null;
          assertEquals(0, getMessageCount(service, ADDRESS.toString()));
 
       }
