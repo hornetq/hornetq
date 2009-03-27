@@ -39,7 +39,7 @@ import org.jboss.messaging.utils.SimpleString;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class ClientConsumerWindowSizeTest extends ServiceTestBase
+public class ConsumerWindowSizeTest extends ServiceTestBase
 {
    private final SimpleString addressA = new SimpleString("addressA");
 
@@ -86,18 +86,16 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
             m.acknowledge();
          }
          receiveSession.close();
-         
+
          for (int i = 0; i < numMessage * 2; i++)
          {
             ClientMessage m = cc.receive(5000);
             assertNotNull(m);
             m.acknowledge();
          }
-         
 
          session.close();
          sendSession.close();
-         
 
          assertEquals(0, getMessageCount(messagingService, queueA.toString()));
 
@@ -174,9 +172,13 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          try
          {
             if (session != null)
+            {
                session.close();
+            }
             if (sessionB != null)
+            {
                sessionB.close();
+            }
          }
          catch (Exception ignored)
          {
@@ -199,7 +201,7 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
       internalTestSlowConsumerNoBuffer(true);
    }
 
-   private void internalTestSlowConsumerNoBuffer(boolean largeMessages) throws Exception
+   private void internalTestSlowConsumerNoBuffer(final boolean largeMessages) throws Exception
    {
       MessagingService service = createService(false);
 
@@ -273,9 +275,13 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          try
          {
             if (session != null)
+            {
                session.close();
+            }
             if (sessionB != null)
+            {
                sessionB.close();
+            }
          }
          catch (Exception ignored)
          {
@@ -444,9 +450,13 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          try
          {
             if (session1 != null)
+            {
                session1.close();
+            }
             if (session2 != null)
+            {
                session2.close();
+            }
          }
          catch (Exception ignored)
          {
@@ -502,7 +512,7 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
             /* (non-Javadoc)
              * @see org.jboss.messaging.core.client.MessageHandler#onMessage(org.jboss.messaging.core.client.ClientMessage)
              */
-            public synchronized void onMessage(ClientMessage message)
+            public synchronized void onMessage(final ClientMessage message)
             {
                try
                {
@@ -517,12 +527,12 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
                   {
                      // it will hold here for a while
                      if (!latchDone.await(TIMEOUT, TimeUnit.SECONDS)) // a timed wait, so if the test fails, one less
-                                                                      // thread around
+                     // thread around
                      {
                         new Exception("ClientConsuemrWindowSizeTest Handler couldn't receive signal in less than 5 seconds").printStackTrace(); // hudson
-                                                                                                                                                // or
-                                                                                                                                                // junit
-                                                                                                                                                // report
+                        // or
+                        // junit
+                        // report
                         failed = true;
                      }
                   }
@@ -580,9 +590,13 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          try
          {
             if (session != null)
+            {
                session.close();
+            }
             if (sessionB != null)
+            {
                sessionB.close();
+            }
          }
          catch (Exception ignored)
          {
@@ -604,9 +618,8 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
    {
       internalTestSlowConsumerOnMessageHandlerBufferOne(true);
    }
-   
-   
-   private void internalTestSlowConsumerOnMessageHandlerBufferOne(boolean largeMessage) throws Exception
+
+   private void internalTestSlowConsumerOnMessageHandlerBufferOne(final boolean largeMessage) throws Exception
    {
       MessagingService service = createService(false);
 
@@ -655,7 +668,7 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
             /* (non-Javadoc)
              * @see org.jboss.messaging.core.client.MessageHandler#onMessage(org.jboss.messaging.core.client.ClientMessage)
              */
-            public synchronized void onMessage(ClientMessage message)
+            public synchronized void onMessage(final ClientMessage message)
             {
                try
                {
@@ -675,9 +688,9 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
                      if (!latchDone.await(TIMEOUT, TimeUnit.SECONDS))
                      {
                         new Exception("ClientConsuemrWindowSizeTest Handler couldn't receive signal in less than 5 seconds").printStackTrace(); // hudson
-                                                                                                                                                // or
-                                                                                                                                                // junit
-                                                                                                                                                // report
+                        // or
+                        // junit
+                        // report
                         failed = true;
                      }
                   }
@@ -719,7 +732,7 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          }
 
          latchDone.countDown();
-         
+
          assertTrue(latchReceivedBuffered.await(TIMEOUT, TimeUnit.SECONDS));
 
          session.close();
@@ -738,9 +751,13 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          try
          {
             if (session != null)
+            {
                session.close();
+            }
             if (sessionB != null)
+            {
                sessionB.close();
+            }
          }
          catch (Exception ignored)
          {
@@ -752,21 +769,20 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          }
       }
    }
-   
+
    public void testNoWindowRoundRobin() throws Exception
    {
       testNoWindowRoundRobin(false);
    }
-   
-   
+
    public void testNoWindowRoundRobinLargeMessage() throws Exception
    {
       testNoWindowRoundRobin(true);
    }
-   
+
    private void testNoWindowRoundRobin(final boolean largeMessages) throws Exception
    {
-      
+
       MessagingService service = createService(false);
 
       ClientSession sessionA = null;
@@ -780,7 +796,7 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerWindowSize(-1);
-         
+
          if (largeMessages)
          {
             sf.setMinLargeMessageSize(100);
@@ -812,25 +828,37 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
             }
             prod.send(msg);
          }
-         
-         
+
          long timeout = System.currentTimeMillis() + TIMEOUT * 1000;
-         
+
          boolean foundA = false;
          boolean foundB = false;
-         
+
          do
          {
             foundA = consA.getBufferSize() == numberOfMessages / 2;
             foundB = consB.getBufferSize() == numberOfMessages / 2;
-            
+
             Thread.sleep(10);
-         } while ((!foundA || !foundB) && System.currentTimeMillis() < timeout);
-         
-         
-         assertTrue("ConsumerA didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() + ", consB=" + consB.getBufferSize() + ") foundA = " + foundA + " foundB = " + foundB, foundA);
-         assertTrue("ConsumerB didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() + ", consB=" + consB.getBufferSize() + ") foundA = " + foundA + " foundB = " + foundB, foundB);
-         
+         }
+         while ((!foundA || !foundB) && System.currentTimeMillis() < timeout);
+
+         assertTrue("ConsumerA didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() +
+                             ", consB=" +
+                             consB.getBufferSize() +
+                             ") foundA = " +
+                             foundA +
+                             " foundB = " +
+                             foundB,
+                    foundA);
+         assertTrue("ConsumerB didn't receive the expected number of messages on buffer (consA=" + consA.getBufferSize() +
+                             ", consB=" +
+                             consB.getBufferSize() +
+                             ") foundA = " +
+                             foundA +
+                             " foundB = " +
+                             foundB,
+                    foundB);
 
       }
       finally
@@ -838,9 +866,13 @@ public class ClientConsumerWindowSizeTest extends ServiceTestBase
          try
          {
             if (sessionA != null)
+            {
                sessionA.close();
+            }
             if (sessionB != null)
+            {
                sessionB.close();
+            }
          }
          catch (Exception ignored)
          {
