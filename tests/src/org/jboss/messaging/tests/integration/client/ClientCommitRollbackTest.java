@@ -43,6 +43,8 @@ public class ClientCommitRollbackTest extends ServiceTestBase
 {
    public final SimpleString addressA = new SimpleString("addressA");
 
+   public final SimpleString addressB = new SimpleString("addressB");
+
    public final SimpleString queueA = new SimpleString("queueA");
 
    public final SimpleString queueB = new SimpleString("queueB");
@@ -134,6 +136,62 @@ public class ClientCommitRollbackTest extends ServiceTestBase
          }
       }
    }
+
+   /*public void testReceiveWithRollbackMultipleConsumersDifferentQueues() throws Exception
+   {
+      MessagingService messagingService = createService(false);
+      try
+      {
+         messagingService.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession sendSession = cf.createSession(false, true, true);
+         ClientSession session = cf.createSession(false, false, false);
+         sendSession.createQueue(addressA, queueA, false);
+         sendSession.createQueue(addressB, queueB, false);
+         ClientProducer cp = sendSession.createProducer(addressA);
+         ClientProducer cp2 = sendSession.createProducer(addressB);
+         ClientConsumer cc = session.createConsumer(queueA);
+         ClientConsumer cc2 = session.createConsumer(queueB);
+         int numMessages = 100;
+         for (int i = 0; i < numMessages; i++)
+         {
+            cp.send(sendSession.createClientMessage(false));
+            cp2.send(sendSession.createClientMessage(false));
+         }
+         session.start();
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage cm = cc.receive(5000);
+            assertNotNull(cm);
+            cm.acknowledge();
+            cm = cc2.receive(5000);
+            assertNotNull(cm);
+            cm.acknowledge();
+         }
+         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q2 = (Queue) messagingService.getServer().getPostOffice().getBinding(queueB).getBindable();
+         assertEquals(numMessages, q.getDeliveringCount());
+         session.rollback();
+         assertEquals(numMessages, q2.getDeliveringCount());
+         assertEquals(numMessages, q.getMessageCount());
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage cm = cc.receive(5000);
+            assertNotNull(cm);
+            cm.acknowledge();
+         }
+         assertEquals(numMessages, q.getDeliveringCount());
+         session.close();
+         sendSession.close();
+      }
+      finally
+      {
+         if (messagingService.isStarted())
+         {
+            messagingService.stop();
+         }
+      }
+   }*/
 
    public void testAsyncConsumerCommit() throws Exception
    {
