@@ -68,6 +68,7 @@
    <property name="core.client.jar.name" value="jbm-core-client.jar"/>
    <property name="ra.jar.name" value="jbm-ra.jar"/>
    <property name="ra.rar.name" value="jbm-ra.rar"/>
+   <property name="netty.jar.name" value="netty-3.1.0.BETA1.jar"/>
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
@@ -887,7 +888,7 @@
             <include name="jnpserver.jar"/>
          </fileset>
          <fileset dir="${netty.netty.lib}">
-            <include name="netty-3.1.0.ALPHA2.jar"/>
+            <include name="${netty.jar.name}"/>
          </fileset>
       </copy>
 
