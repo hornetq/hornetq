@@ -58,7 +58,7 @@ public class PagingTest extends ServiceTestBase
 
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(PagingTest.class);
-   
+
    private static final int RECEIVE_TIMEOUT = 30000;
 
    // Attributes ----------------------------------------------------
@@ -116,7 +116,7 @@ public class PagingTest extends ServiceTestBase
             {
                bodyLocal.writeInt(j);
             }
-            
+
             if (body == null)
             {
                body = bodyLocal.array();
@@ -383,12 +383,11 @@ public class PagingTest extends ServiceTestBase
                bodyLocal.writeInt(j);
             }
 
-            
             if (body == null)
             {
                body = bodyLocal.array();
             }
-            
+
             message.setBody(bodyLocal);
             message.putIntProperty(new SimpleString("id"), i);
 
@@ -513,7 +512,6 @@ public class PagingTest extends ServiceTestBase
                bodyLocal.writeInt(j);
             }
 
-
             message.putIntProperty(new SimpleString("id"), i);
 
             producer.send(message);
@@ -582,7 +580,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages; i++)
          {
             message = session.createClientMessage(true);
-            
+
             MessagingBuffer bodyLocal = message.getBody();
 
             for (int j = 1; j <= numberOfIntegers; j++)
@@ -671,7 +669,7 @@ public class PagingTest extends ServiceTestBase
       }
 
       config.setPagingGlobalWatermarkSize(10 * 1024);
- 
+
       MessagingService messagingService = createService(true, config, settings);
 
       messagingService.start();
@@ -922,7 +920,7 @@ public class PagingTest extends ServiceTestBase
       }
 
    }
-   
+
    public void testPagingOneDestinationOnly() throws Exception
    {
       SimpleString PAGED_ADDRESS = new SimpleString("paged");
@@ -1138,7 +1136,6 @@ public class PagingTest extends ServiceTestBase
 
          consumerA.close();
 
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
          assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
@@ -1165,13 +1162,11 @@ public class PagingTest extends ServiceTestBase
       }
    }
 
-
    public void testPagingDifferentSizesAndGlobal() throws Exception
    {
       SimpleString PAGED_ADDRESS_A = new SimpleString("paged-a");
       SimpleString PAGED_ADDRESS_B = new SimpleString("paged-b");
       SimpleString PAGED_ADDRESS_GLOBAL = new SimpleString("paged-global");
-      
 
       Configuration configuration = createDefaultConfig();
 
@@ -1277,7 +1272,7 @@ public class PagingTest extends ServiceTestBase
          assertNull(consumerA.receiveImmediate());
 
          consumerA.close();
-         
+
          session.commit();
 
          assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
@@ -1295,9 +1290,6 @@ public class PagingTest extends ServiceTestBase
 
          consumerB.close();
 
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
-
          session.close();
 
       }
@@ -1309,8 +1301,6 @@ public class PagingTest extends ServiceTestBase
          }
       }
    }
-
-
 
    // Package protected ---------------------------------------------
 
