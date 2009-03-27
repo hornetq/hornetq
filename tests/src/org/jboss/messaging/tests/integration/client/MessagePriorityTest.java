@@ -99,6 +99,50 @@ public class MessagePriorityTest extends UnitTestCase
       consumer.close();
       session.deleteQueue(queue);
    }
+   
+   /**
+    * in this tests, the session is started and the consumer created *before* the messages are sent.
+    * each message which is sent will be received by the consumer in its buffer and the priority won't be taken
+    * into account.
+    * We need to implement client-side message priority to handle this case: https://jira.jboss.org/jira/browse/JBMESSAGING-1560
+    */
+   public void _testMessagePriorityWithClientSidePrioritization() throws Exception
+   {
+      SimpleString queue = randomSimpleString();
+      SimpleString address = randomSimpleString();
+
+      session.createQueue(address, queue, false);
+
+      ClientProducer producer = session.createProducer(address);
+      session.start();
+      ClientConsumer consumer = session.createConsumer(queue);
+
+
+      ClientMessage[] messages = new ClientMessage[10];
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage m = createTextMessage(Integer.toString(i), session);
+         m.setPriority((byte)i);
+         messages[i] = m;
+      }
+      // send message with lower priority first
+      for (int i = 0; i < 10; i++)
+      {
+         producer.send(messages[i]);
+      }
+
+      // expect to consumer message with higher priority first
+      for (int i = 9; i >= 0; i--)
+      {
+         ClientMessage m = consumer.receive(500);
+         assertNotNull(m);
+         assertEquals(messages[i].getPriority(), m.getPriority());
+         assertEquals(m.getBody().readString(), messages[i].getBody().readString());
+      }
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
 
    public void testMessageOrderWithSamePriority() throws Exception
    {
