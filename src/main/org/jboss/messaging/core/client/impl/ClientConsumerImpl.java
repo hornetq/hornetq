@@ -135,6 +135,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                                       "Cannot call receive(...) - a MessageHandler is set");
       }
 
+      if (clientWindowSize == 0 && buffer.isEmpty())
+      {
+         sendCredits(1);
+      }
+
       receiverThread = Thread.currentThread();
 
       if (timeout == 0)
@@ -152,7 +157,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          while (true)
          {
             ClientMessageInternal m = null;
-
+            
             synchronized (this)
             {
                while ((stopped || (m = buffer.poll()) == null) &&
@@ -248,6 +253,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       boolean noPreviousHandler = handler == null;
+      
+      if (handler != theHandler && clientWindowSize == 0)
+      {
+         sendCredits(1);
+      }
 
       handler = theHandler;
 
@@ -492,16 +502,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       sessionExecutor.execute(runner);
    }
 
-   private void flowControl(final int messageBytes, final boolean useExecutor) throws MessagingException
+   private void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException
    {
-      if (clientWindowSize > 0)
+      if (clientWindowSize >= 0)
       {
          creditsToSend += messageBytes;
 
          if (creditsToSend >= clientWindowSize)
          {
 
-            if (useExecutor)
+            if (isLargeMessage)
             {
                // Flowcontrol on largeMessages continuations needs to be done in a separate thread or failover would block
                final int credits = creditsToSend;
@@ -509,21 +519,37 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                creditsToSend = 0;
                sessionExecutor.execute(new Runnable()
                {
-
                   public void run()
                   {
-                     channel.send(new SessionConsumerFlowCreditMessage(id, credits));
+                     sendCredits(credits);
                   }
+
 
                });
             }
             else
             {
-               channel.send(new SessionConsumerFlowCreditMessage(id, creditsToSend));
+               if (clientWindowSize == 0)
+               {
+                  // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be aways buffering one after received the first message
+                  sendCredits(creditsToSend - 1);
+               }
+               else
+               {
+                  sendCredits(creditsToSend);
+               }
                creditsToSend = 0;
             }
          }
       }
+   }
+
+   /**
+    * @param credits
+    */
+   private void sendCredits(final int credits)
+   {
+      channel.send(new SessionConsumerFlowCreditMessage(id, credits));
    }
 
    private void waitForOnMessageToComplete()
@@ -597,6 +623,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             else
             {
                session.expire(id, message.getMessageID());
+            }
+            
+            if (clientWindowSize == 0)
+            {
+               sendCredits(1);
             }
          }
       }

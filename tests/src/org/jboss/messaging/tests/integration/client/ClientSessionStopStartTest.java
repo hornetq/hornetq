@@ -314,7 +314,15 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 
       latch.await();
 
-      session.stop();
+      try
+      {
+         session.stop();
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+         throw e;
+      }
 
       assertFalse(handler.failed);
 

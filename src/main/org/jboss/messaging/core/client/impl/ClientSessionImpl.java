@@ -1218,9 +1218,14 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
          // caution for very fast consumers
          clientWindowSize = -1;
       }
-      else if (windowSize == 1)
+      else if (windowSize == 0)
       {
          // Slow consumer - no buffering
+         clientWindowSize = 0;
+      }
+      else if (windowSize == 1)
+      {
+         // Slow consumer = buffer 1
          clientWindowSize = 1;
       }
       else if (windowSize > 1)
@@ -1249,7 +1254,10 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
       // We even send it if windowSize == -1, since we need to start the
       // consumer
 
-      channel.send(new SessionConsumerFlowCreditMessage(consumerID, windowSize));
+      if (windowSize != 0)
+      {
+         channel.send(new SessionConsumerFlowCreditMessage(consumerID, windowSize));
+      }
 
       return consumer;
    }

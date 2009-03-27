@@ -801,7 +801,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
             while (positionPendingLargeMessage < sizePendingLargeMessage)
             {
-               if (precalculateAvailableCredits <= 0)
+               if (precalculateAvailableCredits <= 0 && availableCredits != null)
                {
                   if (trace)
                   {
