@@ -137,7 +137,7 @@ public class ClientCommitRollbackTest extends ServiceTestBase
       }
    }
 
-   /*public void testReceiveWithRollbackMultipleConsumersDifferentQueues() throws Exception
+   public void testReceiveWithRollbackMultipleConsumersDifferentQueues() throws Exception
    {
       MessagingService messagingService = createService(false);
       try
@@ -171,17 +171,13 @@ public class ClientCommitRollbackTest extends ServiceTestBase
          Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
          Queue q2 = (Queue) messagingService.getServer().getPostOffice().getBinding(queueB).getBindable();
          assertEquals(numMessages, q.getDeliveringCount());
+         cc.close();
+         cc2.close();
          session.rollback();
-         assertEquals(numMessages, q2.getDeliveringCount());
+         assertEquals(0, q2.getDeliveringCount());
          assertEquals(numMessages, q.getMessageCount());
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage cm = cc.receive(5000);
-            assertNotNull(cm);
-            cm.acknowledge();
-         }
-         assertEquals(numMessages, q.getDeliveringCount());
-         session.close();
+         assertEquals(0, q2.getDeliveringCount());
+         assertEquals(numMessages, q.getMessageCount());
          sendSession.close();
       }
       finally
@@ -191,7 +187,7 @@ public class ClientCommitRollbackTest extends ServiceTestBase
             messagingService.stop();
          }
       }
-   }*/
+   }
 
    public void testAsyncConsumerCommit() throws Exception
    {

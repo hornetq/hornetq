@@ -22,13 +22,13 @@
 
 package org.jboss.messaging.core.server;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Executor;
-
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Executor;
 
 /**
  * 
@@ -144,4 +144,6 @@ public interface Queue extends Bindable
 
    // Only used in testing
    void deliverNow();
+
+   boolean checkDLQ(MessageReference ref) throws Exception;
 }

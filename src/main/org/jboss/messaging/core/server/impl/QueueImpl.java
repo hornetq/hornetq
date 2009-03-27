@@ -12,30 +12,14 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.list.PriorityLinkedList;
 import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -58,6 +42,21 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.ConcurrentSet;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of a Queue TODO use Java 5 concurrent queue
@@ -1028,7 +1027,7 @@ public class QueueImpl implements Queue
    }
 
    
-   private boolean checkDLQ(final MessageReference reference) throws Exception
+   public boolean checkDLQ(final MessageReference reference) throws Exception
    {
       ServerMessage message = reference.getMessage();
 
@@ -1043,8 +1042,6 @@ public class QueueImpl implements Queue
 
       if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
       {
-         log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address");
-
          sendToDeadLetterAddress(reference);
 
          return false;
@@ -1157,6 +1154,8 @@ public class QueueImpl implements Queue
          }
          else
          {
+
+            log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address " + deadLetterAddress + " from " + name);
             move(deadLetterAddress, ref, false);
          }
       }
@@ -1496,7 +1495,8 @@ public class QueueImpl implements Queue
 
          for (MessageReference ref : refsToAck)
          {
-            if (checkDLQ(ref))
+            //if (((QueueImpl)ref.getQueue()).checkDLQ(ref))
+            if (ref.getQueue().checkDLQ(ref))
             {
                LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
 
