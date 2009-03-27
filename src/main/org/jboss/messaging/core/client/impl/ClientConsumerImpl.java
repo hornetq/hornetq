@@ -296,14 +296,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return directory != null;
    }
 
-   public synchronized void stop() throws MessagingException
+   public void stop() throws MessagingException
    {
-      if (stopped)
-      {
-         return;
-      }
-      stopped = true;
       waitForOnMessageToComplete();
+      synchronized (this)
+      {
+         if (stopped)
+         {
+            return;
+         }
+         stopped = true;
+      }
    }
 
    public synchronized void start()
