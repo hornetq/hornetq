@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessageReference;
@@ -37,6 +38,7 @@ import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
 
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -322,6 +324,39 @@ public class UnitTestCase extends TestCase
       return testDir + "/temp";
    }
 
+   protected static void expectMessagingException(String message, int errorCode, MessagingAction action)
+   {
+      try
+      {
+         action.run();
+         fail(message);
+      }
+      catch (Exception e)
+      {
+         assertTrue(e instanceof MessagingException);
+         assertEquals(errorCode, ((MessagingException)e).getCode());
+      }
+   }
+   
+   protected static void expectMessagingException(int errorCode, MessagingAction action)
+   {
+      expectMessagingException("must throw a MessagingException with the expected errorCode: " + errorCode, errorCode, action);
+   }
+   
+   protected static void expectXAException(int errorCode, MessagingAction action)
+   {
+      try
+      {
+         action.run();
+         fail("must throw a XAException with the expected errorCode: " + errorCode);
+      }
+      catch (Exception e)
+      {
+         assertTrue(e instanceof XAException);
+         assertEquals(errorCode, ((XAException)e).errorCode);
+      }
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -575,5 +610,10 @@ public class UnitTestCase extends TestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
+   protected static interface MessagingAction
+   {
+      void run() throws Exception;
+   }
 
 }

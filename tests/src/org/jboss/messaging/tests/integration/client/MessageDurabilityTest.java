@@ -141,7 +141,7 @@ public class MessageDurabilityTest extends UnitTestCase
       boolean durable = true;
 
       SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      final SimpleString queue = randomSimpleString();
 
       session.createQueue(address, queue, !durable);
 
@@ -151,14 +151,14 @@ public class MessageDurabilityTest extends UnitTestCase
       restart();
 
       session.start();
-      try
+      
+      expectMessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
       {
-         session.createConsumer(queue);
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.QUEUE_DOES_NOT_EXIST, e.getCode());
-      }
+         public void run() throws MessagingException
+         {
+            session.createConsumer(queue);
+         }
+      });
    }
 
    /**
@@ -169,7 +169,7 @@ public class MessageDurabilityTest extends UnitTestCase
       boolean durable = true;
 
       SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
+      final SimpleString queue = randomSimpleString();
 
       session.createTemporaryQueue(address, queue);
 
@@ -179,14 +179,13 @@ public class MessageDurabilityTest extends UnitTestCase
       restart();
 
       session.start();
-      try
+      expectMessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
       {
-         session.createConsumer(queue);
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.QUEUE_DOES_NOT_EXIST, e.getCode());
-      }
+         public void run() throws MessagingException
+         {
+            session.createConsumer(queue);
+         }
+      });
    }
 
    // Package protected ---------------------------------------------

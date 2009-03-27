@@ -171,7 +171,7 @@ public class TemporaryQueueTest extends UnitTestCase
 
    public void testDeleteTemporaryQueueWhenClientCrash() throws Exception
    {
-      SimpleString queue = randomSimpleString();
+      final SimpleString queue = randomSimpleString();
       SimpleString address = randomSimpleString();
 
       session.createTemporaryQueue(address, queue);
@@ -194,15 +194,14 @@ public class TemporaryQueueTest extends UnitTestCase
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();
-      try
+      
+      expectMessagingException("temp queue must not exist after the server detected the client crash", MessagingException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
       {
-         session.createConsumer(queue);
-         fail("temp queue must not exist after the server detected the client crash");
-      }
-      catch (MessagingException e)
-      {
-         assertEquals(MessagingException.QUEUE_DOES_NOT_EXIST, e.getCode());
-      }
+         public void run() throws MessagingException
+         {
+            session.createConsumer(queue);
+         }
+      });
 
       session.close();
    }
