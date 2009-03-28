@@ -25,6 +25,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuat
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.Future;
+import org.jboss.messaging.utils.TokenBucketLimiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +76,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final File directory;
 
    private ClientMessageInternal currentChunkMessage;
+   
+   private final TokenBucketLimiter rateLimiter;
 
    private volatile Thread receiverThread;
 
@@ -103,6 +106,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final long id,
                              final int clientWindowSize,
                              final int ackBatchSize,
+                             final TokenBucketLimiter rateLimiter,
                              final Executor executor,
                              final Channel channel,
                              final File directory)
@@ -112,6 +116,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.channel = channel;
 
       this.session = session;
+      
+      this.rateLimiter = rateLimiter;
 
       sessionExecutor = executor;
 
@@ -128,6 +134,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public ClientMessage receive(long timeout) throws MessagingException
    {
       checkClosed();
+      
+      if (rateLimiter != null)
+      {
+         rateLimiter.limit();
+      }
+
 
       if (handler != null)
       {
@@ -175,7 +187,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   catch (InterruptedException e)
                   {
                   }
-
+                  
                   if (m != null || closed)
                   {
                      break;
@@ -603,6 +615,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (theHandler != null)
       {
+         
+         if (rateLimiter != null)
+         {
+            rateLimiter.limit();
+         }
+
          synchronized (this)
          {
             message = buffer.poll();

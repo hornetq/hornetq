@@ -87,6 +87,7 @@ import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TokenBucketLimiter;
 import org.jboss.messaging.utils.TokenBucketLimiterImpl;
 
 /*
@@ -357,7 +358,7 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
                                         final int maxRate,
                                         final boolean browseOnly) throws MessagingException
    {
-      return internalCreateConsumer(queueName, filterString, windowSize, browseOnly, null);
+      return internalCreateConsumer(queueName, filterString, windowSize, maxRate, browseOnly, null);
    }
 
    public ClientConsumer createConsumer(final String queueName,
@@ -422,7 +423,7 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
                                             final int maxRate,
                                             final boolean browseOnly) throws MessagingException
    {
-      return internalCreateConsumer(queueName, filterString, windowSize, browseOnly, directory);
+      return internalCreateConsumer(queueName, filterString, windowSize, maxRate, browseOnly, directory);
    }
 
    public ClientConsumer createFileConsumer(final File directory,
@@ -1198,6 +1199,7 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
    private ClientConsumer internalCreateConsumer(final SimpleString queueName,
                                                  final SimpleString filterString,
                                                  final int windowSize,
+                                                 final int maxRate,
                                                  final boolean browseOnly,
                                                  final File directory) throws MessagingException
    {
@@ -1244,6 +1246,7 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
                                                                consumerID,
                                                                clientWindowSize,
                                                                ackBatchSize,
+                                                               consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate, false) : null, 
                                                                executor,
                                                                channel,
                                                                directory);
