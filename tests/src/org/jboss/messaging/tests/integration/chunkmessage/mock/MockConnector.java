@@ -98,7 +98,7 @@ public class MockConnector extends InVMConnector
       }
 
       @Override
-      public void write(final MessagingBuffer buffer)
+      public void write(final MessagingBuffer buffer, final boolean flush)
       {
          log.info("calling mock connection write");
          if (callback != null)
@@ -106,7 +106,7 @@ public class MockConnector extends InVMConnector
             callback.onWrite(buffer);
          }
 
-         super.write(buffer);
+         super.write(buffer, flush);
       }
    }
 }
