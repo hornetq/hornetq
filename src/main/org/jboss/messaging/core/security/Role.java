@@ -114,9 +114,9 @@ public class Role implements Serializable
       return "Role {name=" + name + ";" +
              "read=" + send + ";" +
              "write=" + consume + ";" +
-             "createDurableQueue=" + createDurableQueue + "}" +
-            "deleteDurableQueue=" + deleteDurableQueue + "}" +
-            "createNonDurableQueue=" + createNonDurableQueue + "}" +
+             "createDurableQueue=" + createDurableQueue + ";" +
+            "deleteDurableQueue=" + deleteDurableQueue + ";" +
+            "createNonDurableQueue=" + createNonDurableQueue + ";" +
             "deleteNonDurableQueue=" + deleteNonDurableQueue + "}";
    }
 
