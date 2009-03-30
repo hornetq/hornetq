@@ -160,21 +160,19 @@ public class ClientRequestorTest extends UnitTestCase
 
    public void testClientRequestorConstructorWithClosedSession() throws Exception
    {
-      SimpleString requestAddress = randomSimpleString();
+      final SimpleString requestAddress = randomSimpleString();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       final ClientSession session = sf.createSession(false, true, true);
 
       session.close();
 
-      try
-      {
-         new ClientRequestor(session, requestAddress);
-         fail("ClientRequestor's session must not be closed");
-      }
-      catch (Exception e)
-      {
-      }
+      expectMessagingException("ClientRequestor's session must not be closed", MessagingException.OBJECT_CLOSED, new MessagingAction(){
+         public void run() throws Exception
+         {
+            new ClientRequestor(session, requestAddress);
+         }
+      });
    }
 
    public void testClose() throws Exception
@@ -194,7 +192,7 @@ public class ClientRequestorTest extends UnitTestCase
       ClientConsumer requestConsumer = session.createConsumer(requestQueue);
       requestConsumer.setMessageHandler(new SimpleMessageHandler(key, session));
 
-      ClientRequestor requestor = new ClientRequestor(session, requestAddress);
+      final ClientRequestor requestor = new ClientRequestor(session, requestAddress);
       ClientMessage request = session.createClientMessage(false);
       request.putLongProperty(key, value);
 
@@ -207,15 +205,13 @@ public class ClientRequestorTest extends UnitTestCase
 
       requestor.close();
 
-      try
-      {
-         reply = requestor.request(request, 500);
-         fail("can not send a request on a closed ClientRequestor");
-      }
-      catch (Exception e)
-      {
+      expectMessagingException("can not send a request on a closed ClientRequestor", MessagingException.OBJECT_CLOSED, new MessagingAction(){
 
-      }
+         public void run() throws Exception
+         {
+            requestor.request(session.createClientMessage(false), 500);
+         }
+      });
    }
 
    // Package protected ---------------------------------------------
