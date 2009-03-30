@@ -21,6 +21,21 @@
  */
 package org.jboss.messaging.tests.integration.security;
 
+import java.io.IOException;
+import java.security.acl.Group;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
@@ -36,20 +51,6 @@ import org.jboss.messaging.integration.security.JAASSecurityManager;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.security.SimpleGroup;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
-import java.io.IOException;
-import java.security.acl.Group;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -670,6 +671,279 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
+   public void testSendMessageUpdateRoleCached() throws Exception
+   {
+      Configuration configuration = createDefaultConfig(false);
+      configuration.setSecurityEnabled(true);
+      configuration.setSecurityInvalidationInterval(10000);
+      MessagingServer server = createServer(false, configuration);
+
+      try
+      {
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         securityManager.addUser("auser", "pass");
+         securityManager.addUser("guest", "guest");
+         securityManager.addRole("guest", "guest");
+         securityManager.setDefaultUser("guest");
+         Role role = new Role("arole", false, false, false, false, false, false, false);
+         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+         Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
+         Set<Role> roles = new HashSet<Role>();
+         roles.add(sendRole);
+         roles.add(role);
+         roles.add(receiveRole);
+         securityRepository.addMatch(addressA, roles);
+         securityManager.addRole("auser", "arole");
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession senSession = cf.createSession(false, true, true);
+         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+         senSession.createQueue(addressA, queueA, true);
+         ClientProducer cp = senSession.createProducer(addressA);
+         cp.send(session.createClientMessage(false));
+         try
+         {
+            ClientConsumer cc = session.createConsumer(queueA);
+         }
+         catch (MessagingException e)
+         {
+            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+         }
+         
+         securityManager.addRole("auser", "receiver");
+         
+         session.createConsumer(queueA);
+
+         // Removing the Role... the check should be cached, so the next createConsumer shouldn't fail
+         securityManager.removeRole("auser", "receiver");
+
+         session.createConsumer(queueA);
+
+         session.close();
+         
+         
+         senSession.close();
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
+   public void testSendMessageUpdateRoleCached2() throws Exception
+   {
+      Configuration configuration = createDefaultConfig(false);
+      configuration.setSecurityEnabled(true);
+      configuration.setSecurityInvalidationInterval(0);
+      MessagingServer server = createServer(false, configuration);
+
+      try
+      {
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         securityManager.addUser("auser", "pass");
+         securityManager.addUser("guest", "guest");
+         securityManager.addRole("guest", "guest");
+         securityManager.setDefaultUser("guest");
+         Role role = new Role("arole", false, false, false, false, false, false, false);
+         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+         Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
+         Set<Role> roles = new HashSet<Role>();
+         roles.add(sendRole);
+         roles.add(role);
+         roles.add(receiveRole);
+         securityRepository.addMatch(addressA, roles);
+         securityManager.addRole("auser", "arole");
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession senSession = cf.createSession(false, true, true);
+         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+         senSession.createQueue(addressA, queueA, true);
+         ClientProducer cp = senSession.createProducer(addressA);
+         cp.send(session.createClientMessage(false));
+         try
+         {
+            session.createConsumer(queueA);
+         }
+         catch (MessagingException e)
+         {
+            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+         }
+         
+         securityManager.addRole("auser", "receiver");
+         
+         session.createConsumer(queueA);
+
+         // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the next createConsumer should fail
+         securityManager.removeRole("auser", "receiver");
+
+         try
+         {
+            session.createConsumer(queueA);
+         }
+         catch (MessagingException e)
+         {
+            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+         }
+         
+
+         session.close();
+         
+         
+         senSession.close();
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
+   
+
+   // This test is being discussed at http://www.jboss.org/index.html?module=bb&op=viewtopic&t=153259
+//   public void testSendMessageUpdateSender() throws Exception
+//   {
+//      Configuration configuration = createDefaultConfig(false);
+//      configuration.setSecurityEnabled(true);
+//      configuration.setSecurityInvalidationInterval(-1);
+//      MessagingServer server = createServer(false, configuration);
+//
+//      try
+//      {
+//         server.start();
+//         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+//         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+//         securityManager.addUser("auser", "pass");
+//         securityManager.addUser("guest", "guest");
+//         securityManager.addRole("guest", "guest");
+//         securityManager.setDefaultUser("guest");
+//         Role role = new Role("arole", false, false, false, false, false, false, false);
+//         System.out.println("guest:" + role);
+//         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+//         System.out.println("guest:" + sendRole);
+//         Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
+//         System.out.println("guest:" + receiveRole);
+//         Set<Role> roles = new HashSet<Role>();
+//         roles.add(sendRole);
+//         roles.add(role);
+//         roles.add(receiveRole);
+//         securityRepository.addMatch(addressA, roles);
+//         securityManager.addRole("auser", "arole");
+//         ClientSessionFactory cf = createInVMFactory();
+//         
+//         ClientSession senSession = cf.createSession(false, true, true);
+//         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+//         senSession.createQueue(addressA, queueA, true);
+//         ClientProducer cp = senSession.createProducer(addressA);
+//         cp.send(session.createClientMessage(false));
+//         try
+//         {
+//            session.createConsumer(queueA);
+//         }
+//         catch (MessagingException e)
+//         {
+//            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+//         }
+//         
+//         securityManager.addRole("auser", "receiver");
+//         
+//
+//         ClientConsumer consumer = session.createConsumer(queueA);
+//
+//         // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the next createConsumer should fail
+//         securityManager.removeRole("auser", "guest");
+//         
+//         ClientSession sendingSession = cf.createSession("auser", "pass", false, false, false, false, 0);
+//         ClientProducer prod = sendingSession.createProducer(addressA);
+//         prod.send(createTextMessage(sendingSession, "Test", true));
+//         prod.send(createTextMessage(sendingSession, "Test", true));
+//         try
+//         {
+//            sendingSession.commit();
+//            fail("Expected exception");
+//         }
+//         catch (MessagingException e)
+//         {
+//            e.printStackTrace();
+//            // I would expect the commit to fail, since there were failures registered
+//         }
+//         
+//         sendingSession.close();
+//         
+//         
+//         Xid xid = newXID();
+//         
+//         sendingSession = cf.createSession("auser", "pass", true, false, false, false, 0);
+//         sendingSession.start(xid, XAResource.TMNOFLAGS);
+//         
+//         prod = sendingSession.createProducer(addressA);
+//         prod.send(createTextMessage(sendingSession, "Test", true));
+//         prod.send(createTextMessage(sendingSession, "Test", true));
+//         sendingSession.end(xid, XAResource.TMSUCCESS);
+//         
+//         try
+//         {
+//            sendingSession.prepare(xid);
+//            fail("Exception was expected");
+//         }
+//         catch (Exception e)
+//         {
+//            e.printStackTrace();
+//         }
+//
+//         // A prepare shouldn't mark any recoverable resources
+//         Xid[] xids = sendingSession.recover(XAResource.TMSTARTRSCAN);
+//         assertEquals(0, xids.length);
+//         
+//         session.close();
+//
+//         sendingSession = cf.createSession("auser", "pass", false, true, true, false, 0);
+//         
+//         
+//         
+//         // This following part is failing, but I'm not sure if this is considered a failure yet
+//         prod = sendingSession.createProducer(addressA);
+//         prod.send(createTextMessage(sendingSession, "Test", true));
+//         prod.send(createTextMessage(sendingSession, "Test", true));
+//         try
+//         {
+//            sendingSession.close();
+//            fail("Expected exception");
+//         }
+//         catch (MessagingException e)
+//         {
+//            e.printStackTrace();
+//            // I would expect the close to fail, since there were failures registered
+//         }
+//         
+//         session.start();
+//         
+//         
+//         System.out.println("msg: " + consumer.receive(1000));
+//
+//         session.close();
+//         
+//         
+//         senSession.close();
+//      }
+//      finally
+//      {
+//         if (server.isStarted())
+//         {
+//            server.stop();
+//         }
+//      }
+//   }
+
+   
+   
    public void testSendManagementWithRole() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);

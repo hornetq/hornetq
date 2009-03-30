@@ -554,7 +554,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                if (clientWindowSize == 0)
                {
-                  // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be aways buffering one after received the first message
+                  // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be always buffering one after received the first message
                   sendCredits(creditsToSend - 1);
                }
                else
@@ -653,6 +653,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                session.expire(id, message.getMessageID());
             }
             
+            // If slow consumer, we need to send 1 credit to make sure we get another message
             if (clientWindowSize == 0)
             {
                sendCredits(1);

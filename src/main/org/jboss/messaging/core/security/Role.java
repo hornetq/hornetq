@@ -111,13 +111,36 @@ public class Role implements Serializable
 
    public String toString()
    {
-      return "Role {name=" + name + ";" +
-             "read=" + send + ";" +
-             "write=" + consume + ";" +
-             "createDurableQueue=" + createDurableQueue + ";" +
-            "deleteDurableQueue=" + deleteDurableQueue + ";" +
-            "createNonDurableQueue=" + createNonDurableQueue + ";" +
-            "deleteNonDurableQueue=" + deleteNonDurableQueue + "}";
+      StringBuffer stringReturn = new StringBuffer("Role {name=" + name + "; allows=[");
+      
+      if (send)
+      {
+         stringReturn.append(" send ");
+      }
+      if (consume)
+      {
+         stringReturn.append(" consume ");
+      }
+      if (createDurableQueue)
+      {
+         stringReturn.append(" createDurableQueue ");
+      }
+      if (deleteDurableQueue)
+      {
+         stringReturn.append(" deleteDurableQueue ");
+      }
+      if (createNonDurableQueue)
+      {
+         stringReturn.append(" createNonDurableQueue ");
+      }
+      if (deleteNonDurableQueue)
+      {
+         stringReturn.append(" deleteNonDurableQueue ");
+      }
+      
+      stringReturn.append("]}");
+      
+      return  stringReturn.toString();
    }
 
    public boolean equals(Object o)
