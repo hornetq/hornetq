@@ -106,7 +106,7 @@ public class MessagePriorityTest extends UnitTestCase
     * into account.
     * We need to implement client-side message priority to handle this case: https://jira.jboss.org/jira/browse/JBMESSAGING-1560
     */
-   public void _testMessagePriorityWithClientSidePrioritization() throws Exception
+   public void testMessagePriorityWithClientSidePrioritization() throws Exception
    {
       SimpleString queue = randomSimpleString();
       SimpleString address = randomSimpleString();
@@ -227,6 +227,8 @@ public class MessagePriorityTest extends UnitTestCase
       service.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
       session = sf.createSession(false, true, true);
    }
 
