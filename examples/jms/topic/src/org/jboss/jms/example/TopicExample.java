@@ -26,54 +26,81 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 import javax.naming.InitialContext;
-
-import org.jboss.messaging.core.logging.Logger;
+import java.util.concurrent.CountDownLatch;
 
 /**
- * A simple JMS Queue example that creates a producer and consumer on a queue and sends a message.
+ * A simple JMS Topic example that creates a producer and consumer on a queue and sends and receives a message via a
+ * Message Listener..
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class QueueExample
+public class TopicExample extends JMSExample
 {
-   final static Logger log = Logger.getLogger(QueueExample.class);
+   public static void main(String[] args)
+   {
+      new TopicExample().run(args);
+   }
 
-   public static void main(final String[] args)
+   public void runExample()
    {
       Connection connection = null;
       try
       {
-         //create an initial context, env will be picked up from jndi.properties
-         InitialContext initialContext = new InitialContext();
-         Queue queue = (Queue) initialContext.lookup("/queue/testQueue");
+         //create an initial context, env will be picked up from client-jndi.properties
+         InitialContext initialContext = getContext();
+         Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
-         
          connection = cf.createConnection();
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer producer = session.createProducer(queue);
+         MessageProducer messageProducer = session.createProducer(topic);
+
+         MessageConsumer messageConsumer = session.createConsumer(topic);
          Message message = session.createTextMessage("This is a text message!");
-         
-         log.info("sending message to queue");
-         producer.send(message);
-         
-         MessageConsumer messageConsumer = session.createConsumer(queue);
+         final CountDownLatch latch = new CountDownLatch(1);
+         messageConsumer.setMessageListener(new MessageListener()
+         {
+            public void onMessage(Message message)
+            {
+               try
+               {
+                  log.info("message received from topic");
+                  TextMessage textMessage = (TextMessage) message;
+                  log.info("message = " + textMessage.getText());
+               }
+               catch (JMSException e)
+               {
+                  e.printStackTrace();
+               }
+               latch.countDown();
+            }
+         });
          connection.start();
-         TextMessage message2 = (TextMessage) messageConsumer.receive(5000);
-         log.info("message received from queue");
-         log.info("message = " + message2.getText());
+
+         log.info("publishing message to topic");
+         messageProducer.send(message);
+
+         try
+         {
+            latch.await();
+         }
+         catch (InterruptedException e)
+         {
+         }
       }
       catch (Exception e)
       {
          e.printStackTrace();
       }
+
       finally
       {
-         if(connection != null)
+         if (connection != null)
          {
             try
             {

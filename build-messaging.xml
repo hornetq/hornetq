@@ -638,6 +638,10 @@
 
       <jar jarfile="${build.jars.dir}/${core.jar.name}">
          <fileset dir="${build.core.classes.dir}" includes="**"/>
+         <fileset dir="${src.schemas.dir}">
+            <include name="**/*.xsd"/>
+            <exclude name="jbm-jms.xsd"/>
+         </fileset>
          <manifest>
             <attribute name="JBossMessaging-Version" value="${messaging.version.string}"/>
             <attribute name="JBossMessaging-SVN-URL" value="${messaging.version.svnurl}"/>
@@ -650,6 +654,9 @@
 
       <jar jarfile="${build.jars.dir}/${jms.jar.name}">
          <fileset dir="${build.jms.classes.dir}" includes="**"/>
+         <fileset dir="${src.schemas.dir}">
+            <include name="jbm-jms.xsd"/>
+         </fileset>
       </jar>
 
    </target>

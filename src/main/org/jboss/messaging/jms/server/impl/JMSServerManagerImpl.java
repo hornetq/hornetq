@@ -22,16 +22,6 @@
 
 package org.jboss.messaging.jms.server.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.management.NotificationBroadcasterSupport;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.logging.Logger;
@@ -52,6 +42,16 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.utils.Pair;
+
+import javax.management.NotificationBroadcasterSupport;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
@@ -381,7 +381,14 @@ public class JMSServerManagerImpl implements JMSServerManager
       }
       for (String jndiBinding : jndiBindings)
       {
-         context.unbind(jndiBinding);
+         try
+         {
+            context.unbind(jndiBinding);
+         }
+         catch (NameNotFoundException e)
+         {
+            //this is ok.
+         }
       }
       connectionFactoryBindings.remove(name);
       connectionFactories.remove(name);

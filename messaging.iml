@@ -18,7 +18,10 @@
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/secure-socket/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/stateless/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/docs/examples/topic/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/jms/common/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/jms/queue/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/examples/jms/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/jms/topic/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/examples/messaging/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/native/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/output/gen-parsers" isTestSource="false" />
@@ -27,6 +30,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests/jms-tests/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/joram-tests/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests/src" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build/api" />
       <excludeFolder url="file://$MODULE_DIR$/build/classes" />
