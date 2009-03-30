@@ -199,6 +199,7 @@ public class MessageDurabilityTest extends UnitTestCase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
+      config.setJournalMinFiles(2);
       service = Messaging.newMessagingService(config);
       service.start();
 
