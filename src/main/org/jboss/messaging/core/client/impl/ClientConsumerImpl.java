@@ -12,11 +12,19 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.concurrent.Executor;
+
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.list.PriorityLinkedList;
+import org.jboss.messaging.core.list.impl.PriorityLinkedListImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
@@ -26,14 +34,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.TokenBucketLimiter;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.Executor;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -54,6 +54,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
 
+   public static final int NUM_PRIORITIES = 10;
+
    // Attributes
    // -----------------------------------------------------------------------------------
 
@@ -69,7 +71,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final int ackBatchSize;
 
-   private final Queue<ClientMessageInternal> buffer = new LinkedList<ClientMessageInternal>();
+   private final PriorityLinkedList<ClientMessageInternal> buffer = new PriorityLinkedListImpl<ClientMessageInternal>(NUM_PRIORITIES);
 
    private final Runner runner = new Runner();
 
@@ -172,7 +174,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             
             synchronized (this)
             {
-               while ((stopped || (m = buffer.poll()) == null) &&
+               while ((stopped || (m = buffer.removeFirst()) == null) &&
                       !closed && toWait > 0)
                {
                   if (start == -1)
@@ -374,7 +376,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          // Execute using executor
 
-         buffer.add(messageToHandle);
+         buffer.addLast(messageToHandle, messageToHandle.getPriority());
          if (!stopped)
          {
             queueExecutor();
@@ -383,7 +385,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       else
       {
          // Add it to the buffer
-         buffer.add(messageToHandle);
+         buffer.addLast(messageToHandle, messageToHandle.getPriority());
 
          notify();
       }
@@ -623,7 +625,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          synchronized (this)
          {
-            message = buffer.poll();
+            message = buffer.removeFirst();
          }
 
          if (message != null)
