@@ -39,7 +39,7 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.utils.Pair;
 
@@ -59,7 +59,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer service;
 
    // Static --------------------------------------------------------
 
@@ -95,7 +95,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
       BroadcastGroupControlMBean broadcastGroupControl = createBroadcastGroupControl(broadcastGroupConfig.getName(), mbeanServer);
@@ -128,12 +128,12 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
       BroadcastGroupControlMBean broadcastGroupControl = createBroadcastGroupControl(broadcastGroupConfig.getName(), mbeanServer);
 
-      // started by the service
+      // started by the server
       assertTrue(broadcastGroupControl.isStarted());
 
       broadcastGroupControl.stop();

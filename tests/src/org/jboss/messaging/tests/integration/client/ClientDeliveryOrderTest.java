@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -53,10 +53,10 @@ public class ClientDeliveryOrderTest extends ServiceTestBase
 
       public void testSendDeliveryOrderOnCommit() throws Exception
       {
-         MessagingService messagingService = createService(false);
+         MessagingServer server = createServer(false);
          try
          {
-            messagingService.start();
+            server.start();
             ClientSessionFactory cf = createInVMFactory();
             ClientSession sendSession = cf.createSession(false, false, true);
             ClientProducer cp = sendSession.createProducer(addressA);
@@ -84,19 +84,19 @@ public class ClientDeliveryOrderTest extends ServiceTestBase
          }
          finally
          {
-            if (messagingService.isStarted())
+            if (server.isStarted())
             {
-               messagingService.stop();
+               server.stop();
             }
          }
       }
 
       public void testReceiveDeliveryOrderOnRollback() throws Exception
       {
-         MessagingService messagingService = createService(false);
+         MessagingServer server = createServer(false);
          try
          {
-            messagingService.start();
+            server.start();
             ClientSessionFactory cf = createInVMFactory();
             ClientSession sendSession = cf.createSession(false, true, false);
             ClientProducer cp = sendSession.createProducer(addressA);
@@ -129,19 +129,19 @@ public class ClientDeliveryOrderTest extends ServiceTestBase
          }
          finally
          {
-            if (messagingService.isStarted())
+            if (server.isStarted())
             {
-               messagingService.stop();
+               server.stop();
             }
          }
       }
 
       public void testMultipleConsumersMessageOrder() throws Exception
       {
-         MessagingService messagingService = createService(false);
+         MessagingServer server = createServer(false);
          try
          {
-            messagingService.start();
+            server.start();
             ClientSessionFactory cf = createInVMFactory();
             ClientSession sendSession = cf.createSession(false, true, true);
             ClientSession recSession = cf.createSession(false, true, true);
@@ -176,9 +176,9 @@ public class ClientDeliveryOrderTest extends ServiceTestBase
          }
          finally
          {
-            if (messagingService.isStarted())
+            if (server.isStarted())
             {
-               messagingService.stop();
+               server.stop();
             }
          }
       }

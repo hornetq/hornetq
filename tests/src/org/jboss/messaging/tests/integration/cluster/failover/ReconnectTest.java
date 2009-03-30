@@ -38,7 +38,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -63,7 +63,7 @@ public class ReconnectTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService service;
+   private MessagingServer service;
 
    // Static --------------------------------------------------------
 
@@ -80,14 +80,11 @@ public class ReconnectTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = -1;
-      
       final int reconnectAttempts = 1;      
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     initialConnectAttempts,
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -98,8 +95,6 @@ public class ReconnectTest extends UnitTestCase
       
       for (int j = 0; j < numIterations; j++)
       {  
-         log.info("Iteration " + j);
-         
          ClientProducer producer = session.createProducer(ADDRESS);
    
          final int numMessages = 1000;
@@ -161,14 +156,11 @@ public class ReconnectTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = -1;
+      final int reconnectAttempts = -1;
       
-      final int reconnectAttempts = -1;      
-
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
-                                                                     retryMultiplier,
-                                                                     initialConnectAttempts,
+                                                                     retryMultiplier,                                                                     
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -190,7 +182,6 @@ public class ReconnectTest extends UnitTestCase
          message.getBody().writeString("aardvarks");
          producer.send(message);
       }
-      log.info("Sent messages");
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -244,20 +235,17 @@ public class ReconnectTest extends UnitTestCase
       t.join();
    }
    
-   public void testMaxRetriesFailsToReconnect() throws Exception
+   public void testReconnectAttemptsFailsToReconnect() throws Exception
    {
       final long retryInterval = 500;
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = 3;
-      
-      final int reconnectAttempts = 0;      
+      final int reconnectAttempts = 3;      
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     initialConnectAttempts,
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -279,7 +267,6 @@ public class ReconnectTest extends UnitTestCase
          message.getBody().writeString("aardvarks");
          producer.send(message);
       }
-      log.info("Sent messages");
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -295,7 +282,7 @@ public class ReconnectTest extends UnitTestCase
          {
             try
             {
-               Thread.sleep(retryInterval * (initialConnectAttempts + 1));
+               Thread.sleep(retryInterval * (reconnectAttempts + 1));
             }
             catch (InterruptedException ignore)
             {               
@@ -323,20 +310,17 @@ public class ReconnectTest extends UnitTestCase
       t.join();
    }
    
-   public void testMaxRetriesSucceedsInReconnecting() throws Exception
+   public void testReconnectAttemptsSucceedsInReconnecting() throws Exception
    {
       final long retryInterval = 500;
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = -1;
-      
       final int reconnectAttempts = 10;      
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
-                                                                     retryMultiplier,
-                                                                     initialConnectAttempts,
+                                                                     retryMultiplier,                                                      
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -358,7 +342,6 @@ public class ReconnectTest extends UnitTestCase
          message.getBody().writeString("aardvarks");
          producer.send(message);
       }
-      log.info("Sent messages");
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -399,14 +382,11 @@ public class ReconnectTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = -1;
-      
       final int reconnectAttempts = -1;      
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
-                                                                     retryMultiplier,
-                                                                     initialConnectAttempts,
+                                                                     retryMultiplier,                                                                    
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -428,7 +408,6 @@ public class ReconnectTest extends UnitTestCase
          message.getBody().writeString("aardvarks");
          producer.send(message);
       }
-      log.info("Sent messages");
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -493,14 +472,11 @@ public class ReconnectTest extends UnitTestCase
 
       final double retryMultiplier = 4d;
 
-      final int initialConnectAttempts = -1;
-      
       final int reconnectAttempts = -1;      
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
-                                                                     retryMultiplier,
-                                                                     initialConnectAttempts,
+                                                                     retryMultiplier,                                                  
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -522,7 +498,6 @@ public class ReconnectTest extends UnitTestCase
          message.getBody().writeString("aardvarks");
          producer.send(message);
       }
-      log.info("Sent messages");
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -595,7 +570,7 @@ public class ReconnectTest extends UnitTestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = Messaging.newNullStorageMessagingService(liveConf);
+      service = Messaging.newNullStorageMessagingServer(liveConf);
       service.start();
    }
 

@@ -26,7 +26,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -41,10 +41,10 @@ public class ClientLargeMessageTest extends ServiceTestBase
 
    public void testSendConsumeLargeMessage() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setMinLargeMessageSize(1000);
          ClientSession sendSession = cf.createSession(false, true, true);
@@ -65,9 +65,9 @@ public class ClientLargeMessageTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }

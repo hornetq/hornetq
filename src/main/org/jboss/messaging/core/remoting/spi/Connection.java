@@ -38,6 +38,8 @@ public interface Connection
    Object getID();
 
    void write(MessagingBuffer buffer);
+   
+   void write(MessagingBuffer buffer, boolean flush);
 
    void close();
 

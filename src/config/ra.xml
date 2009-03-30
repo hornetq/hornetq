@@ -55,7 +55,7 @@
          <config-property-value>jbm.remoting.invm.serverid:0:Integer</config-property-value>
       </config-property>
        <config-property>
-        <description>Use XA methods to obtain connections</description>
+        <description>Use XA methods to obtain connections?</description>
         <config-property-name>UseXA</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value>true</config-property-value>
@@ -223,15 +223,15 @@
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The maximum number of initial connection attempts</description>
-        <config-property-name>InitialConnectAttempts</config-property-name>
+        <description>The maximum number of reconnect attempts</description>
+        <config-property-name>ReconnectAttempts</config-property-name>
         <config-property-type>java.lang.Integer</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The maximum number of reconnection attempts after failure is detected</description>
-        <config-property-name>ReconnectAttempts</config-property-name>
-        <config-property-type>java.lang.Integer</config-property-type>
+        <description>Should clean server shutdown trigger failover?</description>
+        <config-property-name>FailoverOnServerShutdown</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
       <config-property>

@@ -70,12 +70,8 @@ public class MapMessageTest extends MessageTestBase
 
       MapMessage rm = (MapMessage)queueCons.receive(2000);
       
-      log.info("Got rm:" + rm);
-      
       assertNotNull(rm);
       
-      log.info("String is " + rm.getString("nullValue"));
-
       assertNull(rm.getString("nullValue"));
    }
 

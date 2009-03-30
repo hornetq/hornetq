@@ -44,8 +44,8 @@ public class DestroyConsumerTest extends ServiceTestBase
    
 //   public void testDestroyConsumer() throws Exception
 //   {
-//      MessagingService service = createService(false, false, createDefaultConfig(), new HashMap<String, AddressSettings>());
-//      service.start();
+//      MessagingServer server = createService(false, false, createDefaultConfig(), new HashMap<String, AddressSettings>());
+//      server.start();
 //      
 //      SimpleString queue = new SimpleString("add1");
 //      
@@ -59,7 +59,7 @@ public class DestroyConsumerTest extends ServiceTestBase
 //      
 //      session.start();
 //      
-//      Binding binding = service.getServer().getPostOffice().getBindingsForAddress(queue).get(0);
+//      Binding binding = server.getServer().getPostOffice().getBindingsForAddress(queue).get(0);
 //
 //      assertEquals(1, binding.getQueue().getConsumerCount());
 //

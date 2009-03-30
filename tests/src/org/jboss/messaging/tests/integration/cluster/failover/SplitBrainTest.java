@@ -45,7 +45,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -72,9 +72,9 @@ public class SplitBrainTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService liveService;
+   private MessagingServer liveServer;
 
-   private MessagingService backupService;
+   private MessagingServer backupServer;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -117,10 +117,10 @@ public class SplitBrainTest extends UnitTestCase
       }
       
       //Now fail the replicating connections
-      Set<RemotingConnection> conns = liveService.getServer().getRemotingService().getConnections();
+      Set<RemotingConnection> conns = liveServer.getRemotingService().getConnections();
       for (RemotingConnection conn : conns)
       {
-         RemotingConnection replicatingConnection = liveService.getServer().getReplicatingChannel().getConnection();
+         RemotingConnection replicatingConnection = liveServer.getReplicatingChannel().getConnection();
          Connection tcConn = replicatingConnection.getTransportConnection();
          tcConn.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
       }
@@ -146,8 +146,6 @@ public class SplitBrainTest extends UnitTestCase
          
          int count = (Integer)message.getProperty(new SimpleString("count"));
          
-         log.info("got message " + count);
-
          assertEquals(consumeCount++, count);
        
          deliveredMessageIDs.add(count);
@@ -193,8 +191,6 @@ public class SplitBrainTest extends UnitTestCase
          
          int count = (Integer)message.getProperty(new SimpleString("count"));
          
-         log.info("got message on live after failover " + count);
-         
          //Assert that this has been consumed before!!
          assertTrue(deliveredMessageIDs.contains(count));
  
@@ -223,8 +219,8 @@ public class SplitBrainTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
-      backupService.start();
+      backupServer = Messaging.newNullStorageMessagingServer(backupConf);
+      backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -236,16 +232,16 @@ public class SplitBrainTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
-      liveService.start();
+      liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+      liveServer.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      backupService.stop();
+      backupServer.stop();
 
-      liveService.stop();
+      liveServer.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
       

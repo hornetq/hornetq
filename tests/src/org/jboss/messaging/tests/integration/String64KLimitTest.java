@@ -35,7 +35,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -60,7 +60,7 @@ public class String64KLimitTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServiceImpl service;
+   private MessagingServer server;
 
    private ClientSession session;
 
@@ -212,8 +212,8 @@ public class String64KLimitTest extends UnitTestCase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      service = Messaging.newNullStorageMessagingService(config);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(config);
+      server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
@@ -224,7 +224,7 @@ public class String64KLimitTest extends UnitTestCase
    {
       session.close();
 
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

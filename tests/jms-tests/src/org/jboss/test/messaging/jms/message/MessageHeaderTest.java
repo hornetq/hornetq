@@ -306,8 +306,6 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       {
          String propName = (String)en.nextElement();
          
-         log.info("Prop name is " + propName);
-         
          propNames.add(propName);
       }
 
@@ -577,12 +575,9 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          fail();
       } catch (MessageFormatException e) {}
 
-      log.info("** clearing props");
       m2.clearProperties();
 
-      log.info("** getting prop names");
       Enumeration en2 = m2.getPropertyNames();
-      log.info("** got prop names");
       assertTrue(en2.hasMoreElements());
       en2.nextElement();
       assertFalse(en2.hasMoreElements());

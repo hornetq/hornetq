@@ -142,14 +142,14 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
       return localControl.getMaxConnections();
    }
 
-   public int getInitialConnectAttempts()
-   {
-      return localControl.getInitialConnectAttempts();
-   }
-
    public int getReconnectAttempts()
    {
       return localControl.getReconnectAttempts();
+   }
+
+   public boolean isFailoverOnNodeShutdown()
+   {
+      return localControl.isFailoverOnNodeShutdown();
    }
 
    public long getMinLargeMessageSize()

@@ -29,7 +29,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.SendAcknowledgementHandler;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -49,7 +49,7 @@ public class ClientSessionSendAcknowledgementHandlerTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ClientSessionSendAcknowledgementHandlerTest.class);
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private SimpleString address = new SimpleString("address");
 
@@ -60,16 +60,16 @@ public class ClientSessionSendAcknowledgementHandlerTest extends ServiceTestBase
    {
       super.setUp();
 
-      messagingService = createService(false);
-      messagingService.start();
+      server = createServer(false);
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
-         messagingService.stop();
+         server.stop();
       }
       
       super.tearDown();

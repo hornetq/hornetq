@@ -57,11 +57,6 @@ public class JMSTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
-   public void testNoop() throws Exception
-   {
-      log.info("noop");
-   }
-
    public void test_NonPersistent_NonTransactional() throws Exception
    {
       Connection conn = null;

@@ -25,7 +25,7 @@ package org.jboss.messaging.tests.integration.ssl;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -50,7 +50,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService messagingService;
+   private MessagingServer messagingService;
 
    private ClientSession session;
 
@@ -112,8 +112,8 @@ public class CoreClientOverSSLTest extends UnitTestCase
 //      Map<String, Object> params = new HashMap<String, Object>();
 //      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
 //      config.getAcceptorInfos().add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory", params));
-//      messagingService = MessagingServiceImpl.newNullStorageMessagingServer(config);      
-//      messagingService.start();
+//      server = MessagingServerImpl.newNullStorageMessagingServer(config);      
+//      server.start();
 //      ConnectorFactory cf = new NettyConnectorFactory();
 //      ClientSessionFactory sf = new ClientSessionFactoryImpl(cf);    
 //      sf.setTransportParams(params);
@@ -129,7 +129,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
 //      consumer.close();
 //      session.close();
 //
-//      messagingService.stop();
+//      server.stop();
 //
 //      super.tearDown();
 //   }

@@ -38,7 +38,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -56,7 +56,7 @@ public class ClientRequestorTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer service;
 
    // Static --------------------------------------------------------
 
@@ -226,7 +226,7 @@ public class ClientRequestorTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingService(conf);
+      service = Messaging.newNullStorageMessagingServer(conf);
       service.start();
    }
 

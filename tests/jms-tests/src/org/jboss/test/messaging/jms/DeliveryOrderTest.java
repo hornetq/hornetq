@@ -140,9 +140,7 @@ public class DeliveryOrderTest extends JMSTestCase
             }
             
             c++;
-            
-            //log.info("Got message " + c);
-            
+ 
             if (c == num)
             {
                latch.countDown();

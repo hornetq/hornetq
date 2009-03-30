@@ -30,7 +30,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -44,50 +44,50 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
-   protected MessagingService createMessagingServiceNIO(final int id, final Map<String, Object> params)
+   protected MessagingServer createMessagingServerNIO(final int id, final Map<String, Object> params)
+   {
+      return createMessagingServerNIO(id, params, false);
+   }
+
+   protected MessagingServer createMessagingServerNIO(final int id,
+                                                      final Map<String, Object> params,
+                                                      final boolean backup)
    {
       Configuration serviceConf = new ConfigurationImpl();
       serviceConf.setClustered(true);
-      serviceConf.setSecurityEnabled(false); 
+      serviceConf.setSecurityEnabled(false);
+      serviceConf.setBackup(backup);
       serviceConf.setJournalMinFiles(2);
       serviceConf.setJournalFileSize(100 * 1024);
       params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
       serviceConf.getAcceptorConfigurations()
-                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                  params));
-      MessagingService service = Messaging.newMessagingService(serviceConf);
+                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
+                                                 params));
+      MessagingServer service = Messaging.newMessagingServer(serviceConf);
       return service;
    }
-   
-   protected MessagingService createMessagingService(final int id, final Map<String, Object> params)
+
+   protected MessagingServer createMessagingServer(final int id, final Map<String, Object> params)
+   {
+      return createMessagingServer(id, params, false);
+   }
+
+   protected MessagingServer createMessagingServer(final int id, final Map<String, Object> params, final boolean backup)
    {
       Configuration serviceConf = new ConfigurationImpl();
       serviceConf.setClustered(true);
-      serviceConf.setSecurityEnabled(false);     
-      params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
-      serviceConf.getAcceptorConfigurations()
-                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                  params));
-      MessagingService service = Messaging.newNullStorageMessagingService(serviceConf);
-      return service;
-   }
-   
-   protected MessagingService createMessagingService(final int id, final Map<String, Object> params, final boolean backup)
-   {
-      Configuration serviceConf = new ConfigurationImpl();
-      serviceConf.setClustered(true);
-      serviceConf.setSecurityEnabled(false);     
+      serviceConf.setSecurityEnabled(false);
       serviceConf.setBackup(backup);
       params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
       serviceConf.getAcceptorConfigurations()
-                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                  params));
-      MessagingService service = Messaging.newNullStorageMessagingService(serviceConf);
+                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
+                                                 params));
+      MessagingServer service = Messaging.newNullStorageMessagingServer(serviceConf);
       return service;
    }
-   
-   protected MessagingService createMessagingService(final int id)
+
+   protected MessagingServer createMessagingServer(final int id)
    {
-      return this.createMessagingService(id, new HashMap<String, Object>());
+      return this.createMessagingServer(id, new HashMap<String, Object>());
    }
 }

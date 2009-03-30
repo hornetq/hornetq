@@ -29,7 +29,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
@@ -42,7 +42,7 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ClientConsumerTest.class);
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 
@@ -51,17 +51,17 @@ public class ClientQueueBrowserTest extends ServiceTestBase
    {
       super.setUp();
 
-      messagingService = createService(false);
+      server = createServer(false);
 
-      messagingService.start();
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      messagingService.stop();
+      server.stop();
 
-      messagingService = null;
+      server = null;
 
       super.tearDown();
    }
@@ -314,9 +314,9 @@ public class ClientQueueBrowserTest extends ServiceTestBase
          }
          // assert that all the messages are there and none have been acked
          assertEquals(0,
-                      ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+                      ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
          assertEquals(100,
-                      ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+                      ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
          session.close();
       }
@@ -351,9 +351,9 @@ public class ClientQueueBrowserTest extends ServiceTestBase
          }
          // assert that all the messages are there and none have been acked
          assertEquals(0,
-                      ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+                      ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
          assertEquals(100,
-                      ((Queue)messagingService.getServer().getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+                      ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
          session.close();
       }

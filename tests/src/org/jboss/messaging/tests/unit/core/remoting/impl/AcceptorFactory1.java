@@ -55,6 +55,14 @@ public class AcceptorFactory1 implements AcceptorFactory
       {  
       }
       
+      public void pause()
+      {         
+      }    
+      
+      public void resume()
+      {         
+      }
+      
       public boolean isStarted()
       {
          return false;

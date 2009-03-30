@@ -36,7 +36,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
@@ -55,7 +55,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    private final Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private ClientSession clientSession;
 
@@ -81,10 +81,10 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
 
-      messagingService = createService(true, configuration, addressSettings);
+      server = createServer(true, configuration, addressSettings);
 
       // start the server
-      messagingService.start();
+      server.start();
 
       // then we create a client as normal
       createClients(true, false);
@@ -104,18 +104,18 @@ public class BasicXaRecoveryTest extends ServiceTestBase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception e1)
          {
             //
          }
       }
-      messagingService = null;
+      server = null;
       clientSession = null;
 
       super.tearDown();
@@ -341,7 +341,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       clientSession.createQueue(pageQueue, pageQueue, null, true);
       
-      long initialPageSize = this.messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
+      long initialPageSize = this.server.getPostOffice().getPagingManager().getGlobalSize();
 
       clientSession.start(xid, XAResource.TMNOFLAGS);
 
@@ -379,7 +379,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       assertNull(pageConsumer.receive(100));
       
-      long globalSize = this.messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
+      long globalSize = this.server.getPostOffice().getPagingManager().getGlobalSize();
       // Management message (from createQueue) will not be taken into account again as it is nonPersistent
       
       log.info("global size is " + globalSize +  " initial page size is " + initialPageSize);
@@ -1213,11 +1213,11 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       // now stop and start the server
       clientSession.close();
       clientSession = null;
-      messagingService.stop();
-      messagingService = null;
-      messagingService = createService(true, configuration, addressSettings);
+      server.stop();
+      server = null;
+      server = createServer(true, configuration, addressSettings);
 
-      messagingService.start();
+      server.start();
       createClients();
    }
 
@@ -1225,7 +1225,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    {
       for (Map.Entry<String, AddressSettings> setting : addressSettings.entrySet())
       {
-         messagingService.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
    }
 

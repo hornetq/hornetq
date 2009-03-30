@@ -890,13 +890,16 @@ public class JBossMessage implements javax.jms.Message
 
    public void acknowledge() throws JMSException
    {
-      try
+      if (session != null)
       {
-         session.commit();
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         try
+         {
+            session.commit();
+         }
+         catch (MessagingException e)
+         {
+            throw JMSExceptionHelper.convertFromMessagingException(e);
+         }
       }
    }
 
@@ -924,11 +927,6 @@ public class JBossMessage implements javax.jms.Message
    public byte getType()
    {
       return JBossMessage.TYPE;
-   }
-
-   public ClientSession getSession()
-   {
-      return session;
    }
 
    public String toString()

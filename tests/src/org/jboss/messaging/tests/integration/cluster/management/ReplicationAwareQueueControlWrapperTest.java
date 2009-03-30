@@ -28,15 +28,15 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -474,6 +474,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()),
                                                                      new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                                                 backupParams),
+                                                                                                DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                                                                 DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                                                 DEFAULT_PING_PERIOD,
                                                                                                 DEFAULT_CONNECTION_TTL,
@@ -492,7 +493,6 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
                                                                                                 DEFAULT_ACK_BATCH_SIZE,                                 
                                                                                                 DEFAULT_RETRY_INTERVAL,
                                                                                                 DEFAULT_RETRY_INTERVAL_MULTIPLIER,                                        
-                                                                                                DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                                                                 DEFAULT_RECONNECT_ATTEMPTS);
 
       session = sf.createSession(false, true, true);

@@ -37,7 +37,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -51,9 +51,9 @@ public class ReplicationAwareTestBase extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected MessagingService liveService;
+   protected MessagingServer liveServer;
 
-   protected MessagingService backupService;
+   protected MessagingServer backupServer;
 
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -106,8 +106,8 @@ public class ReplicationAwareTestBase extends UnitTestCase
                                                                             backupParams));
       backupConf.setBackup(true);
       backupConf.setJMXManagementEnabled(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf, backupMBeanServer);
-      backupService.start();
+      backupServer = Messaging.newNullStorageMessagingServer(backupConf, backupMBeanServer);
+      backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -120,16 +120,16 @@ public class ReplicationAwareTestBase extends UnitTestCase
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveConf.setJMXManagementEnabled(true);
-      liveService = Messaging.newNullStorageMessagingService(liveConf, liveMBeanServer);
-      liveService.start();
+      liveServer = Messaging.newNullStorageMessagingServer(liveConf, liveMBeanServer);
+      liveServer.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      backupService.stop();
+      backupServer.stop();
 
-      liveService.stop();
+      liveServer.stop();
 
       super.tearDown();
    }

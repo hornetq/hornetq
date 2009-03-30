@@ -40,8 +40,8 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
-      backupService.start();
+      backupServer = Messaging.newNullStorageMessagingServer(backupConf);
+      backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -54,8 +54,8 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
-      liveService.start();
+      liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+      liveServer.start();
    }
 
    /* (non-Javadoc)

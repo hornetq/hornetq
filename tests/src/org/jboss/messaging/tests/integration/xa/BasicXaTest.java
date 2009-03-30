@@ -39,7 +39,7 @@ import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -56,7 +56,7 @@ public class BasicXaTest extends ServiceTestBase
 
    private final Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
-   private MessagingService messagingService;
+   private MessagingServer messagingService;
 
    private ClientSession clientSession;
 
@@ -79,7 +79,7 @@ public class BasicXaTest extends ServiceTestBase
       configuration.setPagingDirectory(getPageDir());
       configuration.setPagingMaxGlobalSizeBytes(0); // no paging for these tests
 
-      messagingService = createService(false, configuration, addressSettings);
+      messagingService = createServer(false, configuration, addressSettings);
 
       // start the server
       messagingService.start();
@@ -340,7 +340,7 @@ public class BasicXaTest extends ServiceTestBase
       messagingService.stop();
 
       // do the same test with a file persistence now
-      messagingService = createService(true, configuration, addressSettings);
+      messagingService = createServer(true, configuration, addressSettings);
 
       messagingService.start();
 

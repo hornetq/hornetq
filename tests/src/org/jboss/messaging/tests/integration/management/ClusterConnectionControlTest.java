@@ -48,8 +48,8 @@ import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -67,11 +67,11 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service_0;
+   private MessagingServer server_0;
 
    private ClusterConnectionConfiguration clusterConnectionConfig;
 
-   private MessagingServiceImpl service_1;
+   private MessagingServer server_1;
 
    // Constructors --------------------------------------------------
 
@@ -87,12 +87,6 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       assertEquals(clusterConnectionConfig.getAddress(), clusterConnectionControl.getAddress());
       assertEquals(clusterConnectionConfig.getDiscoveryGroupName(), clusterConnectionControl.getDiscoveryGroupName());
       assertEquals(clusterConnectionConfig.getRetryInterval(), clusterConnectionControl.getRetryInterval());
-      assertEquals(clusterConnectionConfig.getRetryIntervalMultiplier(),
-                   clusterConnectionControl.getRetryIntervalMultiplier());
-      assertEquals(clusterConnectionConfig.getInitialConnectAttempts(),
-                   clusterConnectionControl.getInitialConnectAttempts());
-      assertEquals(clusterConnectionConfig.getReconnectAttempts(),
-                   clusterConnectionControl.getReconnectAttempts());
       assertEquals(clusterConnectionConfig.isDuplicateDetection(), clusterConnectionControl.isDuplicateDetection());
       assertEquals(clusterConnectionConfig.isForwardWhenNoConsumers(),
                    clusterConnectionControl.isForwardWhenNoConsumers());
@@ -113,7 +107,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       ClusterConnectionControlMBean clusterConnectionControl = ManagementControlHelper.createClusterConnectionControl(clusterConnectionConfig.getName(),
                                                                                                                       mbeanServer);
 
-      // started by the service
+      // started by the server
       assertTrue(clusterConnectionControl.isStarted());
 
       clusterConnectionControl.stop();
@@ -147,13 +141,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       Pair<String, String> connectorPair = new Pair<String, String>(connectorConfig.getName(), null);
       List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
       pairs.add(connectorPair);
-      
+
       clusterConnectionConfig = new ClusterConnectionConfiguration(randomString(),
                                                                    queueConfig.getAddress(),
                                                                    randomPositiveLong(),
-                                                                   randomDouble(),
-                                                                   randomPositiveInt(),
-                                                                   randomPositiveInt(),
                                                                    randomBoolean(),
                                                                    randomBoolean(),
                                                                    randomPositiveInt(),
@@ -174,18 +165,18 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       conf_0.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       conf_0.getClusterConfigurations().add(clusterConnectionConfig);
 
-      service_1 = Messaging.newNullStorageMessagingService(conf_1, MBeanServerFactory.createMBeanServer());
-      service_1.start();
+      server_1 = Messaging.newNullStorageMessagingServer(conf_1, MBeanServerFactory.createMBeanServer());
+      server_1.start();
 
-      service_0 = Messaging.newNullStorageMessagingService(conf_0, mbeanServer);
-      service_0.start();
+      server_0 = Messaging.newNullStorageMessagingServer(conf_0, mbeanServer);
+      server_0.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      service_0.stop();
-      service_1.stop();
+      server_0.stop();
+      server_1.stop();
 
       super.tearDown();
    }

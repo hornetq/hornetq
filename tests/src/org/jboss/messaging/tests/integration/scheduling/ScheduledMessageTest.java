@@ -34,7 +34,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -55,7 +55,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    private Configuration configuration;
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    @Override
    protected void setUp() throws Exception
@@ -66,19 +66,19 @@ public class ScheduledMessageTest extends ServiceTestBase
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingMaxGlobalSizeBytes(-1);
-      messagingService = createService(true, configuration);
-      messagingService.start();
+      server = createServer(true, configuration);
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      if (messagingService != null)
+      if (server != null)
       {
          try
          {
-            messagingService.stop();
-            messagingService = null;
+            server.stop();
+            server = null;
          }
          catch (Exception e)
          {
@@ -175,7 +175,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    {
       AddressSettings qs = new AddressSettings();
       qs.setRedeliveryDelay(5000l);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(atestq.toString(), qs);
+      server.getAddressSettingsRepository().addMatch(atestq.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
@@ -224,7 +224,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       AddressSettings qs = new AddressSettings();
       qs.setRedeliveryDelay(5000l);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(atestq.toString(), qs);
+      server.getAddressSettingsRepository().addMatch(atestq.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = createInVMFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
@@ -252,10 +252,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       consumer2.close();
       producer.close();
       session.close();
-      messagingService.stop();
-      messagingService = null;
-      messagingService = createService(true, configuration);
-      messagingService.start();
+      server.stop();
+      server = null;
+      server = createServer(true, configuration);
+      server.start();
       sessionFactory = createInVMFactory();
       session = sessionFactory.createSession(false, true, true);
       consumer = session.createConsumer(atestq);
@@ -306,10 +306,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       {
          producer.close();
          session.close();
-         messagingService.stop();
-         messagingService = null;
-         messagingService = createService(true, configuration);
-         messagingService.start();
+         server.stop();
+         server = null;
+         server = createServer(true, configuration);
+         server.start();
          sessionFactory = createInVMFactory();
          session = sessionFactory.createSession(false, true, true);
       }
@@ -364,10 +364,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       {
          producer.close();
          session.close();
-         messagingService.stop();
-         messagingService = null;
-         messagingService = createService(true, configuration);
-         messagingService.start();
+         server.stop();
+         server = null;
+         server = createServer(true, configuration);
+         server.start();
 
          sessionFactory = createInVMFactory();
 
@@ -445,10 +445,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       {
          producer.close();
          session.close();
-         messagingService.stop();
-         messagingService = null;
-         messagingService = createService(true, configuration);
-         messagingService.start();
+         server.stop();
+         server = null;
+         server = createServer(true, configuration);
+         server.start();
 
          sessionFactory = createInVMFactory();
 
@@ -522,10 +522,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       {
          producer.close();
          session.close();
-         messagingService.stop();
-         messagingService = null;
-         messagingService = createService(true, configuration);
-         messagingService.start();
+         server.stop();
+         server = null;
+         server = createServer(true, configuration);
+         server.start();
 
          sessionFactory = createInVMFactory();
 
@@ -585,10 +585,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       {
          producer.close();
          session.close();
-         messagingService.stop();
-         messagingService = null;
-         messagingService = createService(true, configuration);
-         messagingService.start();
+         server.stop();
+         server = null;
+         server = createServer(true, configuration);
+         server.start();
 
          sessionFactory = createInVMFactory();
 

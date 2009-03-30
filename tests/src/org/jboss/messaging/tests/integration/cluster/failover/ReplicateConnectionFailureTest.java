@@ -29,14 +29,14 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -56,7 +56,7 @@ import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -79,9 +79,9 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService liveService;
+   private MessagingServer liveServer;
 
-   private MessagingService backupService;
+   private MessagingServer backupServer;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -97,6 +97,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                       null,
+                                                                      DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                                       DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                       pingPeriod,
                                                                       (long)(pingPeriod * 1.5),
@@ -115,32 +116,29 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
                                                                       DEFAULT_ACK_BATCH_SIZE,
                                                                       DEFAULT_RETRY_INTERVAL,
                                                                       DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                      DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                                       DEFAULT_RECONNECT_ATTEMPTS);
 
       sf1.setSendWindowSize(32 * 1024);
 
-      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, liveServer.getRemotingService().getConnections().size());
 
-      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
+      assertEquals(1, backupServer.getRemotingService().getConnections().size());
 
       ClientSession session1 = sf1.createSession(false, true, true);
 
       // One connection
-      assertEquals(1, liveService.getServer().getRemotingService().getConnections().size());
+      assertEquals(1, liveServer.getRemotingService().getConnections().size());
 
       // One replicating connection
-      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
+      assertEquals(1, backupServer.getRemotingService().getConnections().size());
 
       session1.close();
       
       Thread.sleep(2000);
       
-      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, liveServer.getRemotingService().getConnections().size());
 
-      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
-
-      log.info("recreating");
+      assertEquals(1, backupServer.getRemotingService().getConnections().size());
 
       session1 = sf1.createSession(false, true, true);
 
@@ -148,19 +146,17 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
       conn1.stopPingingAfterOne();
 
-      log.info("waiting");
-      
       Thread.sleep(3 * pingPeriod);
 
-      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, liveServer.getRemotingService().getConnections().size());
 
-      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
+      assertEquals(1, backupServer.getRemotingService().getConnections().size());
 
       session1.close();
 
-      assertEquals(0, liveService.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, liveServer.getRemotingService().getConnections().size());
 
-      assertEquals(1, backupService.getServer().getRemotingService().getConnections().size());
+      assertEquals(1, backupServer.getRemotingService().getConnections().size());
    }
    
    // Package protected ---------------------------------------------
@@ -180,8 +176,8 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
-      backupService.start();
+      backupServer = Messaging.newNullStorageMessagingServer(backupConf);
+      backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setConnectionScanPeriod(100);
@@ -195,16 +191,16 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
-      liveService.start();
+      liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+      liveServer.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      backupService.stop();
+      backupServer.stop();
 
-      liveService.stop();
+      liveServer.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
       

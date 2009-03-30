@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.integration.client;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
@@ -45,10 +45,10 @@ public class ClientSendTest extends ServiceTestBase
 
    public void testSendWithCommit() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession(false, false, false);
          session.createQueue(addressA, queueA, false);
@@ -58,7 +58,7 @@ public class ClientSendTest extends ServiceTestBase
          {
             cp.send(session.createClientMessage(false));
          }
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
          assertEquals(q.getMessageCount(), 0);
          session.commit();
          assertEquals(q.getMessageCount(), numMessages);
@@ -74,19 +74,19 @@ public class ClientSendTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testSendWithRollback() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession session = cf.createSession(false, false, false);
          session.createQueue(addressA, queueA, false);
@@ -96,7 +96,7 @@ public class ClientSendTest extends ServiceTestBase
          {
             cp.send(session.createClientMessage(false));
          }
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
          assertEquals(q.getMessageCount(), 0);
          session.rollback();
          assertEquals(q.getMessageCount(), 0);
@@ -112,9 +112,9 @@ public class ClientSendTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }

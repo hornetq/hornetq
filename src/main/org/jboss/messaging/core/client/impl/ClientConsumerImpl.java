@@ -176,6 +176,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                while ((stopped || (m = buffer.removeFirst()) == null) &&
                       !closed && toWait > 0)
+
                {
                   if (start == -1)
                   {
@@ -275,17 +276,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       handler = theHandler;
 
-      //if no previous handler existed queue up messages for delivery
+      // if no previous handler existed queue up messages for delivery
       if (handler != null && noPreviousHandler)
       {
-         for (int i = 0; i < buffer.size(); i++)
-         {
-            queueExecutor();
-         }
+
+         requeueExecutors();
       }
-      //if unsetting a previous handler may be in onMessage so wait for completion
+      // if unsetting a previous handler may be in onMessage so wait for completion
       else if (handler == null && !noPreviousHandler)
       {
+
          waitForOnMessageToComplete();
       }
    }
@@ -323,12 +323,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void stop() throws MessagingException
    {
       waitForOnMessageToComplete();
+      
       synchronized (this)
       {
          if (stopped)
          {
             return;
          }
+         
          stopped = true;
       }
    }
@@ -336,10 +338,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public synchronized void start()
    {
       stopped = false;
-      for (int i = 0; i < buffer.size(); i++)
-      {
-         queueExecutor();
-      }
+
+      requeueExecutors();
    }
 
    public Exception getLastException()
@@ -419,7 +419,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (isFileConsumer())
       {
-         ClientFileMessageInternal fileMessage = (ClientFileMessageInternal) currentChunkMessage;
+         ClientFileMessageInternal fileMessage = (ClientFileMessageInternal)currentChunkMessage;
          addBytesBody(fileMessage, chunk.getBody());
       }
       else
@@ -439,7 +439,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Close the file that was being generated
          if (isFileConsumer())
          {
-            ((ClientFileMessageInternal) currentChunkMessage).closeChannel();
+            ((ClientFileMessageInternal)currentChunkMessage).closeChannel();
          }
 
          currentChunkMessage.setFlowControlSize(chunk.getPacketSize());
@@ -511,6 +511,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Private
    // ---------------------------------------------------------------------------------------
 
+   private void requeueExecutors()
+   {
+      for (int i = 0; i < buffer.size(); i++)
+      {
+         queueExecutor();
+      }
+   }
+
    private void queueExecutor()
    {
       sessionExecutor.execute(runner);
@@ -527,7 +535,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             if (isLargeMessage)
             {
-               // Flowcontrol on largeMessages continuations needs to be done in a separate thread or failover would block
+               // Flowcontrol on largeMessages continuations needs to be done in a separate thread or failover would
+               // block
                final int credits = creditsToSend;
 
                creditsToSend = 0;
@@ -616,8 +625,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       MessageHandler theHandler = handler;
 
       if (theHandler != null)
-      {
-         
+      {         
          if (rateLimiter != null)
          {
             rateLimiter.limit();
@@ -718,7 +726,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             if (message instanceof ClientFileMessage)
             {
-               ((ClientFileMessage) message).getFile().delete();
+               ((ClientFileMessage)message).getFile().delete();
             }
          }
       }

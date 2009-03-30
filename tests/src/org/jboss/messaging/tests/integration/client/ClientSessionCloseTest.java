@@ -42,7 +42,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -60,7 +60,7 @@ public class ClientSessionCloseTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServiceImpl service;
+   private MessagingServer server;
 
    // Static --------------------------------------------------------
 
@@ -269,14 +269,14 @@ public class ClientSessionCloseTest extends UnitTestCase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      service = Messaging.newNullStorageMessagingService(config);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(config);
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

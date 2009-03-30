@@ -26,6 +26,8 @@ public interface Channel
 
    void send(Packet packet);
    
+   void sendAndFlush(Packet packet);
+   
    Packet sendBlocking(Packet packet) throws MessagingException;
 
    void replicatePacket(Packet packet, long replicatedChannelID, Runnable action);

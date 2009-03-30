@@ -70,7 +70,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
       FilenameFilter fnf = new FilenameFilter()
       {
          public boolean accept(final File file, final String name)
-         {
+         {        
             return name.endsWith("." + extension);
          }
       };

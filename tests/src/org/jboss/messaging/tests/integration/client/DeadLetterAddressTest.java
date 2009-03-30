@@ -40,7 +40,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -52,7 +52,7 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class DeadLetterAddressTest extends UnitTestCase
 {
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private ClientSession clientSession;
 
@@ -64,7 +64,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(1);
       addressSettings.setDeadLetterAddress(dla);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
@@ -97,7 +97,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(1);
       addressSettings.setDeadLetterAddress(dla);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       SimpleString dlq = new SimpleString("DLQ1");
       SimpleString dlq2 = new SimpleString("DLQ2");
       clientSession.createQueue(dla, dlq, null, false);
@@ -139,7 +139,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       SimpleString qName = new SimpleString("q1");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(1);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
       producer.send(createTextMessage("heyho!", clientSession));
@@ -168,7 +168,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(MAX_DELIVERIES);
       addressSettings.setDeadLetterAddress(dla);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
@@ -205,7 +205,7 @@ public class DeadLetterAddressTest extends UnitTestCase
          clientSession.rollback(xid);
       }
       
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
       ClientMessage m = clientConsumer.receive(1000);
       assertNull(m);
       //All the messages should now be in the DLQ
@@ -249,7 +249,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
       addressSettings.setDeadLetterAddress(deadLetterAdress);
-      messagingService.getServer().getAddressSettingsRepository().setDefault(addressSettings);
+      server.getAddressSettingsRepository().setDefault(addressSettings);
       
       clientSession.createQueue(address, queue, false);
       clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
@@ -292,7 +292,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
       addressSettings.setDeadLetterAddress(deadLetterAdress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch("*", addressSettings);
+      server.getAddressSettingsRepository().addMatch("*", addressSettings);
       
       clientSession.createQueue(address, queue, false);
       clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
@@ -339,11 +339,11 @@ public class DeadLetterAddressTest extends UnitTestCase
       AddressSettings defaultAddressSettings = new AddressSettings();
       defaultAddressSettings.setMaxDeliveryAttempts(defaultDeliveryAttempt);
       defaultAddressSettings.setDeadLetterAddress(defaultDeadLetterAddress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch("*", defaultAddressSettings);
+      server.getAddressSettingsRepository().addMatch("*", defaultAddressSettings);
       AddressSettings specificAddressSettings = new AddressSettings();
       specificAddressSettings.setMaxDeliveryAttempts(specificeDeliveryAttempt);
       specificAddressSettings.setDeadLetterAddress(specificDeadLetterAddress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(address.toString(), specificAddressSettings);
+      server.getAddressSettingsRepository().addMatch(address.toString(), specificAddressSettings);
       
       clientSession.createQueue(address, queue, false);
       clientSession.createQueue(defaultDeadLetterAddress, defaultDeadLetterQueue, false);
@@ -394,9 +394,9 @@ public class DeadLetterAddressTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = Messaging.newNullStorageMessagingService(configuration);
+      server = Messaging.newNullStorageMessagingServer(configuration);
       //start the server
-      messagingService.start();
+      server.start();
       //then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(true, true, false);
@@ -416,18 +416,18 @@ public class DeadLetterAddressTest extends UnitTestCase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception e1)
          {
             //
          }
       }
-      messagingService = null;
+      server = null;
       clientSession = null;
       super.tearDown();
    }

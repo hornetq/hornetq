@@ -106,19 +106,12 @@ public class QueueTest extends JMSTestCase
 	      
 	      conn.close();
 	      
-	      log.info("**** stopping");
 	      stop();
 	      
-	      	      
-	      log.info("*** restarting");
 	      startNoDelete();
-	      
-	      log.info("Redeploying objects");
 	      
 	      // Messaging server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
-	      
-	      log.info("**** redeployed objects");
 	      
 	      conn = cf.createConnection();
 	      sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -155,8 +148,6 @@ public class QueueTest extends JMSTestCase
       // This loop is to increase chances of a failure.
       for (int counter = 0; counter < 20; counter++)
       {
-         log.info("Iteration = " + counter);
-
          Connection conn1 = null;
          
          Connection conn2 = null;

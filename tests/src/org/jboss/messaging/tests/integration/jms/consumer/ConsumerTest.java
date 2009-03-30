@@ -28,14 +28,14 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -50,7 +50,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -65,7 +65,7 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class ConsumerTest extends UnitTestCase
 {
-   private MessagingService service;
+   private MessagingServer service;
 
    private JMSServerManagerImpl serverManager;
 
@@ -85,9 +85,9 @@ public class ConsumerTest extends UnitTestCase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = Messaging.newNullStorageMessagingService(conf);
+      service = Messaging.newNullStorageMessagingServer(conf);
       service.start();
-      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
+      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service);
       serverManager.start();
       serverManager.setContext(new NullInitialContext());
       serverManager.createQueue(Q_NAME, Q_NAME);
@@ -113,8 +113,8 @@ public class ConsumerTest extends UnitTestCase
                                       true,                            
                                       DEFAULT_RETRY_INTERVAL,
                                       DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                      DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                      DEFAULT_RECONNECT_ATTEMPTS);
+                                      DEFAULT_RECONNECT_ATTEMPTS,
+                                      DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
    }
 
    @Override
@@ -159,8 +159,8 @@ public class ConsumerTest extends UnitTestCase
       }
       // assert that all the messages are there and none have been acked
       SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, ((Queue)service.getServer().getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)service.getServer().getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)service.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)service.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
       session.close();
    }
 }

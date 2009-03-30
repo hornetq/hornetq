@@ -33,7 +33,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
@@ -80,7 +80,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
 
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
 
-      MessagingService messagingService = createService(true, config, settings);
+      MessagingServer messagingService = createServer(true, config, settings);
       messagingService.start();
       try
       {

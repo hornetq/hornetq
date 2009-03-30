@@ -34,7 +34,7 @@ import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -53,7 +53,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer service;
 
    // Static --------------------------------------------------------
 
@@ -70,7 +70,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
       DiscoveryGroupControlMBean discoveryGroupControl = createDiscoveryGroupControl(discoveryGroupConfig.getName(), mbeanServer);
@@ -90,12 +90,12 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
       DiscoveryGroupControlMBean discoveryGroupControl = createDiscoveryGroupControl(discoveryGroupConfig.getName(), mbeanServer);
 
-      // started by the service
+      // started by the server
       assertTrue(discoveryGroupControl.isStarted());
 
       discoveryGroupControl.stop();

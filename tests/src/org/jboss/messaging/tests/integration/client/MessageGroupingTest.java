@@ -33,7 +33,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MessageGroupingTest extends UnitTestCase
 {
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private ClientSession clientSession;
 
@@ -529,18 +529,18 @@ public class MessageGroupingTest extends UnitTestCase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception e1)
          {
             //
          }
       }
-      messagingService = null;
+      server = null;
       clientSession = null;
       
       super.tearDown();
@@ -554,13 +554,13 @@ public class MessageGroupingTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = Messaging.newNullStorageMessagingService(configuration);
+      server = Messaging.newNullStorageMessagingServer(configuration);
       // start the server
-      messagingService.start();
+      server.start();
 
       AddressSettings qs = new AddressSettings();
       qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), qs);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);

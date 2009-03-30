@@ -47,7 +47,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -64,7 +64,7 @@ public class NotificationTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer service;
    private ClientSession session;
    private ClientConsumer notifConsumer;
    private SimpleString notifQueue;
@@ -209,7 +209,7 @@ public class NotificationTest extends UnitTestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingService(conf);
+      service = Messaging.newNullStorageMessagingServer(conf);
       service.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

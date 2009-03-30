@@ -311,7 +311,7 @@ public class JBMActivation implements FailureListener
 
       try
       {
-         while (deliveryActive.get() && reconnectCount < spec.getReconnectAttempts())
+         while (deliveryActive.get() && reconnectCount < spec.getRereconnectAttempts())
          {
             teardown();
 

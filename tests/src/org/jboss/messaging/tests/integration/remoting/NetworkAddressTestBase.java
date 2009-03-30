@@ -38,7 +38,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -199,7 +199,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
       Configuration config = createDefaultConfig(true);
       config.setAcceptorConfigurations(transportConfigs);
-      MessagingService messagingService = createService(false, config);
+      MessagingServer messagingService = createServer(false, config);
       messagingService.start();
 
       params = new HashMap<String, Object>();

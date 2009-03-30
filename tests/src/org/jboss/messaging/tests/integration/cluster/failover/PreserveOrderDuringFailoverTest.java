@@ -77,10 +77,10 @@ public class PreserveOrderDuringFailoverTest extends FailoverTestBase
    {
 
       // This test would fail if both servers have the same time component
-//      NullStorageManager storageManagerLive = (NullStorageManager)liveService.getServer().getStorageManager();
+//      NullStorageManager storageManagerLive = (NullStorageManager)liveServer.getStorageManager();
 //      TimeAndCounterIDGenerator idgeneratorlive = (TimeAndCounterIDGenerator)storageManagerLive.getIDGenerator();
 //
-//      NullStorageManager storageManagerBackup = (NullStorageManager)backupService.getServer().getStorageManager();
+//      NullStorageManager storageManagerBackup = (NullStorageManager)backupServer.getStorageManager();
 //      TimeAndCounterIDGenerator idgeneratorBackup = (TimeAndCounterIDGenerator)storageManagerBackup.getIDGenerator();
 //
 //      idgeneratorBackup.setInternalDate(0);
@@ -118,9 +118,7 @@ public class PreserveOrderDuringFailoverTest extends FailoverTestBase
          }
       };
 
-      liveService.getServer().getRemotingService().addInterceptor(failInterceptor);
-
-      log.info("Created session");
+      liveServer.getRemotingService().addInterceptor(failInterceptor);
 
       ClientProducer producer = session.createProducer(ADDRESS);
 

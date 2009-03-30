@@ -21,17 +21,6 @@
  */
 package org.jboss.jms.example;
 
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -44,6 +33,18 @@ import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.server.Messaging;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
@@ -51,22 +52,22 @@ public class InVMExample
 {
    public static void main(String[] args) throws Exception
    {
-      MessagingService messagingService = null;
+      MessagingServer server = null;
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      messagingService = Messaging.newNullStorageMessagingService(configuration);
-      //start the server
-      messagingService.start();
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(messagingService.getServer());
+      server = Messaging.newNullStorageMessagingServer(configuration);
+      // start the server
+      server.start();
+      JMSServerManager serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
       serverManager.start();
-      //if you want to lookup the objects via jndi, use a proper context
+      // if you want to lookup the objects via jndi, use a proper context
       serverManager.setContext(new NullInitialContext());
       ConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
       Connection conn = cf.createConnection();
       conn.setClientID("myid");
-      //some queue stuff
+      // some queue stuff
       Queue q = new JBossQueue("queueA");
       serverManager.createQueue(q.getQueueName(), q.getQueueName());
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -74,10 +75,10 @@ public class InVMExample
       prod.send(sess.createTextMessage("hello"));
       MessageConsumer cons = sess.createConsumer(q, null, false);
       conn.start();
-      TextMessage message = (TextMessage) cons.receive(5000);
+      TextMessage message = (TextMessage)cons.receive(5000);
       System.out.println("message.getText() = " + message.getText());
 
-      //some topic stuff
+      // some topic stuff
       Topic topic = new JBossTopic("topicA");
       serverManager.createTopic(topic.getTopicName(), topic.getTopicName());
       prod = sess.createProducer(topic);
@@ -87,8 +88,8 @@ public class InVMExample
       System.out.println("message.getText() = " + message.getText());
 
       conn.close();
-      //stop the server
-      messagingService.stop();
+      // stop the server
+      server.stop();
    }
 
    static class NullInitialContext extends InitialContext

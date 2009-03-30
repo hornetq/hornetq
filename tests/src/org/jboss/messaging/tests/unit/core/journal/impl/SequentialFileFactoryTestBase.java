@@ -48,6 +48,9 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      //reset
+      AsynchronousFileImpl.resetMaxAIO();
 
       factory = createFactory();
    }

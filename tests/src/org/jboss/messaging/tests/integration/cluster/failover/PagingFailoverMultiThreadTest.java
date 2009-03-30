@@ -50,7 +50,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.utils.SimpleString;
@@ -87,9 +87,9 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
    protected static final SimpleString ADDRESS_GLOBAL = new SimpleString("FailoverTestAddress");
 
-   protected MessagingService liveService;
+   protected MessagingServer liveService;
 
-   protected MessagingService backupService;
+   protected MessagingServer backupService;
 
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -327,12 +327,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
    {
       final ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                            new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                      backupParams),
-                                                                           0,
-                                                                           1,
-                                                                           ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                                                           ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
-
+                                                                                                      backupParams));
       sf.setSendWindowSize(32 * 1024);
       return sf;
    }
@@ -391,16 +386,14 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
          backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
          backupConf.setPagingGlobalWatermarkSize(pageSize);
-         backupService = Messaging.newMessagingService(backupConf);
+         backupService = Messaging.newMessagingServer(backupConf);
       }
       else
       {
-         backupService = Messaging.newNullStorageMessagingService(backupConf);
+         backupService = Messaging.newNullStorageMessagingServer(backupConf);
       }
 
       backupService.start();
-
-      Thread.sleep(20);
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -434,18 +427,18 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
       if (fileBased)
       {
-         liveService = Messaging.newMessagingService(liveConf);
+         liveService = Messaging.newMessagingServer(liveConf);
       }
       else
       {
-         liveService = Messaging.newNullStorageMessagingService(liveConf);
+         liveService = Messaging.newNullStorageMessagingServer(liveConf);
       }
 
       AddressSettings settings = new AddressSettings();
       settings.setPageSizeBytes(pageSize);
 
-      liveService.getServer().getAddressSettingsRepository().addMatch("#", settings);
-      backupService.getServer().getAddressSettingsRepository().addMatch("#", settings);
+      liveService.getAddressSettingsRepository().addMatch("#", settings);
+      backupService.getAddressSettingsRepository().addMatch("#", settings);
 
       clearData(getTestDir() + "/live");
 

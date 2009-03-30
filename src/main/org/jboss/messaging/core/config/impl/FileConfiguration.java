@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.core.config.impl;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
@@ -78,7 +76,7 @@ public class FileConfiguration extends ConfigurationImpl
    // Public -------------------------------------------------------------------------
 
    public void start() throws Exception
-   {
+   {      
       URL url = getClass().getClassLoader().getResource(configurationUrl);
       Reader reader = new InputStreamReader(url.openStream());
       String xml = org.jboss.messaging.utils.XMLUtil.readerToString(reader);
@@ -545,12 +543,6 @@ public class FileConfiguration extends ConfigurationImpl
 
       long retryInterval = DEFAULT_RETRY_INTERVAL;
 
-      double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-
-      int initialConnectAttempts = ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
-
-      int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
 
       name = brNode.getAttribute("name");
@@ -564,19 +556,7 @@ public class FileConfiguration extends ConfigurationImpl
          if (child.getNodeName().equals("retry-interval"))
          {
             retryInterval = XMLUtil.parseLong(child);
-         }
-         else if (child.getNodeName().equals("retry-interval-multiplier"))
-         {
-            retryIntervalMultiplier = org.jboss.messaging.utils.XMLUtil.parseDouble(child);
-         }
-         else if (child.getNodeName().equals("initial-connect-attempts"))
-         {
-            initialConnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);
-         }
-         else if (child.getNodeName().equals("reconnect-attempts"))
-         {
-            reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);
-         }
+         }        
          else if (child.getNodeName().equals("use-duplicate-detection"))
          {
             duplicateDetection = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
@@ -609,11 +589,8 @@ public class FileConfiguration extends ConfigurationImpl
       if (discoveryGroupName == null)
       {
          config = new ClusterConnectionConfiguration(name,
-                                                     address,
-                                                     retryInterval,
-                                                     retryIntervalMultiplier,
-                                                     initialConnectAttempts,
-                                                     reconnectAttempts,
+                                                     address,                                                   
+                                                     retryInterval,                                                     
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,
@@ -623,10 +600,7 @@ public class FileConfiguration extends ConfigurationImpl
       {
          config = new ClusterConnectionConfiguration(name,
                                                      address,
-                                                     retryInterval,
-                                                     retryIntervalMultiplier,
-                                                     initialConnectAttempts,
-                                                     reconnectAttempts,
+                                                     retryInterval,                                                     
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,
@@ -656,9 +630,9 @@ public class FileConfiguration extends ConfigurationImpl
 
       double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
-      int initialConnectAttempts = DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+      int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 
-      int reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
+      boolean failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
       boolean useDuplicateDetection = DEFAULT_BRIDGE_DUPLICATE_DETECTION;
 
@@ -694,13 +668,13 @@ public class FileConfiguration extends ConfigurationImpl
          {
             retryIntervalMultiplier = XMLUtil.parseDouble(child);
          }
-         else if (child.getNodeName().equals("max-retries-before-failover"))
-         {
-            initialConnectAttempts = XMLUtil.parseInt(child);
-         }
-         else if (child.getNodeName().equals("max-retries-after-failover"))
+         else if (child.getNodeName().equals("reconnect-attempts"))
          {
             reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);
+         }
+         else if (child.getNodeName().equals("failover-on-server-shutdown"))
+         {
+            failoverOnServerShutdown = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
          }
          else if (child.getNodeName().equals("use-duplicate-detection"))
          {
@@ -738,8 +712,8 @@ public class FileConfiguration extends ConfigurationImpl
                                           transformerClassName,
                                           retryInterval,
                                           retryIntervalMultiplier,
-                                          initialConnectAttempts,
                                           reconnectAttempts,
+                                          failoverOnServerShutdown,
                                           useDuplicateDetection,
                                           connectorPair);
       }
@@ -752,8 +726,8 @@ public class FileConfiguration extends ConfigurationImpl
                                           transformerClassName,
                                           retryInterval,
                                           retryIntervalMultiplier,
-                                          initialConnectAttempts,
                                           reconnectAttempts,
+                                          failoverOnServerShutdown,
                                           useDuplicateDetection,
                                           discoveryGroupName);
       }

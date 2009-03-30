@@ -34,7 +34,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ExpiryRunnerTest extends UnitTestCase
 {
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private ClientSession clientSession;
 
@@ -74,8 +74,8 @@ public class ExpiryRunnerTest extends UnitTestCase
          producer.send(m);
       }
       Thread.sleep(1600);
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -94,7 +94,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       clientSession.createQueue(qName2, qName2, null, false);
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(expiryAddress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
       ClientProducer producer2 = clientSession.createProducer(qName2);
       int numMessages = 100;
       long expiration = System.currentTimeMillis();
@@ -108,8 +108,8 @@ public class ExpiryRunnerTest extends UnitTestCase
          producer2.send(m);
       }
       Thread.sleep(1600);
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -137,8 +137,8 @@ public class ExpiryRunnerTest extends UnitTestCase
          producer.send(m);
       }
       Thread.sleep(1600);
-      assertEquals(numMessages / 2, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+      assertEquals(numMessages / 2, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -173,8 +173,8 @@ public class ExpiryRunnerTest extends UnitTestCase
       }
       consumer.close();
       Thread.sleep(2100);
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -192,7 +192,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       clientSession.createQueue(qName, qName2, null, false);
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(expiryAddress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
       ClientProducer producer = clientSession.createProducer(qName);
       int numMessages = 100;
       long expiration = System.currentTimeMillis();
@@ -203,8 +203,8 @@ public class ExpiryRunnerTest extends UnitTestCase
          producer.send(m);
       }
       Thread.sleep(1600);
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getMessageCount());
-      assertEquals(0, ((Queue)messagingService.getServer().getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
 
       ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
       clientSession.start();
@@ -294,9 +294,9 @@ public class ExpiryRunnerTest extends UnitTestCase
       configuration.setMessageExpiryScanPeriod(1000);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = Messaging.newNullStorageMessagingService(configuration);
+      server = Messaging.newNullStorageMessagingServer(configuration);
       // start the server
-      messagingService.start();
+      server.start();
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);
@@ -306,8 +306,8 @@ public class ExpiryRunnerTest extends UnitTestCase
       expiryQueue = new SimpleString("expiryQ");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(expiryAddress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
       clientSession.createQueue(expiryAddress, expiryQueue, null, false);
    }
 
@@ -325,18 +325,18 @@ public class ExpiryRunnerTest extends UnitTestCase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception e1)
          {
             //
          }
       }
-      messagingService = null;
+      server = null;
       clientSession = null;
       
       super.tearDown();

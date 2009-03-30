@@ -23,7 +23,7 @@
 package org.jboss.messaging.jms.bridge;
 
 /**
- * <h3>Quality of service (QoS) levels</h3>
+ * <h3>Quality of server (QoS) levels</h3>
  * 
  * <h4>QOS_AT_MOST_ONCE</h4>
  * 

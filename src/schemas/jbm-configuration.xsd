@@ -324,11 +324,11 @@
 			<xsd:element name="retry-interval-multiplier"
 				type="xsd:double" maxOccurs="1" minOccurs="0">
 			</xsd:element>
-			<xsd:element name="max-retries-before-failover"
+			<xsd:element name="reconnect-attempts"
 				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
 			</xsd:element>
-			<xsd:element name="max-retries-after-failover"
-				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
+			<xsd:element name="failover-on-server-shutdown"
+				type="xsd:boolean" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="use-duplicate-detection"
 				type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -357,16 +357,7 @@
 			</xsd:element>
 			<xsd:element name="retry-interval" type="period"
 				maxOccurs="1" minOccurs="0">
-			</xsd:element>
-			<xsd:element name="retry-interval-multiplier"
-				type="xsd:double" maxOccurs="1" minOccurs="0">
-			</xsd:element>
-			<xsd:element name="max-retries-before-failover"
-				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
-			</xsd:element>
-			<xsd:element name="max-retries-after-failover"
-				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
-			</xsd:element>
+			</xsd:element>			
 			<xsd:element name="use-duplicate-detection"
 				type="xsd:boolean" maxOccurs="1" minOccurs="0">
 			</xsd:element>

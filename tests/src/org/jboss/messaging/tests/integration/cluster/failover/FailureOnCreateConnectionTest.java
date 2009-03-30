@@ -38,7 +38,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -63,7 +63,7 @@ public class FailureOnCreateConnectionTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService service;
+   private MessagingServer service;
 
    // Static --------------------------------------------------------
 
@@ -96,7 +96,7 @@ public class FailureOnCreateConnectionTest extends UnitTestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = Messaging.newNullStorageMessagingService(liveConf);
+      service = Messaging.newNullStorageMessagingServer(liveConf);
       service.start();
    }
 
@@ -120,14 +120,11 @@ public class FailureOnCreateConnectionTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = -1;
-      
       final int reconnectAttempts = -1;      
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     initialConnectAttempts,
                                                                      reconnectAttempts);
 
       InVMConnector.failOnCreateConnection = true;

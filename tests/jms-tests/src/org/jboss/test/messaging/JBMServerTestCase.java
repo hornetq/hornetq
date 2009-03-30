@@ -117,7 +117,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
       log.info(banner);
 
-
       try
       {
          //create any new server we need
@@ -135,16 +134,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
          }
          if (!started)
          {
-            //                  try
-            //                  {
             servers.get(0).start(getContainerConfig(), getConfiguration(), true);
-            //                  }
-            //                  catch (Exception e)
-            //                  {
-            //                     //if we are remote we will need recreating if we get here
-            //                     servers.set(i, ServerManagement.create(i));
-            //                     servers.get(i).start(getContainerConfig(), getConfiguration(), getClearDatabase() && i == 0);
-            //                  }
          }
          //deploy the objects for this test
          deployAdministeredObjects();

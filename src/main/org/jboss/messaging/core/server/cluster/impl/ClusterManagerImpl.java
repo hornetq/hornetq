@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
@@ -55,6 +56,7 @@ import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
+import org.jboss.messaging.core.server.cluster.MessageFlowRecord;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -417,7 +419,6 @@ public class ClusterManagerImpl implements ClusterManager
 
          Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
                                                                                                                               backupConnector);
-
          bridge = new BridgeImpl(nodeUUID,
                                  new SimpleString(config.getName()),
                                  queue,
@@ -429,8 +430,8 @@ public class ClusterManagerImpl implements ClusterManager
                                  transformer,
                                  config.getRetryInterval(),
                                  config.getRetryIntervalMultiplier(),
-                                 config.getInitialConnectAttempts(),
                                  config.getReconnectAttempts(),
+                                 config.isFailoverOnServerShutdown(),
                                  config.isUseDuplicateDetection(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
@@ -504,10 +505,7 @@ public class ClusterManagerImpl implements ClusterManager
 
          clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
-                                                       config.getRetryInterval(),
-                                                       config.getRetryIntervalMultiplier(),
-                                                       config.getInitialConnectAttempts(),
-                                                       config.getReconnectAttempts(),
+                                                       config.getRetryInterval(),                                                       
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        executorFactory,
@@ -533,10 +531,7 @@ public class ClusterManagerImpl implements ClusterManager
 
          clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
-                                                       config.getRetryInterval(),
-                                                       config.getRetryIntervalMultiplier(),
-                                                       config.getInitialConnectAttempts(),
-                                                       config.getReconnectAttempts(),
+                                                       config.getRetryInterval(),                                                      
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        executorFactory,

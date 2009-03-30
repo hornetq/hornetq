@@ -377,14 +377,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       if (replicatingChannel == null)
       {
+         
          doHandleCreateQueue(packet);
       }
       else
-      {
+      {       
          replicatingChannel.replicatePacket(packet, oppositeChannelID, new Runnable()
          {
             public void run()
-            {
+            {              
                doHandleCreateQueue(packet);
             }
          });
@@ -868,11 +869,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    public void handleCloseConsumer(final SessionConsumerCloseMessage packet)
-   {
+   {      
       final ServerConsumer consumer = consumers.get(packet.getConsumerID());
            
       if (replicatingChannel == null)
-      {
+      {         
          doHandleCloseConsumer(packet, consumer);
       }
       else
@@ -1323,8 +1324,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       catch (Exception e)
       {
-         log.error("Failed to create queue", e);
-
          if (e instanceof MessagingException)
          {
             response = new MessagingExceptionMessage((MessagingException)e);

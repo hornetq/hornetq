@@ -1004,7 +1004,7 @@ public class BridgeImpl implements MessagingComponent, Bridge
       }
       catch (Exception e)
       {
-         log.warn("Failed to set up connections", e);
+         log.warn("Failed to set up bridge connections");
          
          //If this fails we should attempt to cleanup or we might end up in some weird state
          
@@ -1583,7 +1583,7 @@ public class BridgeImpl implements MessagingComponent, Bridge
    {
 		public void onException(JMSException e)
 		{
-			log.warn("Detected failure on connection", e);
+			log.warn("Detected failure on bridge connection");
 			
 			synchronized (lock)
 			{

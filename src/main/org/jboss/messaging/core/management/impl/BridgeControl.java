@@ -89,9 +89,9 @@ public class BridgeControl implements BridgeControlMBean
       return configuration.getReconnectAttempts();
    }
 
-   public int getInitialConnectAttempts()
+   public boolean isFailoverOnServerShutdown()
    {
-      return configuration.getInitialConnectAttempts();
+      return configuration.isFailoverOnServerShutdown();
    }
 
    public String getName()

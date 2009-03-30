@@ -29,15 +29,15 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -56,14 +56,13 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import javax.naming.Context;
 
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -89,7 +88,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer server;
 
    private JMSServerManagerImpl serverManager;
 
@@ -303,7 +302,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertNull(queueControl.getExpiryAddress());
 
-      service.getServer().getAddressSettingsRepository().addMatch(queue.getAddress(), new AddressSettings()
+      server.getAddressSettingsRepository().addMatch(queue.getAddress(), new AddressSettings()
       {
          @Override
          public SimpleString getExpiryAddress()
@@ -427,7 +426,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertNull(queueControl.getDeadLetterAddress());
 
-      service.getServer().getAddressSettingsRepository().addMatch(queue.getAddress(), new AddressSettings()
+      server.getAddressSettingsRepository().addMatch(queue.getAddress(), new AddressSettings()
       {
          @Override
          public SimpleString getDeadLetterAddress()
@@ -667,10 +666,10 @@ public class JMSQueueControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server.start();
 
-      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
+      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
       serverManager.start();
       context = new InVMContext();
       serverManager.setContext(context);
@@ -683,7 +682,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }
@@ -719,8 +718,8 @@ public class JMSQueueControlTest extends ManagementTestBase
                                                              DEFAULT_PRE_ACKNOWLEDGE,
                                                              DEFAULT_RETRY_INTERVAL,
                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                                             DEFAULT_RECONNECT_ATTEMPTS);
+                                                             DEFAULT_RECONNECT_ATTEMPTS,
+                                                             DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
 
       return cf.createConnection();
    }

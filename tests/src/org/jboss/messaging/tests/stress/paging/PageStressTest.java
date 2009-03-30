@@ -22,7 +22,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.JournalType;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
@@ -39,7 +39,7 @@ public class PageStressTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService messagingService;
+   private MessagingServer messagingService;
 
    // Static --------------------------------------------------------
 
@@ -78,7 +78,7 @@ public class PageStressTest extends ServiceTestBase
          settings.put("page-adr", setting);
       }
 
-      messagingService = createService(true, config, settings);
+      messagingService = createServer(true, config, settings);
       messagingService.start();
 
       ClientSessionFactory factory = createInVMFactory();
@@ -139,7 +139,7 @@ public class PageStressTest extends ServiceTestBase
 
          System.out.println("server stopped, nr msgs: " + msgs);
 
-         messagingService = createService(true, config, settings);
+         messagingService = createServer(true, config, settings);
          messagingService.start();
 
          factory = createInVMFactory();
@@ -209,7 +209,7 @@ public class PageStressTest extends ServiceTestBase
          settings.put("page-adr", setting);
       }
 
-      messagingService = createService(true, config, settings);
+      messagingService = createServer(true, config, settings);
       messagingService.start();
 
       ClientSessionFactory factory = createInVMFactory();

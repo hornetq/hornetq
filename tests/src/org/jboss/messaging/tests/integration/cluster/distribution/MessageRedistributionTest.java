@@ -606,9 +606,9 @@ public class MessageRedistributionTest extends ClusterTestBase
       AddressSettings as = new AddressSettings();
       as.setRedistributionDelay(delay);
 
-      getService(0).getServer().getAddressSettingsRepository().addMatch("queues.*", as);
-      getService(1).getServer().getAddressSettingsRepository().addMatch("queues.*", as);
-      getService(2).getServer().getAddressSettingsRepository().addMatch("queues.*", as);
+      getServer(0).getAddressSettingsRepository().addMatch("queues.*", as);
+      getServer(1).getAddressSettingsRepository().addMatch("queues.*", as);
+      getServer(2).getAddressSettingsRepository().addMatch("queues.*", as);
    }
 
    protected void setupServers() throws Exception
@@ -623,8 +623,6 @@ public class MessageRedistributionTest extends ClusterTestBase
       closeAllConsumers();
 
       closeAllSessionFactories();
-      
-      stopClusterConnections(0, 1, 2);
 
       stopServers(0, 1, 2);
       

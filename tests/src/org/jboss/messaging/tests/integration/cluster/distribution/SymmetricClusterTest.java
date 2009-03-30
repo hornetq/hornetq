@@ -154,8 +154,6 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
 
       this.verifyNotReceive(0, 1, 2, 3, 4);
-
-      log.info("got here");
    }
    
    public void testBasicRoundRobin() throws Exception
@@ -199,8 +197,6 @@ public class SymmetricClusterTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
 
       this.verifyNotReceive(0, 1, 2, 3, 4);
-
-      log.info("got here");
    }
 
    public void testRoundRobinMultipleQueues() throws Exception
@@ -1522,9 +1518,6 @@ public class SymmetricClusterTest extends ClusterTestBase
       closeAllConsumers();
 
       closeAllSessionFactories();
-
-      // We stop the cluster connections first since this makes server shutdown quicker
-      stopClusterConnections(0, 1, 2, 3, 4);
 
       stopServers(0, 1, 2, 3, 4);
    }

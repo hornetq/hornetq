@@ -27,9 +27,15 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.server.Messaging;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -47,9 +53,12 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(RedeliveryConsumerTest.class);
+
+   
    // Attributes ----------------------------------------------------
 
-   MessagingService messagingService;
+   MessagingServer server;
 
    final SimpleString ADDRESS = new SimpleString("address");
 
@@ -143,8 +152,8 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       if (persistent)
       {
          session.close();
-         messagingService.stop();
-         messagingService.start();
+         server.stop();
+         server.start();
          session = factory.createSession(false, false, false);
          session.start();
          consumer = session.createConsumer(ADDRESS);
@@ -165,8 +174,8 @@ public class RedeliveryConsumerTest extends ServiceTestBase
             if (persistent)
             {
                session.close();
-               messagingService.stop();
-               messagingService.start();
+               server.stop();
+               server.start();
                session = factory.createSession(false, false, false);
                session.start();
                consumer = session.createConsumer(ADDRESS);
@@ -185,6 +194,9 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    {
       setUp(strictUpdate);
       ClientSession session = factory.createSession(false, false, false);
+      
+      log.info("created");
+      
       ClientProducer prod = session.createProducer(ADDRESS);
       prod.send(createTextMessage(session, "Hello"));
       session.commit();
@@ -207,9 +219,9 @@ public class RedeliveryConsumerTest extends ServiceTestBase
          session.close();
       }
 
-      messagingService.stop();
+      server.stop();
 
-      messagingService.start();
+      server.start();
 
       session = factory.createSession(false, true, false);
       session.start();
@@ -231,14 +243,15 @@ public class RedeliveryConsumerTest extends ServiceTestBase
     */
    private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception, MessagingException
    {
-      Configuration config = createFileConfig();
+      Configuration config = createConfigForJournal();
       config.setJournalFileSize(10 * 1024);
       config.setJournalMinFiles(2);
       config.setSecurityEnabled(false);
       config.setPersistDeliveryCountBeforeDelivery(persistDeliveryCountBeforeDelivery);
 
-      messagingService = createService(true, config);
-      messagingService.start();
+      server = createServer(true, config);
+      
+      server.start();
 
       factory = createInVMFactory();
 
@@ -251,9 +264,9 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
-         messagingService.stop();
+         server.stop();
       }
       
       super.tearDown();

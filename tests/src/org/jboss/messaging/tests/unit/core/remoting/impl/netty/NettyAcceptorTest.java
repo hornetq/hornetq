@@ -33,7 +33,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  *
- * A MinaAcceptorTest
+ * A NettyAcceptorTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -48,6 +48,15 @@ public class NettyAcceptorTest extends UnitTestCase
       NettyAcceptor acceptor = new NettyAcceptor(params, handler, listener);
 
       acceptor.start();
+      acceptor.pause();
+      acceptor.stop();
+      acceptor.start();
+      acceptor.pause();
+      acceptor.stop();
+      
+      acceptor.start();
+      acceptor.pause();
+      acceptor.resume();
       acceptor.stop();
       acceptor.start();
       acceptor.stop();

@@ -252,6 +252,19 @@ public class BasicSecurityDeployerTest extends UnitTestCase
       {
          return false;
       }
+      
+      public void start()
+      {         
+      }
+      
+      public void stop()
+      {         
+      }
+      
+      public boolean isStarted()
+      {
+         return true;
+      }
    }
 
    static class User

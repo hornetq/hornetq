@@ -42,7 +42,7 @@ import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
@@ -69,7 +69,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    protected InVMContext context;
 
-   protected MessagingServiceImpl service;
+   protected MessagingServer server;
 
    // Static --------------------------------------------------------
 
@@ -81,7 +81,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       JMSServerControlMBean control = createManagementControl();
       String version = control.getVersion();
-      assertEquals(service.getServer().getVersion().getFullVersion(), version);
+      assertEquals(server.getVersion().getFullVersion(), version);
    }
 
    public void testCreateQueue() throws Exception
@@ -235,8 +235,8 @@ public class JMSServerControlTest extends ManagementTestBase
       int maxConnections = randomPositiveInt();
       long retryInterval = randomPositiveLong();
       double retryIntervalMultiplier = randomDouble();
-      int initialConnectAttempts = randomPositiveInt();
       int reconnectAttempts = randomPositiveInt();
+      boolean failoverOnServerShutdown = randomBoolean();
       boolean preAcknowledge = randomBoolean();
       boolean blockOnAcknowledge = randomBoolean();
       boolean blockOnNonPersistentSend = randomBoolean();
@@ -248,30 +248,30 @@ public class JMSServerControlTest extends ManagementTestBase
       JMSServerControlMBean control = createManagementControl();
 
       control.createSimpleConnectionFactory(cfName,
-                                      InVMConnectorFactory.class.getName(),
-                                      ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                      pingPeriod,
-                                      connectionTTL,
-                                      callTimeout,
-                                      clientID,
-                                      dupsOKBatchSize,
-                                      transactionBatchSize,
-                                      consumerWindowSize,
-                                      consumerMaxRate,
-                                      producerWindowSize,
-                                      producerMaxRate,
-                                      minLargeMessageSize,
-                                      blockOnAcknowledge,
-                                      blockOnNonPersistentSend,
-                                      blockOnPersistentSend,
-                                      autoGroup,
-                                      maxConnections,
-                                      preAcknowledge,
-                                      retryInterval,
-                                      retryIntervalMultiplier,
-                                      initialConnectAttempts,
-                                      reconnectAttempts,
-                                      cfJNDIBinding);
+                                            InVMConnectorFactory.class.getName(),
+                                            ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                            pingPeriod,
+                                            connectionTTL,
+                                            callTimeout,
+                                            clientID,
+                                            dupsOKBatchSize,
+                                            transactionBatchSize,
+                                            consumerWindowSize,
+                                            consumerMaxRate,
+                                            producerWindowSize,
+                                            producerMaxRate,
+                                            minLargeMessageSize,
+                                            blockOnAcknowledge,
+                                            blockOnNonPersistentSend,
+                                            blockOnPersistentSend,
+                                            autoGroup,
+                                            maxConnections,
+                                            preAcknowledge,
+                                            retryInterval,
+                                            retryIntervalMultiplier,
+                                            reconnectAttempts,
+                                            failoverOnServerShutdown,
+                                            cfJNDIBinding);
 
       Object o = checkBinding(context, cfJNDIBinding);
       assertTrue(o instanceof ConnectionFactory);
@@ -298,8 +298,8 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(maxConnections, cfControl.getMaxConnections());
       assertEquals(retryInterval, cfControl.getRetryInterval());
       assertEquals(retryIntervalMultiplier, cfControl.getRetryIntervalMultiplier());
-      assertEquals(initialConnectAttempts, cfControl.getInitialConnectAttempts());
       assertEquals(reconnectAttempts, cfControl.getReconnectAttempts());
+      assertEquals(failoverOnServerShutdown, cfControl.isFailoverOnNodeShutdown());
       assertEquals(preAcknowledge, cfControl.isPreAcknowledge());
       assertEquals(blockOnAcknowledge, cfControl.isBlockOnAcknowledge());
       assertEquals(blockOnNonPersistentSend, cfControl.isBlockOnNonPersistentSend());
@@ -343,11 +343,11 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server.start();
 
       context = new InVMContext();
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
+      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(context);
    }
@@ -355,7 +355,7 @@ public class JMSServerControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

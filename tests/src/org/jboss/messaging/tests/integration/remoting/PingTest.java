@@ -30,14 +30,14 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -59,7 +59,7 @@ import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -79,7 +79,7 @@ public class PingTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    // Static --------------------------------------------------------
 
@@ -92,14 +92,14 @@ public class PingTest extends ServiceTestBase
    {
       super.setUp();
       Configuration config = createDefaultConfig(true);
-      messagingService = createService(false, config);
-      messagingService.start();
+      server = createServer(false, config);
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      messagingService.stop();
+      server.stop();
       super.tearDown();
    }
 
@@ -128,7 +128,8 @@ public class PingTest extends ServiceTestBase
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
-                                                              null,
+                                                              null,                                 
+                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                               PING_INTERVAL,
                                                               DEFAULT_CONNECTION_TTL,
@@ -147,7 +148,6 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_ACK_BATCH_SIZE,
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                               DEFAULT_RECONNECT_ATTEMPTS);
 
       ClientSession session = csf.createSession(false, true, true);
@@ -161,11 +161,11 @@ public class PingTest extends ServiceTestBase
       RemotingConnection serverConn = null;
       while (serverConn == null)
       {
-         Set<RemotingConnection> conns = messagingService.getServer().getRemotingService().getConnections();
+         Set<RemotingConnection> conns = server.getRemotingService().getConnections();
 
          if (!conns.isEmpty())
          {
-            serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+            serverConn = server.getRemotingService().getConnections().iterator().next();
          }
          else
          {
@@ -184,7 +184,7 @@ public class PingTest extends ServiceTestBase
 
       assertNull(serverListener.getException());
 
-      RemotingConnection serverConn2 = messagingService.getServer()
+      RemotingConnection serverConn2 = server
                                                        .getRemotingService()
                                                        .getConnections()
                                                        .iterator()
@@ -204,6 +204,7 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
                                                               null,
+                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                               PING_INTERVAL,
                                                               DEFAULT_CONNECTION_TTL,
@@ -221,8 +222,7 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_PRE_ACKNOWLEDGE,
                                                               DEFAULT_ACK_BATCH_SIZE,
                                                               DEFAULT_RETRY_INTERVAL,
-                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_INITIAL_CONNECT_ATTEMPTS,
+                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,                                             
                                                               DEFAULT_RECONNECT_ATTEMPTS);
 
       ClientSession session = csf.createSession(false, true, true);
@@ -236,11 +236,11 @@ public class PingTest extends ServiceTestBase
       RemotingConnection serverConn = null;
       while (serverConn == null)
       {
-         Set<RemotingConnection> conns = messagingService.getServer().getRemotingService().getConnections();
+         Set<RemotingConnection> conns = server.getRemotingService().getConnections();
 
          if (!conns.isEmpty())
          {
-            serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+            serverConn = server.getRemotingService().getConnections().iterator().next();
          }
          else
          {
@@ -259,7 +259,7 @@ public class PingTest extends ServiceTestBase
 
       assertNull(serverListener.getException());
 
-      RemotingConnection serverConn2 = messagingService.getServer()
+      RemotingConnection serverConn2 = server
                                                        .getRemotingService()
                                                        .getConnections()
                                                        .iterator()
@@ -279,6 +279,7 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
                                                               null,
+                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                               PING_INTERVAL,
                                                               (long)(PING_INTERVAL * 1.5),
@@ -297,7 +298,6 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_ACK_BATCH_SIZE,
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                               DEFAULT_RECONNECT_ATTEMPTS);
 
       Listener clientListener = new Listener();
@@ -317,11 +317,11 @@ public class PingTest extends ServiceTestBase
 
       while (serverConn == null)
       {
-         Set<RemotingConnection> conns = messagingService.getServer().getRemotingService().getConnections();
+         Set<RemotingConnection> conns = server.getRemotingService().getConnections();
 
          if (!conns.isEmpty())
          {
-            serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+            serverConn = server.getRemotingService().getConnections().iterator().next();
          }
          else
          {
@@ -337,7 +337,7 @@ public class PingTest extends ServiceTestBase
       for (int i = 0; i < 40; i++)
       {
          // a few tries to avoid a possible race caused by GCs or similar issues
-         if (messagingService.getServer().getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
+         if (server.getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
          {
             break;
          }
@@ -345,7 +345,7 @@ public class PingTest extends ServiceTestBase
          Thread.sleep(PING_INTERVAL);
       }
 
-      assertTrue(messagingService.getServer().getRemotingService().getConnections().isEmpty());
+      assertTrue(server.getRemotingService().getConnections().isEmpty());
 
       // The client listener should be called too since the server will close it from the server side which will result
       // in the
@@ -379,12 +379,13 @@ public class PingTest extends ServiceTestBase
          }
       };
 
-      messagingService.getServer().getRemotingService().addInterceptor(noPongInterceptor);
+      server.getRemotingService().addInterceptor(noPongInterceptor);
 
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
                                                               null,
+                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                               PING_INTERVAL,
                                                               (long)(PING_INTERVAL * 1.5),
@@ -403,7 +404,6 @@ public class PingTest extends ServiceTestBase
                                                               DEFAULT_ACK_BATCH_SIZE,
                                                               DEFAULT_RETRY_INTERVAL,
                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                               DEFAULT_RECONNECT_ATTEMPTS);
 
       ClientSession session = csf.createSession(false, true, true);
@@ -417,11 +417,11 @@ public class PingTest extends ServiceTestBase
       RemotingConnection serverConn = null;
       while (serverConn == null)
       {
-         Set<RemotingConnection> conns = messagingService.getServer().getRemotingService().getConnections();
+         Set<RemotingConnection> conns = server.getRemotingService().getConnections();
 
          if (!conns.isEmpty())
          {
-            serverConn = messagingService.getServer().getRemotingService().getConnections().iterator().next();
+            serverConn = server.getRemotingService().getConnections().iterator().next();
          }
          else
          {
@@ -437,7 +437,7 @@ public class PingTest extends ServiceTestBase
       for (int i = 0; i < 40; i++)
       {
          // a few tries to avoid a possible race caused by GCs or similar issues
-         if (messagingService.getServer().getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
+         if (server.getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
          {
             break;
          }
@@ -450,9 +450,9 @@ public class PingTest extends ServiceTestBase
       // We don't receive an exception on the server in this case
       assertNull(serverListener.getException());
 
-      assertTrue(messagingService.getServer().getRemotingService().getConnections().isEmpty());
+      assertTrue(server.getRemotingService().getConnections().isEmpty());
 
-      messagingService.getServer().getRemotingService().removeInterceptor(noPongInterceptor);
+      server.getRemotingService().removeInterceptor(noPongInterceptor);
 
       session.close();
    }

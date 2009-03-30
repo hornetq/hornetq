@@ -25,7 +25,7 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 import java.io.File;
@@ -39,7 +39,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumer() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -61,7 +61,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerNoQ() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -89,7 +89,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerWithFilter() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -111,7 +111,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerWithInvalidFilter() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -140,7 +140,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerWithBrowseOnly() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -162,7 +162,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerWithOverrides() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -184,7 +184,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateFileConsumerTest() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -206,7 +206,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateFileConsumerNoQ() throws Exception
       {
-         MessagingService service = createService(false);
+         MessagingServer service = createServer(false);
          try
          {
             service.start();
@@ -234,7 +234,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
       public void testCreateFileConsumerWithFilter() throws Exception
       {
-         MessagingService service = createService(false);
+         MessagingServer service = createServer(false);
          try
          {
             service.start();
@@ -256,7 +256,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
       public void testCreateFileConsumerWithInvalidFilter() throws Exception
       {
-         MessagingService service = createService(false);
+         MessagingServer service = createServer(false);
          try
          {
             service.start();
@@ -285,7 +285,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
       public void testCreateFileConsumerWithBrowseOnly() throws Exception
       {
-         MessagingService service = createService(false);
+         MessagingServer service = createServer(false);
          try
          {
             service.start();
@@ -307,7 +307,7 @@ public class ClientSessionCreateConsumerTest extends ServiceTestBase
 
       public void testCreateFileConsumerWithOverrides() throws Exception
       {
-         MessagingService service = createService(false);
+         MessagingServer service = createServer(false);
          try
          {
             service.start();

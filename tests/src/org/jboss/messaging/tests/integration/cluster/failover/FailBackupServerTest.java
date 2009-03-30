@@ -41,7 +41,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -68,9 +68,9 @@ public class FailBackupServerTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService liveService;
+   private MessagingServer liveServer;
 
-   private MessagingService backupService;
+   private MessagingServer backupServer;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -126,9 +126,7 @@ public class FailBackupServerTest extends UnitTestCase
          {
             // Fail the replicating connection - this simulates the backup server crashing
             
-            log.info("Failing backup connection");
-            
-            liveService.getServer().getReplicatingChannel().getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+            liveServer.getReplicatingChannel().getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
          }
 
          message.acknowledge();
@@ -231,8 +229,8 @@ public class FailBackupServerTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
-      backupService.start();
+      backupServer = Messaging.newNullStorageMessagingServer(backupConf);
+      backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -244,16 +242,16 @@ public class FailBackupServerTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
-      liveService.start();
+      liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+      liveServer.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      backupService.stop();
+      backupServer.stop();
 
-      liveService.stop();
+      liveServer.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
       

@@ -431,8 +431,6 @@ public class SelectorTest extends JBMServerTestCase
 	         {
 	            Message m = cons1.receive(1000);
 	            
-	          //  log.info("Got message " + m);
-
 	            assertNotNull(m);
 	         }
 

@@ -33,10 +33,11 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 
@@ -54,9 +55,12 @@ public class AcceptorControlTest extends ManagementTestBase
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(AcceptorControlTest.class);
+
+   
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer service;
 
    // Static --------------------------------------------------------
 
@@ -74,7 +78,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
       AcceptorControlMBean acceptorControl = createAcceptorControl(acceptorConfig.getName(), mbeanServer);
@@ -92,37 +96,96 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
       AcceptorControlMBean acceptorControl = createAcceptorControl(acceptorConfig.getName(), mbeanServer);
 
-      // started by the service
+      // started by the server
       assertTrue(acceptorControl.isStarted());
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       ClientSession session = sf.createSession(false, true, true);
       assertNotNull(session);
       session.close();
-
-      acceptorControl.stop();
-
-      assertFalse(acceptorControl.isStarted());
+      
+      acceptorControl.pause();
+      
       try
       {
-         sf.createSession(false, true, true);
-         fail("acceptor must not accept connections when stopped");
+         ClientSession session2 = sf.createSession(false, true, true);
+         
+         fail("acceptor must not accept connections when paused");
       }
       catch (Exception e)
       {
       }
-
+      
+      //Pausing a second time should do nothing
+      
+      acceptorControl.pause();
+      assertTrue(acceptorControl.isStarted());
+         
+      try
+      {
+         ClientSession session2 = sf.createSession(false, true, true);
+         
+         fail("acceptor must not accept connections when paused");
+      }
+      catch (Exception e)
+      {
+      }
+      
+      acceptorControl.resume();
+      assertTrue(acceptorControl.isStarted());
+      
+      ClientSession session2 = sf.createSession(false, true, true);
+      assertNotNull(session2);
+      session2.close();
+      
+      //resuming again should do nothing
+      
+      acceptorControl.resume();
+      assertTrue(acceptorControl.isStarted());
+      
+      session2 = sf.createSession(false, true, true);
+      assertNotNull(session2);
+      session2.close();
+      
+      
+      acceptorControl.stop();
+       
+      assertFalse(acceptorControl.isStarted());
+      
+      try
+      {
+         sf.createSession(false, true, true);
+         fail("acceptor must not accept connections when stopped accepting");
+      }
+      catch (Exception e)
+      {
+      }
+      
       acceptorControl.start();
 
       assertTrue(acceptorControl.isStarted());
       session = sf.createSession(false, true, true);
       assertNotNull(session);
       session.close();
+      
+      acceptorControl.stop();
+      
+      assertFalse(acceptorControl.isStarted());
+      
+      try
+      {
+         sf.createSession(false, true, true);
+         fail("acceptor must not accept connections when stopped accepting");
+      }
+      catch (Exception e)
+      {
+      }
+      
    }
 
    // Package protected ---------------------------------------------

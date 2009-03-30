@@ -28,6 +28,7 @@ import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.handler.ssl.SslHandler;
 
@@ -122,10 +123,36 @@ public class NettyConnection implements Connection
    {
       return channel.getId();
    }
-
+   
    public void write(final MessagingBuffer buffer)
    {
-      channel.write(buffer.getUnderlyingBuffer());
+      write(buffer, false);
+   }
+   
+   public void write(final MessagingBuffer buffer, final boolean flush)
+   {
+      ChannelFuture future = channel.write(buffer.getUnderlyingBuffer());
+      
+      if (flush)
+      {
+         while (true)
+         {
+            try
+            {
+               boolean ok = future.await(10000);
+               
+               if (!ok)
+               {
+                  log.warn("Timed out waiting for packet to be flushed");
+               }
+               
+               break;
+            }
+            catch (InterruptedException ignore)
+            {            
+            }
+         }
+      }
    }
 
    public String getRemoteAddress()

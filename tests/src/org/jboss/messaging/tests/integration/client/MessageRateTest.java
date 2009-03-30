@@ -26,8 +26,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.messaging.core.client.*;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -55,11 +60,11 @@ public class MessageRateTest extends ServiceTestBase
 
    public void testProduceRate() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setProducerMaxRate(10);
@@ -81,9 +86,9 @@ public class MessageRateTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
 
@@ -92,11 +97,11 @@ public class MessageRateTest extends ServiceTestBase
 
    public void testConsumeRate() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerMaxRate(10);
@@ -132,9 +137,9 @@ public class MessageRateTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
 
@@ -143,11 +148,11 @@ public class MessageRateTest extends ServiceTestBase
 
    public void testConsumeRateListener() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerMaxRate(10);
@@ -201,9 +206,9 @@ public class MessageRateTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
 

@@ -43,7 +43,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.DataConstants;
@@ -66,7 +66,7 @@ public class ChunkTestBase extends ServiceTestBase
 
    protected final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
-   protected MessagingService messagingService;
+   protected MessagingServer server;
 
    // Attributes ----------------------------------------------------
 
@@ -124,8 +124,8 @@ public class ChunkTestBase extends ServiceTestBase
    {
       clearData();
 
-      messagingService = createService(realFiles);
-      messagingService.start();
+      server = createServer(realFiles);
+      server.start();
 
       try
       {
@@ -142,21 +142,20 @@ public class ChunkTestBase extends ServiceTestBase
          {
             sf.setSendWindowSize(producerWindow);
          }
-         
+
          sf.setMinLargeMessageSize(minSizeProducer);
-         
 
          ClientSession session;
 
          Xid xid = null;
          session = sf.createSession(null, null, isXA, false, false, preAck, 0);
-         
+
          if (isXA)
          {
             xid = newXID();
             session.start(xid, XAResource.TMNOFLAGS);
          }
-         
+
          session.createQueue(ADDRESS, ADDRESS, null, true);
 
          ClientProducer producer = session.createProducer(ADDRESS);
@@ -195,19 +194,18 @@ public class ChunkTestBase extends ServiceTestBase
 
          if (realFiles)
          {
-            messagingService.stop();
+            server.stop();
 
-            messagingService = createService(realFiles);
-            messagingService.start();
+            server = createServer(realFiles);
+            server.start();
 
             sf = createInVMFactory();
          }
 
-         
          sf.setMinLargeMessageSize(minSizeConsumer);
 
          session = sf.createSession(null, null, isXA, false, false, preAck, 0);
-         
+
          if (isXA)
          {
             xid = newXID();
@@ -278,7 +276,6 @@ public class ChunkTestBase extends ServiceTestBase
                   session.commit();
                }
 
-
                assertNotNull(message);
 
                if (delayDelivery <= 0)
@@ -326,12 +323,10 @@ public class ChunkTestBase extends ServiceTestBase
 
          session.close();
 
-         long globalSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
+         long globalSize = server.getPostOffice().getPagingManager().getGlobalSize();
          assertEquals(0l, globalSize);
-         assertEquals(0,
-                      ((Queue)messagingService.getServer().getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
-         assertEquals(0,
-                      ((Queue)messagingService.getServer().getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
          validateNoFilesOnLargeDir();
 
@@ -340,7 +335,7 @@ public class ChunkTestBase extends ServiceTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -395,8 +390,7 @@ public class ChunkTestBase extends ServiceTestBase
                System.out.println("Message sent in " + (System.currentTimeMillis() - timeStart));
             }
          }
-         
-         
+
       }
       else
       {
@@ -418,7 +412,7 @@ public class ChunkTestBase extends ServiceTestBase
             {
                producer.send(message);
             }
- 
+
             if (testTime)
             {
                System.out.println("Message sent in " + (System.currentTimeMillis() - timeStart));
@@ -429,7 +423,7 @@ public class ChunkTestBase extends ServiceTestBase
 
    protected MessagingBuffer createLargeBuffer(final int numberOfIntegers)
    {
-      MessagingBuffer body = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers); 
+      MessagingBuffer body = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
 
       for (int i = 0; i < numberOfIntegers; i++)
       {
@@ -445,7 +439,9 @@ public class ChunkTestBase extends ServiceTestBase
       return createLargeClientMessage(session, numberOfIntegers, true);
    }
 
-   protected ClientFileMessage createLargeClientMessage(final ClientSession session, final int numberOfIntegers, boolean persistent) throws Exception
+   protected ClientFileMessage createLargeClientMessage(final ClientSession session,
+                                                        final int numberOfIntegers,
+                                                        boolean persistent) throws Exception
    {
 
       ClientFileMessage clientMessage = session.createFileMessage(persistent);

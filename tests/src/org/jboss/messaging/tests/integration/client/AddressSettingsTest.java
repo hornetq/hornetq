@@ -26,12 +26,11 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
@@ -69,17 +68,17 @@ public class AddressSettingsTest extends ServiceTestBase
 
    public void testSimpleHierarchyWithDLA() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          AddressSettings addressSettings = new AddressSettings();
          addressSettings.setDeadLetterAddress(dlaA);
          addressSettings.setMaxDeliveryAttempts(1);
          AddressSettings addressSettings2 = new AddressSettings();
          addressSettings2.setDeadLetterAddress(dlaB);
          addressSettings2.setMaxDeliveryAttempts(1);
-         HierarchicalRepository<AddressSettings> repos = messagingService.getServer().getAddressSettingsRepository();
+         HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch(addressB.toString(), addressSettings2);
          ClientSessionFactory sf = createInVMFactory();
@@ -123,26 +122,26 @@ public class AddressSettingsTest extends ServiceTestBase
       }
       finally
       {
-         if(messagingService.isStarted())
+         if(server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void test2LevelHierarchyWithDLA() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          AddressSettings addressSettings = new AddressSettings();
          addressSettings.setDeadLetterAddress(dlaA);
          addressSettings.setMaxDeliveryAttempts(1);
          AddressSettings addressSettings2 = new AddressSettings();
          addressSettings2.setDeadLetterAddress(dlaB);
          addressSettings2.setMaxDeliveryAttempts(1);
-         HierarchicalRepository<AddressSettings> repos = messagingService.getServer().getAddressSettingsRepository();
+         HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch("#", addressSettings2);
          ClientSessionFactory sf = createInVMFactory();
@@ -186,26 +185,26 @@ public class AddressSettingsTest extends ServiceTestBase
       }
       finally
       {
-         if(messagingService.isStarted())
+         if(server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void test2LevelWordHierarchyWithDLA() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          AddressSettings addressSettings = new AddressSettings();
          addressSettings.setDeadLetterAddress(dlaA);
          addressSettings.setMaxDeliveryAttempts(1);
          AddressSettings addressSettings2 = new AddressSettings();
          addressSettings2.setDeadLetterAddress(dlaB);
          addressSettings2.setMaxDeliveryAttempts(1);
-         HierarchicalRepository<AddressSettings> repos = messagingService.getServer().getAddressSettingsRepository();
+         HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch("*", addressSettings2);
          ClientSessionFactory sf = createInVMFactory();
@@ -249,19 +248,19 @@ public class AddressSettingsTest extends ServiceTestBase
       }
       finally
       {
-         if(messagingService.isStarted())
+         if(server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void test3LevelHierarchyWithDLA() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          AddressSettings addressSettings = new AddressSettings();
          addressSettings.setDeadLetterAddress(dlaA);
          addressSettings.setMaxDeliveryAttempts(1);
@@ -271,7 +270,7 @@ public class AddressSettingsTest extends ServiceTestBase
          AddressSettings addressSettings3 = new AddressSettings();
          addressSettings3.setDeadLetterAddress(dlaC);
          addressSettings3.setMaxDeliveryAttempts(1);
-         HierarchicalRepository<AddressSettings> repos = messagingService.getServer().getAddressSettingsRepository();
+         HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
          repos.addMatch(addressA2.toString(), addressSettings);
          repos.addMatch("add.*", addressSettings2);
          repos.addMatch("#", addressSettings3);
@@ -331,19 +330,19 @@ public class AddressSettingsTest extends ServiceTestBase
       }
       finally
       {
-         if(messagingService.isStarted())
+         if(server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testOverrideHierarchyWithDLA() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          AddressSettings addressSettings = new AddressSettings();
          addressSettings.setMaxDeliveryAttempts(1);
          AddressSettings addressSettings2 = new AddressSettings();
@@ -351,7 +350,7 @@ public class AddressSettingsTest extends ServiceTestBase
          AddressSettings addressSettings3 = new AddressSettings();
          addressSettings3.setDeadLetterAddress(dlaC);
          addressSettings3.setMaxDeliveryAttempts(1);
-         HierarchicalRepository<AddressSettings> repos = messagingService.getServer().getAddressSettingsRepository();
+         HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
          repos.addMatch(addressA2.toString(), addressSettings);
          repos.addMatch("add.*", addressSettings2);
          repos.addMatch("#", addressSettings3);
@@ -403,9 +402,9 @@ public class AddressSettingsTest extends ServiceTestBase
       }
       finally
       {
-         if(messagingService.isStarted())
+         if(server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }

@@ -24,11 +24,13 @@ package org.jboss.messaging.core.security;
 
 import java.util.Set;
 
+import org.jboss.messaging.core.server.MessagingComponent;
+
 /**
  * USe to validate whether a user has is valid to connect to the server and perform certain functions
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface JBMSecurityManager
+public interface JBMSecurityManager extends MessagingComponent
 {
    /**
     * is this a valid user.

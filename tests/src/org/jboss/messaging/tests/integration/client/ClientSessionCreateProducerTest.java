@@ -25,7 +25,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -35,7 +35,7 @@ public class ClientSessionCreateProducerTest extends ServiceTestBase
 {
    public void testCreateAnonProducer() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -60,7 +60,7 @@ public class ClientSessionCreateProducerTest extends ServiceTestBase
 
    public void testCreateProducer1() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -85,7 +85,7 @@ public class ClientSessionCreateProducerTest extends ServiceTestBase
 
    public void testCreateProducer2() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -111,7 +111,7 @@ public class ClientSessionCreateProducerTest extends ServiceTestBase
 
    public void testCreateProducer3() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer service = createServer(false);
       try
       {
          service.start();
@@ -139,7 +139,7 @@ public class ClientSessionCreateProducerTest extends ServiceTestBase
 
    public void testProducerOnClosedSession() throws Exception
       {
-         MessagingService service = createService(false);
+         MessagingServer service = createServer(false);
          try
          {
             service.start();

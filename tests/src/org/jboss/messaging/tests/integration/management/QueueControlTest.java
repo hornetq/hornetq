@@ -51,7 +51,7 @@ import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -68,7 +68,7 @@ public class QueueControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected MessagingService service;
+   protected MessagingServer server;
 
    protected ClientSession session;
 
@@ -123,7 +123,7 @@ public class QueueControlTest extends ManagementTestBase
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertNull(queueControl.getDeadLetterAddress());
 
-      service.getServer().getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
+      server.getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
       {
          @Override
          public SimpleString getDeadLetterAddress()
@@ -164,7 +164,7 @@ public class QueueControlTest extends ManagementTestBase
       QueueControlMBean queueControl = createManagementControl(address, queue);
       assertNull(queueControl.getExpiryAddress());
 
-      service.getServer().getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
+      server.getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
       {
          @Override
          public SimpleString getExpiryAddress()
@@ -1135,8 +1135,8 @@ public class QueueControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       sf.setBlockOnNonPersistentSend(true);
@@ -1150,7 +1150,7 @@ public class QueueControlTest extends ManagementTestBase
    {
       session.close();
 
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

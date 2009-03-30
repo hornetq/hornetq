@@ -50,63 +50,60 @@ public interface JMSServerControlMBean
 
    @Operation(desc = "Create a JMS Queue", impact = ACTION)
    boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create")
-                       String name,
-                       @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI")
-                       String jndiBinding) throws Exception;
+   String name, @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI")
+   String jndiBinding) throws Exception;
 
    @Operation(desc = "Destroy a JMS Queue", impact = ACTION)
    boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy")
-                        String name) throws Exception;
+   String name) throws Exception;
 
    @Operation(desc = "Create a JMS Topic", impact = ACTION)
    boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create")
-                       String name,
-                       @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI")
-                       String jndiBinding) throws Exception;
+   String name, @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI")
+   String jndiBinding) throws Exception;
 
    @Operation(desc = "Destroy a JMS Topic", impact = ACTION)
-   boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy") String name) throws Exception;
+   boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy")
+   String name) throws Exception;
+
+   void createConnectionFactory(String name, String connectorFactoryClassName, String jndiBinding) throws Exception;
 
    void createConnectionFactory(String name,
                                 String connectorFactoryClassName,
-                                String jndiBinding) throws Exception;
-
-   void createConnectionFactory(String name,
-                                      String connectorFactoryClassName,
-                                      boolean blockOnAcknowledge,
-                                      boolean blockOnNonPersistentSend,
-                                      boolean blockOnPersistentSend,
-                                      boolean preAcknowledge,
-                                      String jndiBinding) throws Exception;
-
-   void createSimpleConnectionFactory(String name,
-                                String connectorFactoryClassName,
-                                String connectionLoadBalancingPolicyClassName,
-                                long pingPeriod,
-                                long connectionTTL,
-                                long callTimeout,
-                                String clientID,
-                                int dupsOKBatchSize,
-                                int transactionBatchSize,
-                                int consumerWindowSize,
-                                int consumerMaxRate,
-                                int producerWindowSize,
-                                int producerMaxRate,
-                                int minLargeMessageSize,
                                 boolean blockOnAcknowledge,
                                 boolean blockOnNonPersistentSend,
                                 boolean blockOnPersistentSend,
-                                boolean autoGroup,
-                                int maxConnections,
                                 boolean preAcknowledge,
-                                long retryInterval,
-                                double retryIntervalMultiplier,
-                                int maxRetriesBeforeFailover,
-                                int maxRetriesAfterFailover,
                                 String jndiBinding) throws Exception;
 
+   void createSimpleConnectionFactory(String name,
+                                      String connectorFactoryClassName,
+                                      String connectionLoadBalancingPolicyClassName,
+                                      long pingPeriod,
+                                      long connectionTTL,
+                                      long callTimeout,
+                                      String clientID,
+                                      int dupsOKBatchSize,
+                                      int transactionBatchSize,
+                                      int consumerWindowSize,
+                                      int consumerMaxRate,
+                                      int producerWindowSize,
+                                      int producerMaxRate,
+                                      int minLargeMessageSize,
+                                      boolean blockOnAcknowledge,
+                                      boolean blockOnNonPersistentSend,
+                                      boolean blockOnPersistentSend,
+                                      boolean autoGroup,
+                                      int maxConnections,
+                                      boolean preAcknowledge,
+                                      long retryInterval,
+                                      double retryIntervalMultiplier,
+                                      int reconnectAttempts,
+                                      boolean failoverOnNodeShutdown,
+                                      String jndiBinding) throws Exception;
+
    @Operation(desc = "Create a JMS ConnectionFactory with a static list of servers", impact = ACTION)
-   void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create") 
+   void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
                                 String name,
                                 @Parameter(name = "connectorConfigs", desc = "List of pairs of live configuration, backup configuration")
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
@@ -122,119 +119,120 @@ public interface JMSServerControlMBean
                                 String clientID,
                                 @Parameter(name = "dupsOKBatchSize", desc = "Size of the batch in bytes when using DUPS_OK")
                                 int dupsOKBatchSize,
-                                @Parameter(name = "transactionBatchSize", desc = "Size of the batch in bytes when using transacted session") 
+                                @Parameter(name = "transactionBatchSize", desc = "Size of the batch in bytes when using transacted session")
                                 int transactionBatchSize,
-                                @Parameter(name = "consumerWindowSize", desc = "Consumer's window size") 
+                                @Parameter(name = "consumerWindowSize", desc = "Consumer's window size")
                                 int consumerWindowSize,
-                                @Parameter(name = "consumerMaxRate", desc = "Consumer's max rate") 
+                                @Parameter(name = "consumerMaxRate", desc = "Consumer's max rate")
                                 int consumerMaxRate,
                                 @Parameter(name = "producerWindowSize", desc = "Producer's window size")
                                 int producerWindowSize,
-                                @Parameter(name = "producerMaxRate", desc = "Producer's max rate") 
-                                int producerMaxRate,
-                                @Parameter(name = "minLargeMessageSize", desc = "Size of what is considered a big message requiring sending in chunks") int minLargeMessageSize,
-                                @Parameter(name = "blockOnAcknowledge", desc = "Does acknowlegment block?") 
-                                boolean blockOnAcknowledge,
-                                @Parameter(name = "blockOnNonPersistentSend", desc = "Does sending non persistent messages block?") 
-                                boolean blockOnNonPersistentSend,
-                                @Parameter(name = "blockOnPersistentSend", desc = "Does sending persistent messages block?") 
-                                boolean blockOnPersistentSend,
-                                @Parameter(name = "autoGroup", desc = "Any Messages sent via this factories connections will automatically set the property 'JBM_GroupID'") 
-                                boolean autoGroup,
-                                @Parameter(name = "maxConnections", desc = "The maximum number of physical connections created per client using this connection factory. Sessions created will be assigned a connection in a round-robin fashion") 
-                                int maxConnections,
-                                @Parameter(name = "preAcknowledge", desc = "If the server will acknowledge delivery of a message before it is delivered") 
-                                boolean preAcknowledge,
-                                @Parameter(name = "retryInterval", desc = "The retry interval in ms when retrying connecting to same server")
-                                long retryInterval,
-                                @Parameter(name = "retryIntervalMultiplier", desc = "The retry interval multiplier when retrying connecting to same server") 
-                                double retryIntervalMultiplier,
-                                @Parameter(name = "initialConnectAttempts", desc = "The maximum number of attempts to make to establish a first connection. -1 means no maximum") 
-                                int initialConnectAttempts,
-                                @Parameter(name = "reconnectAttempts", desc = "The maximum number of re-connection attempts to a server after failure has been detected. -1 means no maximum")
-                                int reconnectAttempts,
-                                @Parameter(name = "jndiBinding", desc = "JNDI Binding") 
-                                String jndiBinding) 
-   throws Exception;
-
-   
-   @Operation(desc = "Create a JMS ConnectionFactory specifying a discovery group to obtain list of servers from", impact = ACTION)
-   void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create") 
-                                String name,
-                                @Parameter(name = "discoveryGroupName", desc = "Name of the Discovery group configuration")
-                                String discoveryGroupName,
-                                @Parameter(name = "discoveryGroupAddress", desc = "Address of the Discovery group") 
-                                String discoveryGroupAddress,
-                                @Parameter(name = "discoveryGroupPort", desc = "port of the Discovery group")
-                                int discoveryGroupPort,
-                                @Parameter(name = "discoveryGroupRefreshTimeout", desc = "Refresh timeout of the discovery group") 
-                                long discoveryGroupRefreshTimeout,
-                                @Parameter(name = "discoveryInitialWait", desc = "The amount of time in ms to wait for initial discovery information to arrive at first using connection factory") 
-                                long discoveryInitialWait,
-                                @Parameter(name = "connectionLoadBalancingPolicyClassName", desc = "The name of the class to use for client side connection load-balancing")
-                                String connectionLoadBalancingPolicyClassName,
-                                @Parameter(name = "pingPeriod", desc = "The ping period in m") 
-                                long pingPeriod,
-                                @Parameter(name = "connectionTTL", desc = "The connection TTL in ms") 
-                                long connectionTTL,
-                                @Parameter(name = "callTimeout", desc = "The call timeout in m") 
-                                long callTimeout,
-                                @Parameter(name = "clientID", desc = "ClientID for created connections") 
-                                String clientID,
-                                @Parameter(name = "dupsOKBatchSize", desc = "Size of the batch in bytes when using DUPS_OK") 
-                                int dupsOKBatchSize,
-                                @Parameter(name = "transactionBatchSize", desc = "Size of the batch in bytes when using transacted session") 
-                                int transactionBatchSize,
-                                @Parameter(name = "consumerWindowSize", desc = "Consumer's window size") 
-                                int consumerWindowSize,
-                                @Parameter(name = "consumerMaxRate", desc = "Consumer's max rate") 
-                                int consumerMaxRate,
-                                @Parameter(name = "producerWindowSize", desc = "Producer's window size") 
-                                int producerWindowSize,
                                 @Parameter(name = "producerMaxRate", desc = "Producer's max rate")
                                 int producerMaxRate,
-                                @Parameter(name = "minLargeMessageSize", desc = "Size of what is considered a big message requiring sending in chunks") 
+                                @Parameter(name = "minLargeMessageSize", desc = "Size of what is considered a big message requiring sending in chunks")
                                 int minLargeMessageSize,
-                                @Parameter(name = "blockOnAcknowledge", desc = "Does acknowlegment block?") 
+                                @Parameter(name = "blockOnAcknowledge", desc = "Does acknowlegment block?")
                                 boolean blockOnAcknowledge,
-                                @Parameter(name = "blockOnNonPersistentSend", desc = "Does sending non persistent messages block?") 
+                                @Parameter(name = "blockOnNonPersistentSend", desc = "Does sending non persistent messages block?")
                                 boolean blockOnNonPersistentSend,
                                 @Parameter(name = "blockOnPersistentSend", desc = "Does sending persistent messages block?")
                                 boolean blockOnPersistentSend,
                                 @Parameter(name = "autoGroup", desc = "Any Messages sent via this factories connections will automatically set the property 'JBM_GroupID'")
                                 boolean autoGroup,
-                                @Parameter(name = "maxConnections", desc = "The maximum number of physical connections created per client using this connection factory. Sessions created will be assigned a connection in a round-robin fashion") 
+                                @Parameter(name = "maxConnections", desc = "The maximum number of physical connections created per client using this connection factory. Sessions created will be assigned a connection in a round-robin fashion")
                                 int maxConnections,
-                                @Parameter(name = "preAcknowledge", desc = "If the server will acknowledge delivery of a message before it is delivered") 
+                                @Parameter(name = "preAcknowledge", desc = "If the server will acknowledge delivery of a message before it is delivered")
                                 boolean preAcknowledge,
-                                @Parameter(name = "retryInterval", desc = "The retry interval in ms when retrying connecting to same server") 
+                                @Parameter(name = "retryInterval", desc = "The retry interval in ms when retrying connecting to same server")
                                 long retryInterval,
-                                @Parameter(name = "retryIntervalMultiplier", desc = "The retry interval multiplier when retrying connecting to same server") 
+                                @Parameter(name = "retryIntervalMultiplier", desc = "The retry interval multiplier when retrying connecting to same server")
                                 double retryIntervalMultiplier,
-                                @Parameter(name = "initialConnectAttempts", desc = "The maximum number of attempts to make to establish a first connection. -1 means no maximum") 
-                                int initialConnectAttempts,
-                                @Parameter(name = "reconnectAttempts", desc = "The maximum number of re-connection attempts to a server after failure has been detected. -1 means no maximum")
+                                @Parameter(name = "reconnectAttempts", desc = "The maximum number of attempts to make to establish a connection to the server. -1 means no maximum")
                                 int reconnectAttempts,
-                                @Parameter(name = "jndiBinding", desc = "JNDI Binding") 
-                                String jndiBinding) 
-   throws Exception;
+                                @Parameter(name = "failoverOnNodeShutdown", desc = "If the server is cleanly shutdown, should the client attempt failover to backup (if specified)?")
+                                boolean failoverOnNodeShutdown,
+                                @Parameter(name = "jndiBinding", desc = "JNDI Binding")
+                                String jndiBinding) throws Exception;
+
+   @Operation(desc = "Create a JMS ConnectionFactory specifying a discovery group to obtain list of servers from", impact = ACTION)
+   void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
+                                String name,
+                                @Parameter(name = "discoveryGroupName", desc = "Name of the Discovery group configuration")
+                                String discoveryGroupName,
+                                @Parameter(name = "discoveryGroupAddress", desc = "Address of the Discovery group")
+                                String discoveryGroupAddress,
+                                @Parameter(name = "discoveryGroupPort", desc = "port of the Discovery group")
+                                int discoveryGroupPort,
+                                @Parameter(name = "discoveryGroupRefreshTimeout", desc = "Refresh timeout of the discovery group")
+                                long discoveryGroupRefreshTimeout,
+                                @Parameter(name = "discoveryInitialWait", desc = "The amount of time in ms to wait for initial discovery information to arrive at first using connection factory")
+                                long discoveryInitialWait,
+                                @Parameter(name = "connectionLoadBalancingPolicyClassName", desc = "The name of the class to use for client side connection load-balancing")
+                                String connectionLoadBalancingPolicyClassName,
+                                @Parameter(name = "pingPeriod", desc = "The ping period in m")
+                                long pingPeriod,
+                                @Parameter(name = "connectionTTL", desc = "The connection TTL in ms")
+                                long connectionTTL,
+                                @Parameter(name = "callTimeout", desc = "The call timeout in m")
+                                long callTimeout,
+                                @Parameter(name = "clientID", desc = "ClientID for created connections")
+                                String clientID,
+                                @Parameter(name = "dupsOKBatchSize", desc = "Size of the batch in bytes when using DUPS_OK")
+                                int dupsOKBatchSize,
+                                @Parameter(name = "transactionBatchSize", desc = "Size of the batch in bytes when using transacted session")
+                                int transactionBatchSize,
+                                @Parameter(name = "consumerWindowSize", desc = "Consumer's window size")
+                                int consumerWindowSize,
+                                @Parameter(name = "consumerMaxRate", desc = "Consumer's max rate")
+                                int consumerMaxRate,
+                                @Parameter(name = "producerWindowSize", desc = "Producer's window size")
+                                int producerWindowSize,
+                                @Parameter(name = "producerMaxRate", desc = "Producer's max rate")
+                                int producerMaxRate,
+                                @Parameter(name = "minLargeMessageSize", desc = "Size of what is considered a big message requiring sending in chunks")
+                                int minLargeMessageSize,
+                                @Parameter(name = "blockOnAcknowledge", desc = "Does acknowlegment block?")
+                                boolean blockOnAcknowledge,
+                                @Parameter(name = "blockOnNonPersistentSend", desc = "Does sending non persistent messages block?")
+                                boolean blockOnNonPersistentSend,
+                                @Parameter(name = "blockOnPersistentSend", desc = "Does sending persistent messages block?")
+                                boolean blockOnPersistentSend,
+                                @Parameter(name = "autoGroup", desc = "Any Messages sent via this factories connections will automatically set the property 'JBM_GroupID'")
+                                boolean autoGroup,
+                                @Parameter(name = "maxConnections", desc = "The maximum number of physical connections created per client using this connection factory. Sessions created will be assigned a connection in a round-robin fashion")
+                                int maxConnections,
+                                @Parameter(name = "preAcknowledge", desc = "If the server will acknowledge delivery of a message before it is delivered")
+                                boolean preAcknowledge,
+                                @Parameter(name = "retryInterval", desc = "The retry interval in ms when retrying connecting to same server")
+                                long retryInterval,
+                                @Parameter(name = "retryIntervalMultiplier", desc = "The retry interval multiplier when retrying connecting to same server")
+                                double retryIntervalMultiplier,
+                                @Parameter(name = "reconnectAttempts", desc = "The maximum number of attempts to make to establish a connection to the server. -1 means no maximum")
+                                int reconnectAttempts,
+                                @Parameter(name = "failoverOnNodeShutdown", desc = "If the server is cleanly shutdown, should the client attempt failover to backup (if specified)?")
+                                boolean failoverOnNodeShutdown,
+                                @Parameter(name = "jndiBinding", desc = "JNDI Binding")
+                                String jndiBinding) throws Exception;
 
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
-   void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create") String name) throws Exception;
+   void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
+   String name) throws Exception;
 
    @Operation(desc = "List the client addresses", impact = INFO)
    String[] listRemoteAddresses() throws Exception;
 
    @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
-   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
+   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress")
+   String ipAddress) throws Exception;
 
    @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
-   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
+   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress")
+   String ipAddress) throws Exception;
 
    @Operation(desc = "List all the connection IDs", impact = INFO)
    String[] listConnectionIDs() throws Exception;
 
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
-
-   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
+   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID")
+   String connectionID) throws Exception;
 }

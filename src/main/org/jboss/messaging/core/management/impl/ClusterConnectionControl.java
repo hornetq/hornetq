@@ -72,17 +72,7 @@ public class ClusterConnectionControl implements ClusterConnectionControlMBean
    {
       return configuration.getMaxHops();
    }
-
-   public int getInitialConnectAttempts()
-   {
-      return configuration.getInitialConnectAttempts();
-   }
-
-   public int getReconnectAttempts()
-   {
-      return configuration.getReconnectAttempts();
-   }
-
+   
    public String getName()
    {
       return configuration.getName();
@@ -91,11 +81,6 @@ public class ClusterConnectionControl implements ClusterConnectionControlMBean
    public long getRetryInterval()
    {
       return configuration.getRetryInterval();
-   }
-
-   public double getRetryIntervalMultiplier()
-   {
-      return configuration.getRetryIntervalMultiplier();
    }
 
    public TabularData getStaticConnectorNamePairs()

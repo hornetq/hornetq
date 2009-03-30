@@ -32,7 +32,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
@@ -52,10 +52,10 @@ public class ClientSessionTest extends ServiceTestBase
 
    public void testFailureListener() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          final CountDownLatch latch = new CountDownLatch(1);
@@ -68,24 +68,24 @@ public class ClientSessionTest extends ServiceTestBase
             }
          });
 
-         service.stop();
+         server.stop();
          assertTrue(latch.await(5, TimeUnit.SECONDS));
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testFailureListenerRemoved() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          class MyFailureListener implements FailureListener
@@ -103,24 +103,24 @@ public class ClientSessionTest extends ServiceTestBase
          clientSession.addFailureListener(listener);
 
          assertTrue(clientSession.removeFailureListener(listener));
-         service.stop();
+         server.stop();
          assertFalse(listener.called);
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testBindingQuery() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", "q1", false);
@@ -146,19 +146,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testQueueQuery() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", queueName, false);
@@ -176,19 +176,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testQueueQueryWithFilter() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", queueName, "foo=bar", false);
@@ -203,19 +203,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
     public void testQueueQueryNoQ() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          SessionQueueQueryResponseMessage resp = clientSession.queueQuery(new SimpleString(queueName));
@@ -225,19 +225,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testClose() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
@@ -254,19 +254,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testCreateClientMessageNonDurable() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createClientMessage(false);
@@ -275,19 +275,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testCreateClientMessageDurable() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createClientMessage(true);
@@ -296,19 +296,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testCreateClientMessageType() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createClientMessage((byte) 99, false);
@@ -317,19 +317,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testCreateClientMessageOverrides() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createClientMessage((byte) 88, false, 100l, 300l, (byte) 33);
@@ -341,19 +341,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testCreateClientFileMessageNonDurable() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientFileMessageInternal clientMessage = (ClientFileMessageInternal) clientSession.createFileMessage(false);
@@ -362,19 +362,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testCreateClientFileMessageDurable() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientFileMessageInternal clientMessage = (ClientFileMessageInternal) clientSession.createFileMessage(true);
@@ -383,39 +383,39 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testGetVersion() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         assertEquals(service.getServer().getVersion().getIncrementingVersion(), clientSession.getVersion());
+         assertEquals(server.getVersion().getIncrementingVersion(), clientSession.getVersion());
          clientSession.close();
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testStart() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
@@ -424,19 +424,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testStop() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
@@ -446,19 +446,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testCommitWithSend() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
@@ -473,7 +473,7 @@ public class ClientSessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
-         Queue q = (Queue) service.getServer().getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
          assertEquals(0, q.getMessageCount());
          clientSession.commit();
          assertEquals(10, q.getMessageCount());
@@ -481,19 +481,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testRollbackWithSend() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
@@ -508,7 +508,7 @@ public class ClientSessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
-         Queue q = (Queue) service.getServer().getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
          assertEquals(0, q.getMessageCount());
          clientSession.rollback();
          cp.send(clientSession.createClientMessage(false));
@@ -519,19 +519,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testCommitWithReceive() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setBlockOnNonPersistentSend(true);
          cf.setBlockOnPersistentSend(true);
@@ -549,7 +549,7 @@ public class ClientSessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
-         Queue q = (Queue) service.getServer().getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
          assertEquals(10, q.getMessageCount());
          ClientConsumer cc = clientSession.createConsumer(queueName);
          clientSession.start();
@@ -590,19 +590,19 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testRollbackWithReceive() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         service.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setBlockOnNonPersistentSend(true);
          cf.setBlockOnPersistentSend(true);
@@ -620,7 +620,7 @@ public class ClientSessionTest extends ServiceTestBase
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
-         Queue q = (Queue) service.getServer().getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(new SimpleString(queueName)).getBindable();
          assertEquals(10, q.getMessageCount());
          ClientConsumer cc = clientSession.createConsumer(queueName);
          clientSession.start();
@@ -661,9 +661,9 @@ public class ClientSessionTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }

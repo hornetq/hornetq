@@ -29,15 +29,15 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -55,7 +55,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -66,7 +65,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossSession;
@@ -94,9 +93,9 @@ public class JMSFailoverTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService liveService;
+   private MessagingServer liveService;
 
-   private MessagingService backupService;
+   private MessagingServer backupService;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -110,7 +109,7 @@ public class JMSFailoverTest extends UnitTestCase
    {
       JBossConnectionFactory jbcf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                          backupParams),
+                                                                                          backupParams),                                                               
                                                                DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                DEFAULT_PING_PERIOD,
                                                                DEFAULT_CONNECTION_TTL,
@@ -128,11 +127,11 @@ public class JMSFailoverTest extends UnitTestCase
                                                                true,
                                                                DEFAULT_AUTO_GROUP,
                                                                DEFAULT_MAX_CONNECTIONS,
-                                                               DEFAULT_PRE_ACKNOWLEDGE,                                                              
+                                                               DEFAULT_PRE_ACKNOWLEDGE,
                                                                DEFAULT_RETRY_INTERVAL,
                                                                DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                               DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                                               DEFAULT_RECONNECT_ATTEMPTS);
+                                                               DEFAULT_RECONNECT_ATTEMPTS,
+                                                               DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
 
       Connection conn = jbcf.createConnection();
 
@@ -186,7 +185,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       conn.close();
 
-      assertNull(listener.e);     
+      assertNull(listener.e);
    }
 
    public void testManualFailover() throws Exception
@@ -210,11 +209,11 @@ public class JMSFailoverTest extends UnitTestCase
                                                                    true,
                                                                    DEFAULT_AUTO_GROUP,
                                                                    DEFAULT_MAX_CONNECTIONS,
-                                                                   DEFAULT_PRE_ACKNOWLEDGE,                                                                
+                                                                   DEFAULT_PRE_ACKNOWLEDGE,
                                                                    DEFAULT_RETRY_INTERVAL,
                                                                    DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                   DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                                                   DEFAULT_RECONNECT_ATTEMPTS);
+                                                                   DEFAULT_RECONNECT_ATTEMPTS,
+                                                                   DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
 
       JBossConnectionFactory jbcfBackup = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
@@ -236,11 +235,11 @@ public class JMSFailoverTest extends UnitTestCase
                                                                      true,
                                                                      DEFAULT_AUTO_GROUP,
                                                                      DEFAULT_MAX_CONNECTIONS,
-                                                                     DEFAULT_PRE_ACKNOWLEDGE,                                                                   
+                                                                     DEFAULT_PRE_ACKNOWLEDGE,
                                                                      DEFAULT_RETRY_INTERVAL,
                                                                      DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                     DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                                                     DEFAULT_RECONNECT_ATTEMPTS);
+                                                                     DEFAULT_RECONNECT_ATTEMPTS,
+                                                                     DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
 
       Connection connLive = jbcfLive.createConnection();
 
@@ -322,7 +321,7 @@ public class JMSFailoverTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -330,7 +329,7 @@ public class JMSFailoverTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -344,7 +343,7 @@ public class JMSFailoverTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }
 
@@ -356,7 +355,7 @@ public class JMSFailoverTest extends UnitTestCase
       liveService.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
-      
+
       super.tearDown();
    }
 

@@ -138,9 +138,6 @@ public class ClusterWithBackupTest extends ClusterTestBase
 
       closeAllSessionFactories();
 
-      // We stop the cluster connections first since this makes server shutdown quicker
-      stopClusterConnections(0, 1, 2, 3, 4, 5);
-
       stopServers(0, 1, 2, 3, 4, 5);
    }
 

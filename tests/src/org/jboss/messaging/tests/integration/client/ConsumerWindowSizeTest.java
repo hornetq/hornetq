@@ -31,7 +31,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -54,7 +54,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    * */
    public void testSendWindowSize() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer messagingService = createServer(false);
       ClientSessionFactory cf = createInVMFactory();
       try
       {
@@ -111,7 +111,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    public void testSlowConsumerBufferingOne() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -120,7 +120,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          final int numberOfMessages = 100;
 
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerWindowSize(1);
@@ -164,7 +164,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          sessionB.close();
          sessionB = null;
 
-         assertEquals(0, getMessageCount(service, ADDRESS.toString()));
+         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
       }
       finally
@@ -184,9 +184,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
          }
 
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
@@ -203,7 +203,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerNoBuffer(final boolean largeMessages) throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -212,7 +212,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          final int numberOfMessages = 100;
 
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerWindowSize(0);
@@ -267,7 +267,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          sessionB.close();
          sessionB = null;
 
-         assertEquals(0, getMessageCount(service, ADDRESS.toString()));
+         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
       }
       finally
@@ -287,9 +287,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
          }
 
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
@@ -306,7 +306,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerNoBuffer2(final boolean largeMessages) throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       ClientSession session1 = null;
       ClientSession session2 = null;
@@ -315,7 +315,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          final int numberOfMessages = 100;
 
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
 
@@ -394,7 +394,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          prod = session1.createProducer(ADDRESS);
 
 
-         assertEquals(0, getMessageCount(service, ADDRESS.toString()));
+         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
          // This should also work the other way around
 
@@ -450,7 +450,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          session1 = null;
          session2.close();
          session2 = null;
-         assertEquals(0, getMessageCount(service, ADDRESS.toString()));
+         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
       }
       finally
@@ -470,16 +470,16 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
          }
 
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    public void testSlowConsumerOnMessageHandlerNoBuffers() throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -488,7 +488,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          final int numberOfMessages = 100;
 
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerWindowSize(0);
@@ -588,7 +588,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          sessionB.close();
          sessionB = null;
 
-         assertEquals(0, getMessageCount(service, ADDRESS.toString()));
+         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
          assertFalse("MessageHandler received a failure", handler.failed);
 
@@ -610,9 +610,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
          }
 
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
@@ -629,7 +629,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerOnMessageHandlerBufferOne(final boolean largeMessage) throws Exception
    {
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -638,7 +638,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          final int numberOfMessages = 100;
 
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerWindowSize(1);
@@ -749,7 +749,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          sessionB.close();
          sessionB = null;
 
-         assertEquals(0, getMessageCount(service, ADDRESS.toString()));
+         assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
          assertFalse("MessageHandler received a failure", handler.failed);
 
@@ -771,9 +771,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
          }
 
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
@@ -791,7 +791,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    private void testNoWindowRoundRobin(final boolean largeMessages) throws Exception
    {
 
-      MessagingService service = createService(false);
+      MessagingServer server = createServer(false);
 
       ClientSession sessionA = null;
       ClientSession sessionB = null;
@@ -800,7 +800,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          final int numberOfMessages = 100;
 
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerWindowSize(-1);
@@ -886,9 +886,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
          }
 
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }

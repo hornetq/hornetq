@@ -22,8 +22,8 @@
 package org.jboss.test.messaging.tools.container;
 
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
@@ -119,8 +119,6 @@ public class LocalTestServer implements Server, Runnable
          return;
       }
 
-      log.info("** deleting journal?" + clearJournal);
-
       if (clearJournal)
       {
          // Delete the Journal environment
@@ -133,7 +131,6 @@ public class LocalTestServer implements Server, Runnable
       }
 
       PropertyKernelConfig propertyKernelConfig = new PropertyKernelConfig(System.getProperties());
-      // propertyKernelConfig.setServerID(getServerID());
       bootstrap = new JBMBootstrapServer(containerConfig, propertyKernelConfig);
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       bootstrap.run();
@@ -304,8 +301,6 @@ public class LocalTestServer implements Server, Runnable
                                        int dupsOkBatchSize,
                                        boolean blockOnAcknowledge) throws Exception
    {
-      log.info("deploying connection factory with name: " + objectName + " and dupsok: " + dupsOkBatchSize);
-
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
 
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
@@ -333,8 +328,8 @@ public class LocalTestServer implements Server, Runnable
                                                     false,
                                                     DEFAULT_RETRY_INTERVAL,
                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                    DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                     DEFAULT_RECONNECT_ATTEMPTS,
+                                                    DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                     jndiBindings);
    }
 
@@ -443,7 +438,7 @@ public class LocalTestServer implements Server, Runnable
                                                                                                  false);
       TabularData subInfos = topic.listAllSubscriptions();
       List<String> subs = new ArrayList<String>();
-      for (Object o: subInfos.values())
+      for (Object o : subInfos.values())
       {
          CompositeData data = (CompositeData)o;
          subs.add((String)data.get("name"));

@@ -30,7 +30,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 /**
@@ -72,9 +72,9 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       final SimpleString queue2 = new SimpleString("queue2");
                    
-      MessagingService messagingService = createService(true, conf); 
+      MessagingServer server = createServer(true, conf); 
       
-      messagingService.start();
+      server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -120,9 +120,9 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       session2.close();
       
-      messagingService.stop();
+      server.stop();
       
-      messagingService.start();
+      server.start();
       
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
       
@@ -152,9 +152,9 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       session2.close();
       
-      messagingService.stop();
+      server.stop();
       
-      messagingService.start();
+      server.start();
       
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
       
@@ -182,7 +182,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       session2.close();
       
-      messagingService.stop();
+      server.stop();
       
    }
 

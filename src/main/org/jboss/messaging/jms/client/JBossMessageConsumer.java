@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.jms.client;
 
@@ -29,6 +29,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.QueueReceiver;
+import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 
@@ -47,51 +48,54 @@ import org.jboss.messaging.utils.SimpleString;
  * $Id$
  */
 public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber
-{   
-   // Constants -----------------------------------------------------  
-   
+{
+   // Constants -----------------------------------------------------
+
    private static final Logger log = Logger.getLogger(JBossMessageConsumer.class);
-   
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    private final ClientConsumer consumer;
-   
+
    private MessageListener listener;
-   
+
    private MessageHandler coreListener;
-   
+
    private final JBossSession session;
-   
+
    private final int ackMode;
-   
+
    private final boolean noLocal;
-   
+
    private final JBossDestination destination;
-   
+
    private final String selector;
-   
+
    private final SimpleString autoDeleteQueueName;
-     
+
    // Constructors --------------------------------------------------
 
-   public JBossMessageConsumer(final JBossSession session, final ClientConsumer consumer, final boolean noLocal,
-                               final JBossDestination destination, final String selector,
+   public JBossMessageConsumer(final JBossSession session,
+                               final ClientConsumer consumer,
+                               final boolean noLocal,
+                               final JBossDestination destination,
+                               final String selector,
                                final SimpleString autoDeleteQueueName) throws JMSException
-   {      
+   {
       this.session = session;
-      
+
       this.consumer = consumer;
-      
+
       this.ackMode = session.getAcknowledgeMode();
-      
+
       this.noLocal = noLocal;
-      
+
       this.destination = destination;
-      
-      this.selector = selector;      
-      
+
+      this.selector = selector;
+
       this.autoDeleteQueueName = autoDeleteQueueName;
    }
 
@@ -100,30 +104,30 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    public String getMessageSelector() throws JMSException
    {
       checkClosed();
-      
+
       return selector;
    }
 
    public MessageListener getMessageListener() throws JMSException
    {
       checkClosed();
-      
+
       return listener;
    }
 
    public void setMessageListener(MessageListener listener) throws JMSException
    {
       this.listener = listener;
-      
+
       coreListener = new JMSMessageListenerWrapper(session, consumer, listener, ackMode);
-      
+
       try
       {
          consumer.setMessageHandler(coreListener);
       }
       catch (MessagingException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
+         throw JMSExceptionHelper.convertFromMessagingException(e);
       }
    }
 
@@ -141,24 +145,24 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    {
       return getMessage(-1);
    }
-     
+
    public void close() throws JMSException
    {
       try
-      {         
-         consumer.close();                 
-         
+      {
+         consumer.close();
+
          if (autoDeleteQueueName != null)
          {
-            //If non durable subscriber need to delete subscription too
+            // If non durable subscriber need to delete subscription too
             session.deleteQueue(autoDeleteQueueName);
          }
-         
+
          session.removeConsumer(this);
       }
       catch (MessagingException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
+         throw JMSExceptionHelper.convertFromMessagingException(e);
       }
    }
 
@@ -175,7 +179,6 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    {
       return (Topic)destination;
    }
-
 
    public boolean getNoLocal() throws JMSException
    {
@@ -194,7 +197,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private void checkClosed() throws JMSException
    {
       if (session.getCoreSession().isClosed())
@@ -202,21 +205,22 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
          throw new IllegalStateException("Consumer is closed");
       }
    }
-   
+
    private JBossMessage getMessage(long timeout) throws JMSException
    {
       try
       {
-         ClientMessage message =  consumer.receive(timeout);
-               
+         ClientMessage message = consumer.receive(timeout);
+
          JBossMessage jbm = null;
-         
+
          if (message != null)
-         {         
-            message.acknowledge();            
-                     
-            jbm = JBossMessage.createMessage(message, session.getCoreSession());
-            
+         {
+            message.acknowledge();
+
+            jbm = JBossMessage.createMessage(message, ackMode == Session.CLIENT_ACKNOWLEDGE ? session.getCoreSession()
+                                                                                           : null);
+
             try
             {
                jbm.doBeforeReceive();
@@ -224,16 +228,16 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
             catch (Exception e)
             {
                log.error("Failed to prepare message", e);
-               
+
                return null;
             }
          }
-         
+
          return jbm;
       }
       catch (MessagingException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);     
+         throw JMSExceptionHelper.convertFromMessagingException(e);
       }
    }
 

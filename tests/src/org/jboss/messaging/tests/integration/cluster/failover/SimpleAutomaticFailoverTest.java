@@ -48,7 +48,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -70,9 +70,9 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService liveService;
+   private MessagingServer liveService;
 
-   private MessagingService backupService;
+   private MessagingServer backupService;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -96,8 +96,6 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       final int numMessages = 100;
 
-      log.info("Sending messages");
-
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
@@ -110,8 +108,6 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          producer.send(message);
       }
 
-      log.info("sent messages");
-
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       session.start();
@@ -120,17 +116,15 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       {
          ClientMessage message2 = consumer.receive();
 
-         // log.info("Got message " + message2);
-
          assertEquals("aardvarks", message2.getBody().readString());
          assertEquals(i, message2.getProperty(new SimpleString("count")));
 
          message2.acknowledge();
       }
 
-      // ClientMessage message3 = consumer.receive(250);
+      ClientMessage message3 = consumer.receive(250);
 
-      // assertNull(message3);
+      assertNull(message3);
 
       session.close();
    }
@@ -518,8 +512,6 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
-
-      log.info("** got to end");
    }
 
    public void testAllConnectionsReturned() throws Exception
@@ -595,16 +587,14 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = -1;
-
       final int reconnectAttempts = 0;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
+                                                                     true,
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     initialConnectAttempts,
                                                                      reconnectAttempts);
 
       sf.setSendWindowSize(32 * 1024);
@@ -669,6 +659,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       assertFalse(conn == conn2);
 
+      InVMConnector.failOnCreateConnection = true;
       conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
@@ -704,21 +695,19 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                         new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                    backupParams),
+                                                                        true,
                                                                         100,
                                                                         1,
-                                                                        -1,
                                                                         -1);
 
          sf.setSendWindowSize(32 * 1024);
 
          for (int i = 0; i < 10; i++)
          {
-            log.info("j:" + j + " i:" + i);
             // We test failing on the 0th connection created, then the first, then the second etc, to make sure they are
             // all failed over ok
             if (i == j)
             {
-               log.info("Failing on " + i);
                InVMConnector.numberOfFailures = 1;
                InVMConnector.failOnCreateConnection = true;
             }
@@ -839,7 +828,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -853,7 +842,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }
 
@@ -884,6 +873,8 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       stopServers();
+
+      InVMConnector.resetFailures();
 
       super.tearDown();
    }

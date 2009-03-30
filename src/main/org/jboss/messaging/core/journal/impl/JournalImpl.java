@@ -873,7 +873,7 @@ public class JournalImpl implements TestableJournal
       Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
 
       List<JournalFile> orderedFiles = orderFiles();
-
+   
       int lastDataPos = SIZE_HEADER;
 
       long maxID = -1;
@@ -1366,7 +1366,7 @@ public class JournalImpl implements TestableJournal
       while (iter.hasNext())
       {
          currentFile = iter.next();
-
+         
          if (!iter.hasNext())
          {
             iter.remove();
@@ -1937,11 +1937,11 @@ public class JournalImpl implements TestableJournal
       List<String> fileNames = fileFactory.listFiles(fileExtension);
 
       List<JournalFile> orderedFiles = new ArrayList<JournalFile>(fileNames.size());
-
+      
       for (String fileName : fileNames)
       {
          SequentialFile file = fileFactory.createSequentialFile(fileName, maxAIO);
-
+ 
          file.open(1);
 
          ByteBuffer bb = fileFactory.newBuffer(SIZE_INT);
@@ -1959,7 +1959,7 @@ public class JournalImpl implements TestableJournal
 
          file.close();
       }
-
+      
       // Now order them by ordering id - we can't use the file name for ordering
       // since we can re-use dataFiles
 

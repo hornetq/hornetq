@@ -235,9 +235,9 @@ public class MessageChunkTest extends ChunkTestBase
       try
       {
 
-         messagingService = createService(true);
+         server = createServer(true);
 
-         messagingService.start();
+         server.start();
 
          SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
@@ -292,7 +292,7 @@ public class MessageChunkTest extends ChunkTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -321,9 +321,9 @@ public class MessageChunkTest extends ChunkTestBase
       try
       {
 
-         messagingService = createService(true);
+         server = createServer(true);
 
-         messagingService.start();
+         server.start();
 
          SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
@@ -350,13 +350,13 @@ public class MessageChunkTest extends ChunkTestBase
          {
             session.close();
 
-            messagingService.stop();
+            server.stop();
 
             log.info("Restartning");
 
-            messagingService = createService(true);
+            server = createServer(true);
 
-            messagingService.start();
+            server.start();
 
             sf = createInVMFactory();
 
@@ -373,7 +373,7 @@ public class MessageChunkTest extends ChunkTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -396,9 +396,9 @@ public class MessageChunkTest extends ChunkTestBase
    {
       clearData();
 
-      messagingService = createService(true);
+      server = createServer(true);
 
-      messagingService.start();
+      server.start();
 
       ClientSessionFactory sf = createInVMFactory();
 
@@ -438,7 +438,7 @@ public class MessageChunkTest extends ChunkTestBase
 
       validateNoFilesOnLargeDir();
 
-      messagingService.stop();
+      server.stop();
 
    }
 
@@ -462,9 +462,9 @@ public class MessageChunkTest extends ChunkTestBase
       try
       {
 
-         messagingService = createService(true);
+         server = createServer(true);
 
-         messagingService.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
 
@@ -577,7 +577,7 @@ public class MessageChunkTest extends ChunkTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -615,9 +615,9 @@ public class MessageChunkTest extends ChunkTestBase
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      messagingService = createService(realFiles, config, new HashMap<String, AddressSettings>());
+      server = createServer(realFiles, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       final int numberOfIntegers = 256;
 
@@ -674,10 +674,10 @@ public class MessageChunkTest extends ChunkTestBase
 
          if (realFiles)
          {
-            messagingService.stop();
+            server.stop();
 
-            messagingService = createService(true, config, new HashMap<String, AddressSettings>());
-            messagingService.start();
+            server = createServer(true, config, new HashMap<String, AddressSettings>());
+            server.start();
 
             sf = createInVMFactory();
          }
@@ -728,7 +728,7 @@ public class MessageChunkTest extends ChunkTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {

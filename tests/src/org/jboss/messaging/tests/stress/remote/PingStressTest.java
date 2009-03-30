@@ -28,14 +28,14 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -53,7 +53,7 @@ import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.integration.remoting.PingTest;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -73,7 +73,7 @@ public class PingStressTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    // Static --------------------------------------------------------
 
@@ -86,17 +86,17 @@ public class PingStressTest extends ServiceTestBase
    {
       super.setUp();
       Configuration config = createDefaultConfig(true);
-      messagingService = createService(false, config);
-      messagingService.start();
+      server = createServer(false, config);
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
-         messagingService.stop();
-         messagingService = null;
+         server.stop();
+         server = null;
       }
       super.tearDown();
    }
@@ -145,15 +145,17 @@ public class PingStressTest extends ServiceTestBase
          }
       };
 
-      messagingService.getServer().getRemotingService().addInterceptor(noPongInterceptor);
+      server.getRemotingService().addInterceptor(noPongInterceptor);
 
       final ClientSessionFactory csf1 = new ClientSessionFactoryImpl(transportConfig,
                                                                      null,
+                                                                     DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                                      DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                      PING_INTERVAL,
                                                                      (long)(PING_INTERVAL * 1.5),
-                                                                     PING_INTERVAL * 10, // Using a smaller call timeout
-                                                                                        // for this test
+                                                                     PING_INTERVAL * 10, // Using a smaller call
+                                                                                          // timeout
+                                                                     // for this test
                                                                      DEFAULT_CONSUMER_WINDOW_SIZE,
                                                                      DEFAULT_CONSUMER_MAX_RATE,
                                                                      DEFAULT_SEND_WINDOW_SIZE,
@@ -168,7 +170,6 @@ public class PingStressTest extends ServiceTestBase
                                                                      DEFAULT_ACK_BATCH_SIZE,
                                                                      DEFAULT_RETRY_INTERVAL,
                                                                      DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                     DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                                      DEFAULT_RECONNECT_ATTEMPTS);
 
       final int numberOfSessions = 1;
@@ -197,12 +198,14 @@ public class PingStressTest extends ServiceTestBase
 
                final ClientSessionFactory csf2 = new ClientSessionFactoryImpl(transportConfig,
                                                                               null,
+                                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                                                               PING_INTERVAL,
                                                                               (long)(PING_INTERVAL * 1.5),
-                                                                              PING_INTERVAL * 10, // Using a smaller call
-                                                                                                 // timeout for this
-                                                                                                 // test
+                                                                              PING_INTERVAL * 10, // Using a smaller
+                                                                                                   // call
+                                                                              // timeout for this
+                                                                              // test
                                                                               DEFAULT_CONSUMER_WINDOW_SIZE,
                                                                               DEFAULT_CONSUMER_MAX_RATE,
                                                                               DEFAULT_SEND_WINDOW_SIZE,
@@ -217,7 +220,6 @@ public class PingStressTest extends ServiceTestBase
                                                                               DEFAULT_ACK_BATCH_SIZE,
                                                                               DEFAULT_RETRY_INTERVAL,
                                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                              DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                                               DEFAULT_RECONNECT_ATTEMPTS);
 
                // Start all at once to make concurrency worst

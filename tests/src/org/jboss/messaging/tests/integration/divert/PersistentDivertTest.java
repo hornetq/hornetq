@@ -37,7 +37,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -82,7 +82,7 @@ public class PersistentDivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingService messagingService = Messaging.newMessagingService(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf);
            
       messagingService.start();
       
@@ -218,7 +218,7 @@ public class PersistentDivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingService messagingService = Messaging.newMessagingService(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf);
            
       messagingService.start();
       
@@ -369,7 +369,7 @@ public class PersistentDivertTest extends ServiceTestBase
       
       sf.close();
       
-      assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      assertEquals(0, messagingService.getPostOffice().getPagingManager().getGlobalSize());
       
       messagingService.stop();
    }

@@ -152,7 +152,7 @@ public class JournalStorageManager implements StorageManager
       {
          throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
       }
-
+      
       String bindingsDir = config.getBindingsDirectory();
 
       if (bindingsDir == null)
@@ -230,7 +230,7 @@ public class JournalStorageManager implements StorageManager
    }
    
    public UUID getPersistentID()
-   {
+   {   
       return persistentID;
    }
    
@@ -465,7 +465,7 @@ public class JournalStorageManager implements StorageManager
                                   final Map<Long, Queue> queues,
                                   final ResourceManager resourceManager,
                                   final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
-   {
+   {      
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
@@ -906,7 +906,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos) throws Exception
-   {
+   {      
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
@@ -996,6 +996,8 @@ public class JournalStorageManager implements StorageManager
       messageJournal.stop();
 
       executor.awaitTermination(60, TimeUnit.SECONDS);
+      
+      persistentID = null;
 
       started = false;
    }

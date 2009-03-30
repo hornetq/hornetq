@@ -117,8 +117,8 @@
           <transformer-class-name>org.foo.BridgeTransformer</transformer-class-name>
           <retry-interval>3</retry-interval>
           <retry-interval-multiplier>0.2</retry-interval-multiplier>
-          <max-retries-before-failover>2</max-retries-before-failover>
-          <max-retries-after-failover>5</max-retries-after-failover>
+          <reconnect-attempts>2</reconnect-attempts>
+          <failover-on-server-shutdown>false</failover-on-server-shutdown>
           <use-duplicate-detection>true</use-duplicate-detection>
           <connector-ref connector-name="connector"/>
       </bridge>
@@ -131,9 +131,6 @@
       <cluster-connection name="cluster-connection1">
           <address>queues</address>
           <retry-interval>3</retry-interval>
-          <retry-interval-multiplier>0.2</retry-interval-multiplier>
-          <max-retries-before-failover>2</max-retries-before-failover>
-          <max-retries-after-failover>5</max-retries-after-failover>
           <use-duplicate-detection>true</use-duplicate-detection>
           <forward-when-no-consumers>true</forward-when-no-consumers>
           <max-hops>1</max-hops>
@@ -144,9 +141,6 @@
       <cluster-connection name="cluster-connection2">
           <address>queues2</address>
           <retry-interval>3</retry-interval>
-          <retry-interval-multiplier>0.2</retry-interval-multiplier>
-          <max-retries-before-failover>2</max-retries-before-failover>
-          <max-retries-after-failover>5</max-retries-after-failover>
           <use-duplicate-detection>true</use-duplicate-detection>
           <forward-when-no-consumers>true</forward-when-no-consumers>
           <max-hops>1</max-hops>
@@ -171,7 +165,7 @@
    </configuration>
    
    <settings>
-    <queue name="foo3" address="bar" />
+      <queue name="foo3" address="bar" />
    </settings>
 
 </deployment>

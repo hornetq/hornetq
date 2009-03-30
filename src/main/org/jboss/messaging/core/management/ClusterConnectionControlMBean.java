@@ -47,10 +47,4 @@ public interface ClusterConnectionControlMBean extends MessagingComponentControl
    String getDiscoveryGroupName();
 
    long getRetryInterval();
-
-   double getRetryIntervalMultiplier();
-
-   int getInitialConnectAttempts();
-
-   int getReconnectAttempts();
 }

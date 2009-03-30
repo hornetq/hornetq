@@ -12,6 +12,18 @@
 
 package org.jboss.messaging.core.remoting.server.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.DISCONNECT;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -24,7 +36,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -34,16 +46,7 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerPacketHandler;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -73,15 +76,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private TimerTask failedConnectionsTask;
 
-   private final long connectionScanPeriod;
-
-   private final long connectionTTL;
-
-   private final boolean jmxEnabled;
-
    private final BufferHandler bufferHandler = new DelegatingBufferHandler();
-
-   private volatile boolean backup;
+   
+   private final Configuration config;
 
    private volatile MessagingServer server;
 
@@ -109,13 +106,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
 
-      connectionScanPeriod = config.getConnectionScanPeriod();
-
-      connectionTTL = config.getConnectionTTLOverride();
-
-      backup = config.isBackup();
-
-      jmxEnabled = config.isJMXManagementEnabled();
+      this.config = config;
    }
 
    // RemotingService implementation -------------------------------
@@ -134,7 +125,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       // when JMX is enabled, it requires a INVM acceptor to send the core messages
       // corresponding to the JMX management operations (@see ReplicationAwareStandardMBeanWrapper)
-      if (jmxEnabled)
+      if (config.isJMXManagementEnabled())
       {
          boolean invmAcceptorConfigured = false;
          for (TransportConfiguration config : transportConfigs)
@@ -186,12 +177,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       failedConnectionsTask = new FailedConnectionsTask();
       
-      failedConnectionTimer.schedule(failedConnectionsTask, connectionScanPeriod, connectionScanPeriod);
+      failedConnectionTimer.schedule(failedConnectionsTask, config.getConnectionScanPeriod(), config.getConnectionScanPeriod());
 
       started = true;
    }
    
-   public synchronized void stop()
+   public synchronized void stop() throws Exception
    {
       if (!started)
       {
@@ -207,6 +198,17 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          failedConnectionTimer.cancel();
 
          failedConnectionTimer = null;
+      }
+      
+      //We need to stop them accepting first so no new connections are accepted after we send the disconnect message
+      for (Acceptor acceptor : acceptors)
+      {
+         acceptor.pause();
+      }
+      
+      for (RemotingConnection connection: connections.values())
+      {                    
+         connection.getChannel(0, -1, false).sendAndFlush(new PacketImpl(DISCONNECT));
       }
 
       for (Acceptor acceptor : acceptors)
@@ -241,11 +243,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.server = server;
    }
 
-   public void setBackup(final boolean backup)
-   {
-      this.backup = backup;
-   }
-
    // ConnectionLifeCycleListener implementation -----------------------------------
 
    public void connectionCreated(final Connection connection)
@@ -255,7 +252,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
 
-      RemotingConnection rc = new RemotingConnectionImpl(connection, interceptors, !backup, connectionTTL);
+      RemotingConnection rc = new RemotingConnectionImpl(connection, interceptors, !config.isBackup(), config.getConnectionTTLOverride());
 
       Channel channel1 = rc.getChannel(1, -1, false);
 
@@ -269,7 +266,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    }
 
    public void connectionDestroyed(final Object connectionID)
-   {
+   {  
       RemotingConnection conn = connections.remove(connectionID);
       if (conn != null)
       {

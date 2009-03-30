@@ -34,7 +34,7 @@ import org.jboss.messaging.core.management.DivertControlMBean;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -52,7 +52,7 @@ public class DivertControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer service;
 
    private DivertConfiguration divertConfig;
 
@@ -112,7 +112,7 @@ public class DivertControlTest extends ManagementTestBase
       
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
 
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
    }
 

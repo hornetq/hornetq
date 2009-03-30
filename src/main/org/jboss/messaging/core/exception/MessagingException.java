@@ -44,6 +44,8 @@ public class MessagingException extends Exception
    public static final int CONNECTION_TIMEDOUT = 003;
 
    public static final int INTERRUPTED = 004;
+   
+   public static final int SERVER_DISCONNECTED = 005;
 
    public static final int QUEUE_DOES_NOT_EXIST = 100;
 

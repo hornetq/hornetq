@@ -121,7 +121,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
          }
          catch (Exception e)
          {
-            // this will happen if the remoting service is stopped before this method is called
+            // this will happen if the remoting server is stopped before this method is called
             log.warn("Got Exception while closing requestor", e);
          }                 
       }

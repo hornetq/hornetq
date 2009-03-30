@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.tests.integration.persistence;
 
-import org.jboss.messaging.core.config.impl.FileConfiguration;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.LargeServerMessage;
@@ -54,7 +54,7 @@ public class JournalStorageManagerIntegrationTest extends ServiceTestBase
    public void testLargeMessageCopy() throws Exception
    {
       clearData();
-      FileConfiguration configuration = createFileConfig();
+      Configuration configuration = createConfigForJournal();
 
       configuration.start();
 

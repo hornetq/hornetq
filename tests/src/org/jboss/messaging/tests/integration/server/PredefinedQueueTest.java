@@ -36,7 +36,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -83,9 +83,9 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
+      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
            
-      messagingService.start();
+      server.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -126,7 +126,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       sf.close();
       
-      messagingService.stop();
+      server.stop();
    }
    
    public void testDeploySameNames() throws Exception
@@ -153,11 +153,11 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
+      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
            
-      messagingService.start();
+      server.start();
       
-      Bindings bindings = messagingService.getServer().getPostOffice().getBindingsForAddress(new SimpleString(testAddress));
+      Bindings bindings = server.getPostOffice().getBindingsForAddress(new SimpleString(testAddress));
       
       assertEquals(2, bindings.getBindings().size());
       
@@ -206,7 +206,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       sf.close();
       
-      messagingService.stop();
+      server.stop();
    }
    
    public void testDeployPreexistingQueues() throws Exception
@@ -221,9 +221,9 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       final String queueName3 = "queue3";
                  
-      MessagingService messagingService = Messaging.newMessagingService(conf);
+      MessagingServer server = Messaging.newMessagingServer(conf);
            
-      messagingService.start();
+      server.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -239,7 +239,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       sf.close();
       
-      messagingService.stop();
+      server.stop();
       
       QueueConfiguration queue1 = new QueueConfiguration(testAddress, queueName1, null, true);
       
@@ -255,7 +255,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      messagingService.start();
+      server.start();
       
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -310,7 +310,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       sf.close();
       
-      messagingService.stop();
+      server.stop();
    }
    
    public void testDurableNonDurable() throws Exception
@@ -334,9 +334,9 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingService messagingService = Messaging.newMessagingService(conf);
+      MessagingServer server = Messaging.newMessagingServer(conf);
            
-      messagingService.start();
+      server.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -365,9 +365,9 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       sf.close();
       
-      messagingService.stop();
+      server.stop();
       
-      messagingService.start();
+      server.start();
       
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -398,7 +398,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       sf.close();
       
-      messagingService.stop();
+      server.stop();
    }
    
    
@@ -420,9 +420,9 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
+      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
            
-      messagingService.start();
+      server.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
@@ -478,7 +478,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       sf.close();
       
-      messagingService.stop();
+      server.stop();
    }
   
    

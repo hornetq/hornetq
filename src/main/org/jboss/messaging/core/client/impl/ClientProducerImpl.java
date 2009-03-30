@@ -256,7 +256,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       SessionSendMessage initialChunk = new SessionSendMessage(headerBuffer.array(), false);
 
       channel.send(initialChunk);
-
+      
       for (int pos = 0; pos < bodySize;)
       {
          final boolean lastChunk;
@@ -281,8 +281,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          else
          {
             channel.send(chunk);
-         }
-
+         }         
       }
 
       // Note: This could be either a regular message, with a huge body,

@@ -88,7 +88,6 @@ public class MockConnector extends InVMConnector
 
    class MockConnection extends InVMConnection
    {
-
       /**
        * @param handler
        * @param listener
@@ -101,6 +100,7 @@ public class MockConnector extends InVMConnector
       @Override
       public void write(final MessagingBuffer buffer)
       {
+         log.info("calling mock connection write");
          if (callback != null)
          {
             callback.onWrite(buffer);

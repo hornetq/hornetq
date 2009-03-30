@@ -116,10 +116,10 @@ public class JBMRAProperties implements Serializable
    private Double retryIntervalMultiplier;
 
    /** */
-   private Integer initialConnectAttempts;
+   private Integer reconnectAttempts;
 
    /** */
-   private Integer reconnectAttempts;
+   private Boolean failoverOnServerShutdown;
 
    /** The user name */
    private String userName;
@@ -173,8 +173,8 @@ public class JBMRAProperties implements Serializable
       preAcknowledge = null;
       retryInterval = null;
       retryIntervalMultiplier = null;
-      initialConnectAttempts = null;
       reconnectAttempts = null;
+      failoverOnServerShutdown = null;
       userName = null;
       password = null;
       clientID = null;
@@ -734,30 +734,6 @@ public class JBMRAProperties implements Serializable
    }
 
    /**
-    * Get initial connect attempts
-    * @return The value
-    */
-   public Integer getInitialConnectAttempts()
-   {
-      if (trace)
-         log.trace("getInitialConnectAttempts()");
-
-      return initialConnectAttempts;
-   }
-
-   /**
-    * Set initial connect attempts
-    * @param initialConnectAttempts The value
-    */
-   public void setInitialConnectAttempts(Integer initialConnectAttempts)
-   {
-      if (trace)
-         log.trace("setInitialConnectAttempts(" + initialConnectAttempts + ")");
-
-      this.initialConnectAttempts = initialConnectAttempts;
-   }
-
-   /**
     * Get reconnect attempts
     * @return The value
     */
@@ -779,6 +755,30 @@ public class JBMRAProperties implements Serializable
          log.trace("setReconnectAttempts(" + reconnectAttempts + ")");
 
       this.reconnectAttempts = reconnectAttempts;
+   }
+
+   /**
+    * Get failover on server shutdowns
+    * @return The value
+    */
+   public Boolean isFailoverOnServerShutdown()
+   {
+      if (trace)
+         log.trace("isFailoverOnServerShutdown()");
+
+      return failoverOnServerShutdown;
+   }
+
+   /**
+    * Set failover on server shutdown
+    * @param failoverOnServerShutdown The value
+    */
+   public void setFailoverOnServerShutdown(Boolean failoverOnServerShutdown)
+   {
+      if (trace)
+         log.trace("setFailoverOnServerShutdown(" + failoverOnServerShutdown + ")");
+
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
    /**
@@ -931,8 +931,8 @@ public class JBMRAProperties implements Serializable
                  Util.compare(preAcknowledge, you.getPreAcknowledge()) &&
                  Util.compare(retryInterval, you.getRetryInterval()) &&
                  Util.compare(retryIntervalMultiplier, you.getRetryIntervalMultiplier()) &&
-                 Util.compare(initialConnectAttempts, you.getInitialConnectAttempts()) &&
                  Util.compare(reconnectAttempts, you.getReconnectAttempts()) &&
+                 Util.compare(failoverOnServerShutdown, you.isFailoverOnServerShutdown()) &&
                  Util.compare(userName, you.getUserName()) &&
                  Util.compare(password, you.getPassword()) &&
                  Util.compare(clientID, you.getClientID()) &&
@@ -976,8 +976,8 @@ public class JBMRAProperties implements Serializable
       hash += 31 * hash + (preAcknowledge != null ? preAcknowledge.hashCode() : 0);
       hash += 31 * hash + (retryInterval != null ? retryInterval.hashCode() : 0);
       hash += 31 * hash + (retryIntervalMultiplier != null ? retryIntervalMultiplier.hashCode() : 0);
-      hash += 31 * hash + (initialConnectAttempts != null ? initialConnectAttempts.hashCode() : 0);
       hash += 31 * hash + (reconnectAttempts != null ? reconnectAttempts.hashCode() : 0);
+      hash += 31 * hash + (failoverOnServerShutdown != null ? failoverOnServerShutdown.hashCode() : 0);
       hash += 31 * hash + (userName != null ? userName.hashCode() : 0);
       hash += 31 * hash + (password != null ? password.hashCode() : 0);
       hash += 31 * hash + (clientID != null ? clientID.hashCode() : 0);

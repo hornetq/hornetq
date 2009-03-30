@@ -38,7 +38,7 @@ import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -58,7 +58,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer server;
 
    private Configuration conf;
 
@@ -74,7 +74,7 @@ public class MessagingServerControlTest extends ManagementTestBase
    {
       MessagingServerControlMBean serverControl = createManagementControl();
 
-      assertEquals(service.getServer().getVersion().getFullVersion(), serverControl.getVersion());
+      assertEquals(server.getVersion().getFullVersion(), serverControl.getVersion());
 
       assertEquals(conf.isClustered(), serverControl.isClustered());
       assertEquals(conf.isAllowRouteWhenNoBindings(), serverControl.isAllowRouteWhenNoBindings());
@@ -305,17 +305,17 @@ public class MessagingServerControlTest extends ManagementTestBase
       conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
+      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
-      service.start();
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      if (service != null)
+      if (server != null)
       {
-         service.stop();
+         server.stop();
       }
 
       super.tearDown();

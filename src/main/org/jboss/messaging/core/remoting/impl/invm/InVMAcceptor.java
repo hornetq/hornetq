@@ -52,6 +52,8 @@ public class InVMAcceptor implements Acceptor
    private ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
 
    private volatile boolean started;
+      
+   private boolean paused;
 
    public InVMAcceptor(final Map<String, Object> configuration,
                        final BufferHandler handler,
@@ -71,21 +73,56 @@ public class InVMAcceptor implements Acceptor
          return;
       }
 
-      InVMRegistry registry = InVMRegistry.instance;
-
-      registry.registerAcceptor(id, this);
+      InVMRegistry.instance.registerAcceptor(id, this);
       
       started = true;
+      
+      paused = false;
    }
 
+   /*
+    * Stop accepting new connections
+    */
+   public synchronized void pause()
+   {      
+      if (!started)
+      {
+         return;
+      }
+      
+      if (paused)
+      {
+         return;
+      }
+      
+      InVMRegistry.instance.unregisterAcceptor(id);   
+      
+      paused = true;
+   }
+   
+   public synchronized void resume()
+   {
+      if (!paused)
+      {
+         return;
+      }
+      
+      InVMRegistry.instance.registerAcceptor(id, this);
+      
+      paused = false;
+   }
+   
    public synchronized void stop()
    {
       if (!started)
       {
          return;
       }
-
-      InVMRegistry.instance.unregisterAcceptor(id);
+      
+      if (!paused)
+      {
+         InVMRegistry.instance.unregisterAcceptor(id);  
+      }
 
       for (Connection connection : connections.values())
       {
@@ -93,8 +130,8 @@ public class InVMAcceptor implements Acceptor
       }
 
       connections.clear();
-
-      started = true;
+      
+      started = false;
    }
 
    public boolean isStarted()
@@ -126,7 +163,7 @@ public class InVMAcceptor implements Acceptor
    {
       if (!started)
       {
-         throw new IllegalStateException("Acceptor is not started");
+         return;
       }
 
       Connection conn = connections.get(connectionID);

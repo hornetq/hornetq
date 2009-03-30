@@ -68,7 +68,6 @@ public class ServerManagement
     */
    public static synchronized Server create() throws Exception
    {
-      log.info("Attempting to create local server ");
       return new LocalTestServer();
    }
 
@@ -79,29 +78,17 @@ public class ServerManagement
 
    /**
     * When this method correctly completes, the server (local or remote) is started and fully
-    * operational (the service container and the server peer are created and started).
+    * operational (the server container and the server peer are created and started).
     */
    public static void start(int i, String config,
                              boolean clearDatabase,
                              boolean startMessagingServer) throws Exception
    {
-      log.info("Attempting to start server " + i);
-
-      //servers.get(i).start(config,  attrOverrides, clearDatabase, startMessagingServer);
-
-      /*Server s = create(i);
-
-      s.start(config, attrOverrides, clearDatabase, startMessagingServer);
-*/
       throw new IllegalStateException("Method to start a server is not implemented");
-
-      //log.info("server " + i + " started");
    }
 
    public static synchronized void kill(int i) throws Exception
    {
-      log.info("Attempting to kill server " + i);
-
       if (i == 0)
       {
          //Cannot kill server 0 if there are any other servers since it has the rmi registry in it
@@ -116,7 +103,7 @@ public class ServerManagement
 
       if (i > servers.size())
       {
-         log.info("server " + i + " has not been created or has already been killed, so it cannot be killed");
+         log.error("server " + i + " has not been created or has already been killed, so it cannot be killed");
       }
       else
       {

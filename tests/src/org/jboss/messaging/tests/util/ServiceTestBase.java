@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.util;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +46,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
@@ -120,9 +119,9 @@ public class ServiceTestBase extends UnitTestCase
       recreateDirectory(getTemporaryDir(testDir));
    }
 
-   protected FileConfiguration createFileConfig()
+   protected Configuration createConfigForJournal()
    {
-      FileConfiguration config = new FileConfiguration();
+      Configuration config = new ConfigurationImpl();
       config.setJournalDirectory(getJournalDir());
       config.setBindingsDirectory(getBindingsDir());
       config.setJournalType(JournalType.NIO);
@@ -130,81 +129,81 @@ public class ServiceTestBase extends UnitTestCase
       return config;
    }
 
-   protected MessagingService createService(final boolean realFiles,
-                                            final Configuration configuration,
-                                            final Map<String, AddressSettings> settings)
+   protected MessagingServer createServer(final boolean realFiles,
+                                          final Configuration configuration,
+                                          final Map<String, AddressSettings> settings)
    {
-      MessagingService service;
+      MessagingServer service;
 
       if (realFiles)
       {
-         service = Messaging.newMessagingService(configuration);
+         service = Messaging.newMessagingServer(configuration);
       }
       else
       {
-         service = Messaging.newNullStorageMessagingService(configuration);
+         service = Messaging.newNullStorageMessagingServer(configuration);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
       {
-         service.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         service.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
 
-      service.getServer().getAddressSettingsRepository().addMatch("#", defaultSetting);
+      service.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
       return service;
    }
 
-   protected MessagingService createService(final boolean realFiles,
-                                            final Configuration configuration,
-                                            final MBeanServer mbeanServer,
-                                            final Map<String, AddressSettings> settings)
+   protected MessagingServer createService(final boolean realFiles,
+                                           final Configuration configuration,
+                                           final MBeanServer mbeanServer,
+                                           final Map<String, AddressSettings> settings)
    {
 
-      MessagingService service;
+      MessagingServer service;
 
       if (realFiles)
       {
-         service = Messaging.newMessagingService(configuration, mbeanServer);
+         service = Messaging.newMessagingServer(configuration, mbeanServer);
       }
       else
       {
-         service = Messaging.newNullStorageMessagingService(configuration, mbeanServer);
+         service = Messaging.newNullStorageMessagingServer(configuration, mbeanServer);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
       {
-         service.getServer().getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         service.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
 
-      service.getServer().getAddressSettingsRepository().addMatch("#", defaultSetting);
+      service.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
       return service;
    }
 
-   protected MessagingService createService(final boolean realFiles)
+   protected MessagingServer createServer(final boolean realFiles)
    {
-      return createService(realFiles, createDefaultConfig(), new HashMap<String, AddressSettings>());
+      return createServer(realFiles, createDefaultConfig(), new HashMap<String, AddressSettings>());
    }
 
-   protected MessagingService createService(final boolean realFiles, final Configuration configuration)
+   protected MessagingServer createServer(final boolean realFiles, final Configuration configuration)
    {
-      return createService(realFiles, configuration, new HashMap<String, AddressSettings>());
+      return createServer(realFiles, configuration, new HashMap<String, AddressSettings>());
    }
 
-   protected MessagingService createClusteredServiceWithParams(final int index,
-                                                               final boolean realFiles,
-                                                               final Map<String, Object> params)
+   protected MessagingServer createClusteredServerWithParams(final int index,
+                                                             final boolean realFiles,
+                                                             final Map<String, Object> params)
    {
-      return createService(realFiles,
-                           createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
-                           new HashMap<String, AddressSettings>());
+      return createServer(realFiles,
+                          createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                          new HashMap<String, AddressSettings>());
    }
 
    protected Configuration createDefaultConfig()
@@ -241,7 +240,7 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setSecurityEnabled(false);
       configuration.setBindingsDirectory(getBindingsDir(index));
       configuration.setJournalMinFiles(2);
-      configuration.setJournalDirectory(getJournalDir(index));
+      configuration.setJournalDirectory(getJournalDir(index, false));
       configuration.setJournalFileSize(100 * 1024);
       configuration.setJournalType(JournalType.NIO);
       configuration.setPagingDirectory(getPageDir(index));
@@ -332,9 +331,9 @@ public class ServiceTestBase extends UnitTestCase
       return message;
    }
 
-   protected int getMessageCount(final MessagingService service, final String address) throws Exception
+   protected int getMessageCount(final MessagingServer service, final String address) throws Exception
    {
-      return getMessageCount(service.getServer().getPostOffice(), address);
+      return getMessageCount(service.getPostOffice(), address);
    }
 
    /**

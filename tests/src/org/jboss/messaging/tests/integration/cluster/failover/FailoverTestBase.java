@@ -39,7 +39,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.Pair;
@@ -62,9 +62,9 @@ public class FailoverTestBase extends ServiceTestBase
 
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
 
-   protected MessagingService liveService;
+   protected MessagingServer liveServer;
 
-   protected MessagingService backupService;
+   protected MessagingServer backupServer;
 
    // Static --------------------------------------------------------
 
@@ -128,14 +128,14 @@ public class FailoverTestBase extends ServiceTestBase
 
          backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
          backupConf.setPagingGlobalWatermarkSize(pageSize);
-         backupService = Messaging.newMessagingService(backupConf);
+         backupServer = Messaging.newMessagingServer(backupConf);
       }
       else
       {
-         backupService = Messaging.newNullStorageMessagingService(backupConf);
+         backupServer = Messaging.newNullStorageMessagingServer(backupConf);
       }
 
-      backupService.start();
+      backupServer.start();
       
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -169,22 +169,22 @@ public class FailoverTestBase extends ServiceTestBase
 
       if (fileBased)
       {
-         liveService = Messaging.newMessagingService(liveConf);
+         liveServer = Messaging.newMessagingServer(liveConf);
       }
       else
       {
-         liveService = Messaging.newNullStorageMessagingService(liveConf);
+         liveServer = Messaging.newNullStorageMessagingServer(liveConf);
       }
 
       AddressSettings settings = new AddressSettings();
       settings.setPageSizeBytes(pageSize);
 
-      liveService.getServer().getAddressSettingsRepository().addMatch("#", settings);
-      backupService.getServer().getAddressSettingsRepository().addMatch("#", settings);
+      liveServer.getAddressSettingsRepository().addMatch("#", settings);
+      backupServer.getAddressSettingsRepository().addMatch("#", settings);
 
       clearData(getTestDir() + "/live");
 
-      liveService.start();
+      liveServer.start();
    }
    
    protected void setupGroupServers(boolean fileBased, String bcGroupName, int localBindPort, String groupAddress, int groupPort) throws Exception
@@ -212,14 +212,14 @@ public class FailoverTestBase extends ServiceTestBase
 
          backupConf.setPagingMaxGlobalSizeBytes(-1);
          backupConf.setPagingGlobalWatermarkSize(-1);
-         backupService = Messaging.newMessagingService(backupConf);
+         backupServer = Messaging.newMessagingServer(backupConf);
       }
       else
       {
-         backupService = Messaging.newNullStorageMessagingService(backupConf);
+         backupServer = Messaging.newNullStorageMessagingServer(backupConf);
       }
       
-      backupService.start();
+      backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -263,15 +263,15 @@ public class FailoverTestBase extends ServiceTestBase
          liveConf.setJournalFileSize(100 * 1024);
 
          liveConf.setJournalType(JournalType.NIO);
-         liveService = Messaging.newMessagingService(liveConf);
+         liveServer = Messaging.newMessagingServer(liveConf);
       }
       else
       {
-         liveService = Messaging.newNullStorageMessagingService(liveConf);
+         liveServer = Messaging.newNullStorageMessagingServer(liveConf);
       }
 
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
-      liveService.start();
+      liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+      liveServer.start();
 
    }
    
@@ -289,18 +289,18 @@ public class FailoverTestBase extends ServiceTestBase
 
    protected void stopServers() throws Exception
    {
-      if (backupService != null && backupService.isStarted())
+      if (backupServer != null && backupServer.isStarted())
       {
-         backupService.stop();
+         backupServer.stop();
 
-         backupService = null;
+         backupServer = null;
       }
 
-      if (liveService != null && liveService.isStarted())
+      if (liveServer != null && liveServer.isStarted())
       {
-         liveService.stop();
+         liveServer.stop();
 
-         liveService = null;
+         liveServer = null;
 
       }
 

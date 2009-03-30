@@ -33,5 +33,7 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface Acceptor extends MessagingComponent
 {
-   void stop();
+   void pause();
+   
+   void resume();
 }

@@ -83,6 +83,16 @@ public class AcceptorControl implements AcceptorControlMBean
    {
       acceptor.start();
    }
+   
+   public void pause()
+   {
+      acceptor.pause();
+   }
+   
+   public void resume()
+   {
+      acceptor.resume();
+   }
 
    public void stop() throws Exception
    {

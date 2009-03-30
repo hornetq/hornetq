@@ -29,7 +29,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -70,11 +70,11 @@ public class DeleteQueueRestartTest extends ServiceTestBase
 
    private void internalDeleteQueueAndRestart() throws Exception
    {
-      MessagingService service = createService(true);
+      MessagingServer server = createServer(true);
 
-      service.getServer().getConfiguration().setPagingMaxGlobalSizeBytes(0);
+      server.getConfiguration().setPagingMaxGlobalSizeBytes(0);
 
-      service.start();
+      server.start();
 
       ClientSessionFactory factory = createInVMFactory();
 
@@ -116,11 +116,11 @@ public class DeleteQueueRestartTest extends ServiceTestBase
 
       count.await();
 
-      service.stop();
+      server.stop();
 
-      service.start();
+      server.start();
 
-      service.stop();
+      server.stop();
 
    }
    // Package protected ---------------------------------------------

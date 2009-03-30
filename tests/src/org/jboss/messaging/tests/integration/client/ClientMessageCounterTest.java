@@ -27,7 +27,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -39,7 +39,7 @@ public class ClientMessageCounterTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ClientConsumerTest.class);
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 
@@ -48,65 +48,65 @@ public class ClientMessageCounterTest extends ServiceTestBase
    {
       super.setUp();
 
-      messagingService = createService(false);
+      server = createServer(false);
 
-      messagingService.start();
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      messagingService.stop();
+      server.stop();
 
-      messagingService = null;
+      server = null;
 
       super.tearDown();
    }
 
    public void testMessageCounter() throws Exception
-         {
-            ClientSessionFactory sf = createInVMFactory();
+   {
+      ClientSessionFactory sf = createInVMFactory();
 
-            sf.setBlockOnNonPersistentSend(true);
-            sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
 
-            ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
+      ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
 
-            session.createQueue(QUEUE, QUEUE, null, false);
+      session.createQueue(QUEUE, QUEUE, null, false);
 
-            ClientProducer producer = session.createProducer(QUEUE);
+      ClientProducer producer = session.createProducer(QUEUE);
 
-            final int numMessages = 100;
+      final int numMessages = 100;
 
-            for (int i = 0; i < numMessages; i++)
-            {
-               ClientMessage message = createTextMessage("m" + i, session);
-               producer.send(message);
-            }
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         producer.send(message);
+      }
 
-            session.commit();
-            session.start();
+      session.commit();
+      session.start();
 
-            assertEquals(100, getMessageCount(messagingService.getServer().getPostOffice(), QUEUE.toString()));
+      assertEquals(100, getMessageCount(server.getPostOffice(), QUEUE.toString()));
 
-            ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
 
-            for (int i = 0; i < numMessages; i++)
-            {
-               ClientMessage message = consumer.receive(1000);
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
 
-               assertNotNull(message);
-               message.acknowledge();
+         assertNotNull(message);
+         message.acknowledge();
 
-               session.commit();
+         session.commit();
 
-               assertEquals("m" + i, message.getBody().readString());
-            }
+         assertEquals("m" + i, message.getBody().readString());
+      }
 
-            session.close();
+      session.close();
 
-            assertEquals(0, getMessageCount(messagingService.getServer().getPostOffice(), QUEUE.toString()));
+      assertEquals(0, getMessageCount(server.getPostOffice(), QUEUE.toString()));
 
-         }
+   }
 
 }

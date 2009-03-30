@@ -91,18 +91,11 @@ public class TemporaryDestinationTest extends JMSTestCase
 	      catch (javax.jms.IllegalStateException e)
 	      {
 	         //Can't delete temp dest if there are open consumers
-	         log.info("got exception ok");
 	      }
 	
-	      log.info("closing consumer");
-	      
 	      consumer.close();
 	      
-	      log.info("closed consumer");
-	      
 	      tempTopic.delete();      
-	      
-	      log.info("deleted temp topic");
    	}
    	finally
    	{

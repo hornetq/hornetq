@@ -31,7 +31,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
@@ -39,6 +39,9 @@ import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
+
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.jms.Connection;
@@ -69,24 +72,24 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    // Static --------------------------------------------------------
 
-   private MessagingService startMessagingService(String acceptorFactory) throws Exception
+   private MessagingServer startMessagingServer(String acceptorFactory) throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      MessagingService service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
+      MessagingServer server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server.start();
 
       context = new InVMContext();
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
+      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(context);
 
-      return service;
+      return server;
    }
 
-   private MessagingService startMessagingService(int discoveryPort) throws Exception
+   private MessagingServer startMessagingServer(int discoveryPort) throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
@@ -97,15 +100,15 @@ public class JMSServerControl2Test extends ManagementTestBase
                                                "localhost",
                                                discoveryPort,
                                                ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
-      MessagingService service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
+      MessagingServer server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server.start();
 
       context = new InVMContext();
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
+      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(context);
 
-      return service;
+      return server;
    }
 
    // Constructors --------------------------------------------------
@@ -114,13 +117,13 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    public void _testCreateConnectionFactoryWithDiscoveryGroup() throws Exception
    {
-      MessagingService service = null;
+      MessagingServer server = null;
       try
       {
          String cfJNDIBinding = randomString();
          String cfName = randomString();
 
-         service = startMessagingService(8765);
+         server = startMessagingServer(8765);
 
          checkNoBinding(context, cfJNDIBinding);
 
@@ -151,8 +154,8 @@ public class JMSServerControl2Test extends ManagementTestBase
                                          ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                                          ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
                                          ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                         ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                         ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                                         DEFAULT_RECONNECT_ATTEMPTS,
+                                         DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                          cfJNDIBinding);
 
          Object o = checkBinding(context, cfJNDIBinding);
@@ -163,9 +166,9 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
-         if (service != null)
+         if (server != null)
          {
-            service.stop();
+            server.stop();
          }
       }
    }
@@ -233,10 +236,10 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    private void doListConnectionIDs(String acceptorFactory, String connectorFactory) throws Exception
    {
-      MessagingService service = null;
+      MessagingServer server = null;
       try
       {
-         service = startMessagingService(acceptorFactory);
+         server = startMessagingServer(acceptorFactory);
 
          JMSServerControlMBean control = createManagementControl();
 
@@ -262,19 +265,19 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
-         if (service != null)
+         if (server != null)
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    private void doListSessions(String acceptorFactory, String connectorFactory) throws Exception
    {
-      MessagingService service = null;
+      MessagingServer server = null;
       try
       {
-         service = startMessagingService(acceptorFactory);
+         server = startMessagingServer(acceptorFactory);
 
          JMSServerControlMBean control = createManagementControl();
 
@@ -300,19 +303,19 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
-         if (service != null)
+         if (server != null)
          {
-            service.stop();
+            server.stop();
          }
       }
    }
 
    private void doListClientConnections(String acceptorFactory, String connectorFactory) throws Exception
    {
-      MessagingService service = null;
+      MessagingServer server = null;
       try
       {
-         service = startMessagingService(acceptorFactory);
+         server = startMessagingServer(acceptorFactory);
 
          JMSServerControlMBean control = createManagementControl();
 
@@ -327,20 +330,21 @@ public class JMSServerControl2Test extends ManagementTestBase
          {
             System.out.println(remoteAddress);
          }
+         
+         log.info("*** closing connection");
+         
          connection.close();
 
          // FIXME: with Netty, the server is not notified immediately that the connection is closed
-         Thread.sleep(500);
-
-         log.info("got here");
+         Thread.sleep(1000);
 
          assertEquals(0, control.listRemoteAddresses().length);
       }
       finally
       {
-         if (service != null)
+         if (server != null)
          {
-            service.stop();
+            server.stop();
          }
       }
 
@@ -348,19 +352,19 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    private void doCloseConnectionsForAddress(String acceptorFactory, String connectorFactory) throws Exception
    {
-      MessagingService service = null;
+      MessagingServer server = null;
       try
       {
-         service = startMessagingService(acceptorFactory);
+         server = startMessagingServer(acceptorFactory);
 
          JMSServerControlMBean control = createManagementControl();
 
-         assertEquals(0, service.getServer().getConnectionCount());
+         assertEquals(0, server.getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
 
-         assertEquals(1, service.getServer().getConnectionCount());
+         assertEquals(1, server.getConnectionCount());
 
          String[] remoteAddresses = control.listRemoteAddresses();
          assertEquals(1, remoteAddresses.length);
@@ -380,13 +384,13 @@ public class JMSServerControl2Test extends ManagementTestBase
          boolean gotException = exceptionLatch.await(5, TimeUnit.SECONDS);
          assertTrue("did not received the expected JMSException", gotException);
          assertEquals(0, control.listRemoteAddresses().length);
-         assertEquals(0, service.getServer().getConnectionCount());
+         assertEquals(0, server.getConnectionCount());
       }
       finally
       {
-         if (service != null)
+         if (server != null)
          {
-            service.stop();
+            server.stop();
          }
       }
    }
@@ -395,20 +399,20 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       String unknownAddress = randomString();
 
-      MessagingService service = null;
+      MessagingServer server = null;
 
       try
       {
-         service = startMessagingService(acceptorFactory);
+         server = startMessagingServer(acceptorFactory);
 
          JMSServerControlMBean control = createManagementControl();
 
-         assertEquals(0, service.getServer().getConnectionCount());
+         assertEquals(0, server.getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
 
          Connection connection = JMSUtil.createConnection(connectorFactory);
 
-         assertEquals(1, service.getServer().getConnectionCount());
+         assertEquals(1, server.getConnectionCount());
          String[] remoteAddresses = control.listRemoteAddresses();
          assertEquals(1, remoteAddresses.length);
 
@@ -427,14 +431,14 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertFalse(gotException);
 
          assertEquals(1, control.listRemoteAddresses().length);
-         assertEquals(1, service.getServer().getConnectionCount());
+         assertEquals(1, server.getConnectionCount());
 
       }
       finally
       {
-         if (service != null)
+         if (server != null)
          {
-            service.stop();
+            server.stop();
          }
       }
    }

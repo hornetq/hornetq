@@ -38,7 +38,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -53,7 +53,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    private Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
-   private MessagingService messagingService;
+   private MessagingServer messagingService;
    
    private ClientSession clientSession;
 
@@ -77,7 +77,7 @@ public class XaTimeoutTest extends UnitTestCase
       configuration.setTransactionTimeoutScanPeriod(500);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = Messaging.newNullStorageMessagingService(configuration);
+      messagingService = Messaging.newNullStorageMessagingServer(configuration);
       //start the server
       messagingService.start();
       //then we create a client as normal

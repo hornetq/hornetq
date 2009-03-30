@@ -66,7 +66,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    {
       super.setUp();
 
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
+      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(context);
 
@@ -148,8 +148,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                                    final boolean preAcknowledge,
                                                    final long retryInterval,
                                                    final double retryIntervalMultiplier,
-                                                   final int maxRetriesBeforeFailover,
-                                                   final int maxRetriesAfterFailover,
+                                                   final int reconnectAttempts,
+                                                   final boolean failoverOnServerShutdown,
                                                    final String jndiBinding) throws Exception
          {
             proxy.invokeOperation("createSimpleConnectionFactory",
@@ -175,8 +175,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                  preAcknowledge,
                                  retryInterval,
                                  retryIntervalMultiplier,
-                                 maxRetriesBeforeFailover,
-                                 maxRetriesAfterFailover,
+                                 reconnectAttempts,
+                                 failoverOnServerShutdown,
                                  jndiBinding);
          }
 
@@ -202,8 +202,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              final boolean preAcknowledge,
                                              final long retryInterval,
                                              final double retryIntervalMultiplier,
-                                             final int maxRetriesBeforeFailover,
-                                             final int maxRetriesAfterFailover,
+                                             final int reconnectAttempts,
+                                             final boolean failoverOnServerShutdown,
                                              final String jndiBinding) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
@@ -229,8 +229,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                  preAcknowledge,
                                  retryInterval,
                                  retryIntervalMultiplier,
-                                 maxRetriesBeforeFailover,
-                                 maxRetriesAfterFailover,
+                                 reconnectAttempts,
+                                 failoverOnServerShutdown,
                                  jndiBinding);
          }
 
@@ -260,8 +260,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              final boolean preAcknowledge,
                                              final long retryInterval,
                                              final double retryIntervalMultiplier,
-                                             final int maxRetriesBeforeFailover,
-                                             final int maxRetriesAfterFailover,
+                                             final int reconnectAttempts,
+                                             final boolean failoverOnServerShutdown,
                                              final String jndiBinding) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
@@ -291,8 +291,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                  preAcknowledge,
                                  retryInterval,
                                  retryIntervalMultiplier,
-                                 maxRetriesBeforeFailover,
-                                 maxRetriesAfterFailover,
+                                 reconnectAttempts,
+                                 failoverOnServerShutdown,
                                  jndiBinding);
          }
 

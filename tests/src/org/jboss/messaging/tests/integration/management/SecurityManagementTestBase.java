@@ -33,7 +33,7 @@ import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -50,7 +50,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer service;
 
    // Static --------------------------------------------------------
 
@@ -67,7 +67,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
    {
       super.setUp();
       
-      service = setupAndStartMessagingService();
+      service = setupAndStartMessagingServer();
    }
 
    @Override
@@ -78,7 +78,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
       super.tearDown();
    }
 
-   protected abstract MessagingService setupAndStartMessagingService() throws Exception;
+   protected abstract MessagingServer setupAndStartMessagingServer() throws Exception;
    
    protected void doSendManagementMessage(String user, String password, boolean expectSuccess) throws Exception
    {

@@ -37,7 +37,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -80,9 +80,9 @@ public class PagingTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       final int numberOfIntegers = 256;
 
@@ -129,14 +129,14 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         messagingService.stop();
+         server.stop();
 
-         messagingService = createService(true, config, new HashMap<String, AddressSettings>());
-         messagingService.start();
+         server = createServer(true, config, new HashMap<String, AddressSettings>());
+         server.start();
 
          sf = createInVMFactory();
 
-         assertTrue(messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize() > 0);
+         assertTrue(server.getPostOffice().getPagingManager().getGlobalSize() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -172,14 +172,14 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
 
       }
       finally
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -205,9 +205,9 @@ public class PagingTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       final int numberOfIntegers = 256;
 
@@ -236,7 +236,7 @@ public class PagingTest extends ServiceTestBase
             message.setBody(bodyLocal);
 
             // Stop sending message as soon as we start paging
-            if (messagingService.getServer().getPostOffice().getPagingManager().isPaging(ADDRESS))
+            if (server.getPostOffice().getPagingManager().isPaging(ADDRESS))
             {
                break;
             }
@@ -245,7 +245,7 @@ public class PagingTest extends ServiceTestBase
             producer.send(message);
          }
 
-         assertTrue(messagingService.getServer().getPostOffice().getPagingManager().isPaging(ADDRESS));
+         assertTrue(server.getPostOffice().getPagingManager().isPaging(ADDRESS));
 
          session.start();
 
@@ -309,14 +309,14 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
 
       }
       finally
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -344,9 +344,9 @@ public class PagingTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       final int numberOfIntegers = 256;
 
@@ -392,7 +392,7 @@ public class PagingTest extends ServiceTestBase
             message.putIntProperty(new SimpleString("id"), i);
 
             // Worse scenario possible... only schedule what's on pages
-            if (messagingService.getServer().getPostOffice().getPagingManager().isPaging(ADDRESS))
+            if (server.getPostOffice().getPagingManager().isPaging(ADDRESS))
             {
                message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, scheduledTime);
             }
@@ -404,10 +404,10 @@ public class PagingTest extends ServiceTestBase
          {
             session.close();
 
-            messagingService.stop();
+            server.stop();
 
-            messagingService = createService(true, config, new HashMap<String, AddressSettings>());
-            messagingService.start();
+            server = createServer(true, config, new HashMap<String, AddressSettings>());
+            server.start();
 
             sf = createInVMFactory();
 
@@ -450,14 +450,14 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
 
       }
       finally
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -475,9 +475,9 @@ public class PagingTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       final int numberOfIntegers = 256;
 
@@ -497,7 +497,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         long initialSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
+         long initialSize = server.getPostOffice().getPagingManager().getGlobalSize();
 
          ClientMessage message = null;
 
@@ -527,13 +527,13 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(initialSize, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(initialSize, server.getPostOffice().getPagingManager().getGlobalSize());
       }
       finally
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -551,9 +551,9 @@ public class PagingTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       final int numberOfIntegers = 10;
 
@@ -573,7 +573,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         long initialSize = messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
+         long initialSize = server.getPostOffice().getPagingManager().getGlobalSize();
 
          ClientMessage message = null;
 
@@ -609,13 +609,13 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(initialSize, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(initialSize, server.getPostOffice().getPagingManager().getGlobalSize());
       }
       finally
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -670,9 +670,9 @@ public class PagingTest extends ServiceTestBase
 
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, settings);
+      MessagingServer server = createServer(true, config, settings);
 
-      messagingService.start();
+      server.start();
 
       final int numberOfMessages = 1000;
 
@@ -719,8 +719,8 @@ public class PagingTest extends ServiceTestBase
 
          assertNull(consumer.receive(100));
 
-         assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
-         assertEquals(0, messagingService.getServer()
+         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server
                                          .getPostOffice()
                                          .getPagingManager()
                                          .getPageStore(ADDRESS)
@@ -784,8 +784,8 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
-         assertEquals(0, messagingService.getServer()
+         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server
                                          .getPostOffice()
                                          .getPagingManager()
                                          .getPageStore(ADDRESS)
@@ -796,7 +796,7 @@ public class PagingTest extends ServiceTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -816,9 +816,9 @@ public class PagingTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       try
       {
@@ -856,14 +856,14 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         messagingService.stop();
+         server.stop();
 
-         messagingService = createService(true, config, new HashMap<String, AddressSettings>());
-         messagingService.start();
+         server = createServer(true, config, new HashMap<String, AddressSettings>());
+         server.start();
 
          sf = createInVMFactory();
 
-         assertTrue(messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize() > 0);
+         assertTrue(server.getPostOffice().getPagingManager().getGlobalSize() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -893,7 +893,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < NUMBER_OF_BINDINGS; i++)
          {
-            Queue queue = (Queue)messagingService.getServer()
+            Queue queue = (Queue)server
                                                  .getPostOffice()
                                                  .getBinding(new SimpleString("someQueue" + i))
                                                  .getBindable();
@@ -902,7 +902,7 @@ public class PagingTest extends ServiceTestBase
             assertEquals("Queue someQueue" + i + " was supposed to be empty", 0, queue.getDeliveringCount());
          }
 
-         assertEquals("There are pending messages on the server", 0, messagingService.getServer()
+         assertEquals("There are pending messages on the server", 0, server
                                                                                      .getPostOffice()
                                                                                      .getPagingManager()
                                                                                      .getGlobalSize());
@@ -912,7 +912,7 @@ public class PagingTest extends ServiceTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -941,11 +941,11 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS.toString(), pagedDestination);
 
-      MessagingService service = createService(true, configuration, addresses);
+      MessagingServer server = createServer(true, configuration, addresses);
 
       try
       {
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
 
@@ -971,8 +971,8 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
+         assertFalse(server.getPostOffice().getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
 
          session = sf.createSession(false, true, false);
 
@@ -1013,17 +1013,17 @@ public class PagingTest extends ServiceTestBase
 
          assertNull(consumerPaged.receiveImmediate());
 
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
+         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
+         assertFalse(server.getPostOffice().getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
 
          session.close();
 
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
@@ -1056,11 +1056,11 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
 
-      MessagingService service = createService(true, configuration, addresses);
+      MessagingServer server = createServer(true, configuration, addresses);
 
       try
       {
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
 
@@ -1086,8 +1086,8 @@ public class PagingTest extends ServiceTestBase
 
          session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
          {
@@ -1100,8 +1100,8 @@ public class PagingTest extends ServiceTestBase
 
          session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          for (int i = NUMBER_MESSAGES_BEFORE_PAGING * 2; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -1114,8 +1114,8 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -1136,7 +1136,7 @@ public class PagingTest extends ServiceTestBase
 
          consumerA.close();
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -1155,9 +1155,9 @@ public class PagingTest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }
@@ -1191,11 +1191,11 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
 
-      MessagingService service = createService(true, configuration, addresses);
+      MessagingServer server = createServer(true, configuration, addresses);
 
       try
       {
-         service.start();
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
 
@@ -1223,8 +1223,8 @@ public class PagingTest extends ServiceTestBase
 
          session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
          {
@@ -1237,8 +1237,8 @@ public class PagingTest extends ServiceTestBase
 
          session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          for (int i = NUMBER_MESSAGES_BEFORE_PAGING * 2; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -1251,8 +1251,8 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -1275,8 +1275,8 @@ public class PagingTest extends ServiceTestBase
 
          session.commit();
 
-         assertFalse(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
+         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -1291,13 +1291,12 @@ public class PagingTest extends ServiceTestBase
          consumerB.close();
 
          session.close();
-
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
    }

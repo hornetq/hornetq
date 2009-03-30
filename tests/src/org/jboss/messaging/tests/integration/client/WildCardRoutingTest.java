@@ -31,7 +31,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -40,7 +40,7 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class WildCardRoutingTest extends UnitTestCase
 {
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private ClientSession clientSession;
 
@@ -99,9 +99,9 @@ public class WildCardRoutingTest extends UnitTestCase
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
 
-      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+      assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
    public void testBasicWildcardRoutingQueuesDontExist2() throws Exception
@@ -132,15 +132,15 @@ public class WildCardRoutingTest extends UnitTestCase
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
 
-      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+      assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(1, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
 
       clientSession.deleteQueue(queueName2);
 
-      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+      assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(0, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
    public void testBasicWildcardRoutingWithHash() throws Exception
@@ -218,7 +218,7 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.start();
       clientSession.deleteQueue(queueName1);
       //the wildcard binding should still exist
-      assertEquals(messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 1);
+      assertEquals(server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 1);
       producer.send(createTextMessage("m1", clientSession));
       producer2.send(createTextMessage("m2", clientSession));
       ClientMessage m = clientConsumer.receive(500);
@@ -231,7 +231,7 @@ public class WildCardRoutingTest extends UnitTestCase
       m.acknowledge();
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
-      assertEquals(messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 0);
+      assertEquals(server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 0);
    }
 
    public void testWildcardRoutingLotsOfQueuesAddedThenDeleted() throws Exception
@@ -734,9 +734,9 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.createQueue(addressAB, queueName1, null, false);
       clientSession.createQueue(addressAC, queueName2, null, false);
       clientSession.createQueue(address, queueName, null, false);
-      assertEquals(2, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(2, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+      assertEquals(2, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(2, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(1, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
       ClientProducer producer = clientSession.createProducer(addressAB);
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
@@ -755,9 +755,9 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNull(m);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
-      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
-      assertEquals(1, messagingService.getServer().getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
-      assertEquals(0, messagingService.getServer().getPostOffice().getBindingsForAddress(address).getBindings().size());
+      assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size());
+      assertEquals(1, server.getPostOffice().getBindingsForAddress(addressAC).getBindings().size());
+      assertEquals(0, server.getPostOffice().getBindingsForAddress(address).getBindings().size());
    }
 
    @Override
@@ -771,10 +771,10 @@ public class WildCardRoutingTest extends UnitTestCase
       configuration.setTransactionTimeoutScanPeriod(500);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = Messaging.newNullStorageMessagingService(configuration);
+      server = Messaging.newNullStorageMessagingServer(configuration);
       //start the server
-      messagingService.start();
-      messagingService.getServer().getManagementService().enableNotifications(false);
+      server.start();
+      server.getManagementService().enableNotifications(false);
       //then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);
@@ -794,18 +794,18 @@ public class WildCardRoutingTest extends UnitTestCase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception e1)
          {
             //
          }
       }
-      messagingService = null;
+      server = null;
       clientSession = null;
       
       super.tearDown();

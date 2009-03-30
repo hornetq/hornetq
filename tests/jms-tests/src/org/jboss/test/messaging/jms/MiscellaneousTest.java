@@ -248,7 +248,6 @@ public class MiscellaneousTest extends JMSTestCase
             // close the connection on the same thread that processed the message
             try
             {
-               log.info("** closing");
                conn.close();
                result.setSuccess();
             }
@@ -299,8 +298,6 @@ public class MiscellaneousTest extends JMSTestCase
          }
       }
       
-      log.info("sent message");
-   
       final Result result = new Result();
       Connection conn = cf.createConnection();
       Session s = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -312,9 +309,7 @@ public class MiscellaneousTest extends JMSTestCase
             // close the connection on the same thread that processed the message
             try
             {
-               log.info("Closing consumer");
                cons.close();
-               log.info("closed consumer");
                result.setSuccess();
             }
             catch(Exception e)

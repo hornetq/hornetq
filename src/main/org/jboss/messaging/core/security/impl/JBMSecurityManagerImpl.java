@@ -59,7 +59,29 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
     */
    private Map<String, List<String>> roles = new HashMap<String, List<String>>();
 
+   
+   // MessagingComponent implementation ------------------------------------------
+   
+   public void start()
+   {      
+   }
+   
+   public void stop()
+   {   
+      users.clear();
+      
+      roles.clear();
+      
+      defaultUser = null;
+   }
+   
+   public boolean isStarted()
+   {
+      return true;
+   }
 
+   // Public ---------------------------------------------------------------------
+   
    public boolean validateUser(final String user, final String password)
    {
       if(user == null && defaultUser == null)

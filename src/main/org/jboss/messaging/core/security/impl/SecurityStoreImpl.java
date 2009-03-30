@@ -97,13 +97,13 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    {
    	this.invalidationInterval = invalidationInterval;
    	
-   	this.securityEnabled = securityEnabled;
+   	this.securityEnabled = securityEnabled;   	   
    }
 
    // SecurityManager implementation --------------------------------
 
    public void authenticate(final String user, final String password) throws Exception
-   {
+   {     
       if (securityEnabled)
       {
          if (CLUSTER_ADMIN_USER.equals(user))

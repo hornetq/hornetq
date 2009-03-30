@@ -26,7 +26,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -46,11 +46,11 @@ public class ClientRoutingTest extends ServiceTestBase
 
    public void testRouteToMultipleQueues() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
@@ -87,20 +87,20 @@ public class ClientRoutingTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testRouteToSingleNonDurableQueue() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
@@ -125,20 +125,20 @@ public class ClientRoutingTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testRouteToSingleDurableQueue() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, true);
@@ -163,20 +163,20 @@ public class ClientRoutingTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testRouteToSingleQueueWithFilter() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false);
@@ -203,20 +203,20 @@ public class ClientRoutingTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testRouteToMultipleQueueWithFilters() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false);
@@ -266,20 +266,20 @@ public class ClientRoutingTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testRouteToSingleTemporaryQueue() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
 
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createTemporaryQueue(addressA, queueA);
@@ -304,9 +304,9 @@ public class ClientRoutingTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }

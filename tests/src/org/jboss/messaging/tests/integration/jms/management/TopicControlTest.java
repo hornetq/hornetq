@@ -37,7 +37,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
@@ -60,7 +60,7 @@ public class TopicControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer server;
 
    private JMSServerManagerImpl serverManager;
 
@@ -306,10 +306,10 @@ public class TopicControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server.start();
 
-      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service.getServer());
+      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(new NullInitialContext());
 
@@ -324,7 +324,7 @@ public class TopicControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

@@ -22,13 +22,12 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 
 /**
  * A SecurityManagementTest
@@ -77,16 +76,16 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
    // Protected -----------------------------------------------------
 
    @Override
-   protected MessagingService setupAndStartMessagingService() throws Exception
+   protected MessagingServer setupAndStartMessagingServer() throws Exception
    {
       ConfigurationImpl conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.setManagementClusterPassword(configuredClusterPassword);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      MessagingService service = Messaging.newNullStorageMessagingService(conf);
-      service.start();
+      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
+      server.start();
       
-      return service;
+      return server;
    }
    
    // Private -------------------------------------------------------

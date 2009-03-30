@@ -45,7 +45,7 @@ public interface Server extends Remote
    int getServerID() throws Exception;
 
    /**
-    * @param attrOverrides - service attribute overrides that will take precedence over values
+    * @param attrOverrides - server attribute overrides that will take precedence over values
     *        read from configuration files.
     */
    void start(String[] containerConfig,

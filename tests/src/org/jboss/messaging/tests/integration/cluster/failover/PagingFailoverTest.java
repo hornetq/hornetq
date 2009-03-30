@@ -136,10 +136,10 @@ public class PagingFailoverTest extends FailoverTestBase
 
          final int numMessages = getNumberOfMessages();
 
-         PagingManager pmLive = liveService.getServer().getPostOffice().getPagingManager();
+         PagingManager pmLive = liveServer.getPostOffice().getPagingManager();
          PagingStore storeLive = pmLive.getPageStore(ADDRESS);
 
-         PagingManager pmBackup = backupService.getServer().getPostOffice().getPagingManager();
+         PagingManager pmBackup = backupServer.getPostOffice().getPagingManager();
          PagingStore storeBackup = pmBackup.getPageStore(ADDRESS);
 
          for (int i = 0; i < numMessages; i++)
@@ -275,12 +275,12 @@ public class PagingFailoverTest extends FailoverTestBase
          if (connectedOnBackup)
          {
             factory = createBackupFactory();
-            store = backupService.getServer().getPostOffice().getPagingManager().getPageStore(ADDRESS);
+            store = backupServer.getPostOffice().getPagingManager().getPageStore(ADDRESS);
          }
          else
          {
             factory = createFailoverFactory();
-            store = liveService.getServer().getPostOffice().getPagingManager().getPageStore(ADDRESS);
+            store = liveServer.getPostOffice().getPagingManager().getPageStore(ADDRESS);
          }
 
          session = factory.createSession(false, true, true, false);
@@ -432,7 +432,7 @@ public class PagingFailoverTest extends FailoverTestBase
    {
 
       final AtomicInteger numberOfMessages = new AtomicInteger(0);
-      final PagingStore store = liveService.getServer().getPostOffice().getPagingManager().getPageStore(ADDRESS);
+      final PagingStore store = liveServer.getPostOffice().getPagingManager().getPageStore(ADDRESS);
 
       final ClientSessionFactory factory = createFailoverFactory();
 

@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.client.ClientMessage;
@@ -45,6 +46,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationType;
+import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -61,6 +63,7 @@ import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.MessageFlowRecord;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
+import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.utils.ExecutorFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -92,14 +95,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    private final SimpleString address;
 
-   private final long retryInterval;
-
-   private final double retryIntervalMultiplier;
-
-   private final int initialConnectAttempts;
-
-   private final int reconnectAttempts;
-
+   private final long retryInterval;  
+   
    private final boolean useDuplicateDetection;
 
    private final boolean routeWhenNoConsumers;
@@ -128,9 +125,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    public ClusterConnectionImpl(final SimpleString name,
                                 final SimpleString address,
                                 final long retryInterval,
-                                final double retryIntervalMultiplier,
-                                final int initialConnectAttempts,
-                                final int reconnectAttempts,
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
                                 final org.jboss.messaging.utils.ExecutorFactory executorFactory,
@@ -149,12 +143,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.address = address;
 
       this.retryInterval = retryInterval;
-
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-
-      this.initialConnectAttempts = initialConnectAttempts;
-
-      this.reconnectAttempts = reconnectAttempts;
 
       this.useDuplicateDetection = useDuplicateDetection;
 
@@ -199,9 +187,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    public ClusterConnectionImpl(final SimpleString name,
                                 final SimpleString address,
                                 final long retryInterval,
-                                final double retryIntervalMultiplier,
-                                final int initialConnectAttempts,
-                                final int reconnectAttempts,
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
                                 final ExecutorFactory executorFactory,
@@ -220,13 +205,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.address = address;
 
       this.retryInterval = retryInterval;
-
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-
-      this.initialConnectAttempts = initialConnectAttempts;
-
-      this.reconnectAttempts = reconnectAttempts;
-
+      
       this.executorFactory = executorFactory;
 
       this.server = server;
@@ -444,9 +423,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                      scheduledExecutor,
                                      null,
                                      retryInterval,
-                                     retryIntervalMultiplier,
-                                     initialConnectAttempts,
-                                     reconnectAttempts,
+                                     1d,
+                                     -1,
+                                     false,
                                      useDuplicateDetection,
                                      managementService.getManagementAddress(),
                                      managementService.getManagementNotificationAddress(),
@@ -549,12 +528,14 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          this.bridge = bridge;
       }
 
-      public void reset() throws Exception
+      public synchronized void reset() throws Exception
       {
          clearBindings();
+         
+         firstReset = false;
       }
 
-      public void onMessage(final ClientMessage message)
+      public synchronized void onMessage(final ClientMessage message)
       {
          try
          {                        
@@ -668,7 +649,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             throw new IllegalStateException("queueID is null");
          }
-
+         
          if (replChannel != null)
          {
             Packet packet = new ReplicateRemoteBindingAddedMessage(name,
@@ -679,13 +660,13 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                    filterString,
                                                                    queue.getName(),
                                                                    distance + 1);
-
+            
             replChannel.replicatePacket(packet, 1, new Runnable()
             {
                public void run()
                {
                   try
-                  {
+                  {                     
                      doBindingAdded(message, null);
                   }
                   catch (Exception e)

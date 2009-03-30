@@ -25,6 +25,7 @@ package org.jboss.messaging.core.client.impl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -113,11 +114,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private static final ScheduledThreadPoolExecutor pingExecutor = new ScheduledThreadPoolExecutor(5,
                                                                                                    new org.jboss.messaging.utils.JBMThreadFactory("jbm-pinger-threads"));
 
-   private final Map<Object, ConnectionEntry> connections = new LinkedHashMap<Object, ConnectionEntry>();
+   private final Map<Object, ConnectionEntry> connections = Collections.synchronizedMap(new LinkedHashMap<Object, ConnectionEntry>());
 
    private int refCount;
-
-   private boolean connected;
 
    private Iterator<ConnectionEntry> mapIterator;
 
@@ -127,13 +126,15 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private final double retryIntervalMultiplier; // For exponential backoff
 
-   private final int initialConnectAttempts;
-
    private final int reconnectAttempts;
+
+   private boolean failoverOnServerShutdown;
 
    private volatile boolean closed;
 
    private boolean inFailoverOrReconnect;
+
+   private volatile boolean failureSignalled;
 
    // debug
 
@@ -156,18 +157,20 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    public ConnectionManagerImpl(final TransportConfiguration connectorConfig,
                                 final TransportConfiguration backupConfig,
+                                final boolean failoverOnServerShutdown,
                                 final int maxConnections,
                                 final long callTimeout,
                                 final long pingPeriod,
                                 final long connectionTTL,
                                 final long retryInterval,
                                 final double retryIntervalMultiplier,
-                                final int initialConnectAttempts,
                                 final int reconnectAttempts)
-   {
+   {      
       this.connectorConfig = connectorConfig;
 
       this.backupConfig = backupConfig;
+
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
 
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
@@ -198,9 +201,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       this.retryIntervalMultiplier = retryIntervalMultiplier;
 
-      this.initialConnectAttempts = initialConnectAttempts;
-
-      this.reconnectAttempts = reconnectAttempts;          
+      this.reconnectAttempts = reconnectAttempts;
    }
 
    // ConnectionLifeCycleListener implementation --------------------
@@ -211,15 +212,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    public void connectionDestroyed(final Object connectionID)
    {
-      MessagingException me = new MessagingException(MessagingException.OBJECT_CLOSED,
-                                                     "The connection has been closed by the server");
-
-      failoverOrReconnect(me, connectionID);
+      failConnection(connectionID, new MessagingException(MessagingException.NOT_CONNECTED, "Channel disconnected"));
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
    {
-      failoverOrReconnect(me, connectionID);
+      failConnection(connectionID, me);
    }
 
    // ConnectionManager implementation ------------------------------------------------------------------
@@ -260,14 +258,28 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                synchronized (failoverLock)
                {
-                  connection = getConnectionForCreateSession();
-
-                  if (connection == null)
-                  {
-                     // This can happen if the connection manager gets closed - e.g. the server gets shut down
-                     return null;
-                  }
+                  connection = getConnectionWithRetry(1, reconnectAttempts);
                   
+                  if (connection == null)
+                  {                     
+                     if (!failureSignalled)
+                     {
+                        // This can happen if the connection manager gets closed - e.g. the server gets shut down
+                        //return null;
+                        
+                        throw new MessagingException(MessagingException.NOT_CONNECTED, "Unable to connect to server");
+                     }
+                     else
+                     {                        
+                        // This means an async failure came in while getConnectionForCreateSession was executing, we
+                        // need
+                        // to allow the failover/reconnection to occur and let the create session retry after
+                        retry = true;
+
+                        continue;
+                     }
+                  }
+
                   channel1 = connection.getChannel(1, -1, false);
 
                   // Lock it - this must be done while the failoverLock is held
@@ -340,8 +352,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                   sessionChannel.setHandler(handler);
 
-                  connected = true;
-
                   return session;
                }
             }
@@ -393,7 +403,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
 
       // Should never get here
-      throw new IllegalStateException("Oh my God it's full of stars");
+      throw new IllegalStateException("Oh my God it's full of stars!");
    }
 
    // Must be synchronized to prevent it happening concurrently with failover which can lead to
@@ -430,13 +440,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       closed = true;
    }
 
-   private boolean handleConnectionFailed(final MessagingException me, final Object connectionID)
-   {     
-      boolean callNext = !failoverOrReconnect(me, connectionID);
-      
-      return callNext;
-   }
-
    // Public
    // ---------------------------------------------------------------------------------------
 
@@ -449,69 +452,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Private
    // --------------------------------------------------------------------------------------
 
-   private RemotingConnection getConnectionForCreateSession() throws MessagingException
+   private boolean handleConnectionFailure(final MessagingException me, final Object connectionID)
    {
-      int connectAttempts = connected ? 2 : initialConnectAttempts;
-      
-      int count = 0;
+      boolean callNext = !failoverOrReconnect(me, connectionID);
 
-      if (connectAttempts != 0)
-      {
-         while (true)
-         {
-            if (closed)
-            {
-               return null;
-            }
-
-            RemotingConnection connection = getConnection(1);
-
-            if (connection == null)
-            {
-               // We failed to get a connection
-
-               // We now call failover() - this will attempt to reconnect/failover any pre-existing connections
-               // If there are no pre-existing connections it will just return true, so we need to continue in a loop
-               // here
-
-               MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED,
-                                                              "Unabled to create session - server is unavailable and no backup server or backup is unavailable");
-
-               boolean failedOver = failoverOrReconnect(me, null);
-
-               if (!failedOver)
-               {
-                  // Nothing we can do here
-                  throw me;
-               }
-
-               if (connectAttempts != -1)
-               {
-                  count++;
-
-                  if (count == connectAttempts)
-                  {
-                     break;
-                  }
-               }
-
-               try
-               {
-                  Thread.sleep(retryInterval);
-               }
-               catch (Exception ignore)
-               {
-               }
-            }
-            else
-            {
-               return connection;
-            }
-         }
-      }
-
-      throw new MessagingException(MessagingException.NOT_CONNECTED,
-                                   "Unabled to create session after " + connectAttempts + " attempts");
+      return callNext;
    }
 
    private boolean failoverOrReconnect(final MessagingException me, final Object connectionID)
@@ -521,18 +466,22 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          return false;
       }
-      
+
+      if (connectionID != null && !connections.containsKey(connectionID))
+      {
+         // We already failed over/reconnected - probably the first failure came in, all the connections were failed
+         // over then a async connection exception or disconnect
+         // came in for one of the already closed connections, so we return true - we don't want to call the
+         // listeners again
+
+         return true;
+      }
+
+      failureSignalled = true;
+
       synchronized (failoverLock)
       {
-         if (connectionID != null && !connections.containsKey(connectionID))
-         {
-            // We already failed over - probably the first failure came in, all the connetions were failed over then a
-            // async connection exception or disconnect
-            // came in for one of the already closed connections, so we return true - we don't want to call the
-            // listeners again
-
-            return true;
-         }
+         failureSignalled = false;
 
          inFailoverOrReconnect = true;
 
@@ -561,20 +510,18 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
 
+         boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.SERVER_DISCONNECTED);
+
+//         log.info(System.identityHashCode(this) + " in failover or reconnect, attemptFailover is " +
+//                  attemptFailover +
+//                  " failoveronservers:" +
+//                  failoverOnServerShutdown +
+//                  " me.getcode " +
+//                  me.getCode());
+
          boolean done = false;
 
-         int connectAttempts;
-
-         if (!connected)
-         {
-            connectAttempts = initialConnectAttempts;
-         }
-         else
-         {
-            connectAttempts = backupConnectorFactory == null ? reconnectAttempts : 0;
-         }
-         
-         if (backupConnectorFactory != null || connectAttempts != 0)
+         if (attemptFailover || reconnectAttempts != 0)
          {
             lockAllChannel1s();
 
@@ -629,16 +576,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
             mapIterator = null;
 
-            if (connectAttempts != 0)
-            {
-               // First try reconnecting to current node if configured to do this
-
-               done = reattachSessions(connectAttempts);
-            }
-            else
+            if (attemptFailover)
             {
                // Now try failing over to backup
-               
+
                connectorFactory = backupConnectorFactory;
 
                transportParams = backupTransportParams;
@@ -647,7 +588,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                backupTransportParams = null;
 
-               done = reattachSessions(connectAttempts);
+               done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
+            }
+            else if (reconnectAttempts != 0)
+            {              
+               done = reattachSessions(reconnectAttempts);
             }
 
             if (done)
@@ -683,7 +628,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    /*
     * Re-attach sessions all pre-existing sessions to new remoting connections
     */
-   private boolean reattachSessions(final int connectAttempts)
+   private boolean reattachSessions(final int reconnectAttempts)
    {
       // We re-attach sessions per connection to ensure there is the same mapping of channel id
       // on live and backup connections
@@ -714,7 +659,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          List<ClientSessionInternal> theSessions = entry.getValue();
 
-         RemotingConnection backupConnection = getConnectionWithRetry(theSessions, connectAttempts);
+         RemotingConnection backupConnection = getConnectionWithRetry(theSessions.size(), reconnectAttempts);
 
          if (backupConnection == null)
          {
@@ -767,33 +712,32 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       return ok;
    }
 
-   private RemotingConnection getConnectionWithRetry(final List<ClientSessionInternal> sessions,
-                                                     final int connectAttempts)
+   private RemotingConnection getConnectionWithRetry(final int initialRefCount, final int reconnectAttempts)
    {
       long interval = retryInterval;
 
       int count = 0;
-
+      
       while (true)
       {
-         if (closed)
+         if (closed || failureSignalled)
          {
             return null;
          }
 
-         RemotingConnection connection = getConnection(sessions.size());
-
+         RemotingConnection connection = getConnection(initialRefCount);
+         
          if (connection == null)
          {
-            // Failed to get backup connection
+            // Failed to get connection
 
-            if (connectAttempts != 0)
+            if (reconnectAttempts != 0)
             {
                count++;
 
-               if (connectAttempts != -1 && count == connectAttempts)
+               if (reconnectAttempts != -1 && count == reconnectAttempts)
                {
-                  log.warn("Retried " + connectAttempts + " times to reconnect. Now giving up.");
+                  log.warn("Tried " + reconnectAttempts + " times to connect. Now giving up.");
 
                   return null;
                }
@@ -853,7 +797,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
    }
 
-   private RemotingConnection getConnection(final int count)
+   private RemotingConnection getConnection(final int initialRefCount)
    {
       RemotingConnection conn;
 
@@ -870,13 +814,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          try
          {
             connector = connectorFactory.createConnector(transportParams, handler, this);
-            
+
             if (connector != null)
             {
                connector.start();
-               
+
                tc = connector.createConnection();
-                
+
                if (tc == null)
                {
                   try
@@ -884,8 +828,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                      connector.close();
                   }
                   catch (Throwable t)
-                  {}
-                  
+                  {
+                  }
+
                }
 
             }
@@ -893,10 +838,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          catch (Exception e)
          {
             // Sanity catch for badly behaved remoting plugins
-            
+
             log.warn("connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we'll deal with it anyway.",
                      e);
-            
+
             if (tc != null)
             {
                try
@@ -904,9 +849,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   tc.close();
                }
                catch (Throwable t)
-               {}
+               {
+               }
             }
-            
+
             if (connector != null)
             {
                try
@@ -914,14 +860,15 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   connector.close();
                }
                catch (Throwable t)
-               {}
+               {
+               }
             }
 
             tc = null;
 
             connector = null;
          }
-  
+
          if (tc == null)
          {
             return null;
@@ -956,7 +903,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          conn = entry.connection;
       }
 
-      refCount += count;
+      refCount += initialRefCount;
 
       return conn;
    }
@@ -1042,8 +989,20 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          channel1.returnBlocking();
       }
    }
-
-   private class ConnectionEntry
+   
+   private void failConnection(final Object connectionID, final MessagingException me)
+   {
+      ConnectionEntry entry = connections.get(connectionID);
+      
+      if (entry != null)
+      {
+         RemotingConnection conn = entry.connection;
+         
+         conn.fail(me);
+      }     
+   }
+   
+   private static class ConnectionEntry
    {
       ConnectionEntry(final RemotingConnection connection, final Connector connector)
       {
@@ -1078,7 +1037,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       public boolean connectionFailed(final MessagingException me)
       {
-         return handleConnectionFailed(me, connectionID);
+         return handleConnectionFailure(me, connectionID);
       }
    }
 

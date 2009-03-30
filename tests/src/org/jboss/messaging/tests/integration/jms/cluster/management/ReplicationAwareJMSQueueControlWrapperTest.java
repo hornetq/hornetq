@@ -310,11 +310,11 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
    {
       super.setUp();
 
-      liveServerManager = JMSServerManagerImpl.newJMSServerManagerImpl(liveService.getServer());
+      liveServerManager = JMSServerManagerImpl.newJMSServerManagerImpl(liveServer);
       liveServerManager.start();
       liveServerManager.setContext(new NullInitialContext());
 
-      backupServerManager = JMSServerManagerImpl.newJMSServerManagerImpl(backupService.getServer());
+      backupServerManager = JMSServerManagerImpl.newJMSServerManagerImpl(backupServer);
       backupServerManager.start();
       backupServerManager.setContext(new NullInitialContext());
 

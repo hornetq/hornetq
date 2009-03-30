@@ -56,7 +56,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static int EXPECTED_NATIVE_VERSION = 17;
 
-   static void addMax(final int io)
+   public static void addMax(final int io)
    {
       totalMaxIO.addAndGet(io);
    }
@@ -65,6 +65,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
    public static int getTotalMaxIO()
    {
       return totalMaxIO.get();
+   }
+
+   public static void resetMaxAIO()
+   {
+      totalMaxIO.set(0);
    }
 
    private static boolean loadLibrary(final String name)
@@ -159,6 +164,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          writeSemaphore = new Semaphore(this.maxIO);
 
          this.fileName = fileName;
+
          handler = init(fileName, this.maxIO, log);
          opened = true;
          addMax(this.maxIO);

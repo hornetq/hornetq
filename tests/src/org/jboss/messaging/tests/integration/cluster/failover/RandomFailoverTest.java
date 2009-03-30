@@ -37,7 +37,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -59,9 +59,9 @@ public class RandomFailoverTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService liveService;
+   private MessagingServer liveService;
 
-   private MessagingService backupService;
+   private MessagingServer backupService;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -226,19 +226,14 @@ public class RandomFailoverTest extends UnitTestCase
 
          ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                               backupParams),
-                                                                    0,
-                                                                    1,
-                                                                    ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                                                    ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+                                                                                               backupParams));
 
          sf.setSendWindowSize(32 * 1024);
 
          ClientSession session = sf.createSession(false, false, false);
 
          Failer failer = startFailer(1000, session);
-
-         log.info("***************Iteration: " + its);
+         
          do
          {
             runnable.run(sf);
@@ -262,8 +257,6 @@ public class RandomFailoverTest extends UnitTestCase
    protected void doTestA(final ClientSessionFactory sf) throws Exception
    {
       long start = System.currentTimeMillis();
-
-      log.info("starting================");
 
       ClientSession s = sf.createSession(false, false, false);
 
@@ -1044,8 +1037,6 @@ public class RandomFailoverTest extends UnitTestCase
 
       sessSend.commit();
 
-      log.info("sent and committed");
-
       for (int i = 0; i < numMessages; i++)
       {
          for (ClientConsumer consumer : consumers)
@@ -1415,17 +1406,12 @@ public class RandomFailoverTest extends UnitTestCase
    {
       super.setUp();
 
-      log.info("*********** created timer");
-      timer = new Timer(true);
-
-      log.info("************ Starting test " + this.getName());
+      timer = new Timer(true);     
    }
 
    protected void tearDown() throws Exception
    {
       timer.cancel();
-
-      log.info("************ Ended test " + this.getName());
 
       InVMRegistry.instance.clear();
 
@@ -1452,7 +1438,7 @@ public class RandomFailoverTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -1466,7 +1452,7 @@ public class RandomFailoverTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }
 

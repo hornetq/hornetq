@@ -20,11 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.integration.clientcrash;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
@@ -41,7 +40,7 @@ public abstract class ClientTestBase extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    // Static --------------------------------------------------------
 
@@ -60,26 +59,26 @@ public abstract class ClientTestBase extends ServiceTestBase
 
       Configuration config = createDefaultConfig(true);
       config.setSecurityEnabled(false);
-      messagingService = createService(false, config);
-      messagingService.start();
+      server = createServer(false, config);
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      messagingService.stop();
+      server.stop();
 
       super.tearDown();
    }
-   
+
    protected void assertActiveConnections(int expectedActiveConnections) throws Exception
    {
-      assertEquals(expectedActiveConnections, messagingService.getServer().getServerManagement().getConnectionCount());
+      assertEquals(expectedActiveConnections, server.getServerManagement().getConnectionCount());
    }
 
    protected void assertActiveSession(int expectedActiveSession) throws Exception
    {
-      assertEquals(expectedActiveSession, messagingService.getServer().getSessions().size());
+      assertEquals(expectedActiveSession, server.getSessions().size());
    }
 
    // Private -------------------------------------------------------

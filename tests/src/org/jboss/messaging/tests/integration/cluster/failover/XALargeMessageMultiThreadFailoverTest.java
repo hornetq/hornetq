@@ -94,7 +94,7 @@ public class XALargeMessageMultiThreadFailoverTest extends XAMultiThreadRandomFa
                 .add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(), backupParams));
       backupConf.setBackup(true);
 
-      backupService = Messaging.newMessagingService(backupConf);
+      backupService = Messaging.newMessagingServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -120,7 +120,7 @@ public class XALargeMessageMultiThreadFailoverTest extends XAMultiThreadRandomFa
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newMessagingService(liveConf);
+      liveService = Messaging.newMessagingServer(liveConf);
 
       liveService.start();
 

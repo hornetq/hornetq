@@ -114,9 +114,9 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final double retryIntervalMultiplier; // For exponential backoff
 
-   private final int initialConnectAttempts;
-
    private final int reconnectAttempts;
+
+   private final boolean failoverOnServerShutdown;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -144,8 +144,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean preAcknowledge,
                                  final long retryInterval,
                                  final double retryIntervalMultiplier,
-                                 final int initialConnectAttempts,
-                                 final int reconnectAttempts)
+                                 final int reconnectAttempts,
+                                 final boolean failoverOnServerShutdown)
    {
       this.connectorConfigs = null;
       this.discoveryGroupAddress = discoveryGroupAddress;
@@ -172,8 +172,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.preAcknowledge = preAcknowledge;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
    public JBossConnectionFactory(final String discoveryGroupAddress,
@@ -206,8 +206,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
       this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
       this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.initialConnectAttempts = ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
       this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+      this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
    public JBossConnectionFactory(final String discoveryGroupName, final int discoveryGroupPort)
@@ -239,8 +239,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean preAcknowledge,
                                  final long retryInterval,
                                  final double retryIntervalMultiplier,
-                                 final int initialConnectAttempts,
-                                 final int reconnectAttempts)
+                                 final int reconnectAttempts,
+                                 final boolean failoverOnServerShutdown)
    {
       this.discoveryGroupAddress = null;
       this.discoveryGroupPort = -1;
@@ -267,8 +267,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.preAcknowledge = preAcknowledge;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
    public JBossConnectionFactory(final TransportConfiguration transportConfig,
@@ -293,8 +293,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final boolean preAcknowledge,
                                  final long retryInterval,
                                  final double retryIntervalMultiplier,
-                                 final int initialConnectAttempts,
-                                 final int reconnectAttempts)
+                                 final int reconnectAttempts,
+                                 final boolean failoverOnServerShutdown)
    {
       this.discoveryGroupAddress = null;
       this.discoveryGroupPort = -1;
@@ -323,8 +323,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.preAcknowledge = preAcknowledge;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
    public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs)
@@ -354,8 +354,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
       this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
       this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.initialConnectAttempts = ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
       this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+      this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
    
@@ -390,8 +390,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.preAcknowledge = preAcknowledge;
       this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
       this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;      
-      this.initialConnectAttempts = ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
       this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+      this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
    
    public JBossConnectionFactory(final TransportConfiguration connectorConfig)
@@ -425,8 +425,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
       this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
       this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.initialConnectAttempts = ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
       this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+      this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -573,14 +573,14 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       return maxConnections;
    }
    
-   public int getInitialConnectAttempts()
-   {
-      return initialConnectAttempts;
-   }
-   
    public int getReconnectAttempts()
    {
       return reconnectAttempts;
+   }
+   
+   public boolean isFailoverOnServerShutdown()
+   {
+      return failoverOnServerShutdown;
    }
    
    public boolean isBlockOnAcknowledge()
@@ -673,8 +673,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        dupsOKBatchSize,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       initialConnectAttempts,
-                                                       reconnectAttempts);
+                                                       reconnectAttempts,
+                                                       failoverOnServerShutdown);
       }
       else
       {
@@ -700,8 +700,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        dupsOKBatchSize,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       initialConnectAttempts,
-                                                       reconnectAttempts);
+                                                       reconnectAttempts,
+                                                       failoverOnServerShutdown);
       }
    }
 

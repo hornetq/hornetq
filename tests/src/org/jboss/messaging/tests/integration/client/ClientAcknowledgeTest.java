@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
@@ -52,10 +52,10 @@ public class ClientAcknowledgeTest extends ServiceTestBase
 
    public void testReceiveAckLastMessageOnly() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setAckBatchSize(0);
          cf.setBlockOnAcknowledge(true);
@@ -77,7 +77,7 @@ public class ClientAcknowledgeTest extends ServiceTestBase
             assertNotNull(cm);
          }
          cm.acknowledge();
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
 
          assertEquals(0, q.getDeliveringCount());
          session.close();
@@ -85,19 +85,19 @@ public class ClientAcknowledgeTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testAsyncConsumerNoAck() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession(false, true, true);
@@ -119,26 +119,26 @@ public class ClientAcknowledgeTest extends ServiceTestBase
             }
          });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
          assertEquals(numMessages, q.getDeliveringCount());
          sendSession.close();
          session.close();
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testAsyncConsumerAck() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setBlockOnAcknowledge(true);
          cf.setAckBatchSize(0);
@@ -177,26 +177,26 @@ public class ClientAcknowledgeTest extends ServiceTestBase
             }
          });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
          assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
 
    public void testAsyncConsumerAckLastMessageOnly() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setBlockOnAcknowledge(true);
          cf.setAckBatchSize(0);
@@ -238,16 +238,16 @@ public class ClientAcknowledgeTest extends ServiceTestBase
             }
          });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue) messagingService.getServer().getPostOffice().getBinding(queueA).getBindable();
+         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
          assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }

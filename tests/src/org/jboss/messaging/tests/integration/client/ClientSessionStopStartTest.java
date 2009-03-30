@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -42,7 +42,7 @@ public class ClientSessionStopStartTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ClientConsumerTest.class);
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 
@@ -51,17 +51,17 @@ public class ClientSessionStopStartTest extends ServiceTestBase
    {
       super.setUp();
 
-      messagingService = createService(false);
+      server = createServer(false);
 
-      messagingService.start();
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      messagingService.stop();
+      server.stop();
 
-      messagingService = null;
+      server = null;
 
       super.tearDown();
    }

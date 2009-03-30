@@ -35,7 +35,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -50,7 +50,7 @@ public class ClientConsumerCloseTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServiceImpl service;
+   private MessagingServer server;
    private ClientSession session;
    private SimpleString queue;
 
@@ -109,8 +109,8 @@ public class ClientConsumerCloseTest extends ServiceTestBase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      service = Messaging.newNullStorageMessagingService(config);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(config);
+      server.start();
       
       SimpleString address = randomSimpleString();
       queue = randomSimpleString();
@@ -128,7 +128,7 @@ public class ClientConsumerCloseTest extends ServiceTestBase
       
       session.close();
       
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

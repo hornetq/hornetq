@@ -34,7 +34,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -75,9 +75,9 @@ public class CoreClientTest extends UnitTestCase
       
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactoryClassName));
             
-      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);   
+      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);   
            
-      messagingService.start();
+      server.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
 
@@ -114,7 +114,7 @@ public class CoreClientTest extends UnitTestCase
       
       session.close();
       
-      messagingService.stop();
+      server.stop();
    }
 
    // Package protected ---------------------------------------------

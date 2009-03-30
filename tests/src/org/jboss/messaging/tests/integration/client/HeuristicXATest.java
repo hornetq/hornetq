@@ -36,7 +36,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
@@ -73,14 +73,14 @@ public class HeuristicXATest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
 
-      MessagingService service = createService(false,
+      MessagingServer server = createService(false,
                                                configuration,
                                                mbeanServer,
                                                new HashMap<String, AddressSettings>());
 
       try
       {
-         service.start();
+         server.start();
 
          MessagingServerControlMBean jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
 
@@ -88,9 +88,9 @@ public class HeuristicXATest extends ServiceTestBase
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
 
@@ -111,13 +111,13 @@ public class HeuristicXATest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
 
-      MessagingService service = createService(false,
+      MessagingServer server = createService(false,
                                                configuration,
                                                mbeanServer,
                                                new HashMap<String, AddressSettings>());
       try
       {
-         service.start();
+         server.start();
          Xid xid = newXID();
 
          ClientSessionFactory sf = createInVMFactory();
@@ -165,7 +165,7 @@ public class HeuristicXATest extends ServiceTestBase
          if (isCommit)
          {
             assertEquals(1,
-                         ((Queue)service.getServer().getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                         ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
             session = sf.createSession(false, false, false);
 
@@ -181,14 +181,14 @@ public class HeuristicXATest extends ServiceTestBase
          }
 
          assertEquals(0,
-                      ((Queue)service.getServer().getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+                      ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
       {
-         if (service.isStarted())
+         if (server.isStarted())
          {
-            service.stop();
+            server.stop();
          }
       }
 

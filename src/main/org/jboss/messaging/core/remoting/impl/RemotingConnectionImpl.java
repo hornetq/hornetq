@@ -16,6 +16,7 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREAT
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.DELETE_QUEUE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.DISCONNECT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEPTION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL_RESPONSE;
@@ -510,7 +511,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
    {
       final Packet packet = decode(buffer);
-
+      
       synchronized (transferLock)
       {
          if (!frozen)
@@ -608,6 +609,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          case PONG:
          {
             packet = new PacketImpl(PacketImpl.PONG);
+            break;
+         }
+         case DISCONNECT:
+         {
+            packet = new PacketImpl(DISCONNECT);
             break;
          }
          case EXCEPTION:
@@ -1007,9 +1013,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             lock.unlock();
          }
       }
+      
+      public void sendAndFlush(final Packet packet)
+      {
+         send(packet, true);
+      }
+      
+      public void send(final Packet packet)
+      {
+         send(packet, false);
+      }
 
       // This must never called by more than one thread concurrently
-      public void send(final Packet packet)
+      public void send(final Packet packet, final boolean flush)
       {
          synchronized (sendLock)
          {
@@ -1055,7 +1071,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                if (connection.active || packet.isWriteAlways())
                {
-                  connection.transportConnection.write(buffer);
+                  connection.transportConnection.write(buffer, flush);
                }
             }
             finally
@@ -1124,7 +1140,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
 
                connection.transportConnection.write(buffer);
-
+               
                long toWait = connection.blockingCallTimeout;
 
                long start = System.currentTimeMillis();
@@ -1612,6 +1628,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                                                           " client " +
                                                                           client);
 
+            future.cancel(true);
+            
             fail(me);
          }
 
@@ -1654,6 +1672,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             final Packet pong = new Pong(-1);
 
             pingChannel.send(pong);
+         }
+         else if (type == PacketImpl.DISCONNECT)
+         {
+            fail(new MessagingException(MessagingException.SERVER_DISCONNECTED, "The connection was closed by the server"));
          }
          else
          {

@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -59,13 +59,13 @@ public class ClientAutogroupIdTest extends ServiceTestBase
 
    public void testGroupIdAutomaticallySet() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
          AddressSettings qs = new AddressSettings();
          qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
-         messagingService.getServer().getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
-         messagingService.start();
+         server.getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setAutoGroup(true);
@@ -102,9 +102,9 @@ public class ClientAutogroupIdTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
 
@@ -115,13 +115,13 @@ public class ClientAutogroupIdTest extends ServiceTestBase
   * */
    public void testGroupIdAutomaticallySetMultipleProducers() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
          AddressSettings qs = new AddressSettings();
          qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
-         messagingService.getServer().getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
-         messagingService.start();
+         server.getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setAutoGroup(true);
@@ -167,9 +167,9 @@ public class ClientAutogroupIdTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
 
@@ -180,14 +180,14 @@ public class ClientAutogroupIdTest extends ServiceTestBase
   * */
    public void testGroupIdAutomaticallyNotSet() throws Exception
    {
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
          AddressSettings qs = new AddressSettings();
          qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
 
-         messagingService.getServer().getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
-         messagingService.start();
+         server.getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
+         server.start();
 
          ClientSessionFactory sf = createInVMFactory();
 
@@ -224,9 +224,9 @@ public class ClientAutogroupIdTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
 

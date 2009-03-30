@@ -236,7 +236,24 @@ public class ConfigurationImpl implements Configuration
    protected String managementClusterPassword = DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
 
    protected long managementRequestTimeout = DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
-
+   
+   // MessagingComponent implementation ----------------------------------------------
+   
+   public void start() throws Exception
+   {      
+   }
+   
+   public void stop() throws Exception
+   {      
+   }
+   
+   public boolean isStarted()
+   {
+      return true;
+   }
+   
+   // Public -------------------------------------------------------------------------
+   
    public boolean isClustered()
    {
       return clustered;
@@ -630,7 +647,7 @@ public class ConfigurationImpl implements Configuration
    }
 
    public void setSecurityEnabled(final boolean enabled)
-   {
+   {      
       securityEnabled = enabled;
    }
 

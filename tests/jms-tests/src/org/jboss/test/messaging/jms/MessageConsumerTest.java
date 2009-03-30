@@ -254,8 +254,7 @@ public class MessageConsumerTest extends JMSTestCase
          MessageConsumer cons2 = sessConsume2.createConsumer(queue1);
 
          // this should cancel message and cause delivery to other consumer
-
-         log.info("**clsosing consumer");
+;
          sessConsume1.close();
 
          TextMessage tm3 = (TextMessage) cons2.receive(1000);
@@ -2602,15 +2601,10 @@ public class MessageConsumerTest extends JMSTestCase
          {
             queueProducer.send(producerSession.createTextMessage("Message #" + Integer.toString(i)));
          }
-
-         log.info("sent messages");
-         
+   
          consumerConnection.stop();
 
-         log.info("Closing connection");
          consumerConnection.close();
-         log.info("Connection closed");
-         
 
          consumerConnection = null;
       }
@@ -4114,14 +4108,11 @@ public class MessageConsumerTest extends JMSTestCase
          {
             TextMessage tm = (TextMessage) m;
 
-            log.info("Got message:" + tm.getText() + " count is " + count);
-
             messageOrder += tm.getText() + " ";
             if (count == 0)
             {
                if (!("a".equals(tm.getText())))
                {
-                  log.info("Should be a but was " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -4129,14 +4120,11 @@ public class MessageConsumerTest extends JMSTestCase
                {
                   sess.rollback();
                   messageOrder += "RB ";
-                  log.info("rollback() called");
                }
                else
                {
-                  log.info("Calling recover");
                   messageOrder += "RC ";
                   sess.recover();
-                  log.info("recover() called");
                }
             }
 
@@ -4144,7 +4132,6 @@ public class MessageConsumerTest extends JMSTestCase
             {
                if (!("a".equals(tm.getText())))
                {
-                  log.info("Should be a but was " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -4158,7 +4145,6 @@ public class MessageConsumerTest extends JMSTestCase
             {
                if (!("b".equals(tm.getText())))
                {
-                  log.info("Should be b but was " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -4167,7 +4153,6 @@ public class MessageConsumerTest extends JMSTestCase
             {
                if (!("c".equals(tm.getText())))
                {
-                  log.info("Should be c but was " + tm.getText());
                   failed = true;
                   latch.countDown();
                }
@@ -4177,7 +4162,6 @@ public class MessageConsumerTest extends JMSTestCase
                }
                else
                {
-                  log.info("Acknowledging session");
                   tm.acknowledge();
                }
                latch.countDown();
@@ -4186,7 +4170,6 @@ public class MessageConsumerTest extends JMSTestCase
          }
          catch (JMSException e)
          {
-            log.info("Caught JMSException", e);
             failed = true;
             latch.countDown();
          }

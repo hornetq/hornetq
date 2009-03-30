@@ -79,9 +79,9 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String RETRY_INTERVAL_MULTIPLIER = "retry-interval-multiplier";
 
-   private static final String INITIAL_CONNECT_ATTEMPTS = "initial-connect-attempts";
+   private static final String CONNECT_ATTEMPTS = "reconnect-attempts";
    
-   private static final String RECONNECT_ATTEMPTS = "reconnect-attempts";
+   private static final String FAILOVER_ON_NODE_SHUTDOWN = "failover-on-node-shutdown";
 
    private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
@@ -171,8 +171,8 @@ public class JMSServerDeployer extends XmlDeployer
          boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
          long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
          double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;         
-         int initialConnectAttempts = ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
          int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+         boolean failoverOnNodeShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
          List<String> jndiBindings = new ArrayList<String>();
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
@@ -264,13 +264,13 @@ public class JMSServerDeployer extends XmlDeployer
             {
                retryIntervalMultiplier = org.jboss.messaging.utils.XMLUtil.parseDouble(child);
             }
-            else if (INITIAL_CONNECT_ATTEMPTS.equals(child.getNodeName()))
-            {
-               initialConnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
-            }
-            else if (RECONNECT_ATTEMPTS.equals(child.getNodeName()))
+            else if (CONNECT_ATTEMPTS.equals(child.getNodeName()))
             {
                reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
+            }
+            else if (FAILOVER_ON_NODE_SHUTDOWN.equals(child.getNodeName()))
+            {
+               failoverOnNodeShutdown = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);;
             }            
             else if (ENTRY_NODE_NAME.equals(child.getNodeName()))
             {
@@ -361,8 +361,8 @@ public class JMSServerDeployer extends XmlDeployer
                                                      preAcknowledge,                                                   
                                                      retryInterval,
                                                      retryIntervalMultiplier,                                                     
-                                                     initialConnectAttempts,
                                                      reconnectAttempts,
+                                                     failoverOnNodeShutdown,
                                                      jndiBindings);
          }
          else
@@ -389,8 +389,8 @@ public class JMSServerDeployer extends XmlDeployer
                                                      preAcknowledge,                                                
                                                      retryInterval,
                                                      retryIntervalMultiplier,                                                     
-                                                     initialConnectAttempts,
                                                      reconnectAttempts,
+                                                     failoverOnNodeShutdown,
                                                      jndiBindings);
          }
       }

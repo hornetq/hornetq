@@ -30,7 +30,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
@@ -50,7 +50,7 @@ public class NettySecurityClientTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService messagingService;
+   private MessagingServer messagingService;
 
    // Static --------------------------------------------------------
 
@@ -84,7 +84,7 @@ public class NettySecurityClientTest extends UnitTestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      messagingService = Messaging.newNullStorageMessagingService(config);
+      messagingService = Messaging.newNullStorageMessagingServer(config);
       messagingService.start();
    }
 

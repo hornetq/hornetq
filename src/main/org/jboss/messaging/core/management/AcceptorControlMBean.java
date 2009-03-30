@@ -32,6 +32,10 @@ import javax.management.openmbean.TabularData;
  */
 public interface AcceptorControlMBean extends MessagingComponentControlMBean
 {
+   void pause();
+   
+   void resume();
+   
    String getName();
 
    String getFactoryClassName();

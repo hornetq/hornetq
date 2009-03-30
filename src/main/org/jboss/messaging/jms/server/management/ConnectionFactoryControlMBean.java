@@ -75,7 +75,7 @@ public interface ConnectionFactoryControlMBean
 
    double getRetryIntervalMultiplier();
 
-   int getInitialConnectAttempts();
-
    int getReconnectAttempts();
+
+   boolean isFailoverOnNodeShutdown();
 }

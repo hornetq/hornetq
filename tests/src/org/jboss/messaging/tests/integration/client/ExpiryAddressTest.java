@@ -21,6 +21,9 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -31,13 +34,9 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -48,7 +47,7 @@ public class ExpiryAddressTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(ExpiryAddressTest.class);
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private ClientSession clientSession;
 
@@ -59,7 +58,7 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString eq = new SimpleString("EA1");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(ea);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       
@@ -72,7 +71,7 @@ public class ExpiryAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       assertNull(m);
-      System.out.println("size3 = " + messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      System.out.println("size3 = " + server.getPostOffice().getPagingManager().getGlobalSize());
       m = clientConsumer.receive(500);
       assertNull(m);
       clientConsumer.close();
@@ -83,7 +82,7 @@ public class ExpiryAddressTest extends UnitTestCase
       m.acknowledge();
       
       // PageSize should be the same as when it started
-      assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
    }
 
    public void testBasicSendToMultipleQueues() throws Exception
@@ -94,7 +93,7 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString eq2 = new SimpleString("EQ2");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(ea);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(ea, eq2, null, false);
       clientSession.createQueue(qName, qName, null, false);
@@ -102,17 +101,17 @@ public class ExpiryAddressTest extends UnitTestCase
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       
-      System.out.println("initialPageSize = " + messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      System.out.println("initialPageSize = " + server.getPostOffice().getPagingManager().getGlobalSize());
       
       producer.send(clientMessage);
       
-      System.out.println("pageSize after message sent = " + messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      System.out.println("pageSize after message sent = " + server.getPostOffice().getPagingManager().getGlobalSize());
       
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       
-      System.out.println("pageSize after message received = " + messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      System.out.println("pageSize after message received = " + server.getPostOffice().getPagingManager().getGlobalSize());
       
       assertNull(m);
       
@@ -147,7 +146,7 @@ public class ExpiryAddressTest extends UnitTestCase
       clientSession.commit();
 
       // PageGlobalSize should be untouched as the message expired
-      assertEquals(0, messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize());
+      assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
    }
 
    public void testBasicSendToNoQueue() throws Exception
@@ -177,7 +176,7 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString qName = new SimpleString("q1");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(ea);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       SimpleString eq = new SimpleString("EA1");
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
@@ -224,7 +223,7 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString eq = new SimpleString("EA1");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(ea);
-      messagingService.getServer().getAddressSettingsRepository().setDefault(addressSettings);
+      server.getAddressSettingsRepository().setDefault(addressSettings);
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       
@@ -254,7 +253,7 @@ public class ExpiryAddressTest extends UnitTestCase
       SimpleString eq = new SimpleString("EA1");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setExpiryAddress(ea);
-      messagingService.getServer().getAddressSettingsRepository().addMatch("*", addressSettings);
+      server.getAddressSettingsRepository().addMatch("*", addressSettings);
       clientSession.createQueue(ea, eq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       
@@ -287,10 +286,10 @@ public class ExpiryAddressTest extends UnitTestCase
 
       AddressSettings defaultAddressSettings = new AddressSettings();
       defaultAddressSettings.setExpiryAddress(defaultExpiryAddress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch("prefix.*", defaultAddressSettings);
+      server.getAddressSettingsRepository().addMatch("prefix.*", defaultAddressSettings);
       AddressSettings specificAddressSettings = new AddressSettings();
       specificAddressSettings.setExpiryAddress(specificExpiryAddress);
-      messagingService.getServer().getAddressSettingsRepository().addMatch("prefix.address", specificAddressSettings);
+      server.getAddressSettingsRepository().addMatch("prefix.address", specificAddressSettings);
 
       clientSession.createQueue(address, queue, false);
       clientSession.createQueue(defaultExpiryAddress, defaultExpiryQueue, false);
@@ -328,9 +327,9 @@ public class ExpiryAddressTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = Messaging.newNullStorageMessagingService(configuration);
+      server = Messaging.newNullStorageMessagingServer(configuration);
       // start the server
-      messagingService.start();
+      server.start();
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true); // There are assertions over sizes that needs to be done after the ACK was received on server
@@ -351,18 +350,18 @@ public class ExpiryAddressTest extends UnitTestCase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception e1)
          {
             //
          }
       }
-      messagingService = null;
+      server = null;
       clientSession = null;
       
       super.tearDown();

@@ -96,7 +96,7 @@ public class JBMActivationSpec implements ActivationSpec
    private Boolean sessionTransacted;
 
    /** The number of reconnection attempts */
-   private Integer reconnectAttempts;
+   private Integer rereconnectAttempts;
 
    /** Unspecified redelivery */
    private Boolean redeliverUnspecified;
@@ -140,7 +140,7 @@ public class JBMActivationSpec implements ActivationSpec
       maxSession = Integer.valueOf(15);
       keepAlive = Long.valueOf(60000);
       sessionTransacted = Boolean.TRUE;
-      reconnectAttempts = Integer.valueOf(5);
+      rereconnectAttempts = Integer.valueOf(5);
       redeliverUnspecified = Boolean.TRUE;
       transactionTimeout = Integer.valueOf(0);
       isSameRMOverrideValue = null;
@@ -495,7 +495,7 @@ public class JBMActivationSpec implements ActivationSpec
       if (trace)
          log.trace("setMaxMessages(" + value + ")");
 
-      this.maxMessages = maxMessages;
+      this.maxMessages = value;
    }
 
    /**
@@ -670,27 +670,27 @@ public class JBMActivationSpec implements ActivationSpec
    }
 
    /**
-    * Get the reconnect attempts
+    * Get the rereconnect attempts
     * @return The value
     */
-   public Integer getReconnectAttempts()
+   public Integer getRereconnectAttempts()
    {
       if (trace)
-         log.trace("getReconnectAttempts()");
+         log.trace("getRereconnectAttempts()");
 
-      return reconnectAttempts;
+      return rereconnectAttempts;
    }
 
    /**
-    * Set the reconnect attempts
+    * Set the rereconnect attempts
     * @param value The value
     */
-   public void setReconnectAttempts(Integer value)
+   public void setRereconnectAttempts(Integer value)
    {
       if (trace)
-         log.trace("setReconnectAttempts(" + value + ")");
+         log.trace("setRereconnectAttempts(" + value + ")");
 
-      this.reconnectAttempts = value;
+      this.rereconnectAttempts = value;
    }
 
    /**

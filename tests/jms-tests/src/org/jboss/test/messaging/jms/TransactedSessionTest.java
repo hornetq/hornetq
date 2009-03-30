@@ -510,12 +510,9 @@ public class TransactedSessionTest extends JMSTestCase
          assertFalse(tm.getJMSRedelivered());
          assertEquals(1, tm.getIntProperty("JMSXDeliveryCount"));
 
-         log.info("rolling back");
          sess.rollback();
          
-         log.info("closing");
          sess.close();
-         log.info("Closed");
 
          Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -616,8 +613,6 @@ public class TransactedSessionTest extends JMSTestCase
             Message m = producerSess.createMessage();
             producer.send(m);
          }
-
-         log.info("Sent messages");
 
          checkEmpty(queue1);
       }
@@ -764,14 +759,10 @@ public class TransactedSessionTest extends JMSTestCase
          assertEquals(NUM_MESSAGES, count);
 
          conn.stop();
-         log.info("closing consumer");
          consumer.close();
-         log.info("closed consumer");
-         
-         log.info("closing connection");
+   
          conn.close();
-         log.info("closed connection");
-         
+   
          conn = cf.createConnection();
 
          consumerSess = conn.createSession(true, Session.CLIENT_ACKNOWLEDGE);
@@ -780,8 +771,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          count = 0;
          
-         log.info("Receiving...");
-         
+
          while (true)
          {
             Message m = consumer.receive(500);
@@ -789,8 +779,6 @@ public class TransactedSessionTest extends JMSTestCase
             count++;
          }
          
-         log.info("Done receive");
-
          assertEquals(NUM_MESSAGES, count);
       }
       finally
@@ -847,9 +835,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          assertEquals(NUM_MESSAGES, count);
 
-         log.info("Comitting sesion");
          consumerSess.commit();
-         log.info("Committed session");
 
          conn.stop();
          consumer.close();

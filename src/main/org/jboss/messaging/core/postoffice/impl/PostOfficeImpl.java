@@ -509,7 +509,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       {
          props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filter.getFilterString());
       }
-
+         
       managementService.sendNotification(new Notification(NotificationType.BINDING_ADDED, props));
    }
 
@@ -576,7 +576,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public void route(final ServerMessage message, Transaction tx) throws Exception
    {                      
       SimpleString address = message.getDestination();
-      
+       
       byte[] duplicateID = (byte[])message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
@@ -639,13 +639,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          }
       }
 
+      
       Bindings bindings = addressManager.getBindings(address);
 
       if (bindings != null)
-      {
+      { 
          bindings.route(message, tx);
-         
-        // idsAdded.add(message.getMessageID());
       }
 
       if (startedTx)

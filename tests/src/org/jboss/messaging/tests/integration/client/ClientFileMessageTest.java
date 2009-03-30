@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientFileMessageImpl;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -50,10 +50,10 @@ public class ClientFileMessageTest extends ServiceTestBase
    {
       String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/jbm-unit-test";
 
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setMinLargeMessageSize(1000);
          ClientSession sendSession = cf.createSession(false, true, true);
@@ -79,9 +79,9 @@ public class ClientFileMessageTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -90,10 +90,10 @@ public class ClientFileMessageTest extends ServiceTestBase
    {
       String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/jbm-unit-test";
 
-      MessagingService messagingService = createService(false);
+      MessagingServer server = createServer(false);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          cf.setMinLargeMessageSize(1000);
          ClientSession sendSession = cf.createSession(false, true, true);
@@ -124,9 +124,9 @@ public class ClientFileMessageTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }

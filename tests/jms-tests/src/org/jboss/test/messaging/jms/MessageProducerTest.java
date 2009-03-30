@@ -123,8 +123,6 @@ public class MessageProducerTest extends JMSTestCase
          TextMessage m = ps.createTextMessage("test");
          p.send(m);
          
-         log.info("** sent message");
-
          TextMessage r = (TextMessage)c.receive(3000);
 
          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());

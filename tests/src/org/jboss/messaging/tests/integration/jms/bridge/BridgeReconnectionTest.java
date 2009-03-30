@@ -111,7 +111,7 @@ public class BridgeReconnectionTest extends BridgeTestBase
          server1.start();
          
          context1 = new InVMContext();
-         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1.getServer());
+         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1);
          jmsServer1.start();
          jmsServer1.setContext(context1);
 
@@ -185,7 +185,7 @@ public class BridgeReconnectionTest extends BridgeTestBase
          server1.start();
          
          context1 = new InVMContext();
-         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1.getServer());
+         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1);
          jmsServer1.start();
          jmsServer1.setContext(context1);
 
@@ -267,7 +267,7 @@ public class BridgeReconnectionTest extends BridgeTestBase
          server1.start();
          
          context1 = new InVMContext();
-         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1.getServer());
+         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1);
          jmsServer1.start();
          jmsServer1.setContext(context1);
 

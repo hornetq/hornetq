@@ -212,6 +212,10 @@ public class NullStorageManager implements StorageManager
       {
          throw new IllegalStateException("Not started");
       }
+      
+      id = null;
+      
+      idGenerator.set(0);
 
       started = false;
    }

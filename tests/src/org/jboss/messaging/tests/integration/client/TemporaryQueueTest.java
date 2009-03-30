@@ -36,7 +36,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.ServerSessionImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -60,7 +60,7 @@ public class TemporaryQueueTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServiceImpl service;
+   private MessagingServer server;
 
    private ClientSession session;
 
@@ -149,7 +149,7 @@ public class TemporaryQueueTest extends UnitTestCase
       SimpleString address = randomSimpleString();
 
       session.createTemporaryQueue(address, queue);
-      assertEquals(1, service.getServer().getConnectionCount());
+      assertEquals(1, server.getConnectionCount());
       
       // we create a second session. the temp queue must be present
       // even after we closed the session which created it
@@ -176,9 +176,9 @@ public class TemporaryQueueTest extends UnitTestCase
 
       session.createTemporaryQueue(address, queue);
 
-      assertEquals(1, service.getServer().getConnectionCount());
+      assertEquals(1, server.getConnectionCount());
 
-      RemotingConnection remotingConnection = service.getServer()
+      RemotingConnection remotingConnection = server
                                                      .getRemotingService()
                                                      .getConnections()
                                                      .iterator()
@@ -188,7 +188,7 @@ public class TemporaryQueueTest extends UnitTestCase
       // let some time for the server to clean the connections
       Thread.sleep(1000);
 
-      assertEquals(0, service.getServer().getConnectionCount());
+      assertEquals(0, server.getConnectionCount());
 
       sf.close();
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
@@ -217,8 +217,8 @@ public class TemporaryQueueTest extends UnitTestCase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      service = Messaging.newMessagingService(config);
-      service.start();
+      server = Messaging.newMessagingServer(config);
+      server.start();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
@@ -229,7 +229,7 @@ public class TemporaryQueueTest extends UnitTestCase
    {
       session.close();
 
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

@@ -144,14 +144,14 @@ public class ConnectionFactoryControl extends StandardMBean implements Connectio
       return cf.getMaxConnections();
    }
 
-   public int getInitialConnectAttempts()
-   {
-      return cf.getInitialConnectAttempts();
-   }
-
    public int getReconnectAttempts()
    {
       return cf.getReconnectAttempts();
+   }
+
+   public boolean isFailoverOnNodeShutdown()
+   {
+      return cf.isFailoverOnServerShutdown();
    }
 
    public long getMinLargeMessageSize()

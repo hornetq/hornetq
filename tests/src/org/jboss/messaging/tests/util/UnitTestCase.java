@@ -23,6 +23,8 @@
 package org.jboss.messaging.tests.util;
 
 import junit.framework.TestCase;
+
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -221,9 +223,13 @@ public class UnitTestCase extends TestCase
       return testDir + "/journal";
    }
    
-   protected String getJournalDir(int index)
+   protected String getJournalDir(int index, boolean backup)
    {
-      return getJournalDir(testDir) + index;
+      String dir =  getJournalDir(testDir) + index + "-" + (backup ? "B" : "L");
+      
+      log.info("dir is " + dir);
+      
+      return dir;
    }
 
    /**
@@ -368,7 +374,7 @@ public class UnitTestCase extends TestCase
       
       InVMRegistry.instance.clear();
       
-      log.info("###### starting test " + this.getName());
+      log.info("###### starting test " + this.getClass().getName() + "." + this.getName());
    }
    
    @Override
@@ -376,7 +382,7 @@ public class UnitTestCase extends TestCase
    {
       deleteDirectory(new File(getTestDir()));
 
-      assertEquals(0, InVMRegistry.instance.size());
+      assertEquals(0, InVMRegistry.instance.size());          
       
       super.tearDown();
    }

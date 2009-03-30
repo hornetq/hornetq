@@ -187,8 +187,8 @@ public class PageOrderingOnBackupTest extends FailoverTestBase
          }
       }
 
-      PagingManager livePagingManager = liveService.getServer().getPostOffice().getPagingManager();
-      PagingManager backupPagingManager = backupService.getServer().getPostOffice().getPagingManager();
+      PagingManager livePagingManager = liveServer.getPostOffice().getPagingManager();
+      PagingManager backupPagingManager = backupServer.getPostOffice().getPagingManager();
 
       TestSupportPageStore livePagingStore = (TestSupportPageStore)livePagingManager.getPageStore(ADDRESS);
       TestSupportPageStore backupPagingStore = (TestSupportPageStore)backupPagingManager.getPageStore(ADDRESS);

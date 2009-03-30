@@ -103,8 +103,8 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
                 .add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(), backupParams));
       backupConf.setBackup(true);
 
-      backupService = Messaging.newMessagingService(backupConf);
-      backupService.start();
+      backupServer = Messaging.newMessagingServer(backupConf);
+      backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
 
@@ -130,9 +130,9 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newMessagingService(liveConf);
+      liveServer = Messaging.newMessagingServer(liveConf);
 
-      liveService.start();
+      liveServer.start();
 
    }
 

@@ -513,10 +513,7 @@ public class ManagementServiceImpl implements ManagementService
          unregisterResource(objectName);
       }
 
-      // FIXME the replicationInvoker should be properly stopped.
-      // the code is commented since stopping the invoker will interact
-      // with the remoting service which is stopped first when stopping the server
-      // replicationInvoker.stop();
+      replicationInvoker.stop();
 
       started = false;
    }

@@ -32,6 +32,7 @@ import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.ExecutorFactory;
+import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.UUIDGenerator;
@@ -88,14 +89,21 @@ public class InVMConnection implements Connection
          return;
       }
       
-      //We can't wait for the executor to finish processing, since if the connection is closed on failover on the server
-      //and there are other replication requests still in progress and blocked because of the failover
-      //then it will time out waiting for close.
-      //Instead we let the executor complete after close but ignore the actions
+      //Must execute this on the executor, to ensure connection destroyed doesn't get fired before the last DISCONNECT
+      //packet is processed
+      
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            if (!closed)
+            {
+               listener.connectionDestroyed(id);
 
-      listener.connectionDestroyed(id);
-
-      closed = true;
+               closed = true;
+            }
+         }
+      }); 
    }
 
    public MessagingBuffer createBuffer(final int size)
@@ -136,6 +144,7 @@ public class InVMConnection implements Connection
             }
          }
       });
+      
    }
 
    public String getRemoteAddress()

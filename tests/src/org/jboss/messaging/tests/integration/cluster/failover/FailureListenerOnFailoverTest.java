@@ -44,7 +44,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -67,9 +67,9 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService liveService;
+   private MessagingServer liveService;
 
-   private MessagingService backupService;
+   private MessagingServer backupService;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -82,28 +82,27 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
    class MyListener implements FailureListener
    {
       private int i;
-      
+
       MyListener(int i)
       {
          this.i = i;
       }
-      
+
       int failCount;
 
       public synchronized boolean connectionFailed(final MessagingException me)
       {
          failCount++;
-         
+
          return true;
       }
-      
+
       synchronized int getFailCount()
       {
          return failCount;
       }
    }
 
-   
    /*
     * Listeners shouldn't be called if failed over successfully
     */
@@ -120,7 +119,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       RemotingConnection conn = null;
 
       Set<ClientSession> sessions = new HashSet<ClientSession>();
-      
+
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession session = sf.createSession(false, true, true);
@@ -135,7 +134,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          session.addFailureListener(listener);
 
          listeners.add(listener);
-         
+
          sessions.add(session);
       }
 
@@ -145,20 +144,20 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       {
          assertEquals(0, listener.getFailCount());
       }
-      
-      //Do some stuff to make sure sessions failed over/reconnected ok
+
+      // Do some stuff to make sure sessions failed over/reconnected ok
       int i = 0;
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.createQueue("testaddress" + i, "testaddress" + i, false);
          session.deleteQueue("testaddress" + i);
-         i++;         
+         i++;
          session.close();
       }
 
       sf.close();
    }
-   
+
    /*
     * Listeners shouldn't be called if reconnected successfully
     */
@@ -168,14 +167,11 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = 10;
-
-      final int reconnectAttempts = 1;
+      final int reconnectAttempts = 10;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     initialConnectAttempts,
                                                                      reconnectAttempts);
 
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
@@ -183,7 +179,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       List<MyListener> listeners = new ArrayList<MyListener>();
 
       RemotingConnection conn = null;
-      
+
       Set<ClientSession> sessions = new HashSet<ClientSession>();
 
       for (int i = 0; i < numSessions; i++)
@@ -200,7 +196,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          session.addFailureListener(listener);
 
          listeners.add(listener);
-         
+
          sessions.add(session);
       }
 
@@ -210,14 +206,14 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       {
          assertEquals(0, listener.getFailCount());
       }
-      
-      //Do some stuff to make sure sessions failed over/reconnected ok
+
+      // Do some stuff to make sure sessions failed over/reconnected ok
       int i = 0;
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.createQueue("testaddress" + i, "testaddress" + i, false);
          session.deleteQueue("testaddress" + i);
-         i++;         
+         i++;
          session.close();
       }
 
@@ -231,7 +227,6 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
    {
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-     
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
 
       List<MyListener> listeners = new ArrayList<MyListener>();
@@ -255,12 +250,12 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       }
 
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-      
+
       for (MyListener listener : listeners)
       {
          assertEquals(1, listener.getFailCount());
       }
-      
+
       sf.close();
    }
 
@@ -273,14 +268,11 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = 1;
-
       final int reconnectAttempts = 10;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     initialConnectAttempts,
                                                                      reconnectAttempts);
 
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
@@ -306,7 +298,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       }
 
       InVMConnector.failOnCreateConnection = true;
-      
+
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       int i = 0;
@@ -317,9 +309,9 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       sf.close();
    }
-   
+
    /*
-    * Listener should be called if failed to reconnect, backup present
+    * Listener should be called if failed to reconnect after failover, backup present
     */
    public void testFailureListenerCalledOnFailureToReconnectBackupPresent() throws Exception
    {
@@ -327,16 +319,14 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = 1;
-
       final int reconnectAttempts = 10;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
+                                                                     true,
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     initialConnectAttempts,
                                                                      reconnectAttempts);
 
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
@@ -344,7 +334,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       List<MyListener> listeners = new ArrayList<MyListener>();
 
       RemotingConnection conn = null;
-      
+
       Set<ClientSession> sessions = new HashSet<ClientSession>();
 
       for (int i = 0; i < numSessions; i++)
@@ -361,69 +351,69 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          session.addFailureListener(listener);
 
          listeners.add(listener);
-         
+
          sessions.add(session);
       }
-      
-      //Fail once to failover ok
+
+      // Fail once to failover ok
 
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-      
+
       for (MyListener listener : listeners)
       {
          assertEquals(0, listener.getFailCount());
       }
-      
-      //Do some stuff to make sure sessions failed over/reconnected ok
+
+      // Do some stuff to make sure sessions failed over/reconnected ok
       int i = 0;
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.createQueue("testaddress" + i, "testaddress" + i, false);
          session.deleteQueue("testaddress" + i);
-         i++;         
+         i++;
       }
-      
-      //Now fail again and reconnect ok
-       
+
+      // Now fail again and reconnect ok
+
       ClientSession csession = sf.createSession(false, true, true);
 
       conn = ((ClientSessionImpl)csession).getConnection();
-      
+
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
-                  
+
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-      
+
       i = 0;
-      for (ClientSession session: sessions)
+      for (ClientSession session : sessions)
       {
          session.createQueue("testaddress" + i, "testaddress" + i, false);
          session.deleteQueue("testaddress" + i);
-         i++;         
+         i++;
       }
-      
-      //Now fail again and fail to reconnect
-      
+
+      // Now fail again and fail to reconnect
+
       csession = sf.createSession(false, true, true);
 
       conn = ((ClientSessionImpl)csession).getConnection();
-      
+
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = -1;
-                  
+
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-      
+
       i = 0;
       for (MyListener listener : listeners)
       {
          assertEquals(1, listener.getFailCount());
       }
-      
+
       csession.close();
-            
+
       sf.close();
    }
-   
+
    /*
     * Listener should be called if failed to failover
     */
@@ -433,16 +423,14 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int initialConnectAttempts = 1;
-
       final int reconnectAttempts = 1;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams),
+                                                                     true,
                                                                      retryInterval,
                                                                      retryMultiplier,
-                                                                     initialConnectAttempts,
                                                                      reconnectAttempts);
 
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
@@ -466,7 +454,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
          listeners.add(listener);
       }
-      
+
       InVMConnector.failOnCreateConnection = true;
 
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -476,7 +464,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          assertEquals(1, listener.getFailCount());
       }
 
-      sf.close();      
+      sf.close();
    }
 
    // Package protected ---------------------------------------------
@@ -495,7 +483,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -509,7 +497,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }
 

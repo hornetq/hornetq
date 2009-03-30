@@ -28,13 +28,11 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
@@ -67,11 +65,12 @@ import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.DestinationFactory;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
@@ -105,13 +104,13 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected static boolean firstTime = true;
 
-   protected MessagingServiceImpl server0;
+   protected MessagingServer server0;
 
-   protected JMSServerManagerImpl jmsServer0;
+   protected JMSServerManager jmsServer0;
 
-   protected MessagingServiceImpl server1;
+   protected MessagingServer server1;
 
-   protected JMSServerManagerImpl jmsServer1;
+   protected JMSServerManager jmsServer1;
 
    private InVMContext context0;
 
@@ -128,11 +127,11 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf0.setSecurityEnabled(false);
       conf0.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0 = Messaging.newNullStorageMessagingService(conf0);
+      server0 = Messaging.newNullStorageMessagingServer(conf0);
       server0.start();
 
       context0 = new InVMContext();
-      jmsServer0 = JMSServerManagerImpl.newJMSServerManagerImpl(server0.getServer());
+      jmsServer0 = JMSServerManagerImpl.newJMSServerManagerImpl(server0);
       jmsServer0.start();
       jmsServer0.setContext(context0);
 
@@ -143,11 +142,11 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf1.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", params1));
 
-      server1 = Messaging.newNullStorageMessagingService(conf1);
+      server1 = Messaging.newNullStorageMessagingServer(conf1);
       server1.start();
 
       context1 = new InVMContext();
-      jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1.getServer());
+      jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1);
       jmsServer1.start();
       jmsServer1.setContext(context1);
 
@@ -171,7 +170,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected void createQueue(String queueName, int index) throws Exception
    {
-      JMSServerManagerImpl server = jmsServer0;
+      JMSServerManager server = jmsServer0;
       if (index == 1)
       {
          server = jmsServer1;
@@ -201,9 +200,10 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          public ConnectionFactory createConnectionFactory() throws Exception
          {
+             
             //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             return new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
-                                              null,
+                                              null,                                             
                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                               DEFAULT_PING_PERIOD,
                                               DEFAULT_CONNECTION_TTL,
@@ -224,8 +224,8 @@ public abstract class BridgeTestBase extends UnitTestCase
                                               DEFAULT_PRE_ACKNOWLEDGE,
                                               DEFAULT_RETRY_INTERVAL,
                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                              1,
-                                              0);
+                                              0,
+                                              false);
          }
 
       };
@@ -260,8 +260,8 @@ public abstract class BridgeTestBase extends UnitTestCase
                                               DEFAULT_PRE_ACKNOWLEDGE,
                                               DEFAULT_RETRY_INTERVAL,
                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                              1,
-                                              0);
+                                              0,
+                                              false);
          }
       };
 
@@ -451,10 +451,10 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    public boolean checkEmpty(Queue queue, int index) throws Exception
    {
-      ManagementService managementService = server0.getServer().getManagementService();
+      ManagementService managementService = server0.getManagementService();
       if (index == 1)
       {
-         managementService = server1.getServer().getManagementService();
+         managementService = server1.getManagementService();
       }
       ObjectName objectName = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
       JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(objectName);
@@ -470,10 +470,10 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected void checkNoSubscriptions(Topic topic, int index) throws Exception
    {
-      ManagementService managementService = server0.getServer().getManagementService();
+      ManagementService managementService = server0.getManagementService();
       if (index == 1)
       {
-         managementService = server1.getServer().getManagementService();
+         managementService = server1.getManagementService();
       }
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
       TopicControlMBean topicControl = (TopicControlMBean)managementService.getResource(objectName);
@@ -483,10 +483,10 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected void removeAllMessages(String queueName, int index) throws Exception
    {
-      ManagementService managementService = server0.getServer().getManagementService();
+      ManagementService managementService = server0.getManagementService();
       if (index == 1)
       {
-         managementService = server1.getServer().getManagementService();
+         managementService = server1.getManagementService();
       }
       ObjectName objectName = ObjectNames.getJMSQueueObjectName(queueName);
       JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(objectName);

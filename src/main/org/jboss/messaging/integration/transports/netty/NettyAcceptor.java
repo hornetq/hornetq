@@ -83,7 +83,9 @@ public class NettyAcceptor implements Acceptor
 
    private ChannelFactory channelFactory;
 
-   volatile ChannelGroup channelGroup;
+   private volatile ChannelGroup serverChannelGroup;
+   
+   private volatile ChannelGroup channelGroup;
 
    private ServerBootstrap bootstrap;
 
@@ -126,6 +128,8 @@ public class NettyAcceptor implements Acceptor
    private final HttpKeepAliveTask httpKeepAliveTask;
 
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
+   
+   private boolean paused;
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
@@ -290,8 +294,17 @@ public class NettyAcceptor implements Acceptor
       bootstrap.setOption("child.reuseAddress", true);
       bootstrap.setOption("child.keepAlive", true);
 
-      channelGroup = new DefaultChannelGroup("jbm-acceptor");
+      channelGroup = new DefaultChannelGroup("jbm-accepted-channels");
+      
+      serverChannelGroup = new DefaultChannelGroup("jbm-acceptor-channels");
 
+      startServerChannels();
+      
+      paused = false;
+   }
+   
+   private void startServerChannels()
+   {
       String[] hosts = TransportConfiguration.splitHosts(host);
       for (String h : hosts)
       {
@@ -305,16 +318,77 @@ public class NettyAcceptor implements Acceptor
             address = new InetSocketAddress(h, port);
          }
          Channel serverChannel = bootstrap.bind(address);
-         channelGroup.add(serverChannel);
+         serverChannelGroup.add(serverChannel);
       }
    }
-
-   public synchronized void stop()
-   {
-
+   
+   public synchronized void pause()
+   {      
+      if (paused)
+      {
+         return;
+      }
+      
       if (channelFactory == null)
       {
          return;
+      }
+
+      //We *pause* the acceptor so no new connections are made
+      
+      serverChannelGroup.close().awaitUninterruptibly();     
+      
+//      //We also need to wait for workers to complete, otherwise requests could still sneak in after we have returned
+//      //from this method
+//      workerExecutor.shutdown();
+//      
+//      log.info("Waiting for worker to complete************************");
+//      try
+//      {
+//         boolean ok = workerExecutor.awaitTermination(5000, TimeUnit.MILLISECONDS);
+//         
+//         if (!ok)
+//         {
+//            log.warn("Timed out in waiting for worker to complete");
+//         }
+//      }
+//      catch (InterruptedException e)
+//      {         
+//      }
+      
+      try
+      {
+         Thread.sleep(500);
+      }
+      catch (Exception e)
+      {         
+      }
+      
+      paused = true;         
+   }
+   
+   public synchronized void resume()
+   {
+      if (!paused)
+      {
+         return;
+      }
+            
+      startServerChannels();
+      
+      paused = false;
+   }
+   
+   public synchronized void stop()
+   {
+      if (channelFactory == null)
+      {
+         return;
+      }
+      
+      if (!paused)
+      {
+         serverChannelGroup.close().awaitUninterruptibly(); 
       }
 
       if (httpKeepAliveTimer != null)
@@ -323,10 +397,11 @@ public class NettyAcceptor implements Acceptor
 
          httpKeepAliveTimer.cancel();
       }
+      
       channelGroup.close().awaitUninterruptibly();
       channelFactory.releaseExternalResources();
-      channelFactory = null;
-
+      channelFactory = null;  
+      
       for (Connection connection : connections.values())
       {
          listener.connectionDestroyed(connection.getID());

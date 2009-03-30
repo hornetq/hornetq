@@ -41,7 +41,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -66,9 +66,9 @@ public class FailoverExpiredMessageTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService liveService;
+   private MessagingServer liveService;
 
-   private MessagingService backupService;
+   private MessagingServer backupService;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -191,12 +191,8 @@ public class FailoverExpiredMessageTest extends UnitTestCase
   
       ClientSession session1 = sf1.createSession(false, true, true);
       
-      log.info("created session");
-
       session1.createQueue(ADDRESS, ADDRESS, null, false);
-      
-      log.info("created queue");
-      
+          
       ClientProducer producer = session1.createProducer(ADDRESS);
 
       final int numMessages = 10000;
@@ -268,7 +264,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -282,7 +278,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }
 

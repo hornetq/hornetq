@@ -48,19 +48,6 @@ public class TopicTest extends JMSTestCase
 
    // Constructors --------------------------------------------------
    
-   protected void setUp() throws Exception
-   {
-      
-      log.info("______________________Test starting");
-      super.setUp();
-   }
-
-   protected void tearDown() throws Exception
-   {      
-      super.tearDown();
-      log.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~ Test endded");
-   }
-   
    // Public --------------------------------------------------------
 
    /**

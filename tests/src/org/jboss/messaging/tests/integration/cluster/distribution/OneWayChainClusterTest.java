@@ -57,8 +57,6 @@ public class OneWayChainClusterTest extends ClusterTestBase
       
       closeAllSessionFactories();
       
-      stopClusterConnections(0, 1, 2, 3, 4);
-      
       stopServers(0, 1, 2, 3, 4);
       
       super.tearDown();

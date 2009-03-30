@@ -49,7 +49,7 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -66,7 +66,7 @@ public class SecurityNotificationTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer server;
    private ClientSession adminSession;
    private ClientConsumer notifConsumer;
    private SimpleString notifQueue;
@@ -108,8 +108,8 @@ public class SecurityNotificationTest extends UnitTestCase
       Role role = new Role("roleCanNotCreateQueue", true, true, false, true, false, true, true);
       Set<Role> roles = new HashSet<Role>();
       roles.add(role);
-      service.getServer().getSecurityRepository().addMatch(address.toString(), roles);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) service.getServer().getSecurityManager();
+      server.getSecurityRepository().addMatch(address.toString(), roles);
+      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
       securityManager.addRole("guest", "roleCanNotCreateQueue");
       
       flush(notifConsumer);
@@ -148,12 +148,12 @@ public class SecurityNotificationTest extends UnitTestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingService(conf);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(conf);
+      server.start();
 
       notifQueue = randomSimpleString();
 
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) service.getServer().getSecurityManager();
+      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
       securityManager.addUser("admin", "admin");      
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");
@@ -161,7 +161,7 @@ public class SecurityNotificationTest extends UnitTestCase
       Role role = new Role("notif", true, true, true, true, true, true, true);
       Set<Role> roles = new HashSet<Role>();
       roles.add(role);
-      service.getServer().getSecurityRepository().addMatch(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString(), roles);
+      server.getSecurityRepository().addMatch(DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString(), roles);
 
       securityManager.addRole("admin", "notif");
 
@@ -182,7 +182,7 @@ public class SecurityNotificationTest extends UnitTestCase
       adminSession.deleteQueue(notifQueue);
       adminSession.close();
       
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

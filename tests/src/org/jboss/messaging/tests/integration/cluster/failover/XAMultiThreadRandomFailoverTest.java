@@ -12,9 +12,6 @@
 
 package org.jboss.messaging.tests.integration.cluster.failover;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,7 +39,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -60,9 +57,9 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
 
    private final Logger log = Logger.getLogger(getClass());
 
-   protected MessagingService liveService;
+   protected MessagingServer liveService;
 
-   protected MessagingService backupService;
+   protected MessagingServer backupService;
 
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -607,7 +604,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -621,7 +618,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }
 
@@ -643,11 +640,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
    {
       final ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                            new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                      backupParams),
-                                                                           0,
-                                                                           1,
-                                                                           DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                                                           DEFAULT_RECONNECT_ATTEMPTS);
+                                                                                                      backupParams));
 
       sf.setSendWindowSize(32 * 1024);
       return sf;
@@ -828,8 +821,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
             log.error(failure);
             return;
          }
-
-         // log.info("*** handler got message");
+      
          try
          {
             message.acknowledge();
@@ -852,8 +844,6 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
          {
             c = new Integer(cnt);
          }
-
-         // log.info(System.identityHashCode(this) + " consumed message " + threadNum + ":" + cnt);
 
          if (tn == threadNum && cnt != c.intValue())
          {

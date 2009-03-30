@@ -35,7 +35,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
@@ -58,7 +58,7 @@ public class AddressControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingService service;
+   private MessagingServer server;
 
    protected ClientSession session;
 
@@ -122,7 +122,7 @@ public class AddressControlTest extends ManagementTestBase
 
       Set<Role> newRoles = new HashSet<Role>();
       newRoles.add(role);
-      service.getServer().getSecurityRepository().addMatch(address.toString(), newRoles);
+      server.getSecurityRepository().addMatch(address.toString(), newRoles);
 
       tabularData = addressControl.getRoles();
       assertEquals(1, tabularData.size());
@@ -284,8 +284,8 @@ public class AddressControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingService(conf, mbeanServer);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       sf.setBlockOnNonPersistentSend(true);
@@ -299,7 +299,7 @@ public class AddressControlTest extends ManagementTestBase
    {
       session.close();
 
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

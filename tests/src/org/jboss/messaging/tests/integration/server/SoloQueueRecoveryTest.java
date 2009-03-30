@@ -21,31 +21,31 @@
  */
 package org.jboss.messaging.tests.integration.server;
 
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public class SoloQueueRecoveryTest extends ServiceTestBase
 {
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private ClientSession clientSession;
 
@@ -55,7 +55,7 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
 
    private ClientSession clientSessionXa;
 
-   private ConfigurationImpl configuration;
+   private Configuration configuration;
 
    private AddressSettings qs;
 
@@ -172,18 +172,18 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception e1)
          {
             //
          }
       }
-      messagingService = null;
+      server = null;
       clientSession = null;
       
       super.tearDown();
@@ -194,17 +194,17 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       super.setUp();
       
       clearData();
-      configuration = createFileConfig();
+      configuration = createConfigForJournal();
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = createService(true, configuration);
+      server = createServer(true, configuration);
       // start the server
-      messagingService.start();
+      server.start();
 
       qs = new AddressSettings();
       qs.setSoloQueue(true);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(address.toString(), qs);
+      server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);
@@ -216,16 +216,16 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
 
    private void restartServer() throws Exception
    {
-      messagingService.stop();
-      messagingService = null;
-      messagingService = createService(true, configuration);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(address.toString(), qs);
+      server.stop();
+      server = null;
+      server = createServer(true, configuration);
+      server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // start the server
-      messagingService.start();
+      server.start();
 
       AddressSettings qs = new AddressSettings();
       qs.setSoloQueue(true);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(address.toString(), qs);
+      server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);

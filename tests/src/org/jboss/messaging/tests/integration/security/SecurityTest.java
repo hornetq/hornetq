@@ -29,7 +29,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.integration.security.JAASSecurityManager;
@@ -67,13 +67,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+      MessagingServer server = createServer(false, configuration);
+      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
 
          try
@@ -87,9 +87,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -98,10 +98,10 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
          try
          {
@@ -115,9 +115,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -126,12 +126,12 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+      MessagingServer server = createServer(false, configuration);
+      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
 
          try
@@ -146,9 +146,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -157,12 +157,12 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+      MessagingServer server = createServer(false, configuration);
+      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
 
          try
@@ -176,9 +176,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -188,13 +188,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -208,9 +208,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -219,13 +219,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -247,9 +247,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -258,13 +258,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, true, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -279,9 +279,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -290,13 +290,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -319,9 +319,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -330,13 +330,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -350,9 +350,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -362,13 +362,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -390,9 +390,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -401,13 +401,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, true, false);
          Set<Role> roles = new HashSet<Role>();
@@ -422,9 +422,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -433,13 +433,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -462,9 +462,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -474,13 +474,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", true, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -497,9 +497,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -508,13 +508,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -538,9 +538,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -549,13 +549,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -569,14 +569,14 @@ public class SecurityTest extends ServiceTestBase
          cp.send(session.createClientMessage(false));
          session.close();
 
-         Queue binding = (Queue) messagingService.getServer().getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
+         Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
          assertEquals(0, binding.getMessageCount());
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -585,13 +585,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -615,9 +615,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -626,13 +626,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -663,9 +663,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -674,13 +674,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, true);
          Set<Role> roles = new HashSet<Role>();
@@ -696,9 +696,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -707,13 +707,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -737,9 +737,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -748,13 +748,13 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
 
       try
       {
-         messagingService.start();
-         HierarchicalRepository<Set<Role>> securityRepository = messagingService.getServer().getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) messagingService.getServer().getSecurityManager();
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -768,14 +768,14 @@ public class SecurityTest extends ServiceTestBase
          cp.send(session.createClientMessage(false));
          session.close();
 
-         Queue binding = (Queue) messagingService.getServer().getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
+         Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
          assertEquals(0, binding.getMessageCount());
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -789,9 +789,9 @@ public class SecurityTest extends ServiceTestBase
       String domainName = SimpleLogingModule.class.getName();
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
       JAASSecurityManager securityManager = new JAASSecurityManager();
-      messagingService.getServer().setSecurityManager(securityManager);
+      server.setSecurityManager(securityManager);
 
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
@@ -806,7 +806,7 @@ public class SecurityTest extends ServiceTestBase
       securityManager.setConfiguration(new SimpleConfiguration(domainName, options));
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
 
          try
@@ -820,9 +820,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }
@@ -832,9 +832,9 @@ public class SecurityTest extends ServiceTestBase
       String domainName = SimpleLogingModule.class.getName();
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingService messagingService = createService(false, configuration);
+      MessagingServer server = createServer(false, configuration);
       JAASSecurityManager securityManager = new JAASSecurityManager();
-      messagingService.getServer().setSecurityManager(securityManager);
+      server.setSecurityManager(securityManager);
 
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
@@ -849,7 +849,7 @@ public class SecurityTest extends ServiceTestBase
       securityManager.setConfiguration(new SimpleConfiguration(domainName, options));
       try
       {
-         messagingService.start();
+         server.start();
          ClientSessionFactory cf = createInVMFactory();
 
          try
@@ -864,9 +864,9 @@ public class SecurityTest extends ServiceTestBase
       }
       finally
       {
-         if (messagingService.isStarted())
+         if (server.isStarted())
          {
-            messagingService.stop();
+            server.stop();
          }
       }
    }

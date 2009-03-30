@@ -32,8 +32,9 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
+import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jnp.server.Main;
 import org.jnp.server.NamingBeanImpl;
@@ -74,10 +75,10 @@ public class SpawnedJMSServer
          Configuration conf = new ConfigurationImpl();
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
-         final MessagingServiceImpl server = Messaging.newNullStorageMessagingService(conf);
+         final MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
          server.start();
 
-         JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server.getServer());
+         JMSServerManager serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
          serverManager.start();
 
          Hashtable<String, String> env = new Hashtable<String, String>();

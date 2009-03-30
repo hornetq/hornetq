@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -42,7 +42,7 @@ public class DelayedMessageTest extends ServiceTestBase
 
    private Configuration configuration;
 
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private static final long DELAY = 3000;
    
@@ -57,28 +57,28 @@ public class DelayedMessageTest extends ServiceTestBase
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingMaxGlobalSizeBytes(-1);
-      messagingService = createService(true, configuration);
-      messagingService.start();
+      server = createServer(true, configuration);
+      server.start();
       
-      AddressSettings qs = messagingService.getServer().getAddressSettingsRepository().getMatch("*");
+      AddressSettings qs = server.getAddressSettingsRepository().getMatch("*");
       AddressSettings newSets = new AddressSettings();
       newSets.setRedeliveryDelay(DELAY);
       newSets.merge(qs);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(qName, newSets);
+      server.getAddressSettingsRepository().addMatch(qName, newSets);
 
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      if (messagingService != null)
+      if (server != null)
       {
          try
          {
-            messagingService.getServer().getAddressSettingsRepository().removeMatch(qName);
+            server.getAddressSettingsRepository().removeMatch(qName);
 
-            messagingService.stop();
-            messagingService = null;
+            server.stop();
+            server = null;
          }
          catch (Exception e)
          {

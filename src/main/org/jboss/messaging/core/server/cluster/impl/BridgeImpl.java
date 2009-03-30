@@ -137,9 +137,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private final double retryIntervalMultiplier;
 
-   private final int initialConnectAttempts;
-
    private final int reconnectAttempts;
+   
+   private final boolean failoverOnServerShutdown;
 
    private final SimpleString idsHeaderName;
 
@@ -150,8 +150,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    private final SimpleString managementNotificationAddress;
 
    private final String clusterPassword;
-
-   private final StorageManager storageManager;
 
    private Channel replicatingChannel;
 
@@ -174,8 +172,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final Transformer transformer,
                      final long retryInterval,
                      final double retryIntervalMultiplier,
-                     final int initialConnectAttempts,
                      final int reconnectAttempts,
+                     final boolean failoverOnServerShutdown,
                      final boolean useDuplicateDetection,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
@@ -195,8 +193,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
            transformer,
            retryInterval,
            retryIntervalMultiplier,
-           initialConnectAttempts,
            reconnectAttempts,
+           failoverOnServerShutdown,
            useDuplicateDetection,
            managementAddress,
            managementNotificationAddress,
@@ -218,8 +216,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final Transformer transformer,
                      final long retryInterval,
                      final double retryIntervalMultiplier,
-                     final int initialConnectAttempts,
                      final int reconnectAttempts,
+                     final boolean failoverOnServerShutdown,
                      final boolean useDuplicateDetection,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
@@ -260,9 +258,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       this.retryIntervalMultiplier = retryIntervalMultiplier;
 
-      this.initialConnectAttempts = initialConnectAttempts;
-
       this.reconnectAttempts = reconnectAttempts;
+
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
 
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
 
@@ -276,9 +274,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       this.replicatingChannel = replicatingChannel;
 
-      this.activated = activated;
-
-      this.storageManager = storageManager;   
+      this.activated = activated;   
    }
 
    public synchronized void start() throws Exception
@@ -293,7 +289,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       if (activated)
       {
          executor.execute(new CreateObjectsRunnable());
-      }
+      }           
    }
 
    private void cancelRefs() throws Exception
@@ -326,9 +322,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             csf.close();
          }
       }
-
+      
       executor.execute(new StopRunnable());
-
+           
       waitForRunnablesToComplete();
    }
 
@@ -518,7 +514,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             // Preserve the original address
             dest = message.getDestination();
          }
-
+         
          producer.send(dest, message);
 
          return HandleStatus.HANDLED;
@@ -576,6 +572,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
          csf = new ClientSessionFactoryImpl(connectorPair.a,
                                             connectorPair.b,
+                                            failoverOnServerShutdown,
                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                                             DEFAULT_PING_PERIOD,
                                             DEFAULT_CONNECTION_TTL,
@@ -594,15 +591,15 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                                             DEFAULT_ACK_BATCH_SIZE,
                                             retryInterval,
                                             retryIntervalMultiplier,
-                                            initialConnectAttempts,
                                             reconnectAttempts);
 
+         //Session is pre-acknowledge
          session = (ClientSessionInternal)csf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER,
                                                             clusterPassword,
                                                             false,
                                                             true,
                                                             true,
-                                                            false,
+                                                            true,
                                                             1);
          
          if (session == null)
@@ -696,7 +693,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          active = true;
 
          queue.deliverAsync(executor);
-
+         
          return true;
       }
       catch (Exception e)
@@ -723,8 +720,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                }
 
                if (session != null)
-               {
-                  session.close();
+               {              
+                  session.close();               
                }
 
                started = false;

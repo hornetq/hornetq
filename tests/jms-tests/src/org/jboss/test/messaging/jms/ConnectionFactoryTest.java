@@ -229,19 +229,10 @@ public class ConnectionFactoryTest extends JMSTestCase
 
                TextMessage tm = (TextMessage)msg;
 
-               try
-               {
-                  log.info("Fast listener got message " + tm.getText());
-               }
-               catch (JMSException e)
-               {
-               }
-
                if (processed == numMessages - 2)
                {
                   synchronized (waitLock)
                   {
-                     log.info("Notifying");
                      waitLock.notifyAll();
                   }
                }
@@ -259,21 +250,12 @@ public class ConnectionFactoryTest extends JMSTestCase
                TextMessage tm = (TextMessage)msg;
                
                processed++;
-
-               try
-               {
-                  log.info("Slow listener got message " + tm.getText());
-               }
-               catch (JMSException e)
-               {
-               }
-
+              
                synchronized (waitLock)
                {
                   //Should really cope with spurious wakeups
                   while (fast.processed != numMessages - 2)
-                  {
-                     log.info("Waiting");
+                  {                
                      try
                      {
                         waitLock.wait(20000);
@@ -281,7 +263,6 @@ public class ConnectionFactoryTest extends JMSTestCase
                      catch (InterruptedException e)
                      {
                      }
-                     log.info("Waited");
                   }
                   
                   waitLock.notify();
@@ -320,16 +301,12 @@ public class ConnectionFactoryTest extends JMSTestCase
             //Should really cope with spurious wakeups
             while (fast.processed != numMessages - 2)
             {
-               log.info("Waiting");
                waitLock.wait(20000);
-               log.info("Waited");
             }
             
             while (slow.processed != 2)
             {
-               log.info("Waiting");
                waitLock.wait(20000);
-               log.info("Waited");
             }
          }
 
@@ -342,9 +319,7 @@ public class ConnectionFactoryTest extends JMSTestCase
          {
             if (conn != null)
             {
-               log.info("Closing connection");
                conn.close();
-               log.info("Closed connection");
             }
          }
          catch (Exception e)

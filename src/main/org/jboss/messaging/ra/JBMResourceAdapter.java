@@ -193,7 +193,7 @@ public class JBMResourceAdapter implements ResourceAdapter
 
       this.ctx = ctx;
 
-      log.info("JBoss Messaging resource adapter started");
+      log.info("JBoss Messaging 2.0 resource adapter started");
    }
 
    /**
@@ -1013,37 +1013,7 @@ public class JBMResourceAdapter implements ResourceAdapter
    }
 
    /**
-    * Get max number of initial connect attempts
-    *
-    * @return The value
-    */
-   public Integer getInitialConnectAttempts()
-   {
-      if (trace)
-      {
-         log.trace("getInitialConnectAttempts()");
-      }
-
-      return raProperties.getInitialConnectAttempts();
-   }
-
-   /**
-    * Set max number of initial connect attempts
-    *
-    * @param initialConnectAttempts The value
-    */
-   public void setInitialConnectAttempts(Integer initialConnectAttempts)
-   {
-      if (trace)
-      {
-         log.trace("setInitialConnectAttempts(" + initialConnectAttempts + ")");
-      }
-
-      raProperties.setInitialConnectAttempts(initialConnectAttempts);
-   }
-
-   /**
-    * Get reconnect attempts
+    * Get number of reconnect attempts
     *
     * @return The value
     */
@@ -1058,7 +1028,7 @@ public class JBMResourceAdapter implements ResourceAdapter
    }
 
    /**
-    * Set reconnect attempts
+    * Set number of reconnect attempts
     *
     * @param reconnectAttempts The value
     */
@@ -1070,6 +1040,36 @@ public class JBMResourceAdapter implements ResourceAdapter
       }
 
       raProperties.setReconnectAttempts(reconnectAttempts);
+   }
+
+   /**
+    * Get failover on server shutdown
+    *
+    * @return The value
+    */
+   public Boolean isFailoverOnServerShutdown()
+   {
+      if (trace)
+      {
+         log.trace("isFailoverOnServerShutdown()");
+      }
+
+      return raProperties.isFailoverOnServerShutdown();
+   }
+
+   /**
+    * Set failover on server shutdown
+    *
+    * @param failoverOnServerShutdown The value
+    */
+   public void setFailoverOnServerShutdown(Boolean failoverOnServerShutdown)
+   {
+      if (trace)
+      {
+         log.trace("setFailoverOnServerShutdown(" + failoverOnServerShutdown + ")");
+      }
+
+      raProperties.setFailoverOnServerShutdown(failoverOnServerShutdown);
    }
 
    /**
@@ -1396,10 +1396,10 @@ public class JBMResourceAdapter implements ResourceAdapter
                                                                                        : getRetryInterval(),
                                                              getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER
                                                                                                  : getRetryIntervalMultiplier(),
-                                                             getInitialConnectAttempts() == null ? ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS
-                                                                                                : getInitialConnectAttempts(),
                                                              getReconnectAttempts() == null ? ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS
-                                                                                           : getReconnectAttempts());
+                                                                                         : getReconnectAttempts(),
+                                                             isFailoverOnServerShutdown() == null ? ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN
+                                                                                                 : isFailoverOnServerShutdown());
       }
       else if (getDiscoveryGroupAddress() != null && getDiscoveryGroupPort() != null)
       {
@@ -1448,10 +1448,10 @@ public class JBMResourceAdapter implements ResourceAdapter
                                                                                        : getRetryInterval(),
                                                              getRetryIntervalMultiplier() == null ? ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER
                                                                                                  : getRetryIntervalMultiplier(),
-                                                             getInitialConnectAttempts() == null ? ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS
-                                                                                                : getInitialConnectAttempts(),
                                                              getReconnectAttempts() == null ? ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS
-                                                                                           : getReconnectAttempts());
+                                                                                         : getReconnectAttempts(),
+                                                             isFailoverOnServerShutdown() == null ? ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN
+                                                                                                 : isFailoverOnServerShutdown());
       }
       else
       {

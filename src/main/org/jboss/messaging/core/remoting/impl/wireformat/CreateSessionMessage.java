@@ -159,17 +159,25 @@ public class CreateSessionMessage extends PacketImpl
 
    public int getRequiredBufferSize()
    {
-      return BASIC_PACKET_SIZE + 
-             stringEncodeSize(name) + // buffer.writeString(name);
-             DataConstants.SIZE_LONG + // buffer.writeLong(sessionChannelID);
-             DataConstants.SIZE_INT + // buffer.writeInt(version);
-             nullableStringEncodeSize(username) + // buffer.writeNullableString(username);
-             nullableStringEncodeSize(password) + // buffer.writeNullableString(password);
-             DataConstants.SIZE_INT + // buffer.writeInt(minLargeMessageSize);
-             DataConstants.SIZE_BOOLEAN + // buffer.writeBoolean(xa);
-             DataConstants.SIZE_BOOLEAN + // buffer.writeBoolean(autoCommitSends);
-             DataConstants.SIZE_BOOLEAN + // buffer.writeBoolean(autoCommitAcks);
-             DataConstants.SIZE_INT + // buffer.writeInt(windowSize);
+      return BASIC_PACKET_SIZE + stringEncodeSize(name) + // buffer.writeString(name);
+             DataConstants.SIZE_LONG +
+             // buffer.writeLong(sessionChannelID);
+             DataConstants.SIZE_INT +
+             // buffer.writeInt(version);
+             nullableStringEncodeSize(username) +
+             // buffer.writeNullableString(username);
+             nullableStringEncodeSize(password) +
+             // buffer.writeNullableString(password);
+             DataConstants.SIZE_INT +
+             // buffer.writeInt(minLargeMessageSize);
+             DataConstants.SIZE_BOOLEAN +
+             // buffer.writeBoolean(xa);
+             DataConstants.SIZE_BOOLEAN +
+             // buffer.writeBoolean(autoCommitSends);
+             DataConstants.SIZE_BOOLEAN +
+             // buffer.writeBoolean(autoCommitAcks);
+             DataConstants.SIZE_INT +
+             // buffer.writeInt(windowSize);
              DataConstants.SIZE_BOOLEAN; // buffer.writeBoolean(preAcknowledge);
 
    }

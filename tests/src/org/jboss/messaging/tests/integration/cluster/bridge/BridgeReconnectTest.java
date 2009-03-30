@@ -40,7 +40,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.impl.BridgeImpl;
 import org.jboss.messaging.utils.Pair;
@@ -59,40 +59,41 @@ public class BridgeReconnectTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeReconnectTest.class);
 
-   public void testAutomaticReconnectBeforeFailover() throws Exception
+
+   //Fail bridge and reconnecting immediately
+   public void testFailoverAndReconnectImmediately() throws Exception
    {
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createMessagingService(0, service0Params);
+      Map<String, Object> server0Params = new HashMap<String, Object>();
+      MessagingServer server0 = createMessagingServer(0, server0Params);
 
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      MessagingService service1 = createMessagingService(1, service1Params);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      MessagingServer server1 = createMessagingServer(1, server1Params);
 
-      Map<String, Object> service2Params = new HashMap<String, Object>();
-      MessagingService service2 = createMessagingService(2, service2Params, true);
+      Map<String, Object> server2Params = new HashMap<String, Object>();
+      MessagingServer service2 = createMessagingServer(2, server2Params, true);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service0Params,
+                                                                    server0Params,
                                                                     "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
       TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params,
+                                                                    server1Params,
                                                                     "server1tc");
 
       TransportConfiguration server2tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service2Params,
+                                                                    server2Params,
                                                                     "server2tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
       connectors.put(server2tc.getName(), server2tc);
 
-      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
+      server0.getConfiguration().setConnectorConfigurations(connectors);
+      server1.getConfiguration().setConnectorConfigurations(connectors);
 
-      service1.getServer().getConfiguration().setConnectorConfigurations(connectors);
-
-      service1.getServer().getConfiguration().setBackupConnectorName(server2tc.getName());
+      server1.getConfiguration().setBackupConnectorName(server2tc.getName());
 
       final String bridgeName = "bridge1";
       final String testAddress = "testAddress";
@@ -101,139 +102,8 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int initalConnectAttempts = 3;
-      final int reconnectAttempts = -1;
-
-      Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), server2tc.getName());
-
-      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
-                                                                        queueName0,
-                                                                        forwardAddress,
-                                                                        null,                                                      
-                                                                        null,
-                                                                        retryInterval,
-                                                                        retryIntervalMultiplier,
-                                                                        initalConnectAttempts,
-                                                                        reconnectAttempts,
-                                                                        false,
-                                                                        connectorPair);
-
-      List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
-      bridgeConfigs.add(bridgeConfiguration);
-      service0.getServer().getConfiguration().setBridgeConfigurations(bridgeConfigs);
-
-      QueueConfiguration queueConfig0 = new QueueConfiguration(testAddress, queueName0, null, true);
-      List<QueueConfiguration> queueConfigs0 = new ArrayList<QueueConfiguration>();
-      queueConfigs0.add(queueConfig0);
-      service0.getServer().getConfiguration().setQueueConfigurations(queueConfigs0);
-
-      QueueConfiguration queueConfig1 = new QueueConfiguration(forwardAddress, queueName0, null, true);
-      List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
-      queueConfigs1.add(queueConfig1);
-      service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
-      service2.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
-
-      service2.start();
-      service1.start();
-      service0.start();
-
-      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
-      ClientSession session0 = csf0.createSession(false, true, true);
-
-      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
-      ClientSession session1 = csf1.createSession(false, true, true);
-
-      ClientProducer prod0 = session0.createProducer(testAddress);
-
-      ClientConsumer cons1 = session1.createConsumer(queueName0);
-
-      session1.start();
-
-      log.info("Simulating failure");
-
-      // Now we will simulate a failure of the bridge connection between server1 and server2
-      // And prevent reconnection for a few tries, then it will reconnect without failing over
-      Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      RemotingConnection forwardingConnection = getForwardingConnection(bridge);
-      InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = initalConnectAttempts - 1;
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-
-      final int numMessages = 10;
-
-      SimpleString propKey = new SimpleString("propkey");
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session0.createClientMessage(false);
-         message.putIntProperty(propKey, i);
-
-         prod0.send(message);
-      }
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage r1 = cons1.receive(500);
-         assertNotNull(r1);
-         assertEquals(i, r1.getProperty(propKey));
-      }
-
-      session0.close();
-      session1.close();
-
-      service0.stop();
-      service1.stop();
-      service2.stop();
-
-      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service2.getServer().getRemotingService().getConnections().size());
-   }
-
-   public void testAutomaticReconnectTryThenFailover() throws Exception
-   {
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createMessagingService(0, service0Params);
-
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      MessagingService service1 = createMessagingService(1, service1Params);
-
-      Map<String, Object> service2Params = new HashMap<String, Object>();
-      MessagingService service2 = createMessagingService(2, service2Params, true);
-
-      TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service0Params,
-                                                                    "server0tc");
-
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-
-      TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params,
-                                                                    "server1tc");
-
-      TransportConfiguration server2tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service2Params,
-                                                                    "server2tc");
-
-      connectors.put(server1tc.getName(), server1tc);
-
-      connectors.put(server2tc.getName(), server2tc);
-
-      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
-      service1.getServer().getConfiguration().setConnectorConfigurations(connectors);
-
-      service1.getServer().getConfiguration().setBackupConnectorName(server2tc.getName());
-
-      final String bridgeName = "bridge1";
-      final String testAddress = "testAddress";
-      final String queueName0 = "queue0";
-      final String forwardAddress = "forwardAddress";
-
-      final long retryInterval = 50;
-      final double retryIntervalMultiplier = 1d;
-      final int initalConnectAttempts = 3;
-      final int reconnectAttempts = -1;
-
+      final int reconnectAttempts = 1;
+   
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), server2tc.getName());
 
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
@@ -242,30 +112,30 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,                                                            
                                                                         null,
                                                                         retryInterval,
-                                                                        retryIntervalMultiplier,
-                                                                        initalConnectAttempts,
+                                                                        retryIntervalMultiplier,                                                               
                                                                         reconnectAttempts,
+                                                                        true,
                                                                         false,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
-      service0.getServer().getConfiguration().setBridgeConfigurations(bridgeConfigs);
+      server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
       QueueConfiguration queueConfig0 = new QueueConfiguration(testAddress, queueName0, null, true);
       List<QueueConfiguration> queueConfigs0 = new ArrayList<QueueConfiguration>();
       queueConfigs0.add(queueConfig0);
-      service0.getServer().getConfiguration().setQueueConfigurations(queueConfigs0);
+      server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
       QueueConfiguration queueConfig1 = new QueueConfiguration(forwardAddress, queueName0, null, true);
       List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
       queueConfigs1.add(queueConfig1);
-      service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
-      service2.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
+      server1.getConfiguration().setQueueConfigurations(queueConfigs1);
+      service2.getConfiguration().setQueueConfigurations(queueConfigs1);
 
       service2.start();
-      service1.start();
-      service0.start();
+      server1.start();
+      server0.start();
 
       ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
@@ -279,10 +149,8 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       session2.start();
 
-      log.info("Simulating failure");
-
       // Now we will simulate a failure of the bridge connection between server0 and server1
-      Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
+      Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
@@ -308,68 +176,49 @@ public class BridgeReconnectTest extends BridgeTestBase
       session0.close();
       session2.close();
 
-      service0.stop();
-      service1.stop();
+      server0.stop();
+      server1.stop();
       service2.stop();
 
-      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service2.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, server0.getRemotingService().getConnections().size());
+      assertEquals(0, server1.getRemotingService().getConnections().size());
+      assertEquals(0, service2.getRemotingService().getConnections().size());
    }
    
-   private RemotingConnection getForwardingConnection(final Bridge bridge) throws Exception
+   // Fail bridge and attempt failover a few times before succeeding
+   public void testFailoverAndReconnectAfterAFewTries() throws Exception
    {
-      long start = System.currentTimeMillis();
-      
-      do
-      {
-         RemotingConnection forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
-         
-         if (forwardingConnection != null)
-         {
-            return forwardingConnection;
-         }
-                  
-         Thread.sleep(10);
-      }
-      while (System.currentTimeMillis() - start < 50000);
-      
-      throw new IllegalStateException("Failed to get forwarding connection");
-   }
+      Map<String, Object> server0Params = new HashMap<String, Object>();
+      MessagingServer server0 = createMessagingServer(0, server0Params);
 
-   public void testFailoverThenReconnectAfterFailover() throws Exception
-   {
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createMessagingService(0, service0Params);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      MessagingServer server1 = createMessagingServer(1, server1Params);
 
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      MessagingService service1 = createMessagingService(1, service1Params);
-
-      Map<String, Object> service2Params = new HashMap<String, Object>();
-      MessagingService service2 = createMessagingService(2, service2Params, true);
+      Map<String, Object> server2Params = new HashMap<String, Object>();
+      MessagingServer service2 = createMessagingServer(2, server2Params, true);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service0Params,
+                                                                    server0Params,
                                                                     "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
       TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params,
+                                                                    server1Params,
                                                                     "server1tc");
 
       TransportConfiguration server2tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service2Params,
+                                                                    server2Params,
                                                                     "server2tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
       connectors.put(server2tc.getName(), server2tc);
 
-      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
-      service1.getServer().getConfiguration().setConnectorConfigurations(connectors);
+      server0.getConfiguration().setConnectorConfigurations(connectors);
+      server1.getConfiguration().setConnectorConfigurations(connectors);
 
-      service1.getServer().getConfiguration().setBackupConnectorName(server2tc.getName());
+      server1.getConfiguration().setBackupConnectorName(server2tc.getName());
 
       final String bridgeName = "bridge1";
       final String testAddress = "testAddress";
@@ -378,7 +227,6 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int initalConnectAttempts = 3;
       final int reconnectAttempts = 3;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), server2tc.getName());
@@ -390,29 +238,29 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
-                                                                        initalConnectAttempts,
                                                                         reconnectAttempts,
+                                                                        true,
                                                                         false,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
-      service0.getServer().getConfiguration().setBridgeConfigurations(bridgeConfigs);
+      server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
       QueueConfiguration queueConfig0 = new QueueConfiguration(testAddress, queueName0, null, true);
       List<QueueConfiguration> queueConfigs0 = new ArrayList<QueueConfiguration>();
       queueConfigs0.add(queueConfig0);
-      service0.getServer().getConfiguration().setQueueConfigurations(queueConfigs0);
+      server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
       QueueConfiguration queueConfig1 = new QueueConfiguration(forwardAddress, queueName0, null, true);
       List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
       queueConfigs1.add(queueConfig1);
-      service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
-      service2.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
+      server1.getConfiguration().setQueueConfigurations(queueConfigs1);
+      service2.getConfiguration().setQueueConfigurations(queueConfigs1);
 
       service2.start();
-      service1.start();
-      service0.start();
+      server1.start();
+      server0.start();
 
       ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
@@ -426,14 +274,13 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       session2.start();
 
-      log.info("Simulating failure");
-
       // Now we will simulate a failure of the bridge connection between server0 and server1
-      Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
+      Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
+      InVMConnector.failOnCreateConnection = true;
+      InVMConnector.numberOfFailures = reconnectAttempts - 1;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
-      // Now we should be failed over so fail again and should reconnect
       forwardingConnection = getForwardingConnection(bridge);      
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
@@ -459,36 +306,38 @@ public class BridgeReconnectTest extends BridgeTestBase
       session0.close();
       session2.close();
 
-      service0.stop();
-      service1.stop();
+      server0.stop();
+      server1.stop();
       service2.stop();
 
-      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service2.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, server0.getRemotingService().getConnections().size());
+      assertEquals(0, server1.getRemotingService().getConnections().size());
+      assertEquals(0, service2.getRemotingService().getConnections().size());
    }
-
-   public void testAutomaticReconnectSingleServer() throws Exception
+   
+   // Fail bridge and reconnect same node, no backup specified
+   public void testReconnectSameNode() throws Exception
    {
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createMessagingService(0, service0Params);
+      Map<String, Object> server0Params = new HashMap<String, Object>();
+      MessagingServer server0 = createMessagingServer(0, server0Params);
 
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      MessagingService service1 = createMessagingService(1, service1Params);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      MessagingServer server1 = createMessagingServer(1, server1Params);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service0Params,
+                                                                    server0Params,
                                                                     "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
       TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params,
+                                                                    server1Params,
                                                                     "server1tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
-      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
+      server0.getConfiguration().setConnectorConfigurations(connectors);
+      server1.getConfiguration().setConnectorConfigurations(connectors);
 
       final String bridgeName = "bridge1";
       final String testAddress = "testAddress";
@@ -497,7 +346,120 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int initalConnectAttempts = 3;
+      final int reconnectAttempts = 3;
+
+      Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
+
+      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
+                                                                        queueName0,
+                                                                        forwardAddress,
+                                                                        null,                                                               
+                                                                        null,
+                                                                        retryInterval,
+                                                                        retryIntervalMultiplier,
+                                                                        reconnectAttempts,
+                                                                        true,
+                                                                        false,
+                                                                        connectorPair);
+
+      List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
+      bridgeConfigs.add(bridgeConfiguration);
+      server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+
+      QueueConfiguration queueConfig0 = new QueueConfiguration(testAddress, queueName0, null, true);
+      List<QueueConfiguration> queueConfigs0 = new ArrayList<QueueConfiguration>();
+      queueConfigs0.add(queueConfig0);
+      server0.getConfiguration().setQueueConfigurations(queueConfigs0);
+
+      QueueConfiguration queueConfig1 = new QueueConfiguration(forwardAddress, queueName0, null, true);
+      List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
+      queueConfigs1.add(queueConfig1);
+      server1.getConfiguration().setQueueConfigurations(queueConfigs1);
+
+      server1.start();
+      server0.start();
+
+      ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
+      ClientSession session0 = csf0.createSession(false, true, true);
+
+      ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
+      ClientSession session1 = csf1.createSession(false, true, true);
+
+      ClientProducer prod0 = session0.createProducer(testAddress);
+
+      ClientConsumer cons1 = session1.createConsumer(queueName0);
+
+      session1.start();
+
+      // Now we will simulate a failure of the bridge connection between server0 and server1
+      Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
+      RemotingConnection forwardingConnection = getForwardingConnection(bridge);
+      InVMConnector.failOnCreateConnection = true;
+      InVMConnector.numberOfFailures = reconnectAttempts - 1;
+      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      forwardingConnection = getForwardingConnection(bridge);      
+      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      final int numMessages = 10;
+
+      SimpleString propKey = new SimpleString("propkey");
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session0.createClientMessage(false);
+         message.putIntProperty(propKey, i);
+
+         prod0.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage r1 = cons1.receive(1500);
+         assertNotNull(r1);
+         assertEquals(i, r1.getProperty(propKey));
+      }
+
+      session0.close();
+      session1.close();
+
+      server0.stop();
+      server1.stop();
+
+      assertEquals(0, server0.getRemotingService().getConnections().size());
+      assertEquals(0, server1.getRemotingService().getConnections().size());
+   }
+      
+   public void testShutdownServerCleanlyAndReconnectSameNode() throws Exception
+   {
+      Map<String, Object> server0Params = new HashMap<String, Object>();
+      MessagingServer server0 = createMessagingServer(0, server0Params);
+
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      MessagingServer server1 = createMessagingServer(1, server1Params);
+
+      TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    server0Params,
+                                                                    "server0tc");
+
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+
+      TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                    server1Params,
+                                                                    "server1tc");
+
+      connectors.put(server1tc.getName(), server1tc);
+
+      server0.getConfiguration().setConnectorConfigurations(connectors);
+      server1.getConfiguration().setConnectorConfigurations(connectors);
+
+      final String bridgeName = "bridge1";
+      final String testAddress = "testAddress";
+      final String queueName0 = "queue0";
+      final String forwardAddress = "forwardAddress";
+
+      final long retryInterval = 50;
+      final double retryIntervalMultiplier = 1d;
       final int reconnectAttempts = -1;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
@@ -509,49 +471,42 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
-                                                                        initalConnectAttempts,
                                                                         reconnectAttempts,
+                                                                        true,
                                                                         false,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
-      service0.getServer().getConfiguration().setBridgeConfigurations(bridgeConfigs);
+      server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
       QueueConfiguration queueConfig0 = new QueueConfiguration(testAddress, queueName0, null, true);
       List<QueueConfiguration> queueConfigs0 = new ArrayList<QueueConfiguration>();
       queueConfigs0.add(queueConfig0);
-      service0.getServer().getConfiguration().setQueueConfigurations(queueConfigs0);
+      server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
       QueueConfiguration queueConfig1 = new QueueConfiguration(forwardAddress, queueName0, null, true);
       List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
       queueConfigs1.add(queueConfig1);
-      service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
+      server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
-      service1.start();
-      service0.start();
+      server1.start();
+      server0.start();
 
       ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
 
+      ClientProducer prod0 = session0.createProducer(testAddress);
+
+      server1.stop();
+      server1.start();
+      
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
-
-      ClientProducer prod0 = session0.createProducer(testAddress);
 
       ClientConsumer cons1 = session1.createConsumer(queueName0);
 
       session1.start();
-
-      log.info("Simulating failure");
-
-      // Now we will simulate a failure of the bridge connection between server1 and server2
-      // And prevent reconnection for a few tries, then it will reconnect without failing over
-      Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
-      RemotingConnection forwardingConnection = getForwardingConnection(bridge);
-      InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = initalConnectAttempts - 1;
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       final int numMessages = 10;
 
@@ -573,35 +528,36 @@ public class BridgeReconnectTest extends BridgeTestBase
       }
 
       session0.close();
+      session1.close();
 
-      service0.stop();
-      service1.stop();
+      server0.stop();
+      server1.stop();
 
-      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, server0.getRemotingService().getConnections().size());
+      assertEquals(0, server1.getRemotingService().getConnections().size());
    }
    
-   public void testNonAutomaticReconnectSingleServer() throws Exception
+   public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
-      Map<String, Object> service0Params = new HashMap<String, Object>();
-      MessagingService service0 = createMessagingService(0, service0Params);
+      Map<String, Object> server0Params = new HashMap<String, Object>();
+      MessagingServer server0 = createMessagingServer(0, server0Params);
 
-      Map<String, Object> service1Params = new HashMap<String, Object>();
-      MessagingService service1 = createMessagingService(1, service1Params);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      MessagingServer server1 = createMessagingServer(1, server1Params);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service0Params,
+                                                                    server0Params,
                                                                     "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
       TransportConfiguration server1tc = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    service1Params,
+                                                                    server1Params,
                                                                     "server1tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
-      service0.getServer().getConfiguration().setConnectorConfigurations(connectors);
+      server0.getConfiguration().setConnectorConfigurations(connectors);
 
       final String bridgeName = "bridge1";
       final String testAddress = "testAddress";
@@ -610,8 +566,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
-      final int initalConnectAttempts = 3;
-      final int reconnectAttempts = -1;
+      final int reconnectAttempts = 3;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
@@ -622,27 +577,27 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         null,
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
-                                                                        initalConnectAttempts,
                                                                         reconnectAttempts,
+                                                                        true,
                                                                         false,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
       bridgeConfigs.add(bridgeConfiguration);
-      service0.getServer().getConfiguration().setBridgeConfigurations(bridgeConfigs);
+      server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
 
       QueueConfiguration queueConfig0 = new QueueConfiguration(testAddress, queueName0, null, true);
       List<QueueConfiguration> queueConfigs0 = new ArrayList<QueueConfiguration>();
       queueConfigs0.add(queueConfig0);
-      service0.getServer().getConfiguration().setQueueConfigurations(queueConfigs0);
+      server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
       QueueConfiguration queueConfig1 = new QueueConfiguration(forwardAddress, queueName0, null, true);
       List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
       queueConfigs1.add(queueConfig1);
-      service1.getServer().getConfiguration().setQueueConfigurations(queueConfigs1);
+      server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
-      service1.start();
-      service0.start();
+      server1.start();
+      server0.start();
 
       ClientSessionFactory csf0 = new ClientSessionFactoryImpl(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
@@ -656,14 +611,10 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       session1.start();
 
-      log.info("Simulating failure");
-
-      // Now we will simulate a failure of the bridge connection between server1 and server2
-      // And prevent reconnection for a few tries, then it will reconnect without failing over
-      Bridge bridge = service0.getServer().getClusterManager().getBridges().get(bridgeName);
+      Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = initalConnectAttempts * 2;
+      InVMConnector.numberOfFailures = reconnectAttempts - 1;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       final int numMessages = 10;
@@ -685,9 +636,10 @@ public class BridgeReconnectTest extends BridgeTestBase
          assertEquals(i, r1.getProperty(propKey));
       }
       
+      //Fail again - should reconnect
       forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
       InVMConnector.failOnCreateConnection = true;
-      InVMConnector.numberOfFailures = initalConnectAttempts * 2;
+      InVMConnector.numberOfFailures = reconnectAttempts - 1;
       forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
       
       for (int i = 0; i < numMessages; i++)
@@ -707,10 +659,31 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       session0.close();
 
-      service0.stop();
-      service1.stop();
+      server0.stop();
+      server1.stop();
 
-      assertEquals(0, service0.getServer().getRemotingService().getConnections().size());
-      assertEquals(0, service1.getServer().getRemotingService().getConnections().size());
+      assertEquals(0, server0.getRemotingService().getConnections().size());
+      assertEquals(0, server1.getRemotingService().getConnections().size());
    }
+   
+   private RemotingConnection getForwardingConnection(final Bridge bridge) throws Exception
+   {
+      long start = System.currentTimeMillis();
+      
+      do
+      {
+         RemotingConnection forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
+         
+         if (forwardingConnection != null)
+         {
+            return forwardingConnection;
+         }
+                  
+         Thread.sleep(10);
+      }
+      while (System.currentTimeMillis() - start < 50000);
+      
+      throw new IllegalStateException("Failed to get forwarding connection");
+   }
+
 }

@@ -41,7 +41,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.utils.SimpleString;
@@ -62,7 +62,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    // Constants -----------------------------------------------------
 
    private static final int RECEIVE_TIMEOUT = 30000;
-   
+
    private final int LATCH_WAIT = getLatchWait();
 
    private int NUM_THREADS = getNumThreads();
@@ -70,9 +70,9 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    // Attributes ----------------------------------------------------
    protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   protected MessagingService liveService;
+   protected MessagingServer liveServer;
 
-   protected MessagingService backupService;
+   protected MessagingServer backupServer;
 
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -258,7 +258,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    protected abstract void setBody(ClientMessage message) throws Exception;
 
    protected abstract boolean checkSize(ClientMessage message);
-   
+
    protected int getNumThreads()
    {
       return 10;
@@ -562,7 +562,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
          {
             throw new Exception("Handler failed: " + handler.failure);
          }
-         
+
          handler.reset();
       }
 
@@ -570,7 +570,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       {
          session.rollback();
       }
-      
+
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(LATCH_WAIT, TimeUnit.MILLISECONDS);
@@ -1279,7 +1279,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
       sessCreate.close();
    }
-   
+
    protected int getLatchWait()
    {
       return 20000;
@@ -1303,13 +1303,13 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    {
       log.info("************* Ending test " + getName());
 
-      if (liveService != null && liveService.isStarted())
+      if (liveServer != null && liveServer.isStarted())
       {
-         liveService.stop();
+         liveServer.stop();
       }
-      if (backupService != null && backupService.isStarted())
+      if (backupServer != null && backupServer.isStarted())
       {
-         backupService.stop();
+         backupServer.stop();
       }
 
       super.tearDown();
@@ -1329,7 +1329,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
                                        final boolean failOnCreateConnection,
                                        final long failDelay) throws Exception
    {
-      
+
       runMultipleThreadsFailoverTest(runnable, numThreads, getNumIterations(), failOnCreateConnection, failDelay);
    }
 
@@ -1341,10 +1341,10 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       final ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                            new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                       backupParams),
-                                                                           0,
-                                                                           1,
-                                                                           ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS,
-                                                                           ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+                                                                           ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                                                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                                                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                                           -1);
 
       sf.setSendWindowSize(32 * 1024);
       return sf;
@@ -1352,9 +1352,9 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
    protected void stop() throws Exception
    {
-      backupService.stop();
+      backupServer.stop();
 
-      liveService.stop();
+      liveServer.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
    }
@@ -1443,15 +1443,15 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       final int numMessages;
 
       volatile boolean done;
-      
+
       synchronized void reset()
       {
          counts.clear();
-         
+
          done = false;
-         
+
          failure = null;
-         
+
          latch = new CountDownLatch(1);
       }
 

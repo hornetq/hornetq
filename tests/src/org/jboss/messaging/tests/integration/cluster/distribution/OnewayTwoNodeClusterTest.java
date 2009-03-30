@@ -54,8 +54,6 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       
       closeAllSessionFactories();
       
-      stopClusterConnections(0, 1);
-      
       stopServers(0, 1);
       
       super.tearDown();
@@ -82,7 +80,6 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       //Give it a little time for the bridge to try to start
       Thread.sleep(2000);
       
-      log.info("Stopping server 0");
       stopServers(0);            
    }
    
@@ -161,13 +158,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       
       stopServers(1);
       
-      log.info("*** stopped service 1");
-      
-      log.info("** starting server 1");
-      
       startServers(1);
-      
-      log.info("*** started service 1");
       
       long end = System.currentTimeMillis();
       
@@ -182,12 +173,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       
       createQueue(1, "queues.testaddress", "queue0", myFilter, false);
       
-      log.info("** adding consumer");
-      
       addConsumer(0, 1, "queue0", null);
       
-      log.info("** added consumer");
-          
       waitForBindings(1, "queues.testaddress", 1, 1, true);
       waitForBindings(0, "queues.testaddress", 1, 1, false);
 

@@ -31,7 +31,7 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 
 import java.util.HashSet;
@@ -93,15 +93,15 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
 
    // Protected -----------------------------------------------------
 
-   protected MessagingService setupAndStartMessagingService() throws Exception
+   protected MessagingServer setupAndStartMessagingServer() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      MessagingService service = Messaging.newNullStorageMessagingService(conf);
-      service.start();
-      HierarchicalRepository<Set<Role>> securityRepository = service.getServer().getSecurityRepository();
-      JBMSecurityManagerImpl securityManager = (JBMSecurityManagerImpl)service.getServer().getSecurityManager();
+      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      JBMSecurityManagerImpl securityManager = (JBMSecurityManagerImpl)server.getSecurityManager();
       securityManager.addUser(validAdminUser, validAdminPassword);
       securityManager.addUser(invalidAdminUser, invalidAdminPassword);
       securityManager.addRole(validAdminUser, "admin");
@@ -115,7 +115,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       guestRole.add(new Role("guest", true, true, true, true, true, true, true));
       securityRepository.addMatch("*", guestRole);
       
-      return service;
+      return server;
    }
 
    // Private -------------------------------------------------------

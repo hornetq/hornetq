@@ -22,6 +22,13 @@
 
 package org.jboss.messaging.tests.integration.paging;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.Executor;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -44,20 +51,11 @@ import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.MessagingService;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Executor;
 
 /**
  * This test will make sure that a failing depage won't cause duplicated messages
@@ -103,7 +101,7 @@ public class PageCrashTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer messagingService = createServer(true, config, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -145,9 +143,9 @@ public class PageCrashTest extends ServiceTestBase
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      MessagingService service = newMessagingService(config);
+      MessagingServer server = newMessagingServer(config);
 
-      service.start();
+      server.start();
 
       try
       {
@@ -171,7 +169,7 @@ public class PageCrashTest extends ServiceTestBase
          message = session.createClientMessage(true);
          message.getBody().writeBytes(new byte[1024]);
 
-         PagingStore store = service.getServer().getPostOffice().getPagingManager().getPageStore(ADDRESS);
+         PagingStore store = server.getPostOffice().getPagingManager().getPageStore(ADDRESS);
 
          int messages = 0;
          while (!store.isPaging())
@@ -188,7 +186,7 @@ public class PageCrashTest extends ServiceTestBase
 
          session.close();
 
-         assertTrue(service.getServer().getPostOffice().getPagingManager().getGlobalSize() > 0);
+         assertTrue(server.getPostOffice().getPagingManager().getGlobalSize() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -209,14 +207,14 @@ public class PageCrashTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, service.getServer().getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
 
       }
       finally
       {
          try
          {
-            service.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -230,9 +228,8 @@ public class PageCrashTest extends ServiceTestBase
 
    // Private -------------------------------------------------------
 
-   private MessagingServiceImpl newMessagingService(final Configuration configuration)
+   private MessagingServer newMessagingServer(final Configuration configuration)
    {
-
       StorageManager storageManager = new JournalStorageManager(configuration);
 
       RemotingService remotingService = new RemotingServiceImpl(configuration);
@@ -243,7 +240,7 @@ public class PageCrashTest extends ServiceTestBase
 
       remotingService.setManagementService(managementService);
 
-      MessagingServer server = new FailingMessagingServiceImpl();
+      MessagingServer server = new FailingMessagingServerImpl();
 
       server.setConfiguration(configuration);
 
@@ -254,14 +251,13 @@ public class PageCrashTest extends ServiceTestBase
       server.setSecurityManager(securityManager);
 
       server.setManagementService(managementService);
-      
+
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
-      
+
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
-
-      return new MessagingServiceImpl(server, storageManager, remotingService);
+      return server;
    }
 
    // Inner classes -------------------------------------------------
@@ -269,7 +265,7 @@ public class PageCrashTest extends ServiceTestBase
    /** This is hacking MessagingServerImpl, 
     *  to make sure the server will fail right 
     *  before the page-file was removed */
-   class FailingMessagingServiceImpl extends MessagingServerImpl
+   class FailingMessagingServerImpl extends MessagingServerImpl
    {
       @Override
       protected PagingManager createPagingManager()

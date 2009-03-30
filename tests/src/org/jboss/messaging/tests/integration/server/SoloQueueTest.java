@@ -32,7 +32,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -42,7 +42,7 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class SoloQueueTest extends UnitTestCase
 {
-   private MessagingService messagingService;
+   private MessagingServer server;
 
    private ClientSession clientSession;
 
@@ -539,18 +539,18 @@ public class SoloQueueTest extends UnitTestCase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception e1)
          {
             //
          }
       }
-      messagingService = null;
+      server = null;
       clientSession = null;
       
       super.tearDown();
@@ -565,13 +565,13 @@ public class SoloQueueTest extends UnitTestCase
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       storageManager = new FakeStorageManager();
-      messagingService = Messaging.newMessagingService(configuration, storageManager);
+      server = Messaging.newMessagingServer(configuration, storageManager);
       // start the server
-      messagingService.start();
+      server.start();
 
       AddressSettings qs = new AddressSettings();
       qs.setSoloQueue(true);
-      messagingService.getServer().getAddressSettingsRepository().addMatch(address.toString(), qs);
+      server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       sessionFactory.setBlockOnAcknowledge(true);

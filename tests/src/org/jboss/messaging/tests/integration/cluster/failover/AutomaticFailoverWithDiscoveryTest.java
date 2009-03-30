@@ -71,8 +71,6 @@ public class AutomaticFailoverWithDiscoveryTest extends FailoverTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      log.info("Created session");
-
       session.createQueue(ADDRESS, ADDRESS, null, false);
 
       ClientProducer producer = session.createProducer(ADDRESS);

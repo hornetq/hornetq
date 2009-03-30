@@ -23,11 +23,9 @@ package org.jboss.messaging.tests.integration.client;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
-import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -35,10 +33,8 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 
@@ -51,7 +47,7 @@ public class ClientProducerCloseTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServiceImpl service;
+   private MessagingServer server;
 
    private ClientSession session;
 
@@ -91,8 +87,8 @@ public class ClientProducerCloseTest extends ServiceTestBase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      service = Messaging.newNullStorageMessagingService(config);
-      service.start();
+      server = Messaging.newNullStorageMessagingServer(config);
+      server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
@@ -103,7 +99,7 @@ public class ClientProducerCloseTest extends ServiceTestBase
    {
       session.close();
 
-      service.stop();
+      server.stop();
 
       super.tearDown();
    }

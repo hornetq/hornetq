@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -48,7 +48,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   MessagingService service;
+   MessagingServer service;
 
    SimpleString ADDRESS = new SimpleString("Address");
 
@@ -128,7 +128,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    protected void setUpService(boolean netty) throws Exception
    {
-      service = createService(false, createDefaultConfig(netty));
+      service = createServer(false, createDefaultConfig(netty));
       service.start();
    }
 

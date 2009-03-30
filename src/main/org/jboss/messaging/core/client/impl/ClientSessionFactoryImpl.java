@@ -89,9 +89,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
 
-   public static final int DEFAULT_INITIAL_CONNECT_ATTEMPTS = 1;
-
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
+   
+   public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
+
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -147,9 +148,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private final double retryIntervalMultiplier; // For exponential backoff
 
-   private final int initialConnectAttempts;
-
    private final int reconnectAttempts;
+   
+   private final boolean failoverOnServerShutdown;
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -201,8 +202,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
       this.retryInterval = DEFAULT_RETRY_INTERVAL;
       this.retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.initialConnectAttempts = DEFAULT_INITIAL_CONNECT_ATTEMPTS;
       this.reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
+      this.failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
    public ClientSessionFactoryImpl(final String discoveryGroupAddress,
@@ -227,8 +228,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final int ackBatchSize,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int initialConnectAttempts,
-                                   final int reconnectAttempts) throws MessagingException
+                                   final int reconnectAttempts,
+                                   final boolean failoverOnServerShutdown) throws MessagingException
    {
       try
       {
@@ -269,8 +270,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.preAcknowledge = preAcknowledge;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
    public ClientSessionFactoryImpl(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors,
@@ -292,8 +293,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final int ackBatchSize,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int initialConnectAttempts,
-                                   final int reconnectAttempts)
+                                   final int reconnectAttempts,
+                                   final boolean failoverOnServerShutdown)
    {
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
       this.pingPeriod = pingPeriod;
@@ -313,8 +314,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.preAcknowledge = preAcknowledge;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
 
       this.initialWaitTimeout = -1;
 
@@ -322,13 +323,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          ConnectionManager cm = new ConnectionManagerImpl(pair.a,
                                                           pair.b,
+                                                          failoverOnServerShutdown,
                                                           maxConnections,
                                                           callTimeout,
                                                           pingPeriod,
                                                           connectionTTL,
                                                           retryInterval,
                                                           retryIntervalMultiplier,
-                                                          initialConnectAttempts,
                                                           reconnectAttempts);
 
          connectionManagerMap.put(pair, cm);
@@ -341,9 +342,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConnectorConfig,
+                                   final boolean failoverOnServerShutdown,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int initialConnectAttempts,
                                    final int reconnectAttempts)
    {
       this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
@@ -364,8 +365,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
 
       this.initialWaitTimeout = -1;
 
@@ -374,13 +375,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       ConnectionManager cm = new ConnectionManagerImpl(pair.a,
                                                        pair.b,
+                                                       failoverOnServerShutdown,
                                                        maxConnections,
                                                        callTimeout,
                                                        pingPeriod,
                                                        connectionTTL,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       initialConnectAttempts,
                                                        reconnectAttempts);
 
       connectionManagerMap.put(pair, cm);
@@ -393,7 +394,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int initialConnectAttempts,
                                    final int reconnectAttempts)
    {
       this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
@@ -414,8 +414,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
+      this.failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
       this.initialWaitTimeout = -1;
 
@@ -424,13 +424,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       ConnectionManager cm = new ConnectionManagerImpl(pair.a,
                                                        pair.b,
+                                                       failoverOnServerShutdown,
                                                        maxConnections,
                                                        callTimeout,
                                                        pingPeriod,
                                                        connectionTTL,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       initialConnectAttempts,
                                                        reconnectAttempts);
 
       connectionManagerMap.put(pair, cm);
@@ -461,8 +461,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
       this.retryInterval = DEFAULT_RETRY_INTERVAL;
       this.retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.initialConnectAttempts = DEFAULT_INITIAL_CONNECT_ATTEMPTS;
       this.reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
+      this.failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
       this.initialWaitTimeout = -1;
 
@@ -471,13 +471,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       ConnectionManager cm = new ConnectionManagerImpl(pair.a,
                                                        pair.b,
+                                                       failoverOnServerShutdown,
                                                        maxConnections,
                                                        callTimeout,
                                                        pingPeriod,
                                                        connectionTTL,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       initialConnectAttempts,
                                                        reconnectAttempts);
 
       connectionManagerMap.put(pair, cm);
@@ -489,6 +489,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConfig,
+                                   final boolean failoverOnServerShutdown,
                                    final String connectionloadBalancingPolicyClassName,
                                    final long pingPeriod,
                                    final long connectionTTL,
@@ -507,7 +508,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final int ackBatchSize,
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,
-                                   final int initialConnectAttempts,
                                    final int reconnectAttempts)
    {
       this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
@@ -528,8 +528,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.preAcknowledge = preAcknowledge;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.initialConnectAttempts = initialConnectAttempts;
       this.reconnectAttempts = reconnectAttempts;
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
 
       this.initialWaitTimeout = -1;
 
@@ -537,13 +537,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                                                                            backupConfig);
       ConnectionManager cm = new ConnectionManagerImpl(pair.a,
                                                        pair.b,
+                                                       failoverOnServerShutdown,
                                                        maxConnections,
                                                        callTimeout,
                                                        pingPeriod,
                                                        connectionTTL,
                                                        retryInterval,
                                                        retryIntervalMultiplier,
-                                                       initialConnectAttempts,
                                                        reconnectAttempts);
 
       connectionManagerMap.put(pair, cm);
@@ -560,9 +560,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       this(connectorConfig,
            null,
+           DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
            DEFAULT_RETRY_INTERVAL,
            DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-           DEFAULT_INITIAL_CONNECT_ATTEMPTS,
            DEFAULT_RECONNECT_ATTEMPTS);
    }
 
@@ -810,13 +810,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
             ConnectionManager connectionManager = new ConnectionManagerImpl(connectorPair.a,
                                                                             connectorPair.b,
+                                                                            failoverOnServerShutdown,
                                                                             maxConnections,
                                                                             callTimeout,
                                                                             pingPeriod,
                                                                             connectionTTL,
                                                                             retryInterval,
                                                                             retryIntervalMultiplier,
-                                                                            initialConnectAttempts,
                                                                             reconnectAttempts);
 
             connectionManagerMap.put(connectorPair, connectionManager);

@@ -31,7 +31,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -43,7 +43,7 @@ public class SimpleExample
 {
    public static void main(final String[] args) throws Exception
    {
-      MessagingService messagingService = null;
+      MessagingServer server = null;
       ClientSession clientSession = null;
 
       try
@@ -52,9 +52,9 @@ public class SimpleExample
          ConfigurationImpl configuration = new ConfigurationImpl();
          configuration.setSecurityEnabled(false);
          configuration.getAcceptorConfigurations().add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory"));
-         messagingService = Messaging.newNullStorageMessagingService(configuration);
+         server = Messaging.newNullStorageMessagingServer(configuration);
          //start the server
-         messagingService.start();
+         server.start();
 
          //then we create a client as normal       
          ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
@@ -88,11 +88,11 @@ public class SimpleExample
                //
             }
          }
-         if (messagingService != null && messagingService.isStarted())
+         if (server != null && server.isStarted())
          {
             try
             {
-               messagingService.stop();
+               server.stop();
             }
             catch (Exception e1)
             {

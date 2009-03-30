@@ -33,7 +33,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -55,9 +55,9 @@ public class CoreClientOverHttpTest extends UnitTestCase
 //      params.put("jbm.remoting.netty.httpenabled", true);
 //      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 //
-//      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
+//      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
 //
-//      messagingService.start();
+//      server.start();
 //
 //      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
 //
@@ -92,7 +92,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
 //
 //      session.close();
 //
-//      messagingService.stop();
+//      server.stop();
 //   }
 //
 //   public void testCoreHttpClientIdle() throws Exception
@@ -107,9 +107,9 @@ public class CoreClientOverHttpTest extends UnitTestCase
 //      params.put("jbm.remoting.netty.httpenabled", true);
 //      conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 //
-//      MessagingService messagingService = Messaging.newNullStorageMessagingService(conf);
+//      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
 //
-//      messagingService.start();
+//      server.start();
 //
 //      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
 //
@@ -119,11 +119,11 @@ public class CoreClientOverHttpTest extends UnitTestCase
 //
 //      ClientProducer producer = session.createProducer(QUEUE);
 //
-//      Thread.sleep(messagingService.getServer().getConfiguration().getConnectionScanPeriod() * 5);
+//      Thread.sleep(server.getServer().getConfiguration().getConnectionScanPeriod() * 5);
 //
 //      session.close();
 //
-//      messagingService.stop();
+//      server.stop();
 //   }
    
    public void testFoo()

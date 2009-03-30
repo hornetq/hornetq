@@ -210,13 +210,8 @@ public class XATest extends JBMServerTestCase
 
          Transaction tx = tm.getTransaction();
          
-         log.info("res is " + res);
-         log.info("res2 is " + res2);
-         
-         log.info("Enlisting reousrce1");
          tx.enlistResource(res);
                            
-         log.info("enlisting resource2");
          tx.enlistResource(res2);
 
          MessageProducer prod = sess.createProducer(queue1);
@@ -229,10 +224,8 @@ public class XATest extends JBMServerTestCase
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
-         log.info("Committing***");
          tm.commit();
-         log.info("Committed****");
-
+ 
          conn2 = cf.createConnection();
          conn2.start();
          Session sessReceiver = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -639,7 +632,6 @@ public class XATest extends JBMServerTestCase
          tx.delistResource(res, XAResource.TMSUCCESS);
          tx.delistResource(res2, XAResource.TMSUCCESS);
 
-         log.info("rolling back");
          tm.rollback();
 
          //Message should be redelivered
@@ -1939,10 +1931,8 @@ public class XATest extends JBMServerTestCase
          tx1.delistResource(res1, XAResource.TMSUCCESS);
 
          //suspend the tx
-         log.info("Calling suspend");
          Transaction suspended = tm.suspend();
-         log.info("Called suspend");
-
+ 
          tm.begin();
 
          Transaction tx2 = tm.getTransaction();
@@ -1971,8 +1961,6 @@ public class XATest extends JBMServerTestCase
          tm.resume(suspended);
 
          tm.commit();
-         
-         log.info("Got to end");
       }
       finally
       {
@@ -2274,27 +2262,8 @@ public class XATest extends JBMServerTestCase
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private void assertEqualByteArrays(byte[] b1, byte[] b2)
-   {
-      log.info("b1 length: " + b1.length + " b2 length " + b2.length);
-
-      if (b1.length != b2.length)
-      {
-         fail("Lengths not the same");
-      }
-
-      for (int i = 0; i < b1.length; i++)
-      {
-         if (b1[i] != b2[i])
-         {
-            fail("Not same at index " + i);
-         }
-      }
-   }
-
+   
    // Inner classes -------------------------------------------------
-
 
    static class DummyListener implements MessageListener
    {
@@ -2305,7 +2274,6 @@ public class XATest extends JBMServerTestCase
 
       public void onMessage(Message message)
       {
-         log.info("Message received on DummyListener " + message);
          messages.add(message);
       }
    }

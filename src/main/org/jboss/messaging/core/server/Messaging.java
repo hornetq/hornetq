@@ -20,11 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.server;
+
+import java.lang.management.ManagementFactory;
+
+import javax.management.MBeanServer;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -35,10 +39,6 @@ import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.server.impl.MessagingServerImpl;
-import org.jboss.messaging.core.server.impl.MessagingServiceImpl;
-
-import javax.management.MBeanServer;
-import java.lang.management.ManagementFactory;
 
 /**
  * A Messaging
@@ -51,41 +51,17 @@ import java.lang.management.ManagementFactory;
  */
 public class Messaging
 {
-   public static MessagingServiceImpl newNullStorageMessagingService()
+   private static final Logger log = Logger.getLogger(Messaging.class);
+
+   public static MessagingServer newNullStorageMessagingServer()
    {
-      return newNullStorageMessagingService(new ConfigurationImpl());
+      return newNullStorageMessagingServer(new ConfigurationImpl());
    }
 
-   public static MessagingServiceImpl newNullStorageMessagingService(final Configuration config)
+   public static MessagingServer newNullStorageMessagingServer(final Configuration config)
    {
       StorageManager storageManager = new NullStorageManager();
 
-      RemotingService remotingService = new RemotingServiceImpl(config);
-
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
-
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
-                                                                      config.isJMXManagementEnabled());
-      
-      remotingService.setManagementService(managementService);
-      
-      MessagingServer server = new MessagingServerImpl();
-
-      server.setConfiguration(config);
-
-      server.setStorageManager(storageManager);
-
-      server.setRemotingService(remotingService);
-
-      server.setSecurityManager(securityManager);
-
-      server.setManagementService(managementService);
-
-      return new MessagingServiceImpl(server, storageManager, remotingService);
-   }
-
-   public static MessagingServiceImpl newMessagingService(final Configuration config, StorageManager storageManager)
-   {
       RemotingService remotingService = new RemotingServiceImpl(config);
 
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
@@ -107,22 +83,20 @@ public class Messaging
 
       server.setManagementService(managementService);
 
-      return new MessagingServiceImpl(server, storageManager, remotingService);
+      return server;
    }
 
-   public static MessagingServiceImpl newNullStorageMessagingService(final Configuration config, MBeanServer mbeanServer)
+   public static MessagingServer newMessagingServer(final Configuration config, final StorageManager storageManager)
    {
-      StorageManager storageManager = new NullStorageManager();
-
       RemotingService remotingService = new RemotingServiceImpl(config);
 
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
-      ManagementService managementService = new ManagementServiceImpl(mbeanServer,
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
                                                                       config.isJMXManagementEnabled());
-      
+
       remotingService.setManagementService(managementService);
-      
+
       MessagingServer server = new MessagingServerImpl();
 
       server.setConfiguration(config);
@@ -135,22 +109,53 @@ public class Messaging
 
       server.setManagementService(managementService);
 
-      return new MessagingServiceImpl(server, storageManager, remotingService);
+      return server;
    }
 
-   public static MessagingServiceImpl newMessagingService(final Configuration config)
-   {      
+   public static MessagingServer newNullStorageMessagingServer(final Configuration config, final MBeanServer mbeanServer)
+   {
+      StorageManager storageManager = new NullStorageManager();
+
+      RemotingService remotingService = new RemotingServiceImpl(config);
+
+      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
+
+      ManagementService managementService = new ManagementServiceImpl(mbeanServer, config.isJMXManagementEnabled());
+
+      remotingService.setManagementService(managementService);
+
+      MessagingServer server = new MessagingServerImpl();
+
+      server.setConfiguration(config);
+
+      server.setStorageManager(storageManager);
+
+      server.setRemotingService(remotingService);
+
+      server.setSecurityManager(securityManager);
+
+      server.setManagementService(managementService);
+
+      return server;
+   }
+
+   public static MessagingServer newMessagingServer(final Configuration config)
+   {
       StorageManager storageManager = new JournalStorageManager(config);
 
       RemotingService remotingService = new RemotingServiceImpl(config);
 
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), config.isJMXManagementEnabled());
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
+                                                                      config.isJMXManagementEnabled());
 
       remotingService.setManagementService(managementService);
-      
+
       MessagingServer server = new MessagingServerImpl();
+
+      log.info("** creating server with security enabled " + config.isSecurityEnabled() + 
+               " " + System.identityHashCode(config));
 
       server.setConfiguration(config);
 
@@ -162,11 +167,11 @@ public class Messaging
 
       server.setManagementService(managementService);
 
-      return new MessagingServiceImpl(server, storageManager, remotingService);
+      return server;
    }
 
-   public static MessagingServiceImpl newMessagingService(final Configuration config, final MBeanServer mbeanService)
-   {      
+   public static MessagingServer newMessagingServer(final Configuration config, final MBeanServer mbeanService)
+   {
       StorageManager storageManager = new JournalStorageManager(config);
 
       RemotingService remotingService = new RemotingServiceImpl(config);
@@ -176,7 +181,7 @@ public class Messaging
       ManagementService managementService = new ManagementServiceImpl(mbeanService, config.isJMXManagementEnabled());
 
       remotingService.setManagementService(managementService);
-      
+
       MessagingServer server = new MessagingServerImpl();
 
       server.setConfiguration(config);
@@ -189,8 +194,6 @@ public class Messaging
 
       server.setManagementService(managementService);
 
-      return new MessagingServiceImpl(server, storageManager, remotingService);
+      return server;
    }
-
-
 }

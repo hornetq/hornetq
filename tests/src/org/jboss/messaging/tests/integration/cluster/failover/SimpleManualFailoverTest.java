@@ -45,7 +45,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
@@ -67,9 +67,9 @@ public class SimpleManualFailoverTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingService server0Service;
+   private MessagingServer server0Service;
 
-   private MessagingService server1Service;
+   private MessagingServer server1Service;
 
    private Map<String, Object> server1Params = new HashMap<String, Object>();
 
@@ -134,8 +134,7 @@ public class SimpleManualFailoverTest extends UnitTestCase
       class MyListener implements FailureListener
       {
          public boolean connectionFailed(MessagingException me)
-         {
-            log.info("*** connection failed");
+         {            
             latch.countDown();
             
             return true;
@@ -155,10 +154,8 @@ public class SimpleManualFailoverTest extends UnitTestCase
 
       assertTrue(ok);
 
-      log.info("closing session");
       session.close();
-      log.info("closed session");
-
+ 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                    server1Params));
 
@@ -185,14 +182,14 @@ public class SimpleManualFailoverTest extends UnitTestCase
       server1Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  server1Params));
-      server1Service = Messaging.newNullStorageMessagingService(server1Conf);
+      server1Service = Messaging.newNullStorageMessagingServer(server1Conf);
       server1Service.start();
 
       Configuration server0Conf = new ConfigurationImpl();
       server0Conf.setSecurityEnabled(false);
       server0Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0Service = Messaging.newNullStorageMessagingService(server0Conf);
+      server0Service = Messaging.newNullStorageMessagingServer(server0Conf);
       server0Service.start();
    }
 

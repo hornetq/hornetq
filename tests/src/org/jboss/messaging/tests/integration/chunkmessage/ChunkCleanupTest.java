@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.integration.chunkmessage;
 
 import java.io.File;
@@ -38,6 +37,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -55,8 +55,10 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class ChunkCleanupTest extends ChunkTestBase
 {
-
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ChunkCleanupTest.class);
+
 
    // Attributes ----------------------------------------------------
 
@@ -73,9 +75,9 @@ public class ChunkCleanupTest extends ChunkTestBase
 
       Configuration config = createDefaultConfig();
 
-      messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      server = createServer(true, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       try
       {
@@ -86,7 +88,7 @@ public class ChunkCleanupTest extends ChunkTestBase
       }
       finally
       {
-         messagingService.stop();
+         server.stop();
       }
    }
 
@@ -99,9 +101,9 @@ public class ChunkCleanupTest extends ChunkTestBase
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
       config.setPagingGlobalWatermarkSize(10 * 1024);
 
-      messagingService = createService(true, config, new HashMap<String, AddressSettings>());
+      server = createServer(true, config, new HashMap<String, AddressSettings>());
 
-      messagingService.start();
+      server.start();
 
       final int numberOfIntegersBigMessage = 150000;
 
@@ -109,25 +111,23 @@ public class ChunkCleanupTest extends ChunkTestBase
 
       class LocalCallback implements MockConnector.MockCallback
       {
-
          AtomicInteger counter = new AtomicInteger(0);
 
          ClientSession session;
 
          public void onWrite(final MessagingBuffer buffer)
          {
+            log.info("calling cb onwrite** ");
             if (counter.incrementAndGet() == 5)
             {
                RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
-               RemotingServiceImpl remotingServiceImpl = (RemotingServiceImpl)messagingService.getServer()
-                                                                                              .getRemotingService();
+               RemotingServiceImpl remotingServiceImpl = (RemotingServiceImpl)server.getRemotingService();
                remotingServiceImpl.connectionException(conn.getID(),
                                                        new MessagingException(MessagingException.NOT_CONNECTED, "blah!"));
                conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
                throw new IllegalStateException("blah");
             }
          }
-
       }
 
       LocalCallback callback = new LocalCallback();
@@ -159,6 +159,7 @@ public class ChunkCleanupTest extends ChunkTestBase
          try
          {
             producer.send(clientLarge);
+            
             fail("Exception was expected!");
          }
          catch (Exception e)
@@ -172,7 +173,7 @@ public class ChunkCleanupTest extends ChunkTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Exception ignored)
          {
@@ -196,8 +197,8 @@ public class ChunkCleanupTest extends ChunkTestBase
    {
       clearData();
 
-      messagingService = createService(true);
-      messagingService.start();
+      server = createServer(true);
+      server.start();
 
       final int numberOfIntegers = 10;
       final int numberOfMessages = 100;
@@ -214,7 +215,7 @@ public class ChunkCleanupTest extends ChunkTestBase
 
          session.createQueue(ADDRESS, ADDRESS, null, true);
 
-         messagingService.getServer().getPostOffice().getPagingManager().getGlobalSize();
+         server.getPostOffice().getPagingManager().getGlobalSize();
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -260,7 +261,7 @@ public class ChunkCleanupTest extends ChunkTestBase
       {
          try
          {
-            messagingService.stop();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -272,12 +273,12 @@ public class ChunkCleanupTest extends ChunkTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected void setUp() throws Exception
    {
       super.setUp();
    }
-   
+
    protected void tearDown() throws Exception
    {
       super.tearDown();

@@ -24,8 +24,11 @@ package org.jboss.messaging.jms.server;
 
 import java.util.List;
 
+import javax.naming.Context;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -34,7 +37,7 @@ import org.jboss.messaging.utils.Pair;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public interface JMSServerManager
+public interface JMSServerManager extends MessagingComponent
 {
    String getVersion();
 
@@ -141,8 +144,8 @@ public interface JMSServerManager
                                    boolean preAcknowledge,                               
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,                                   
-                                   final int initialConnectAttempts,
                                    final int reconnectAttempts,
+                                   final boolean failoverOnNodeShutdown,
                                    List<String> jndiBindings) throws Exception;
    
    boolean createConnectionFactory(String name,
@@ -168,8 +171,8 @@ public interface JMSServerManager
                                    boolean preAcknowledge,                            
                                    final long retryInterval,
                                    final double retryIntervalMultiplier,                                   
-                                   final int initialConnectAttempts,
                                    final int reconnectAttempts,
+                                   final boolean failoverOnNodeShutdown,
                                    List<String> jndiBindings) throws Exception;
 
    /**
@@ -193,5 +196,5 @@ public interface JMSServerManager
 
    String[] listSessions(String connectionID) throws Exception;
 
-
+   void setContext(final Context context);
 }

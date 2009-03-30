@@ -31,7 +31,7 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingService;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.Pair;
@@ -50,9 +50,9 @@ public class ClientSessionFactoryTest extends ServiceTestBase
 
    private final int groupPort = 8765;
 
-   private MessagingService liveService;
+   private MessagingServer liveService;
 
-   private MessagingService backupService;
+   private MessagingServer backupService;
 
    private TransportConfiguration liveTC;
 
@@ -129,8 +129,8 @@ public class ClientSessionFactoryTest extends ServiceTestBase
          int batchSize = 33;
          long interval = 44l;
          double intervalMultiplier = 6.0;
-         int retriesBeforeFailover = 8;
-         int retriesAfterFailover = 7;
+         int reconnectAttempts = 8;
+         boolean failoverOnServerShutdown = true;
          int maxConnections = 2;
          int minLargeMessageSize = 101;
          int producerMaxRate = 99;
@@ -149,7 +149,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                                                                 period, ttl, callTimeout, windowSize1,
                                                                 consumerMaxRate, windowSize, producerMaxRate, minLargeMessageSize,
                                                                 onAcknowledge, blockOnNonPersistentSend, blockOnPersistentSend, autoGroup, maxConnections, preAcknowledge, batchSize, interval,
-                                                                intervalMultiplier, retriesBeforeFailover, retriesAfterFailover);
+                                                                intervalMultiplier, reconnectAttempts, failoverOnServerShutdown);
          assertFactoryParams(cf,
                              batchSize,
                              callTimeout,
@@ -180,8 +180,8 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       int batchSize = 33;
       long interval = 44l;
       double intervalMultiplier = 6.0;
-      int retriesBeforeFailover = 8;
-      int retriesAfterFailover = 7;
+      int reconnectAttempts = 8;
+      boolean failoverOnServerShutdown = true;
       int maxConnections = 2;
       int minLargeMessageSize = 101;
       int producerMaxRate = 99;
@@ -205,7 +205,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                                                                 period, ttl, callTimeout, windowSize1,
                                                                 consumerMaxRate, windowSize, producerMaxRate, minLargeMessageSize,
                                                                 onAcknowledge, blockOnNonPersistentSend, blockOnPersistentSend, autoGroup, maxConnections, preAcknowledge, batchSize, interval,
-                                                                intervalMultiplier, retriesBeforeFailover, retriesAfterFailover);
+                                                                intervalMultiplier, reconnectAttempts, failoverOnServerShutdown);
          assertFactoryParams(cf,
                              batchSize,
                              callTimeout,
@@ -238,9 +238,9 @@ public class ClientSessionFactoryTest extends ServiceTestBase
          startLiveAndBackup();
          long interval = 66l;
          double intervalMultiplier = 7.0;
-         int retriesBeforeFailover = 44;
-         int retriesAfterFailover = 33;
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, backupTC, interval, intervalMultiplier, retriesBeforeFailover, retriesAfterFailover);
+         int reconnectAttempts = 44;
+         boolean failoverOnServerShutdown = true;
+         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, backupTC, failoverOnServerShutdown, interval, intervalMultiplier, reconnectAttempts);
          assertFactoryParams(cf,
                              ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
@@ -273,9 +273,8 @@ public class ClientSessionFactoryTest extends ServiceTestBase
          startLiveAndBackup();
          long interval = 66l;
          double intervalMultiplier = 7.0;
-         int retriesBeforeFailover = 44;
-         int retriesAfterFailover = 33;
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, interval, intervalMultiplier, retriesBeforeFailover, retriesAfterFailover);
+         int reconnectAttempts = 44;
+         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, interval, intervalMultiplier, reconnectAttempts);
          assertFactoryParams(cf,
                              ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
@@ -339,8 +338,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
          int batchSize = 33;
          long interval = 44l;
          double intervalMultiplier = 6.0;
-         int retriesBeforeFailover = 8;
-         int retriesAfterFailover = 7;
+         int reconnectAttempts = 8;
          int maxConnections = 2;
          int minLargeMessageSize = 101;
          int producerMaxRate = 99;
@@ -355,13 +353,16 @@ public class ClientSessionFactoryTest extends ServiceTestBase
          boolean blockOnPersistentSend = true;
          boolean autoGroup = true;
          boolean preAcknowledge = true;
+         boolean failoverOnServerShutdown = true;
+         
          startLiveAndBackup();
          ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, backupTC,
+                                                                failoverOnServerShutdown,
                                                                 org.jboss.messaging.core.client.impl.RandomConnectionLoadBalancingPolicy.class.getName(),
                                                                 period, ttl, callTimeout, windowSize1,
                                                                 consumerMaxRate, windowSize, producerMaxRate, minLargeMessageSize,
                                                                 onAcknowledge, blockOnNonPersistentSend, blockOnPersistentSend, autoGroup, maxConnections, preAcknowledge, batchSize, interval,
-                                                                intervalMultiplier, retriesBeforeFailover, retriesAfterFailover);
+                                                                intervalMultiplier, reconnectAttempts);
 
          assertFactoryParams(cf,
                              batchSize,
@@ -569,9 +570,9 @@ public class ClientSessionFactoryTest extends ServiceTestBase
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()),
                                                              null,
+                                                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
                                                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             ClientSessionFactoryImpl.DEFAULT_INITIAL_CONNECT_ATTEMPTS,
                                                              ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
 
       try
@@ -639,7 +640,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
             .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                             backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingService(backupConf);
+      backupService = Messaging.newNullStorageMessagingServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -676,7 +677,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       bcConfigs1.add(bcConfig1);
       liveConf.setBroadcastGroupConfigurations(bcConfigs1);
 
-      liveService = Messaging.newNullStorageMessagingService(liveConf);
+      liveService = Messaging.newNullStorageMessagingServer(liveConf);
       liveService.start();
    }
 }
