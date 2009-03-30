@@ -21,6 +21,26 @@
   */
 package org.jboss.test.messaging.jms.message;
 
+import java.io.File;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.HashSet;
+
+import javax.jms.BytesMessage;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.MessageFormatException;
+import javax.jms.MessageNotWriteableException;
+import javax.jms.ObjectMessage;
+import javax.jms.StreamMessage;
+import javax.jms.TextMessage;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientFileMessage;
@@ -41,25 +61,6 @@ import org.jboss.messaging.jms.client.JBossObjectMessage;
 import org.jboss.messaging.jms.client.JBossStreamMessage;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.utils.SimpleString;
-
-import javax.jms.BytesMessage;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageFormatException;
-import javax.jms.MessageNotWriteableException;
-import javax.jms.ObjectMessage;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.io.File;
-import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashSet;
 
 /**
  *
@@ -803,35 +804,6 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       ensureEquivalent(receivedMessage, (JBossMessage)message);
    }
    
-// Invalid!!
-//   public void testForeignJMSReplyTo() throws JMSException
-//   {
-//   	Message msg = queueProducerSession.createTextMessage();
-//   	
-//      JBossMessage jbossMessage = (JBossMessage)msg;
-//      
-//      Destination foreignDestination = new ForeignDestination();
-//      
-//      jbossMessage.setJMSReplyTo(foreignDestination);
-//      
-//      queueProducer.send(msg);
-//      
-//      Message receivedMessage = queueConsumer.receive(2000);
-//
-//      ensureEquivalent(receivedMessage, jbossMessage);
-//   }
-//   
-//   public void testCopyForeignDestinationAndReplyTo() throws JMSException
-//   {
-//      Message foreignMessage = new SimpleJMSMessage();
-//      foreignMessage.setJMSDestination(new ForeignDestination());
-//      foreignMessage.setJMSReplyTo(new ForeignDestination());
-//
-//      JBossMessage copy = new JBossMessage(foreignMessage);
-//
-//      ensureEquivalent(foreignMessage, copy);
-//   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

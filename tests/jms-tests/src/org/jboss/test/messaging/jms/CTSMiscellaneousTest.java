@@ -71,19 +71,19 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
          // Deploy a connection factory with load balancing but no failover on node0
          List<String> bindings = new ArrayList<String>();
          bindings.add("StrictTCKConnectionFactory");
-         
-         List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = 
-            new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-         
-         connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"), null));
-         
+
+         List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+
+         connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
+                                                                                       null));
+
          List<String> jndiBindings = new ArrayList<String>();
          jndiBindings.add("/StrictTCKConnectionFactory");
-         
+
          getJmsServerManager().createConnectionFactory("StrictTCKConnectionFactory",
                                                        connectorConfigs,
                                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                       ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,  
+                                                       ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                        DEFAULT_CONNECTION_TTL,
                                                        ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                        null,
@@ -99,7 +99,7 @@ public class CTSMiscellaneousTest extends JBMServerTestCase
                                                        true,
                                                        ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                        ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                       ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,                                                       
+                                                       ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                                                        DEFAULT_RETRY_INTERVAL,
                                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                        DEFAULT_RECONNECT_ATTEMPTS,

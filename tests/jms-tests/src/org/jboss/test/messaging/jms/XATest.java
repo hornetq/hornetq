@@ -2267,7 +2267,6 @@ public class XATest extends JBMServerTestCase
 
    static class DummyListener implements MessageListener
    {
-
       protected Logger log = Logger.getLogger(getClass());
 
       public ArrayList messages = new ArrayList();

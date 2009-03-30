@@ -406,13 +406,11 @@ public class SimpleJMSMessage implements Message
 
    public void acknowledge() throws JMSException
    {
-
    }
 
 
    public void clearBody() throws JMSException
    {
-
    }
 
 

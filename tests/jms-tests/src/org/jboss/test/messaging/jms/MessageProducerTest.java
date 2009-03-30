@@ -26,12 +26,14 @@ import java.io.Serializable;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
 import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 
@@ -55,8 +57,8 @@ public class MessageProducerTest extends JMSTestCase
    // Public --------------------------------------------------------
 
    public void testSendForeignWithForeignDestinationSet() throws Exception
-   {   	   	
-      Connection conn = null;      
+   {
+      Connection conn = null;
 
       try
       {
@@ -74,7 +76,7 @@ public class MessageProducerTest extends JMSTestCase
 
          foreign.setJMSDestination(new SimpleDestination());
 
-         //the producer destination should override the foreign destination and the send should succeed
+         // the producer destination should override the foreign destination and the send should succeed
 
          p.send(foreign);
 
@@ -105,14 +107,14 @@ public class MessageProducerTest extends JMSTestCase
 
    private void sendToQueue(boolean persistent) throws Exception
    {
-      Connection pconn = null;      
+      Connection pconn = null;
       Connection cconn = null;
 
       try
       {
          pconn = cf.createConnection();
          cconn = cf.createConnection();
-         
+
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Session cs = cconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer p = ps.createProducer(queue1);
@@ -122,7 +124,7 @@ public class MessageProducerTest extends JMSTestCase
 
          TextMessage m = ps.createTextMessage("test");
          p.send(m);
-         
+
          TextMessage r = (TextMessage)c.receive(3000);
 
          assertEquals(m.getJMSMessageID(), r.getJMSMessageID());
@@ -185,10 +187,10 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
-   //I moved this into it's own class so we can catch any exception that occurs
-   //Since this test intermittently fails.
-   //(As an aside, technically this test is invalid anyway since the sessions is used for sending
-   //and consuming concurrently - and sessions are supposed to be single threaded)
+   // I moved this into it's own class so we can catch any exception that occurs
+   // Since this test intermittently fails.
+   // (As an aside, technically this test is invalid anyway since the sessions is used for sending
+   // and consuming concurrently - and sessions are supposed to be single threaded)
    private class Sender implements Runnable
    {
       volatile Exception ex;
@@ -210,7 +212,7 @@ public class MessageProducerTest extends JMSTestCase
          {
             prod.send(m);
          }
-         catch(Exception e)
+         catch (Exception e)
          {
             log.error(e);
 
@@ -226,7 +228,7 @@ public class MessageProducerTest extends JMSTestCase
 
    public void testNonPersistentSendToTopic() throws Exception
    {
-      sendToTopic(false);      
+      sendToTopic(false);
    }
 
    private void sendToTopic(boolean persistent) throws Exception
@@ -259,7 +261,7 @@ public class MessageProducerTest extends JMSTestCase
 
          if (sender.ex != null)
          {
-            //If an exception was caught in sending we rethrow here so as not to lose it
+            // If an exception was caught in sending we rethrow here so as not to lose it
             throw sender.ex;
          }
 
@@ -274,8 +276,6 @@ public class MessageProducerTest extends JMSTestCase
          cconn.close();
       }
    }
-
-
 
    /**
     *  Test sending via anonymous producer
@@ -304,7 +304,7 @@ public class MessageProducerTest extends JMSTestCase
                {
                   anonProducer.send(topic2, m1);
                }
-               catch(Exception e)
+               catch (Exception e)
                {
                   log.error(e);
                }
@@ -340,7 +340,7 @@ public class MessageProducerTest extends JMSTestCase
          cconn.start();
 
          Message m = new SimpleJMSTextMessage("something");
-         p.send(m);         
+         p.send(m);
 
          TextMessage rec = (TextMessage)c.receive(3000);
 
@@ -386,7 +386,7 @@ public class MessageProducerTest extends JMSTestCase
             p.getDestination();
             fail("should throw exception");
          }
-         catch(javax.jms.IllegalStateException e)
+         catch (javax.jms.IllegalStateException e)
          {
             // OK
          }
@@ -397,34 +397,27 @@ public class MessageProducerTest extends JMSTestCase
       }
    }
 
-   //Is this test valid?
-   //How can we check if the destination is valid if it is created on the client side only??
-
-   // TODO - verify what spec says about this and enable/delete the test accordingly
-
-// public void testCreateProducerOnInexistentDestination() throws Exception
-// {
-// Connection pconn = cf.createConnection();
-
-// try
-// {
-// Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-// try
-// {
-// ps.createProducer(new JBossTopic("NoSuchTopic"));
-// fail("should throw exception");
-// }
-// catch(InvalidDestinationException e)
-// {
-// // OK
-// }
-// }
-// finally
-// {
-// pconn.close();
-// }
-// }  
+   public void testCreateProducerOnInexistentDestination() throws Exception
+   {
+      Connection pconn = cf.createConnection();
+      try
+      {
+         Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         try
+         {
+            ps.createProducer(new JBossTopic("NoSuchTopic"));
+            fail("should throw exception");
+         }
+         catch (InvalidDestinationException e)
+         {
+            // OK
+         }
+      }
+      finally
+      {
+         pconn.close();
+      }
+   }
 
    //
    // disabled MessageID tests
@@ -463,7 +456,7 @@ public class MessageProducerTest extends JMSTestCase
             p.getDisableMessageID();
             fail("should throw exception");
          }
-         catch(javax.jms.IllegalStateException e)
+         catch (javax.jms.IllegalStateException e)
          {
             // OK
          }
@@ -557,7 +550,7 @@ public class MessageProducerTest extends JMSTestCase
             p.getDisableMessageTimestamp();
             fail("should throw exception");
          }
-         catch(javax.jms.IllegalStateException e)
+         catch (javax.jms.IllegalStateException e)
          {
             // OK
          }
@@ -628,7 +621,7 @@ public class MessageProducerTest extends JMSTestCase
             p.getDeliveryMode();
             fail("should throw exception");
          }
-         catch(javax.jms.IllegalStateException e)
+         catch (javax.jms.IllegalStateException e)
          {
             // OK
          }
@@ -699,7 +692,7 @@ public class MessageProducerTest extends JMSTestCase
             p.getPriority();
             fail("should throw exception");
          }
-         catch(javax.jms.IllegalStateException e)
+         catch (javax.jms.IllegalStateException e)
          {
             // OK
          }
@@ -770,7 +763,7 @@ public class MessageProducerTest extends JMSTestCase
             p.setTimeToLive(100l);
             fail("should throw exception");
          }
-         catch(javax.jms.IllegalStateException e)
+         catch (javax.jms.IllegalStateException e)
          {
             // OK
          }
@@ -788,7 +781,5 @@ public class MessageProducerTest extends JMSTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
-
 
 }

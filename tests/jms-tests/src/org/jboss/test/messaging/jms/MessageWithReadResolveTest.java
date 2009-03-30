@@ -102,39 +102,7 @@ public class MessageWithReadResolveTest extends JMSTestCase
       }
             
    }
-   
-   /* Now test using serialization directly */
-   
-   /*
-    * 
-    * We don't currently use JBoss Serialization
-   public void testUseSerializationDirectly() throws Exception
-   {
-      TestMessage tm = new TestMessage(456, false);
-      
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      
-      JBossObjectOutputStream oos = new JBossObjectOutputStream(os);
-      
-      oos.writeObject(tm);
-      
-      oos.close();
-      
-      byte[] bytes = os.toByteArray();
-      
-      ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-      
-      JBossObjectInputStream ois = new JBossObjectInputStream(is);
-      
-      TestMessage tm2 = (TestMessage)ois.readObject();
-      
-      assertEquals(tm.id, tm2.id);
-      
-      ois.close();
-            
-   }
-   */
-   
+     
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

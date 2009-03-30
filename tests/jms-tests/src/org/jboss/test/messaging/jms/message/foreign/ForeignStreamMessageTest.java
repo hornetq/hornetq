@@ -40,48 +40,48 @@ import org.jboss.test.messaging.jms.message.SimpleJMSStreamMessage;
 public class ForeignStreamMessageTest extends ForeignMessageTest
 {
 
-    protected Message createForeignMessage() throws Exception
-    {
-        SimpleJMSStreamMessage m = new SimpleJMSStreamMessage();
-        
-        log.debug("creating JMS Message type " + m.getClass().getName()); 
-        
-        m.writeBoolean(true);
-        m.writeBytes("jboss".getBytes());
-        m.writeChar('c');
-        m.writeDouble(1.0D);
-        m.writeFloat(2.0F);
-        m.writeInt(3);
-        m.writeLong(4L);
-        m.writeObject("object");
-        m.writeShort((short)5);
-        m.writeString("stringvalue");
+   protected Message createForeignMessage() throws Exception
+   {
+      SimpleJMSStreamMessage m = new SimpleJMSStreamMessage();
 
-        return m;
-    }
-    
-    protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
-    {
-        super.assertEquivalent(m,mode, redelivery);
-        
-        StreamMessage sm = (StreamMessage)m;
-        
-        assertTrue(sm.readBoolean());
-        
-        byte bytes[] = new byte[5];
-        sm.readBytes(bytes);
-        String s = new String(bytes);
-        assertEquals("jboss",s);
-        assertEquals(-1,sm.readBytes(bytes));
-        
-        assertEquals(sm.readChar(),'c');
-        assertEquals(sm.readDouble(),1.0D,0.0D);
-        assertEquals(sm.readFloat(),2.0F,0.0F);
-        assertEquals(sm.readInt(),3);
-        assertEquals(sm.readLong(),4L);
-        assertEquals(sm.readObject(),"object");
-        assertEquals(sm.readShort(),(short)5);
-        assertEquals(sm.readString(),"stringvalue");
-    }
+      log.debug("creating JMS Message type " + m.getClass().getName());
+
+      m.writeBoolean(true);
+      m.writeBytes("jboss".getBytes());
+      m.writeChar('c');
+      m.writeDouble(1.0D);
+      m.writeFloat(2.0F);
+      m.writeInt(3);
+      m.writeLong(4L);
+      m.writeObject("object");
+      m.writeShort((short)5);
+      m.writeString("stringvalue");
+
+      return m;
+   }
+
+   protected void assertEquivalent(Message m, int mode, boolean redelivery) throws JMSException
+   {
+      super.assertEquivalent(m, mode, redelivery);
+
+      StreamMessage sm = (StreamMessage)m;
+
+      assertTrue(sm.readBoolean());
+
+      byte bytes[] = new byte[5];
+      sm.readBytes(bytes);
+      String s = new String(bytes);
+      assertEquals("jboss", s);
+      assertEquals(-1, sm.readBytes(bytes));
+
+      assertEquals(sm.readChar(), 'c');
+      assertEquals(sm.readDouble(), 1.0D, 0.0D);
+      assertEquals(sm.readFloat(), 2.0F, 0.0F);
+      assertEquals(sm.readInt(), 3);
+      assertEquals(sm.readLong(), 4L);
+      assertEquals(sm.readObject(), "object");
+      assertEquals(sm.readShort(), (short)5);
+      assertEquals(sm.readString(), "stringvalue");
+   }
 
 }

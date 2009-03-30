@@ -47,19 +47,18 @@ public class JMSTestCase extends JBMServerTestCase
       // All jms tests should use a specific cg which has blockOnAcknowledge = true and
       // both np and p messages are sent synchronously
 
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs =
-         new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"), null));
-      
+      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+
+      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
+                                                                                    null));
+
       List<String> jndiBindings = new ArrayList<String>();
       jndiBindings.add("/testsuitecf");
-      
-      
+
       getJmsServerManager().createConnectionFactory("testsuitecf",
                                                     connectorConfigs,
                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,    
+                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                     DEFAULT_CONNECTION_TTL,
                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                     null,
@@ -75,25 +74,24 @@ public class JMSTestCase extends JBMServerTestCase
                                                     true,
                                                     ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                                                     ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                                    ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,                                   
+                                                    ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                                                     DEFAULT_RETRY_INTERVAL,
                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                     DEFAULT_RECONNECT_ATTEMPTS,
                                                     DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                     jndiBindings);
-      
+
       cf = (JBossConnectionFactory)getInitialContext().lookup("/testsuitecf");
-      
+
       assertRemainingMessages(0);
    }
-   
 
    protected void tearDown() throws Exception
    {
       super.tearDown();
       getJmsServerManager().destroyConnectionFactory("testsuitecf");
       cf = null;
-      
+
       assertRemainingMessages(0);
    }
 }

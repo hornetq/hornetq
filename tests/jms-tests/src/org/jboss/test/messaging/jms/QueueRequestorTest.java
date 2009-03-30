@@ -114,9 +114,7 @@ public class QueueRequestorTest extends JMSTestCase
       {
          try
          {
-            log.trace("Received message");
             Destination queue = m.getJMSReplyTo();
-            log.trace("Sending response back to:" + queue);
             Message m2 = sess.createTextMessage("This is the response");
             sender.send(queue, m2);
          }

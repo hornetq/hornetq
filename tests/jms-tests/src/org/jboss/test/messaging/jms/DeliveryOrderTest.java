@@ -53,47 +53,47 @@ public class DeliveryOrderTest extends JMSTestCase
       try
       {
          conn = cf.createConnection();
-         
+
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-         
+
          Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          MessageProducer prod = sess.createProducer(queue1);
-         
+
          MessageConsumer cons = sess2.createConsumer(queue1);
-         
+
          CountDownLatch latch = new CountDownLatch(1);
-         
+
          final int NUM_MESSAGES = 1000;
-                  
+
          MyListener listener = new MyListener(latch, NUM_MESSAGES);
-         
+
          cons.setMessageListener(listener);
-         
+
          conn.start();
-         
+
          for (int i = 0; i < NUM_MESSAGES; i++)
          {
             TextMessage tm = sess.createTextMessage("message" + i);
-            
+
             prod.send(tm);
-            
+
             if (i % 10 == 0)
             {
                sess.commit();
             }
          }
-         
+
          // need extra commit for cases in which the last message index is not a multiple of 10
          sess.commit();
 
          latch.await(20000, MILLISECONDS);
-         
+
          if (listener.failed)
          {
             fail("listener failed: " + listener.getError());
          }
-                  
+
       }
       finally
       {
@@ -103,13 +103,17 @@ public class DeliveryOrderTest extends JMSTestCase
          }
       }
    }
-   
+
    class MyListener implements MessageListener
    {
       private int c;
+
       private int num;
+
       private CountDownLatch latch;
+
       private volatile boolean failed;
+
       private String error;
 
       MyListener(CountDownLatch latch, int num)
@@ -129,35 +133,34 @@ public class DeliveryOrderTest extends JMSTestCase
          try
          {
             TextMessage tm = (TextMessage)msg;
-            
+
             if (!("message" + c).equals(tm.getText()))
             {
                // Failed
                failed = true;
-               setError("Listener was supposed to get " + ("message" + c) +
-                        " but got " + tm.getText());
+               setError("Listener was supposed to get " + ("message" + c) + " but got " + tm.getText());
                latch.countDown();
             }
-            
+
             c++;
- 
+
             if (c == num)
             {
                latch.countDown();
-               
+
                try
                {
                   Thread.sleep(2000);
                }
                catch (Exception e)
-               {                  
+               {
                }
             }
          }
          catch (JMSException e)
          {
             e.printStackTrace();
-            
+
             // Failed
             failed = true;
             setError("Listener got exception " + e.toString());
@@ -175,7 +178,6 @@ public class DeliveryOrderTest extends JMSTestCase
          error = s;
       }
 
-      
    }
 
 }

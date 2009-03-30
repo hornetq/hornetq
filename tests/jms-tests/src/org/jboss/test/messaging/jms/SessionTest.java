@@ -38,6 +38,8 @@ import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.test.messaging.JBMServerTestCase;
 
 /**
@@ -50,53 +52,19 @@ import org.jboss.test.messaging.JBMServerTestCase;
 public class SessionTest extends JBMServerTestCase
 {
    // Constants -----------------------------------------------------
-   
+
    // Static --------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------
-   
+
    // Constructors --------------------------------------------------
-   
+
    // Public --------------------------------------------------------
-   
-//   public void testNoTransactionAfterClose() throws Exception
-//   {
-//      Connection conn = getConnectionFactory().createConnection();
-//      conn.start();
-//      Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
-//      MessageProducer prod = sess.createProducer(queue1);
-//      prod.send(sess.createMessage());
-//      sess.commit();
-//      MessageConsumer cons = sess.createConsumer(queue1);
-//      cons.receive();
-//      sess.commit();
-//      
-//      ClientSession del = ((JBossSession)sess).getDelegate();
-//      
-//      //SessionState state = (SessionState)del.getState();
-//      //ConnectionState cState = (ConnectionState)state.getParent();
-//      
-//      Object xid = del.getCurrentTxId();
-//      assertNotNull(xid);
-//      assertNotNull(del.getConnection().getResourceManager().getTx(xid));
-//      
-//      //Now close the session
-//      sess.close();
-//      
-//      //Session should be removed from resource manager
-//      xid = del.getCurrentTxId();
-//      assertNotNull(xid);
-//      assertNull(del.getConnection().getResourceManager().getTx(xid));
-//      
-//      conn.close();
-//      
-//      assertEquals(0, del.getConnection().getResourceManager().size());
-//   }
 
    public void testCreateProducer() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);          
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       sess.createProducer(topic1);
       conn.close();
    }
@@ -113,20 +81,20 @@ public class SessionTest extends JBMServerTestCase
 
       MessageConsumer c = sess.createConsumer(queue1);
       conn.start();
-      
-      //receiveNoWait is not guaranteed to return message immediately
+
+      // receiveNoWait is not guaranteed to return message immediately
       TextMessage rm = (TextMessage)c.receive(1000);
 
       assertEquals("something", rm.getText());
-      
+
       conn.close();
    }
-   
+
    public void testCreateConsumer() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       sess.createConsumer(topic1);
       conn.close();
    }
@@ -135,31 +103,31 @@ public class SessionTest extends JBMServerTestCase
    {
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       try
       {
          ((XASession)sess).getSession();
          fail("Should throw IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
-      {}
+      {
+      }
       conn.close();
    }
-   
+
    public void testGetSession2() throws Exception
    {
       XAConnection conn = getXAConnectionFactory().createXAConnection();
       XASession sess = conn.createXASession();
-      
+
       sess.getSession();
       conn.close();
    }
-   
+
    //
    // createQueue()/createTopic()
    //
-   
-   
+
    public void testCreateNonExistentQueue() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -170,27 +138,28 @@ public class SessionTest extends JBMServerTestCase
          fail();
       }
       catch (JMSException e)
-      {}
+      {
+      }
       conn.close();
    }
-   
+
    public void testCreateQueueOnATopicSession() throws Exception
    {
       TopicConnection c = (TopicConnection)getConnectionFactory().createConnection();
       TopicSession s = c.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       try
       {
          s.createQueue("TestQueue");
          fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
       c.close();
    }
-   
+
    public void testCreateQueueWhileTopicWithSameNameExists() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -206,26 +175,26 @@ public class SessionTest extends JBMServerTestCase
       }
       conn.close();
    }
-   
+
    public void testCreateQueue() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Queue queue = sess.createQueue("Queue1");
-      
+
       MessageProducer producer = sess.createProducer(queue);
       MessageConsumer consumer = sess.createConsumer(queue);
       conn.start();
-      
+
       Message m = sess.createTextMessage("testing");
       producer.send(m);
-      
+
       Message m2 = consumer.receive(3000);
-      
+
       assertNotNull(m2);
       conn.close();
    }
-   
+
    public void testCreateNonExistentTopic() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -241,24 +210,24 @@ public class SessionTest extends JBMServerTestCase
       }
       conn.close();
    }
-   
+
    public void testCreateTopicOnAQueueSession() throws Exception
    {
       QueueConnection c = (QueueConnection)getConnectionFactory().createConnection();
       QueueSession s = c.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       try
       {
          s.createTopic("TestTopic");
          fail("should throw IllegalStateException");
       }
-      catch(javax.jms.IllegalStateException e)
+      catch (javax.jms.IllegalStateException e)
       {
          // OK
       }
       c.close();
    }
-   
+
    public void testCreateTopicWhileQueueWithSameNameExists() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
@@ -274,36 +243,38 @@ public class SessionTest extends JBMServerTestCase
       }
       conn.close();
    }
-   
+
    public void testCreateTopic() throws Exception
    {
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       Topic topic = sess.createTopic("Topic1");
-      
+
       MessageProducer producer = sess.createProducer(topic);
       producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      
+
       MessageConsumer consumer = sess.createConsumer(topic);
       conn.start();
-      
-      
+
       class TestRunnable implements Runnable
       {
          boolean exceptionThrown;
+
          public Message m;
+
          MessageConsumer consumer;
+
          TestRunnable(MessageConsumer consumer)
          {
             this.consumer = consumer;
          }
-         
+
          public void run()
          {
             try
             {
-               m = consumer.receive(3000);               
+               m = consumer.receive(3000);
             }
             catch (Exception e)
             {
@@ -311,19 +282,19 @@ public class SessionTest extends JBMServerTestCase
             }
          }
       }
-      
+
       TestRunnable tr1 = new TestRunnable(consumer);
       Thread t1 = new Thread(tr1);
       t1.start();
-      
+
       Message m = sess.createTextMessage("testing");
       producer.send(m);
-      
+
       t1.join();
-      
+
       assertFalse(tr1.exceptionThrown);
       assertNotNull(tr1.m);
-      
+
       conn.close();
    }
 
@@ -336,7 +307,6 @@ public class SessionTest extends JBMServerTestCase
       conn.close();
    }
 
-
    public void testGetXAResource2() throws Exception
    {
       XAConnection conn = getXAConnectionFactory().createXAConnection();
@@ -346,40 +316,40 @@ public class SessionTest extends JBMServerTestCase
       conn.close();
    }
 
-
    public void testIllegalState() throws Exception
    {
-      //IllegalStateException should be thrown if commit or rollback
-      //is invoked on a non transacted session
+      // IllegalStateException should be thrown if commit or rollback
+      // is invoked on a non transacted session
       Connection conn = getConnectionFactory().createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       MessageProducer prod = sess.createProducer(queue1);
       prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
       Message m = sess.createTextMessage("hello");
       prod.send(m);
-      
+
       try
       {
          sess.rollback();
          fail();
       }
       catch (javax.jms.IllegalStateException e)
-      {}
-      
+      {
+      }
+
       try
       {
          sess.commit();
          fail();
       }
       catch (javax.jms.IllegalStateException e)
-      {}
-      
+      {
+      }
+
       conn.close();
-      
+
       removeAllMessages(queue1.getQueueName(), true);
    }
-
 
    //
    // Test session state
@@ -396,7 +366,7 @@ public class SessionTest extends JBMServerTestCase
       // this test whether session's transacted state is correctly scoped per instance (by an
       // interceptor or othewise)
       assertFalse(sessionOne.getTransacted());
-      
+
       conn.close();
    }
 
@@ -410,10 +380,9 @@ public class SessionTest extends JBMServerTestCase
       // this test whether session's closed state is correctly scoped per instance (by an
       // interceptor or othewise)
       s = c.createSession(true, -1);
-      
+
       c.close();
    }
-
 
    public void testCloseNoClientAcknowledgment() throws Exception
    {
@@ -464,12 +433,12 @@ public class SessionTest extends JBMServerTestCase
 
       // make sure the acknowledment hasn't been sent to the channel
       assertRemainingMessages(1);
-      
+
       // close the session
       session.close();
 
       // JMS 1.1 4.4.1: "Closing a transacted session must roll back its transaction in progress"
-      
+
       assertRemainingMessages(1);
 
       conn.close();
@@ -487,12 +456,11 @@ public class SessionTest extends JBMServerTestCase
    }
 
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------
-   
-}
 
+   // Inner classes -------------------------------------------------
+
+}
