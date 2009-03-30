@@ -172,7 +172,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
                props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
                props.putStringProperty(ManagementHelper.HDR_CHECK_TYPE, new SimpleString(checkType.toString()));
-               props.putStringProperty(ManagementHelper.HDR_USER, new SimpleString(user));
+               props.putStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(user));
 
                Notification notification = new Notification(NotificationType.SECURITY_PERMISSION_VIOLATION, props);
 
