@@ -136,4 +136,8 @@
          <classpath refid="jms.runtime.classpath"/>
       </java>
    </target>
+
+   <target name="clean">
+   	  <delete dir="./build" quiet="true" />
+   </target>
 </project>
