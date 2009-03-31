@@ -35,6 +35,8 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -54,6 +56,7 @@ import org.jboss.security.SimpleGroup;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class SecurityTest extends ServiceTestBase
 {
@@ -69,7 +72,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");
       try
@@ -128,7 +131,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
       {
@@ -159,7 +162,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
       {
@@ -184,7 +187,6 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-
    public void testCreateDurableQueueWithRole() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -195,7 +197,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -226,7 +228,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -265,7 +267,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, true, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -297,7 +299,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -337,7 +339,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -358,7 +360,6 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-
    public void testCreateTempQueueWithoutRole() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -369,7 +370,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -408,7 +409,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, true, false);
          Set<Role> roles = new HashSet<Role>();
@@ -440,7 +441,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -470,7 +471,6 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-
    public void testSendWithRole() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -481,7 +481,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", true, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -515,7 +515,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -556,7 +556,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -570,7 +570,7 @@ public class SecurityTest extends ServiceTestBase
          cp.send(session.createClientMessage(false));
          session.close();
 
-         Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
+         Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
          assertEquals(0, binding.getMessageCount());
       }
       finally
@@ -592,7 +592,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -633,7 +633,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -682,7 +682,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -710,9 +710,9 @@ public class SecurityTest extends ServiceTestBase
          {
             assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
          }
-         
+
          securityManager.addRole("auser", "receiver");
-         
+
          session.createConsumer(queueA);
 
          // Removing the Role... the check should be cached, so the next createConsumer shouldn't fail
@@ -721,8 +721,7 @@ public class SecurityTest extends ServiceTestBase
          session.createConsumer(queueA);
 
          session.close();
-         
-         
+
          senSession.close();
       }
       finally
@@ -745,7 +744,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -773,12 +772,13 @@ public class SecurityTest extends ServiceTestBase
          {
             assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
          }
-         
+
          securityManager.addRole("auser", "receiver");
-         
+
          session.createConsumer(queueA);
 
-         // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the next createConsumer should fail
+         // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the
+         // next createConsumer should fail
          securityManager.removeRole("auser", "receiver");
 
          try
@@ -789,11 +789,9 @@ public class SecurityTest extends ServiceTestBase
          {
             assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
          }
-         
 
          session.close();
-         
-         
+
          senSession.close();
       }
       finally
@@ -805,145 +803,111 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-   
+   public void testSendMessageUpdateSender() throws Exception
+   {
+      Configuration configuration = createDefaultConfig(false);
+      configuration.setSecurityEnabled(true);
+      configuration.setSecurityInvalidationInterval(-1);
+      MessagingServer server = createServer(false, configuration);
 
-   // This test is being discussed at http://www.jboss.org/index.html?module=bb&op=viewtopic&t=153259
-//   public void testSendMessageUpdateSender() throws Exception
-//   {
-//      Configuration configuration = createDefaultConfig(false);
-//      configuration.setSecurityEnabled(true);
-//      configuration.setSecurityInvalidationInterval(-1);
-//      MessagingServer server = createServer(false, configuration);
-//
-//      try
-//      {
-//         server.start();
-//         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-//         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
-//         securityManager.addUser("auser", "pass");
-//         securityManager.addUser("guest", "guest");
-//         securityManager.addRole("guest", "guest");
-//         securityManager.setDefaultUser("guest");
-//         Role role = new Role("arole", false, false, false, false, false, false, false);
-//         System.out.println("guest:" + role);
-//         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
-//         System.out.println("guest:" + sendRole);
-//         Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
-//         System.out.println("guest:" + receiveRole);
-//         Set<Role> roles = new HashSet<Role>();
-//         roles.add(sendRole);
-//         roles.add(role);
-//         roles.add(receiveRole);
-//         securityRepository.addMatch(addressA, roles);
-//         securityManager.addRole("auser", "arole");
-//         ClientSessionFactory cf = createInVMFactory();
-//         
-//         ClientSession senSession = cf.createSession(false, true, true);
-//         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-//         senSession.createQueue(addressA, queueA, true);
-//         ClientProducer cp = senSession.createProducer(addressA);
-//         cp.send(session.createClientMessage(false));
-//         try
-//         {
-//            session.createConsumer(queueA);
-//         }
-//         catch (MessagingException e)
-//         {
-//            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
-//         }
-//         
-//         securityManager.addRole("auser", "receiver");
-//         
-//
-//         ClientConsumer consumer = session.createConsumer(queueA);
-//
-//         // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the next createConsumer should fail
-//         securityManager.removeRole("auser", "guest");
-//         
-//         ClientSession sendingSession = cf.createSession("auser", "pass", false, false, false, false, 0);
-//         ClientProducer prod = sendingSession.createProducer(addressA);
-//         prod.send(createTextMessage(sendingSession, "Test", true));
-//         prod.send(createTextMessage(sendingSession, "Test", true));
-//         try
-//         {
-//            sendingSession.commit();
-//            fail("Expected exception");
-//         }
-//         catch (MessagingException e)
-//         {
-//            e.printStackTrace();
-//            // I would expect the commit to fail, since there were failures registered
-//         }
-//         
-//         sendingSession.close();
-//         
-//         
-//         Xid xid = newXID();
-//         
-//         sendingSession = cf.createSession("auser", "pass", true, false, false, false, 0);
-//         sendingSession.start(xid, XAResource.TMNOFLAGS);
-//         
-//         prod = sendingSession.createProducer(addressA);
-//         prod.send(createTextMessage(sendingSession, "Test", true));
-//         prod.send(createTextMessage(sendingSession, "Test", true));
-//         sendingSession.end(xid, XAResource.TMSUCCESS);
-//         
-//         try
-//         {
-//            sendingSession.prepare(xid);
-//            fail("Exception was expected");
-//         }
-//         catch (Exception e)
-//         {
-//            e.printStackTrace();
-//         }
-//
-//         // A prepare shouldn't mark any recoverable resources
-//         Xid[] xids = sendingSession.recover(XAResource.TMSTARTRSCAN);
-//         assertEquals(0, xids.length);
-//         
-//         session.close();
-//
-//         sendingSession = cf.createSession("auser", "pass", false, true, true, false, 0);
-//         
-//         
-//         
-//         // This following part is failing, but I'm not sure if this is considered a failure yet
-//         prod = sendingSession.createProducer(addressA);
-//         prod.send(createTextMessage(sendingSession, "Test", true));
-//         prod.send(createTextMessage(sendingSession, "Test", true));
-//         try
-//         {
-//            sendingSession.close();
-//            fail("Expected exception");
-//         }
-//         catch (MessagingException e)
-//         {
-//            e.printStackTrace();
-//            // I would expect the close to fail, since there were failures registered
-//         }
-//         
-//         session.start();
-//         
-//         
-//         System.out.println("msg: " + consumer.receive(1000));
-//
-//         session.close();
-//         
-//         
-//         senSession.close();
-//      }
-//      finally
-//      {
-//         if (server.isStarted())
-//         {
-//            server.stop();
-//         }
-//      }
-//   }
+      try
+      {
+         server.start();
+         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         securityManager.addUser("auser", "pass");
+         securityManager.addUser("guest", "guest");
+         securityManager.addRole("guest", "guest");
+         securityManager.setDefaultUser("guest");
+         Role role = new Role("arole", false, false, false, false, false, false, false);
+         System.out.println("guest:" + role);
+         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+         System.out.println("guest:" + sendRole);
+         Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
+         System.out.println("guest:" + receiveRole);
+         Set<Role> roles = new HashSet<Role>();
+         roles.add(sendRole);
+         roles.add(role);
+         roles.add(receiveRole);
+         securityRepository.addMatch(addressA, roles);
+         securityManager.addRole("auser", "arole");
+         ClientSessionFactory cf = createInVMFactory();
 
-   
-   
+         ClientSession senSession = cf.createSession(false, true, true);
+         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+         senSession.createQueue(addressA, queueA, true);
+         ClientProducer cp = senSession.createProducer(addressA);
+         cp.send(session.createClientMessage(false));
+         try
+         {
+            session.createConsumer(queueA);
+         }
+         catch (MessagingException e)
+         {
+            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+         }
+
+         securityManager.addRole("auser", "receiver");
+
+         ClientConsumer consumer = session.createConsumer(queueA);
+
+         // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the
+         // next createConsumer should fail
+         securityManager.removeRole("auser", "guest");
+
+         ClientSession sendingSession = cf.createSession("auser", "pass", false, false, false, false, 0);
+         ClientProducer prod = sendingSession.createProducer(addressA);
+         prod.send(createTextMessage(sendingSession, "Test", true));
+         prod.send(createTextMessage(sendingSession, "Test", true));
+         try
+         {
+            sendingSession.commit();
+            fail("Expected exception");
+         }
+         catch (MessagingException e)
+         {
+            // I would expect the commit to fail, since there were failures registered
+         }
+
+         sendingSession.close();
+
+         Xid xid = newXID();
+
+         sendingSession = cf.createSession("auser", "pass", true, false, false, false, 0);
+         sendingSession.start(xid, XAResource.TMNOFLAGS);
+
+         prod = sendingSession.createProducer(addressA);
+         prod.send(createTextMessage(sendingSession, "Test", true));
+         prod.send(createTextMessage(sendingSession, "Test", true));
+         sendingSession.end(xid, XAResource.TMSUCCESS);
+
+         try
+         {
+            sendingSession.prepare(xid);
+            fail("Exception was expected");
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+
+         // A prepare shouldn't mark any recoverable resources
+         Xid[] xids = sendingSession.recover(XAResource.TMSTARTRSCAN);
+         assertEquals(0, xids.length);
+
+         session.close();
+
+         senSession.close();
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
    public void testSendManagementWithRole() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -954,7 +918,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, true);
          Set<Role> roles = new HashSet<Role>();
@@ -987,7 +951,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -1028,7 +992,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -1042,7 +1006,7 @@ public class SecurityTest extends ServiceTestBase
          cp.send(session.createClientMessage(false));
          session.close();
 
-         Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
+         Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
          assertEquals(0, binding.getMessageCount());
       }
       finally
@@ -1053,10 +1017,10 @@ public class SecurityTest extends ServiceTestBase
          }
       }
    }
-   /*
-  * basic JAAS tests
-  * */
 
+   /*
+   * basic JAAS tests
+   * */
 
    public void testJaasCreateSessionSucceeds() throws Exception
    {
@@ -1070,7 +1034,7 @@ public class SecurityTest extends ServiceTestBase
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
       {
-         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
+         public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException
          {
             // empty callback, auth info are directly passed as options to the login module
          }
@@ -1113,7 +1077,7 @@ public class SecurityTest extends ServiceTestBase
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
       {
-         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
+         public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException
          {
             // empty callback, auth info are directly passed as options to the login module
          }
@@ -1165,10 +1129,10 @@ public class SecurityTest extends ServiceTestBase
          return true;
       }
 
-      public void initialize(Subject subject,
-                             CallbackHandler callbackHandler,
-                             Map<String, ?> sharedState,
-                             Map<String, ?> options)
+      public void initialize(final Subject subject,
+                             final CallbackHandler callbackHandler,
+                             final Map<String, ?> sharedState,
+                             final Map<String, ?> options)
       {
          this.subject = subject;
          this.options = options;
@@ -1176,11 +1140,11 @@ public class SecurityTest extends ServiceTestBase
 
       public boolean login() throws LoginException
       {
-         boolean authenticated = (Boolean) options.get("authenticated");
+         boolean authenticated = (Boolean)options.get("authenticated");
          if (authenticated)
          {
             Group roles = new SimpleGroup("Roles");
-            roles.addMember(new JAASSecurityManager.SimplePrincipal((String) options.get("role")));
+            roles.addMember(new JAASSecurityManager.SimplePrincipal((String)options.get("role")));
             subject.getPrincipals().add(roles);
          }
          return authenticated;
@@ -1200,23 +1164,23 @@ public class SecurityTest extends ServiceTestBase
 
    public static class SimpleConfiguration extends javax.security.auth.login.Configuration
    {
-      private Map<String, ?> options;
+      private final Map<String, ?> options;
 
-      private String loginModuleName;
+      private final String loginModuleName;
 
-      public SimpleConfiguration(String loginModuleName, Map<String, ?> options)
+      public SimpleConfiguration(final String loginModuleName, final Map<String, ?> options)
       {
          this.loginModuleName = loginModuleName;
          this.options = options;
       }
 
       @Override
-      public AppConfigurationEntry[] getAppConfigurationEntry(String name)
+      public AppConfigurationEntry[] getAppConfigurationEntry(final String name)
       {
          AppConfigurationEntry entry = new AppConfigurationEntry(loginModuleName,
                                                                  AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
                                                                  options);
-         return new AppConfigurationEntry[]{entry};
+         return new AppConfigurationEntry[] { entry };
       }
 
       @Override

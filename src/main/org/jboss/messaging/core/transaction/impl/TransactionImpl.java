@@ -108,9 +108,16 @@ public class TransactionImpl implements Transaction
       {
          if (state == State.ROLLBACK_ONLY)
          {
-            //Do nothing
-            return;
-         }                     
+            if (messagingException != null)
+            {
+               throw messagingException;
+            }
+            else
+            {
+               //Do nothing
+               return;
+            }
+         }
          else if (state != State.ACTIVE)
          {
             throw new IllegalStateException("Transaction is in invalid state " + state);
