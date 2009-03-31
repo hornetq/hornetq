@@ -1275,7 +1275,6 @@ public class PagingTest extends ServiceTestBase
 
          session.commit();
 
-         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
          assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
