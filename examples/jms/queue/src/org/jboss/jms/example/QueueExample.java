@@ -49,37 +49,49 @@ public class QueueExample extends JMSExample
       Connection connection = null;
       try
       {
-         //create an initial context, env will be picked up from client-jndi.properties
+         //Step 1. Create an initial context to perform the JNDI lookup.
          InitialContext initialContext = getContext();
+
+         //Step 2. Perfom a lookup on the queue
          Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
+
+         //Step 3. Perform a lookup on the Connection Factory
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
-         
+
+         //Step 4.Create a JMS Connection
          connection = cf.createConnection();
+
+         //Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         //Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
-         Message message = session.createTextMessage("This is a text message!");
+
+         //Step 7. Create a Text Message
+         TextMessage message = session.createTextMessage("This is a text message!");
          
-         log.info("sending message to queue");
+         System.out.println("Sent message: " + message.getText());
+
+         //Step 8. Send the Message
          producer.send(message);
-         
+
+         //Step 9. Create a JMS Message Consumer
          MessageConsumer messageConsumer = session.createConsumer(queue);
+
+         //Step 10. Start the Connection
          connection.start();
-         TextMessage message2 = (TextMessage) messageConsumer.receive(5000);
-         log.info("message received from queue");
-         log.info("message = " + message2.getText());
+
+         //Step 11. Receive the message
+         TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);
+
+         System.out.println("Received message: " + messageReceived.getText());
       }
       finally
       {
+         //Step 12. Be sure to close our JMS resources!
          if(connection != null)
          {
-            try
-            {
-               connection.close();
-            }
-            catch (JMSException e)
-            {
-               e.printStackTrace();
-            }
+            connection.close();
          }
       }
    }
