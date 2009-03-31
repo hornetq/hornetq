@@ -24,7 +24,6 @@ package org.jboss.jms.example;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -49,31 +48,48 @@ public class TransactionalExample extends JMSExample
       Connection connection = null;
       try
       {
-         //create an initial context, env will be picked up from client-jndi.properties
+         // Step 1. Create an initial context to perform the JNDI lookup.
          InitialContext initialContext = getContext();
+
+         // Step 2. Look-up the JMS topic
          Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+
+         // Step 3. Look-up the JMS connection factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
          
+         // Step 4. Create a JMS connection
          connection = cf.createConnection();
+
+         // Step 5. Start the connection
+         connection.start();
+
+         // Step 6. Create a transactional JMS session
          Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
          
-         MessageProducer producer = session.createProducer(queue);
-         Message message = session.createTextMessage("This is a text message!");
-         
-         log.info("sending message to queue");
-         producer.send(message);
-         
+         // Step 7. Create a JMS message producer
+         MessageProducer messageProducer = session.createProducer(queue);
+
+         // Step 8. Create a text message
+         TextMessage message = session.createTextMessage("This is a text message");
+
+         // Step 9. Send the text message to the queue
+         messageProducer.send(message);
+
+         System.out.println("Sent message: " + message.getText());
+
+         // Step 10. Commit the session
          session.commit();
          
+         // Step 11. Create a message consumer
          MessageConsumer messageConsumer = session.createConsumer(queue);
-         connection.start();
-         TextMessage message2 = (TextMessage) messageConsumer.receive(5000);
+
+         // Step 12. Receive the message from the queue
+         message = (TextMessage) messageConsumer.receive(5000);
+
+         System.out.println("Received message: " + message.getText());
          
+         // Step 13. Commit the session again
          session.commit();
-
-         log.info("message received from queue");
-         log.info("message = " + message2.getText());
-
       }
       finally
       {
@@ -81,6 +97,7 @@ public class TransactionalExample extends JMSExample
          {
             try
             {
+               // Step 19. Be sure to close our JMS resources!
                connection.close();
             }
             catch (JMSException e)
