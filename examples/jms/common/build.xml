@@ -51,11 +51,12 @@
    <property name="src.example.dir" location="src"/>
    <property name="example.classname" value="this.shouldn't.be.run.directly"/>
    <property name="jbm.example.runServer" value="true"/>
+   <property name="jbm.example.beans.file" value="jbm-example-beans.xml"/>
 
    <property name="build.dir" value="build"/>
    <property name="classes.dir" value="${build.dir}/classes"/>
    <property name="config.dir" value="${imported.basedir}/config"/>
-
+   <property name="example.config.dir" value="config"/>
    <property name="jbm.jars.dir" value="${imported.basedir}/../../../build/jars"/>
 
    <property name="project.thirdparty" value="${imported.basedir}/../../../thirdparty"/>
@@ -76,6 +77,7 @@
       <path refid="jms.compilation.classpath"/>
       <path refid="apache.log4j.classpath"/>
       <pathelement location="${config.dir}"/>
+      <pathelement location="${example.config.dir}"/>
       <path refid="oswego.concurrent.classpath"/>
       <path refid="apache.log4j.classpath"/>
       <path refid="cglib.classpath"/>
@@ -125,14 +127,13 @@
          <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Dcom.sun.management.jmxremote"/>
          <jvmarg value="-Djava.util.logging.config.file=${logging.properties}"/>
-         <jvmarg
-               value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
+         <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
          <!-- <jvmarg value="-Djava.library.path=${native.bin.dir}"/>-->
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
          <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
          <jvmarg value="-Djbm.example.runServer=${jbm.example.runServer}"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
-         <arg line="jbm-example-beans.xml"/>
+         <arg line="${jbm.example.beans.file}"/>
          <classpath refid="jms.runtime.classpath"/>
       </java>
    </target>
