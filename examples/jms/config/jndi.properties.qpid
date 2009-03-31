@@ -1,3 +1,0 @@
-java.naming.factory.initial=org.apache.qpid.jndi.PropertiesFileInitialContextFactory
-connectionfactory.ConnectionFactory=amqp://guest:guest@/test?brokerlist='tcp://192.168.1.13:5672'
-queue.MyQueue=MyQueue
