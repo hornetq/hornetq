@@ -23,17 +23,12 @@ package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * A simple JMS example that shows how to use a durable subcriber.
@@ -52,80 +47,80 @@ public class DurableSubscriberExample extends JMSExample
       Connection connection = null;
       try
       {
-         //create an initial context, env will be picked up from client-jndi.properties
+         //Step 1. Create an initial context to perform the JNDI lookup.
          InitialContext initialContext = getContext();
+         
+         //Step 2. Look-up the JMS topic
          Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");
+         
+         //Step 3. Look-up the JMS connection factory
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         
+         //Step 4. Create a JMS connection
          connection = cf.createConnection();
+         
+         //Step 5. Set the client-id on the connection
          connection.setClientID("durable-client");
+         
+         //Step 6. Start the connection
+         connection.start();
+         
+         //Step 7. Create a JMS session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
+         //Step 8. Create a JMS message producer
          MessageProducer messageProducer = session.createProducer(topic);
 
-         TopicSubscriber subscriber1 = session.createDurableSubscriber(topic, "subscriber-1");
-         TopicSubscriber subscriber2 = session.createDurableSubscriber(topic, "subscriber-2");
-         Message message = session.createTextMessage("This is a text message!");
-         final CountDownLatch latch = new CountDownLatch(2);
-         subscriber1.setMessageListener(new MessageListener()
-         {
-            public void onMessage(Message message)
-            {
-               try
-               {
-                  log.info("message received by subscriber1 from topic");
-                  TextMessage textMessage = (TextMessage) message;
-                  log.info("message = " + textMessage.getText());
-               }
-               catch (JMSException e)
-               {
-                  e.printStackTrace();
-               }
-               latch.countDown();
-            }
-         });
-         subscriber2.setMessageListener(new MessageListener()
-         {
-            public void onMessage(Message message)
-            {
-               try
-               {
-                  log.info("message received by subscriber2 from topic");
-                  TextMessage textMessage = (TextMessage) message;
-                  log.info("message = " + textMessage.getText());
-               }
-               catch (JMSException e)
-               {
-                  e.printStackTrace();
-               }
-               latch.countDown();
-            }
-         });
-         connection.start();
-
-         log.info("publishing message to topic");
-         messageProducer.send(message);
-
-         try
-         {
-            latch.await();
-         }
-         catch (InterruptedException e)
-         {
-         }
+         //Step 9. Create the subscription and the subscriber.
+         TopicSubscriber subscriber = session.createDurableSubscriber(topic, "subscriber-1");
+         
+         //Step 10. Create a text message
+         TextMessage message1 = session.createTextMessage("This is a text message 1");
+         
+         //Step 11. Send the text message to the topic
+         messageProducer.send(message1);
+         
+         System.out.println("Sent message: " + message1.getText());
+         
+         //Step 12. Consume the message from the durable subscription
+                           
+         TextMessage messageReceived = (TextMessage)subscriber.receive();
+         
+         System.out.println("Received message: " + messageReceived.getText());
+         
+         //Step 13. Create and send another message
+         
+         TextMessage message2 = session.createTextMessage("This is a text message 2");
+         
+         messageProducer.send(message2);
+         
+         System.out.println("Sent message: " + message2.getText());
+         
+         //Step 14. Close the subscriber - the server could even be stopped at this point!
+         subscriber.close();
+         
+         //Step 15. Create a new subscriber on the *same* durable subscription.
+         
+         subscriber = session.createDurableSubscriber(topic, "subscriber-1");
+         
+         //Step 16. Consume the message
+         
+         messageReceived = (TextMessage)subscriber.receive();
+         
+         System.out.println("Received message: " + messageReceived.getText());
+         
+         //Step 17. Close the subscriber
+         subscriber.close();
+         
+         //Step 18. Delete the durable subscription
+         session.unsubscribe("subscriber-1");
       }
-
       finally
       {
          if (connection != null)
          {
-            try
-            {
-               connection.close();
-            }
-            catch (JMSException e)
-            {
-               e.printStackTrace();
-            }
+            // Step 19. Be sure to close our JMS resources!
+            connection.close();
          }
       }
    }
