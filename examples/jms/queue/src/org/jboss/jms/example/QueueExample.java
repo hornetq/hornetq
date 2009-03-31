@@ -68,7 +68,7 @@ public class QueueExample extends JMSExample
          MessageProducer producer = session.createProducer(queue);
 
          //Step 7. Create a Text Message
-         TextMessage message = session.createTextMessage("This is a text message!");
+         TextMessage message = session.createTextMessage("This is a text message");
          
          System.out.println("Sent message: " + message.getText());
 

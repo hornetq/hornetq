@@ -35,8 +35,7 @@ import javax.naming.InitialContext;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * A simple JMS Topic example that creates a producer and consumer on a queue and sends and receives a message via a
- * Message Listener..
+ * A simple JMS Topic example that creates a producer and consumer on a queue and sends and receives a message.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
@@ -52,59 +51,57 @@ public class TopicExample extends JMSExample
       Connection connection = null;
       try
       {
-         //create an initial context, env will be picked up from client-jndi.properties
+         ///Step 1. Create an initial context to perform the JNDI lookup.
          InitialContext initialContext = getContext();
-         Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
-         connection = cf.createConnection();
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer messageProducer = session.createProducer(topic);
 
-         MessageConsumer messageConsumer = session.createConsumer(topic);
-         Message message = session.createTextMessage("This is a text message!");
-         final CountDownLatch latch = new CountDownLatch(1);
-         messageConsumer.setMessageListener(new MessageListener()
-         {
-            public void onMessage(Message message)
-            {
-               try
-               {
-                  log.info("message received from topic");
-                  TextMessage textMessage = (TextMessage) message;
-                  log.info("message = " + textMessage.getText());
-               }
-               catch (JMSException e)
-               {
-                  e.printStackTrace();
-               }
-               latch.countDown();
-            }
-         });
+         //Step 2. perform a lookup on the topic
+         Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");
+
+         //Step 3. perform a lookup on the Connection Factory
+         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+
+         //Step 4. Create a JMS Connection
+         connection = cf.createConnection();
+
+         //Step 5. Create a JMS Session
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         //Step 6. Create a Message Producer
+         MessageProducer producer = session.createProducer(topic);
+
+         //Step 7. Create a JMS Message Consumer
+         MessageConsumer messageConsumer1 = session.createConsumer(topic);
+
+         //Step 8. Create a JMS Message Consumer
+         MessageConsumer messageConsumer2 = session.createConsumer(topic);
+         
+         //Step 9. Create a Text Message
+         TextMessage message = session.createTextMessage("This is a text message");
+
+         System.out.println("Sent message: " + message.getText());
+
+         //Step 10. Send the Message
+         producer.send(message);
+         
+         //Step 11. Start the Connection
          connection.start();
 
-         log.info("publishing message to topic");
-         messageProducer.send(message);
+         //Step 12. Receive the message
+         TextMessage messageReceived = (TextMessage) messageConsumer1.receive();
 
-         try
-         {
-            latch.await();
-         }
-         catch (InterruptedException e)
-         {
-         }
+         System.out.println("Consumer 1 Received message: " + messageReceived.getText());
+
+         //Step 13. Receive the message
+         messageReceived = (TextMessage) messageConsumer2.receive();
+
+         System.out.println("Consumer 2 Received message: " + messageReceived.getText());
       }
       finally
       {
-         if (connection != null)
+         //Step 14. Be sure to close our JMS resources!
+         if(connection != null)
          {
-            try
-            {
-               connection.close();
-            }
-            catch (JMSException e)
-            {
-               //ignore
-            }
+            connection.close();
          }
       }
    }
