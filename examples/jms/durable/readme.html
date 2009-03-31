@@ -54,7 +54,7 @@
 	   <code>MessageProducer messageProducer = session.createProducer(topic);</code>
         </pre>
 
-        <li>We create the durable subscriberon the topic, specifying it's name. Since this is the first time the subscriber is created and a subscription with that name and for this clien-id does not already exist, then the underlying durable subscription will be created, and a subscriber will be created and returned for that subscription.</li>
+        <li>We create the durable subscriber on the topic, specifying it's name. Since this is the first time the subscriber is created and a subscription with that name and for this client-id does not already exist, then the underlying durable subscription will be created, and a subscriber will be created and returned for that subscription.</li>
 	<pre>
            <code>TopicSubscriber subscriber = session.createDurableSubscriber(topic, "subscriber-1");</code>
         </pre>
