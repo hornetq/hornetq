@@ -111,7 +111,7 @@
            <code>session.unsubscribe("subscriber-1");</code>
         </pre>
 
-	<li>And finally (no pun intended), <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+	<li>And finally (no pun intended), <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its session, consumer, producer and browser objects</li>
 
         <pre>
            <code>
@@ -120,7 +120,7 @@
       {
          if (connection != null)
          {
-            // Step 20. Be sure to close our JMS resources!
+            // Be sure to close our JMS resources!
             connection.close();
          }
       }
