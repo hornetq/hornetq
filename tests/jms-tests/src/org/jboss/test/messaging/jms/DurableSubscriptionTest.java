@@ -457,6 +457,74 @@ public class DurableSubscriptionTest extends JMSTestCase
          }
       }
    }
+   
+   
+   public void testNoLocal() throws Exception
+   {
+      internalTestNoLocal(true);
+      internalTestNoLocal(false);
+   }
+   
+   private void internalTestNoLocal(boolean noLocal) throws Exception
+   {
+      Connection conn1 = null;
+      Connection conn2 = null;
+
+      try
+      {
+         conn1 = cf.createConnection();
+         conn1.setClientID(".client.id.with.periods.");
+         
+         conn2 = cf.createConnection();
+         conn2.setClientID(".client.id.with.periods2.");
+
+         Session s1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session s2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         TopicSubscriber subscriber1 = s1.createDurableSubscriber(topic1, ".subscription.name.with.periods.", null, noLocal);
+         TopicSubscriber subscriber2 = s2.createDurableSubscriber(topic1, ".subscription.name.with.periods.", null, false);
+
+         
+         s1.createProducer(topic1).send(s1.createTextMessage("Subscription test"));
+
+         conn1.start();
+
+         Message m = subscriber1.receive(100L);
+
+         if (noLocal)
+         {
+            assertNull(m);
+         }
+         else
+         {
+            assertNotNull(m);
+         }
+         
+         conn2.start();
+         
+         m = subscriber2.receive(1000l);
+         
+         assertNotNull(m);
+         assertTrue(m instanceof TextMessage);
+
+         subscriber1.close();
+         subscriber2.close();
+
+         s1.unsubscribe(".subscription.name.with.periods.");
+         s2.unsubscribe(".subscription.name.with.periods.");
+      }
+      finally
+      {
+         if (conn1 != null)
+         {
+            conn1.close();
+         }
+         if (conn2 != null)
+         {
+            conn2.close();
+         }
+      }
+   }
 
    // Package protected ---------------------------------------------
 

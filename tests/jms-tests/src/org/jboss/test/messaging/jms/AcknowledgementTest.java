@@ -1526,4 +1526,93 @@ public class AcknowledgementTest extends JMSTestCase
       }
 
    }
+   
+   public void testTransactionalIgnoreACK() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+
+         Session producerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
+         MessageProducer producer = producerSess.createProducer(queue1);
+
+         Session consumerSess = conn.createSession(true, Session.SESSION_TRANSACTED);
+         MessageConsumer consumer = consumerSess.createConsumer(queue1);
+         conn.start();
+
+         final int NUM_MESSAGES = 20;
+
+         // Send some messages
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            Message m = producerSess.createMessage();
+            m.acknowledge(); // This is invalid but should be ignored accordingly to the javadoc
+            producer.send(m);
+         }
+         
+         assertRemainingMessages(0);
+
+         producerSess.rollback();
+
+         // Send some messages
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            Message m = producerSess.createMessage();
+            m.acknowledge(); /// should be ignored
+            producer.send(m);
+         }
+         assertRemainingMessages(0);
+
+         producerSess.commit();
+
+         assertRemainingMessages(NUM_MESSAGES);
+
+
+         int count = 0;
+         while (true)
+         {
+            Message m = consumer.receive(200);
+            if (m == null)
+            {
+               break;
+            }
+            m.acknowledge();
+            count++;
+         }
+                  
+         assertRemainingMessages(NUM_MESSAGES);
+
+         assertEquals(count, NUM_MESSAGES);
+
+         consumerSess.rollback();
+
+         assertRemainingMessages(NUM_MESSAGES);
+
+         int i = 0;
+         for (; i < NUM_MESSAGES; i++)
+         {
+            consumer.receive();
+         }
+
+         assertRemainingMessages(NUM_MESSAGES);
+
+         // if I don't receive enough messages, the test will timeout
+
+         consumerSess.commit();
+
+         assertRemainingMessages(0);
+
+         checkEmpty(queue1);
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
 }
