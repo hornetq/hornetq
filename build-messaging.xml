@@ -1148,7 +1148,6 @@
       </antcall>
    </target>
 
-
    <target name="unit-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/jboss/messaging/tests/unit/**/*${test-mask}.class"/>
@@ -1199,7 +1198,6 @@
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
                <include name="${tests.param}"/>
-               <exclude name="**/*Failover*.class" />
             </fileset>
          </batchtest>
       </junit>
