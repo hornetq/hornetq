@@ -51,7 +51,7 @@ public abstract class JMSExample
 {
    protected static Logger log = Logger.getLogger(JMSExample.class.getName());
 
-   private JBMBootstrapServer server;
+   private JBMBootstrapServer[] servers;
 
    private Connection conn;
 
@@ -64,7 +64,7 @@ public abstract class JMSExample
       {
          if (runServer)
          {
-            startServer(args);
+            startServer(getServerNames(args));
          }
          InitialContext ic = new InitialContext();
          ConnectionFactory cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
@@ -132,15 +132,27 @@ public abstract class JMSExample
       return new InitialContext(props);
    }
 
-   private void startServer(String[] args) throws Throwable
+   private void startServer(String[][] args) throws Throwable
    {
-      server = new JBMBootstrapServer(args);
-      server.run();
+      servers = new JBMBootstrapServer[args.length];
+      for (int i = 0; i < args.length; i++)
+      {
+         String[] arg = args[i];
+         log.info("starting server with config '" + arg[0] + "'");
+         servers[i] = new JBMBootstrapServer(arg);
+      }
+      for (JBMBootstrapServer server : servers)
+      {
+         server.run();
+      }
    }
 
    private void stopServer() throws Throwable
    {
-      server.shutDown();
+      for (JBMBootstrapServer server : servers)
+      {
+         server.shutDown();
+      }
    }
 
    private void deployQueues(Session session, QueueRequestor requestor) throws Exception
@@ -197,7 +209,16 @@ public abstract class JMSExample
       }
    }
 
-   public abstract void runExample();
+   private String[][] getServerNames(String[] args)
+   {
+      String[][] actArgs = new String[args.length][1];
+      for (int i = 0; i < args.length; i++)
+      {
+         actArgs[i][0] = args[i].trim();
+      }
+      return actArgs;
+   }
+   public abstract void runExample() throws Exception;
 
 
 }

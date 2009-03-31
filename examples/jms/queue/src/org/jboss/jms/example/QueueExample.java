@@ -44,7 +44,7 @@ public class QueueExample extends JMSExample
       new QueueExample().run(args);
    }
 
-   public void runExample()
+   public void runExample() throws Exception
    {
       Connection connection = null;
       try
@@ -67,10 +67,6 @@ public class QueueExample extends JMSExample
          TextMessage message2 = (TextMessage) messageConsumer.receive(5000);
          log.info("message received from queue");
          log.info("message = " + message2.getText());
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
       }
       finally
       {

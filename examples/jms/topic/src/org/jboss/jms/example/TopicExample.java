@@ -47,7 +47,7 @@ public class TopicExample extends JMSExample
       new TopicExample().run(args);
    }
 
-   public void runExample()
+   public void runExample() throws Exception
    {
       Connection connection = null;
       try
@@ -93,11 +93,6 @@ public class TopicExample extends JMSExample
          {
          }
       }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-
       finally
       {
          if (connection != null)
@@ -108,7 +103,7 @@ public class TopicExample extends JMSExample
             }
             catch (JMSException e)
             {
-               e.printStackTrace();
+               //ignore
             }
          }
       }

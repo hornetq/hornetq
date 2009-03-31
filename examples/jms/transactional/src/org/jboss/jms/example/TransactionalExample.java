@@ -44,7 +44,7 @@ public class TransactionalExample extends JMSExample
       new TransactionalExample().run(args);
    }
 
-   public void runExample()
+   public void runExample() throws Exception
    {
       Connection connection = null;
       try
@@ -74,10 +74,6 @@ public class TransactionalExample extends JMSExample
          log.info("message received from queue");
          log.info("message = " + message2.getText());
 
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
       }
       finally
       {

@@ -47,7 +47,7 @@ public class DurableSubscriberExample extends JMSExample
       new DurableSubscriberExample().run(args);
    }
 
-   public void runExample()
+   public void runExample() throws Exception
    {
       Connection connection = null;
       try
@@ -112,10 +112,6 @@ public class DurableSubscriberExample extends JMSExample
          catch (InterruptedException e)
          {
          }
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
       }
 
       finally
