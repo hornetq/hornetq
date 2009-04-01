@@ -1,0 +1,142 @@
+<html>
+  <head>
+    <title>JBoss Messaging JMS Request-Reply Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>JMS Request-Reply Example</h1>
+     <br>
+     <p>This example shows you how to send a request message and receive a reply. It first sends a request message and receives the reply message.</p>
+     <p>Request/Reply style messaging are supported through standard JMS message headers JMSReplyTo and JMSCorrelationID, please consult the JMS 1.1 specification for full details.</p>
+     <br>
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <br>
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
+        <pre>
+           <code>InitialContext initialContext = getContext();</code>
+        </pre>
+
+        <li>We lookup the queue for sending the request message</li>
+        <pre>
+           <code>Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
+        </pre>
+
+        <li>We lookup for the Connection Factory</li>
+        <pre>
+           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
+        </pre>
+
+        <li>We create a JMS Connection</li>
+        <pre>
+           <code>connection = cf.createConnection();</code>
+        </pre>
+
+        <li>We start the connection</li>
+        <pre>
+           <code>connection.start();</code>
+        </pre>
+
+        <li>We create a JMS Session</li>
+        <pre>
+           <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
+        </pre>
+
+        <li>We create a JMS Message Producer to send request message</li>
+        <pre>
+           <code>MessageProducer producer = session.createProducer(requestQueue);</code>
+        </pre>
+
+        <li>We create a temporary queue used to send reply message to and receive reply from</li>
+        <pre>
+           <code>TemporaryQueue replyQueue = session.createTemporaryQueue();</code>
+        </pre>
+
+        <li>We create a request Text Message</li>
+        <pre>
+           <code>TextMessage requestMsg = session.createTextMessage("A request message");</code>
+        </pre>
+
+        <li>We set the ReplyTo header so that the request receiver knows where to send the reply.</li>
+        <pre>
+           <code>requestMsg.setJMSReplyTo(replyQueue);</code>
+        </pre>
+
+        <li>We set the CorrelationID so that it can be linked with corresponding reply message</li>
+        <pre>
+           <code>requestMsg.setJMSCorrelationID("jbm-id: 0000001");</code>
+        </pre>
+
+        <li>We sent the request message</li>
+        <pre>
+           <code>producer.send(requestMsg);</code>
+        </pre>
+
+        <li>We create a JMS Message Consumer to receive request</li>
+        <pre>
+           <code>MessageConsumer messageConsumer = session.createConsumer(requestQueue);</code>
+        </pre>
+
+        <li>We receive the request message</li>
+        <pre>
+           <code>TextMessage requestMsgReceived = (TextMessage) messageConsumer.receive(5000);</code>
+        </pre>
+
+        <li>We extract the ReplyTo destination from the request message</li>
+        <pre>
+           <code>Destination replyDestination = requestMsgReceived.getJMSReplyTo();</code>
+        </pre>
+
+        <li>We create a reply message</li>
+        <pre>
+           <code>TextMessage replyMessage = session.createTextMessage("A reply message");</code>
+        </pre>
+
+        <li>We set the CorrelationID</li>
+        <pre>
+           <code>replyMessage.setJMSCorrelationID(requestMsgReceived.getJMSCorrelationID());</code>
+        </pre>
+
+        <li>We create a producer to send the reply message</li>
+        <pre>
+           <code>MessageProducer replyProducer = session.createProducer(replyDestination);</code>
+        </pre>
+
+        <li>We send out the reply message</li>
+        <pre>
+           <code>replyProducer.send(replyMessage);</code>
+        </pre>
+
+        <li>We create consumer to receive reply message</li>
+        <pre>
+           <code>MessageConsumer replyConsumer = session.createConsumer(replyDestination);</code>
+        </pre>
+
+        <li>We receive the reply message</li>
+        <pre>
+           <code>TextMessage replyMessageReceived = (TextMessage)replyConsumer.receive(5000);</code>
+        </pre>
+
+        
+        <li>And finally, <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre>
+           <code>
+
+      finally
+      {
+         if (connection != null)
+         {
+            // Step 22. Be sure to close our JMS resources!
+            connection.close();
+         }
+      }
+           </code>
+        </pre>
+
+
+
+     </ol>
+  </body>
+</html>
