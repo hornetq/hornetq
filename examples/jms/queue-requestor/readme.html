@@ -6,15 +6,17 @@
   <body>
      <h1>JMS QueueRequestor Example</h1>
      <br>
-     <p>This example shows you how to use a QueueRequestor with JBoss Messaging.</p>
-     <p>A QueueRequestor is a JMS utility object to simplify the use of request/reply.</p>
-     <br>
+     <p>This example shows you how to use a <a href="http://java.sun.com/javaee/5/docs/api/javax/jms/QueueRequestor.html">QueueRequestor</a> with JBoss Messaging.</p>
+     <p>JMS is mainly used to send messages asynchronously so that the producer of a message is not waiting for the result of the message consumption.
+        However, there are cases where it is necessary to have a synchronous behavior: the code sending a message requires a reply for this message
+        before continuing its execution.<br />
+        A QueueRequestor facilitates this use case by providing a simple request/reply abstraction on top of JMS.</p>
      <p>The example consists in two classes:</p>
      <dl>
          <dt><code>TextReverserService</code></dt>
          <dd>A JMS MessageListener which consumes text messages and sends replies containing the reversed text</dd>
          <dt><code>QueueRequestorExample</code></dt>
-         <dd>A JMS Client which uses a QueueRequestor to send text requests to a queue and receive replies with the reversed text</dd>
+         <dd>A JMS Client which uses a QueueRequestor to send text requests to a queue and receive replies with the reversed text in a synchronous fashion</dd>
     </dl>
          
          
@@ -67,7 +69,12 @@
            <code>TextMessage request = session.createTextMessage("Hello, World!");</code>
         </pre>
    
-        <li>We use the queue requestor to send the request and block until a reply is received</li>
+        <li><p>We use the queue requestor to send the request and block until a reply is received.<br />
+            Using the queue requestor simplify request/reply use case by abstracting boilerplate JMS code
+            (creating a temporary queue, a consumer and a producer, setting the JMS ReplyTo header on the request, 
+            sending the request with the producer, consuming the message from the consumer).
+            All this code is replaced by a single call to <code>QueueRequestor.request()</code> method.</p>
+            </li>
         <pre>
            <code>TextMessage reply = (TextMessage)queueRequestor.request(request);</code>
         </pre>
@@ -78,7 +85,7 @@
            System.out.println("Received reply:" + reply.getText());</code>
         </pre>
 
-        <li>We close the queue requestor to release its JMS resources</li>
+        <li>We close the queue requestor to release all the JMS resources it created to provide request/reply mechanism</li>
         <pre>
            <code>queueRequestor.close()</code>
         </pre>
@@ -91,17 +98,14 @@
 	<li>and finally <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its session, consumer, producer and browser objects</li>
 
         <pre>
-           <code>
-
-      finally
-      {
-         if (connection != null)
-         {
-            // Be sure to close our JMS resources!
-            connection.close();
-         }
-      }
-           </code>
+           <code>finally
+           { 
+              if (connection != null)
+              {
+                 // Be sure to close our JMS resources!
+                 connection.close();
+              }
+           }</code>
         </pre>
 
 
