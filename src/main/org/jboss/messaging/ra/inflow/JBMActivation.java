@@ -22,11 +22,7 @@
 package org.jboss.messaging.ra.inflow;
 
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.jms.JBossDestination;
 import org.jboss.messaging.ra.JBMResourceAdapter;
 import org.jboss.messaging.ra.Util;
@@ -34,17 +30,14 @@ import org.jboss.messaging.utils.SimpleString;
 import org.jboss.tm.TransactionManagerLocator;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
-import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
@@ -60,7 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
-public class JBMActivation implements FailureListener
+public class JBMActivation
 {
    /**
     * The logger
@@ -96,11 +89,6 @@ public class JBMActivation implements FailureListener
     * Whether delivery is active
     */
    protected AtomicBoolean deliveryActive = new AtomicBoolean(false);
-
-   /**
-    * Whether we are in the failure recovery loop
-    */
-   private AtomicBoolean inFailure = new AtomicBoolean(false);
 
    /**
     * The destination type
@@ -293,77 +281,6 @@ public class JBMActivation implements FailureListener
       teardown();
    }
 
-   /**
-    * Handles any failure by trying to reconnect
-    *
-    * @param failure The reason for the failure
-    */
-   public void handleFailure(Throwable failure)
-   {
-      log.warn("Failure in jms activation " + spec, failure);
-      int reconnectCount = 0;
-
-      // Only enter the failure loop once
-      if (inFailure.getAndSet(true))
-      {
-         return;
-      }
-
-      try
-      {
-         while (deliveryActive.get() && reconnectCount < spec.getRereconnectAttempts())
-         {
-            teardown();
-
-            try
-            {
-               if (spec.getReconnectIntervalMillis() > 0)
-               {
-                  Thread.sleep(spec.getReconnectIntervalMillis());
-               }
-            }
-            catch (InterruptedException e)
-            {
-               log.debug("Interrupted trying to reconnect " + spec, e);
-               break;
-            }
-
-            log.info("Attempting to reconnect " + spec);
-            try
-            {
-               setup();
-               log.info("Reconnected with messaging provider.");
-               break;
-            }
-            catch (Throwable t)
-            {
-               log.error("Unable to reconnect " + spec, t);
-            }
-            ++reconnectCount;
-         }
-      }
-      finally
-      {
-         // Leaving failure recovery loop
-         inFailure.set(false);
-      }
-   }
-
-   /**
-    * On exception
-    *
-    * @param exception The reason for the failure
-    */
-   public void onException(JMSException exception)
-   {
-      if (trace)
-      {
-         log.trace("onException(" + exception + ")");
-      }
-
-      handleFailure(exception);
-   }
-
 
    /**
     * Setup the activation
@@ -420,8 +337,6 @@ public class JBMActivation implements FailureListener
       try
       {
          result = ra.createSession(spec.getAcknowledgeModeInt(), user, pass, ra.getPreAcknowledge(), ra.getDupsOKBatchSize(), ra.getTransactionBatchSize(), isDeliveryTransacted);
-
-         result.addFailureListener(this);
 
          log.debug("Using queue connection " + result);
 
@@ -521,17 +436,6 @@ public class JBMActivation implements FailureListener
       buffer.append(" transacted=").append(isDeliveryTransacted);
       buffer.append(')');
       return buffer.toString();
-   }
-
-   public boolean connectionFailed(MessagingException me)
-   {
-      if (trace)
-      {
-         log.trace("onException(" + me + ")");
-      }
-
-      handleFailure(me);
-      return true;
    }
 }
 

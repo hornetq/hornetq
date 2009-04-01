@@ -21,6 +21,7 @@
  */
 package org.jboss.messaging.ra.inflow;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.ra.JBMResourceAdapter;
 
 import javax.jms.Session;
@@ -28,8 +29,6 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
-
-import org.jboss.messaging.core.logging.Logger;
 
 /**
  * The activation spec
@@ -71,9 +70,6 @@ public class JBMActivationSpec implements ActivationSpec
    /** The client id */
    private String clientId;
 
-   /** The reconnect interval in seconds */
-   private Long reconnectInterval;
-
    /** The user */
    private String user;
 
@@ -94,9 +90,6 @@ public class JBMActivationSpec implements ActivationSpec
 
    /** Is the session transacted */
    private Boolean sessionTransacted;
-
-   /** The number of reconnection attempts */
-   private Integer rereconnectAttempts;
 
    /** Unspecified redelivery */
    private Boolean redeliverUnspecified;
@@ -132,7 +125,6 @@ public class JBMActivationSpec implements ActivationSpec
       subscriptionDurability = false;
       subscriptionName = null;
       clientId = null;
-      reconnectInterval = Long.valueOf(10);
       user = null;
       password = null;
       maxMessages = Integer.valueOf(1);
@@ -140,7 +132,6 @@ public class JBMActivationSpec implements ActivationSpec
       maxSession = Integer.valueOf(15);
       keepAlive = Long.valueOf(60000);
       sessionTransacted = Boolean.TRUE;
-      rereconnectAttempts = Integer.valueOf(5);
       redeliverUnspecified = Boolean.TRUE;
       transactionTimeout = Integer.valueOf(0);
       isSameRMOverrideValue = null;
@@ -388,45 +379,6 @@ public class JBMActivationSpec implements ActivationSpec
    }
 
    /**
-    * Get the reconnection interval
-    * @return The value
-    */
-   public Long getReconnectInterval()
-   {
-      if (trace)
-         log.trace("getReconnectInterval()");
-
-      return reconnectInterval;
-   }
-
-   /**
-    * Set the reconnection interval
-    * @param value The value
-    */
-   public void setReconnectInterval(Long value)
-   {
-      if (trace)
-         log.trace("setReconnectInterval(" + value + ")");
-
-      this.reconnectInterval = value;
-   }
-
-   /**
-    * Get the reconnection interval in milliseconds
-    * @return The value; if 0 == disable
-    */
-   public long getReconnectIntervalMillis()
-   {
-      if (trace)
-         log.trace("getReconnectIntervalMillis()");
-
-      if (reconnectInterval == null)
-         return 0;
-
-      return reconnectInterval.longValue() * 1000L;
-   }
-
-   /**
     * Get the user
     * @return The value
     */
@@ -668,31 +620,6 @@ public class JBMActivationSpec implements ActivationSpec
 
       return sessionTransacted.booleanValue();
    }
-
-   /**
-    * Get the rereconnect attempts
-    * @return The value
-    */
-   public Integer getRereconnectAttempts()
-   {
-      if (trace)
-         log.trace("getRereconnectAttempts()");
-
-      return rereconnectAttempts;
-   }
-
-   /**
-    * Set the rereconnect attempts
-    * @param value The value
-    */
-   public void setRereconnectAttempts(Integer value)
-   {
-      if (trace)
-         log.trace("setRereconnectAttempts(" + value + ")");
-
-      this.rereconnectAttempts = value;
-   }
-
    /**
     * Get the redeliver upspecified
     * @return The value
@@ -886,7 +813,6 @@ public class JBMActivationSpec implements ActivationSpec
          buffer.append(" clientID=").append(clientId);
       if (subscriptionName != null)
          buffer.append(" subscription=").append(subscriptionName);
-      buffer.append(" reconnect=").append(reconnectInterval);
       buffer.append(" user=").append(user);
       if (password != null)
          buffer.append(" password=").append("****");
