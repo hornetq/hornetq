@@ -21,21 +21,18 @@
  */
 package org.jboss.test.messaging.jms;
 
-import java.io.Serializable;
+import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
+import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.test.messaging.jms.message.SimpleJMSMessage;
-import org.jboss.test.messaging.jms.message.SimpleJMSTextMessage;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -396,8 +393,8 @@ public class MessageProducerTest extends JMSTestCase
          pconn.close();
       }
    }
-
-   public void testCreateProducerOnInexistentDestination() throws Exception
+   //TODO Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1565 is complete
+   /*public void testCreateProducerOnInexistentDestination() throws Exception
    {
       Connection pconn = cf.createConnection();
       try
@@ -418,7 +415,7 @@ public class MessageProducerTest extends JMSTestCase
          pconn.close();
       }
    }
-
+*/
    //
    // disabled MessageID tests
    //
