@@ -1,0 +1,91 @@
+<html>
+  <head>
+    <title>JBoss Messaging JMS Temporary Queue Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>JMS Temporary Queue Example</h1>
+     <br>
+     <p>This example shows you how to use a TemporaryQueue object with JBoss Messaging.</p>
+     <p>TemporaryQueue is a JMS queue that lives within lifetime of its connection. Please consult the JMS 1.1 specification for full details.</p>
+     <br>
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <br>
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS connection factory from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
+        <pre>
+           <code>InitialContext initialContext = getContext();</code>
+        </pre>
+
+        <li>We look-up JMS connection factory from JNDI</li>
+        <pre>
+           <code>ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");</code>
+        </pre>
+
+        <li>We Create a JMS connection</li>
+        <pre>
+           <code>connection = cf.createConnection();</code>
+        </pre>
+         
+        <li>We start the connection. In order for delivery to occur on any consumers or subscribers on a connection, the connection must be started</li>
+        <pre>
+           <code>connection.start();</code>
+        </pre>
+         
+        <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
+        <pre>
+           <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
+        </pre>
+        
+        <li>We create a Temporary Queue</li>
+        <pre>
+           <code>Queue tempQueue = session.createTemporaryQueue();</code>
+        </pre>
+
+        <li>We create a JMS message producer to the temporary queue. This will be used to send the messages.</li>
+        <pre>
+	        <code>MessageProducer messageProducer = session.createProducer(tempQueue);</code>
+        </pre>
+         
+        <li>We create a JMS text message to send </li>
+        <pre>
+           <code>TextMessage message = session.createTextMessage("This is a text message");</code>
+        </pre>
+   
+        <li>We send the message to the temporary queue</li>
+        <pre>
+           <code>messageProducer.send(message);</code>
+        </pre>
+
+        <li>We create a message consumer of the temporary queue</li>
+        <pre>
+           <code>MessageConsumer messageConsumer = session.createConsumer(tempQueue);</code>
+        </pre>
+
+        <li>We receive the message from the temporary queue</li>
+        <pre>
+           <code>message = (TextMessage) messageConsumer.receive(5000);</code>
+        </pre>
+
+	<li>and finally (no pun intended), <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its session, consumer, producer and browser objects</li>
+
+        <pre>
+           <code>
+
+      finally
+      {
+         if (connection != null)
+         {
+            // Be sure to close our JMS resources!
+            connection.close();
+         }
+      }
+           </code>
+        </pre>
+
+
+         
+     </ol>
+  </body>
+</html>
