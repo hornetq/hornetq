@@ -1,0 +1,114 @@
+<html>
+  <head>
+    <title>JBoss Messaging Paging Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>Paging Example</h1>
+     <br>
+     <p>This example shows how JBoss Messaging would avoid running out of resources by paging messages.</p>
+     <p>A maxSize could be specified per Destination on the destinations settings, or a globalMaxSize could also be set on the maing config file.</a>
+     <p>When the buffered messages are consuming too much memory, JBossMessaging starts writing messages on the file-system, and as the memory is released by message acknowledgement or transaction commits those messages are recovered from disk and placed in memory</p>
+     <p>Acknowledgement plays an important factor on paging as messages will stay on the file system until the memory is released</p> 
+       
+     <p>A Queue is used to send messages point to point, from a producer to a consumer. The queue guarantees message ordering between these 2 points.</p>
+     <br>
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <br>
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
+        <pre>
+           <code>InitialContext initialContext = getContext();</code>
+        </pre>
+
+        <li>We look-up the JMS queue object from JNDI</li>
+        <pre>
+           <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
+        </pre>
+
+        <li>We look-up the JMS connection factory object from JNDI</li>
+        <pre>
+           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
+        </pre>
+
+        <li>We create a JMS connection</li>
+        <pre>
+           <code>connection = cf.createConnection();</code>
+        </pre>
+
+        <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
+        <pre>
+           <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
+        </pre>
+        
+        <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
+        <pre>
+          <code>MessageProducer messageProducer = session.createProducer(topic);</code>
+       </pre>
+
+        <li>We don't need persistent messages in order to use paging. (This step is optional)</li>
+        <pre><code>
+        messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+        </code></pre>
+
+        <li>Create a Binary Bytes Message with 10K arbitrary bytes</li>
+        <pre><code>
+         BytesMessage message = session.createBytesMessage();
+         message.writeBytes(new byte[10 * 1024]);</code>
+       </pre>
+       
+       <li>Send the same message over 30K times, which should be over the max limit configured and imposed by the server. Probably also over to what would fit on the server's memory</li>
+       
+       <pre><code>
+         for (int i = 0; i < 30000; i++)
+         {
+            messageProducer.send(message);
+         }</code>
+       </pre>
+       
+       <li>Create a JMS Consumer</p>
+       <pre><code>
+       MessageConsumer messageConsumer = session.createConsumer(queue);
+       </code></pre>
+       
+       <li> Start the JMS Connection. This step will activate the subscribers to receive messages.</li>
+       <pre><code>
+       connection.start();
+       </code></pre>
+
+
+        <li>Receive the messages. It's important to ACK for messages as JBM will not read messages from the paging file system until messages are ACKed or that would lead the server to be OutOfMemory</li>
+        <pre><code>
+         for (int i = 0; i < 30000; i++)
+         {
+            message = (BytesMessage)messageConsumer.receive(1000);
+
+            if (i % 1000 == 0)
+            {
+               System.out.println("Received " + i + " messages");
+               
+               message.acknowledge();
+            }
+         }
+        </code></pre>
+
+        <li>And finally, <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre>
+           <code>
+
+      finally
+      {
+         if (connection != null)
+         {
+            // Step 12. Be sure to close our JMS resources!
+            connection.close();
+         }
+      }
+           </code>
+        </pre>
+
+     </ol>
+  </body>
+</html>
