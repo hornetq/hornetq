@@ -23,11 +23,11 @@ package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 
 /**
@@ -41,10 +41,6 @@ public class TopicSelector extends JMSExample
    {
       new TopicSelector().run(args);
    }
-   
-   
-   
-   
 
    public void runExample() throws Exception
    {
@@ -63,60 +59,99 @@ public class TopicSelector extends JMSExample
 
          // Step 4. Create a JMS connection
          connection = cf.createConnection();
-         
+
          // Step 5. Create a JMS session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          // Step 6. Create a JMS message producer
-         MessageProducer messageProducer = session.createProducer(topic);
+         MessageProducer producer = session.createProducer(topic);
 
-         // Step 7. Create one consumer with a specific Filter
-         TopicSubscriber subscriberA = session.createDurableSubscriber(topic, "sub-a1", "userId=1", false);
+         // Step 7. Create one subscription with a specific Filter for someID=1
+         MessageConsumer messageConsumer1 = session.createConsumer(topic, "someID=1", false);
 
-         // Step 8. Create another consuemr with a different Filter
-         TopicSubscriber subscriberB = session.createDurableSubscriber(topic, "sub-a2", "userId=2", false);
+         // Step 8. Create another subscription with a specific Filter for someID=2
+         MessageConsumer messageConsumer2 = session.createConsumer(topic, "someID=2", false);
 
-         // Step 9. Send two messages
-         
-         for (int i = 1; i <= 2; i++)
+         // Step 9. Create another subscription with no filters, which will receive every message sent to the topic
+         MessageConsumer messageConsumer3 = session.createConsumer(topic);
+
+         // Step 10. Send 20 messages, 10 with someID=1, 10 with someID=2
+
+         for (int i = 1; i < 10; i++)
          {
-            // Step 9.1 Create a text message
-            TextMessage message1 = session.createTextMessage("This is a text message " + i);
-            
-            // Step 9.1 Set a property
-            message1.setIntProperty("userId", i);
-   
-            // Step 9.2 Send the message
-            messageProducer.send(message1);
+            for (int someID = 1; someID <= 2; someID++)
+            {
+               // Step 10.1 Create a text message
+               TextMessage message1 = session.createTextMessage("This is a text message " + i +
+                                                                " sent for someID=" +
+                                                                someID);
 
-            System.out.println("Sent message: " + message1.getText());
+               // Step 10.1 Set a property
+               message1.setIntProperty("someID", someID);
+
+               // Step 10.2 Send the message
+               producer.send(message1);
+
+               System.out.println("Sent message: " + message1.getText());
+            }
          }
 
-         // Step 10. Start the JMS Connection. This step will activate the subscribers to receive messages.
+         // Step 11. Start the JMS Connection. This step will activate the subscribers to receive messages.
          connection.start();
 
+         // Step 12. Consume the messages from MessageConsumer1, filtering out someID=2
 
-         // Step 11. Consume the message from the durable subscription a
+         System.out.println("*************************************************************");
+         System.out.println("MessageConsumer1 will only receive messages where someID=1:");
+         for (;;)
+         {
+            TextMessage messageReceivedA = (TextMessage)messageConsumer1.receive(1000);
+            if (messageReceivedA == null)
+            {
+               break;
+            }
 
-         TextMessage messageReceivedA = (TextMessage)subscriberA.receive();
+            System.out.println("messageConsumer1 received " + messageReceivedA.getText() +
+                               " someID = " +
+                               messageReceivedA.getIntProperty("someID"));
+         }
 
-         System.out.println("Received message: " + messageReceivedA.getText());
+         // Step 13. Consume the messages from MessageConsumer2, filtering out someID=2
+         System.out.println("*************************************************************");
+         System.out.println("MessageConsumer2 will only receive messages where someID=2:");
+         for (;;)
+         {
+            TextMessage messageReceivedB = (TextMessage)messageConsumer2.receive(1000);
+            if (messageReceivedB == null)
+            {
+               break;
+            }
 
+            System.out.println("messageConsumer2 received " + messageReceivedB.getText() +
+                               " someID = " +
+                               messageReceivedB.getIntProperty("someID"));
+         }
 
-         // Step 12. Consume the message from the durable subscription b
+         // Step 14. Consume the messages from MessageConsumer3, receiving the complete set of messages
+         System.out.println("*************************************************************");
+         System.out.println("MessageConsumer3 will receive every message:");
+         for (;;)
+         {
+            TextMessage messageReceivedC = (TextMessage)messageConsumer3.receive(1000);
+            if (messageReceivedC == null)
+            {
+               break;
+            }
+            System.out.println("messageConsumer3 received " + messageReceivedC.getText() +
+                               " someID = " +
+                               messageReceivedC.getIntProperty("someID"));
+         }
 
-         TextMessage messageReceivedB = (TextMessage)subscriberB.receive();
+         // Step 15. Close the subscribers
+         messageConsumer1.close();
+         messageConsumer2.close();
+         messageConsumer3.close();
 
-         System.out.println("Received message: " + messageReceivedB.getText());
-
-         
-         // Step 13. Close the subscribers
-         subscriberA.close();
-         subscriberA.close();
-
-         // Step 14. Delete the durable subscription
-         session.unsubscribe("sub-a1");
-         session.unsubscribe("sub-a2");
       }
       finally
       {

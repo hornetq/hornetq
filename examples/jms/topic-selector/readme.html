@@ -7,8 +7,9 @@
      <h1>JMS Topic Example</h1>
      <br>
      <p>This example shows you how to send message to a JMS Topic, and subscribe them using selectors with JBoss Messaging.</p>
+     <p>The test will send 20 messages where 10 will have the message property someID set to 1 and the other 10 will have it set to 2.</p> 
+     <p>The test is also creating 3 non durable subscribers. 2 subscriptions using selectors, and a third one that should receive the complete set of messages.</p>
      <p>Topics and selectors are a standard part of JMS, please consult the JMS 1.1 specification for full details.</p>
-     <p>A Topic is used to send messages using the publish-subscribe model, from a producer to 1 or more consumers.</p>
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
@@ -44,50 +45,87 @@
           <code>MessageProducer messageProducer = session.createProducer(topic);</code>
         </pre>
        
-        <li>Create one subscriber with a specific filter</li>
+        <li>Create one non-durable subscriber with a specific filter</li>
         <pre>
-         <code>TopicSubscriber subscriberA = session.createDurableSubscriber(topic, "sub-a1", "userId=1", false);</code>
+         <code>MessageConsumer messageConsumer1 = session.createConsumer(topic, "someID=1", false);</code>
         </pre>
         
-        <li>Create another subscriber</li>
+        <li>Create a second non-durable subscriber with a specific filter</li>
         <pre>
-         <code>TopicSubscriber subscriberB = session.createDurableSubscriber(topic, "sub-a2", "userId=2", false);</code>
+         <code>MessageConsumer messageConsumer2 = session.createConsumer(topic, "someID=2", false);</code>
+        </pre>
+        
+        <li>Create a third non-durable subscriber without any filters, and it should receive the complete set of messages</li>
+        <pre>
+         <code>MessageConsumer messageConsumer3 = session.createConsumer(topic, "someID=2", false);</code>
         </pre>
 
-        <li>Start the JMS Connections. This step will activate the subscribers to receive messages</li>
-        <pre>
-         <code>connection.start();</code>
-        </pre>
-
-        <li>Send two messages </li>
-        <pre>
-<code>         for (int i = 1; i <= 2; i++)
+        <li>Send 20 messages, 10 with someID=1, 10 with someID=2 </li>
+        <pre><code>
+         for (int i = 1; i < 10; i++)
          {
-            // Create a text message
-            TextMessage message1 = session.createTextMessage("This is a text message " + i);
-            
-            // Set a property
-            message1.setIntProperty("userId", i);
-   
-            // Send the message
-            messageProducer.send(message1);
-         }</code>
-        </pre>
+            for (int someID = 1; someID <= 2; someID++)
+            {
+               TextMessage message1 = session.createTextMessage("This is a text message " + i +
+                                                                " sent for someID=" +
+                                                                someID);
+
+               message1.setIntProperty("someID", someID);
+
+               producer.send(message1);
+
+               System.out.println("Sent message: " + message1.getText());
+            }
+         }</code></pre>
 
         <li>We start the connection. In order for delivery to occur on any consumers or subscribers on a connection, the connection must be started</li>
-        <pre>
-           <code>connection.start();</code>
+        <pre>           <code>connection.start();</code>
         </pre>
 
 
-        <li>Receive the messages on subscription a and b</li>
-        <pre>
-           <code>TextMessage messageReceivedA = (TextMessage)subscriberA.receive();</code>
-           <code>System.out.println(messageReceivedA.getText());</code>
-           <code>TextMessage messageReceivedB = (TextMessage)subscriberB.receive();</code>
-           <code>System.out.println(messageReceivedB.getText());</code>
-        </pre>
+        <li>Consume the messages from MessageConsumer1, filtering out someID=2</li>
+        <pre><code>
+         for (;;)
+         {
+            TextMessage messageReceivedA = (TextMessage)messageConsumer1.receive(1000);
+            if (messageReceivedA == null)
+            {
+               break;
+            }
+
+            System.out.println("messageConsumer1 received " + messageReceivedA.getText() +
+                               " someID = " +
+                               messageReceivedA.getIntProperty("someID"));
+         }</code></pre>
            
+        <li>Consume the messages from MessageConsumer2, filtering out someID=1</li>
+        <pre><code>
+        for (;;)
+         {
+            TextMessage messageReceivedB = (TextMessage)messageConsumer2.receive(1000);
+            if (messageReceivedB == null)
+            {
+               break;
+            }
+
+            System.out.println("messageConsumer2 received " + messageReceivedB.getText() +
+                               " someID = " +
+                               messageReceivedB.getIntProperty("someID"));
+         }</code></pre>
+
+        <li>Consume the messages from MessageConsumer3, receiving the complete set of messages</li>
+        <pre><code>
+         for (;;)
+         {
+            TextMessage messageReceivedC = (TextMessage)messageConsumer3.receive(1000);
+            if (messageReceivedC == null)
+            {
+               break;
+            }
+            System.out.println("messageConsumer3 received " + messageReceivedC.getText() +
+                               " someID = " +
+                               messageReceivedC.getIntProperty("someID"));
+         }</code></pre>
 
         <li>Close the consumers</li>
         <pre><code>subscriberA.close();</code></pre>
