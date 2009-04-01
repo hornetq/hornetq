@@ -1321,7 +1321,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
                                        final int numThreads,
                                        final boolean failOnCreateConnection) throws Exception
    {
-      this.runTestMultipleThreads(runnable, numThreads, failOnCreateConnection, 1000);
+      runTestMultipleThreads(runnable, numThreads, failOnCreateConnection, 1000);
    }
 
    private void runTestMultipleThreads(final RunnableT runnable,

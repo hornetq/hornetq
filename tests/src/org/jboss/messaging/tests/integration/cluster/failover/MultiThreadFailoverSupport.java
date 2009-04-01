@@ -102,6 +102,8 @@ public abstract class MultiThreadFailoverSupport extends ServiceTestBase
    {
       for (int its = 0; its < numIts; its++)
       {
+         log.info("Beginning iteration " + its);
+         
          start();
 
          final ClientSessionFactoryInternal sf = createSessionFactory();

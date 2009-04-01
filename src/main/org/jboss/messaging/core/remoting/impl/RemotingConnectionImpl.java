@@ -1196,14 +1196,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       public void replicatePacket(final Packet packet, final long replicatedChannelID, final Runnable action)
       {
          packet.setChannelID(replicatedChannelID);
+         
+         boolean runItNow = false;
 
          synchronized (replicationLock)
          {
             if (playedResponsesOnFailure && action != null)
-            {
+            {               
                // Already replicating channel failed, so just play the action now
-
-               action.run();
+               
+               runItNow = true;               
             }
             else
             {
@@ -1220,6 +1222,13 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                connection.transportConnection.write(buffer);
             }
+         }
+         
+         //Execute outside lock
+         
+         if (runItNow)
+         {
+            action.run();
          }
       }
 
@@ -1238,6 +1247,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private void doExecuteOutstandingDelayedResults()
       {
+         List<Runnable> toRun = new ArrayList<Runnable>();
+         
          synchronized (replicationLock)
          {
             // Execute all the response actions now
@@ -1248,7 +1259,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                if (action != null)
                {
-                  action.run();
+                  toRun.add(action);
                }
                else
                {
@@ -1259,6 +1270,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             responseActionCount = 0;
 
             this.playedResponsesOnFailure = true;
+         }
+         
+         //Run outside lock
+         for (Runnable action: toRun)
+         {
+            action.run();
          }
       }
 

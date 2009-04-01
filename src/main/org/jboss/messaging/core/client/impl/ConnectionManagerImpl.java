@@ -512,13 +512,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.SERVER_DISCONNECTED);
 
-//         log.info(System.identityHashCode(this) + " in failover or reconnect, attemptFailover is " +
-//                  attemptFailover +
-//                  " failoveronservers:" +
-//                  failoverOnServerShutdown +
-//                  " me.getcode " +
-//                  me.getCode());
-
          boolean done = false;
 
          if (attemptFailover || reconnectAttempts != 0)

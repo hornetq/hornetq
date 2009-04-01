@@ -220,9 +220,9 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       configuration.start();
-      
+
       storageManager.start();
-      
+
       securityManager.start();
 
       managementService.start();
@@ -282,7 +282,7 @@ public class MessagingServerImpl implements MessagingServer
       if (uuid == null)
       {
          uuid = storageManager.getPersistentID();
-         
+
          if (uuid == null && !configuration.isBackup())
          {
             uuid = UUIDGenerator.getInstance().generateUUID();
@@ -306,7 +306,7 @@ public class MessagingServerImpl implements MessagingServer
          }
 
       }
-      
+
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
                                                           configuration,
@@ -435,26 +435,26 @@ public class MessagingServerImpl implements MessagingServer
 
       if (!configuration.isBackup())
       {
-         //Once we ready we can start the remoting service so we can start accepting connections
+         // Once we ready we can start the remoting service so we can start accepting connections
          remotingService.start();
       }
-      
+
       started = true;
    }
 
    public synchronized void start() throws Exception
-   {      
+   {
       if (started)
       {
          return;
       }
-   
+
       remotingService.setMessagingServer(this);
 
       if (configuration.isBackup())
       {
          remotingService.start();
-         
+
          // We defer actually initialisation until the live node has contacted the backup
          log.info("Backup server will await live server before becoming operational");
       }
@@ -470,20 +470,20 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-      
+
       if (clusterManager != null)
-      {       
-         clusterManager.stop();         
+      {
+         clusterManager.stop();
       }
-      
+
       remotingService.stop();
-      
+
       managementService.stop();
-      
+
       storageManager.stop();
-      
+
       securityManager.stop();
-      
+
       asyncDeliveryPool.shutdown();
 
       try
@@ -526,7 +526,7 @@ public class MessagingServerImpl implements MessagingServer
       resourceManager = null;
       serverManagement = null;
 
-      sessions.clear();      
+      sessions.clear();
 
       started = false;
       initialised = false;
@@ -643,26 +643,29 @@ public class MessagingServerImpl implements MessagingServer
       return clusterManager;
    }
 
-   private synchronized void checkActivate(final RemotingConnection connection)
+   private void checkActivate(final RemotingConnection connection)
    {
       if (configuration.isBackup())
-      {      
-         freezeBackupConnection();
-
-         List<Queue> toActivate = postOffice.activate();
-
-         for (Queue queue : toActivate)
+      {
+         synchronized (this)
          {
-            scheduledExecutor.schedule(new ActivateRunner(queue),
-                                       configuration.getQueueActivationTimeout(),
-                                       TimeUnit.MILLISECONDS);
-         }
-
-         configuration.setBackup(false);
-
-         if (clusterManager != null)
-         {
-            clusterManager.activate();
+            freezeBackupConnection();
+   
+            List<Queue> toActivate = postOffice.activate();
+   
+            for (Queue queue : toActivate)
+            {
+               scheduledExecutor.schedule(new ActivateRunner(queue),
+                                          configuration.getQueueActivationTimeout(),
+                                          TimeUnit.MILLISECONDS);
+            }
+   
+            configuration.setBackup(false);
+   
+            if (clusterManager != null)
+            {
+               clusterManager.activate();
+            }
          }
       }
 
@@ -823,7 +826,7 @@ public class MessagingServerImpl implements MessagingServer
    public boolean isInitialised()
    {
       synchronized (initialiseLock)
-      {         
+      {
          return initialised;
       }
    }
@@ -843,7 +846,7 @@ public class MessagingServerImpl implements MessagingServer
             {
                throw new IllegalStateException("Backup node already has a unique id but it's not the same as the live node id");
             }
-            
+
             return;
          }
 
@@ -1072,7 +1075,7 @@ public class MessagingServerImpl implements MessagingServer
             if (config.isDurable())
             {
                storageManager.addQueueBinding(queueBinding);
-            }                      
+            }
          }
       }
    }
@@ -1171,7 +1174,7 @@ public class MessagingServerImpl implements MessagingServer
       // some other people
       // security my be screwed up, on account of thread local security stack
       // being corrupted.
-      
+
       securityStore.authenticate(username, password);
 
       ServerSession currentSession = sessions.remove(name);

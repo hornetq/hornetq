@@ -1050,20 +1050,24 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       
       remotingConnection.removeFailureListener(this);
+      
+      //Note. We do not destroy the replicating connection here. In the case the live server has really crashed
+      //then the connection will get cleaned up anyway when the server ping timeout kicks in.
+      //In the case the live server is really still up, i.e. a split brain situation (or in tests), then closing
+      //the replicating connection will cause the outstanding responses to be be replayed on the live server,
+      //if these reach the client who then subsequently fails over, on reconnection to backup, it will have
+      //received responses that the backup did not know about.
 
       channel.transferConnection(newConnection, this.id, replicatingChannel);
 
       newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
-
-      // Destroy the old connection
-      remotingConnection.destroy();
 
       remotingConnection = newConnection;
 
       remotingConnection.addFailureListener(this);
 
       int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
-
+ 
       channel.replayCommands(lastReceivedCommandID, this.id);
 
       if (wasStarted)
@@ -1086,7 +1090,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       try
       {
-         log.info("Connection timed out, so clearing up resources for session " + name);
+         log.warn("Client connection failed, clearing up resources for session " + name);
 
          for (Runnable runner : failureRunners)
          {
@@ -1102,7 +1106,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          handleClose(new PacketImpl(PacketImpl.SESS_CLOSE));
 
-         log.info("Cleared up resources for session " + name);
+         log.warn("Cleared up resources for session " + name);
       }
       catch (Throwable t)
       {
