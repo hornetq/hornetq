@@ -84,7 +84,7 @@ public class PagingExample extends JMSExample
          MessageConsumer messageConsumer = session.createConsumer(queue);
          
 
-         //Step 11. Start the Connection
+         //Step 11.  Start the JMS Connection. This step will activate the subscribers to receive messages.
          connection.start();
          
          
