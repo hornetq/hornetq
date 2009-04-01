@@ -1,0 +1,120 @@
+<html>
+  <head>
+    <title>JBoss Messaging JMS Topic With Selectors Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>JMS Topic Example</h1>
+     <br>
+     <p>This example shows you how to send message to a JMS Topic, and subscribe them using selectors with JBoss Messaging.</p>
+     <p>Topics and selectors are a standard part of JMS, please consult the JMS 1.1 specification for full details.</p>
+     <p>A Topic is used to send messages using the publish-subscribe model, from a producer to 1 or more consumers.</p>
+     <br>
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <br>
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
+        <pre>
+           <code>InitialContext initialContext = getContext();</code>
+        </pre>
+
+        <li>We look-up the JMS topic object from JNDI</li>
+        <pre>
+           <code>Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");</code>
+        </pre>
+
+        <li>We look-up the JMS connection factory object from JNDI</li>
+        <pre>
+           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
+        </pre>
+
+        <li>We create a JMS connection</li>
+        <pre>
+           <code>connection = cf.createConnection();</code>
+        </pre>
+
+        <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
+        <pre>
+           <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
+        </pre>
+
+        <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
+        <pre>
+          <code>MessageProducer messageProducer = session.createProducer(topic);</code>
+        </pre>
+       
+        <li>Create one subscriber with a specific filter</li>
+        <pre>
+         <code>TopicSubscriber subscriberA = session.createDurableSubscriber(topic, "sub-a1", "userId=1", false);</code>
+        </pre>
+        
+        <li>Create another subscriber</li>
+        <pre>
+         <code>TopicSubscriber subscriberB = session.createDurableSubscriber(topic, "sub-a2", "userId=2", false);</code>
+        </pre>
+
+        <li>Start the JMS Connections. This step will activate the subscribers to receive messages</li>
+        <pre>
+         <code>connection.start();</code>
+        </pre>
+
+        <li>Send two messages </li>
+        <pre>
+<code>         for (int i = 1; i <= 2; i++)
+         {
+            // Create a text message
+            TextMessage message1 = session.createTextMessage("This is a text message " + i);
+            
+            // Set a property
+            message1.setIntProperty("userId", i);
+   
+            // Send the message
+            messageProducer.send(message1);
+         }</code>
+        </pre>
+
+        <li>We start the connection. In order for delivery to occur on any consumers or subscribers on a connection, the connection must be started</li>
+        <pre>
+           <code>connection.start();</code>
+        </pre>
+
+
+        <li>Receive the messages on subscription a and b</li>
+        <pre>
+           <code>TextMessage messageReceivedA = (TextMessage)subscriberA.receive();</code>
+           <code>System.out.println(messageReceivedA.getText());</code>
+           <code>TextMessage messageReceivedB = (TextMessage)subscriberB.receive();</code>
+           <code>System.out.println(messageReceivedB.getText());</code>
+        </pre>
+           
+
+        <li>Close the consumers</li>
+        <pre><code>subscriberA.close();</code></pre>
+        <pre><code>subscriberB.close();</code></pre>
+        
+        <li>Delete the subscriptions when you're done</li>
+        <pre><code>session.unsubscribe("sub-a1");</code></pre>
+		<pre><code>session.unsubscribe("sub-a2");</code></pre>
+        
+        <li>And finally, <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre>
+           <code>
+
+      finally
+      {
+         if (connection != null)
+         {
+            // Step 14. Be sure to close our JMS resources!
+            connection.close();
+         }
+      }
+           </code>
+        </pre>
+
+
+
+     </ol>
+  </body>
+</html>
