@@ -6,10 +6,9 @@
   <body>
      <h1>JMS Topic Example</h1>
      <br>
-     <p>This example shows you how to send message to a JMS Topic, and subscribe them using selectors with JBoss Messaging.</p>
-     <p>The test will send 20 messages where 10 will have the message property someID set to 1 and the other 10 will have it set to 2.</p> 
-     <p>The test is also creating 3 non durable subscribers. 2 subscriptions using selectors, and a third one that should receive the complete set of messages.</p>
+     <p>This example shows you how to send message to a JMS Topic, and subscribe them using selectors with JBoss Messaging, also creating 3 non durable subscribers. 2 subscriptions using selectors, and a third one that should receive the complete set of messages.</p>
      <p>Topics and selectors are a standard part of JMS, please consult the JMS 1.1 specification for full details.</p>
+     <p>A regular subscriber would receive every message sent to the topic, but when you use a selector you would limit the messages you receive by the logic expression you choose only getting the messages that will matter to your processing.</p>  
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
