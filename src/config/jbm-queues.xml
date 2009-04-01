@@ -7,6 +7,7 @@
       <!--  only the admin role can interact with the management address  -->
       <permission type="consume" roles="admin"/>
       <permission type="send" roles="admin"/>
+      <permission type="manage" roles="admin"/>
    </security>
    
    <security match="topicjms.testTopic">

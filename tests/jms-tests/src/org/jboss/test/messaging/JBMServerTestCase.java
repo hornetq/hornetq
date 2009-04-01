@@ -21,12 +21,14 @@
    */
 package org.jboss.test.messaging;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.test.messaging.tools.ServerManagement;
+import org.jboss.test.messaging.tools.container.Server;
+import org.jboss.test.messaging.util.ProxyAssertSupport;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -40,16 +42,12 @@ import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnectionFactory;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
-
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.test.messaging.tools.ServerManagement;
-import org.jboss.test.messaging.tools.container.Server;
-import org.jboss.test.messaging.util.ProxyAssertSupport;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
@@ -260,7 +258,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
    public String[] getContainerConfig()
    {
-         return new String[]{ "invm-beans.xml", "jbm-jboss-beans.xml"};
+         return new String[]{ "invm-beans.xml", "/src/config/AS/jbm-jboss-beans.xml"};
    }
 
    protected MessagingServer getJmsServer() throws Exception

@@ -30,6 +30,7 @@
 
 <project default="compile" name="jmsexample" basedir=".">
    <dirname property="imported.basedir" file="${ant.file.jmsexample}"/>
+   <property file="${imported.basedir}/config/ant.properties"/>
 
    <!--
        This module is based on Java 1.5
@@ -118,6 +119,7 @@
       </javac>
    </target>
 
+
    <target name="runExample" depends="compile">
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
          <jvmarg value="-XX:+UseParallelGC"/>
@@ -132,6 +134,7 @@
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
          <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
          <jvmarg value="-Djbm.example.runServer=${jbm.example.runServer}"/>
+         <jvmarg value="-Djbm.example.logserveroutput=${jbm.example.logserveroutput}"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
          <arg line="${jbm.example.beans.file}"/>
          <classpath refid="jms.runtime.classpath"/>

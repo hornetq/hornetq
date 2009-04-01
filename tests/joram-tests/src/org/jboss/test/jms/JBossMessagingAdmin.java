@@ -22,18 +22,7 @@
 
 package org.jboss.test.jms;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.Hashtable;
-
-import javax.management.ObjectName;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import junit.framework.Assert;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;
@@ -46,6 +35,15 @@ import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.objectweb.jtests.jms.admin.Admin;
+
+import javax.management.ObjectName;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.Hashtable;
 
 /**
  * A JBossMessagingAdmin
@@ -244,7 +242,7 @@ public class JBossMessagingAdmin implements Admin
                      String line = null;
                      while ((line = br.readLine()) != null)
                      {
-                        System.out.println("JoramServerOutput: " + line);
+                        System.out.println("server output: " + line);
                      }
                   }
                   catch (Exception e)

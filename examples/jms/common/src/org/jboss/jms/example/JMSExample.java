@@ -23,7 +23,6 @@ package org.jboss.jms.example;
 
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;
 
@@ -51,7 +50,7 @@ public abstract class JMSExample
 {
    protected static Logger log = Logger.getLogger(JMSExample.class.getName());
 
-   private JBMBootstrapServer[] servers;
+   private Process[] servers;
 
    private Connection conn;
 
@@ -62,15 +61,17 @@ public abstract class JMSExample
    protected void run(String[] args)
    {
       String runServerProp = System.getProperty("jbm.example.runServer");
+      String logServerOutputProp = System.getProperty("jbm.example.logserveroutput");
       boolean runServer = runServerProp == null ? true : Boolean.valueOf(runServerProp);
+      boolean logServerOutput = logServerOutputProp == null?false:Boolean.valueOf(logServerOutputProp);
       log.info("jbm.example.runServer is " + runServer);
       try
       {
          if (runServer)
          {
-            startServer(getServerNames(args));
+            startServer(getServerNames(args), logServerOutput);
          }
-         InitialContext ic = new InitialContext();
+         InitialContext ic = getContext();
          ConnectionFactory cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
          conn = cf.createConnection("admin", "admin");
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -138,26 +139,24 @@ public abstract class JMSExample
       return new InitialContext(props);
    }
 
-   private void startServer(String[][] args) throws Throwable
+   private void startServer(String[][] args, boolean logServerOutput) throws Throwable
    {
-      servers = new JBMBootstrapServer[args.length];
+      servers = new Process[args.length];
       for (int i = 0; i < args.length; i++)
       {
          String[] arg = args[i];
-         log.info("starting server with config '" + arg[0] + "'");
-         servers[i] = new JBMBootstrapServer(arg);
-      }
-      for (JBMBootstrapServer server : servers)
-      {
-         server.run();
+         log.info("starting server with config '" + arg[0] + "' " + "logServerOutput " + logServerOutput);
+         servers[i] = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), new String[]{}, logServerOutput, "STARTED::", "FAILED::", args[0]);
       }
    }
 
    private void stopServer() throws Throwable
    {
-      for (JBMBootstrapServer server : servers)
+      for (Process server : servers)
       {
-         server.shutDown();
+         server.getInputStream().close();
+         server.getErrorStream().close();
+         server.destroy();
       }
    }
 

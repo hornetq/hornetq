@@ -22,20 +22,21 @@
 
 package org.jboss.messaging.integration.bootstrap;
 
+import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
+import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
+import org.jboss.kernel.spi.config.KernelConfig;
+import org.jboss.kernel.spi.deployment.KernelDeployment;
+import org.jboss.messaging.core.logging.Logger;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
-import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
-import org.jboss.kernel.spi.config.KernelConfig;
-import org.jboss.kernel.spi.deployment.KernelDeployment;
-import org.jboss.messaging.core.logging.Logger;
 
 /**
  * This is the method in which the JBM server can be deployed externall outside of jBoss. Alternatively a user can embed
@@ -156,6 +157,14 @@ public class JBMBootstrapServer extends BasicBootstrap
       if(url == null)
       {
          url = getClass().getClassLoader().getResource(arg);
+      }
+      if(url == null)
+      {
+         File file = new File(arg);
+         if(file.exists())
+         {
+            url = file.toURL();
+         }
       }
       if (url == null)
       {
