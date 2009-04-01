@@ -6,6 +6,7 @@
 	<classpathentry kind="src" path="examples/jms/transactional/src"/>
 	<classpathentry kind="src" path="examples/jms/topic/src"/>
 	<classpathentry kind="src" path="examples/jms/queue/src"/>
+	<classpathentry kind="src" path="examples/jms/queue-requestor/src"/>
 	<classpathentry kind="src" path="examples/jms/durable/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>
 	<classpathentry kind="src" path="build/src"/>
