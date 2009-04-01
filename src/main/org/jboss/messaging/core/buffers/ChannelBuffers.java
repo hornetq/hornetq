@@ -83,7 +83,6 @@ import java.nio.ByteBuffer;
  * @version $Rev: 472 $, $Date: 2008-11-14 16:45:53 +0900 (Fri, 14 Nov 2008) $
  *
  * @apiviz.landmark
- * @apiviz.has org.jboss.netty.buffer.ChannelBuffer oneway - - creates
  */
 public class ChannelBuffers
 {
