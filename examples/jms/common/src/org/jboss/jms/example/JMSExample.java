@@ -55,6 +55,10 @@ public abstract class JMSExample
 
    private Connection conn;
 
+   private boolean failure = false;
+
+   public abstract void runExample() throws Exception;
+
    protected void run(String[] args)
    {
       String runServerProp = System.getProperty("jbm.example.runServer");
@@ -80,6 +84,7 @@ public abstract class JMSExample
       }
       catch (Throwable e)
       {
+         failure = true;
          e.printStackTrace();
       }
       finally
@@ -107,6 +112,7 @@ public abstract class JMSExample
             }
          }
       }
+      reportResultAndExit();
    }
 
 
@@ -218,7 +224,24 @@ public abstract class JMSExample
       }
       return actArgs;
    }
-   public abstract void runExample() throws Exception;
-
-
+   
+   private void reportResultAndExit()
+   {
+      if (failure)
+      {
+         System.err.println();
+         System.err.println("#####################");
+         System.err.println("###    FAILURE!   ###");
+         System.err.println("#####################");
+         System.exit(1);
+      }
+      else
+      {
+         System.out.println();
+         System.out.println("#####################");
+         System.out.println("###    SUCCESS!   ###");
+         System.out.println("#####################");
+         System.exit(0);
+      }
+   }
 }

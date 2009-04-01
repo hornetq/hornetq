@@ -119,7 +119,7 @@
    </target>
 
    <target name="runExample" depends="compile">
-      <java classname="${example.classname}" fork="true">
+      <java classname="${example.classname}" fork="true" resultproperty="example-result">
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
          <jvmarg value="-Xmx2048M"/>
@@ -136,9 +136,24 @@
          <arg line="${jbm.example.beans.file}"/>
          <classpath refid="jms.runtime.classpath"/>
       </java>
+      <!-- if the example exited with a result value != 0, we fail the build -->
+      <fail message="Example ${example.classname} failed">
+          <condition>
+              <not>
+                <equals arg1="${example-result}" arg2="0" />
+              </not>
+          </condition>
+      </fail>
    </target>
 
    <target name="clean">
    	  <delete dir="./build" quiet="true" />
    </target>
+    
+   <target name="all" description="Run all the JMS examples">
+      <subant target="run" failonerror="true">
+         <fileset dir=".." includes="*/build.xml" excludes="common/build.xml"/>
+      </subant>
+   </target>
+
 </project>
