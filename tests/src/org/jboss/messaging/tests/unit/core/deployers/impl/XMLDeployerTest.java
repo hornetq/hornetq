@@ -22,15 +22,15 @@
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * tests the abstract xml deployer class
@@ -223,6 +223,11 @@ public class XMLDeployerTest extends UnitTestCase
       public String[] getConfigFileNames()
       {
          return new String[] {"test"};
+      }
+
+      public String[] getDefaultConfigFileNames()
+      {
+         return new String[0];
       }
 
       @Override

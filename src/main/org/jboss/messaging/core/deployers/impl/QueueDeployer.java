@@ -22,12 +22,12 @@
 
 package org.jboss.messaging.core.deployers.impl;
 
-import java.util.List;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.w3c.dom.Node;
+
+import java.util.List;
 
 /**
  * A QueueDeployer
@@ -90,7 +90,7 @@ public class QueueDeployer extends XmlDeployer
     *
     * @return The name of the config file
     */
-   public String[] getConfigFileNames()
+   public String[] getDefaultConfigFileNames()
    {
       return new String[] { "jbm-configuration.xml", "jbm-queues.xml" };
    }

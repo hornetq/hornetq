@@ -144,7 +144,7 @@ public class AddressSettingsDeployer extends XmlDeployer
       addressSettingsRepository.addMatch(match, addressSettings);
    }
 
-   public String[] getConfigFileNames()
+   public String[] getDefaultConfigFileNames()
    {
       return new String[] { "jbm-configuration", "jbm-queues.xml" };
    }

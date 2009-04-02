@@ -38,6 +38,11 @@
       <property name="jbmSecurityManager">
          <inject bean="JBMSecurityManager"/>
       </property>
+      <!--<property name="configFileNames">
+         <array elementClass="java.lang.String">
+            <value>jbm-security.xml</value>
+         </array>
+      </property>-->
    </bean>
 
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">

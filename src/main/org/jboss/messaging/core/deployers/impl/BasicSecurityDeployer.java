@@ -88,7 +88,7 @@ public class BasicSecurityDeployer extends XmlDeployer
       jbmSecurityManager.removeUser(username);
    }
 
-   public String[] getConfigFileNames()
+   public String[] getDefaultConfigFileNames()
    {
       return new String[] {"jbm-security.xml"};
    }

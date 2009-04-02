@@ -12,9 +12,6 @@
 
 package org.jboss.messaging.jms.server.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -26,6 +23,9 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.utils.Pair;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -452,7 +452,7 @@ public class JMSServerDeployer extends XmlDeployer
       }
    }
 
-   public String[] getConfigFileNames()
+   public String[] getDefaultConfigFileNames()
    {
       return new String[] {"jbm-jms.xml"};
    }

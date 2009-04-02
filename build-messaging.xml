@@ -954,7 +954,7 @@
          </fileset>
       </copy>
 
-      <copy tofile="${build.distro.examples.dir}/jms/common/config/ant.properties" file="AS/examples-ant.properties" overwrite="true">
+      <copy tofile="${build.distro.examples.dir}/jms/common/config/ant.properties" file="AS/config/examples-ant.properties" overwrite="true">
 
       </copy>
       <echo message="lib.dir=../../lib${line.separator}client.jar=../../lib/jboss-messaging-client.jar${line.separator}config.dir=../../config${line.separator}server.jar=../../lib/jboss-messaging.jar"

@@ -22,6 +22,14 @@
 
 package org.jboss.messaging.core.deployers.impl;
 
+import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessagingComponent;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -31,14 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.jboss.messaging.core.deployers.Deployer;
-import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingComponent;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -55,9 +55,12 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
    
    private boolean started;
 
+   private String[] configFileNames;
+
    public XmlDeployer(final DeploymentManager deploymentManager)
    {
       this.deploymentManager = deploymentManager;
+      configFileNames = getDefaultConfigFileNames();
    }
    
    /**
@@ -247,12 +250,23 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
       return started;
    }
 
+   public String[] getConfigFileNames()
+   {
+      return configFileNames;
+   }
+
+   public void setConfigFileNames(String[] configFileNames)
+   {
+      this.configFileNames = configFileNames;
+   }
+
    /**
     * the names of the elements to deploy
     * @return the names of the elements todeploy
     */
    public abstract String[] getElementTagName();
 
+   public abstract String[] getDefaultConfigFileNames();
 
    /**
     * deploy an element
