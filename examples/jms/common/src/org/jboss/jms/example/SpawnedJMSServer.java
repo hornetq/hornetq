@@ -35,7 +35,6 @@ public class SpawnedJMSServer
       {
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-         System.setProperty("java.util.logging.config.file", "../../../src/config/logging.properties");
          System.setProperty("org.jboss.logging.Logger.pluginClass", "org.jboss.messaging.integration.logging.JBMLoggerPlugin");
          bootstrap = new JBMBootstrapServer(args);
          bootstrap.run();

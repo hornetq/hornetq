@@ -58,39 +58,20 @@
    <property name="classes.dir" value="${build.dir}/classes"/>
    <property name="config.dir" value="${imported.basedir}/config"/>
    <property name="example.config.dir" value="config"/>
-   <property name="jbm.jars.dir" value="${imported.basedir}/../../../build/jars"/>
 
-   <property name="project.thirdparty" value="${imported.basedir}/../../../thirdparty"/>
-
-   <property name="logging.properties" value="${imported.basedir}/../../../src/config/logging.properties"/>
-
-   &libraries;
    <path id="jms.compilation.classpath">
       <fileset dir="${jbm.jars.dir}">
          <include name="**/*.jar"/>
       </fileset>
-      <path refid="jboss.microcontainer.classpath"/>
-      <path refid="jboss.common.classpath"/>
-      <path refid="jboss.jboss.javaee.classpath"/>
+      <fileset dir="${jars.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
    </path>
 
    <path id="jms.runtime.classpath">
       <path refid="jms.compilation.classpath"/>
-      <path refid="apache.log4j.classpath"/>
       <pathelement location="${config.dir}"/>
       <pathelement location="${example.config.dir}"/>
-      <path refid="oswego.concurrent.classpath"/>
-      <path refid="apache.log4j.classpath"/>
-      <path refid="cglib.classpath"/>
-      <path refid="jboss.common.core.classpath"/>
-      <path refid="jboss.aop.classpath"/>
-      <path refid="trove.trove.classpath"/>
-      <path refid="javassist.classpath"/>
-      <path refid="jboss.jbossxb.classpath"/>
-      <path refid="apache.xerces.classpath"/>
-      <path refid="apache.logging.classpath"/>
-      <path refid="jboss.jnpserver.classpath"/>
-      <path refid="netty.netty.classpath"/>
       <pathelement location="${classes.dir}"/>
    </path>
    <target name="init">
