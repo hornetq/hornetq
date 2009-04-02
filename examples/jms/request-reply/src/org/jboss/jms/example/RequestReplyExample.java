@@ -24,7 +24,10 @@ package org.jboss.jms.example;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -53,7 +56,7 @@ public class RequestReplyExample extends JMSExample
          InitialContext initialContext = getContext();
 
          //Step 2. Lookup the queue for sending the request message
-         Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");
+         Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");         
 
          //Step 3. Lookup for the Connection Factory
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
@@ -73,71 +76,116 @@ public class RequestReplyExample extends JMSExample
          //Step 8. Create a temporary queue used to send reply message
          TemporaryQueue replyQueue = session.createTemporaryQueue();
          
-         //Step 9. Create a JMS Message Consumer
-         MessageConsumer messageConsumer = session.createConsumer(requestQueue);
+         
+         //Step 9. Create consumer to receive reply message
+         MessageConsumer replyConsumer = session.createConsumer(replyQueue);
 
-         //Step 10. Create a request Text Message
+         //Step 10. Create a JMS Message Consumer
+         MessageConsumer messageConsumer = session.createConsumer(requestQueue);
+         
+         //Step 11. Register a message listener as request handler
+         messageConsumer.setMessageListener(new SimpleRequestHandler(cf));
+
+         //Step 12. Create a request Text Message
          TextMessage requestMsg = session.createTextMessage("A request message");
          
-         //Step 11. Set the ReplyTo header so that the request receiver knows where to send the reply.
+         //Step 13. Set the ReplyTo header so that the request receiver knows where to send the reply.
          requestMsg.setJMSReplyTo(replyQueue);
          
-         //Step 12. Set the CorrelationID so that it can be linked with corresponding reply message
+         //Step 14. Set the CorrelationID so that it can be linked with corresponding reply message
          requestMsg.setJMSCorrelationID("jbm-id: 0000001");
          
-         //Step 13. Sent the request message
+         //Step 15. Sent the request message
          producer.send(requestMsg);
          
          System.out.println("Request message sent.");
          
-         //Step 14. Receive the request message
-         TextMessage requestMsgReceived = (TextMessage) messageConsumer.receive(5000);
-
-         System.out.println("Received message: " + requestMsgReceived.getText());
-         System.out.println("The request CorrelationID: " + requestMsgReceived.getJMSCorrelationID());
-
-         //Step 15. Extract the ReplyTo destination
-         Destination replyDestination = requestMsgReceived.getJMSReplyTo();
-         
-         System.out.println("Got reply queue: " + replyDestination);
-         
-         //Step 16. Create a reply message
-         TextMessage replyMessage = session.createTextMessage("A reply message");
-         
-         //Step 17. Set the CorrelationID
-         replyMessage.setJMSCorrelationID(requestMsgReceived.getJMSCorrelationID());
-         
-         //Step 18. Create a producer to send the reply message
-         MessageProducer replyProducer = session.createProducer(replyDestination);
-         
-         //Step 19. Send out the reply message
-         replyProducer.send(replyMessage);
-         
-         //Step 20. Create consumer to receive reply message
-         MessageConsumer replyConsumer = session.createConsumer(replyDestination);
-         
-         //Step 21. Receive the reply message.
-         TextMessage replyMessageReceived = (TextMessage)replyConsumer.receive(5000);
+         //Step 16. Receive the reply message.
+         TextMessage replyMessageReceived = (TextMessage)replyConsumer.receive();
          
          System.out.println("Received reply: " + replyMessageReceived.getText());
          System.out.println("CorrelatedId: " + replyMessageReceived.getJMSCorrelationID());
-
-         //Step 22 closing the consumer and producer on the replyQueue
-         replyConsumer.close();
-         replyProducer.close();
          
-         //Step 23. Delete the temporary queue
+         //Step 17. close the consumer.
+         replyConsumer.close();
+         
+         //Step 18. Delete the temporary queue
          replyQueue.delete();
          
       }
       finally
       {
-         //Step 24. Be sure to close our JMS resources!
+         //Step 19. Be sure to close our JMS resources!
          if(connection != null)
          {
             connection.close();
          }
       }
+   }
+   
+   private class SimpleRequestHandler implements MessageListener
+   {
+      private ConnectionFactory cf;
+      
+      public SimpleRequestHandler(ConnectionFactory cfact)
+      {
+         cf = cfact;
+      }
+      
+      public void onMessage(Message request)
+      {
+         Connection connection = null;
+         try
+         {
+            System.out.println("Received request message: " + ((TextMessage)request).getText());
+
+            // Create a connection
+            connection = cf.createConnection();
+
+            // Create a session
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            // Extract the ReplyTo destination
+            Destination replyDestination = request.getJMSReplyTo();
+
+            // Create a producer to send the reply message
+            MessageProducer replyProducer = session.createProducer(replyDestination);
+
+            System.out.println("Got reply queue: " + replyDestination);
+
+            // Create the reply message
+            TextMessage replyMessage = session.createTextMessage("A reply message");
+
+            // Set the CorrelationID
+            replyMessage.setJMSCorrelationID(request.getJMSCorrelationID());
+
+            // Send out the reply message
+            replyProducer.send(replyMessage);
+
+            // Close the producer on the replyQueue
+            replyProducer.close();
+         }
+         catch (JMSException e)
+         {
+            e.printStackTrace();
+         }
+         finally
+         {
+            if (connection != null)
+            {
+               try 
+               {
+                  //Close the connection
+                  connection.close();
+               }
+               catch (JMSException e)
+               {
+                  e.printStackTrace();
+               }
+            }
+         }
+      }
+      
    }
 
 }
