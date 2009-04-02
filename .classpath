@@ -13,9 +13,10 @@
 	<classpathentry kind="src" path="src/schemas"/>
 	<classpathentry kind="src" path="tests/joram-tests/src"/>
 	<classpathentry kind="src" path="tests/joram-tests/config"/>
-    <classpathentry kind="src" path="examples/jms/browser/src"/>
+	<classpathentry kind="src" path="examples/jms/browser/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>
 	<classpathentry kind="src" path="examples/jms/durable/src"/>
+	<classpathentry kind="src" path="examples/jms/expiry/src"/>
 	<classpathentry kind="src" path="examples/jms/queue/src"/>
 	<classpathentry kind="src" path="examples/jms/queue-requestor/src"/>
 	<classpathentry kind="src" path="examples/jms/request-reply/src"/>
