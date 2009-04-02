@@ -126,6 +126,7 @@ public class MessageExpirationTest extends UnitTestCase
       ClientMessage expiredMessage = expiryConsumer.receive(500);
       assertNotNull(expiredMessage);
       assertNotNull(expiredMessage.getProperty(MessageImpl.HDR_ACTUAL_EXPIRY_TIME));
+      assertEquals(address, expiredMessage.getProperty(MessageImpl.HDR_ORIGINAL_DESTINATION));
       consumer.close();
       expiryConsumer.close();
       session.deleteQueue(queue);
