@@ -43,7 +43,7 @@ import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 
- * It validates if the messages are in the same ordering on the page system betwen the backup and live nodes.
+ * It validates if the messages are in the same ordering on the page system between the backup and live nodes.
  * 
  * This test is valid as long as we want to guarantee strict ordering on both nodes for paged messages between backup and live nodes.
  * 

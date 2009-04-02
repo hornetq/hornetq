@@ -42,6 +42,7 @@ import org.jboss.messaging.utils.SimpleString;
  * A AutomaticFailoverWithDiscoveryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * 
  * Created 8 Dec 2008 14:52:21
  *
@@ -75,17 +76,6 @@ public class PreserveOrderDuringFailoverTest extends FailoverTestBase
 
    protected void failoverOrderTest() throws Exception
    {
-
-      // This test would fail if both servers have the same time component
-//      NullStorageManager storageManagerLive = (NullStorageManager)liveServer.getStorageManager();
-//      TimeAndCounterIDGenerator idgeneratorlive = (TimeAndCounterIDGenerator)storageManagerLive.getIDGenerator();
-//
-//      NullStorageManager storageManagerBackup = (NullStorageManager)backupServer.getStorageManager();
-//      TimeAndCounterIDGenerator idgeneratorBackup = (TimeAndCounterIDGenerator)storageManagerBackup.getIDGenerator();
-//
-//      idgeneratorBackup.setInternalDate(0);
-//      idgeneratorlive.setInternalDate(0);
-
       ClientSessionFactory sf = createFailoverFactory();
 
       ClientSession session = sf.createSession(false, true, true);

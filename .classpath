@@ -17,6 +17,7 @@
 	<classpathentry kind="src" path="examples/jms/common/src"/>
 	<classpathentry kind="src" path="examples/jms/durable/src"/>
 	<classpathentry kind="src" path="examples/jms/expiry/src"/>
+	<classpathentry kind="src" path="examples/jms/paging/src"/>
 	<classpathentry kind="src" path="examples/jms/queue/src"/>
 	<classpathentry kind="src" path="examples/jms/queue-requestor/src"/>
 	<classpathentry kind="src" path="examples/jms/request-reply/src"/>
