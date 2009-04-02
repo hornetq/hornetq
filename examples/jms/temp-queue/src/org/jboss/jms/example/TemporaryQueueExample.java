@@ -23,21 +23,14 @@ package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
 import javax.jms.Session;
+import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * A simple JMS example that shows how to use temporary queues.
@@ -72,7 +65,7 @@ public class TemporaryQueueExample extends JMSExample
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          // Step 6. Create a Temporary Queue
-         Queue tempQueue = session.createTemporaryQueue();
+         TemporaryQueue tempQueue = session.createTemporaryQueue();
          
          System.out.println("Temporary queue is created: " + tempQueue);
          
@@ -94,6 +87,39 @@ public class TemporaryQueueExample extends JMSExample
          message = (TextMessage) messageConsumer.receive(5000);
 
          System.out.println("Received message: " + message.getText());
+         
+         // Step 13. Close the consumer and producer
+         messageConsumer.close();
+         messageProducer.close();
+         
+         // Step 14. Delete the temporary queue
+         tempQueue.delete();
+         
+         // Step 15. Create another temporary queue.
+         TemporaryQueue tempQueue2 = session.createTemporaryQueue();
+         
+         System.out.println("Another temporary queue is created: " + tempQueue2);
+         
+         // Step 16. Close the connection.
+         connection.close();
+         
+         // Step 17. Create a new connection.
+         connection = cf.createConnection();
+         
+         // Step 18. Create a new session.
+         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         // Step 19. Try to access the tempQueue2 outside its lifetime
+         try
+         {
+            messageConsumer = session.createConsumer(tempQueue2);
+            throw new Exception("Temporary queue cannot be accessed outside its lifecycle!");
+         }
+         catch (InvalidDestinationException e)
+         {
+            System.out.println("Exception got when trying to access a temp queue outside its scope: " + e);
+         }
+         
       }
       finally
       {
@@ -101,7 +127,7 @@ public class TemporaryQueueExample extends JMSExample
          {
             try
             {
-               // Step 13. Be sure to close our JMS resources!
+               // Step 20. Be sure to close our JMS resources!
                connection.close();
             }
             catch (JMSException e)

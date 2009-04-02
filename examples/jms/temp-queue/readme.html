@@ -6,8 +6,8 @@
   <body>
      <h1>JMS Temporary Queue Example</h1>
      <br>
-     <p>This example shows you how to use a TemporaryQueue object with JBoss Messaging.</p>
-     <p>TemporaryQueue is a JMS queue that lives within lifetime of its connection. Please consult the JMS 1.1 specification for full details.</p>
+     <p>This example shows you how to use a TemporaryQueue object with JBoss Messaging. First it creates a temporary queue to send and receive a message, then delete it. Then it creates another temporary queue and tries to use it after its connection is closed -- to illustrate its scope.</p>
+     <p>TemporaryQueue is a JMS queue that lives within lifetime of its connection. It is often used in request-reply type messaging where the reply is sent through a temporary destination. The temporary queue is often created as a server resource, so after using, the user should call delete() method to release the resources. Please consult the JMS 1.1 specification for full details.</p>
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
@@ -66,6 +66,52 @@
         <li>We receive the message from the temporary queue</li>
         <pre>
            <code>message = (TextMessage) messageConsumer.receive(5000);</code>
+        </pre>
+
+        <li>We close the consumer and producer before destroying the temporary queue</li>
+        <pre>
+           <code>messageConsumer.close();</code>
+           <code>messageProducer.close();</code>
+        </pre>
+
+        <li>We delete the temporary queue</li>
+        <pre>
+           <code>tempQueue.delete();</code>
+        </pre>
+
+        <li>We create another temporary queue</li>
+        <pre>
+           <code>TemporaryQueue tempQueue2 = session.createTemporaryQueue();</code>
+        </pre>
+
+        <li>We close the connection</li>
+        <pre>
+           <code>connection.close();</code>
+        </pre>
+
+        <li>We create a new connection</li>
+        <pre>
+           <code>connection = cf.createConnection();</code>
+        </pre>
+
+        <li>We create a new session</li>
+        <pre>
+           <code>session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
+        </pre>
+
+        <li>We try to access the tempQueue2 outside its lifetime, this will cause exception thrown</li>
+        <pre>
+           <code>
+         try
+         {
+            messageConsumer = session.createConsumer(tempQueue2);
+            throw new Exception("Temporary queue cannot be accessed outside its lifecycle!");
+         }
+         catch (InvalidDestinationException e)
+         {
+            System.out.println("Exception got when trying to access a temp queue outside its scope: " + e);
+         }
+           </code>
         </pre>
 
 	<li>and finally (no pun intended), <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its session, consumer, producer and browser objects</li>
