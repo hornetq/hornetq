@@ -18,6 +18,10 @@
       <entry name="/queue/expiryQueue"/>
    </queue>
 
+   <queue name="deadLetterQueue">
+      <entry name="/queue/deadLetterQueue"/>
+   </queue>
+
    <topic name="topic">
       <entry name="/topic/exampleTopic"/>
    </topic>

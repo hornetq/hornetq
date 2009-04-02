@@ -55,6 +55,9 @@
         <xsd:element name="redelivery-delay" type="xsd:unsignedLong"
             maxOccurs="1" minOccurs="0">
         </xsd:element>
+        <xsd:element name="max-delivery-attempts" type="xsd:unsignedInt"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
         <xsd:element name="max-size-bytes" type="xsd:long"
             maxOccurs="1" minOccurs="0">
         </xsd:element>

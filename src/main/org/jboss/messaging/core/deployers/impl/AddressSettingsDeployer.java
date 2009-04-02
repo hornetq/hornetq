@@ -41,6 +41,8 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    private static final String REDELIVERY_DELAY_NODE_NAME = "redelivery-delay";
 
+   private static final String MAX_DELIVERY_ATTEMPTS = "max-delivery-attempts";
+
    private static final String MAX_SIZE_BYTES_NODE_NAME = "max-size-bytes";
 
    private static final String DROP_MESSAGES_WHEN_FULL_NODE_NAME = "drop-messages-when-full";
@@ -138,6 +140,10 @@ public class AddressSettingsDeployer extends XmlDeployer
          else if (SOLO_MESSAGE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setSoloQueue(Boolean.valueOf(child.getTextContent().trim()));
+         }
+         else if (MAX_DELIVERY_ATTEMPTS.equalsIgnoreCase(child.getNodeName()))
+         {
+            addressSettings.setMaxDeliveryAttempts(Integer.valueOf(child.getTextContent().trim()));
          }
       }
 
