@@ -5,8 +5,9 @@
   <body>
      <h1>JMS Transactional Session Example</h1>
      <br>
-     <p>This example shows you how to use a transactional Session with JBoss Messaging.</p>
-     <p>Messages can be sent and received over transactional sessions, please consult the JMS 1.1 specification for full details.</p>
+     <p>This example shows you how to use a transactional Session with JBoss Messaging. It creates a transactional session. At first it sends out two messages and tries to receive without session commit. Then it commits the sending session and receives only one messages before it rolls back the receiving session. It then receives all the messages and commits the session.</p>
+
+     <p>Messages can be sent and received over transactional sessions. Messages in a transactional session will not be sent or acknowledged until the session is committed. It a session is rolled back, the produced messages will be destroyed and consumed messages will be recovered. Please consult the JMS 1.1 specification for full details.</p>
 
      <br>
      <h2>Example step-by-step</h2>
@@ -48,39 +49,59 @@
 	   <code>MessageProducer messageProducer = session.createProducer(queue);</code>
         </pre>
 
-        <li>We create a JMS text message to be sent</li>
+        <li>We create a message consumer</li>
 	<pre>
-           <code>TextMessage message = session.createTextMessage("This is a text message");</code>
+	   <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
+        </pre>
+
+        <li>We create 2 text messages</li>
+	<pre>
+           <code>TextMessage message1 = session.createTextMessage("This is a text message1");</code>
+           <code>TextMessage message2 = session.createTextMessage("This is a text message2");</code>
         </pre>
    
-        <li>We send message to the queue</li>
+        <li>We send the text messages to the queue</li>
         <pre>
-           <code>messageProducer.send(message);</code>
+           <code>messageProducer.send(message1);</code>
+           <code>messageProducer.send(message2);</code>
         </pre>
 
-        <li>We commit the session to let the message be delivered. After commit, the session will start a new transaction automatically.</li>
+        <li>We receive the message, it will return null as the transaction is not committed.</li>
         <pre>
+           <code>TextMessage receivedMessage = (TextMessage) messageConsumer.receive(5000);</code>
+        </pre>
+
+        <li>We commit the session</li>
+	<pre>
            <code>session.commit();</code>
         </pre>
-
-        <li>We create a message consumer on the queue</li>
-	<pre>
-           <code>TextMessage message2 = session.createTextMessage("This is a text message 2");</code>
-	   <br>
-           <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
-        </pre>
          
-        <li>We receive the message</li>
-
+        <li>We receive the messages again</li>
         <pre>
-           <code>message = (TextMessage) messageConsumer.receive(5000);</code>
+           <code>receivedMessage = (TextMessage) messageConsumer.receive(5000);</code>
         </pre>
-         
-        <li>We now commit the transaction. It will finish the message delivery.</li>
 
+        <li>We roll back the session, this will cause the received message canceled and redelivered again</li>
+        <pre> 
+           <code>session.rollback();</code>
+        </pre>
+
+        <li>We receive the message again, we will get two messages. Nothing more, nothing less</li>
+        <pre> 
+           <code>receivedMessage = (TextMessage) messageConsumer.receive(5000);</code>
+           <code>receivedMessage = (TextMessage) messageConsumer.receive(5000);</code>
+        </pre>
+
+        <li>We commit the session</li>
         <pre> 
            <code>session.commit();</code>
         </pre>
+
+        <li>We receive the message again. Nothing should be received</li>
+        <pre> 
+           <code>receivedMessage = (TextMessage) messageConsumer.receive(5000);</code>
+        </pre>
+
 
 	<li>And finally (no pun intended), <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its session, consumer, producer and browser objects</li>
 

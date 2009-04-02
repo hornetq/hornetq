@@ -69,27 +69,57 @@ public class TransactionalExample extends JMSExample
          // Step 7. Create a JMS message producer
          MessageProducer messageProducer = session.createProducer(queue);
 
-         // Step 8. Create a text message
-         TextMessage message = session.createTextMessage("This is a text message");
-
-         // Step 9. Send the text message to the queue
-         messageProducer.send(message);
-
-         System.out.println("Sent message: " + message.getText());
-
-         // Step 10. Commit the session
-         session.commit();
-         
-         // Step 11. Create a message consumer
+         // Step 8. Create a message consumer
          MessageConsumer messageConsumer = session.createConsumer(queue);
 
-         // Step 12. Receive the message from the queue
-         message = (TextMessage) messageConsumer.receive(5000);
+         // Step 9. Create 2 text messages
+         TextMessage message1 = session.createTextMessage("This is a text message1");
+         TextMessage message2 = session.createTextMessage("This is a text message2");
 
-         System.out.println("Received message: " + message.getText());
+         // Step 10. Send the text messages to the queue
+         messageProducer.send(message1);
+         messageProducer.send(message2);
+
+         System.out.println("Sent message: " + message1.getText());
+         System.out.println("Sent message: " + message2.getText());
+
+         // Step 11. Receive the message, it will return null as the transaction is not committed.
+         TextMessage receivedMessage = (TextMessage) messageConsumer.receive(5000);
          
-         // Step 13. Commit the session again
+         System.out.println("Message received before send commit: " + receivedMessage);
+
+         // Step 12. Commit the session
          session.commit();
+
+         // Step 13. Receive the messages again
+         receivedMessage = (TextMessage) messageConsumer.receive(5000);
+         
+         System.out.println("Message received after send commit: " + receivedMessage.getText());
+         
+         // Step 14. Roll back the session, this will cause the received message canceled and redelivered again.
+         session.rollback();
+         
+         // Step 15. Receive the message again, we will get two messages
+         receivedMessage = (TextMessage) messageConsumer.receive(5000);
+         
+         System.out.println("Message1 received after receive rollback: " + receivedMessage.getText());
+
+         receivedMessage = (TextMessage) messageConsumer.receive(5000);
+         
+         System.out.println("Message2 received after receive rollback: " + receivedMessage.getText());
+         
+         receivedMessage = (TextMessage) messageConsumer.receive(5000);
+         
+         System.out.println("Message3 received after receive rollback: " + receivedMessage);
+         
+         //Step 16. Commit the session
+         session.commit();
+         
+         //Step 17. Receive the message again. Nothing should be received.
+         receivedMessage = (TextMessage) messageConsumer.receive(5000);
+         
+         System.out.println("Message received after receive commit: " + receivedMessage);
+         
       }
       finally
       {
@@ -97,7 +127,7 @@ public class TransactionalExample extends JMSExample
          {
             try
             {
-               // Step 19. Be sure to close our JMS resources!
+               // Step 18. Be sure to close our JMS resources!
                connection.close();
             }
             catch (JMSException e)
