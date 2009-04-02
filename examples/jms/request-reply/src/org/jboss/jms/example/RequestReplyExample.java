@@ -73,22 +73,22 @@ public class RequestReplyExample extends JMSExample
          //Step 8. Create a temporary queue used to send reply message
          TemporaryQueue replyQueue = session.createTemporaryQueue();
          
-         //Step 9. Create a request Text Message
+         //Step 9. Create a JMS Message Consumer
+         MessageConsumer messageConsumer = session.createConsumer(requestQueue);
+
+         //Step 10. Create a request Text Message
          TextMessage requestMsg = session.createTextMessage("A request message");
          
-         //Step 10. Set the ReplyTo header so that the request receiver knows where to send the reply.
+         //Step 11. Set the ReplyTo header so that the request receiver knows where to send the reply.
          requestMsg.setJMSReplyTo(replyQueue);
          
-         //Step 11. Set the CorrelationID so that it can be linked with corresponding reply message
+         //Step 12. Set the CorrelationID so that it can be linked with corresponding reply message
          requestMsg.setJMSCorrelationID("jbm-id: 0000001");
          
-         //Step 12. Sent the request message
+         //Step 13. Sent the request message
          producer.send(requestMsg);
          
          System.out.println("Request message sent.");
-         
-         //Step 13. Create a JMS Message Consumer
-         MessageConsumer messageConsumer = session.createConsumer(requestQueue);
          
          //Step 14. Receive the request message
          TextMessage requestMsgReceived = (TextMessage) messageConsumer.receive(5000);
@@ -121,10 +121,18 @@ public class RequestReplyExample extends JMSExample
          
          System.out.println("Received reply: " + replyMessageReceived.getText());
          System.out.println("CorrelatedId: " + replyMessageReceived.getJMSCorrelationID());
+
+         //Step 22 closing the consumer and producer on the replyQueue
+         replyConsumer.close();
+         replyProducer.close();
+         
+         //Step 23. Delete the temporary queue
+         replyQueue.delete();
+         
       }
       finally
       {
-         //Step 22. Be sure to close our JMS resources!
+         //Step 24. Be sure to close our JMS resources!
          if(connection != null)
          {
             connection.close();

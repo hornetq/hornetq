@@ -6,8 +6,10 @@
   <body>
      <h1>JMS Request-Reply Example</h1>
      <br>
-     <p>This example shows you how to send a request message and receive a reply. It first sends a request message and receives the reply message.</p>
-     <p>Request/Reply style messaging are supported through standard JMS message headers JMSReplyTo and JMSCorrelationID, please consult the JMS 1.1 specification for full details.</p>
+     <p>This example shows you how to send a request message and receive a reply. It first sends a request message with a JMSReplyTo header set to get a reply, then after 
+     receiving the request message, forges a reply message and send out to the reply queue. Then it receives the reply message.</p>
+     <p>Request/Reply style messaging is supported through standard JMS message headers JMSReplyTo and JMSCorrelationID. This is often used in request-reply style communications between applications.
+     Whenever a client sends a message that expects a response, it can use this mechanism to implement. please consult the JMS 1.1 specification for full details.</p>
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
@@ -53,6 +55,11 @@
            <code>TemporaryQueue replyQueue = session.createTemporaryQueue();</code>
         </pre>
 
+        <li>We create a JMS Message Consumer to receive request</li>
+        <pre>
+           <code>MessageConsumer messageConsumer = session.createConsumer(requestQueue);</code>
+        </pre>
+
         <li>We create a request Text Message</li>
         <pre>
            <code>TextMessage requestMsg = session.createTextMessage("A request message");</code>
@@ -71,11 +78,6 @@
         <li>We sent the request message</li>
         <pre>
            <code>producer.send(requestMsg);</code>
-        </pre>
-
-        <li>We create a JMS Message Consumer to receive request</li>
-        <pre>
-           <code>MessageConsumer messageConsumer = session.createConsumer(requestQueue);</code>
         </pre>
 
         <li>We receive the request message</li>
@@ -118,6 +120,16 @@
            <code>TextMessage replyMessageReceived = (TextMessage)replyConsumer.receive(5000);</code>
         </pre>
 
+        <li>We close the consumer and producer on the replyQueue</li>
+        <pre>
+           <code>replyConsumer.close();</code>
+           <code>replyProducer.close();</code>
+        </pre>
+
+        <li>We elete the temporary queue</li>
+        <pre>
+           <code>replyQueue.delete();</code>
+        </pre>
         
         <li>And finally, <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
