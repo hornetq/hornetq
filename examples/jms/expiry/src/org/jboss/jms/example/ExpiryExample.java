@@ -94,23 +94,40 @@ public class ExpiryExample extends JMSExample
          TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
          System.out.println("Received message from " + queue.getQueueName() + ": " + messageReceived);
 
-         // Step 15. Perfom a lookup on the expiry queue
+         // Step 14. Perfom a lookup on the expiry queue
          Queue expiryQueue = (Queue)initialContext.lookup("/queue/expiryQueue");
 
-         // Step 16. Create a JMS Message Consumer for the expiry queue
+         // Step 15. Create a JMS Message Consumer for the expiry queue
          MessageConsumer expiryConsumer = session.createConsumer(expiryQueue);
 
-         // Step 17. Receive the message from the expiry queue
+         // Step 16. Receive the message from the expiry queue
          messageReceived = (TextMessage)expiryConsumer.receive(5000);
 
-         // Step 18. The message sent to the queue was moved to the expiry queue when it expired.
+         // Step 17. The message sent to the queue was moved to the expiry queue when it expired.
          System.out.println("Received message from " + expiryQueue.getQueueName() + ": " + messageReceived.getText());
+
+         // The message received from the expiry queue has the same content than the expired message but its JMS headers differ
+         // (from JMS point of view, it's not the same message).
+         // JBoss Messaging defines additional properties to correlate the message received from the expiry queue with the 
+         // message expired from the queue
+         
+         System.out.println();
+         // Step 18. the messageReceived's destination is now the expiry queue.
+         System.out.println("Destination of the expired message: " + ((Queue)messageReceived.getJMSDestination()).getQueueName());
+         // Step 19. and its own expiration (the time to live in the *expiry* queue)
+         System.out.println("Expiration time of the expired message (relative to the expiry queue): " + messageReceived.getJMSExpiration());
+         
+         System.out.println();
+         // Step 20. the *origin* destination is stored in the _JBM_ORIG_DESTINATION property
+         System.out.println("*Origin destination* of the expired message: " + messageReceived.getStringProperty("_JBM_ORIG_DESTINATION"));
+         // Step 21. the actual expiration time is stored in the _JBM_ORIG_DESTINATION property
+         System.out.println("*Actual expiration time* of the expired message: " + messageReceived.getLongProperty("_JBM_ACTUAL_EXPIRY"));
 
          initialContext.close();
       }
       finally
       {
-         // Step 19. Be sure to close our JMS resources!
+         // Step 22. Be sure to close our JMS resources!
          if (connection != null)
          {
             connection.close();

@@ -9,15 +9,15 @@
      <p>This example shows you how to define and deal with message expiration.</p>
      <p>Messages can be retained in the messaging system for a limited period of time before being removed.
          JMS specification states that clients should not receive messages that have been expired (but it does not guarantee this will not happen).</p>
-     <p>JBoss Messaging can assign a <em>expiry queue</em> to a given queue so that when messages are expired, they are removed from the queue and put
-         in the expiry queue. These "expired" messages can later be consumed from the expiry queue for further inspection.
+     <p>JBoss Messaging can assign a <em>expiry destination</em> to a given queue so that when messages are expired, they are removed from the queue and sent
+         to the expiry destination. These "expired" messages can later be consumed from the expiry destination for further inspection.
      <p>
          The example will send 1 message with a short <em>time-to-live</em> to a queue. We will wait for the message to expire and checks that the message
          is no longer in the queue it was sent to.
-         We will instead consume it from the <em>expiry queue</em> where it was moved when it expired.
+         We will instead consume it from an <em>expiry queue</em> where it was moved when it expired.
      </p>
      <h2>Example setup</h2>
-     <p>Expiry queues are defined as in the queue settings configuration file <a href="../common/config/jbm-queues.xml">jbm-queues.xml</a>:</p>
+     <p>Expiry destinations are defined as in the queue settings configuration file <a href="../common/config/jbm-queues.xml">jbm-queues.xml</a>:</p>
      <pre>
          <code>&lt;!--default for all queues--&gt;
              &lt;address-settings match="#"&gt;
@@ -26,6 +26,9 @@
              &lt;/address-settings&gt;</code>
      </pre>          
      <p>This configuration will moved expired messages from any given queue (the wildcard <code>#</code>) to the <code>expiryQueue</code></p>
+     <p>JBoss Messaging allows to specify either a <code>Queue</code> by prefixing the <code>expiry-address</code> with <code>queuejms.</code>
+         or a <code>Topic</code> by prefixing with <code>topicjms.</code>.<br />
+         In this example, we will use a <code>Queue</code> to hold the expired messages.</p>
      <p>Since we want to consume messages from this expiryQueue, we also need to add a JNDI binding to perform a lookup.
          This is configured in <a href="../common/config/jbm-jms.xml">jbm-jms.xml</a></p>
      <pre>
@@ -118,16 +121,45 @@
             <code>MessageConsumer expiryConsumer = session.createConsumer(expiryQueue);</code>
         </pre>
         
-        <li>We consume a message from the expiry queue:<li>
+        <li>We consume a message from the expiry queue:</li>
         <pre>
             <code>messageReceived = (TextMessage)expiryConsumer.receive(5000);</code>
         </pre>
         
-        <li>The message consumed from the <em>expiry queue</em> is the same message which was sent to the <em>queue</em>
+        <li>The message consumed from the <em>expiry queue</em> has the <em>same content</em> than the message which was sent to the <em>queue</em>
         <pre>
             <code>System.out.println("Received message from " + expiryQueue.getQueueName() + ": " + messageReceived.getText());</code>
         </pre>    
             
+        <p>JMS does not specify the notion of expiry queue. From JMS point of view, the message received from the expiry queue
+            is a <strong>different</strong> message than the message expired from the queue: the two messages have the same content (properties and body) but
+            their JMS headers differ.<br />
+            JBoss Messaging defines additional properties to correlate the message received from the expiry queue with the 
+            message expired from the queue</p>
+            
+        <li>The expired message's destination is the expiry queue</li>
+        <pre>
+            <code>System.out.println("Destination of the expired message: " + ((Queue)messageReceived.getJMSDestination()).getQueueName());</code>
+        </pre>
+
+        <li>The expired message has its own <em>expiration time</em> (its time to live in the <strong>expiry queue</strong>)</li>
+        <pre>
+            <code>System.out.println("Expiration time of the expired message (relative to the expiry queue): " + messageReceived.getJMSExpiration());</code>
+        </pre>
+        
+        <p>As we have not defined a time-to-live for the expiry queue, messages sent to the expiry queue will be kept forever (their JMS Expiration value is 0)</p>
+
+        <li>The <strong>origin destination</strong> is stored in the <code>_JBM_ORIG_DESTINATION</code> property
+        <pre>
+            <code>System.out.println("*Origin destination* of the expired message: " + messageReceived.getStringProperty("_JBM_ORIG_DESTINATION"));</code>
+        </pre>
+
+        <li>The <strong>actual expiration time</strong> (when the message was expired from the queue) is stored in the <code>_JBM_ACTUAL_EXPIRY</code> property
+        <pre>
+            <code>System.out.println("*Actual expiration time* of the expired message: " + messageReceived.getLongProperty("_JBM_ACTUAL_EXPIRY"));</code>
+        </pre>
+
+        </p>    
         <li>And finally, <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
         <pre>
