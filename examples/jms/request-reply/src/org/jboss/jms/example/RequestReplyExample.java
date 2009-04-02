@@ -52,55 +52,53 @@ public class RequestReplyExample extends JMSExample
       Connection connection = null;
       try
       {
-         //Step 1. Create an initial context to perform the JNDI lookup.
+         
+         //Step 1. Start the request server
+         SimpleRequestServer server = new SimpleRequestServer();
+         server.start();
+
+         //Step 2. Create an initial context to perform the JNDI lookup.
          InitialContext initialContext = getContext();
 
-         //Step 2. Lookup the queue for sending the request message
+         //Step 3. Lookup the queue for sending the request message
          Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");         
 
-         //Step 3. Lookup for the Connection Factory
+         //Step 4. Lookup for the Connection Factory
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
 
-         //Step 4. Create a JMS Connection
+         //Step 5. Create a JMS Connection
          connection = cf.createConnection();
          
-         //Step 5. Start the connection.
+         //Step 6. Start the connection.
          connection.start();
 
-         //Step 6. Create a JMS Session
+         //Step 7. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         //Step 7. Create a JMS Message Producer to send request message
+         //Step 8. Create a JMS Message Producer to send request message
          MessageProducer producer = session.createProducer(requestQueue);
          
-         //Step 8. Create a temporary queue used to send reply message
+         //Step 9. Create a temporary queue used to send reply message
          TemporaryQueue replyQueue = session.createTemporaryQueue();
          
-         
-         //Step 9. Create consumer to receive reply message
+         //Step 10. Create consumer to receive reply message
          MessageConsumer replyConsumer = session.createConsumer(replyQueue);
 
-         //Step 10. Create a JMS Message Consumer
-         MessageConsumer messageConsumer = session.createConsumer(requestQueue);
-         
-         //Step 11. Register a message listener as request handler
-         messageConsumer.setMessageListener(new SimpleRequestHandler(cf));
-
-         //Step 12. Create a request Text Message
+         //Step 11. Create a request Text Message
          TextMessage requestMsg = session.createTextMessage("A request message");
          
-         //Step 13. Set the ReplyTo header so that the request receiver knows where to send the reply.
+         //Step 12. Set the ReplyTo header so that the request receiver knows where to send the reply.
          requestMsg.setJMSReplyTo(replyQueue);
          
-         //Step 14. Set the CorrelationID so that it can be linked with corresponding reply message
+         //Step 13. Set the CorrelationID so that it can be linked with corresponding reply message
          requestMsg.setJMSCorrelationID("jbm-id: 0000001");
          
-         //Step 15. Sent the request message
+         //Step 14. Sent the request message
          producer.send(requestMsg);
          
          System.out.println("Request message sent.");
          
-         //Step 16. Receive the reply message.
+         //Step 15. Receive the reply message.
          TextMessage replyMessageReceived = (TextMessage)replyConsumer.receive();
          
          System.out.println("Received reply: " + replyMessageReceived.getText());
@@ -111,6 +109,9 @@ public class RequestReplyExample extends JMSExample
          
          //Step 18. Delete the temporary queue
          replyQueue.delete();
+         
+         //Step 19. Shutdown the request server
+         server.shutdown();
          
       }
       finally
@@ -123,35 +124,53 @@ public class RequestReplyExample extends JMSExample
       }
    }
    
-   private class SimpleRequestHandler implements MessageListener
+   private class SimpleRequestServer implements MessageListener
    {
-      private ConnectionFactory cf;
+      private Connection connection;
+      private Session session;
+      MessageProducer replyProducer;
+      MessageConsumer requestConsumer;
       
-      public SimpleRequestHandler(ConnectionFactory cfact)
+      public void start() throws Exception
       {
-         cf = cfact;
+         //Get an initial context to perform the JNDI lookup.
+         InitialContext initialContext = getContext();
+
+         //Lookup the queue to receive the request message
+         Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");         
+
+         //Lookup for the Connection Factory
+         ConnectionFactory cfact = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         
+         // Create a connection
+         connection = cfact.createConnection();
+         
+         // Start the connection;
+         connection.start();
+         
+         // Create a session
+         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         // Create a producer to send the reply message
+         replyProducer = session.createProducer(null);
+         
+         //Create the request comsumer
+         requestConsumer = session.createConsumer(requestQueue);
+         
+         //register the listener
+         requestConsumer.setMessageListener(this);
       }
-      
+
       public void onMessage(Message request)
       {
-         Connection connection = null;
          try
          {
             System.out.println("Received request message: " + ((TextMessage)request).getText());
 
-            // Create a connection
-            connection = cf.createConnection();
-
-            // Create a session
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
             // Extract the ReplyTo destination
             Destination replyDestination = request.getJMSReplyTo();
 
-            // Create a producer to send the reply message
-            MessageProducer replyProducer = session.createProducer(replyDestination);
-
-            System.out.println("Got reply queue: " + replyDestination);
+            System.out.println("Reply to queue: " + replyDestination);
 
             // Create the reply message
             TextMessage replyMessage = session.createTextMessage("A reply message");
@@ -160,32 +179,20 @@ public class RequestReplyExample extends JMSExample
             replyMessage.setJMSCorrelationID(request.getJMSCorrelationID());
 
             // Send out the reply message
-            replyProducer.send(replyMessage);
-
-            // Close the producer on the replyQueue
-            replyProducer.close();
+            replyProducer.send(replyDestination, replyMessage);
+            
+            System.out.println("Reply sent");
          }
          catch (JMSException e)
          {
             e.printStackTrace();
          }
-         finally
-         {
-            if (connection != null)
-            {
-               try 
-               {
-                  //Close the connection
-                  connection.close();
-               }
-               catch (JMSException e)
-               {
-                  e.printStackTrace();
-               }
-            }
-         }
       }
       
+      public void shutdown() throws JMSException
+      {
+         connection.close();
+      }
    }
 
 }
