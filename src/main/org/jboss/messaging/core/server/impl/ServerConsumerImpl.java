@@ -429,7 +429,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
          else
          {
-            ref = messageQueue.removeFirstReference(id);
+            ref = messageQueue.removeFirstReference(messageID);
             
             if (ref == null)
             {
