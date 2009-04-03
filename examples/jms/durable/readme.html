@@ -16,7 +16,7 @@
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre>
-           <code>InitialContext initialContext = getContext();</code>
+           <code>initialContext = getContext();</code>
         </pre>
 
         <li>We look-up the JMS topic object from JNDI</li>
