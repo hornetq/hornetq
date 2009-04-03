@@ -10,7 +10,7 @@
       <entry name="java:/XAConnectionFactory"/>
    </connection-factory>
 
-   <queue name="queue">
+   <queue name="exampleQueue">
       <entry name="/queue/exampleQueue"/>
    </queue>
    

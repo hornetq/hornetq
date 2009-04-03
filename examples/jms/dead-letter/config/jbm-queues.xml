@@ -3,17 +3,26 @@
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
 
    <!--default security to catch all-->
-   <security match="#">
-      <permission type="createDurableQueue" roles="guest,def"/>
-      <permission type="deleteDurableQueue" roles="guest,def"/>
-      <permission type="createTempQueue" roles="guest,def"/>
-      <permission type="deleteTempQueue" roles="guest,def"/>
-      <permission type="consume" roles="guest,def"/>
-      <permission type="send" roles="guest,def"/>
+   <security match="queuejms.exampleQueue">
+      <permission type="createDurableQueue" roles="guest"/>
+      <permission type="deleteDurableQueue" roles="guest"/>
+      <permission type="createTempQueue" roles="guest"/>
+      <permission type="deleteTempQueue" roles="guest"/>
+      <permission type="consume" roles="guest"/>
+      <permission type="send" roles="guest"/>
+   </security>
+
+   <security match="queuejms.deadLetterQueue">
+      <permission type="createDurableQueue" roles="guest"/>
+      <permission type="deleteDurableQueue" roles="guest"/>
+      <permission type="createTempQueue" roles="guest"/>
+      <permission type="deleteTempQueue" roles="guest"/>
+      <permission type="consume" roles="guest"/>
+      <permission type="send" roles="guest"/>
    </security>
    
    <!--default for catch all-->
-   <address-settings match="queuejms.queue">
+   <address-settings match="queuejms.exampleQueue">
       <clustered>false</clustered>
       <dead-letter-address>queuejms.deadLetterQueue</dead-letter-address>
       <expiry-address>queuejms.expiryQueue</expiry-address>
