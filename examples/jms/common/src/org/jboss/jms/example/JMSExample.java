@@ -109,7 +109,7 @@ public abstract class JMSExample
          String[] arg = args[i];
          log.info("starting server with config '" + arg[0] + "' " + "logServerOutput " + logServerOutput);
          String logProps = System.getProperty("java.util.logging.config.file");
-         servers[i] = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), new String[]{"-Djava.util.logging.config.file=" + logProps}, logServerOutput, "STARTED::", "FAILED::", args[0]);
+         servers[i] = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), new String[]{"-Djava.util.logging.config.file=" + logProps}, logServerOutput, "STARTED::", "FAILED::", args[i]);
       }
    }
 
