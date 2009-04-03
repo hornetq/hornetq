@@ -22,9 +22,7 @@
       </constructor>
    </bean>
    
-   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration">
-      <property name="configurationUrl">example-configuration.xml</property>
-   </bean>
+   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
    <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBossASSecurityManager"/>-->
 
