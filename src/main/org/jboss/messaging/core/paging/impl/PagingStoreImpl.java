@@ -512,7 +512,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          if (!ok)
          {
-            log.warn("Timed out waiting for depage executor on destination " + this.storeName + " to stop");
+            log.warn("Timed out waiting for depage executor on destination " + storeName + " to stop");
          }
 
          if (currentPage != null)
@@ -770,7 +770,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       if (fileFactory == null)
       {
-         fileFactory = storeFactory.newFileFactory(this.getStoreName());
+         fileFactory = storeFactory.newFileFactory(getStoreName());
       }
 
       SequentialFile file = fileFactory.createSequentialFile(fileName, 1000);
@@ -817,114 +817,103 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       Transaction depageTransaction = new TransactionImpl(storageManager);
 
-//      SendLock sendLock = postOffice.getAddressLock(destination);
-//
-//      sendLock.beforeSend();
-//
-//      try
-//      {
-         depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
+      depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
-         HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
+      HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
 
-         for (PagedMessage pagedMessage : pagedMessages)
+      for (PagedMessage pagedMessage : pagedMessages)
+      {
+         ServerMessage message = null;
+
+         message = pagedMessage.getMessage(storageManager);
+
+         final long transactionIdDuringPaging = pagedMessage.getTransactionID();
+
+         if (transactionIdDuringPaging >= 0)
          {
-            ServerMessage message = null;
+            final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
 
-            message = pagedMessage.getMessage(storageManager);
-
-            final long transactionIdDuringPaging = pagedMessage.getTransactionID();
-
-            if (transactionIdDuringPaging >= 0)
+            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+            // This is the Step D described on the "Transactions on Paging"
+            // section
+            if (pageTransactionInfo == null)
             {
-               final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
+               log.warn("Transaction " + pagedMessage.getTransactionID() +
+                        " used during paging not found, ignoring message " +
+                        message);
 
-               // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-               // This is the Step D described on the "Transactions on Paging"
-               // section
-               if (pageTransactionInfo == null)
+               continue;
+            }
+
+            // This is to avoid a race condition where messages are depaged
+            // before the commit arrived
+
+            while (running && !pageTransactionInfo.waitCompletion(500))
+            {
+               // This is just to give us a chance to interrupt the process..
+               // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying
+               // the shutdown of the server
+               if (isTrace)
                {
-                  log.warn("Transaction " + pagedMessage.getTransactionID() +
-                           " used during paging not found, ignoring message " +
-                           message);
-
-                  continue;
-               }
-
-               // This is to avoid a race condition where messages are depaged
-               // before the commit arrived
-
-               while (running && !pageTransactionInfo.waitCompletion(500))
-               {
-                  // This is just to give us a chance to interrupt the process..
-                  // if we start a shutdown in the middle of transactions, the commit/rollback may never come, delaying
-                  // the shutdown of the server
-                  if (isTrace)
-                  {
-                     trace("Waiting pageTransaction to complete");
-                  }
-               }
-
-               if (!running)
-               {
-                  break;
-               }
-
-               if (!pageTransactionInfo.isCommit())
-               {
-                  if (isTrace)
-                  {
-                     trace("Rollback was called after prepare, ignoring message " + message);
-                  }
-                  continue;
-               }
-
-               // Update information about transactions
-               if (message.isDurable())
-               {
-                  pageTransactionInfo.decrement();
-                  pageTransactionsToUpdate.add(pageTransactionInfo);
+                  trace("Waiting pageTransaction to complete");
                }
             }
 
-            postOffice.route(message, depageTransaction);
-         }
-
-         if (!running)
-         {
-            depageTransaction.rollback();
-            return false;
-         }
-
-         for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
-         {
-            // This will set the journal transaction to commit;
-            depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-
-            if (pageWithTransaction.getNumberOfMessages() == 0)
+            if (!running)
             {
-               // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-               // numberOfReads==numberOfWrites -> We delete the record
-               storageManager.deletePageTransactional(depageTransaction.getID(), pageWithTransaction.getRecordID());
-               pagingManager.removeTransaction(pageWithTransaction.getTransactionID());
+               break;
             }
-            else
+
+            if (!pageTransactionInfo.isCommit())
             {
-               storageManager.storePageTransaction(depageTransaction.getID(), pageWithTransaction);
+               if (isTrace)
+               {
+                  trace("Rollback was called after prepare, ignoring message " + message);
+               }
+               continue;
+            }
+
+            // Update information about transactions
+            if (message.isDurable())
+            {
+               pageTransactionInfo.decrement();
+               pageTransactionsToUpdate.add(pageTransactionInfo);
             }
          }
 
-         depageTransaction.commit();
+         postOffice.route(message, depageTransaction);
+      }
 
-         if (isTrace)
+      if (!running)
+      {
+         depageTransaction.rollback();
+         return false;
+      }
+
+      for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
+      {
+         // This will set the journal transaction to commit;
+         depageTransaction.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+
+         if (pageWithTransaction.getNumberOfMessages() == 0)
          {
-            trace("Depage committed, running = " + running);
+            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
+            // numberOfReads==numberOfWrites -> We delete the record
+            storageManager.deletePageTransactional(depageTransaction.getID(), pageWithTransaction.getRecordID());
+            pagingManager.removeTransaction(pageWithTransaction.getTransactionID());
          }
-//      }
-//      finally
-//      {
-//         sendLock.afterSend();
-//      }
+         else
+         {
+            storageManager.storePageTransaction(depageTransaction.getID(), pageWithTransaction);
+         }
+      }
+
+      depageTransaction.commit();
+
+      if (isTrace)
+      {
+         trace("Depage committed, running = " + running);
+      }
 
       return true;
    }
@@ -1027,7 +1016,9 @@ public class PagingStoreImpl implements TestSupportPageStore
    // To be used on isDropMessagesWhenFull
    private boolean isDrop()
    {
-      return (getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes()) || (pagingManager.getMaxGlobalSize() > 0 && pagingManager.getGlobalSize() > pagingManager.getMaxGlobalSize());
+      return getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes() ||
+             pagingManager.getMaxGlobalSize() > 0 &&
+             pagingManager.getGlobalSize() > pagingManager.getMaxGlobalSize();
    }
 
    // Inner classes -------------------------------------------------
