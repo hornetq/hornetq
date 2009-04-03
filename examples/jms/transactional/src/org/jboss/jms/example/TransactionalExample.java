@@ -23,7 +23,6 @@ package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -46,10 +45,11 @@ public class TransactionalExample extends JMSExample
    public void runExample() throws Exception
    {
       Connection connection = null;
+      InitialContext initialContext = null;
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          // Step 2. Look-up the JMS topic
          Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
@@ -125,15 +125,13 @@ public class TransactionalExample extends JMSExample
       {
          if(connection != null)
          {
-            try
-            {
-               // Step 18. Be sure to close our JMS resources!
-               connection.close();
-            }
-            catch (JMSException e)
-            {
-               e.printStackTrace();
-            }
+            // Step 18. Be sure to close our JMS resources!
+            connection.close();
+         }
+         if(initialContext != null)
+         {
+            // Step 19. Also close initial context!
+            initialContext.close();
          }
       }
    }
