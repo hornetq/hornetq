@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<project default="default" name="JBoss Messaging">
+   <property environment="ENV"/>
+   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+
+   <property name="config.dir" value="config"/>
+   <property name="main.config.dir" value="../config"/>
+   <property name="lib.dir" value="../lib"/>
+
+   <target name="default">
+      <antcall target="build">
+         <param name="messaging.config.source" value="default"/>
+         <param name="messaging.config.name" value="jbm2_default"/>
+      </antcall>
+   </target>
+
+   <target name="build">
+      <antcall target="validate-jboss"/>
+      <property name="src.dir" value="${jboss.home}/server/${messaging.config.source}"/>
+      <property name="dest.dir" value="${jboss.home}/server/${messaging.config.name}"/>
+      <mkdir dir="${jboss.home}/server/${messaging.config.name}"/>
+      <copy todir="${dest.dir}">
+         <fileset dir="${src.dir}">
+            <exclude name="**/messaging/**"/>
+            <exclude name="conf/login-config.xml"/>
+             <exclude name="**/jms-ra.rar"/>
+         </fileset>
+      </copy>
+      <copy todir="${dest.dir}/conf">
+         <fileset dir="${config.dir}">
+            <include name="login-config.xml"/>
+         </fileset>
+      </copy>
+      <copy todir="${dest.dir}/conf/props">
+         <fileset dir="${config.dir}">
+            <include name="messaging-users.properties"/>
+            <include name="messaging-roles.properties"/>
+         </fileset>
+      </copy>
+      <copy todir="${dest.dir}/lib">
+         <fileset dir="${lib.dir}">
+            <include name="jbm-*.jar"/>
+            <include name="netty*.jar"/>
+         </fileset>
+      </copy>
+      <property name="messaging.sar.dir" value="${dest.dir}/deploy/messaging.sar"/>
+      <mkdir dir="${messaging.sar.dir}"/>
+      <copy todir="${messaging.sar.dir}">
+         <fileset dir="${config.dir}">
+            <include name="jbm-jboss-beans.xml"/>
+         </fileset>
+      </copy>
+      <copy todir="${messaging.sar.dir}">
+         <fileset dir="${main.config.dir}">
+            <include name="jbm-configuration.xml"/>
+            <include name="jbm-jms.xml"/>
+            <include name="jbm-queues.xml"/>
+         </fileset>
+      </copy>
+      <copy todir="${dest.dir}/deploy">
+         <fileset dir=".">
+            <include name="jbm-ra.rar"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <!-- The JBOSS_HOME environment variable and the directory must exist, we also check we are running
+        in JBoss 5.1 or later -->
+   <target name="validate-jboss">
+      <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
+      <available property="default-config" type="dir" file="${jboss.home}/server/${messaging.config.source}"/>
+      <fail unless="default-config" message="${jboss.home}/server/${messaging.config.source} not found!"/>
+      <available property="messaging-config" type="dir" file="${jboss.home}/server/${messaging.config.name}"/>
+      <fail if="messaging-config"
+            message="'${messaging.config.name}' configuration already exists! Delete it manually and try again."/>
+   </target>
+
+</project>

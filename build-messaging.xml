@@ -86,6 +86,7 @@
    <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
    <property name="build.jars.dir" value="${build.dir}/jars"/>
    <property name="build.src.dir" value="${build.dir}/src"/>
+   <property name="as.dir" value="AS"/>
    <property name="src.dir" value="src"/>
    <property name="src.main.dir" value="${src.dir}/main"/>
    <property name="src.config.dir" value="${src.dir}/config"/>
@@ -110,6 +111,7 @@
    <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
    <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
    <property name="build.distro.licenses.dir" value="${build.distro.dir}/licenses"/>
+   <property name="build.distro.as.dir" value="${build.distro.dir}/AS"/>
    <property name="artifacts.dir" value="${build.dir}/artifacts"/>
 
    <!--default clustering server settings-->   
@@ -824,6 +826,7 @@
       <mkdir dir="${build.distro.bin.dir}"/>
       <mkdir dir="${build.distro.api.dir}"/>
       <mkdir dir="${build.distro.licenses.dir}"/>
+      <mkdir dir="${build.distro.as.dir}"/>
 
       <copy todir="${build.distro.lib.dir}">
          <fileset dir="${build.jars.dir}">
@@ -954,7 +957,15 @@
          </fileset>
       </copy>
 
-      <copy tofile="${build.distro.examples.dir}/jms/common/config/ant.properties" file="AS/config/examples-ant.properties" overwrite="true">
+      <copy todir="${build.distro.as.dir}">
+         <fileset dir="${as.dir}"/>
+      </copy>
+       <copy todir="${build.distro.as.dir}">
+         <fileset dir="${build.jars.dir}">
+            <include name="jbm-ra.rar"/>
+         </fileset>
+      </copy>
+      <copy tofile="${build.distro.examples.dir}/jms/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true">
 
       </copy>
       <echo message="lib.dir=../../lib${line.separator}client.jar=../../lib/jboss-messaging-client.jar${line.separator}config.dir=../../config${line.separator}server.jar=../../lib/jboss-messaging.jar"
