@@ -2,6 +2,18 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
 
+   <connection-factory name="ConnectionFactory">
+      <connector-ref connector-name="netty"/>
+      <entry name="ConnectionFactory"/>
+      <entry name="XAConnectionFactory"/>
+      <entry name="java:/ConnectionFactory"/>
+      <entry name="java:/XAConnectionFactory"/>
+   </connection-factory>
+
+   <queue name="queue">
+      <entry name="/queue/exampleQueue"/>
+   </queue>
+   
    <queue name="deadLetterQueue">
       <entry name="/queue/deadLetterQueue"/>
    </queue>

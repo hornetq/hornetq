@@ -21,24 +21,11 @@
  */
 package org.jboss.jms.example;
 
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
-import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;
-
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
-import javax.jms.QueueRequestor;
-import javax.jms.QueueSession;
-import javax.jms.Session;
 import javax.naming.InitialContext;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -71,16 +58,6 @@ public abstract class JMSExample
          {
             startServer(getServerNames(args), logServerOutput);
          }
-         InitialContext ic = getContext();
-         ConnectionFactory cf = (ConnectionFactory) ic.lookup("/ConnectionFactory");
-         conn = cf.createConnection("admin", "admin");
-         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         conn.start();
-         JBossQueue managementQueue = new JBossQueue(DEFAULT_MANAGEMENT_ADDRESS.toString(),
-                                                     DEFAULT_MANAGEMENT_ADDRESS.toString());
-         QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
-         deployQueues(session, requestor);
-         deployTopics(session, requestor);
          runExample();
       }
       catch (Throwable e)
@@ -116,21 +93,6 @@ public abstract class JMSExample
       reportResultAndExit();
    }
 
-
-   public Set<String> getQueues()
-   {
-      Set<String> queues = new HashSet<String>();
-      queues.add("exampleQueue");
-      return queues;
-   }
-
-   public Set<String> getTopics()
-   {
-      Set<String> topics = new HashSet<String>();
-      topics.add("exampleTopic");
-      return topics;
-   }
-
    protected InitialContext getContext() throws Exception
    {
       URL url = Thread.currentThread().getContextClassLoader().getResource("client-jndi.properties");
@@ -158,60 +120,6 @@ public abstract class JMSExample
          server.getInputStream().close();
          server.getErrorStream().close();
          server.destroy();
-      }
-   }
-
-   private void deployQueues(Session session, QueueRequestor requestor) throws Exception
-   {
-      Set<String> queues = getQueues();
-      for (String queue : queues)
-      {
-         Message m = session.createMessage();
-         JMSManagementHelper.putOperationInvocation(m, ObjectNames.getJMSServerObjectName(), "createQueue", queue, "/queue/" + queue);
-         ObjectMessage reply = (ObjectMessage) requestor.request(m);
-         if (JMSManagementHelper.hasOperationSucceeded(reply))
-         {
-            Boolean created = (Boolean) reply.getObject();
-            if (created)
-            {
-               log.info("created queue " + queue);
-            }
-            else
-            {
-               log.info("queue " + queue + " already exists not creating");
-            }
-         }
-         else
-         {
-            throw new Exception(JMSManagementHelper.getOperationExceptionMessage(reply));
-         }
-      }
-   }
-
-   private void deployTopics(Session session, QueueRequestor requestor) throws Exception
-   {
-      Set<String> topics = getTopics();
-      for (String topic : topics)
-      {
-         Message m = session.createMessage();
-         JMSManagementHelper.putOperationInvocation(m, ObjectNames.getJMSServerObjectName(), "createTopic", topic, "/topic/" + topic);
-         ObjectMessage reply = (ObjectMessage) requestor.request(m);
-         if (JMSManagementHelper.hasOperationSucceeded(reply))
-         {
-            Boolean created = (Boolean) reply.getObject();
-            if (created)
-            {
-               log.info("created topic " + topic);
-            }
-            else
-            {
-               log.info("topic " + topic + " already exists not creating");
-            }
-         }
-         else
-         {
-            throw new Exception(JMSManagementHelper.getOperationExceptionMessage(reply));
-         }
       }
    }
 

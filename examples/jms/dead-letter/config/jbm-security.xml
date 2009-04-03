@@ -4,8 +4,4 @@
    <defaultuser name="guest" password="guest">
       <role name="guest"/>
    </defaultuser>
-   <user name="admin" password="admin">
-      <role name="admin"/>
-      <role name="guest"/>
-   </user>
 </deployment>

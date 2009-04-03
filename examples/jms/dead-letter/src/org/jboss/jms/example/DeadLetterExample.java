@@ -21,9 +21,6 @@
    */
 package org.jboss.jms.example;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -146,15 +143,6 @@ public class DeadLetterExample extends JMSExample
             connection.close();
          }
       }
-   }
-
-   @Override
-   public Set<String> getQueues()
-   {
-      HashSet<String> queues = new HashSet<String>();
-      queues.add("exampleQueue");
-      queues.add("deadLetterQueue");
-      return queues;
    }
 
 }
