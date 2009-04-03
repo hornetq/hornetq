@@ -28,14 +28,14 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging JMS Queue Example">
+<project default="run" name="JBoss Messaging JMS Clustered Queue Example">
 
    <import file="../common/build.xml"/>
 
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.ClusteredQueueExample"/>
-         <param name="jbm.example.beans.file" value="jbm-example-clustered-queue-beans-0.xml"/>
+         <param name="jbm.example.beans.file" value="jbm-example-clustered-queue-beans-0.xml jbm-example-clustered-queue-beans-1.xml"/>
       </antcall>
    </target>
 
