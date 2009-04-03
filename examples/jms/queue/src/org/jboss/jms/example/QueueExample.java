@@ -42,13 +42,14 @@ public class QueueExample extends JMSExample
       new QueueExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
+      InitialContext initialContext = null;
       try
       {
          //Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          //Step 2. Perfom a lookup on the queue
          Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
@@ -85,10 +86,16 @@ public class QueueExample extends JMSExample
          System.out.println("Received message: " + messageReceived.getText());
 
          initialContext.close();
+         
+         return true;
       }
       finally
       {
          //Step 12. Be sure to close our JMS resources!
+         if (initialContext != null)
+         {
+            initialContext.close();
+         }
          if(connection != null)
          {
             connection.close();

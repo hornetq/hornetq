@@ -43,13 +43,15 @@ public class DeadLetterExample extends JMSExample
       new DeadLetterExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
+      InitialContext initialContext = null;
+      
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          // Step 2. Perfom a lookup on the queue
          Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
@@ -132,12 +134,16 @@ public class DeadLetterExample extends JMSExample
 
          // Step 23. This time, we commit the session, the delivery from the dead letter queue is successful!
          session.commit();
-
-         initialContext.close();
+         
+         return true;
       }
       finally
       {
          // Step 24. Be sure to close our JMS resources!
+         if (initialContext != null)
+         {
+            initialContext.close();
+         }
          if (connection != null)
          {
             connection.close();

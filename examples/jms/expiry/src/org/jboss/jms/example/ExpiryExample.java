@@ -43,13 +43,14 @@ public class ExpiryExample extends JMSExample
       new ExpiryExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
+      InitialContext initialContext = null;
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          // Step 2. Perfom a lookup on the queue
          Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
@@ -121,10 +122,16 @@ public class ExpiryExample extends JMSExample
          System.out.println("*Actual expiration time* of the expired message: " + messageReceived.getLongProperty("_JBM_ACTUAL_EXPIRY"));
 
          initialContext.close();
+         
+         return true;
       }
       finally
       {
          // Step 22. Be sure to close our JMS resources!
+         if (initialContext != null)
+         {
+            initialContext.close();
+         }
          if (connection != null)
          {
             connection.close();

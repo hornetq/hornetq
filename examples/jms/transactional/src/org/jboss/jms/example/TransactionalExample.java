@@ -42,7 +42,7 @@ public class TransactionalExample extends JMSExample
       new TransactionalExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
@@ -118,7 +118,15 @@ public class TransactionalExample extends JMSExample
          //Step 17. Receive the message again. Nothing should be received.
          receivedMessage = (TextMessage) messageConsumer.receive(5000);
          
+         if (receivedMessage != null)
+         {
+            // This was not supposed to happen
+            return false;
+         }
+         
          System.out.println("Message received after receive commit: " + receivedMessage);
+         
+         return true;
          
       }
       finally

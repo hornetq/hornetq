@@ -52,7 +52,7 @@ public class RequestReplyExample extends JMSExample
       new RequestReplyExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
@@ -127,6 +127,7 @@ public class RequestReplyExample extends JMSExample
          //Step 19. Shutdown the request server
          server.shutdown();
          
+         return true;
       }
       finally
       {

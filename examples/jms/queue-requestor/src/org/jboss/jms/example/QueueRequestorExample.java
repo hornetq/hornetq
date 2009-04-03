@@ -43,13 +43,14 @@ public class QueueRequestorExample extends JMSExample
       new QueueRequestorExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       QueueConnection connection = null;
+      InitialContext initialContext = null;
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          // Step 2. Perfom a lookup on the queue
          Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
@@ -87,6 +88,8 @@ public class QueueRequestorExample extends JMSExample
 
          // Step 13. close the text reverser service
          reverserService.close();
+         
+         return true;
       }
       finally
       {
@@ -101,6 +104,12 @@ public class QueueRequestorExample extends JMSExample
             {
                e.printStackTrace();
             }
+         }
+         
+         if (initialContext != null)
+         {
+            // Also the InitialContext
+            initialContext.close();
          }
       }
    }

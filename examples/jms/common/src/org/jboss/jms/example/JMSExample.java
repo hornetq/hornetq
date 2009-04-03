@@ -43,7 +43,7 @@ public abstract class JMSExample
 
    private boolean failure = false;
 
-   public abstract void runExample() throws Exception;
+   public abstract boolean runExample() throws Exception;
 
    protected void run(String[] args)
    {
@@ -58,7 +58,10 @@ public abstract class JMSExample
          {
             startServer(getServerNames(args), logServerOutput);
          }
-         runExample();
+         if (!runExample())
+         {
+            failure = true;
+         }
       }
       catch (Throwable e)
       {

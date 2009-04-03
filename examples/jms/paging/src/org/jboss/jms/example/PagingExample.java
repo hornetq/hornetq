@@ -43,7 +43,7 @@ public class PagingExample extends JMSExample
       new PagingExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
       
@@ -137,7 +137,7 @@ public class PagingExample extends JMSExample
          }
          
 
-         
+         return true;
 
       }
       finally

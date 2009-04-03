@@ -44,13 +44,14 @@ public class ClusteredQueueExample extends JMSExample
       new ClusteredQueueExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
+      InitialContext initialContext = null;
       try
       {
          //Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          //Step 2. Perfom a lookup on the queue
          Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
@@ -85,6 +86,8 @@ public class ClusteredQueueExample extends JMSExample
          TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);
 
          System.out.println("Received message: " + messageReceived.getText());
+         
+         return true;
       }
       finally
       {
@@ -92,6 +95,10 @@ public class ClusteredQueueExample extends JMSExample
          if(connection != null)
          {
             connection.close();
+         }
+         if (initialContext != null)
+         {
+            initialContext.close();
          }
       }
    }

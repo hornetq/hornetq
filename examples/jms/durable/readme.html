@@ -112,25 +112,20 @@
            <code>session.unsubscribe("subscriber-1");</code>
         </pre>
 
-	<li>And finally (no pun intended), <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its session, consumer, producer and browser objects. Also remember to close the JNDI initial context.</li>
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
         <pre>
-           <code>
-
-      finally
-      {
-         if (connection != null)
-         {
-            //Step 19. Be sure to close our JMS resources!
-            connection.close();
-         }
-         if (initialContext != null)
-         {
-            //Step 20. Also close the initialContext!
-            initialContext.close();
-         }
-      }
-           </code>
+           <code>finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }</code>
         </pre>
 
 

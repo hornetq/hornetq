@@ -34,13 +34,13 @@
 
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.TopicSelector"/>
+         <param name="example.classname" value="org.jboss.jms.example.TopicSelectorExample"/>
       </antcall>
    </target>
 
    <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.TopicSelector"/>
+         <param name="example.classname" value="org.jboss.jms.example.TopicSelectorExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>

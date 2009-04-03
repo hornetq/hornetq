@@ -79,20 +79,20 @@
            <code>messageReceived = (TextMessage) messageConsumer2.receive();</code>
         </pre>
         
-        <li>And finally, <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
         <pre>
-           <code>
-
-      finally
-      {
-         if (connection != null)
-         {
-            // Step 14. Be sure to close our JMS resources!
-            connection.close();
-         }
-      }
-           </code>
+           <code>finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }</code>
         </pre>
 
 

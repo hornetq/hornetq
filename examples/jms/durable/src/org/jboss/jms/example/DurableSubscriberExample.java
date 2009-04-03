@@ -42,7 +42,7 @@ public class DurableSubscriberExample extends JMSExample
       new DurableSubscriberExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
@@ -115,6 +115,8 @@ public class DurableSubscriberExample extends JMSExample
 
          // Step 18. Delete the durable subscription
          session.unsubscribe("subscriber-1");
+         
+         return true;
       }
       finally
       {

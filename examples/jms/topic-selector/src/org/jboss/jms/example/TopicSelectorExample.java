@@ -42,7 +42,7 @@ public class TopicSelectorExample extends JMSExample
       new TopicSelectorExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
       
@@ -153,17 +153,19 @@ public class TopicSelectorExample extends JMSExample
          messageConsumer1.close();
          messageConsumer2.close();
          messageConsumer3.close();
+         
+         return true;
 
       }
       finally
       {
+         // Step 15. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
          }
          if (connection != null)
          {
-            // Step 15. Be sure to close our JMS resources!
             connection.close();
          }
       }

@@ -43,7 +43,7 @@ public class TemporaryQueueExample extends JMSExample
       new TemporaryQueueExample().run(args);
    }
 
-   public void runExample() throws Exception
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
@@ -120,6 +120,7 @@ public class TemporaryQueueExample extends JMSExample
             System.out.println("Exception got when trying to access a temp queue outside its scope: " + e);
          }
          
+         return true;
       }
       finally
       {
