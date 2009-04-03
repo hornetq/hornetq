@@ -49,7 +49,7 @@ import javax.transaction.xa.XAResource;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.jms.bridge.Bridge;
+import org.jboss.messaging.jms.bridge.JMSBridge;
 import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.DestinationFactory;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
@@ -59,15 +59,15 @@ import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * 
- * A Bridge
+ * A JMSBridge
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision:4566 $</tt>
  *
- * $Id:Bridge.java 4566 2008-06-24 08:01:35Z jmesnil $
+ * $Id:JMSBridge.java 4566 2008-06-24 08:01:35Z jmesnil $
  *
  */
-public class BridgeImpl implements MessagingComponent, Bridge
+public class JMSBridgeImpl implements MessagingComponent, JMSBridge
 {
    private static final Logger log;
    
@@ -75,7 +75,7 @@ public class BridgeImpl implements MessagingComponent, Bridge
    
    static
    {
-      log = Logger.getLogger(BridgeImpl.class);
+      log = Logger.getLogger(JMSBridgeImpl.class);
       
       trace = log.isTraceEnabled();
    }
@@ -163,12 +163,12 @@ public class BridgeImpl implements MessagingComponent, Bridge
    /*
     * Constructor for MBean
     */
-   public BridgeImpl()
+   public JMSBridgeImpl()
    {      
       this.messages = new LinkedList<Message>();      
    }
    
-   public BridgeImpl(ConnectionFactoryFactory sourceCff, ConnectionFactoryFactory targetCff,
+   public JMSBridgeImpl(ConnectionFactoryFactory sourceCff, ConnectionFactoryFactory targetCff,
                  DestinationFactory sourceDestinationFactory, DestinationFactory targetDestinationFactory,         
                  String sourceUsername, String sourcePassword,
                  String targetUsername, String targetPassword,
@@ -367,7 +367,7 @@ public class BridgeImpl implements MessagingComponent, Bridge
       return started;
    }
 
-   // Bridge implementation ------------------------------------------------------------
+   // JMSBridge implementation ------------------------------------------------------------
 
    public synchronized void pause() throws Exception
    {
@@ -1554,7 +1554,7 @@ public class BridgeImpl implements MessagingComponent, Bridge
             if (failed)
             {
                //Ignore the message
-               if (trace) { log.trace("Bridge has failed so ignoring message"); }
+               if (trace) { log.trace("JMSBridge has failed so ignoring message"); }
                               
                return;
             }

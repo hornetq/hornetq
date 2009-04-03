@@ -26,7 +26,7 @@ import javax.management.ObjectName;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
+import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
 
 /**
  * A BridgeService
@@ -40,7 +40,7 @@ import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
 public class BridgeService implements BridgeMBean
 {
    private static final Logger log = Logger.getLogger(BridgeService.class);
-   private Bridge bridge;
+   private JMSBridge bridge;
    
    private String sourceDestinationLookup;
    
@@ -53,7 +53,7 @@ public class BridgeService implements BridgeMBean
       
    public BridgeService()
    {
-      bridge = new BridgeImpl();
+      bridge = new JMSBridgeImpl();
    }
    
    // JMX attributes ----------------------------------------------------------------

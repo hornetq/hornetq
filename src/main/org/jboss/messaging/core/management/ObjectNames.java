@@ -93,7 +93,7 @@ public class ObjectNames
 
    public static ObjectName getBridgeObjectName(final String name) throws Exception
    {
-      return createObjectName(CORE_MODULE, "Bridge", name);
+      return createObjectName(CORE_MODULE, "JMSBridge", name);
    }
    
    public static ObjectName getClusterConnectionObjectName(String name) throws Exception

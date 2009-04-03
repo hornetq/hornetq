@@ -460,7 +460,7 @@ public class BridgeStartTest extends ServiceTestBase
       // Wait a bit
       Thread.sleep(1000);
 
-      // Bridge should be stopped since retries = 0
+      // JMSBridge should be stopped since retries = 0
 
       server1.start();
 

@@ -86,7 +86,7 @@ import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
 
 /**
- * A BridgeImpl
+ * A JMSBridgeImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -709,7 +709,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       }
       catch (Exception e)
       {
-         log.warn("Unable to connect. Bridge is now disabled.", e);
+         log.warn("Unable to connect. JMSBridge is now disabled.", e);
 
          return false;
       }

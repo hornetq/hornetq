@@ -23,7 +23,7 @@ package org.jboss.messaging.tests.integration.jms.bridge;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
-import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
+import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.unit.util.InVMContext;
 
@@ -34,9 +34,9 @@ import org.jboss.messaging.tests.unit.util.InVMContext;
  * $Id$
  *
  */
-public class BridgeReconnectionTest extends BridgeTestBase
+public class JMSBridgeReconnectionTest extends BridgeTestBase
 {
-   private static final Logger log = Logger.getLogger(BridgeReconnectionTest.class);
+   private static final Logger log = Logger.getLogger(JMSBridgeReconnectionTest.class);
 
    // Crash and reconnect
    
@@ -94,7 +94,7 @@ public class BridgeReconnectionTest extends BridgeTestBase
    {
       server1.stop();
 
-      BridgeImpl bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+      JMSBridgeImpl bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
             null, null, null, null,
             null, 1000, -1, QualityOfServiceMode.DUPLICATES_OK,
             10, -1,
@@ -145,11 +145,11 @@ public class BridgeReconnectionTest extends BridgeTestBase
     */
    private void testCrashAndReconnectDestBasic(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
          
       try
       {   
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 1000, -1, qosMode,
                   10, -1,
@@ -230,11 +230,11 @@ public class BridgeReconnectionTest extends BridgeTestBase
     */
    private void testCrashAndReconnectDestCrashBeforePrepare(boolean persistent) throws Exception
    {   
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
             
       try
       {
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 1000, -1, QualityOfServiceMode.ONCE_AND_ONLY_ONCE,
                   10, 5000,

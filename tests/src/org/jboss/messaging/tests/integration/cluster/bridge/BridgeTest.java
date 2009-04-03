@@ -45,7 +45,7 @@ import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
- * A BridgeTest
+ * A JMSBridgeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 

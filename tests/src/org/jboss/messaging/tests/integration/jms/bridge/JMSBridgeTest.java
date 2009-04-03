@@ -23,7 +23,7 @@ package org.jboss.messaging.tests.integration.jms.bridge;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
-import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
+import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
 import org.jboss.messaging.jms.client.JBossMessage;
 
 import javax.jms.Connection;
@@ -40,7 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A BridgeTest
+ * A JMSBridgeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
@@ -48,9 +48,9 @@ import java.util.List;
  * $Id$
  *
  */
-public class BridgeTest extends BridgeTestBase
+public class JMSBridgeTest extends BridgeTestBase
 {
-   private static final Logger log = Logger.getLogger(BridgeTest.class);
+   private static final Logger log = Logger.getLogger(JMSBridgeTest.class);
    
    // MaxBatchSize but no MaxBatchTime
    
@@ -330,7 +330,7 @@ public class BridgeTest extends BridgeTestBase
    
    public void testParams() throws Exception
    {
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       try
       {               
@@ -360,7 +360,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new BridgeImpl(null, cff1, sourceQueueFactory, targetQueueFactory,
+            bridge= new JMSBridgeImpl(null, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -373,7 +373,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new BridgeImpl(cff0, null, sourceQueueFactory, targetQueueFactory,
+            bridge= new JMSBridgeImpl(cff0, null, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -386,7 +386,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new BridgeImpl(cff0, cff1, null, targetQueueFactory,
+            bridge= new JMSBridgeImpl(cff0, cff1, null, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -399,7 +399,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, null,
+            bridge= new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -412,7 +412,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+            bridge= new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, -2, maxRetries, qosMode,
                                batchSize, maxBatchTime,
@@ -425,7 +425,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+            bridge= new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, -1, 10, qosMode,
                                batchSize, maxBatchTime,
@@ -438,7 +438,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, null,
+            bridge= new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                0, maxBatchTime,
@@ -451,7 +451,7 @@ public class BridgeTest extends BridgeTestBase
          
          try
          {
-            bridge= new BridgeImpl(cff0, cff1, sourceQueueFactory, null,
+            bridge= new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, null,
                                sourceUsername, sourcePassword, destUsername, destPassword,
                                selector, failureRetryInterval, maxRetries, qosMode,
                                batchSize, -2,
@@ -473,7 +473,7 @@ public class BridgeTest extends BridgeTestBase
    
    public void testSelector() throws Exception
    {      
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       Connection connSource = null;
       
@@ -485,7 +485,7 @@ public class BridgeTest extends BridgeTestBase
          
          String selector = "vegetable='radish'";
          
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   selector, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
@@ -561,7 +561,7 @@ public class BridgeTest extends BridgeTestBase
    
    public void testStartBridgeWithJTATransactionAlreadyRunning() throws Exception
    {  
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       Transaction toResume = null;
       
@@ -580,7 +580,7 @@ public class BridgeTest extends BridgeTestBase
            
          final int NUM_MESSAGES = 10;
          
-         bridge = new BridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
@@ -626,13 +626,13 @@ public class BridgeTest extends BridgeTestBase
    
    public void testNonDurableSubscriber() throws Exception
    { 
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
             
       try
       {   
          final int NUM_MESSAGES = 10;
          
-         bridge = new BridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
@@ -656,13 +656,13 @@ public class BridgeTest extends BridgeTestBase
    
    public void testDurableSubscriber() throws Exception
    {
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
             
       try
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new BridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
@@ -703,7 +703,7 @@ public class BridgeTest extends BridgeTestBase
    
    private void messageIDInHeader(boolean on) throws Exception
    { 
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       Connection connSource = null;
       
@@ -713,7 +713,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
@@ -875,7 +875,7 @@ public class BridgeTest extends BridgeTestBase
    
    private void propertiesPreserved(boolean persistent, boolean messageIDInHeader) throws Exception
    { 
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       Connection connSource = null;
       
@@ -885,7 +885,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
@@ -1037,7 +1037,7 @@ public class BridgeTest extends BridgeTestBase
    
    public void testNoMessageIDInHeader() throws Exception
    { 
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       Connection connSource = null;
       
@@ -1047,7 +1047,7 @@ public class BridgeTest extends BridgeTestBase
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
                   1, -1,
@@ -1129,13 +1129,13 @@ public class BridgeTest extends BridgeTestBase
    {
       Connection connSource = null;
       
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       Thread t = null;
             
       try
       {      
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
@@ -1203,13 +1203,13 @@ public class BridgeTest extends BridgeTestBase
    {
       Connection connSource = null;
       
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       Thread t = null;
             
       try
       {      
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   2, maxBatchTime,
@@ -1278,13 +1278,13 @@ public class BridgeTest extends BridgeTestBase
    {
       Connection connSource = null;
       
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
       
       Thread t = null;
             
       try
       {  
-         bridge = new BridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   batchSize, -1,
@@ -1351,13 +1351,13 @@ public class BridgeTest extends BridgeTestBase
       
    private void testNoMaxBatchTime(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
             
       try
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
@@ -1410,13 +1410,13 @@ public class BridgeTest extends BridgeTestBase
    
    private void testNoMaxBatchTimeSameServer(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
             
       try
       {
          final int NUM_MESSAGES = 10;
          
-         bridge = new BridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, qosMode,
                   NUM_MESSAGES, -1,
@@ -1469,7 +1469,7 @@ public class BridgeTest extends BridgeTestBase
    
    private void testMaxBatchTime(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
             
       try
       {
@@ -1477,7 +1477,7 @@ public class BridgeTest extends BridgeTestBase
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
-         bridge = new BridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,
@@ -1511,7 +1511,7 @@ public class BridgeTest extends BridgeTestBase
    
    private void testMaxBatchTimeSameServer(QualityOfServiceMode qosMode, boolean persistent) throws Exception
    {
-      BridgeImpl bridge = null;
+      JMSBridgeImpl bridge = null;
             
       try
       {
@@ -1519,7 +1519,7 @@ public class BridgeTest extends BridgeTestBase
          
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
          
-         bridge = new BridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
+         bridge = new JMSBridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
                   null, null, null, null,
                   null, 3000, 10, qosMode,
                   MAX_BATCH_SIZE, MAX_BATCH_TIME,

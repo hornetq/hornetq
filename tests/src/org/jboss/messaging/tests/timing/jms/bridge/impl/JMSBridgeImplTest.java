@@ -49,7 +49,7 @@ import org.easymock.IAnswer;
 import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.DestinationFactory;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
-import org.jboss.messaging.jms.bridge.impl.BridgeImpl;
+import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -58,7 +58,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class BridgeImplTest extends UnitTestCase
+public class JMSBridgeImplTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -102,7 +102,7 @@ public class BridgeImplTest extends UnitTestCase
             targetDF, targetDest);
       replay(tm);
 
-      BridgeImpl bridge = new BridgeImpl();
+      JMSBridgeImpl bridge = new JMSBridgeImpl();
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);
       bridge.setSourceDestinationFactory(sourceDF);
@@ -178,7 +178,7 @@ public class BridgeImplTest extends UnitTestCase
             targetDF, targetDest);
       replay(tm);
 
-      BridgeImpl bridge = new BridgeImpl();
+      JMSBridgeImpl bridge = new JMSBridgeImpl();
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);
       bridge.setSourceDestinationFactory(sourceDF);
@@ -264,7 +264,7 @@ public class BridgeImplTest extends UnitTestCase
       replay(tm);
       replay(message);
 
-      BridgeImpl bridge = new BridgeImpl();
+      JMSBridgeImpl bridge = new JMSBridgeImpl();
       assertNotNull(bridge);
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);
@@ -362,7 +362,7 @@ public class BridgeImplTest extends UnitTestCase
       replay(tm);
       replay(message);
 
-      BridgeImpl bridge = new BridgeImpl();
+      JMSBridgeImpl bridge = new JMSBridgeImpl();
       assertNotNull(bridge);
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);
@@ -456,7 +456,7 @@ public class BridgeImplTest extends UnitTestCase
       replay(tm);
       replay(message);
 
-      BridgeImpl bridge = new BridgeImpl();
+      JMSBridgeImpl bridge = new JMSBridgeImpl();
       assertNotNull(bridge);
 
       bridge.setSourceConnectionFactoryFactory(sourceCFF);

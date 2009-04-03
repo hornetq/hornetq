@@ -27,12 +27,14 @@ import javax.transaction.TransactionManager;
 import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
+ * 
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface Bridge extends MessagingComponent
+public interface JMSBridge extends MessagingComponent
 {
    void pause() throws Exception;
 

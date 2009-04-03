@@ -30,7 +30,7 @@ import org.jboss.messaging.utils.SimpleString;
 
 
 /**
- * A Bridge
+ * A JMSBridge
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
