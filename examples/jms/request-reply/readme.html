@@ -6,7 +6,7 @@
   <body>
      <h1>JMS Request-Reply Example</h1>
      <br>
-     <p>This example shows you how to handle a request message and receive a reply. To get a reply message, the requesting client creates a temporary queue. Then it sends out the request message with JMSReplyTo set to the temporary queue and a JMSCorrelationID to identify the request. The request message is handled by a SimpleRequestServer, who is listening to the request queue for incoming requests. If a request message has arrived, it extracts the reply queue from the request message by JMSReplyTo header, and sends back a reply message. To let the client know to which request message a reply message is related, the server also set the JMSCorrelationID header to the reply message.</p>
+     <p>This example shows you how to handle a request message and receive a reply. To get a reply message, the requesting client creates a temporary queue. Then it sends out the request message with JMSReplyTo set to the temporary queue. The request message is handled by a SimpleRequestServer, who is listening to the request queue for incoming requests. If a request message has arrived, it extracts the reply queue from the request message by JMSReplyTo header, and sends back a reply message. To let the client know to which request message a reply message is related, the server also set the JMSCorrelationID with the request message's JMSMessageID header to the reply message.</p>
 
      <p>Request/Reply style messaging is supported through standard JMS message headers JMSReplyTo and JMSCorrelationID. This is often used in request-reply style communications between applications.
      Whenever a client sends a message that expects a response, it can use this mechanism to implement. please consult the JMS 1.1 specification for full details.</p>
@@ -24,7 +24,7 @@
 
         <li>We need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
         <pre>
-           <code>InitialContext initialContext = getContext();</code>
+           <code>initialContext = getContext();</code>
         </pre>
 
         <li>We lookup the queue for sending the request message</li>
@@ -77,19 +77,24 @@
            <code>requestMsg.setJMSReplyTo(replyQueue);</code>
         </pre>
 
-        <li>We set the CorrelationID so that it can be linked with corresponding reply message</li>
-        <pre>
-           <code>requestMsg.setJMSCorrelationID("jbm-id: 0000001");</code>
-        </pre>
-
         <li>We sent the request message</li>
         <pre>
            <code>producer.send(requestMsg);</code>
         </pre>
 
+        <li>We put the request message to the map. Later we use it to check out which request message a reply message is for. Here we use the MessageID as the correlation id (JMSCorrelationID). You don't have to use it though. You can use some arbitrary string for example.</li>
+        <pre>
+           <code>requestMap.put(requestMsg.getJMSMessageID(), requestMsg);</code>
+        </pre>
+
         <li>We receive the reply message</li>
         <pre>
            <code>TextMessage replyMessageReceived = (TextMessage)replyConsumer.receive();</code>
+        </pre>
+
+        <li>We check out which request message is this reply message sent for. Here we just have one request message for illustrative purpose. In real world there may be many requests and many replies.</li>
+        <pre>
+           <code>TextMessage matchedMessage = requestMap.get(replyMessageReceived.getJMSCorrelationID());</code>
         </pre>
 
         <li>We close the consumer and producer on the replyQueue</li>
@@ -107,7 +112,7 @@
            <code>server.shutdown();</code>
         </pre>
         
-        <li>And finally, <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+        <li>And finally, <b>always</b> remember to close your JMS connections after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects. Also remember close the JNDI initial context.</li>
 
         <pre>
            <code>
@@ -116,8 +121,13 @@
       {
          if (connection != null)
          {
-            // Step 19. Be sure to close our JMS resources!
+            // Step 20. Be sure to close our JMS resources!
             connection.close();
+         }
+         //Step 21. Also close the initialContext!
+         if (initialContext != null)
+         {
+            initialContext.close();
          }
       }
            </code>

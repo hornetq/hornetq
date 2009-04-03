@@ -21,6 +21,9 @@
    */
 package org.jboss.jms.example;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -42,6 +45,8 @@ import javax.naming.InitialContext;
  */
 public class RequestReplyExample extends JMSExample
 {
+   private Map<String, TextMessage> requestMap = new HashMap<String, TextMessage>();
+   
    public static void main(String[] args)
    {
       new RequestReplyExample().run(args);
@@ -50,15 +55,16 @@ public class RequestReplyExample extends JMSExample
    public void runExample() throws Exception
    {
       Connection connection = null;
+      InitialContext initialContext = null;
+      
       try
       {
-         
          //Step 1. Start the request server
          SimpleRequestServer server = new SimpleRequestServer();
          server.start();
 
          //Step 2. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          //Step 3. Lookup the queue for sending the request message
          Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");         
@@ -90,19 +96,27 @@ public class RequestReplyExample extends JMSExample
          //Step 12. Set the ReplyTo header so that the request receiver knows where to send the reply.
          requestMsg.setJMSReplyTo(replyQueue);
          
-         //Step 13. Set the CorrelationID so that it can be linked with corresponding reply message
-         requestMsg.setJMSCorrelationID("jbm-id: 0000001");
-         
-         //Step 14. Sent the request message
+         //Step 13. Sent the request message
          producer.send(requestMsg);
          
          System.out.println("Request message sent.");
+         
+         //Step 14. Put the request message to the map. Later we can use it to 
+         //check out which request message a reply message is for. Here we use the MessageID as the 
+         //correlation id (JMSCorrelationID). You don't have to use it though. You can use some arbitrary string for example.
+         requestMap.put(requestMsg.getJMSMessageID(), requestMsg);
          
          //Step 15. Receive the reply message.
          TextMessage replyMessageReceived = (TextMessage)replyConsumer.receive();
          
          System.out.println("Received reply: " + replyMessageReceived.getText());
          System.out.println("CorrelatedId: " + replyMessageReceived.getJMSCorrelationID());
+         
+         //Step 16. Check out which request message is this reply message sent for.
+         //Here we just have one request message for illustrative purpose. In real world there may be many requests and many replies.
+         TextMessage matchedMessage = requestMap.get(replyMessageReceived.getJMSCorrelationID());
+         
+         System.out.println("We found matched request: " + matchedMessage.getText());
          
          //Step 17. close the consumer.
          replyConsumer.close();
@@ -116,10 +130,15 @@ public class RequestReplyExample extends JMSExample
       }
       finally
       {
-         //Step 19. Be sure to close our JMS resources!
+         //Step 20. Be sure to close our JMS resources!
          if(connection != null)
          {
             connection.close();
+         }
+         //Step 21. Also close the initialContext!
+         if (initialContext != null)
+         {
+            initialContext.close();
          }
       }
    }
@@ -175,8 +194,8 @@ public class RequestReplyExample extends JMSExample
             // Create the reply message
             TextMessage replyMessage = session.createTextMessage("A reply message");
 
-            // Set the CorrelationID
-            replyMessage.setJMSCorrelationID(request.getJMSCorrelationID());
+            // Set the CorrelationID, using message id.
+            replyMessage.setJMSCorrelationID(request.getJMSMessageID());
 
             // Send out the reply message
             replyProducer.send(replyDestination, replyMessage);
