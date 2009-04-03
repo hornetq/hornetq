@@ -246,7 +246,8 @@ public class MessagingServerImpl implements MessagingServer
 
       resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
                                                 configuration.getTransactionTimeoutScanPeriod());
-      postOffice = new PostOfficeImpl(storageManager,
+      postOffice = new PostOfficeImpl(this,
+                                      storageManager,
                                       pagingManager,
                                       queueFactory,
                                       managementService,
@@ -278,35 +279,39 @@ public class MessagingServerImpl implements MessagingServer
 
       storageManager.loadBindingJournal(queueBindingInfos);
 
-      // TODO - this logic could be simplified
-      if (uuid == null)
+      if (!configuration.isBackup())
       {
-         uuid = storageManager.getPersistentID();
-
-         if (uuid == null && !configuration.isBackup())
+         if (uuid == null)
          {
-            uuid = UUIDGenerator.getInstance().generateUUID();
+            uuid = storageManager.getPersistentID();
 
-            storageManager.setPersistentID(uuid);
-         }
+            if (uuid == null)
+            {
+               uuid = UUIDGenerator.getInstance().generateUUID();
 
-         if (uuid != null)
-         {
-            nodeID = new SimpleString(uuid.toString());
+               storageManager.setPersistentID(uuid);
+            }
+            
+            nodeID = new SimpleString(uuid.toString());            
          }
       }
       else
       {
-         UUID theUUID = storageManager.getPersistentID();
-
-         if (theUUID == null)
+         UUID currentUUID = storageManager.getPersistentID();
+         
+         if (currentUUID != null)
          {
-            // Backup being initialised
+            if (!currentUUID.equals(uuid))
+            {
+               throw new IllegalStateException("Backup server already has an id but it's not the same as live");
+            }
+         }
+         else
+         {
             storageManager.setPersistentID(uuid);
          }
-
       }
-
+      
       serverManagement = managementService.registerServer(postOffice,
                                                           storageManager,
                                                           configuration,
@@ -650,18 +655,18 @@ public class MessagingServerImpl implements MessagingServer
          synchronized (this)
          {
             freezeBackupConnection();
-   
+
             List<Queue> toActivate = postOffice.activate();
-   
+
             for (Queue queue : toActivate)
             {
                scheduledExecutor.schedule(new ActivateRunner(queue),
                                           configuration.getQueueActivationTimeout(),
                                           TimeUnit.MILLISECONDS);
             }
-   
+
             configuration.setBackup(false);
-   
+ 
             if (clusterManager != null)
             {
                clusterManager.activate();
@@ -833,42 +838,27 @@ public class MessagingServerImpl implements MessagingServer
 
    public void initialiseBackup(final UUID theUUID, final long currentMessageID) throws Exception
    {
+      if (theUUID == null)
+      {
+         throw new IllegalArgumentException("node id is null");
+      }
+
       synchronized (initialiseLock)
       {
          if (initialised)
          {
-            if (uuid == null)
-            {
-               throw new IllegalStateException("Server is already initialised but has no id");
-            }
-
-            if (!uuid.toString().equals(theUUID.toString()))
-            {
-               throw new IllegalStateException("Backup node already has a unique id but it's not the same as the live node id");
-            }
-
-            return;
-         }
-
-         if (uuid != null && !uuid.toString().equals(theUUID.toString()))
-         {
-            throw new IllegalStateException("Backup node already has a unique id but it's not the same as the live node id");
-         }
-
-         if (theUUID == null)
-         {
-            throw new IllegalArgumentException("node id is null");
+            throw new IllegalStateException("Server is already initialised");
          }
 
          this.uuid = theUUID;
 
          this.nodeID = new SimpleString(uuid.toString());
-
+         
          doStart();
-
+         
          if (currentMessageID != this.storageManager.getCurrentUniqueID())
          {
-            throw new IllegalStateException("Backup node current unique id != live node current unique id " + this.storageManager.getCurrentUniqueID() +
+            throw new IllegalStateException("Backup node current id sequence != live node current id sequence " + this.storageManager.getCurrentUniqueID() +
                                             ", " +
                                             currentMessageID);
          }
@@ -975,7 +965,7 @@ public class MessagingServerImpl implements MessagingServer
                             final boolean temporary) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
-
+      
       if (binding != null)
       {
          throw new MessagingException(MessagingException.QUEUE_EXISTS);
@@ -1216,7 +1206,7 @@ public class MessagingServerImpl implements MessagingServer
 
       sessions.put(name, session);
 
-      ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session, channel);
+      ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session);
 
       session.setHandler(handler);
 

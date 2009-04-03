@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
@@ -34,6 +35,9 @@ import org.jboss.messaging.utils.SimpleString;
 public class CreateQueueMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(CreateQueueMessage.class);
+
 
    // Attributes ----------------------------------------------------
 
@@ -46,7 +50,7 @@ public class CreateQueueMessage extends PacketImpl
    private boolean durable;
 
    private boolean temporary;
-
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -110,7 +114,7 @@ public class CreateQueueMessage extends PacketImpl
    {
       return temporary;
    }
-
+   
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeSimpleString(address);

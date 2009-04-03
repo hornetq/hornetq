@@ -128,7 +128,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
                   props.putStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(user));
 
-                  Notification notification = new Notification(SECURITY_AUTHENTICATION_VIOLATION, props);
+                  Notification notification = new Notification(null, SECURITY_AUTHENTICATION_VIOLATION, props);
 
                   notificationService.sendNotification(notification);
                }
@@ -173,7 +173,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                props.putStringProperty(ManagementHelper.HDR_CHECK_TYPE, new SimpleString(checkType.toString()));
                props.putStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(user));
 
-               Notification notification = new Notification(NotificationType.SECURITY_PERMISSION_VIOLATION, props);
+               Notification notification = new Notification(null, NotificationType.SECURITY_PERMISSION_VIOLATION, props);
 
                notificationService.sendNotification(notification);
             }

@@ -257,7 +257,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       createQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filterString), durable);
    }
-   
+
    public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws MessagingException
    {
       internalCreateQueue(address, queueName, null, false, true);
@@ -267,7 +267,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       internalCreateQueue(toSimpleString(address), toSimpleString(queueName), null, false, true);
    }
-   
+
    public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws MessagingException
    {
       internalCreateQueue(address, queueName, filter, false, true);
@@ -278,7 +278,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       internalCreateQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filter), false, true);
    }
 
-public void deleteQueue(final SimpleString queueName) throws MessagingException
+   public void deleteQueue(final SimpleString queueName) throws MessagingException
    {
       checkClosed();
 
@@ -630,7 +630,7 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
          started = false;
       }
    }
-   
+
    public void addFailureListener(final FailureListener listener)
    {
       remotingConnection.addFailureListener(listener);
@@ -739,7 +739,7 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
          consumer.handleLargeMessageContinuation(continuation);
       }
    }
-   
+
    public void close() throws MessagingException
    {
       if (closed)
@@ -1246,7 +1246,9 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
                                                                consumerID,
                                                                clientWindowSize,
                                                                ackBatchSize,
-                                                               consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate, false) : null, 
+                                                               consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate,
+                                                                                                                false)
+                                                                                  : null,
                                                                executor,
                                                                channel,
                                                                directory);
@@ -1288,24 +1290,22 @@ public void deleteQueue(final SimpleString queueName) throws MessagingException
    }
 
    private void internalCreateQueue(final SimpleString address,
-                            final SimpleString queueName,
-                            final SimpleString filterString,
-                            final boolean durable,
-                            final boolean temp) throws MessagingException
-                            {
+                                    final SimpleString queueName,
+                                    final SimpleString filterString,
+                                    final boolean durable,
+                                    final boolean temp) throws MessagingException
+   {
       checkClosed();
-
-
+      
       if (durable && temp)
       {
-         throw new MessagingException(MessagingException.INTERNAL_ERROR,
-         "Queue can not be both durable and temporay");
+         throw new MessagingException(MessagingException.INTERNAL_ERROR, "Queue can not be both durable and temporay");
       }
 
       CreateQueueMessage request = new CreateQueueMessage(address, queueName, filterString, durable, temp);
 
       channel.sendBlocking(request);
-                            }
+   }
 
    private void checkXA() throws XAException
    {

@@ -49,4 +49,6 @@ public interface RemotingService extends MessagingComponent
    boolean removeInterceptor(Interceptor interceptor);
    
    void setManagementService(ManagementService managementService);
+   
+   void freeze();
 }

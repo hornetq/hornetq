@@ -220,7 +220,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       
       buff.putInt(remoteQueueID);
       
-      message.putBytesProperty(idsHeaderName, ids);                
+      message.putBytesProperty(idsHeaderName, ids);           
    }
 
    public synchronized void addConsumer(final SimpleString filterString) throws Exception

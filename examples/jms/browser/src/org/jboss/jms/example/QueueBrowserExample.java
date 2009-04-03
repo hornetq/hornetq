@@ -63,7 +63,7 @@ public class QueueBrowserExample extends JMSExample
          // Step 3. Perform a lookup on the Connection Factory
          ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         // Step 4.Create a JMS Connection
+         // Step 4. Create a JMS Connection
          connection = cf.createConnection();
 
          // Step 5. Create a JMS Session

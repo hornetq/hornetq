@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.cluster.DiscoveryEntry;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -66,16 +67,16 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private final Object waitLock = new Object();
 
-   private final Map<Pair<TransportConfiguration, TransportConfiguration>, Long> connectors = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, Long>();
+   private final Map<String, DiscoveryEntry> connectors = new HashMap<String, DiscoveryEntry>();
 
    private final long timeout;
 
    private volatile boolean started;
 
    private final String nodeID;
-   
+
    private final InetAddress groupAddress;
-   
+
    private final int groupPort;
 
    public DiscoveryGroupImpl(final String nodeID,
@@ -86,12 +87,12 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    {
       this.nodeID = nodeID;
 
-      this.name = name;     
+      this.name = name;
 
-      this.timeout = timeout;     
-      
+      this.timeout = timeout;
+
       this.groupAddress = groupAddress;
-      
+
       this.groupPort = groupPort;
    }
 
@@ -101,7 +102,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       {
          return;
       }
-      
+
       socket = new MulticastSocket(groupPort);
 
       socket.joinGroup(groupAddress);
@@ -109,7 +110,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       socket.setSoTimeout(SOCKET_TIMEOUT);
 
       started = true;
-      
+
       thread = new Thread(this);
 
       thread.setDaemon(true);
@@ -138,9 +139,9 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
 
       socket.close();
-      
+
       socket = null;
-      
+
       thread = null;
    }
 
@@ -154,9 +155,9 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       return name;
    }
 
-   public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getConnectors()
+   public synchronized Map<String, DiscoveryEntry> getDiscoveryEntryMap()
    {
-      return new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>(connectors.keySet());
+      return new HashMap<String, DiscoveryEntry>(connectors);
    }
 
    public boolean waitForBroadcast(final long timeout)
@@ -191,6 +192,83 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          return ret;
       }
    }
+   
+   private static class UniqueIDEntry
+   {
+      String uniqueID;
+      
+      boolean changed;
+      
+      UniqueIDEntry(final String uniqueID)
+      {
+         this.uniqueID = uniqueID;
+      }
+      
+      boolean isChanged()
+      {
+         return changed;
+      }
+      
+      void setChanged()
+      {
+         changed = true;
+      }
+      
+      String getUniqueID()
+      {
+         return uniqueID;
+      }
+      
+      void setUniqueID(final String uniqueID)
+      {
+         this.uniqueID = uniqueID;
+      }      
+   }
+   
+   private Map<String, UniqueIDEntry> uniqueIDMap = new HashMap<String, UniqueIDEntry>();
+   
+   /*
+    * This is a sanity check to catch any cases where two different nodes are broadcasting the same node id either
+    * due to misconfiguration or problems in failover
+    */
+   private boolean uniqueIDOK(final String originatingNodeID, final String uniqueID)
+   {
+      UniqueIDEntry entry = uniqueIDMap.get(originatingNodeID);
+      
+      if (entry == null)
+      {
+         entry = new UniqueIDEntry(uniqueID);
+         
+         uniqueIDMap.put(originatingNodeID, entry);
+         
+         return true;
+      }
+      else
+      {
+         if (entry.getUniqueID().equals(uniqueID))
+         {
+            return true;
+         }
+         else
+         {
+            //We allow one change - this might occur if one node fails over onto its backup which
+            //has same node id but different unique id
+            if (!entry.isChanged())
+            {
+               entry.setChanged();
+               
+               entry.setUniqueID(uniqueID);
+               
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+      }
+   }
+   
 
    public void run()
    {
@@ -207,7 +285,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             }
 
             final DatagramPacket packet = new DatagramPacket(data, data.length);
-
+                        
             try
             {
                socket.receive(packet);
@@ -223,17 +301,26 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   continue;
                }
             }
-            
+
             MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(data);
-            
+
             String originatingNodeID = buffer.readString();
+            
+            String uniqueID = buffer.readString();
+            
+            if (!uniqueIDOK(originatingNodeID, uniqueID))
+            {
+               log.warn("There seem to be more than one broadcasters on the network broadcasting the same node id");
+               
+               continue;
+            }
 
             if (nodeID.equals(originatingNodeID))
             {
                // Ignore traffic from own node
                continue;
             }
-
+            
             int size = buffer.readInt();
 
             boolean changed = false;
@@ -243,7 +330,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                for (int i = 0; i < size; i++)
                {
                   TransportConfiguration connector = new TransportConfiguration();
-                  
+
                   connector.decode(buffer);
 
                   boolean existsBackup = buffer.readBoolean();
@@ -253,14 +340,16 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   if (existsBackup)
                   {
                      backupConnector = new TransportConfiguration();
-                     
+
                      backupConnector.decode(buffer);
                   }
 
                   Pair<TransportConfiguration, TransportConfiguration> connectorPair = new Pair<TransportConfiguration, TransportConfiguration>(connector,
                                                                                                                                                 backupConnector);
 
-                  Long oldVal = connectors.put(connectorPair, System.currentTimeMillis());
+                  DiscoveryEntry entry = new DiscoveryEntry(connectorPair, System.currentTimeMillis());
+
+                  DiscoveryEntry oldVal = connectors.put(originatingNodeID, entry);
 
                   if (oldVal == null)
                   {
@@ -270,15 +359,15 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
                long now = System.currentTimeMillis();
 
-               Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Long>> iter = connectors.entrySet()
-                                                                                                                .iterator();
+               Iterator<Map.Entry<String, DiscoveryEntry>> iter = connectors.entrySet().iterator();
+               
                // Weed out any expired connectors
 
                while (iter.hasNext())
                {
-                  Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, Long> entry = iter.next();
+                  Map.Entry<String, DiscoveryEntry> entry = iter.next();
 
-                  if (entry.getValue() + timeout <= now)
+                  if (entry.getValue().getLastUpdate() + timeout <= now)
                   {
                      iter.remove();
 

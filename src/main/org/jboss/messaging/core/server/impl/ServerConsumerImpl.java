@@ -51,6 +51,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -136,10 +137,13 @@ public class ServerConsumerImpl implements ServerConsumer
    private final ManagementService managementService;
 
    private final Binding binding;
+   
+   
+   private MessagingServer server;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ServerConsumerImpl(final long id,
+   public ServerConsumerImpl(final MessagingServer server, final long id,
                              final long replicatedSessionID,
                              final ServerSession session,
                              final QueueBinding binding,
@@ -155,6 +159,8 @@ public class ServerConsumerImpl implements ServerConsumer
                              final Executor executor,
                              final ManagementService managementService) throws Exception
    {
+      this.server = server;
+      
       this.id = id;
 
       this.replicatedSessionID = replicatedSessionID;
@@ -251,7 +257,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, messageQueue.getConsumerCount());
 
-         Notification notification = new Notification(NotificationType.CONSUMER_CLOSED, props);
+         Notification notification = new Notification(null, NotificationType.CONSUMER_CLOSED, props);
 
          managementService.sendNotification(notification);
       }
@@ -409,13 +415,27 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void deliverReplicated(final long messageID) throws Exception
    {      
-      MessageReference ref = removeFirstReference(messageID);
+      MessageReference ref = messageQueue.removeFirstReference(messageID);
 
       if (ref == null)
       {
-         throw new IllegalStateException("Cannot find ref when replicating delivery " + messageID +
-                                         " queue" +
-                                         messageQueue.getName());
+         // The order is correct, but it hasn't been depaged yet, so we need to force a depage
+         PagingStore store = pagingManager.getPageStore(binding.getAddress());
+         
+         // force a depage
+         if (!store.readPage()) // This returns false if there are no pages
+         {
+            throw new IllegalStateException("Cannot find ref " + messageID + " server " + System.identityHashCode(server) + " queue " + this.messageQueue.getName());
+         }
+         else
+         {
+            ref = messageQueue.removeFirstReference(id);
+            
+            if (ref == null)
+            {
+               throw new IllegalStateException("Cannot find ref after depaging");
+            }
+         }
       }
 
       // We call doHandle rather than handle, since we don't want to check available credits
@@ -457,34 +477,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Private --------------------------------------------------------------------------------------
 
-   private MessageReference removeFirstReference(final long id) throws Exception
-   {
-      MessageReference ref = messageQueue.removeFirstReference(id);
-
-      if (ref == null)
-      {
-         // The order is correct, but it hasn't been depaged yet, so we need to force a depage
-         PagingStore store = pagingManager.getPageStore(binding.getAddress());
-         
-         // force a depage
-         if (!store.readPage()) // This returns false if there are no pages
-         {
-            throw new IllegalStateException("Cannot find page " + id);
-         }
-         else
-         {
-            ref = messageQueue.removeFirstReference(id);
-            
-            if (ref == null)
-            {
-               throw new IllegalStateException("Cannot find ref after depaging");
-            }
-         }
-      }
-
-      return ref;
-   }
-   
    private void promptDelivery()
    {
       lock.lock();

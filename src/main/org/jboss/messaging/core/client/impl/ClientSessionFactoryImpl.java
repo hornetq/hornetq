@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy;
+import org.jboss.messaging.core.cluster.DiscoveryEntry;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.cluster.impl.DiscoveryGroupImpl;
@@ -90,9 +91,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
 
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
-   
-   public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 
+   public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private final double retryIntervalMultiplier; // For exponential backoff
 
    private final int reconnectAttempts;
-   
+
    private final boolean failoverOnServerShutdown;
 
    // Static
@@ -442,7 +442,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
                                    final TransportConfiguration backupConfig)
-   {      
+   {
       this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
       this.pingPeriod = DEFAULT_PING_PERIOD;
       this.callTimeout = DEFAULT_CALL_TIMEOUT;
@@ -780,12 +780,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public synchronized void connectorsChanged()
    {
       receivedBroadcast = true;
-
-      List<Pair<TransportConfiguration, TransportConfiguration>> newConnectors = discoveryGroup.getConnectors();
+            
+      Map<String, DiscoveryEntry> newConnectors = discoveryGroup.getDiscoveryEntryMap();
 
       Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
 
-      connectorSet.addAll(newConnectors);
+      for (DiscoveryEntry entry : newConnectors.values())
+      {
+         connectorSet.add(entry.getConnectorPair());
+      }
 
       Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager>> iter = connectionManagerMap.entrySet()
                                                                                                                               .iterator();
@@ -802,7 +805,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
       }
 
-      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : newConnectors)
+      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectorSet)
       {
          if (!connectionManagerMap.containsKey(connectorPair))
          {

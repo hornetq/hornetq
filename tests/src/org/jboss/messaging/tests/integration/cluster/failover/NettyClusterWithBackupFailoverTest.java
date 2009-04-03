@@ -20,46 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.management;
 
-import org.jboss.messaging.utils.TypedProperties;
+package org.jboss.messaging.tests.integration.cluster.failover;
 
 /**
- * A Notification
+ * A NettyClusterWithBackupFailoverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Created 22 Jan 2009 16:41:12
  *
  *
  */
-public class Notification
+public class NettyClusterWithBackupFailoverTest extends ClusterWithBackupFailoverTest
 {
-   private final NotificationType type;
-
-   private final TypedProperties properties;
-
-   public Notification(String uid, final NotificationType type, final TypedProperties properties)
+   protected boolean isNetty()
    {
-      this.uid = uid;
-      this.type = type;
-      this.properties = properties;
+      return true;
    }
 
-   public NotificationType getType()
+   protected boolean isFileStorage()
    {
-      return type;
+      return false;
    }
-
-   public TypedProperties getProperties()
-   {
-      return properties;
-   }
-
-   private String uid;
-
-   public String getUID()
-   {
-      return uid;
-   }
+   
 }
+
+

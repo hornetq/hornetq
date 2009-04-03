@@ -598,6 +598,11 @@ public class ManagementServiceImpl implements ManagementService
 
             notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
 
+            if (notification.getUID() != null)
+            {               
+               notifProps.putStringProperty(new SimpleString("foobar"), new SimpleString(notification.getUID()));
+            }
+            
             notificationMessage.putTypedProperties(notifProps);
 
             postOffice.route(notificationMessage, null);

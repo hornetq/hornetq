@@ -131,7 +131,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
             // Create queue can also be fielded here in the case of a replicated store and forward queue creation
 
             CreateQueueMessage request = (CreateQueueMessage)packet;
-
+            
             handleCreateQueue(request);
 
             break;
@@ -377,7 +377,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
       }
       
       // Need to propagate the consumer add
-      Notification notification = new Notification(CONSUMER_CREATED, request.getProperties());
+      Notification notification = new Notification(null, CONSUMER_CREATED, request.getProperties());
 
       try
       {
@@ -409,7 +409,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
       }
       
       // Need to propagate the consumer close
-      Notification notification = new Notification(CONSUMER_CLOSED, request.getProperties());
+      Notification notification = new Notification(null, CONSUMER_CLOSED, request.getProperties());
 
       try
       {

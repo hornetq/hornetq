@@ -251,9 +251,9 @@ public class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir(int index)
+   protected String getBindingsDir(int index, boolean backup)
    {
-      return getBindingsDir(testDir) + index;
+      return getBindingsDir(testDir) + index + "-" + (backup ? "B" : "L");
    }
 
    /**
@@ -272,9 +272,9 @@ public class UnitTestCase extends TestCase
       return testDir + "/page";
    }
    
-   protected String getPageDir(int index)
+   protected String getPageDir(int index, boolean backup)
    {
-      return getPageDir(testDir) + index;
+      return getPageDir(testDir) + index + "-" + (backup ? "B" : "L");
    }
 
    /**
@@ -293,9 +293,9 @@ public class UnitTestCase extends TestCase
       return testDir + "/large-msg";
    }
    
-   protected String getLargeMessagesDir(int index)
+   protected String getLargeMessagesDir(int index, boolean backup)
    {
-      return getLargeMessagesDir(testDir) + index;
+      return getLargeMessagesDir(testDir) + index + "-" + (backup ? "B" : "L");
    }
 
    /**
@@ -464,16 +464,12 @@ public class UnitTestCase extends TestCase
       return buffer.array();
    }
 
-   
-
-   
    protected void recreateDirectory(String directory)
    {
       File file = new File(directory);
       deleteDirectory(file);
       file.mkdirs();
    }
-
 
    protected boolean deleteDirectory(File directory)
    {

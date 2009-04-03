@@ -182,13 +182,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       started = true;
    }
    
+   public synchronized void freeze()
+   {
+      //Used in testing - prevents service taking any more connections
+      
+      for (Acceptor acceptor : acceptors)
+      {
+         acceptor.pause();
+      }
+   }
+   
    public synchronized void stop() throws Exception
    {
       if (!started)
       {
          return;
       }
-
+ 
       if (failedConnectionTimer != null)
       {
          failedConnectionsTask.cancel();
@@ -199,7 +209,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          failedConnectionTimer = null;
       }
-      
+          
       //We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
       {
@@ -262,7 +272,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       Object id = connection.getID();
 
-      connections.put(id, rc);
+      connections.put(id, rc);           
    }
 
    public void connectionDestroyed(final Object connectionID)

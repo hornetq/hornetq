@@ -175,7 +175,7 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-//      log.info("waiting for bindings on node " + node +
+//       log.info("waiting for bindings on node " + node +
 //               " address " +
 //               address +
 //               " count " +
@@ -572,6 +572,12 @@ public class ClusterTestBase extends ServiceTestBase
                {
                   message.acknowledge();
                }
+               
+               //log.info("consumer " + consumerIDs[i] +" returns " + count);
+            }
+            else
+            {
+              // log.info("consumer " + consumerIDs[i] +" returns null");
             }
          }
          while (message != null);
@@ -792,7 +798,7 @@ public class ClusterTestBase extends ServiceTestBase
          serverBackuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
       }
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc, serverBackuptc);
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc, serverBackuptc, false, 100, 1d, -1);
 
       sf.setBlockOnNonPersistentSend(blocking);
       sf.setBlockOnPersistentSend(blocking);
@@ -840,13 +846,13 @@ public class ClusterTestBase extends ServiceTestBase
       Configuration configuration = new ConfigurationImpl();
 
       configuration.setSecurityEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir(node));
+      configuration.setBindingsDirectory(getBindingsDir(node, backup));
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(node, backup));
       configuration.setJournalFileSize(100 * 1024);
       configuration.setJournalType(JournalType.NIO);
-      configuration.setPagingDirectory(getPageDir(node));
-      configuration.setLargeMessagesDirectory(getLargeMessagesDir(node));
+      configuration.setPagingDirectory(getPageDir(node, backup));
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, backup));
       configuration.setClustered(true);
       configuration.setBackup(backup);
 
@@ -898,7 +904,33 @@ public class ClusterTestBase extends ServiceTestBase
       servers[node] = server;
    }
 
-   protected void setupServerWithDiscovery(int node, String groupAddress, int port, boolean fileStorage, boolean netty)
+   protected void setupServerWithDiscovery(int node,
+                                           String groupAddress,
+                                           int port,
+                                           boolean fileStorage,
+                                           boolean netty,
+                                           boolean backup)
+   {
+      this.setupServerWithDiscovery(node, groupAddress, port, fileStorage, netty, backup, -1);
+   }
+
+   protected void setupServerWithDiscovery(int node,
+                                           String groupAddress,
+                                           int port,
+                                           boolean fileStorage,
+                                           boolean netty,
+                                           int backupNode)
+   {
+      this.setupServerWithDiscovery(node, groupAddress, port, fileStorage, netty, false, backupNode);
+   }
+
+   protected void setupServerWithDiscovery(int node,
+                                           String groupAddress,
+                                           int port,
+                                           boolean fileStorage,
+                                           boolean netty,
+                                           boolean backup,
+                                           int backupNode)
    {
       if (servers[node] != null)
       {
@@ -908,13 +940,39 @@ public class ClusterTestBase extends ServiceTestBase
       Configuration configuration = new ConfigurationImpl();
 
       configuration.setSecurityEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir(node));
+      configuration.setBindingsDirectory(getBindingsDir(node, false));
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(node, false));
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setPagingDirectory(getPageDir(node));
-      configuration.setLargeMessagesDirectory(getLargeMessagesDir(node));
+      configuration.setPagingDirectory(getPageDir(node, false));
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));
       configuration.setClustered(true);
+      configuration.setBackup(backup);
+
+      TransportConfiguration nettyBackuptc = null;
+      TransportConfiguration invmBackuptc = null;
+      
+      if (backupNode != -1)
+      {
+         Map<String, Object> backupParams = generateParams(backupNode, netty);
+
+         if (netty)
+         {
+            nettyBackuptc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, backupParams);
+
+            configuration.getConnectorConfigurations().put(nettyBackuptc.getName(), nettyBackuptc);
+
+            configuration.setBackupConnectorName(nettyBackuptc.getName());
+         }
+         else
+         {
+            invmBackuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
+
+            configuration.getConnectorConfigurations().put(invmBackuptc.getName(), invmBackuptc);
+
+            configuration.setBackupConnectorName(invmBackuptc.getName());
+         }
+      }
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -939,11 +997,11 @@ public class ClusterTestBase extends ServiceTestBase
          TransportConfiguration nettytc_c = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
          configuration.getConnectorConfigurations().put(nettytc_c.getName(), nettytc_c);
 
-         connectorPairs.add(new Pair<String, String>(nettytc_c.getName(), null));
+         connectorPairs.add(new Pair<String, String>(nettytc_c.getName(), nettyBackuptc == null ? null : nettyBackuptc.getName()));
       }
       else
       {
-         connectorPairs.add(new Pair<String, String>(invmtc_c.getName(), null));
+         connectorPairs.add(new Pair<String, String>(invmtc_c.getName(), invmBackuptc == null ? null : invmBackuptc.getName()));
       }
 
       BroadcastGroupConfiguration bcConfig = new BroadcastGroupConfiguration("bg1",
@@ -996,6 +1054,14 @@ public class ClusterTestBase extends ServiceTestBase
          }
 
          servers[nodes[i]] = null;
+      }
+   }
+   
+   protected void clearAllServers()
+   {
+      for (int i = 0; i < servers.length; i++)
+      {
+         servers[i] = null;
       }
    }
 

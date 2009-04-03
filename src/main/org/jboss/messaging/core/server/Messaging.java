@@ -154,9 +154,6 @@ public class Messaging
 
       MessagingServer server = new MessagingServerImpl();
 
-      log.info("** creating server with security enabled " + config.isSecurityEnabled() + 
-               " " + System.identityHashCode(config));
-
       server.setConfiguration(config);
 
       server.setStorageManager(storageManager);

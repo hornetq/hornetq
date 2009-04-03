@@ -51,4 +51,6 @@ public interface Bridge extends Consumer, MessagingComponent
    boolean isUseDuplicateDetection();  
    
    void activate();
+   
+   void setQueue(Queue queue);
 }

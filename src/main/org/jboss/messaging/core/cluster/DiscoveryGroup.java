@@ -23,11 +23,9 @@
 
 package org.jboss.messaging.core.cluster;
 
-import java.util.List;
+import java.util.Map;
 
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.utils.Pair;
 
 /**
  * A DiscoveryGroup
@@ -42,7 +40,7 @@ public interface DiscoveryGroup extends MessagingComponent
 {
    String getName();
 
-   List<Pair<TransportConfiguration, TransportConfiguration>> getConnectors();
+   Map<String, DiscoveryEntry> getDiscoveryEntryMap();
    
    boolean waitForBroadcast(long timeout);
    

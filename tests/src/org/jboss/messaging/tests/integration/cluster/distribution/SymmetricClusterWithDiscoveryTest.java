@@ -37,9 +37,9 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
 {
    private static final Logger log = Logger.getLogger(SymmetricClusterWithDiscoveryTest.class);
    
-   private static final String groupAddress = "230.1.2.3";
+   protected static final String groupAddress = "230.1.2.3";
    
-   private static final int groupPort = 6745;
+   protected static final int groupPort = 6745;
 
    protected boolean isNetty()
    {
@@ -74,11 +74,11 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
    @Override
    protected void setupServers() throws Exception
    {
-      setupServerWithDiscovery(0, groupAddress, groupPort, isFileStorage(), isNetty());
-      setupServerWithDiscovery(1, groupAddress, groupPort, isFileStorage(), isNetty());
-      setupServerWithDiscovery(2, groupAddress, groupPort, isFileStorage(), isNetty());
-      setupServerWithDiscovery(3, groupAddress, groupPort, isFileStorage(), isNetty());
-      setupServerWithDiscovery(4, groupAddress, groupPort, isFileStorage(), isNetty()); 
+      setupServerWithDiscovery(0, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+      setupServerWithDiscovery(1, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+      setupServerWithDiscovery(2, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+      setupServerWithDiscovery(3, groupAddress, groupPort, isFileStorage(), isNetty(), false);
+      setupServerWithDiscovery(4, groupAddress, groupPort, isFileStorage(), isNetty(), false); 
    }
      
 

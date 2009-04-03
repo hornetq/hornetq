@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.util;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -110,6 +111,12 @@ public class ServiceTestBase extends UnitTestCase
 
    protected void clearData(String testDir)
    {
+      //Need to delete the root
+      
+      File file = new File(testDir);
+      deleteDirectory(file);
+      file.mkdirs();
+      
       recreateDirectory(getJournalDir(testDir));
       recreateDirectory(getBindingsDir(testDir));
       recreateDirectory(getPageDir(testDir));
@@ -237,13 +244,13 @@ public class ServiceTestBase extends UnitTestCase
    {
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir(index));
+      configuration.setBindingsDirectory(getBindingsDir(index, false));
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(index, false));
       configuration.setJournalFileSize(100 * 1024);
       configuration.setJournalType(JournalType.NIO);
-      configuration.setPagingDirectory(getPageDir(index));
-      configuration.setLargeMessagesDirectory(getLargeMessagesDir(index));
+      configuration.setPagingDirectory(getPageDir(index, false));
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir(index, false));
 
       configuration.getAcceptorConfigurations().clear();
 

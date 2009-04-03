@@ -24,21 +24,17 @@ package org.jboss.messaging.core.server.cluster.impl;
 
 import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
-import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
-import static org.jboss.messaging.core.management.NotificationType.SECURITY_PERMISSION_VIOLATION;
 import static org.jboss.messaging.core.postoffice.impl.PostOfficeImpl.HDR_RESET_QUEUE_DATA;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import org.jboss.messaging.core.cluster.DiscoveryEntry;
 import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -46,7 +42,6 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationType;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -63,7 +58,6 @@ import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.MessageFlowRecord;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
-import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.utils.ExecutorFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -95,13 +89,13 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    private final SimpleString address;
 
-   private final long retryInterval;  
-   
+   private final long retryInterval;
+
    private final boolean useDuplicateDetection;
 
    private final boolean routeWhenNoConsumers;
 
-   private Map<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord> records = new HashMap<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord>();
+   private Map<String, MessageFlowRecord> records = new HashMap<String, MessageFlowRecord>();
 
    private final DiscoveryGroup discoveryGroup;
 
@@ -177,7 +171,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       if (!backup)
       {
-         this.updateConnectors(connectors);
+         this.updateFromStaticConnectors(connectors);
       }
    }
 
@@ -205,7 +199,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.address = address;
 
       this.retryInterval = retryInterval;
-      
+
       this.executorFactory = executorFactory;
 
       this.server = server;
@@ -284,7 +278,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       {
          return;
       }
-       
+
       backup = false;
 
       if (discoveryGroup != null)
@@ -295,7 +289,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       {
          try
          {
-            updateConnectors(staticConnectors);
+            updateFromStaticConnectors(staticConnectors);
          }
          catch (Exception e)
          {
@@ -315,7 +309,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       try
       {
-         List<Pair<TransportConfiguration, TransportConfiguration>> connectors = discoveryGroup.getConnectors();
+         Map<String, DiscoveryEntry> connectors = discoveryGroup.getDiscoveryEntryMap();
 
          updateConnectors(connectors);
       }
@@ -325,28 +319,37 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
    }
 
-   private void updateConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
+   private void updateFromStaticConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
    {
-      doUpdateConnectors(connectors);
+      Map<String, DiscoveryEntry> map = new HashMap<String, DiscoveryEntry>();
+
+      // TODO - we fudge the node id - it's never updated anyway
+      int i = 0;
+      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectors)
+      {
+         map.put(String.valueOf(i++), new DiscoveryEntry(connectorPair, 0));
+      }
+      
+      updateConnectors(map);
    }
 
-   private void doUpdateConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
+   private void updateConnectors(final Map<String, DiscoveryEntry> connectors) throws Exception
    {
-      Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
+      // Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new
+      // HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
 
-      connectorSet.addAll(connectors);
+      // connectorSet.addAll(connectors);
 
-      Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord>> iter = records.entrySet()
-                                                                                                                 .iterator();
+      Iterator<Map.Entry<String, MessageFlowRecord>> iter = records.entrySet().iterator();
 
       while (iter.hasNext())
       {
-         Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, MessageFlowRecord> entry = iter.next();
+         Map.Entry<String, MessageFlowRecord> entry = iter.next();
 
-         if (!connectorSet.contains(entry.getKey()))
+         if (!connectors.containsKey(entry.getKey()))
          {
             // Connector no longer there - we should remove and close it - we don't delete the queue though - it may
-            // have messages - this is up to the admininstrator to do this
+            // have messages - this is up to the administrator to do this
 
             entry.getValue().close();
 
@@ -354,11 +357,13 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          }
       }
 
-      for (final Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectors)
+      for (final Map.Entry<String, DiscoveryEntry> entry : connectors.entrySet())
       {
-         if (!records.containsKey(connectorPair))
+         if (!records.containsKey(entry.getKey()))
          {
-            final SimpleString queueName = generateQueueName(name, connectorPair);
+            Pair<TransportConfiguration, TransportConfiguration> connectorPair = entry.getValue().getConnectorPair();
+
+            final SimpleString queueName = new SimpleString("sf." + name + "." + entry.getKey());
 
             Binding queueBinding = postOffice.getBinding(queueName);
 
@@ -367,25 +372,30 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             if (queueBinding != null)
             {
                queue = (Queue)queueBinding.getBindable();
-               
-               createNewRecord(connectorPair, queueName, queue);
+
+               createNewRecord(entry.getKey(), connectorPair, queueName, queue, true);
             }
             else
             {
                // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
                // actually routed to at that address though
-               
+
                if (replicatingChannel == null)
                {
                   queue = server.createQueue(queueName, queueName, null, true, false);
-                  
-                  createNewRecord(connectorPair, queueName, queue);
+
+                  createNewRecord(entry.getKey(), connectorPair, queueName, queue, true);
                }
                else
                {
-                  //Replicate the createQueue first
+                  // We need to create the record before we replicate, since otherwise, two updates can come in for
+                  // the same entry before the first replication comes back, and it won't find the record, so it
+                  // will try and create the queue twice
+                  createNewRecord(entry.getKey(), connectorPair, queueName, null, false);
+
+                  // Replicate the createQueue first
                   Packet packet = new CreateQueueMessage(queueName, queueName, null, true, false);
-                  
+
                   replicatingChannel.replicatePacket(packet, 1, new Runnable()
                   {
                      public void run()
@@ -393,8 +403,16 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                         try
                         {
                            Queue queue = server.createQueue(queueName, queueName, null, true, false);
-                        
-                           createNewRecord(connectorPair, queueName, queue);
+
+                           synchronized (ClusterConnectionImpl.this)
+                           {
+                              MessageFlowRecord record = records.get(entry.getKey());
+
+                              if (record != null)
+                              {
+                                 record.activate(queue);
+                              }
+                           }
                         }
                         catch (Exception e)
                         {
@@ -405,11 +423,14 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                }
             }
          }
-      }            
+      }
    }
-   
-   private void createNewRecord(final Pair<TransportConfiguration, TransportConfiguration> connectorPair, final SimpleString queueName,
-                                final Queue queue) throws Exception
+
+   private void createNewRecord(final String nodeID,
+                                final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                                final SimpleString queueName,
+                                final Queue queue,
+                                final boolean start) throws Exception
    {
       MessageFlowRecordImpl record = new MessageFlowRecordImpl(queue);
 
@@ -433,61 +454,28 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                      record,
                                      replicatingChannel,
                                      !backup,
-                                     server.getStorageManager());
+                                     server.getStorageManager(),
+                                     server);
 
       record.setBridge(bridge);
 
-      records.put(connectorPair, record);
+      records.put(nodeID, record);
 
-      bridge.start();
-   }
-
-   private SimpleString generateQueueName(final SimpleString clusterName,
-                                          final Pair<TransportConfiguration, TransportConfiguration> connectorPair) throws Exception
-   {
-      return new SimpleString("cluster." + name +
-                              "." +
-                              generateConnectorString(connectorPair.a) +
-                              "-" +
-                              (connectorPair.b == null ? "null" : generateConnectorString(connectorPair.b)));
-   }
-
-   private String replaceWildcardChars(final String str)
-   {
-      return str.replace('.', '-');
-   }
-
-   private SimpleString generateConnectorString(final TransportConfiguration config) throws Exception
-   {
-      StringBuilder str = new StringBuilder(replaceWildcardChars(config.getFactoryClassName()));
-
-      if (config.getParams() != null)
+      if (start)
       {
-         if (!config.getParams().isEmpty())
-         {
-            str.append("?");
-         }
-
-         boolean first = true;
-         for (Map.Entry<String, Object> entry : config.getParams().entrySet())
-         {
-            if (!first)
-            {
-               str.append("&");
-            }
-            String encodedKey = replaceWildcardChars(entry.getKey());
-
-            String val = entry.getValue().toString();
-            String encodedVal = replaceWildcardChars(val);
-
-            str.append(encodedKey).append('=').append(encodedVal);
-
-            first = false;
-         }
+         bridge.start();
       }
-
-      return new SimpleString(str.toString());
    }
+
+//   private SimpleString generateQueueName(final SimpleString clusterName,
+//                                          final Pair<TransportConfiguration, TransportConfiguration> connectorPair) throws Exception
+//   {
+//      return new SimpleString("sf." + name +
+//                              "." +
+//                              connectorPair.a.toString() +
+//                              "-" +
+//                              (connectorPair.b == null ? "null" : connectorPair.b.toString()));
+//   }
 
    // Inner classes -----------------------------------------------------------------------------------
 
@@ -495,7 +483,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    {
       private Bridge bridge;
 
-      private final Queue queue;
+      private Queue queue;
 
       private final Map<SimpleString, RemoteQueueBinding> bindings = new HashMap<SimpleString, RemoteQueueBinding>();
 
@@ -517,10 +505,19 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
 
       public void close() throws Exception
-      {       
+      {
          bridge.stop();
 
          clearBindings();
+      }
+
+      public void activate(final Queue queue) throws Exception
+      {
+         this.queue = queue;
+
+         bridge.setQueue(queue);
+
+         bridge.start();
       }
 
       public void setBridge(final Bridge bridge)
@@ -531,14 +528,14 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       public synchronized void reset() throws Exception
       {
          clearBindings();
-         
+
          firstReset = false;
       }
 
       public synchronized void onMessage(final ClientMessage message)
       {
          try
-         {                        
+         {
             // Reset the bindings
             if (message.getProperty(HDR_RESET_QUEUE_DATA) != null)
             {
@@ -553,7 +550,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             {
                return;
             }
-            
+
             // TODO - optimised this by just passing int in header - but filter needs to be extended to support IN with
             // a list of integers
             SimpleString type = (SimpleString)message.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE);
@@ -649,7 +646,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             throw new IllegalStateException("queueID is null");
          }
-         
+
          if (replChannel != null)
          {
             Packet packet = new ReplicateRemoteBindingAddedMessage(name,
@@ -660,13 +657,13 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                    filterString,
                                                                    queue.getName(),
                                                                    distance + 1);
-            
+
             replChannel.replicatePacket(packet, 1, new Runnable()
             {
                public void run()
                {
                   try
-                  {                     
+                  {
                      doBindingAdded(message, null);
                   }
                   catch (Exception e)
@@ -684,7 +681,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                     queueID,
                                                                     filterString,
                                                                     queue,
-                                                                   // useDuplicateDetection,
+                                                                    // useDuplicateDetection,
                                                                     bridge.getName(),
                                                                     distance + 1);
 
@@ -767,7 +764,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             throw new IllegalStateException("clusterName is null");
          }
-         
+
          message.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
 
          SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
@@ -801,9 +798,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             }
 
             binding.addConsumer(filterString);
-           
+
             // Need to propagate the consumer add
-            Notification notification = new Notification(CONSUMER_CREATED, message.getProperties());
+            Notification notification = new Notification(null, CONSUMER_CREATED, message.getProperties());
 
             managementService.sendNotification(notification);
          }
@@ -824,14 +821,16 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             throw new IllegalStateException("clusterName is null");
          }
-         
+
          message.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
 
          SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
 
          if (replChannel != null)
          {
-            Packet packet = new ReplicateRemoteConsumerRemovedMessage(clusterName, filterString, message.getProperties());
+            Packet packet = new ReplicateRemoteConsumerRemovedMessage(clusterName,
+                                                                      filterString,
+                                                                      message.getProperties());
 
             replChannel.replicatePacket(packet, 1, new Runnable()
             {
@@ -859,9 +858,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
             binding.removeConsumer(filterString);
 
-            
             // Need to propagate the consumer close
-            Notification notification = new Notification(CONSUMER_CLOSED, message.getProperties());
+            Notification notification = new Notification(null, CONSUMER_CLOSED, message.getProperties());
 
             managementService.sendNotification(notification);
          }
@@ -892,9 +890,17 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                               queueID,
                                                               filterString,
                                                               queue,
-                                                             // useDuplicateDetection,
                                                               queueName,
                                                               distance);
+
+      if (postOffice.getBinding(uniqueName) != null)
+      {
+         log.warn("Remoting queue binding " + uniqueName +
+                  " has already been bound in the post office. Most likely cause for this is you have a loop " +
+                  "in your cluster due to cluster max-hops being too large or you have multiple cluster connections to the same nodes using overlapping addresses");
+
+         return;
+      }
 
       postOffice.addBinding(binding);
 

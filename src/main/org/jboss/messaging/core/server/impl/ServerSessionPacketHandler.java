@@ -86,14 +86,9 @@ public class ServerSessionPacketHandler implements ChannelHandler
 
    private final ServerSession session;
 
-   private final Channel channel;
-
-   public ServerSessionPacketHandler(final ServerSession session, final Channel channel)
-
+   public ServerSessionPacketHandler(final ServerSession session)
    {
       this.session = session;
-
-      this.channel = channel;
    }
 
    public long getID()
@@ -121,8 +116,8 @@ public class ServerSessionPacketHandler implements ChannelHandler
                break;
             }
             case CREATE_QUEUE:
-            {
-               CreateQueueMessage request = (CreateQueueMessage)packet;
+            {               
+               CreateQueueMessage request = (CreateQueueMessage)packet;               
                session.handleCreateQueue(request);             
                break;
             }

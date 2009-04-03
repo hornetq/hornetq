@@ -83,7 +83,6 @@ import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
-import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * 

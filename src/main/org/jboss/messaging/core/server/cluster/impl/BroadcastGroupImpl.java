@@ -35,6 +35,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * A BroadcastGroupImpl
@@ -67,6 +68,10 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    private ScheduledFuture<?> future;
    
    private boolean active;
+   
+   //Each broadcast group has a unique id - we use this to detect when more than one group broadcasts the same node id
+   //on the network which would be an error
+   private final String uniqueID;
 
    public BroadcastGroupImpl(final String nodeID,
                              final String name,
@@ -86,6 +91,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.groupPort = groupPort;
       
       this.active = active;
+           
+      this.uniqueID = UUIDGenerator.getInstance().generateStringUUID();
    }
 
    public synchronized void start() throws Exception
@@ -136,7 +143,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    }
 
    public synchronized void addConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
-   {
+   { 
       connectorPairs.add(connectorPair);
    }
 
@@ -165,6 +172,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       MessagingBuffer buff = ChannelBuffers.dynamicBuffer(4096);
      
       buff.writeString(nodeID);
+      
+      buff.writeString(uniqueID);
 
       buff.writeInt(connectorPairs.size());
 

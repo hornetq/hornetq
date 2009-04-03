@@ -74,6 +74,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateAc
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
@@ -105,7 +106,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private final SimpleString name;
 
-   private final Queue queue;
+   private Queue queue;
 
    private final Executor executor;
 
@@ -154,6 +155,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    private Channel replicatingChannel;
 
    private boolean activated;
+   
+   
+   private MessagingServer server;
 
    // Static --------------------------------------------------------
 
@@ -202,7 +206,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
            null,
            replicatingChannel,
            activated,
-           storageManager);
+           storageManager, null);
    }
 
    public BridgeImpl(final UUID nodeUUID,
@@ -225,7 +229,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final MessageFlowRecord flowRecord,
                      final Channel replicatingChannel,
                      final boolean activated,
-                     final StorageManager storageManager) throws Exception
+                     final StorageManager storageManager,
+                     MessagingServer server) throws Exception
    {
       this.nodeUUID = nodeUUID;
 
@@ -274,7 +279,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       this.replicatingChannel = replicatingChannel;
 
-      this.activated = activated;   
+      this.activated = activated;  
+      
+      this.server = server;
    }
 
    public synchronized void start() throws Exception
@@ -283,7 +290,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       {
          return;
       }
-
+      
       started = true;
 
       if (activated)
@@ -300,7 +307,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       while ((ref = refs.poll()) != null)
       {
-         // ref.getQueue().cancel(ref);
          list.addFirst(ref);
       }
 
@@ -325,7 +331,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       
       executor.execute(new StopRunnable());
            
-      waitForRunnablesToComplete();
+      waitForRunnablesToComplete();   
    }
 
    public boolean isStarted()
@@ -350,6 +356,11 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    public Queue getQueue()
    {
       return queue;
+   }
+   
+   public void setQueue(final Queue queue)
+   {
+      this.queue = queue;
    }
 
    public Filter getFilter()
@@ -569,7 +580,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       try
       {
          queue.addConsumer(BridgeImpl.this);
-
+  
          csf = new ClientSessionFactoryImpl(connectorPair.a,
                                             connectorPair.b,
                                             failoverOnServerShutdown,
@@ -625,7 +636,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             // different each time this is called
             // Otherwise it may already exist if server is restarted before it has been deleted on backup
 
-            String qName = "notif-" + nodeUUID.toString() + "-" + name.toString();
+            String qName = "notif." + nodeUUID.toString() + "." + name.toString();
             
             SimpleString notifQueueName = new SimpleString(qName);
 
@@ -693,7 +704,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          active = true;
 
          queue.deliverAsync(executor);
-         
+
          return true;
       }
       catch (Exception e)

@@ -138,7 +138,7 @@ public class BindingsImpl implements Bindings
       ByteBuffer buff = ByteBuffer.wrap(ids);
 
       Set<Bindable> chosen = new HashSet<Bindable>();
-
+      
       while (buff.hasRemaining())
       {
          int bindingID = buff.getInt();
@@ -269,7 +269,7 @@ public class BindingsImpl implements Bindings
       else
       {
          if (message.getProperty(MessageImpl.HDR_FROM_CLUSTER) != null)
-         {
+         {            
             routeFromCluster(message, tx);
          }
          else
@@ -281,7 +281,7 @@ public class BindingsImpl implements Bindings
                SimpleString routingName = entry.getKey();
 
                List<Binding> bindings = entry.getValue();
-
+               
                if (bindings == null)
                {
                   // The value can become null if it's concurrently removed while we're iterating - this is expected

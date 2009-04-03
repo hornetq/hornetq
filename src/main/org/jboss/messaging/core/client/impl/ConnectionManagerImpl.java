@@ -265,7 +265,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                      if (!failureSignalled)
                      {
                         // This can happen if the connection manager gets closed - e.g. the server gets shut down
-                        //return null;
                         
                         throw new MessagingException(MessagingException.NOT_CONNECTED, "Unable to connect to server");
                      }
@@ -572,7 +571,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             if (attemptFailover)
             {
                // Now try failing over to backup
-
+               
                connectorFactory = backupConnectorFactory;
 
                transportParams = backupTransportParams;
@@ -734,7 +733,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                   return null;
                }
-
+               
                try
                {
                   Thread.sleep(interval);

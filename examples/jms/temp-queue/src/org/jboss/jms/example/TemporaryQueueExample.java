@@ -74,7 +74,7 @@ public class TemporaryQueueExample extends JMSExample
 
          // Step 8. Create a text message
          TextMessage message = session.createTextMessage("This is a text message");
-
+         
          // Step 9. Send the text message to the queue
          messageProducer.send(message);
 

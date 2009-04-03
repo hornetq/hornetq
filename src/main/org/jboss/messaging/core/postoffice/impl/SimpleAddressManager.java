@@ -21,14 +21,15 @@
  */
 package org.jboss.messaging.core.postoffice.impl;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * A simple address manager that maintains the addresses and bindings.
@@ -39,6 +40,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class SimpleAddressManager implements AddressManager
 {
+   private static final Logger log = Logger.getLogger(SimpleAddressManager.class);
+
    private final ConcurrentMap<SimpleString, Bindings> mappings = new ConcurrentHashMap<SimpleString, Bindings>();
 
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
@@ -47,7 +50,10 @@ public class SimpleAddressManager implements AddressManager
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
-         throw new IllegalStateException("Binding already exists " + binding);
+         //throw new IllegalStateException("Binding already exists " + binding);
+         log.error("Binding already exists " + binding.getUniqueName(), new Exception());
+         
+         System.exit(1);
       }
       return addMappingInternal(binding.getAddress(), binding);
    }

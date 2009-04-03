@@ -24,6 +24,7 @@
 package org.jboss.messaging.core.server.cluster;
 
 import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.server.Queue;
 
 /**
  * A MessageFlowRecord
@@ -39,6 +40,8 @@ public interface MessageFlowRecord extends MessageHandler
    String getAddress();
    
    int getMaxHops();
+   
+   void activate(Queue queue) throws Exception;
    
    void reset() throws Exception;
    

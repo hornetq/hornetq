@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
@@ -262,5 +263,42 @@ public class TransportConfiguration implements Serializable
       {
          return false;
       }
+   }
+   
+   public String toString()
+   {
+      StringBuilder str = new StringBuilder(replaceWildcardChars(factoryClassName));
+
+      if (params != null)
+      {
+         if (!params.isEmpty())
+         {
+            str.append("?");
+         }
+
+         boolean first = true;
+         for (Map.Entry<String, Object> entry : params.entrySet())
+         {
+            if (!first)
+            {
+               str.append("&");
+            }
+            String encodedKey = replaceWildcardChars(entry.getKey());
+
+            String val = entry.getValue().toString();
+            String encodedVal = replaceWildcardChars(val);
+
+            str.append(encodedKey).append('=').append(encodedVal);
+
+            first = false;
+         }
+      }
+
+      return str.toString();
+   }
+   
+   private String replaceWildcardChars(final String str)
+   {
+      return str.replace('.', '-');
    }
 }

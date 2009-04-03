@@ -1208,7 +1208,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             theQueue = (Queue)binding.getBindable();
          }
 
-         ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
+         ServerConsumer consumer = new ServerConsumerImpl(server, idGenerator.generateID(),
                                                           oppositeChannelID,
                                                           this,
                                                           (QueueBinding)binding,
@@ -1245,7 +1245,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
             }
 
-            Notification notification = new Notification(CONSUMER_CREATED, props);
+            Notification notification = new Notification(null, CONSUMER_CREATED, props);
 
             managementService.sendNotification(notification);
          }
