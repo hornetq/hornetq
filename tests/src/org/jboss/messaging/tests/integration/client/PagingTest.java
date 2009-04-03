@@ -720,11 +720,7 @@ public class PagingTest extends ServiceTestBase
          assertNull(consumer.receive(100));
 
          assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
-         assertEquals(0, server
-                                         .getPostOffice()
-                                         .getPagingManager()
-                                         .getPageStore(ADDRESS)
-                                         .getAddressSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getPageStore(ADDRESS).getAddressSize());
 
          for (int i = 0; i < numberOfMessages; i++)
          {
@@ -785,11 +781,7 @@ public class PagingTest extends ServiceTestBase
          session.close();
 
          assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
-         assertEquals(0, server
-                                         .getPostOffice()
-                                         .getPagingManager()
-                                         .getPageStore(ADDRESS)
-                                         .getAddressSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getPageStore(ADDRESS).getAddressSize());
 
       }
       finally
@@ -893,19 +885,15 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < NUMBER_OF_BINDINGS; i++)
          {
-            Queue queue = (Queue)server
-                                                 .getPostOffice()
-                                                 .getBinding(new SimpleString("someQueue" + i))
-                                                 .getBindable();
+            Queue queue = (Queue)server.getPostOffice().getBinding(new SimpleString("someQueue" + i)).getBindable();
 
             assertEquals("Queue someQueue" + i + " was supposed to be empty", 0, queue.getMessageCount());
             assertEquals("Queue someQueue" + i + " was supposed to be empty", 0, queue.getDeliveringCount());
          }
 
-         assertEquals("There are pending messages on the server", 0, server
-                                                                                     .getPostOffice()
-                                                                                     .getPagingManager()
-                                                                                     .getGlobalSize());
+         assertEquals("There are pending messages on the server", 0, server.getPostOffice()
+                                                                           .getPagingManager()
+                                                                           .getGlobalSize());
 
       }
       finally
@@ -1293,6 +1281,139 @@ public class PagingTest extends ServiceTestBase
       }
       finally
       {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
+   public void testPageTwoDestinationsGlobalAndAddresSettings() throws Exception
+   {
+      clearData();
+      
+      SimpleString PAGED_ADDRESS_A = new SimpleString("paged-a");
+      SimpleString PAGED_ADDRESS_GLOBAL = new SimpleString("paged-global");
+
+      Configuration configuration = createDefaultConfig();
+      configuration.setPagingMaxGlobalSizeBytes(104857600);
+
+      System.out.println("getPagingMaxGlobalSizeBytes:" + configuration.getPagingMaxGlobalSizeBytes());
+      System.out.println("getPagingGlobalWatermarkSize:" + configuration.getPagingGlobalWatermarkSize());
+      
+      Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
+
+      addresses.put("#", new AddressSettings());
+
+      AddressSettings pagedDestinationA = new AddressSettings();
+      pagedDestinationA.setPageSizeBytes(20000);
+      pagedDestinationA.setMaxSizeBytes(100000);
+
+      addresses.put(PAGED_ADDRESS_A.toString(), pagedDestinationA);
+
+      MessagingServer server = createServer(true, configuration, addresses);
+      
+      ClientSession session = null;
+      
+      try
+      {
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+        
+         session = sf.createSession(false, true, false);
+
+         session.createQueue(PAGED_ADDRESS_A, PAGED_ADDRESS_A, true);
+
+         session.start();
+
+         session.createQueue(PAGED_ADDRESS_GLOBAL, PAGED_ADDRESS_GLOBAL, true);
+
+         ClientProducer producerA = session.createProducer(PAGED_ADDRESS_A);
+
+         ClientProducer producerGlobal = session.createProducer(PAGED_ADDRESS_GLOBAL);
+
+         int NUMBER_OF_MESSAGES_A = 20;
+
+         int NUMBER_OF_MESSAGES_GLOBAL = 30000;
+
+         ClientMessage msg = session.createClientMessage(false);
+         msg.getBody().writeBytes(new byte[10 * 1024]);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES_A; i++)
+         {
+            producerA.send(msg);
+         }
+
+         session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
+
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_GLOBAL).isPaging());
+
+         System.out.println("AddressA.size = " + server.getPostOffice()
+                                                       .getPagingManager()
+                                                       .getPageStore(PAGED_ADDRESS_A)
+                                                       .getAddressSize() +
+                            " globalSize = " +
+                            server.getPostOffice().getPagingManager().getGlobalSize());
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES_GLOBAL; i++)
+         {
+            producerGlobal.send(msg);
+         }
+
+
+         System.out.println("AddressA.size = " + server.getPostOffice()
+                                                       .getPagingManager()
+                                                       .getPageStore(PAGED_ADDRESS_A)
+                                                       .getAddressSize() +
+                            " globalSize = " +
+                            server.getPostOffice().getPagingManager().getGlobalSize());
+
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_GLOBAL).isPaging());
+
+         ClientConsumer consumerGlobal = session.createConsumer(PAGED_ADDRESS_GLOBAL);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES_GLOBAL; i++)
+         {
+            msg = consumerGlobal.receive(5000);
+            assertNotNull("Couldn't receive a message on consumerGlobal, iteration = " + i, msg);
+            msg.acknowledge();
+            if (i % 1000 == 0)
+            {
+               session.commit();
+            }
+         }
+         
+         session.commit();
+         
+         assertNull(consumerGlobal.receiveImmediate());
+
+         ClientConsumer consumerA = session.createConsumer(PAGED_ADDRESS_A);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES_A; i++)
+         {
+            msg = consumerA.receive(5000);
+            assertNotNull("Couldn't receive a message on consumerA, iteration = " + i, msg);
+            msg.acknowledge();
+            session.commit();
+         }
+
+         assertNull(consumerA.receiveImmediate());
+
+         consumerA.close();
+
+         session.commit();
+
+         session.close();
+      }
+      finally
+      {
+         if (session != null)
+         {
+            session.close();
+         }
          if (server.isStarted())
          {
             server.stop();

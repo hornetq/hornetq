@@ -11,5 +11,19 @@
       <permission type="consume" roles="guest"/>
       <permission type="send" roles="guest"/>
    </security>
+   
+   <security match="queuejms.pagingQueue">
+      <permission type="createDurableQueue" roles="guest"/>
+      <permission type="deleteDurableQueue" roles="guest"/>
+      <permission type="createTempQueue" roles="guest"/>
+      <permission type="deleteTempQueue" roles="guest"/>
+      <permission type="consume" roles="guest"/>
+      <permission type="send" roles="guest"/>
+   </security>
+   
+   <address-settings match="queuejms.pagingQueue">
+      <max-size-bytes>100000</max-size-bytes>
+      <page-size-bytes>20000</page-size-bytes>
+   </address-settings>
 
 </settings>

@@ -34,7 +34,7 @@ import javax.naming.InitialContext;
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends then receives a message.
  *
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
 public class PagingExample extends JMSExample
 {
@@ -46,50 +46,69 @@ public class PagingExample extends JMSExample
    public void runExample() throws Exception
    {
       Connection connection = null;
+      
+      InitialContext initialContext = null;
       try
       {
          //Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
-         //Step 2. Perfom a lookup on the queue
-         Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
-
-         //Step 3. Perform a lookup on the Connection Factory
+         //Step 2. Perform a lookup on the Connection Factory
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
 
-         //Step 4.Create a JMS Connection
-         connection = cf.createConnection();
+         // Step 3. We look-up the JMS queue object from JNDI. pagingQueue is configured to hold a very limited number of bytes in memory
+         Queue pageQueue = (Queue) initialContext.lookup("/queue/pagingQueue");
+         
+         // Step 4. Lookup for a JMS Queue 
+         Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
 
-         //Step 5. Create a JMS Session
+         // Step 5. Create a JMS Connection
+         connection = cf.createConnection();
+         
+         //Step 6. Create a JMS Session
          Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
-         //Step 6. Create a JMS Message Producer
-         MessageProducer messageProducer = session.createProducer(queue);
+         //Step 7. Create a JMS Message Producer for pageQueueAddress
+         MessageProducer pageMessageProducer = session.createProducer(pageQueue);
          
-         //Step 7. We don't need persistent messages in order to use paging. (This step is optional)
-         messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-         //Step 8. Create a Binary Bytes Message with 10K arbitrary bytes
+         //Step 8. We don't need persistent messages in order to use paging. (This step is optional)
+         pageMessageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+         
+         //Step 9. Create a Binary Bytes Message with 10K arbitrary bytes
          BytesMessage message = session.createBytesMessage();
          message.writeBytes(new byte[10 * 1024]);
          
-         //Step 9. Send the message for about 30K, which should be over the memory limit imposed by the server
+
+         //Step 10. Send only 20 messages to the Queue. This will be already enough for pagingQueue. Look at ./paging/config/jbm-queues.xml for the config.
+         for (int i = 0; i < 20; i++)
+         {
+            pageMessageProducer.send(message);
+         }         
+         
+         //Step 11. Create a JMS Message Producer
+         MessageProducer messageProducer = session.createProducer(queue);
+         
+         //Step 12. We don't need persistent messages in order to use paging. (This step is optional)
+         messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+         //Step 13. Send the message for about 30K, which should be over the memory limit imposed by the server
          for (int i = 0; i < 30000; i++)
          {
             messageProducer.send(message);
          }
+
+         // Step 14. if you pause this example here, you will several files under ./build/data/paging
+         // Thread.sleep(30000); // if you want to just our of curiosity, you can sleep here and inspect the created files just for 
          
-         
-         //Step 10. Create a JMS Message Consumer
+         //Step 15. Create a JMS Message Consumer
          MessageConsumer messageConsumer = session.createConsumer(queue);
          
 
-         //Step 11.  Start the JMS Connection. This step will activate the subscribers to receive messages.
+         //Step 16.  Start the JMS Connection. This step will activate the subscribers to receive messages.
          connection.start();
          
          
-         //Step 12. Receive the messages. 
-         //         It's important to ACK for messages as JBM will not read messages from paging until messages are ACKed or that would lead the server to be OutOfMemory
+         //Step 17. Receive the messages. It's important to ACK for messages as JBM will not read messages from paging until messages are ACKed
          
          for (int i = 0; i < 30000; i++)
          {
@@ -103,13 +122,33 @@ public class PagingExample extends JMSExample
             }
          }
          
-         System.out.println("Received 30000 messages");
+         
+         // Step 18. Receive the messages from the Queue names pageQueue. Create the proper consumer for that
+         messageConsumer.close();
+         messageConsumer = session.createConsumer(pageQueue);
 
-         initialContext.close();
+         for (int i = 0; i < 20; i++)
+         {
+            message = (BytesMessage)messageConsumer.receive(1000);
+            
+            System.out.println("Received message " + i + " from pageQueue");
+
+            message.acknowledge();
+         }
+         
+
+         
+
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
+         // And finally, always remember to close your JMS connections after use, in a finally block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects
+         
+         if (initialContext != null)
+         {
+            initialContext.close();
+         }
+         
          if(connection != null)
          {
             connection.close();

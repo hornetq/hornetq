@@ -1232,6 +1232,9 @@ public class QueueImpl implements Queue
                   // If the queue is empty, we need to check if there are pending messages, and throw a warning
                   if (pagingStore.isPaging() && !pagingStore.isDropWhenMaxSize())
                   {
+                     // This is just a *request* to depage. Depage will only happens if there is space on the Address and GlobalSize
+                     pagingStore.startDepaging();
+                     
                      log.warn("The Queue " + name +
                               " is empty, however there are pending messages on Paging for the address " +
                               pagingStore.getStoreName() +

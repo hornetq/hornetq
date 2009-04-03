@@ -14,5 +14,9 @@
    <queue name="exampleQueue">
       <entry name="/queue/exampleQueue"/>
    </queue>
+   
+   <queue name="pagingQueue">
+      <entry name="/queue/pagingQueue"/>
+   </queue>
 
 </deployment>
