@@ -11,7 +11,7 @@
    	<xsd:complexType>
    		<xsd:sequence>
    			<xsd:element ref="connection-factory"
-   				maxOccurs="unbounded" minOccurs="1">
+   				maxOccurs="unbounded" minOccurs="0">
    			</xsd:element>
    			<xsd:choice maxOccurs="unbounded" minOccurs="1">
    				<xsd:element ref="queue" maxOccurs="1"
