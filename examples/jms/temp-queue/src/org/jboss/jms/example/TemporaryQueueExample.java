@@ -24,7 +24,6 @@ package org.jboss.jms.example;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.InvalidDestinationException;
-import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -47,10 +46,11 @@ public class TemporaryQueueExample extends JMSExample
    public void runExample() throws Exception
    {
       Connection connection = null;
+      InitialContext initialContext = null;
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          // Step 2. Look-up the JMS connection factory
          ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
@@ -125,15 +125,13 @@ public class TemporaryQueueExample extends JMSExample
       {
          if(connection != null)
          {
-            try
-            {
-               // Step 20. Be sure to close our JMS resources!
-               connection.close();
-            }
-            catch (JMSException e)
-            {
-               e.printStackTrace();
-            }
+            // Step 20. Be sure to close our JMS resources!
+            connection.close();
+         }
+         if (initialContext != null)
+         {
+            //Step 21. Also close the initialContext!
+            initialContext.close();
          }
       }
    }
