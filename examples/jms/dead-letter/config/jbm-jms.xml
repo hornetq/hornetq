@@ -1,7 +1,7 @@
 <deployment xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
-
+   <!--the connection factory used by the example-->
    <connection-factory name="ConnectionFactory">
       <connector-ref connector-name="netty"/>
       <entry name="ConnectionFactory"/>
@@ -10,10 +10,12 @@
       <entry name="java:/XAConnectionFactory"/>
    </connection-factory>
 
+   <!--the queue used by the example-->
    <queue name="exampleQueue">
       <entry name="/queue/exampleQueue"/>
    </queue>
-   
+
+   <!-- the dead letter queue where dead messages will be sent-->
    <queue name="deadLetterQueue">
       <entry name="/queue/deadLetterQueue"/>
    </queue>
