@@ -35,21 +35,23 @@ import javax.naming.InitialContext;
  *
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
-public class TopicSelector extends JMSExample
+public class TopicSelectorExample extends JMSExample
 {
    public static void main(String[] args)
    {
-      new TopicSelector().run(args);
+      new TopicSelectorExample().run(args);
    }
 
    public void runExample() throws Exception
    {
       Connection connection = null;
+      
+      InitialContext initialContext = null;
       try
       {
 
          // Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          // Step 2. Look-up the JMS topic
          Topic topic = (Topic)initialContext.lookup("/topic/exampleTopic");
@@ -155,6 +157,10 @@ public class TopicSelector extends JMSExample
       }
       finally
       {
+         if (initialContext != null)
+         {
+            initialContext.close();
+         }
          if (connection != null)
          {
             // Step 15. Be sure to close our JMS resources!
