@@ -135,13 +135,4 @@ public class ExpiryExample extends JMSExample
       }
    }
 
-   @Override
-   public Set<String> getQueues()
-   {
-      HashSet<String> queues = new HashSet<String>();
-      queues.add("exampleQueue");
-      queues.add("expiryQueue");
-      return queues;
-   }
-
 }
