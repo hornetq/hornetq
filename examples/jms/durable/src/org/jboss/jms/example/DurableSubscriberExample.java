@@ -45,10 +45,11 @@ public class DurableSubscriberExample extends JMSExample
    public void runExample() throws Exception
    {
       Connection connection = null;
+      InitialContext initialContext = null;
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         initialContext = getContext();
 
          // Step 2. Look-up the JMS topic
          Topic topic = (Topic)initialContext.lookup("/topic/exampleTopic");
@@ -121,6 +122,11 @@ public class DurableSubscriberExample extends JMSExample
          {
             // Step 19. Be sure to close our JMS resources!
             connection.close();
+         }
+         if (initialContext != null)
+         {
+            //Step 20. Also close the initialContext!
+            initialContext.close();
          }
       }
    }
