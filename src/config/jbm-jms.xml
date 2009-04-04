@@ -60,6 +60,8 @@
       <producer-window-size>1048576</producer-window-size>
       <!-- This is the maximum producer send rate that will be applied when using rate based producer flow control -->
       <producer-max-rate>100</producer-max-rate>
+      <!-- When using this ConnectionFactory, messages beyond this limit are considered largeMessages and will be sent using smaller packets -->
+      <big-message-size>10240</big-message-size>
       <!-- This is the window size in bytes to use when using consumer window based flow control -->
       <consumer-window-size>1048576</consumer-window-size>
       <!-- This is the maximum producer send rate that will be applied when using rate based consumer flow control -->

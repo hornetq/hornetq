@@ -56,6 +56,9 @@
             <xsd:element name="producer-max-rate" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
+            <xsd:element name="big-message-size" type="xsd:positiveInteger"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
             <xsd:element name="consumer-window-size" type="xsd:positiveInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
