@@ -31,15 +31,15 @@ import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 
 /**
- * A simple JMS example that shows how to use a durable subcriber.
+ * A simple JMS example that shows how to use a durable subscription.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class DurableSubscriberExample extends JMSExample
+public class DurableSubscriptionExample extends JMSExample
 {
    public static void main(String[] args)
    {
-      new DurableSubscriberExample().run(args);
+      new DurableSubscriptionExample().run(args);
    }
 
    public boolean runExample() throws Exception

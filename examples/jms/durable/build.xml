@@ -34,13 +34,13 @@
 
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.DurableSubscriberExample"/>
+         <param name="example.classname" value="org.jboss.jms.example.DurableSubscriptionExample"/>
       </antcall>
    </target>
 
    <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.DurableSubscriberExample"/>
+         <param name="example.classname" value="org.jboss.jms.example.DurableSubscriptionExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>
