@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
+	<classpathentry kind="src" path="examples/jms/durable-subscription/src"/>
 	<classpathentry kind="src" path="build/src"/>
 	<classpathentry kind="src" path="tests/config"/>
 	<classpathentry kind="src" path="src/config"/>
@@ -17,7 +18,6 @@
 	<classpathentry kind="src" path="examples/jms/common/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/dead-letter/src"/>
-	<classpathentry kind="src" path="examples/jms/durable/src"/>
 	<classpathentry kind="src" path="examples/jms/expiry/src"/>
 	<classpathentry kind="src" path="examples/jms/large-message/src"/>
 	<classpathentry kind="src" path="examples/jms/paging/src"/>
