@@ -22,13 +22,14 @@
 
 package org.jboss.messaging.core.server;
 
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.utils.SimpleString;
-
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
+
+import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 
@@ -138,7 +139,7 @@ public interface Queue extends Bindable
 
    boolean consumerFailedOver();
 
-   void addRedistributor(long delay, Executor executor);
+   void addRedistributor(long delay, Executor executor, final Channel replicatingChannel);
 
    void cancelRedistributor() throws Exception;
 

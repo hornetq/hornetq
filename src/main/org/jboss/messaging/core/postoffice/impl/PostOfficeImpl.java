@@ -377,7 +377,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                      if (redistributionDelay != -1)
                      {
-                        queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
+                        queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor(),
+                                               server.getReplicatingChannel());
                      }
                   }
                }
@@ -447,7 +448,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                      if (redistributionDelay != -1)
                      {
-                        queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
+                        queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor(),
+                                               server.getReplicatingChannel());
                      }
                   }
                }

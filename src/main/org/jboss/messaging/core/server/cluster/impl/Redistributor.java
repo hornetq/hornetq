@@ -28,6 +28,9 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRedistributionMessage;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
@@ -63,11 +66,14 @@ public class Redistributor implements Consumer
 
    private int count;
    
+   private final Channel replicatingChannel;
+   
    public Redistributor(final Queue queue,
                         final StorageManager storageManager,
                         final PostOffice postOffice,
                         final Executor executor,
-                        final int batchSize)
+                        final int batchSize,
+                        final Channel replicatingChannel)
    {
       this.queue = queue;
       
@@ -78,6 +84,8 @@ public class Redistributor implements Consumer
       this.executor = executor;
 
       this.batchSize = batchSize;
+      
+      this.replicatingChannel = replicatingChannel;
    }
    
    public Filter getFilter()
@@ -121,37 +129,42 @@ public class Redistributor implements Consumer
 
       active = false;
    }
-
+   
    public synchronized HandleStatus handle(final MessageReference reference) throws Exception
    {
       if (!active)
       {
          return HandleStatus.BUSY;
       }
-        
-      Transaction tx = new TransactionImpl(storageManager);
+      
+      final Transaction tx = new TransactionImpl(storageManager);
 
       boolean routed = postOffice.redistribute(reference.getMessage(), queue.getName(), tx);
 
       if (routed)
-      {
-         queue.referenceHandled();
-
-         queue.acknowledge(tx, reference);
-
-         tx.commit();
-  
-         count++;
-
-         if (count == batchSize)
+      {    
+         if (replicatingChannel == null)
          {
-            // We continue the next batch on a different thread, so as not to keep the delivery thread busy for a very
-            // long time, in the case there are many messages in the queue
-            active = false;
-
-            executor.execute(new Prompter());
-
-            count = 0;
+            doRedistribute(reference, tx);
+         }
+         else
+         {
+            Packet packet = new ReplicateRedistributionMessage(queue.getName(), reference.getMessage().getMessageID());
+            
+            replicatingChannel.replicatePacket(packet, 1, new Runnable()
+            {
+               public void run()
+               {
+                  try
+                  {
+                     doRedistribute(reference, tx);
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Failed to handle redistribution", e);
+                  }
+               }
+            });
          }
 
          return HandleStatus.HANDLED;
@@ -159,6 +172,28 @@ public class Redistributor implements Consumer
       else
       {
          return HandleStatus.BUSY;
+      }
+   }
+   
+   private void doRedistribute(final MessageReference reference, final Transaction tx) throws Exception
+   {
+      queue.referenceHandled();
+
+      queue.acknowledge(tx, reference);
+
+      tx.commit();
+
+      count++;
+
+      if (count == batchSize)
+      {
+         // We continue the next batch on a different thread, so as not to keep the delivery thread busy for a very
+         // long time in the case there are many messages in the queue
+         active = false;
+
+         executor.execute(new Prompter());
+
+         count = 0;
       }
    }
 

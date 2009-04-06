@@ -160,6 +160,8 @@ public class PacketImpl implements Packet
    
    public static final byte REPLICATE_STARTUP_INFO = 96;
    
+   public static final byte REPLICATE_REDISTRIBUTION = 97;
+   
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

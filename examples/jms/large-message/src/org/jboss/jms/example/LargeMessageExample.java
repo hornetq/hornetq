@@ -68,7 +68,10 @@ public class LargeMessageExample extends JMSExample
 
          //Step 7. Create a BytesMessage with 1MB arbitrary bytes
          BytesMessage message = session.createBytesMessage();
-         message.writeBytes(new byte[1024 * 1024]);
+         byte[] bytes = new byte[100 * 1024 * 1024];
+         message.writeBytes(bytes);
+         
+         System.out.println("Sending message of " + bytes.length + " bytes");
          
          //Step 8. Send the Message
          producer.send(message);
@@ -84,7 +87,7 @@ public class LargeMessageExample extends JMSExample
          connection.start();
 
          //Step 11. Receive the message
-         BytesMessage messageReceived = (BytesMessage) messageConsumer.receive(5000);
+         BytesMessage messageReceived = (BytesMessage) messageConsumer.receive(60000);
 
          System.out.println("Received message: " + messageReceived.getBodyLength() + " bytes");
 

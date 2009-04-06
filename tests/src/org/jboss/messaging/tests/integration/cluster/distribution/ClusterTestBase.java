@@ -412,13 +412,18 @@ public class ClusterTestBase extends ServiceTestBase
    {
       sendInRange(node, address, 0, numMessages, durable, filterVal);
    }
-
+   
+   protected void verifyReceiveAllInRange(boolean ack, int msgStart, int msgEnd, int... consumerIDs) throws Exception
+   {
+      verifyReceiveAllInRangeNotBefore(ack, -1, msgStart, msgEnd, consumerIDs);
+   }
+   
    protected void verifyReceiveAllInRange(int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
-      verifyReceiveAllInRangeNotBefore(-1, msgStart, msgEnd, consumerIDs);
+      verifyReceiveAllInRangeNotBefore(false, -1, msgStart, msgEnd, consumerIDs);
    }
 
-   protected void verifyReceiveAllInRangeNotBefore(long firstReceiveTime, int msgStart, int msgEnd, int... consumerIDs) throws Exception
+   protected void verifyReceiveAllInRangeNotBefore(boolean ack, long firstReceiveTime, int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
       boolean outOfOrder = false;
       for (int i = 0; i < consumerIDs.length; i++)
@@ -436,6 +441,11 @@ public class ClusterTestBase extends ServiceTestBase
 
             assertNotNull("consumer " + consumerIDs[i] + " did not receive message " + j, message);
 
+            if (ack)
+            {
+               message.acknowledge();
+            }
+            
             if (firstReceiveTime != -1)
             {
                assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
@@ -451,15 +461,20 @@ public class ClusterTestBase extends ServiceTestBase
 
       assertFalse("Messages were consumed out of order, look at System.out for more information", outOfOrder);
    }
+   
+   protected void verifyReceiveAll(boolean ack, int numMessages, int... consumerIDs) throws Exception
+   {
+      verifyReceiveAllInRange(ack, 0, numMessages, consumerIDs);
+   }
 
    protected void verifyReceiveAll(int numMessages, int... consumerIDs) throws Exception
    {
-      verifyReceiveAllInRange(0, numMessages, consumerIDs);
+      verifyReceiveAllInRange(false, 0, numMessages, consumerIDs);
    }
 
    protected void verifyReceiveAllNotBefore(long firstReceiveTime, int numMessages, int... consumerIDs) throws Exception
    {
-      verifyReceiveAllInRangeNotBefore(firstReceiveTime, 0, numMessages, consumerIDs);
+      verifyReceiveAllInRangeNotBefore(false, firstReceiveTime, 0, numMessages, consumerIDs);
    }
 
    protected void checkReceive(int... consumerIDs) throws Exception

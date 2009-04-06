@@ -35,6 +35,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateAcknowledgeMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRedistributionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteBindingAddedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteBindingRemovedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerAddedMessage;
@@ -45,6 +46,8 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 
 /**
  * A packet handler for all packets that need to be handled at the server level
@@ -174,6 +177,14 @@ public class MessagingServerPacketHandler implements ChannelHandler
 
             handleReplicateAcknowledge(request);
 
+            break;
+         }
+         case PacketImpl.REPLICATE_REDISTRIBUTION:
+         {
+            ReplicateRedistributionMessage message = (ReplicateRedistributionMessage)packet;
+            
+            handleReplicateRedistribution(message);
+            
             break;
          }
          default:
@@ -437,6 +448,25 @@ public class MessagingServerPacketHandler implements ChannelHandler
          MessageReference ref = queue.removeFirstReference(request.getMessageID());
          
          queue.acknowledge(ref);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to handle remove remote consumer", e);
+      }
+   }
+   
+   private void handleReplicateRedistribution(final ReplicateRedistributionMessage request)
+   {
+      Binding binding = server.getPostOffice().getBinding(request.getQueueName());
+
+      if (binding == null)
+      {
+         throw new IllegalStateException("Cannot find binding " + request.getQueueName());
+      }
+
+      try
+      {
+         server.handleReplicateRedistribution(request.getQueueName(), request.getMessageID());
       }
       catch (Exception e)
       {

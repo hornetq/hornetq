@@ -24,6 +24,7 @@ import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRedistributionMessage;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -132,4 +133,6 @@ public interface MessagingServer extends MessagingComponent
    boolean isInitialised();
    
    Queue createQueue(SimpleString address, SimpleString queueName, SimpleString filter, boolean durable, boolean temporary) throws Exception;
+   
+   void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception;
 }

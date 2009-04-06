@@ -65,6 +65,7 @@ import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Divert;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.QueueFactory;
@@ -76,7 +77,9 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.core.transaction.ResourceManager;
+import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
+import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.Pair;
@@ -992,6 +995,36 @@ public class MessagingServerImpl implements MessagingServer
       postOffice.addBinding(binding);
 
       return queue;
+   }
+   
+   public void handleReplicateRedistribution(final SimpleString queueName, final long messageID)
+      throws Exception
+   {
+      Binding binding = postOffice.getBinding(queueName);
+
+      if (binding == null)
+      {
+         throw new IllegalStateException("Cannot find queue " + queueName);
+      }
+
+      Queue queue = (Queue)binding.getBindable();
+      
+      MessageReference reference = queue.removeFirstReference(messageID);
+      
+      Transaction tx = new TransactionImpl(storageManager);
+
+      boolean routed = postOffice.redistribute(reference.getMessage(), queue.getName(), tx);
+
+      if (routed)
+      {         
+         queue.acknowledge(tx, reference);
+
+         tx.commit();           
+      }
+      else
+      {
+         throw new IllegalStateException("Must be routed");
+      }
    }
 
    // Public
