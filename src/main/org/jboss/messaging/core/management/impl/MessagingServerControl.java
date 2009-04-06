@@ -654,11 +654,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.getTransactionTimeoutScanPeriod();
    }
 
-   public boolean isAllowRouteWhenNoBindings()
-   {
-      return configuration.isAllowRouteWhenNoBindings();
-   }
-
    public boolean isPersistDeliveryCountBeforeDelivery()
    {
       return configuration.isPersistDeliveryCountBeforeDelivery();

@@ -52,10 +52,6 @@ public interface Configuration extends Serializable, MessagingComponent
 
    void setClustered(boolean clustered);
    
-   boolean isAllowRouteWhenNoBindings();
-   
-   void setAllowRouteWhenNoBindings(boolean allowRoute);
-
    boolean isPersistDeliveryCountBeforeDelivery();
 
    void setPersistDeliveryCountBeforeDelivery(boolean persistDeliveryCountBeforeDelivery);

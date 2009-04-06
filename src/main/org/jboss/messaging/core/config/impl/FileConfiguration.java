@@ -90,8 +90,6 @@ public class FileConfiguration extends ConfigurationImpl
 
       persistDeliveryCountBeforeDelivery = getBoolean(e, "persist-delivery-count-before-delivery", persistDeliveryCountBeforeDelivery);
       
-      allowRouteWhenNoBindings = getBoolean(e, "allow-route-when-no-bindings", allowRouteWhenNoBindings);
-
       queueActivationTimeout = getLong(e, "queue-activation-timeout", queueActivationTimeout);
 
       // NOTE! All the defaults come from the super class

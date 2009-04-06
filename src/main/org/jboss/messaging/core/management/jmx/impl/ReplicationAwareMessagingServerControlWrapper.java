@@ -375,11 +375,6 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getTransactionTimeoutScanPeriod();
    }
 
-   public boolean isAllowRouteWhenNoBindings()
-   {
-      return localControl.isAllowRouteWhenNoBindings();
-   }
-
    public boolean isPersistDeliveryCountBeforeDelivery()
    {
       return localControl.isPersistDeliveryCountBeforeDelivery();

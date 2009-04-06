@@ -23,8 +23,7 @@
       </remoting-interceptors>
       <queue-activation-timeout>12456</queue-activation-timeout>
       <backup>true</backup>
-      <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>
-      <allow-route-when-no-bindings>false</allow-route-when-no-bindings>
+      <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>      
       <backup-connector-ref connector-name="backup-connector"/>
       <connector name="connector">
          <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>

@@ -56,8 +56,6 @@ public interface MessagingServerControlMBean
 
    boolean isSecurityEnabled();
 
-  // boolean isRequireDestinations();
-
    String getBindingsDirectory();
 
    String getJournalDirectory();
@@ -158,8 +156,6 @@ public interface MessagingServerControlMBean
    TabularData getConnectors() throws Exception;
    
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;
-
-   boolean isAllowRouteWhenNoBindings();
 
    boolean isPersistDeliveryCountBeforeDelivery();
 

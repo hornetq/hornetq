@@ -43,8 +43,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_CLUSTERED = false;
    
-   public static final boolean DEFAULT_ALLOW_ROUTE_WHEN_NO_BINDINGS = true;
-
    public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
    public static final boolean DEFAULT_BACKUP = false;
@@ -139,8 +137,6 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean backup = DEFAULT_BACKUP;
       
-   protected boolean allowRouteWhenNoBindings;
-   
    protected boolean persistDeliveryCountBeforeDelivery = DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 
    protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
@@ -284,17 +280,6 @@ public class ConfigurationImpl implements Configuration
    {
       this.persistDeliveryCountBeforeDelivery = persistDeliveryCountBeforeDelivery;
    }
-
-   public boolean isAllowRouteWhenNoBindings()
-   {
-      return allowRouteWhenNoBindings;
-   }
-   
-   public void setAllowRouteWhenNoBindings(final boolean allowRoute)
-   {
-      this.allowRouteWhenNoBindings = allowRoute;
-   }
-
 
    public void setBackup(final boolean backup)
    {

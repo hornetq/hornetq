@@ -76,8 +76,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
       assertEquals(server.getVersion().getFullVersion(), serverControl.getVersion());
 
-      assertEquals(conf.isClustered(), serverControl.isClustered());
-      assertEquals(conf.isAllowRouteWhenNoBindings(), serverControl.isAllowRouteWhenNoBindings());
+      assertEquals(conf.isClustered(), serverControl.isClustered());     
       assertEquals(conf.isPersistDeliveryCountBeforeDelivery(), serverControl.isPersistDeliveryCountBeforeDelivery());
       assertEquals(conf.isBackup(), serverControl.isBackup());
       assertEquals(conf.getQueueActivationTimeout(), serverControl.getQueueActivationTimeout());
