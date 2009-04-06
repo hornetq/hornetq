@@ -40,7 +40,7 @@ import org.jboss.messaging.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class SoloQueueTest extends UnitTestCase
+public class LVQTest extends UnitTestCase
 {
    private MessagingServer server;
 
@@ -50,9 +50,9 @@ public class SoloQueueTest extends UnitTestCase
 
    private ClientSession clientSessionTxSends;
 
-   private SimpleString address = new SimpleString("SoloQueueTestAddress");
+   private SimpleString address = new SimpleString("LVQTestAddress");
 
-   private SimpleString qName1 = new SimpleString("SoloQueueTestQ1");
+   private SimpleString qName1 = new SimpleString("LVQTestQ1");
 
    private FakeStorageManager storageManager;
 
@@ -63,9 +63,9 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       ClientMessage m1 = createTextMessage("m1", clientSession);
       SimpleString rh = new SimpleString("SMID1");
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       producer.send(m1);
       producer.send(m2);
       clientSession.start();
@@ -82,13 +82,13 @@ public class SoloQueueTest extends UnitTestCase
       SimpleString messageId1 = new SimpleString("SMID1");
       SimpleString messageId2 = new SimpleString("SMID2");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId1);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId1);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId2);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId2);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId1);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId1);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId2);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId2);
       producer.send(m1);
       producer.send(m2);
       producer.send(m3);
@@ -110,9 +110,9 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       ClientMessage m1 = createTextMessage("m1", clientSession);
       SimpleString rh = new SimpleString("SMID1");
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       producer.send(m1);
       clientSession.start();
       ClientMessage m = consumer.receive(1000);
@@ -132,9 +132,9 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       ClientMessage m1 = createTextMessage("m1", clientSession);
       SimpleString rh = new SimpleString("SMID1");
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       producer.send(m1);
       clientSession.start();
       ClientMessage m = consumer.receive(1000);
@@ -157,17 +157,17 @@ public class SoloQueueTest extends UnitTestCase
 
       SimpleString rh = new SimpleString("SMID1");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m5 = createTextMessage("m5", clientSession);
-      m5.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m5.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m6 = createTextMessage("m6", clientSession);
-      m6.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m6.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       clientSession.start();
       producer.send(m1);
       ClientMessage m = consumer.receive(1000);
@@ -210,9 +210,9 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSessionTxReceives.createConsumer(qName1);
       ClientMessage m1 = createTextMessage("m1", clientSession);
       SimpleString rh = new SimpleString("SMID1");
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       producer.send(m1);
       producer.send(m2);
       clientSessionTxReceives.start();
@@ -229,13 +229,13 @@ public class SoloQueueTest extends UnitTestCase
       SimpleString messageId1 = new SimpleString("SMID1");
       SimpleString messageId2 = new SimpleString("SMID2");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId1);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId1);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId2);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId2);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId1);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId1);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId2);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId2);
       producer.send(m1);
       producer.send(m2);
       producer.send(m3);
@@ -261,13 +261,13 @@ public class SoloQueueTest extends UnitTestCase
       SimpleString messageId1 = new SimpleString("SMID1");
       SimpleString messageId2 = new SimpleString("SMID2");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId1);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId1);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId2);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId2);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId1);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId1);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId2);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId2);
       producer.send(m1);
       producer.send(m2);
       clientSessionTxReceives.start();
@@ -306,17 +306,17 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSessionTxSends.createConsumer(qName1);
       SimpleString rh = new SimpleString("SMID1");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m5 = createTextMessage("m5", clientSession);
-      m5.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m5.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       ClientMessage m6 = createTextMessage("m6", clientSession);
-      m6.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m6.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       producer.send(m1);
       producer.send(m2);
       producer.send(m3);
@@ -337,22 +337,22 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       SimpleString rh = new SimpleString("SMID1");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m1.setDurable(true);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m2.setDurable(true);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m3.setDurable(true);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m4.setDurable(true);
       ClientMessage m5 = createTextMessage("m5", clientSession);
-      m5.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m5.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m5.setDurable(true);
       ClientMessage m6 = createTextMessage("m6", clientSession);
-      m6.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m6.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m6.setDurable(true);
       producer.send(m1);
       producer.send(m2);
@@ -375,22 +375,22 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSessionTxSends.createConsumer(qName1);
       SimpleString rh = new SimpleString("SMID1");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m1.setDurable(true);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m2.setDurable(true);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m3.setDurable(true);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m4.setDurable(true);
       ClientMessage m5 = createTextMessage("m5", clientSession);
-      m5.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m5.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m5.setDurable(true);
       ClientMessage m6 = createTextMessage("m6", clientSession);
-      m6.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m6.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m6.setDurable(true);
       producer.send(m1);
       producer.send(m2);
@@ -414,22 +414,22 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       SimpleString rh = new SimpleString("SMID1");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m1.setDurable(true);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m2.setDurable(true);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m3.setDurable(true);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m4.setDurable(true);
       ClientMessage m5 = createTextMessage("m5", clientSession);
-      m5.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m5.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m5.setDurable(true);
       ClientMessage m6 = createTextMessage("m6", clientSession);
-      m6.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m6.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m6.setDurable(true);
       clientSession.start();
       producer.send(m1);
@@ -471,22 +471,22 @@ public class SoloQueueTest extends UnitTestCase
       ClientConsumer consumer = clientSessionTxReceives.createConsumer(qName1);
       SimpleString rh = new SimpleString("SMID1");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m1.setDurable(true);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m2.setDurable(true);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m3.setDurable(true);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m4.setDurable(true);
       ClientMessage m5 = createTextMessage("m5", clientSession);
-      m5.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m5.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m5.setDurable(true);
       ClientMessage m6 = createTextMessage("m6", clientSession);
-      m6.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m6.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m6.setDurable(true);
       clientSessionTxReceives.start();
       producer.send(m1);
@@ -570,7 +570,7 @@ public class SoloQueueTest extends UnitTestCase
       server.start();
 
       AddressSettings qs = new AddressSettings();
-      qs.setSoloQueue(true);
+      qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));

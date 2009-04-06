@@ -72,7 +72,7 @@ public abstract class MessageImpl implements Message
    
    public static final SimpleString HDR_FROM_CLUSTER = new SimpleString("_JBM_FROM_CLUSTER");
 
-   public static final SimpleString HDR_SOLE_MESSAGE = new SimpleString("_JBM_SOLO_MESSAGE");
+   public static final SimpleString HDR_LAST_VALUE_NAME = new SimpleString("_JBM_LVQ_NAME");
 
    public static final byte OBJECT_TYPE = 2;
       

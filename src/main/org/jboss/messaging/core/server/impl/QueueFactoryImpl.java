@@ -78,9 +78,9 @@ public class QueueFactoryImpl implements QueueFactory
       AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
 
       Queue queue;
-      if (addressSettings.isSoloQueue())
+      if (addressSettings.isLastValueQueue())
       {
-         queue = new SoloQueueImpl(persistenceID,
+         queue = new LastValueQueue(persistenceID,
                                    address,
                                    name,
                                    filter,

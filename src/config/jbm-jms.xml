@@ -122,9 +122,6 @@
    <topic name="testDurableTopic">
       <entry name="/topic/testDurableTopic"/>
    </topic>
-   <topic name="testSoloTopic">
-      <entry name="/topic/testSoloTopic"/>
-   </topic>
    <queue name="testQueue">
       <entry name="/queue/testQueue"/>
    </queue>

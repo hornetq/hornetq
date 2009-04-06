@@ -44,12 +44,15 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
- * A queue that will discard messages if a newer message with the same MessageImpl.HDR_SOLE_MESSAGE property value.
+ * A queue that will discard messages if a newer message with the same MessageImpl.HDR_LAST_VALUE_NAME property value.
+ * In other words it only retains the last value
+ * This is useful for example, for stock prices, where you're only interested in the latest value
+ * for a particular stock
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class SoloQueueImpl extends QueueImpl
+public class LastValueQueue extends QueueImpl
 {
-   private static final Logger log = Logger.getLogger(SoloQueueImpl.class);
+   private static final Logger log = Logger.getLogger(LastValueQueue.class);
 
    private final Map<SimpleString, ServerMessage> map = new HashMap<SimpleString, ServerMessage>();
 
@@ -57,7 +60,7 @@ public class SoloQueueImpl extends QueueImpl
 
    private final StorageManager storageManager;
 
-   public SoloQueueImpl(final long persistenceID,
+   public LastValueQueue(final long persistenceID,
                         final SimpleString address,
                         final SimpleString name,
                         final Filter filter,
@@ -84,7 +87,7 @@ public class SoloQueueImpl extends QueueImpl
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception
    {
-      SimpleString prop = (SimpleString)message.getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+      SimpleString prop = (SimpleString)message.getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
       if (prop != null)
       {
          synchronized (map)
@@ -115,7 +118,7 @@ public class SoloQueueImpl extends QueueImpl
 
    public MessageReference reroute(final ServerMessage message, final Transaction tx) throws Exception
    {
-      SimpleString prop = (SimpleString)message.getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+      SimpleString prop = (SimpleString)message.getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
       if (prop != null)
       {
          synchronized (map)
@@ -141,7 +144,7 @@ public class SoloQueueImpl extends QueueImpl
    public void acknowledge(final MessageReference ref) throws Exception
    {
       super.acknowledge(ref);
-      SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+      SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
       if (prop != null)
       {
          synchronized (map)
@@ -157,7 +160,7 @@ public class SoloQueueImpl extends QueueImpl
 
    public void cancel(final Transaction tx, final MessageReference ref) throws Exception
    {
-      SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+      SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
       if (prop != null)
       {
          synchronized (map)
@@ -187,7 +190,7 @@ public class SoloQueueImpl extends QueueImpl
       {
          for (MessageReference ref : refs)
          {
-            SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_SOLE_MESSAGE);
+            SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
             if (prop != null)
             {
                ServerMessage msg = map.get(prop);

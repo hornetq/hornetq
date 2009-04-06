@@ -123,10 +123,6 @@
       <distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor</distribution-policy-class>
    </address-settings>
 
-   <address-settings match="topicjms.testSoloTopic">
-      <solo-queue>true</solo-queue>
-   </address-settings>
-
    <!--default for catch all-->
    <address-settings match="#">
       <clustered>false</clustered>

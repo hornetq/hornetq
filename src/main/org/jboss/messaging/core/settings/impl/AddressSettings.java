@@ -55,7 +55,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public static final long DEFAULT_REDELIVER_DELAY = 0L;
 
-   public static final boolean DEFAULT_SOLO_QUEUE = false;
+   public static final boolean DEFAULT_LAST_VALUE_QUEUE = false;
 
    public static final long DEFAULT_REDISTRIBUTION_DELAY = -1;
 
@@ -77,18 +77,18 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    private SimpleString expiryAddress = null;
 
-   private Boolean soloQueue = null;
+   private Boolean lastValueQueue = null;
 
    private Long redistributionDelay = null;
 
-   public boolean isSoloQueue()
+   public boolean isLastValueQueue()
    {
-      return soloQueue != null ? soloQueue : DEFAULT_SOLO_QUEUE;
+      return lastValueQueue != null ? lastValueQueue : DEFAULT_LAST_VALUE_QUEUE;
    }
 
-   public void setSoloQueue(final boolean soloQueue)
+   public void setLastValueQueue(final boolean lastValueQueue)
    {
-      this.soloQueue = soloQueue;
+      this.lastValueQueue = lastValueQueue;
    }
 
    public int getPageSizeBytes()

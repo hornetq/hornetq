@@ -53,7 +53,7 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME = "message-counter-history-day-limit";
 
-   private static final String SOLO_MESSAGE_NODE_NAME = "solo-queue";
+   private static final String LVQ_NODE_NAME = "last-value-queue";
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
@@ -137,9 +137,9 @@ public class AddressSettingsDeployer extends XmlDeployer
          {
             addressSettings.setDropMessagesWhenFull(Boolean.valueOf(child.getTextContent().trim()));
          }
-         else if (SOLO_MESSAGE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (LVQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setSoloQueue(Boolean.valueOf(child.getTextContent().trim()));
+            addressSettings.setLastValueQueue(Boolean.valueOf(child.getTextContent().trim()));
          }
          else if (MAX_DELIVERY_ATTEMPTS.equalsIgnoreCase(child.getNodeName()))
          {

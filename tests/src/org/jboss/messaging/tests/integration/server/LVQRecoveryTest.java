@@ -43,15 +43,15 @@ import org.jboss.messaging.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class SoloQueueRecoveryTest extends ServiceTestBase
+public class LVQRecoveryTest extends ServiceTestBase
 {
    private MessagingServer server;
 
    private ClientSession clientSession;
 
-   private SimpleString address = new SimpleString("SoloQueueTestAddress");
+   private SimpleString address = new SimpleString("LVQTestAddress");
 
-   private SimpleString qName1 = new SimpleString("SoloQueueTestQ1");
+   private SimpleString qName1 = new SimpleString("LVQTestQ1");
 
    private ClientSession clientSessionXa;
 
@@ -67,13 +67,13 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       SimpleString messageId2 = new SimpleString("SMID2");
       clientSessionXa.start(xid, XAResource.TMNOFLAGS);
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId1);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId1);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId2);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId2);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId1);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId1);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, messageId2);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, messageId2);
       producer.send(m1);
       producer.send(m2);
       producer.send(m3);
@@ -102,22 +102,22 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
 
       SimpleString rh = new SimpleString("SMID1");
       ClientMessage m1 = createTextMessage("m1", clientSession);
-      m1.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m1.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m1.setDurable(true);
       ClientMessage m2 = createTextMessage("m2", clientSession);
-      m2.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m2.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m2.setDurable(true);
       ClientMessage m3 = createTextMessage("m3", clientSession);
-      m3.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m3.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m3.setDurable(true);
       ClientMessage m4 = createTextMessage("m4", clientSession);
-      m4.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m4.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m4.setDurable(true);
       ClientMessage m5 = createTextMessage("m5", clientSession);
-      m5.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m5.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m5.setDurable(true);
       ClientMessage m6 = createTextMessage("m6", clientSession);
-      m6.putStringProperty(MessageImpl.HDR_SOLE_MESSAGE, rh);
+      m6.putStringProperty(MessageImpl.HDR_LAST_VALUE_NAME, rh);
       m6.setDurable(true);
       clientSessionXa.start(xid, XAResource.TMNOFLAGS);
       clientSessionXa.start();
@@ -203,7 +203,7 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       server.start();
 
       qs = new AddressSettings();
-      qs.setSoloQueue(true);
+      qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
@@ -224,7 +224,7 @@ public class SoloQueueRecoveryTest extends ServiceTestBase
       server.start();
 
       AddressSettings qs = new AddressSettings();
-      qs.setSoloQueue(true);
+      qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));

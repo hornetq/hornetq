@@ -26,7 +26,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.impl.SoloQueueImpl;
+import org.jboss.messaging.core.server.impl.LastValueQueue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
@@ -102,13 +102,13 @@ public class ClientSessionCreateAndDeleteQueueTest extends ServiceTestBase
     public void testAddressSettingUSed() throws Exception
    {
       AddressSettings addressSettings = new AddressSettings();
-      addressSettings.setSoloQueue(true);
+      addressSettings.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       ClientSession session = createInVMFactory().createSession(false, true, true);
       SimpleString filterString = new SimpleString("x=y");
       session.createQueue(address, queueName, filterString, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
-      assertTrue(binding.getBindable() instanceof SoloQueueImpl);
+      assertTrue(binding.getBindable() instanceof LastValueQueue);
 
       session.close();
    }
