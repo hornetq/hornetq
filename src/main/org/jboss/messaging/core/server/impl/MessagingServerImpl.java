@@ -491,6 +491,8 @@ public class MessagingServerImpl implements MessagingServer
       storageManager.stop();
 
       securityManager.stop();
+      
+      configuration.stop();
 
       asyncDeliveryPool.shutdown();
 
