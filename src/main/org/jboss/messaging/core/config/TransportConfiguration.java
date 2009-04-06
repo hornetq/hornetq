@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
 
 /**

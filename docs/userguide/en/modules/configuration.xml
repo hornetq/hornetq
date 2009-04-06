@@ -296,8 +296,8 @@
          against a destination using an hierarchical style match that supports both wild cards ('*') and word
          replacement ('^')
       </para>
-      <para>For instance a destination withname 'queuejms.aqueue.myQueue' would match against 'queuejms.*',
-         'queuejms.aqueue.^', 'queuejms.^.myQueue' and obviously 'queuejms.aqueue.myQueue'. If a destination has
+      <para>For instance a destination withname 'jms.queue.aqueue.myQueue' would match against 'jms.queue.*',
+         'jms.queue.aqueue.^', 'jms.queue.^.myQueue' and obviously 'jms.queue.aqueue.myQueue'. If a destination has
          multiple
          matches then the most precise match is used
       </para>
@@ -305,34 +305,34 @@
          <![CDATA[
    <deployment>
 
-      <security match="topicjms.testTopic">
+      <security match="jms.topic.testTopic">
          <permission type="create" roles="durpublisher"/>
          <permission type="read" roles="guest,publisher,durpublisher"/>
          <permission type="write" roles="guest,publisher,durpublisher"/>
       </security>
 
-      <security match="topicjms.securedTopic">
+      <security match="jms.topic.securedTopic">
          <permission type="write" roles="publisher"/>
          <permission type="read" roles="publisher"/>
       </security>
 
-      <security match="topicjms.testDurableTopic">
+      <security match="jms.topic.testDurableTopic">
          <permission type="create" roles="durpublisher"/>
          <permission type="read" roles="guest,publisher,durpublisher"/>
          <permission type="write" roles="guest,publisher,durpublisher"/>
       </security>
 
-      <security match="queuejms.testQueue">
+      <security match="jms.queue.testQueue">
          <permission type="read" roles="guest,publisher"/>
          <permission type="write" roles="guest,publisher"/>
       </security>
 
-      <security match="queuejms.NoSuchQueue">
+      <security match="jms.queue.NoSuchQueue">
          <permission type="read" roles="guest,publisher"/>
          <permission type="write" roles="guest,publisher"/>
       </security>
 
-      <security match="topicjms.NoSuchTopic">
+      <security match="jms.topic.NoSuchTopic">
          <permission type="read" roles="guest,publisher"/>
          <permission type="write" roles="guest,publisher"/>
       </security>
@@ -349,14 +349,14 @@
          <permission type="write" roles="guest,def"/>
       </security>
 
-      <!--this will catch any word i.e. queuejms.anything-->
-      <!--<security match="queuejms.^">
+      <!--this will catch any word i.e. jms.queue.anything-->
+      <!--<security match="jms.queue.^">
          <permission type="read" roles="guest,publisher"/>
          <permission type="write" roles="guest,publisher"/>
       </security>-->
 
-      <!--this will catch any word i.e. queuejms.anything-->
-      <!--<security match="topicjms.^">
+      <!--this will catch any word i.e. jms.queue.anything-->
+      <!--<security match="jms.topic.^">
          <permission type="read" roles="guest,publisher"/>
          <permission type="write" roles="guest,publisher"/>
       </security>-->
@@ -368,33 +368,33 @@
          <permission type="write" roles="guest,def"/>
       </security>
 
-      <queue-settings match="queuejms.QueueWithOwnDLQAndExpiryQueue">
+      <queue-settings match="jms.queue.QueueWithOwnDLQAndExpiryQueue">
          <dlq>PrivateDLQ</dlq>
-         <expiry-queue>queuejms.PrivateExpiryQueue</expiry-queue>
+         <expiry-queue>jms.queue.PrivateExpiryQueue</expiry-queue>
       </queue-settings>
 
-      <queue-settings match="topicjms.TopicWithOwnDLQAndExpiryQueue">
+      <queue-settings match="jms.topic.TopicWithOwnDLQAndExpiryQueue">
          <dlq>PrivateDLQ</dlq>
-         <expiry-queue>queuejms.PrivateExpiryQueue</expiry-queue>
+         <expiry-queue>jms.queue.PrivateExpiryQueue</expiry-queue>
       </queue-settings>
 
-      <queue-settings match="queuejms.QueueWithOwnRedeliveryDelay">
+      <queue-settings match="jms.queue.QueueWithOwnRedeliveryDelay">
          <redelivery-delay>5000</redelivery-delay>
       </queue-settings>
 
-      <queue-settings match="topicjms.TopicWithOwnRedeliveryDelay">
+      <queue-settings match="jms.topic.TopicWithOwnRedeliveryDelay">
          <redelivery-delay>5000</redelivery-delay>
       </queue-settings>
 
-      <queue-settings match="queuejms.testDistributedQueue">
+      <queue-settings match="jms.queue.testDistributedQueue">
          <clustered>true</clustered>
       </queue-settings>
 
-      <queue-settings match="topicjms.testDistributedTopic">
+      <queue-settings match="jms.topic.testDistributedTopic">
          <clustered>true</clustered>
       </queue-settings>
 
-      <queue-settings match="queuejms.testPerfQueue">
+      <queue-settings match="jms.queue.testPerfQueue">
          <clustered>false</clustered>
       </queue-settings>
 
@@ -402,7 +402,7 @@
       <queue-settings match="*">
          <clustered>false</clustered>
          <dlq>DLQ</dlq>
-         <expiry-queue>queuejms.ExpiryQueue</expiry-queue>
+         <expiry-queue>jms.queue.ExpiryQueue</expiry-queue>
          <redelivery-delay>0</redelivery-delay>
          <max-size>-1</max-size>
          <distribution-policy-class>

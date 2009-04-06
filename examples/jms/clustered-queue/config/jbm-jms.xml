@@ -3,7 +3,7 @@
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
    <!--the connection factory used by the example-->
    <connection-factory name="ConnectionFactory">
-      <connector-ref connector-name="netty"/>
+      <connector-ref connector-name="netty-connector"/>
       <entry name="ConnectionFactory"/>
       <entry name="XAConnectionFactory"/>
       <entry name="java:/ConnectionFactory"/>

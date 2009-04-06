@@ -40,7 +40,7 @@ public class SecurityDeployerTest extends UnitTestCase
 {
    private SecurityDeployer deployer;
 
-   private String conf = "<security match=\"topicjms.testTopic\">\n" +
+   private String conf = "<security match=\"jms.topic.testTopic\">\n" +
                          "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>\n" +
                          "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>\n" +
                          "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n" +
@@ -48,7 +48,7 @@ public class SecurityDeployerTest extends UnitTestCase
                          "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>\n" +
                          "   </security>";
 
-   private String conf2 = "<security match=\"topicjms.testQueue\">\n" +
+   private String conf2 = "<security match=\"jms.topic.testQueue\">\n" +
                           "      <permission type=\"createTempQueue\" roles=\"durpublisher\"/>\n" +
                           "      <permission type=\"deleteTempQueue\" roles=\"durpublisher\"/>\n" +
                           "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n" +
@@ -74,7 +74,7 @@ public class SecurityDeployerTest extends UnitTestCase
    {
       Element e = org.jboss.messaging.utils.XMLUtil.stringToElement(conf);
       deployer.deploy(e);
-      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("topicjms.testTopic");
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
       assertNotNull(roles);
       assertEquals(3, roles.size());
       for (Role role : roles)
@@ -120,7 +120,7 @@ public class SecurityDeployerTest extends UnitTestCase
    {
       deployer.deploy(org.jboss.messaging.utils.XMLUtil.stringToElement(conf));
       deployer.deploy(org.jboss.messaging.utils.XMLUtil.stringToElement(conf2));
-      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("topicjms.testTopic");
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
       assertNotNull(roles);
       assertEquals(3, roles.size());
       for (Role role : roles)
@@ -160,7 +160,7 @@ public class SecurityDeployerTest extends UnitTestCase
             fail("unexpected role");
          }
       }
-      roles = (HashSet<Role>) repository.getMatch("topicjms.testQueue");
+      roles = (HashSet<Role>) repository.getMatch("jms.topic.testQueue");
       assertNotNull(roles);
       assertEquals(3, roles.size());
       for (Role role : roles)
@@ -205,7 +205,7 @@ public class SecurityDeployerTest extends UnitTestCase
    public void testNoRolesAdded() throws Exception
    {
       deployer.deploy(org.jboss.messaging.utils.XMLUtil.stringToElement(noRoles));
-      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("topicjms.testQueue");
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testQueue");
       assertNull(roles);
    }
 }

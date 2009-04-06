@@ -82,31 +82,31 @@
          10:25:57,707 INFO @main [FileDeploymentManager] Deploying org.jboss.messagin
          g.core.deployers.impl.SecurityDeployer@fe0fd9 with urlfile:/home/andy/project
          s/jBossMessaging/build/messaging-2.0.0.alpha1/config/queues.xml
-         10:25:57,758 INFO @main [XmlDeployer] deploying topicjms.testTopic
-         10:25:57,761 INFO @main [XmlDeployer] deploying topicjms.securedTopic
-         10:25:57,761 INFO @main [XmlDeployer] deploying topicjms.testDurableTopic
-         10:25:57,762 INFO @main [XmlDeployer] deploying queuejms.testQueue
-         10:25:57,762 INFO @main [XmlDeployer] deploying queuejms.NoSuchQueue
-         10:25:57,763 INFO @main [XmlDeployer] deploying topicjms.NoSuchTopic
+         10:25:57,758 INFO @main [XmlDeployer] deploying jms.topic.testTopic
+         10:25:57,761 INFO @main [XmlDeployer] deploying jms.topic.securedTopic
+         10:25:57,761 INFO @main [XmlDeployer] deploying jms.topic.testDurableTopic
+         10:25:57,762 INFO @main [XmlDeployer] deploying jms.queue.testQueue
+         10:25:57,762 INFO @main [XmlDeployer] deploying jms.queue.NoSuchQueue
+         10:25:57,763 INFO @main [XmlDeployer] deploying jms.topic.NoSuchTopic
          10:25:57,763 INFO @main [XmlDeployer] deploying queuetempjms.*
          10:25:57,764 INFO @main [XmlDeployer] deploying topictempjms.*
          10:25:57,764 INFO @main [XmlDeployer] deploying *
          10:25:57,765 INFO @main [FileDeploymentManager] Deploying org.jboss.messagin
          g.core.deployers.impl.QueueSettingsDeployer@1220b36 with urlfile:/home/andy/p
          rojects/jBossMessaging/build/messaging-2.0.0.alpha1/config/queues.xml
-         10:25:57,783 INFO @main [XmlDeployer] deploying queuejms.QueueWithOwnDLQAndE
+         10:25:57,783 INFO @main [XmlDeployer] deploying jms.queue.QueueWithOwnDLQAndE
          xpiryQueue
-         10:25:57,784 INFO @main [XmlDeployer] deploying topicjms.TopicWithOwnDLQAndE
+         10:25:57,784 INFO @main [XmlDeployer] deploying jms.topic.TopicWithOwnDLQAndE
          xpiryQueue
-         10:25:57,784 INFO @main [XmlDeployer] deploying queuejms.QueueWithOwnRedeliv
+         10:25:57,784 INFO @main [XmlDeployer] deploying jms.queue.QueueWithOwnRedeliv
          eryDelay
-         10:25:57,784 INFO @main [XmlDeployer] deploying topicjms.TopicWithOwnRedeliv
+         10:25:57,784 INFO @main [XmlDeployer] deploying jms.topic.TopicWithOwnRedeliv
          eryDelay
-         10:25:57,785 INFO @main [XmlDeployer] deploying queuejms.testDistributedQueu
+         10:25:57,785 INFO @main [XmlDeployer] deploying jms.queue.testDistributedQueu
          e
-         10:25:57,785 INFO @main [XmlDeployer] deploying topicjms.testDistributedTopi
+         10:25:57,785 INFO @main [XmlDeployer] deploying jms.topic.testDistributedTopi
          c
-         10:25:57,785 INFO @main [XmlDeployer] deploying queuejms.testPerfQueue
+         10:25:57,785 INFO @main [XmlDeployer] deploying jms.queue.testPerfQueue
          10:25:57,785 INFO @main [XmlDeployer] deploying *
          10:26:02,824 INFO @main [FileDeploymentManager] Deploying org.jboss.messagin
          g.core.deployers.impl.SecurityManagerDeployer@1a1ff9 with urlfile:/home/andy/

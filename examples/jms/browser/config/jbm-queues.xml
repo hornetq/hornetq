@@ -3,7 +3,7 @@
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
 
    <!--security for example queue-->
-   <security match="queuejms.exampleQueue">
+   <security match="jms.queue.exampleQueue">
       <permission type="createDurableQueue" roles="guest"/>
       <permission type="deleteDurableQueue" roles="guest"/>
       <permission type="createTempQueue" roles="guest"/>

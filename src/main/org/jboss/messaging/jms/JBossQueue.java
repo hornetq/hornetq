@@ -25,6 +25,7 @@ package org.jboss.messaging.jms;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -38,9 +39,12 @@ public class JBossQueue extends JBossDestination implements Queue
 {
    // Constants -----------------------------------------------------
    
+   private static final Logger log = Logger.getLogger(JBossQueue.class);
+
+   
 	private static final long serialVersionUID = -1106092883162295462L;
 	
-	public static final String JMS_QUEUE_ADDRESS_PREFIX = "queuejms.";
+	public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
 
    // Static --------------------------------------------------------
    
@@ -54,12 +58,12 @@ public class JBossQueue extends JBossDestination implements Queue
    // Constructors --------------------------------------------------
 
    public JBossQueue(final String name)
-   {
+   {      
       super(JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
 
    public JBossQueue(final String address, final String name)
-   {
+   {      
       super(address, name);
    }
 

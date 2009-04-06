@@ -340,7 +340,7 @@ public class LocalTestServer implements Server, Runnable
 
    public void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception
    {
-      String destination = (isQueue ? "queuejms." : "topicjms.") + destName;
+      String destination = (isQueue ? "jms.queue." : "jms.topic.") + destName;
       if (roles != null)
       {
          getMessagingServer().getSecurityRepository().addMatch(destination, roles);

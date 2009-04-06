@@ -72,11 +72,19 @@ public class FileConfiguration extends ConfigurationImpl
    // Attributes ----------------------------------------------------------------------
 
    private String configurationUrl = DEFAULT_CONFIGURATION_URL;
+   
 
+   private boolean started;
+   
    // Public -------------------------------------------------------------------------
 
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {      
+      if (started)
+      {
+         return;
+      }
+       
       URL url = getClass().getClassLoader().getResource(configurationUrl);
       Reader reader = new InputStreamReader(url.openStream());
       String xml = org.jboss.messaging.utils.XMLUtil.readerToString(reader);
@@ -293,6 +301,15 @@ public class FileConfiguration extends ConfigurationImpl
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 
       messageCounterEnabled = getBoolean(e, "message-counter-enabled", messageCounterEnabled);
+      
+      started = true;
+   }
+   
+   public synchronized void stop() throws Exception
+   {
+      super.stop();
+      
+      started = false;
    }
 
    public String getConfigurationUrl()
@@ -551,7 +568,11 @@ public class FileConfiguration extends ConfigurationImpl
       {
          Node child = children.item(j);
 
-         if (child.getNodeName().equals("retry-interval"))
+         if (child.getNodeName().equals("address"))
+         {
+            address = child.getTextContent().trim();
+         }  
+         else if (child.getNodeName().equals("retry-interval"))
          {
             retryInterval = XMLUtil.parseLong(child);
          }        

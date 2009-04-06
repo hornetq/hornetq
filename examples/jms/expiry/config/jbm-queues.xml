@@ -3,7 +3,7 @@
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
 
    <!--security for example queue-->
-   <security match="queuejms.exampleQueue">
+   <security match="jms.queue.exampleQueue">
       <permission type="createDurableQueue" roles="guest"/>
       <permission type="deleteDurableQueue" roles="guest"/>
       <permission type="createTempQueue" roles="guest"/>
@@ -13,7 +13,7 @@
    </security>
 
    <!--security for dead letter queue-->
-   <security match="queuejms.expiryQueue">
+   <security match="jms.queue.expiryQueue">
       <permission type="createDurableQueue" roles="guest"/>
       <permission type="deleteDurableQueue" roles="guest"/>
       <permission type="createTempQueue" roles="guest"/>
@@ -23,8 +23,8 @@
    </security>
 
    <!--override the expiry address for the example-->
-   <address-settings match="queuejms.exampleQueue">
-      <expiry-address>queuejms.expiryQueue</expiry-address>
+   <address-settings match="jms.queue.exampleQueue">
+      <expiry-address>jms.queue.expiryQueue</expiry-address>
    </address-settings>
 
 </settings>

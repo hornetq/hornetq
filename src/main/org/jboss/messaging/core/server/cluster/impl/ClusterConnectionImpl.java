@@ -467,15 +467,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
    }
 
-//   private SimpleString generateQueueName(final SimpleString clusterName,
-//                                          final Pair<TransportConfiguration, TransportConfiguration> connectorPair) throws Exception
-//   {
-//      return new SimpleString("sf." + name +
-//                              "." +
-//                              connectorPair.a.toString() +
-//                              "-" +
-//                              (connectorPair.b == null ? "null" : connectorPair.b.toString()));
-//   }
 
    // Inner classes -----------------------------------------------------------------------------------
 

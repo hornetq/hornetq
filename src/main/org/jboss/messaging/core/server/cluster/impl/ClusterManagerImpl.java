@@ -459,7 +459,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       if (config.getAddress() == null)
       {
-         log.warn("Must specify an address for each cluster. This one will not be deployed.");
+         log.warn("Must specify an address for each cluster connection. This one will not be deployed.");
 
          return;
       }

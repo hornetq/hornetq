@@ -21,6 +21,9 @@
    */
 package org.jboss.jms.example;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -28,7 +31,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
+
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.integration.transports.netty.TransportConstants;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends then receives a message.
@@ -44,60 +51,82 @@ public class ClusteredQueueExample extends JMSExample
 
    public boolean runExample() throws Exception
    {
-      Connection connection = null;
-      InitialContext initialContext = null;
+      Connection connection0 = null;
+
+      Connection connection1 = null;
       try
       {
-         // Step 1. Create an initial context to perform the JNDI lookup.
-         initialContext = getContext();
+         Queue queue = new JBossQueue("exampleQueue");
 
-         // Step 2. Perfom a lookup on the queue
-         Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
+         Map<String, Object> params0 = new HashMap<String, Object>();
+         params0.put(TransportConstants.PORT_PROP_NAME, 5445);
+         TransportConfiguration tc0 = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
+                                                                 params0);
+         ConnectionFactory cf0 = new JBossConnectionFactory(tc0);
 
-         // Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         Map<String, Object> params1 = new HashMap<String, Object>();
+         params1.put(TransportConstants.PORT_PROP_NAME, 5446);
+         TransportConfiguration tc1 = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
+                                                                 params1);
+         ConnectionFactory cf1 = new JBossConnectionFactory(tc1);
 
-         // Step 4.Create a JMS Connection
-         connection = cf.createConnection();
+         connection0 = cf0.createConnection();
 
-         // Step 5. Create a JMS Session
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         connection1 = cf1.createConnection();
 
-         // Step 6. Create a JMS Message Producer
-         MessageProducer producer = session.createProducer(queue);
+         Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         // Step 7. Create a Text Message
-         TextMessage message = session.createTextMessage("This is a text message");
+         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         System.out.println("Sent message: " + message.getText());
+         connection0.start();
 
-         // Step 8. Send the Message
-         producer.send(message);
+         connection1.start();
 
-         // Step 9. Create a JMS Message Consumer
-         MessageConsumer messageConsumer = session.createConsumer(queue);
+         MessageConsumer consumer0 = session0.createConsumer(queue);
 
-         // Step 10. Start the Connection
-         connection.start();
+         MessageConsumer consumer1 = session1.createConsumer(queue);
+         
+         Thread.sleep(5000);
 
-         // Step 11. Receive the message
-         TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
+         MessageProducer producer = session0.createProducer(queue);
 
-         System.out.println("Received message: " + messageReceived.getText());
+         final int numMessages = 10;
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            TextMessage message = session0.createTextMessage("This is text message " + i);
+            
+            producer.send(message);
+
+            System.out.println("Sent message: " + message.getText());
+         }
+
+         for (int i = 0; i < numMessages; i += 2)
+         {
+            TextMessage message0 = (TextMessage)consumer0.receive(5000);
+
+            System.out.println("Got message: " + message0.getText() + " from node 0");
+
+            TextMessage message1 = (TextMessage)consumer1.receive(5000);
+
+            System.out.println("Got message: " + message1.getText() + " from node 1");
+         }
 
          return true;
       }
       finally
       {
          // Step 12. Be sure to close our JMS resources!
-         if (connection != null)
+         if (connection0 != null)
          {
-            connection.close();
+            connection0.close();
          }
-         if (initialContext != null)
+         
+         if (connection1 != null)
          {
-            initialContext.close();
+            connection1.close();
          }
+
       }
    }
 

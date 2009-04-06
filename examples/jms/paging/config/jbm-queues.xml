@@ -3,7 +3,7 @@
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
 
    <!--security for example queue-->
-   <security match="queuejms.exampleQueue">
+   <security match="jms.queue.exampleQueue">
       <permission type="createDurableQueue" roles="guest"/>
       <permission type="deleteDurableQueue" roles="guest"/>
       <permission type="createTempQueue" roles="guest"/>
@@ -12,7 +12,7 @@
       <permission type="send" roles="guest"/>
    </security>
    
-   <security match="queuejms.pagingQueue">
+   <security match="jms.queue.pagingQueue">
       <permission type="createDurableQueue" roles="guest"/>
       <permission type="deleteDurableQueue" roles="guest"/>
       <permission type="createTempQueue" roles="guest"/>
@@ -21,7 +21,7 @@
       <permission type="send" roles="guest"/>
    </security>
    
-   <address-settings match="queuejms.pagingQueue">
+   <address-settings match="jms.queue.pagingQueue">
       <max-size-bytes>100000</max-size-bytes>
       <page-size-bytes>20000</page-size-bytes>
    </address-settings>
