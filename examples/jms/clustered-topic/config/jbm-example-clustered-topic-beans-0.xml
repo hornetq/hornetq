@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+   <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
+
+   <!-- JNDI server. Disable this if you don't want JNDI -->
+   <bean name="JNDIServer" class="org.jnp.server.Main">
+      <property name="namingInfo">
+         <inject bean="Naming"/>
+      </property>
+      <property name="port">1099</property>
+      <property name="bindAddress">localhost</property>
+      <property name="rmiPort">1098</property>
+      <property name="rmiBindAddress">localhost</property>
+   </bean>
+
+   <bean name="DeploymentManager" class="org.jboss.messaging.core.deployers.impl.FileDeploymentManager">
+      <constructor>
+         <!-- The scan time in milliseconds -->
+         <parameter>5000</parameter>
+      </constructor>
+   </bean>
+   
+   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration">
+      <property name="configurationUrl">clustered-topic-example-configuration0.xml</property>
+   </bean>
+
+   <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBossASSecurityManager"/>-->
+
+   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
+   </bean>
+
+   <bean name="BasicSecurityDeployer" class="org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+      </constructor>
+      <property name="jbmSecurityManager">
+         <inject bean="JBMSecurityManager"/>
+      </property>
+   </bean>
+
+   <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+      <depends>AddressSettingsDeployer</depends>
+      <depends>QueueDeployer</depends>
+      
+      <property name="storageManager">
+         <inject bean="StorageManager"/>
+      </property>
+      <property name="remotingService">
+         <inject bean="RemotingService"/>
+      </property>
+      <property name="configuration">
+         <inject bean="Configuration"/>
+      </property>
+      <property name="securityManager">
+         <inject bean="JBMSecurityManager"/>
+      </property>
+      <property name="managementService">
+         <inject bean="ManagementService"/>
+      </property>      
+   </bean>
+
+   <bean name="StorageManager" class="org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager">
+      <constructor>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="RemotingService" class="org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl">
+      <constructor>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+      <property name="managementService">
+         <inject bean="ManagementService"/>
+      </property>
+   </bean>
+   
+   <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
+      <constructor>
+         <parameter>
+            <inject bean="MessagingServer" property="serverManagement"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="postOffice"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="storageManager"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="addressSettingsRepository"/>
+         </parameter>
+         <parameter>
+            <inject bean="JMSManagementService"/>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="JMSServerDeployer" class="org.jboss.messaging.jms.server.impl.JMSServerDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+          <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+      <property name="jmsServerManager">
+         <inject bean="JMSServerManager"/>
+      </property>
+   </bean>
+
+   <bean name="AddressSettingsDeployer" class="org.jboss.messaging.core.deployers.impl.AddressSettingsDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="addressSettingsRepository" state="Configured"/>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="QueueDeployer" class="org.jboss.messaging.core.deployers.impl.QueueDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+      </constructor>
+   </bean>
+   
+   <bean name="SecurityDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityDeployer">
+      <constructor>
+         <parameter>
+            <inject bean="DeploymentManager"/>
+         </parameter>
+         <parameter>
+            <inject bean="MessagingServer" property="securityRepository"/>
+         </parameter>
+      </constructor>
+   </bean>
+
+   <bean name="ManagementService" class="org.jboss.messaging.core.management.impl.ManagementServiceImpl">
+      <constructor>
+         <parameter>
+            <inject bean="MBeanServer"/>
+         </parameter>
+         <parameter>
+            <inject bean="Configuration" property="JMXManagementEnabled" />
+         </parameter>
+      </constructor>
+   </bean>
+   
+   <bean name="JMSManagementService" class="org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl">
+      <constructor>
+         <parameter>
+            <inject bean="ManagementService"/>
+         </parameter>
+      </constructor>
+   </bean>
+   
+   <bean name="MBeanServer" class="javax.management.MBeanServer">
+      <constructor factoryClass="java.lang.management.ManagementFactory"
+                   factoryMethod="getPlatformMBeanServer"/>
+   </bean> 
+   
+</deployment>
