@@ -62,6 +62,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendLargeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -914,7 +915,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void handleSendLargeMessage(final SessionSendMessage packet)
+   public void handleSendLargeMessage(final SessionSendLargeMessage packet)
    {
       // need to create the LargeMessage before continue
       final LargeServerMessage msg = doCreateLargeMessage(packet);
@@ -2185,16 +2186,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    }
 
    /**
-    * We need to create the LargeMessage before replicating the packe, or else we won't know how to extract the destination,
+    * We need to create the LargeMessage before replicating the packet, or else we won't know how to extract the destination,
     * which is stored on the header
     * @param packet
     * @throws Exception
     */
-   private LargeServerMessage doCreateLargeMessage(final SessionSendMessage packet)
+   private LargeServerMessage doCreateLargeMessage(final SessionSendLargeMessage packet)
    {
       try
       {
-         return createLargeMessageStorage(packet.getMessageID(), packet.getLargeMessageHeader());
+         return createLargeMessageStorage(packet.getLargeMessageHeader());
       }
       catch (Exception e)
       {
@@ -2233,7 +2234,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       channel.confirm(packet);
    }
 
-   private void doSendLargeMessage(final SessionSendMessage packet)
+   private void doSendLargeMessage(final SessionSendLargeMessage packet)
    {
       Packet response = null;
 
@@ -2410,16 +2411,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private LargeServerMessage createLargeMessageStorage(final long messageID, final byte[] header) throws Exception
+   private LargeServerMessage createLargeMessageStorage(final byte[] header) throws Exception
    {
       LargeServerMessage largeMessage = storageManager.createLargeMessage();
 
       MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header); 
 
       largeMessage.decodeProperties(headerBuffer);
-
-      // client didn't send the ID originally
-      largeMessage.setMessageID(messageID);
 
       return largeMessage;
    }

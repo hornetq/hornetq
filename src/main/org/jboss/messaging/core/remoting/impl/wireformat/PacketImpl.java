@@ -133,16 +133,18 @@ public class PacketImpl implements Packet
    public static final byte SESS_FLOWTOKEN = 70;
 
    public static final byte SESS_SEND = 71;
+   
+   public static final byte SESS_SEND_LARGE = 72;
 
-   public static final byte SESS_SEND_CONTINUATION = 72;
+   public static final byte SESS_SEND_CONTINUATION = 73;
 
-   public static final byte SESS_CONSUMER_CLOSE = 73;
+   public static final byte SESS_CONSUMER_CLOSE = 74;
 
-   public static final byte SESS_RECEIVE_MSG = 74;
+   public static final byte SESS_RECEIVE_MSG = 75;
 
-   public static final byte SESS_RECEIVE_CONTINUATION = 75;
+   public static final byte SESS_RECEIVE_CONTINUATION = 76;
 
-   public static final byte SESS_FAILOVER_COMPLETE = 76;
+   public static final byte SESS_FAILOVER_COMPLETE = 77;
    
    //Replication
 

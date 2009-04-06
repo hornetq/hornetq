@@ -22,10 +22,7 @@
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
-import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.utils.DataConstants;
 
 /**
@@ -35,15 +32,17 @@ import org.jboss.messaging.utils.DataConstants;
  * 
  * @version <tt>$Revision$</tt>
  */
-public class SessionSendMessage extends PacketImpl
+public class SessionSendLargeMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private Message clientMessage;
+   /** Used only if largeMessage */
+   private byte[] largeMessageHeader;
 
-   private ServerMessage serverMessage;
+   /** We need to set the MessageID when replicating this on the server */
+   private long largeMessageId = -1;
 
    private boolean requiresResponse;
 
@@ -51,30 +50,25 @@ public class SessionSendMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public SessionSendMessage(final Message message, final boolean requiresResponse)
+   public SessionSendLargeMessage(final byte[] largeMessageHeader, final boolean requiresResponse)
    {
-      super(SESS_SEND);
+      super(SESS_SEND_LARGE);
 
-      clientMessage = message;
+      this.largeMessageHeader = largeMessageHeader;
 
       this.requiresResponse = requiresResponse;
    }
 
-   public SessionSendMessage()
+   public SessionSendLargeMessage()
    {
-      super(SESS_SEND);
+      super(SESS_SEND_LARGE);
    }
 
    // Public --------------------------------------------------------
 
-   public Message getClientMessage()
+   public byte[] getLargeMessageHeader()
    {
-      return clientMessage;
-   }
-
-   public ServerMessage getServerMessage()
-   {
-      return serverMessage;
+      return largeMessageHeader;
    }
 
    public boolean isRequiresResponse()
@@ -82,41 +76,51 @@ public class SessionSendMessage extends PacketImpl
       return requiresResponse;
    }
 
+   /**
+    * @return the largeMessageId
+    */
+   public long getLargeMessageID()
+   {
+      return largeMessageId;
+   }
+
+   /**
+    * @param largeMessageId the largeMessageId to set
+    */
+   public void setLargeMessageID(long id)
+   {
+      this.largeMessageId = id;
+   }
+
    @Override
    public void encodeBody(final MessagingBuffer buffer)
    {
-      if (clientMessage != null)
-      {
-         clientMessage.encode(buffer);
-      }
-      else
-      {
-         // If we're replicating a buffer to a backup node then we encode the serverMessage not the clientMessage
-         serverMessage.encode(buffer);
-      }
-
+      buffer.writeInt(largeMessageHeader.length);
+      buffer.writeBytes(largeMessageHeader);
+      buffer.writeLong(largeMessageId);
       buffer.writeBoolean(requiresResponse);
    }
 
    @Override
    public void decodeBody(final MessagingBuffer buffer)
    {
-      // TODO can be optimised
+      int largeMessageLength = buffer.readInt();
 
-      serverMessage = new ServerMessageImpl();
+      largeMessageHeader = new byte[largeMessageLength];
 
-      clientMessage = serverMessage;
+      buffer.readBytes(largeMessageHeader);
 
-      serverMessage.decode(buffer);
-
-      serverMessage.getBody().resetReaderIndex();
+      largeMessageId = buffer.readLong();
 
       requiresResponse = buffer.readBoolean();
    }
 
    public int getRequiredBufferSize()
    {
-      int size = BASIC_PACKET_SIZE + clientMessage.getEncodeSize() + DataConstants.SIZE_BOOLEAN;
+      int size = BASIC_PACKET_SIZE + DataConstants.SIZE_INT +
+                 largeMessageHeader.length +
+                 DataConstants.SIZE_LONG +
+                 DataConstants.SIZE_BOOLEAN;
 
       return size;
    }

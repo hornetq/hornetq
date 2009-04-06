@@ -31,6 +31,7 @@ import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendContinuationMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendLargeMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.SimpleString;
@@ -253,7 +254,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       final int bodySize = msg.getBodySize();
 
-      SessionSendMessage initialChunk = new SessionSendMessage(headerBuffer.array(), false);
+      SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.array(), false);
 
       channel.send(initialChunk);
       

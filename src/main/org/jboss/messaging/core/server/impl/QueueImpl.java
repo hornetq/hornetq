@@ -1579,13 +1579,13 @@ public class QueueImpl implements Queue
    private class DelayedAddRedistributor implements Runnable
    {
       private final Executor executor;
-      
+
       private final Channel replicatingChannel;
 
       DelayedAddRedistributor(final Executor executor, final Channel replicatingChannel)
       {
          this.executor = executor;
-         
+
          this.replicatingChannel = replicatingChannel;
       }
 
