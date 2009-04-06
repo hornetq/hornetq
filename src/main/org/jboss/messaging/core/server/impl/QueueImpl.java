@@ -773,7 +773,7 @@ public class QueueImpl implements Queue
       return deleted;
    }
 
-   public synchronized boolean expireMessage(final long messageID) throws Exception
+   public synchronized boolean expireReference(final long messageID) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -791,7 +791,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public synchronized int expireMessages(final Filter filter) throws Exception
+   public synchronized int expireReferences(final Filter filter) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -815,13 +815,13 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public synchronized void expireMessages() throws Exception
+   public synchronized void expireReferences() throws Exception
    {
       for (MessageReference expiringMessageReference : expiringMessageReferences)
       {
          if (expiringMessageReference.getMessage().isExpired())
          {
-            expireMessage(expiringMessageReference.getMessage().getMessageID());
+            expireReference(expiringMessageReference.getMessage().getMessageID());
          }
       }
    }
@@ -844,7 +844,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public synchronized boolean moveMessage(final long messageID, final SimpleString toAddress) throws Exception
+   public synchronized boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
    {
       Iterator<MessageReference> iter = messageReferences.iterator();
 
@@ -862,7 +862,7 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public synchronized int moveMessages(final Filter filter, final SimpleString toAddress) throws Exception
+   public synchronized int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -898,7 +898,7 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public synchronized boolean changeMessagePriority(final long messageID, final byte newPriority) throws Exception
+   public synchronized boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
    {
       List<MessageReference> refs = list(null);
       for (MessageReference ref : refs)
@@ -1100,7 +1100,6 @@ public class QueueImpl implements Queue
        and original message id
       */
 
-      // FIXME - this won't work with replication!!!!!!!!!!!
       long newMessageId = storageManager.generateUniqueID();
 
       ServerMessage copy = message.copy(newMessageId);
@@ -1180,7 +1179,6 @@ public class QueueImpl implements Queue
    {
       Transaction tx = new TransactionImpl(storageManager);
 
-      // FIXME: JBMESSAGING-1468
       ServerMessage copyMessage = makeCopy(ref, expiry);
 
       copyMessage.setDestination(address);
@@ -1425,7 +1423,6 @@ public class QueueImpl implements Queue
       // the Address for the Queue
       PagingStore store = null;
 
-      // FIXME - this shouldn't be called when references are expired etc
       if (pagingManager != null)
       {
          store = pagingManager.getPageStore(ref.getMessage().getDestination());

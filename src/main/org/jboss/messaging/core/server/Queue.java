@@ -110,24 +110,24 @@ public interface Queue extends Bindable
 
    int deleteMatchingReferences(Filter filter) throws Exception;
 
-   boolean expireMessage(long messageID) throws Exception;
+   boolean expireReference(long messageID) throws Exception;
 
    /**
-    * Expire all the messages in the queue which matches the filter
+    * Expire all the references in the queue which matches the filter
     */
-   int expireMessages(Filter filter) throws Exception;
+   int expireReferences(Filter filter) throws Exception;
 
-   void expireMessages() throws Exception;
+   void expireReferences() throws Exception;
 
    void expire(MessageReference ref) throws Exception;
 
    boolean sendMessageToDeadLetterAddress(long messageID) throws Exception;
 
-   boolean changeMessagePriority(long messageID, byte newPriority) throws Exception;
+   boolean changeReferencePriority(long messageID, byte newPriority) throws Exception;
 
-   boolean moveMessage(long messageID, SimpleString toAddress) throws Exception;
+   boolean moveReference(long messageID, SimpleString toAddress) throws Exception;
 
-   int moveMessages(Filter filter, SimpleString toAddress) throws Exception;
+   int moveReferences(Filter filter, SimpleString toAddress) throws Exception;
 
    void setBackup();
 

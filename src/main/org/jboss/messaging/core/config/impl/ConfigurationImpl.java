@@ -103,7 +103,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
 
-   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("jbm.admin.management");
+   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("jbm.management");
 
    public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("jbm.admin.notification");
 

@@ -276,7 +276,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.expireMessage(refs.get(0).getMessage().getMessageID());
+      return coreQueue.expireReference(refs.get(0).getMessage().getMessageID());
    }
 
    public int expireMessages(final String filterStr) throws Exception
@@ -284,7 +284,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       try
       {
          Filter filter = createFilterFromJMSSelector(filterStr);
-         return coreQueue.expireMessages(filter);
+         return coreQueue.expireReferences(filter);
       }
       catch (MessagingException e)
       {
@@ -316,7 +316,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.changeMessagePriority(refs.get(0).getMessage().getMessageID(), (byte)newPriority);
+      return coreQueue.changeReferencePriority(refs.get(0).getMessage().getMessageID(), (byte)newPriority);
    }
 
    public boolean moveMessage(String messageID, String otherQueueName) throws Exception
@@ -334,7 +334,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
 
-      return coreQueue.moveMessage(refs.get(0).getMessage().getMessageID(), binding.getAddress());
+      return coreQueue.moveReference(refs.get(0).getMessage().getMessageID(), binding.getAddress());
    }
 
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
@@ -347,7 +347,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       }
 
       Filter filter = createFilterFromJMSSelector(filterStr);
-      return coreQueue.moveMessages(filter, otherBinding.getAddress());
+      return coreQueue.moveReferences(filter, otherBinding.getAddress());
    }
 
    public int moveAllMessages(String otherQueueName) throws Exception

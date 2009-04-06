@@ -3,7 +3,7 @@
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
 
    <!--  manangement address -->
-   <security match="jbm.admin.management">
+   <security match="jbm.management">
       <!--  only the admin role can interact with the management address  -->
       <permission type="consume" roles="admin"/>
       <permission type="send" roles="admin"/>

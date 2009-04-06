@@ -618,8 +618,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       if (cache != null)
       {
-         cache.addToCache(duplicateID, tx);
-
          if (tx == null)
          {
             // We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
@@ -628,6 +626,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
             startedTx = true;
          }
+         
+         cache.addToCache(duplicateID, tx);
       }
 
       if (tx == null)
@@ -908,7 +908,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          {
             try
             {
-               queue.expireMessages();
+               queue.expireReferences();
             }
             catch (Exception e)
             {

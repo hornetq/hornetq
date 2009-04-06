@@ -307,7 +307,7 @@ public class QueueControl implements QueueControlMBean
 
    public boolean expireMessage(final long messageID) throws Exception
    {
-      return queue.expireMessage(messageID);
+      return queue.expireReference(messageID);
    }
 
    public int expireMessages(final String filterStr) throws Exception
@@ -316,7 +316,7 @@ public class QueueControl implements QueueControlMBean
       {
          Filter filter = FilterImpl.createFilter(filterStr);
          
-         return queue.expireMessages(filter);
+         return queue.expireReferences(filter);
       }
       catch (MessagingException e)
       {
@@ -333,7 +333,7 @@ public class QueueControl implements QueueControlMBean
          throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
 
-      return queue.moveMessage(messageID, binding.getAddress());
+      return queue.moveReference(messageID, binding.getAddress());
    }
 
    public int moveMatchingMessages(final String filterStr, final String otherQueueName) throws Exception
@@ -347,7 +347,7 @@ public class QueueControl implements QueueControlMBean
          throw new IllegalArgumentException("No queue found for " + otherQueueName);
       }
 
-      return queue.moveMessages(filter, binding.getAddress());
+      return queue.moveReferences(filter, binding.getAddress());
    }
 
    public int moveAllMessages(String otherQueueName) throws Exception
@@ -367,7 +367,7 @@ public class QueueControl implements QueueControlMBean
          throw new IllegalArgumentException("invalid newPriority value: " + newPriority +
                                             ". It must be between 0 and 9 (both included)");
       }
-      return queue.changeMessagePriority(messageID, (byte)newPriority);
+      return queue.changeReferencePriority(messageID, (byte)newPriority);
    }
 
    public CompositeData listMessageCounter()
