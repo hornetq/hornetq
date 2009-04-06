@@ -86,7 +86,7 @@ public class ClusteredQueueExample extends JMSExample
 
          MessageConsumer consumer1 = session1.createConsumer(queue);
          
-         Thread.sleep(5000);
+         Thread.sleep(1000);
 
          MessageProducer producer = session0.createProducer(queue);
 
