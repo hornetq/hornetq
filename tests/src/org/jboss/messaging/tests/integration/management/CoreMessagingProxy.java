@@ -30,7 +30,6 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A MBeanUsingCoreMessage

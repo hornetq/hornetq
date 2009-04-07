@@ -21,9 +21,10 @@
  */
 package org.jboss.messaging.integration.logging;
 
+import java.util.logging.Level;
+
 import org.jboss.logging.Logger;
 
-import java.util.logging.Level;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

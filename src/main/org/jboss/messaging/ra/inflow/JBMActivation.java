@@ -21,13 +21,10 @@
  */
 package org.jboss.messaging.ra.inflow;
 
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.JBossDestination;
-import org.jboss.messaging.ra.JBMResourceAdapter;
-import org.jboss.messaging.ra.Util;
-import org.jboss.messaging.utils.SimpleString;
-import org.jboss.tm.TransactionManagerLocator;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -40,10 +37,14 @@ import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.TransactionManager;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.ra.JBMResourceAdapter;
+import org.jboss.messaging.ra.Util;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * The activation.
