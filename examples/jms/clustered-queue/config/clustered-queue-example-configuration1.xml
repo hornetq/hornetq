@@ -43,6 +43,8 @@
 	 <discovery-group-ref discovery-group-name="my-discovery-group"/>
       </cluster-connection>
       
+      <!-- Other config -->
+      
       <paging-directory>server1/data/paging</paging-directory>
 
       <bindings-directory>server1/data/bindings</bindings-directory>

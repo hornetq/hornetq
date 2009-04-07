@@ -42,7 +42,9 @@
 	 <max-hops>1</max-hops>
 	 <discovery-group-ref discovery-group-name="my-discovery-group"/>
       </cluster-connection>
-
+      
+      <!-- Other config -->
+      
       <paging-directory>server0/data/paging</paging-directory>
 
       <bindings-directory>server0/data/bindings</bindings-directory>
