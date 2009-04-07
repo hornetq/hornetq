@@ -97,7 +97,7 @@ public class PagingExample extends JMSExample
             messageProducer.send(message);
          }
 
-         // Step 14. if you pause this example here, you will several files under ./build/data/paging
+         // Step 14. if you pause this example here, you will see several files under ./build/data/paging
          // Thread.sleep(30000); // if you want to just our of curiosity, you can sleep here and inspect the created files just for 
          
          //Step 15. Create a JMS Message Consumer
