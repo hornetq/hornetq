@@ -17,7 +17,7 @@
          We will instead consume it from an <em>expiry queue</em> where it was moved when it expired.
      </p>
      <h2>Example setup</h2>
-     <p>Expiry destinations are defined as in the queue settings configuration file <a href="config/jbm-queues.xml">jbm-queues.xml</a>:</p>
+     <p>Expiry destinations are defined as in the queue settings configuration file <a href="server0/jbm-queues.xml">jbm-queues.xml</a>:</p>
      <pre>
          <code>&lt;address-settings match="jms.queue.exampleQueue"&gt;
             &lt;expiry-address&gt;jms.queue.expiryQueue&lt;/expiry-address&gt;
@@ -28,7 +28,7 @@
          or a <code>Topic</code> by prefixing with <code>jms.topic.</code>.<br />
          In this example, we will use a <code>Queue</code> to hold the expired messages.</p>
      <p>Since we want to consume messages from this expiryQueue, we also need to add a JNDI binding to perform a lookup.
-         This is configured in <a href="config/jbm-jms.xml">jbm-jms.xml</a></p>
+         This is configured in <a href="server0/jbm-jms.xml">jbm-jms.xml</a></p>
      <pre>
          <code>&lt;queue name="expiryQueue"&gt;
             &lt;entry name="/queue/expiryQueue"/&gt;
