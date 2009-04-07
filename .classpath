@@ -58,5 +58,8 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts/lib/jbossjta.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/integration/lib/jboss-integration.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jboss-reflect/lib/jboss-reflect.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jboss-mdr/lib/jboss-mdr.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
