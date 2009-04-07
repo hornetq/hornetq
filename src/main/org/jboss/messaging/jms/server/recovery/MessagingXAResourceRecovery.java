@@ -22,13 +22,11 @@
 
 package org.jboss.messaging.jms.server.recovery;
 
-import java.util.StringTokenizer;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.tm.XAResourceRecovery;
 
 import javax.transaction.xa.XAResource;
-
-import com.arjuna.ats.jta.recovery.XAResourceRecovery;
-
-import org.jboss.messaging.core.logging.Logger;
+import java.util.StringTokenizer;
 
 /**
  * 
@@ -128,7 +126,12 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
       
       return res;
    }
-   
+
+   public XAResource[] getXAResources()
+   {
+      return new XAResource[]{res};
+   }
+
    protected void finalize()
    {
       res.close();  
