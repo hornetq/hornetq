@@ -21,9 +21,6 @@
    */
 package org.jboss.jms.example;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -31,14 +28,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.integration.transports.netty.TransportConstants;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import javax.naming.InitialContext;
 
 /**
- * A simple JMS Topic example
+ * A simple example that shows a JMS Topic clustered across two nodes of a cluster.
+ * Messages are sent on one node and received by consumers on both nodes.
  *
  */
 public class ClusteredTopicExample extends JMSExample
@@ -53,52 +47,71 @@ public class ClusteredTopicExample extends JMSExample
       Connection connection0 = null;
 
       Connection connection1 = null;
+      
+      InitialContext ic0 = null;
+
+      InitialContext ic1 = null;
+      
       try
       {
-         Topic topic = new JBossTopic("exampleTopic");
+         // Step 1. Get an initial context for looking up JNDI from server 0
+         ic0 = getContext(0);
 
-         Map<String, Object> params0 = new HashMap<String, Object>();
-         params0.put(TransportConstants.PORT_PROP_NAME, 5445);
-         TransportConfiguration tc0 = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
-                                                                 params0);
-         ConnectionFactory cf0 = new JBossConnectionFactory(tc0);
+         // Step 2. Look-up the JMS Topic object from JNDI
+         Topic topic = (Topic)ic0.lookup("/topic/exampleTopic");
 
-         Map<String, Object> params1 = new HashMap<String, Object>();
-         params1.put(TransportConstants.PORT_PROP_NAME, 5446);
-         TransportConfiguration tc1 = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
-                                                                 params1);
-         ConnectionFactory cf1 = new JBossConnectionFactory(tc1);
+         // Step 3. Look-up a JMS Connection Factory object from JNDI on server 0
+         ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
 
+         // Step 4. Get an initial context for looking up JNDI from server 1
+         ic1 = getContext(1);
+
+         // Step 5. Look-up a JMS Connection Factory object from JNDI on server 1
+         ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+
+         // Step 6. We create a JMS Connection connection0 which is a connection to server 0
          connection0 = cf0.createConnection();
 
+         // Step 7. We create a JMS Connection connection1 which is a connection to server 1
          connection1 = cf1.createConnection();
 
+         // Step 8. We create a JMS Session on server 0
          Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+         // Step 9. We create a JMS Session on server 1
          Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
+         // Step 10. We start the connections to ensure delivery occurs on them
          connection0.start();
 
          connection1.start();
 
+         // Step 11. We create JMS MessageConsumer objects on server 0 and server 1
          MessageConsumer consumer0 = session0.createConsumer(topic);
 
          MessageConsumer consumer1 = session1.createConsumer(topic);
-         
+
          Thread.sleep(1000);
 
+         // Step 12. We create a JMS MessageProducer object on server 0
          MessageProducer producer = session0.createProducer(topic);
+
+         // Step 13. We send some messages to server 0
 
          final int numMessages = 10;
 
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage message = session0.createTextMessage("This is text message " + i);
-            
+
             producer.send(message);
 
             System.out.println("Sent message: " + message.getText());
          }
+
+         // Step 14. We now consume those messages on *both* server 0 and server 1.
+         // We note that all messages have been consumed by *both* consumers.
+         // JMS Topics implement *publish-subscribe* messaging where all consumers get a copy of all messages
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -115,17 +128,26 @@ public class ClusteredTopicExample extends JMSExample
       }
       finally
       {
-         // Step 12. Be sure to close our JMS resources!
+         // Step 15. Be sure to close our JMS resources!
          if (connection0 != null)
          {
             connection0.close();
          }
-         
+
          if (connection1 != null)
          {
             connection1.close();
          }
+         
+         if (ic0 != null)
+         {
+            ic0.close();
+         }
 
+         if (ic1 != null)
+         {
+            ic1.close();
+         }
       }
    }
 

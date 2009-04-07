@@ -1,19 +1,18 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Load Balanced Queue Example without JNDI</title>
+    <title>JBoss Messaging JMS Load Balanced Queue Example/title>
     <link rel="stylesheet" type="text/css" href="../common/common.css">
   </head>
   <body>
-     <h1>JBoss Messaging JMS Load Balanced Queue Example without JNDI</h1>
+     <h1>JBoss Messaging JMS Load Balanced Queue Example</h1>
      <br>
      <p>This example demonstrates a JMS queue deployed on two different nodes. The two nodes are configured to form a cluster.</p>
      <p>We then create a consumer on the queue on each node, and we create a producer on only one of the nodes.</p>
      <p>We then send some messages via the producer, and we verify that <b>both</b> consumers receive the sent messages
      in a round-robin fashion.</p>
      <p>In other words, JBoss Messaging <b>load balances</b> the sent messages across all consumers on the cluster</p>
-     <p>This example does not use JNDI to lookup the JMS Queue and ConnectionFactory objects, instead it instantiates them
-     directly. Another example is available which demonstrates them being looked up from JNDI.</p>
-     <br>
+     <p>This example uses JNDI to lookup the JMS Queue and ConnectionFactory objects. If you prefer not to use
+     JNDI, these could be instantiated directly.</p>     
      <p>Here's the relevant snippet from the server configuration, which tells the server to form a cluster between the two nodes
      and to load balance the messages between the nodes.</p>     
      <pre>
@@ -34,46 +33,31 @@
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <br>
      <ol>
-        <li>We directly instantiate a JMS Queue object. (Alternatively you could look up from JNDI - this is covered in a separate example)</li>
+        <li> Get an initial context for looking up JNDI from server 0.</li>
         <pre>
            <code>
-   Queue queue = new JBossQueue("exampleQueue");
+   ic0 = getContext(0);
    </code>
         </pre>
 
-        <li>We create some objects with the connection details of server 0 so we can connect to that server.
-        JBoss Messaging provides a fully pluggable transport system. In this case we want to use Netty, so we need
-        to tell the system we want to use Netty and provide the parameters for connection e.g. port</li>
+        <li>Look-up the JMS Queue object from JNDI</li>
         <pre>
-           <code>
-   Map<String, Object> params0 = new HashMap<String, Object>();
-   params0.put(TransportConstants.PORT_PROP_NAME, 5445);
-   TransportConfiguration tc0 = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
-                                                           params0);                      
-        </code>
+           <code>Queue queue = (Queue)ic0.lookup("/queue/exampleQueue");</code>
         </pre>
 
-        <li>We directly instantiate a JMS ConnectionFactory with those connection details. This connection factory will
-         create connections to server 0</li>
+        <li>Look-up a JMS Connection Factory object from JNDI on server 0</li>
         <pre>
-           <code>ConnectionFactory cf0 = new JBossConnectionFactory(tc0);</code>
+           <code>ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");</code>
         </pre>
 
-        <li>We create some objects with the connection details of server 1 so we can connect to that server.</li>
+        <li>Get an initial context for looking up JNDI from server 1.</li>
         <pre>
-           <code>
-   Map<String, Object> params1 = new HashMap<String, Object>();
-   params1.put(TransportConstants.PORT_PROP_NAME, 5446);
-   TransportConfiguration tc1 = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
-                                                           params1);
-           </code>
+           <code>ic1 = getContext(1);</code>
         </pre>
 
-        <li>We directly instantiate a JMS ConnectionFactory with those connection details. This connection factory will
-            create connections to server 1</li>
+        <li>Look-up a JMS Connection Factory object from JNDI on server 1</li>
         <pre>
-           <code>
-   ConnectionFactory cf1 = new JBossConnectionFactory(tc1);
+           <code>ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
            </code>
         </pre>
 
@@ -150,7 +134,8 @@
          JBoss Messaging has <b>load balanced</b> the messages between the available consumers on the different nodes.
          JBoss Messaging can be configured to always load balance messages to all nodes, or to only balance messages
          to nodes which have consumers with no or matching selectors. See the user manual for more details.</li>
-         
+         JMS Queues implement point-to-point message where each message is only ever consumed by a
+         maximum of one consumer.
         <pre>
            <code>
 	for (int i = 0; i < numMessages; i += 2)
