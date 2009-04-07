@@ -1,91 +1,189 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Queue Example</title>
+    <title>JBoss Messaging JMS Load Balanced Queue Example without JNDI</title>
     <link rel="stylesheet" type="text/css" href="../common/common.css">
   </head>
   <body>
-     <h1>JMS Queue Example</h1>
+     <h1>JBoss Messaging JMS Load Balanced Queue Example without JNDI</h1>
      <br>
-     <p>This example shows you how to send and receive a message to a JMS Queue with JBoss Messaging.</p>
-     <p>Queues are a standard part of JMS, please consult the JMS 1.1 specification for full details.</p>
-     <p>A Queue is used to send messages point to point, from a producer to a consumer. The queue guarantees message ordering between these 2 points.</p>
+     <p>This example demonstrates a JMS queue deployed on two different nodes. The two nodes are configured to form a cluster.</p>
+     <p>We then create a consumer on the queue on each node, and we create a producer on only one of the nodes.</p>
+     <p>We then send some messages via the producer, and we verify that <b>both</b> consumers receive the sent messages
+     in a round-robin fashion.</p>
+     <p>In other words, JBoss Messaging <b>load balances</b> the sent messages across all consumers on the cluster</p>
+     <p>This example does not use JNDI to lookup the JMS Queue and ConnectionFactory objects, instead it instantiates them
+     directly. Another example is available which demonstrates them being looked up from JNDI.</p>
      <br>
+     <p>Here's the relevant snippet from the server configuration, which tells the server to form a cluster between the two nodes
+     and to load balance the messages between the nodes.</p>     
+     <pre>
+     <code>
+   &lt;cluster-connection name="my-cluster"&gt;
+      &lt;address&gt;jms&lt;/address&gt;
+	   &lt;retry-interval&gt;500&lt;/retry-interval&gt;
+	   &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
+	   &lt;forward-when-no-consumers&gt;true&lt;/forward-when-no-consumers&gt;
+	   &lt;max-hops&gt;1&lt;/max-hops&gt;
+	   &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
+   &lt;/cluster-connection&gt;
+   </code>
+     </pre>    
+     <p>For more information on JBoss Messaging load balancing, and clustering in general, please see the clustering
+     section of the user manual.</p>      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <br>
      <ol>
-        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
+        <li>We directly instantiate a JMS Queue object. (Alternatively you could look up from JNDI - this is covered in a separate example)</li>
         <pre>
-           <code>InitialContext initialContext = getContext();</code>
+           <code>
+   Queue queue = new JBossQueue("exampleQueue");
+   </code>
         </pre>
 
-        <li>We look-up the JMS queue object from JNDI</li>
+        <li>We create some objects with the connection details of server 0 so we can connect to that server.
+        JBoss Messaging provides a fully pluggable transport system. In this case we want to use Netty, so we need
+        to tell the system we want to use Netty and provide the parameters for connection e.g. port</li>
         <pre>
-           <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
+           <code>
+   Map<String, Object> params0 = new HashMap<String, Object>();
+   params0.put(TransportConstants.PORT_PROP_NAME, 5445);
+   TransportConfiguration tc0 = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
+                                                           params0);                      
+        </code>
         </pre>
 
-        <li>We look-up the JMS connection factory object from JNDI</li>
+        <li>We directly instantiate a JMS ConnectionFactory with those connection details. This connection factory will
+         create connections to server 0</li>
         <pre>
-           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
+           <code>ConnectionFactory cf0 = new JBossConnectionFactory(tc0);</code>
         </pre>
 
-        <li>We create a JMS connection</li>
+        <li>We create some objects with the connection details of server 1 so we can connect to that server.</li>
         <pre>
-           <code>connection = cf.createConnection();</code>
+           <code>
+   Map<String, Object> params1 = new HashMap<String, Object>();
+   params1.put(TransportConstants.PORT_PROP_NAME, 5446);
+   TransportConfiguration tc1 = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
+                                                           params1);
+           </code>
         </pre>
 
-        <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
+        <li>We directly instantiate a JMS ConnectionFactory with those connection details. This connection factory will
+            create connections to server 1</li>
         <pre>
-           <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
+           <code>
+   ConnectionFactory cf1 = new JBossConnectionFactory(tc1);
+           </code>
         </pre>
 
-        <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
+        <li>We create a JMS Connection connection0 which is a connection to server 0</li>
         <pre>
-          <code>MessageProducer messageProducer = session.createProducer(topic);</code>
-       </pre>
-
-        <li>We create a JMS text message that we are going to send.</li>
+          <code>
+   connection0 = cf0.createConnection();
+          </code>
+        </pre>
+        
+        <li>We create a JMS Connection connection1 which is a connection to server 1</li>
         <pre>
-           <code>TextMessage message = session.createTextMessage("This is a text message");</code>
+          <code>
+   connection1 = cf1.createConnection();
+          </code>
         </pre>
 
-        <li>We send message to the queue</li>
+        <li>We create a JMS Session on server 0</li>
         <pre>
-           <code>messageProducer.send(message);</code>
+           <code>
+   Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           </code>
         </pre>
-
-        <li>We create a JMS Message Consumer to receive the message.</li>
-          <pre>
-           <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
-        </pre>
-
-        <li>We start the connection. In order for delivery to occur on any consumers or subscribers on a connection, the connection must be started</li>
+        
+        <li>We create a JMS Session on server 1</li>
         <pre>
-           <code>connection.start();</code>
+           <code>
+   Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            </code>
         </pre>
 
-        <li>The message arrives at the consumer. In this case we use a timeout of 5000 milliseconds but we could use a blocking 'receive()'</li>
+        <li>We start the connections to ensure delivery occurs on them</li>
         <pre>
-           <code>TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);</code>
+           <code>
+   connection0.start();
+
+   connection1.start();
+           </code>
         </pre>
 
-        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+        <li>We create JMS MessageConsumer objects on server 0 and server 1</li>
+        <pre>
+           <code>
+   MessageConsumer consumer0 = session0.createConsumer(queue);
+
+   MessageConsumer consumer1 = session1.createConsumer(queue);
+           </code>
+        </pre>
+
+        <li>We create a JMS MessageProducer object on server 0.</li>
+        <pre>
+           <code>
+   MessageProducer producer = session0.createProducer(queue);</code>
+        </pre>
+
+        <li>We send some messages to server 0.</li>
+        <pre>
+           <code>
+	final int numMessages = 10;
+
+	for (int i = 0; i < numMessages; i++)
+	{
+	   TextMessage message = session0.createTextMessage("This is text message " + i);
+	      
+	   producer.send(message);
+	
+	   System.out.println("Sent message: " + message.getText());
+	}
+           </code>
+        </pre>
+        
+        <li>We now consume those messages on *both* server 0 and server 1.
+         We note the messages have been distributed between servers in a round robin fashion.
+         JBoss Messaging has <b>load balanced</b> the messages between the available consumers on the different nodes.
+         JBoss Messaging can be configured to always load balance messages to all nodes, or to only balance messages
+         to nodes which have consumers with no or matching selectors. See the user manual for more details.</li>
+         
+        <pre>
+           <code>
+	for (int i = 0; i < numMessages; i += 2)
+	{
+	   TextMessage message0 = (TextMessage)consumer0.receive(5000);
+	
+	   System.out.println("Got message: " + message0.getText() + " from node 0");
+	
+	   TextMessage message1 = (TextMessage)consumer1.receive(5000);
+	
+	   System.out.println("Got message: " + message1.getText() + " from node 1");
+	}
+           </code>
+        </pre> 
+
+        <li>And finally (no pun intended), <b>always</b> remember to close your JMS resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
         <pre>
-           <code>finally
-           {
-              if (initialContext != null)
-              {
-                initialContext.close();
-              }
-              if (connection != null)
-              {
-                 connection.close();
-              }
-           }</code>
+           <code>
+	finally
+	{
+	   if (connection0 != null)
+	   {
+	      connection0.close();
+	   }
+	      
+	   if (connection1 != null)
+	   {
+	      connection1.close();
+	   }
+	}
+           </code>
         </pre>
-
-
 
      </ol>
   </body>
