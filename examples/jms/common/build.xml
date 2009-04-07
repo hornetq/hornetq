@@ -65,6 +65,7 @@
       </fileset>
       <fileset dir="${jars.dir}">
          <include name="**/*.jar"/>
+         <exclude name="**/*-sources.jar"/>
       </fileset>
    </path>
 
