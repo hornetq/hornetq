@@ -1,0 +1,12 @@
+2009-04-07 17:41:25,259 1135  INFO  [org.jboss.messaging.core.deployers.impl.XmlDeployer] (main:) deploying guest
+2009-04-07 17:41:25,491 1367  INFO  [org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager] (main:) AIO journal selected
+2009-04-07 17:41:25,494 1370  WARN  [org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager] (main:) AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal
+2009-04-07 17:41:26,397 2273  WARN  [org.jboss.messaging.core.security.impl.SecurityStoreImpl] (main:) It has been detected that the cluster admin password which is used to replicate management operation from one node to the other has not had its password changed from the installation default. Please see the JBoss Messaging user guide for instructions on how to do this.
+2009-04-07 17:41:27,917 3793  INFO  [org.jboss.messaging.core.deployers.impl.XmlDeployer] (main:) deploying jms.topic.exampleTopic
+2009-04-07 17:41:27,971 3847  INFO  [org.jboss.messaging.core.deployers.impl.XmlDeployer] (main:) deploying exampleTopic
+2009-04-07 17:41:27,997 3873  INFO  [org.jboss.messaging.core.deployers.impl.XmlDeployer] (main:) deploying ConnectionFactory
+2009-04-07 17:41:28,037 3913  WARN  [org.jboss.messaging.jms.server.impl.JMSServerManagerImpl] (main:) Binding for java:/ConnectionFactory already exists
+2009-04-07 17:41:28,038 3914  WARN  [org.jboss.messaging.jms.server.impl.JMSServerManagerImpl] (main:) Binding for java:/XAConnectionFactory already exists
+2009-04-07 17:41:28,042 3918  INFO  [org.jboss.messaging.integration.bootstrap.JBMBootstrapServer] (main:) JBM Server Started
+2009-04-07 17:41:32,465 8341  WARN  [org.jboss.messaging.core.security.impl.SecurityStoreImpl] (New I/O server worker #1-1:) It has been detected that the cluster admin password which is used to replicate management operation from one node to the other has not had its password changed from the installation default. Please see the JBoss Messaging user guide for instructions on how to do this.
+2009-04-07 17:41:34,797 10673 INFO  [org.jboss.messaging.integration.bootstrap.JBMBootstrapServer] (Thread-1:) Shutting down

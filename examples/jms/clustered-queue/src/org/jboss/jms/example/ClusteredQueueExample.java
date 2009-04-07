@@ -23,6 +23,7 @@ package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -125,7 +126,7 @@ public class ClusteredQueueExample extends JMSExample
 
             System.out.println("Got message: " + message1.getText() + " from node 1");
          }
-
+        
          return true;
       }
       finally

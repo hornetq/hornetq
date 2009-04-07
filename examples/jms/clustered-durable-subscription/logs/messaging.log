@@ -1,0 +1,5 @@
+2009-04-07 17:41:22,578 0     INFO  [org.jboss.jms.example.JMSExample] (main:) jbm.example.runServer is true
+2009-04-07 17:41:22,579 1     INFO  [org.jboss.jms.example.JMSExample] (main:) starting server with config 'server0' logServerOutput true
+2009-04-07 17:41:28,043 5465  INFO  [org.jboss.jms.example.JMSExample] (main:) starting server with config 'server1' logServerOutput true
+2009-04-07 17:41:32,643 10065 INFO  [org.jboss.jms.example.JMSExample] (main:) using server0/client-jndi.properties for jndi
+2009-04-07 17:41:32,952 10374 INFO  [org.jboss.jms.example.JMSExample] (main:) using server1/client-jndi.properties for jndi
