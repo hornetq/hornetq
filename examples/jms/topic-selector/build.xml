@@ -28,7 +28,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging JMS Topic Example">
+<project default="run" name="JBoss Messaging JMS Topic Selector Example">
 
    <import file="../common/build.xml"/>
 

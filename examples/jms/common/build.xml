@@ -52,7 +52,7 @@
    <property name="src.example.dir" location="src"/>
    <property name="example.classname" value="this.shouldn't.be.run.directly"/>
    <property name="jbm.example.runServer" value="true"/>
-   <property name="jbm.example.beans.file" value="jbm-example-beans.xml"/>
+   <property name="jbm.example.beans.file" value="server0"/>
 
    <property name="build.dir" value="build"/>
    <property name="classes.dir" value="${build.dir}/classes"/>

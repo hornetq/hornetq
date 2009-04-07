@@ -35,7 +35,7 @@
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.ClusteredTopicExample"/>
-         <param name="jbm.example.beans.file" value="jbm-example-clustered-topic-beans-0.xml jbm-example-clustered-topic-beans-1.xml"/>
+         <param name="jbm.example.beans.file" value="server0 server1"/>
       </antcall>
    </target>
 

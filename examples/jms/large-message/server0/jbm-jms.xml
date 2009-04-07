@@ -1,0 +1,22 @@
+<deployment xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
+   <!--the connection factory used by the example-->
+   <connection-factory name="ConnectionFactory">
+      <connector-ref connector-name="netty-connector"/>
+      <entry name="ConnectionFactory"/>
+      <entry name="XAConnectionFactory"/>
+      <entry name="java:/ConnectionFactory"/>
+      <entry name="java:/XAConnectionFactory"/>
+      
+      <!-- When using this ConnectionFactory, messages beyond this limit are considered largeMessages and will be sent using smaller packets -->
+      <big-message-size>10240</big-message-size>
+      
+   </connection-factory>
+
+   <!--the queue used by the example-->
+   <queue name="exampleQueue">
+      <entry name="/queue/exampleQueue"/>
+   </queue>
+
+</deployment>

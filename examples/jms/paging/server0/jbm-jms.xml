@@ -1,0 +1,22 @@
+<deployment xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
+   <!--the connection factory used by the example-->
+   <connection-factory name="ConnectionFactory">
+      <connector-ref connector-name="netty-connector"/>
+      <entry name="ConnectionFactory"/>
+      <entry name="XAConnectionFactory"/>
+      <entry name="java:/ConnectionFactory"/>
+      <entry name="java:/XAConnectionFactory"/>
+   </connection-factory>
+
+   <!--the topic used by the example-->
+   <queue name="exampleQueue">
+      <entry name="/queue/exampleQueue"/>
+   </queue>
+   
+   <queue name="pagingQueue">
+      <entry name="/queue/pagingQueue"/>
+   </queue>
+
+</deployment>
