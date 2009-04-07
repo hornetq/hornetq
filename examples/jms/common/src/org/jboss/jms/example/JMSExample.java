@@ -97,6 +97,10 @@ public abstract class JMSExample
       reportResultAndExit();
    }
 
+   protected void killServer(int id)
+   {
+      servers[id].destroy();
+   }
    protected InitialContext getContext(int serverId) throws Exception
    {
       String jndiFilename = "server" + serverId + "/client-jndi.properties";
