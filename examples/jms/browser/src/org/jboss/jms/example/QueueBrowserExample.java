@@ -22,8 +22,6 @@
 
 package org.jboss.jms.example;
 
-import java.util.Enumeration;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -33,6 +31,7 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+import java.util.Enumeration;
 
 /**
  * A simple example which shows how to use a QueueBrowser to look at messages of a queue without removing them from the queue
@@ -56,7 +55,7 @@ public class QueueBrowserExample extends JMSExample
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         initialContext = getContext();
+         initialContext = getContext(0);
 
          // Step 2. Perfom a lookup on the queue
          Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");

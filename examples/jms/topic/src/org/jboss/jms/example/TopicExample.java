@@ -23,16 +23,12 @@ package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * A simple JMS Topic example that creates a producer and consumer on a queue and sends and receives a message.
@@ -53,7 +49,7 @@ public class TopicExample extends JMSExample
       try
       {
          ///Step 1. Create an initial context to perform the JNDI lookup.
-         initialContext = getContext();
+         initialContext = getContext(0);
 
          //Step 2. perform a lookup on the topic
          Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");

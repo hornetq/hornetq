@@ -50,7 +50,7 @@ public class TemporaryQueueExample extends JMSExample
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup.
-         initialContext = getContext();
+         initialContext = getContext(0);
 
          // Step 2. Look-up the JMS connection factory
          ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");

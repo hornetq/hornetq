@@ -21,9 +21,6 @@
    */
 package org.jboss.jms.example;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -37,6 +34,8 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A simple JMS example that shows how to use Request/Replay style messaging.
@@ -64,7 +63,7 @@ public class RequestReplyExample extends JMSExample
          server.start();
 
          //Step 2. Create an initial context to perform the JNDI lookup.
-         initialContext = getContext();
+         initialContext = getContext(0);
 
          //Step 3. Lookup the queue for sending the request message
          Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");         
@@ -154,7 +153,7 @@ public class RequestReplyExample extends JMSExample
       public void start() throws Exception
       {
          //Get an initial context to perform the JNDI lookup.
-         InitialContext initialContext = getContext();
+         InitialContext initialContext = getContext(0);
 
          //Lookup the queue to receive the request message
          Queue requestQueue = (Queue) initialContext.lookup("/queue/exampleQueue");         

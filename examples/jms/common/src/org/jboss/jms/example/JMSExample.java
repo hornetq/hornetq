@@ -24,7 +24,8 @@ package org.jboss.jms.example;
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.naming.InitialContext;
-import java.net.URL;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -96,11 +97,13 @@ public abstract class JMSExample
       reportResultAndExit();
    }
 
-   protected InitialContext getContext() throws Exception
+   protected InitialContext getContext(int serverId) throws Exception
    {
-      URL url = Thread.currentThread().getContextClassLoader().getResource("client-jndi.properties");
+      String jndiFilename = "server" + serverId + "/client-jndi.properties";
+      File jndiFile = new File(jndiFilename);
+      log.info("using " + jndiFile + " for jndi");
       Properties props = new Properties();
-      props.load(url.openStream());
+      props.load(new FileInputStream(jndiFile));
       return new InitialContext(props);
    }
 
@@ -130,16 +133,6 @@ public abstract class JMSExample
          server.getErrorStream().close();
          server.destroy();
       }
-   }
-
-   private String[][] getServerNames(String[] args)
-   {
-      String[][] actArgs = new String[args.length][1];
-      for (int i = 0; i < args.length; i++)
-      {
-         actArgs[i][0] = args[i].trim();
-      }
-      return actArgs;
    }
    
    private void reportResultAndExit()
