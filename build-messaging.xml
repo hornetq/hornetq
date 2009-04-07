@@ -199,7 +199,7 @@
    <path id="jms.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
       <path refid="jboss.jboss.javaee.classpath"/>
-      <path refid="jboss.jbossts14.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
       <path refid="jboss.integration.classpath"/>
    </path>
 
@@ -220,7 +220,7 @@
    <path id="bootstrap.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
       <path refid="jboss.microcontainer.classpath"/>
-      <path refid="jboss.common.classpath"/>
+      <path refid="jboss.common.core.classpath"/>
    </path>
 
    <path id="logging.compilation.classpath">
@@ -239,6 +239,9 @@
       <path refid="security.compilation.classpath"/>
       <path refid="bootstrap.compilation.classpath"/>
       <path refid="junit.junit.classpath"/>
+      <path refid="jboss.jboss.reflect.classpath"/>
+      <path refid="jboss.jboss.common.logging.spi.classpath"/>
+      <path refid="jboss.jboss.mdr.classpath"/>
       <!--<path refid="jboss.profiler.jvmti.classpath"/>-->
       <!--<path refid="jboss.test14.classpath"/>-->
       <!--<path refid="jboss.jboss.retro.classpath"/>-->
@@ -258,6 +261,9 @@
       <path refid="jms.compilation.classpath"/>
       <path refid="junit.junit.classpath"/>
       <path refid="jboss.profiler.jvmti.classpath"/>
+      <path refid="jboss.jboss.reflect.classpath"/>
+      <path refid="jboss.jboss.common.logging.spi.classpath"/>
+      <path refid="jboss.jboss.mdr.classpath"/>
       <!--<path refid="jboss.test14.classpath"/>-->
       <!--<path refid="jboss.jboss.retro.classpath"/>-->
       <!--<path refid="apache.ant.classpath"/>-->
@@ -303,7 +309,7 @@
 	      <pathelement location="${src.config.dir}"/>
 	      <pathelement location="${src.schemas.dir}"/>
 	      <path refid="test.compilation.classpath"/>
-	      <path refid="oswego.concurrent.classpath"/>
+	      <!--<path refid="oswego.concurrent.classpath"/>-->
 	      <path refid="apache.log4j.classpath"/>
 	      <path refid="cglib.classpath"/>
 	      <path refid="jboss.common.core.classpath"/>
@@ -322,7 +328,7 @@
 	      <pathelement location="${src.config.dir}"/>
 	      <pathelement location="${src.schemas.dir}"/>
 	      <path refid="test.compilation.classpath"/>
-	      <path refid="oswego.concurrent.classpath"/>
+	      <!--<path refid="oswego.concurrent.classpath"/>-->
 	      <path refid="apache.log4j.classpath"/>
 	      <path refid="cglib.classpath"/>
 	      <path refid="jboss.common.core.classpath"/>
@@ -342,7 +348,7 @@
       <pathelement location="${test.jms.classes.dir}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.compilation.classpath"/>
-      <path refid="oswego.concurrent.classpath"/>
+      <!--<path refid="oswego.concurrent.classpath"/>-->
       <path refid="apache.log4j.classpath"/>
       <path refid="cglib.classpath"/>
       <path refid="jboss.common.core.classpath"/>
@@ -360,7 +366,7 @@
       <!--<path refid="jboss.integration.classpath"/>-->
       <!--<path refid="jboss.jbosssx.client.classpath"/>-->
       <!--<path refid="jboss.jboss.javaee.classpath"/>-->
-      <!--<path refid="jboss.jbossts14.classpath"/>-->
+      <!--<path refid="jboss.jbossts.classpath"/>-->
       <!--<path refid="jboss.common.classpath"/>-->
       <!--<path refid="jboss.jnpserver.classpath"/>-->
    </path>
@@ -382,15 +388,10 @@
       <path refid="jms.test.execution.classpath"/>
 
       <path refid="jboss.jnpserver.classpath"/>
-      <!--<path refid="dom4j.dom4j.classpath"/>-->
-      <!--<path refid="jboss.microcontainer.classpath"/>-->
-      <!--<path refid="jboss.jboss.security.spi.classpath"/>-->
-      <!--<path refid="jboss.jboss.jaspi.api.classpath"/>-->
-      <!--<path refid="jboss.integration.classpath"/>-->
-      <!--<path refid="jboss.jbosssx.client.classpath"/>-->
-      <!--<path refid="jboss.jboss.javaee.classpath"/>-->
-      <!--<path refid="jboss.jbossts14.classpath"/>-->
-      <!--<path refid="jboss.common.classpath"/>-->
+      <path refid="jboss.jboss.reflect.classpath"/>
+      <path refid="jboss.jboss.mdr.classpath"/>
+      <path refid="jboss.jboss.common.logging.spi.classpath"/>
+      <path refid="jboss.jboss.common.logging.log4j.classpath"/>
       <!---->
    </path>
 
