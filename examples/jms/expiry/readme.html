@@ -17,20 +17,18 @@
          We will instead consume it from an <em>expiry queue</em> where it was moved when it expired.
      </p>
      <h2>Example setup</h2>
-     <p>Expiry destinations are defined as in the queue settings configuration file <a href="../common/config/jbm-queues.xml">jbm-queues.xml</a>:</p>
+     <p>Expiry destinations are defined as in the queue settings configuration file <a href="config/jbm-queues.xml">jbm-queues.xml</a>:</p>
      <pre>
-         <code>&lt;!--default for all queues--&gt;
-             &lt;address-settings match="#"&gt;
-                ...
-                &lt;expiry-address&gt;queuejms.expiryQueue&lt;/expiry-address&gt;
-             &lt;/address-settings&gt;</code>
+         <code>&lt;address-settings match="jms.queue.exampleQueue"&gt;
+            &lt;expiry-address&gt;jms.queue.expiryQueue&lt;/expiry-address&gt;
+         &lt;/address-settings&gt;
      </pre>          
-     <p>This configuration will moved expired messages from any given queue (the wildcard <code>#</code>) to the <code>expiryQueue</code></p>
-     <p>JBoss Messaging allows to specify either a <code>Queue</code> by prefixing the <code>expiry-address</code> with <code>queuejms.</code>
-         or a <code>Topic</code> by prefixing with <code>topicjms.</code>.<br />
+     <p>This configuration will moved expired messages from the <code>exampleQueue</code> to the <code>expiryQueue</code></p>
+     <p>JBoss Messaging allows to specify either a <code>Queue</code> by prefixing the <code>expiry-address</code> with <code>jms.queue.</code>
+         or a <code>Topic</code> by prefixing with <code>jms.topic.</code>.<br />
          In this example, we will use a <code>Queue</code> to hold the expired messages.</p>
      <p>Since we want to consume messages from this expiryQueue, we also need to add a JNDI binding to perform a lookup.
-         This is configured in <a href="../common/config/jbm-jms.xml">jbm-jms.xml</a></p>
+         This is configured in <a href="config/jbm-jms.xml">jbm-jms.xml</a></p>
      <pre>
          <code>&lt;queue name="expiryQueue"&gt;
             &lt;entry name="/queue/expiryQueue"/&gt;
