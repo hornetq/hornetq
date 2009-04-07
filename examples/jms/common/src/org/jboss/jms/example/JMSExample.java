@@ -103,7 +103,19 @@ public abstract class JMSExample
       File jndiFile = new File(jndiFilename);
       log.info("using " + jndiFile + " for jndi");
       Properties props = new Properties();
-      props.load(new FileInputStream(jndiFile));
+      FileInputStream inStream = null;
+      try
+      {
+         inStream = new FileInputStream(jndiFile);
+         props.load(inStream);
+      }
+      finally
+      {
+         if(inStream != null)
+         {
+            inStream.close();
+         }
+      }
       return new InitialContext(props);
    }
 
