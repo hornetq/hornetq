@@ -134,6 +134,7 @@
       <componentref name="javassist" version="3.9.0.GA/"/>
       <componentref name="jboss/jbossxb" version="2.0.0.GA"/>
       <componentref name="apache-xerces" version="2.9.1"/>
+      <componentref name="sun-jaxb" version="2.1.9"/>
 
       <!--
           Dependencies required to run the unit tests
