@@ -25,6 +25,7 @@ package org.jboss.jms.example;
 import org.jboss.messaging.core.logging.Logger;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,6 +54,7 @@ public class SpawnedVMSupport
                                  final boolean logOutput,
                                  final String success,
                                  final String failure,
+                                 final String configDir,
                                  final String... args) throws Exception
    {
       StringBuffer sb = new StringBuffer();
@@ -67,7 +69,9 @@ public class SpawnedVMSupport
       }
 
       String classPath = System.getProperty("java.class.path");
-
+      String pathSeparater = System.getProperty("path.separator");
+      classPath = classPath + pathSeparater + ".";
+      System.out.println("classPath = " + classPath);
       // I guess it'd be simpler to check if the OS is Windows...
       if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X"))
       {
@@ -92,7 +96,7 @@ public class SpawnedVMSupport
 
       log.trace("command line: " + commandLine);
 
-      Process process = Runtime.getRuntime().exec(commandLine);
+      Process process = Runtime.getRuntime().exec(commandLine, new String[]{}, new File(configDir));
 
       log.trace("process: " + process);
 

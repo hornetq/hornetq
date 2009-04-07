@@ -56,7 +56,7 @@ public abstract class JMSExample
       {
          if (runServer)
          {
-            startServer(getServerNames(args), logServerOutput);
+            startServer(args, logServerOutput);
          }
          if (!runExample())
          {
@@ -104,15 +104,21 @@ public abstract class JMSExample
       return new InitialContext(props);
    }
 
-   private void startServer(String[][] args, boolean logServerOutput) throws Throwable
+   private void startServer(String[] args, boolean logServerOutput) throws Throwable
    {
       servers = new Process[args.length];
       for (int i = 0; i < args.length; i++)
       {
-         String[] arg = args[i];
-         log.info("starting server with config '" + arg[0] + "' " + "logServerOutput " + logServerOutput);
+         log.info("starting server with config '" + args[i] + "' " + "logServerOutput " + logServerOutput);
          String logProps = System.getProperty("java.util.logging.config.file");
-         servers[i] = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), new String[]{"-Djava.util.logging.config.file=" + logProps}, logServerOutput, "STARTED::", "FAILED::", args[i]);
+         servers[i] = SpawnedVMSupport.spawnVM(
+               SpawnedJMSServer.class.getName(),
+               new String[]{"-Djava.util.logging.config.file=" + logProps},
+               logServerOutput,
+               "STARTED::",
+               "FAILED::",
+               args[i],
+               "jbm-standalone-beans.xml");
       }
    }
 

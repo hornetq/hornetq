@@ -16,7 +16,7 @@
    <appender name="FILE" class="org.apache.log4j.DailyRollingFileAppender">
       <errorHandler class="org.apache.log4j.helpers.OnlyOnceErrorHandler"/>
 
-      <param name="File" value="./build/logs/messaging.log"/>
+      <param name="File" value="./logs/messaging.log"/>
 
       <!-- since majority of the tests are ran in fork mode by ant, the log file is overwritten
            for each test. We need to append if we want to preserve a full testsuite run log.

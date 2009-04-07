@@ -9,16 +9,16 @@
 
       <connector name="netty-connector">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-	 <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+         <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
       </connector>
 
       <!-- Acceptors -->
 
       <acceptor name="netty-acceptor">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-	 <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+         <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
       </acceptor>
-     
+
       <!-- Clustering configuration -->
 
       <broadcast-group name="my-broadcast-group">
@@ -33,28 +33,20 @@
          <group-port>9876</group-port>
          <refresh-timeout>10000</refresh-timeout>
       </discovery-group>
-      
+
       <cluster-connection name="my-cluster">
          <address>jms</address>
-	 <retry-interval>500</retry-interval>
-	 <use-duplicate-detection>true</use-duplicate-detection>
-	 <forward-when-no-consumers>true</forward-when-no-consumers>
-	 <max-hops>1</max-hops>
-	 <discovery-group-ref discovery-group-name="my-discovery-group"/>
+         <retry-interval>500</retry-interval>
+         <use-duplicate-detection>true</use-duplicate-detection>
+         <forward-when-no-consumers>true</forward-when-no-consumers>
+         <max-hops>1</max-hops>
+         <discovery-group-ref discovery-group-name="my-discovery-group"/>
       </cluster-connection>
-      
+
       <!-- Other config -->
-      
-      <paging-directory>server0/data/paging</paging-directory>
 
-      <bindings-directory>server0/data/bindings</bindings-directory>
-
-      <journal-directory>server0/data/journal</journal-directory>
-      
       <journal-min-files>2</journal-min-files>
 
-      <large-messages-directory>server0/data/largeMessages</large-messages-directory>
-      
    </configuration>
 
 </deployment>

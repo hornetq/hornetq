@@ -9,9 +9,9 @@
       <property name="namingInfo">
          <inject bean="Naming"/>
       </property>
-      <property name="port">2099</property>
+      <property name="port">1099</property>
       <property name="bindAddress">localhost</property>
-      <property name="rmiPort">2098</property>
+      <property name="rmiPort">1098</property>
       <property name="rmiBindAddress">localhost</property>
    </bean>
 
@@ -22,9 +22,7 @@
       </constructor>
    </bean>
    
-   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration">
-      <property name="configurationUrl">clustered-queue-example-configuration1.xml</property>
-   </bean>
+   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
    <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBossASSecurityManager"/>-->
 
