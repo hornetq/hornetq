@@ -86,15 +86,6 @@ public class MessagingServerControlTest extends ManagementTestBase
       assertEquals(conf.getInterceptorClassNames(), serverControl.getInterceptorClassNames());
       assertEquals(conf.getConnectionScanPeriod(), serverControl.getConnectionScanPeriod());
       assertEquals(conf.getConnectionTTLOverride(), serverControl.getConnectionTTLOverride());
-
-      // TODO
-      // assertEquals(conf.getBroadcastGroupConfigurations(), serverControl.getBroadcastGroupConfigurations());
-      // assertEquals(conf.getDiscoveryGroupConfigurations(), serverControl.getDiscoveryGroupConfigurations());
-      // assertEquals(conf.getBridgeConfigurations(), serverControl.getBridgeConfigurations());
-      // assertEquals(conf.getDivertConfigurations(), serverControl.getDivertConfigurations());
-      // assertEquals(conf.getClusterConfigurations(), serverControl.getClusterConfigurations());
-      // assertEquals(conf.getQueueConfigurations(), serverControl.getQueueConfigurations());
-
       assertEquals(conf.getBackupConnectorName(), serverControl.getBackupConnectorName());
       assertEquals(conf.getManagementAddress().toString(), serverControl.getManagementAddress());
       assertEquals(conf.getManagementNotificationAddress().toString(), serverControl.getManagementNotificationAddress());
