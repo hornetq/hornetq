@@ -102,7 +102,7 @@ public class ScheduledMessageExample extends JMSExample
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
+         //Step 13. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
