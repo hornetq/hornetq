@@ -75,6 +75,8 @@
    </bean>
 
    <bean name="RemotingService" class="org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl">
+      <start ignored="true"/>
+      <stop ignored="true"/>
       <constructor>
          <parameter>
             <inject bean="Configuration"/>
