@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
+	<classpathentry kind="src" path="examples/jms/selector/src"/>
 	<classpathentry kind="src" path="examples/jms/scheduled-message/src"/>
 	<classpathentry kind="src" path="examples/jms/http-transport/src"/>
 	<classpathentry kind="src" path="build/src"/>
