@@ -28,19 +28,19 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging JMS Selector Example">
+<project default="run" name="JBoss Messaging JMS Selector Example 2">
 
    <import file="../common/build.xml"/>
 
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.SelectorExample"/>
+         <param name="example.classname" value="org.jboss.jms.example.TopicSelectorExample2"/>
       </antcall>
    </target>
 
    <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.SelectorExample"/>
+         <param name="example.classname" value="org.jboss.jms.example.TopicSelectorExample2"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>

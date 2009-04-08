@@ -38,13 +38,13 @@ import javax.naming.InitialContext;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class SelectorExample extends JMSExample
+public class TopicSelectorExample2 extends JMSExample
 {
    private volatile boolean result = true;
    
    public static void main(String[] args)
    {
-      new SelectorExample().run(args);
+      new TopicSelectorExample2().run(args);
    }
 
    public boolean runExample() throws Exception
