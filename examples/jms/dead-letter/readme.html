@@ -25,6 +25,7 @@
             &lt;dead-letter-address&gt;jms.queue.deadLetterQueue&lt;/dead-letter-address&gt;
             &lt;max-delivery-attempts&gt;3&lt;/max-delivery-attempts&gt;
          &lt;/address-settings&gt;
+         </code>
      </pre>          
      <p>This configuration will moved dead letter messages from <code>exampleQueue</code> to the <code>deadLetterQueue</code>.</p>
      <p>JBoss Messaging allows to specify either a <code>Queue</code> by prefixing the <code>dead-letter-address</code> with <code>jms.queue.</code>
@@ -193,9 +194,12 @@
               }
            }</code>
         </pre>
-
-
-
      </ol>
+     
+     <h2>More information</h2>
+     
+     <ul>
+         <li>Dead letter address and delivery attempts are configured on a <a href="../../../docs/userguide/en/html/configuration.html#configuration.queues">queue-basis</a></li>
+     </ul>
   </body>
 </html>

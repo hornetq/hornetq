@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Expiration Example</title>
+    <title>JBoss Messaging Expiration Example</title>
     <link rel="stylesheet" type="text/css" href="../common/common.css">
   </head>
   <body>
@@ -22,6 +22,7 @@
          <code>&lt;address-settings match="jms.queue.exampleQueue"&gt;
             &lt;expiry-address&gt;jms.queue.expiryQueue&lt;/expiry-address&gt;
          &lt;/address-settings&gt;
+         </code>
      </pre>          
      <p>This configuration will moved expired messages from the <code>exampleQueue</code> to the <code>expiryQueue</code></p>
      <p>JBoss Messaging allows to specify either a <code>Queue</code> by prefixing the <code>expiry-address</code> with <code>jms.queue.</code>
@@ -173,8 +174,13 @@
               }
            }</code>
         </pre>
-
-
      </ol>
+     
+     <h2>More information</h2>
+     
+     <ul>
+         <li>Expiry address is <a href="../../../docs/userguide/en/html/configuration.html#configuration.queues">configured on a queue-basis</a></li>
+         <li>Expiry scan period and thread priority are <a href="../../../docs/userguide/en/html/configuration.html#configuration.main">configured at the server level</a></li>
+     </ul>
   </body>
 </html>
