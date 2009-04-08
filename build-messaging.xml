@@ -830,8 +830,14 @@
             <include name="jboss-dependency.jar"/>
             <include name="jboss-aop-mc-int.jar"/>
          </fileset>
+         <fileset dir="${jboss.jboss.mdr.lib}">
+            <include name="jboss-mdr.jar"/>
+         </fileset>         
+         <fileset dir="${jboss.jboss.reflect.lib}">
+            <include name="jboss-reflect.jar"/>
+         </fileset>          
          <fileset dir="${jboss.aop.lib}">
-            <include name="jboss-aop-jdk50.jar"/>
+            <include name="jboss-aop.jar"/>
          </fileset>
          <fileset dir="${jboss.jboss.javaee.lib}">
             <include name="jboss-javaee.jar"/>
@@ -862,6 +868,9 @@
          </fileset>
          <fileset dir="${apache.logging.lib}">
             <include name="commons-logging.jar"/>
+         </fileset>
+         <fileset dir="${sun.jaxb.lib}">
+            <include name="jaxb-api.jar"/>
          </fileset>
          <fileset dir="${jboss.jboss.common.logging.spi.lib}">
             <include name="jboss-common-logging-spi.jar"/>
