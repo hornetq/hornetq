@@ -35,6 +35,7 @@
 	<classpathentry kind="src" path="examples/jms/topic-selector-example1/src"/>
 	<classpathentry kind="src" path="examples/jms/topic-selector-example2/src"/>
 	<classpathentry kind="src" path="examples/jms/transactional/src"/>
+	<classpathentry kind="src" path="examples/jms/management/src"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
