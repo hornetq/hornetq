@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<project default="compile" name="javaeeexample" basedir=".">
+   <dirname property="imported.basedir" file="${ant.file.javaeeexample}"/>
+   <property file="${imported.basedir}/config/ant.properties"/>
+   <property environment="ENV"/>
+   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+
+   <!--
+       This module is based on Java 1.5
+   -->
+
+   <property name="javac.target" value="1.5"/>
+   <property name="javac.source" value="1.5"/>
+
+   <property name="javac.debug" value="true"/>
+   <property name="javac.optimize" value="false"/>
+   <property name="javac.depend" value="false"/>
+   <property name="javac.verbose" value="false"/>
+   <property name="javac.deprecation" value="true"/>
+   <property name="javac.include.ant.runtime" value="false"/>
+   <property name="javac.include.java.runtime" value="true"/>
+   <property name="javac.fail.onerror" value="true"/>
+
+   <property name="src.dir" value="src"/>
+   <property name="example.classname" value="this.shouldn't.be.run.directly"/>
+   <property name="jbm.example.runServer" value="true"/>
+   <property name="jbm.example.beans.file" value="server0"/>
+
+   <property name="build.dir" value="build"/>
+   <property name="classes.dir" value="${build.dir}/classes"/>
+   <property name="config.dir" value="${imported.basedir}/config"/>
+   <property name="example.config.dir" value="config"/>
+
+   <path id="jms.compilation.classpath">
+      <fileset dir="${jbm.jars.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${jars.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
+
+   <path id="jms.runtime.classpath">
+      <path refid="jms.compilation.classpath"/>
+      <pathelement location="${config.dir}"/>
+      <pathelement location="${example.config.dir}"/>
+      <pathelement location="${classes.dir}"/>
+   </path>
+   <target name="init">
+      <mkdir dir="${build.dir}"/>
+      <mkdir dir="${classes.dir}"/>
+   </target>
+
+   <target name="compile" depends="init">
+      <javac destdir="${classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.dir}"/>
+         </src>
+         <classpath refid="jms.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="jar" depends="compile">
+      <jar destfile="${build.dir}/mdb-example.jar"
+           basedir="${classes.dir}"
+           includes="org/jboss/javaee/example/server/**/*">
+      </jar>
+   </target>
+
+   <target name="ear" depends="jar">
+      <jar destfile="${build.dir}/mdb-example.ear" basedir="${build.dir}">
+         <include name="mdb-example.jar"/>
+      </jar>
+   </target>
+
+   <target name="deploy" depends="validate-jboss, ear">
+      <copy file="${build.dir}/mdb-example.ear" todir="${jboss.home}/server/jbm2_default/deploy"/>
+   </target>
+
+   <target name="undeploy" depends="validate-jboss">
+      <delete file="${jboss.home}/server/jbm2_default/deploy/mdb-example.ear"/>
+   </target>
+
+   <target name="validate-jboss">
+      <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
+      <available property="default-config" type="dir" file="${jboss.home}/server/jbm2_default"/>
+      <fail unless="default-config" message="${jboss.home}/server/jbm2_default not found!"/>
+   </target>
+
+   <target name="runExample" depends="compile">
+      <java classname="${example.classname}" fork="true">
+         <classpath refid="jms.runtime.classpath"/>
+      </java>
+
+   </target>
+
+   <target name="clean">
+      <delete dir="./build" quiet="true"/>
+   </target>
+
+</project>

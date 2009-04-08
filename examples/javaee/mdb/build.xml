@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
 <!-- =========================================================================================== -->
 <!--                                                                                             -->
 <!-- JBoss, Home of Professional Open Source                                                     -->
@@ -26,21 +25,14 @@
 <!-- =========================================================================================== -->
 
 
-<project default="deploy" name="JBoss Messaging">
-   <property environment="ENV"/>
-   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+<project default="run" name="JBoss Messaging Java EE MDB Example">
 
-   <property name="config.dir" value="config"/>
-   <property name="main.config.dir" value="../config"/>
-   <property name="lib.dir" value="../lib"/>
+   <import file="../common/build.xml"/>
 
-   <target name="deploy">
-      <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
-      <available property="default-config" type="dir" file="${jboss.home}/server/jbm2_default"/>
-      <fail unless="default-config" message="${jboss.home}/server/jbm2_default not found!"/>
+   <target name="run">
+      <antcall target="runExample">
+         <param name="example.classname" value="org.jboss.javaee.example.MDBClientExample"/>
+      </antcall>
    </target>
-
-   
-
 
 </project>

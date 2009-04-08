@@ -869,7 +869,7 @@
          <fileset dir="${apache.log4j.lib}">
             <include name="log4j.jar"/>
          </fileset>
-         <fileset dir="${jboss.jbossts14.lib}">
+         <fileset dir="${jboss.jbossts.lib}">
             <include name="jbossjta.jar"/>
             <include name="jbossts-common.jar"/>
             <include name="jbossjta-integration.jar"/>

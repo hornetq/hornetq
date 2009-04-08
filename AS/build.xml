@@ -84,11 +84,7 @@
             <include name="jbm-queues.xml"/>
          </fileset>
       </copy>
-      <copy todir="${dest.dir}/deploy">
-         <fileset dir=".">
-            <include name="jbm-ra.rar"/>
-         </fileset>
-      </copy>
+      <copy file="jbm-ra.rar" tofile="${dest.dir}/deploy/jms-ra.rar"/>
    </target>
 
    <!-- The JBOSS_HOME environment variable and the directory must exist, we also check we are running
