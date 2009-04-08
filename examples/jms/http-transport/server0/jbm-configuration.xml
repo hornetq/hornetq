@@ -1,0 +1,29 @@
+<deployment xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
+   <configuration>
+
+      <!-- Connectors -->
+
+      <connector name="netty-connector">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.httpenabled" value="true" type="Boolean"/>
+         <param key="jbm.remoting.netty.port" value="8080" type="Integer"/>
+      </connector>
+
+      <!-- Acceptors -->
+
+      <acceptor name="netty-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.httpenabled" value="true" type="Boolean"/>
+         <param key="jbm.remoting.netty.port" value="8080" type="Integer"/>
+      </acceptor>
+
+
+      <!-- Other config -->
+
+      <journal-min-files>2</journal-min-files>
+
+   </configuration>
+
+</deployment>
