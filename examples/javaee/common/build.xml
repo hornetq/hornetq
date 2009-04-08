@@ -61,7 +61,7 @@
       <fileset dir="${jbm.jars.dir}">
          <include name="**/*.jar"/>
       </fileset>
-      <fileset dir="${jars.dir}">
+      <fileset dir="${jboss.home}/client">
          <include name="**/*.jar"/>
       </fileset>
    </path>

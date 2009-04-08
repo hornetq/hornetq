@@ -21,9 +21,8 @@
  */
 package org.jboss.messaging.ra;
 
-import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.Set;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 import javax.jms.ConnectionMetaData;
 import javax.resource.ResourceException;
@@ -34,9 +33,9 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * JBM ManagedConectionFactory
@@ -351,7 +350,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * Get the JBoss connection factory
     * @return The factory
     */
-   protected JBossConnectionFactory getJBossConnectionFactory()
+   protected JBossConnectionFactory getJBossConnectionFactory() throws ResourceException
    {
       return ra.getJBossConnectionFactory();
    }

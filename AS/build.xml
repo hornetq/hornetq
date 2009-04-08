@@ -75,6 +75,7 @@
       <copy todir="${messaging.sar.dir}">
          <fileset dir="${config.dir}">
             <include name="jbm-jboss-beans.xml"/>
+            <include name="jms-ds.xml"/>
          </fileset>
       </copy>
       <copy todir="${messaging.sar.dir}">

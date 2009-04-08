@@ -26,8 +26,8 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.ra.inflow.JBMActivation;
@@ -1501,8 +1501,19 @@ public class JBMResourceAdapter implements ResourceAdapter
       return val;
    }
 
-   public JBossConnectionFactory getJBossConnectionFactory()
+   public JBossConnectionFactory getJBossConnectionFactory() throws ResourceException
    {
+      if (!configured.getAndSet(true))
+      {
+         try
+         {
+            setup();
+         }
+         catch (MessagingException e)
+         {
+            throw new ResourceException("Unable to create activation", e);
+         }
+      }
       return jBossConnectionFactory;
    }
 }
