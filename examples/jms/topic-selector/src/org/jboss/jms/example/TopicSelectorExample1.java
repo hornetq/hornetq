@@ -35,11 +35,11 @@ import javax.naming.InitialContext;
  *
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
-public class TopicSelectorExample extends JMSExample
+public class TopicSelectorExample1 extends JMSExample
 {
    public static void main(String[] args)
    {
-      new TopicSelectorExample().run(args);
+      new TopicSelectorExample1().run(args);
    }
 
    public boolean runExample() throws Exception
