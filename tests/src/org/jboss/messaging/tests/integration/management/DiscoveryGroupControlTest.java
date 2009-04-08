@@ -26,16 +26,12 @@ import static org.jboss.messaging.tests.integration.management.ManagementControl
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
  * A AcceptorControlTest
@@ -73,7 +69,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createDiscoveryGroupControl(discoveryGroupConfig.getName(), mbeanServer);
+      DiscoveryGroupControlMBean discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
 
       assertEquals(discoveryGroupConfig.getName(), discoveryGroupControl.getName());
       assertEquals(discoveryGroupConfig.getGroupAddress(), discoveryGroupControl.getGroupAddress());
@@ -93,7 +89,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createDiscoveryGroupControl(discoveryGroupConfig.getName(), mbeanServer);
+      DiscoveryGroupControlMBean discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
 
       // started by the server
       assertTrue(discoveryGroupControl.isStarted());
@@ -120,6 +116,13 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
 
       super.tearDown();
    }
+   
+   protected DiscoveryGroupControlMBean createManagementControl(String name) throws Exception
+   {
+      return createDiscoveryGroupControl(name, mbeanServer);
+   }
+
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

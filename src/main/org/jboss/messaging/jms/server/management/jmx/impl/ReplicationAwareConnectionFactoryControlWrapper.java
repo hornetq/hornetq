@@ -25,9 +25,9 @@ package org.jboss.messaging.jms.server.management.jmx.impl;
 import java.util.List;
 
 import javax.management.MBeanInfo;
-import javax.management.ObjectName;
 
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
@@ -52,11 +52,10 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareConnectionFactoryControlWrapper(final ObjectName objectName,
-                                                          final ConnectionFactoryControl localControl,
+   public ReplicationAwareConnectionFactoryControlWrapper(final ConnectionFactoryControl localControl,
                                                           final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(objectName, ConnectionFactoryControlMBean.class, replicationInvoker);
+      super(ResourceNames.JMS_CONNECTION_FACTORY + localControl.getName(), ConnectionFactoryControlMBean.class, replicationInvoker);
       this.localControl = localControl;
    }
 

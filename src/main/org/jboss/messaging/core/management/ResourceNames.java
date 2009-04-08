@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,56 +20,59 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.management.jmx.impl;
 
-import javax.management.StandardMBean;
-
-import org.jboss.messaging.core.management.ReplicationOperationInvoker;
+package org.jboss.messaging.core.management;
 
 /**
- * A ReplicationAwareStandardMBeanWrapper
+ * A ResourceNames
  *
- * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * Created Dec 3, 2008 11:23:11
+ * @author jmesnil
  *
  *
  */
-public class ReplicationAwareStandardMBeanWrapper extends StandardMBean
+public class ResourceNames
 {
 
    // Constants -----------------------------------------------------
 
+   public static final String CORE_SERVER = "core.server";
+
+   public static final String CORE_QUEUE = "core.queue.";
+
+   public static final String CORE_ADDRESS = "core.address.";
+
+   public static final String CORE_BRIDGE = "core.bridge.";
+
+   public static final String CORE_ACCEPTOR = "core.acceptor.";
+
+   public static final String CORE_DIVERT = "core.divert.";
+
+   public static final String CORE_CLUSTER_CONNECTION = "core.clusterconnection.";
+
+   public static final String CORE_BROADCAST_GROUP = "core.broadcastgroup.";
+
+   public static final String CORE_DISCOVERY_GROUP = "core.discovery.";
+   
+   public static final String JMS_SERVER = "jms.server";
+
+   public static final String JMS_QUEUE = "jms.queue.";
+
+   public static final String JMS_TOPIC = "jms.address.";
+
+   public static final String JMS_CONNECTION_FACTORY = "jms.connectionfactory.";
+
+
    // Attributes ----------------------------------------------------
-
-   private final String resourceName;
-
-   private final ReplicationOperationInvoker replicationInvoker;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   protected ReplicationAwareStandardMBeanWrapper(final String resourceName,
-                                                  final Class mbeanInterface,
-                                                  final ReplicationOperationInvoker replicationInvoker) throws Exception
-   {
-      super(mbeanInterface);
-
-      this.resourceName = resourceName;
-      this.replicationInvoker = replicationInvoker;
-   }
 
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected Object replicationAwareInvoke(final String operationName, final Object... parameters) throws Exception
-   {
-      return replicationInvoker.invoke(resourceName, operationName, parameters);
-   }
 
    // Private -------------------------------------------------------
 

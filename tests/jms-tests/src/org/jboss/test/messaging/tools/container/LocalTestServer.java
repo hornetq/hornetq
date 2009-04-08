@@ -22,8 +22,8 @@
 package org.jboss.test.messaging.tools.container;
 
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
@@ -47,6 +47,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.security.Role;
@@ -402,9 +403,8 @@ public class LocalTestServer implements Server, Runnable
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      ObjectName objectName = ObjectNames.getJMSQueueObjectName(queueName);
       JMSQueueControlMBean queue = (JMSQueueControlMBean)getMessagingServer().getManagementService()
-                                                                             .getResource(objectName);
+                                                                             .getResource(ResourceNames.JMS_QUEUE + queueName);
       if (queue != null)
       {
          return queue.getMessageCount();

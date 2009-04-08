@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createBroadcastGroupControl;
-import static org.jboss.messaging.tests.util.RandomUtil.randomPort;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
@@ -98,7 +96,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
-      BroadcastGroupControlMBean broadcastGroupControl = createBroadcastGroupControl(broadcastGroupConfig.getName(), mbeanServer);
+      BroadcastGroupControlMBean broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
 
       assertEquals(broadcastGroupConfig.getName(), broadcastGroupControl.getName());
       assertEquals(broadcastGroupConfig.getGroupAddress(), broadcastGroupControl.getGroupAddress());
@@ -131,7 +129,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
-      BroadcastGroupControlMBean broadcastGroupControl = createBroadcastGroupControl(broadcastGroupConfig.getName(), mbeanServer);
+      BroadcastGroupControlMBean broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
 
       // started by the server
       assertTrue(broadcastGroupControl.isStarted());
@@ -156,6 +154,11 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       }
 
       super.tearDown();
+   }
+   
+   protected BroadcastGroupControlMBean createManagementControl(String name) throws Exception
+   {
+      return ManagementControlHelper.createBroadcastGroupControl(name, mbeanServer);
    }
    // Private -------------------------------------------------------
 

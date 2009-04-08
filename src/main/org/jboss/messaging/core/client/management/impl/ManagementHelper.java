@@ -31,8 +31,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.management.ObjectName;
-
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -46,17 +44,17 @@ public class ManagementHelper
 
    // Constants -----------------------------------------------------
 
-   public static final SimpleString HDR_JMX_OBJECTNAME = new SimpleString("_JBM_JMX_ObjectName");
+   public static final SimpleString HDR_RESOURCE_NAME = new SimpleString("_JBM_ResourceName");
 
-   public static final SimpleString HDR_JMX_ATTRIBUTE = new SimpleString("_JBM_JMXAttribute");
+   public static final SimpleString HDR_ATTRIBUTE = new SimpleString("_JBM_Attribute");
 
-   public static final SimpleString HDR_JMX_OPERATION_PREFIX = new SimpleString("_JBM_JMXOperation$");
+   public static final SimpleString HDR_OPERATION_PREFIX = new SimpleString("_JBM_Operation$");
 
-   public static final SimpleString HDR_JMX_OPERATION_NAME = new SimpleString(HDR_JMX_OPERATION_PREFIX + "name");
+   public static final SimpleString HDR_OPERATION_NAME = new SimpleString(HDR_OPERATION_PREFIX + "name");
 
-   public static final SimpleString HDR_JMX_OPERATION_SUCCEEDED = new SimpleString("_JBM_JMXOperationSucceeded");
+   public static final SimpleString HDR_OPERATION_SUCCEEDED = new SimpleString("_JBM_OperationSucceeded");
 
-   public static final SimpleString HDR_JMX_OPERATION_EXCEPTION = new SimpleString("_JBM_JMXOperationException");
+   public static final SimpleString HDR_OPERATION_EXCEPTION = new SimpleString("_JBM_OperationException");
 
    public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("_JBM_NotifType");
 
@@ -88,27 +86,27 @@ public class ManagementHelper
 
    // Static --------------------------------------------------------
 
-   public static void putAttribute(final Message message, final ObjectName objectName, final String attribute)
+   public static void putAttribute(final Message message, final String resourceName, final String attribute)
    {
-      message.putStringProperty(HDR_JMX_OBJECTNAME, new SimpleString(objectName.toString()));
-      message.putStringProperty(HDR_JMX_ATTRIBUTE, new SimpleString(attribute));
+      message.putStringProperty(HDR_RESOURCE_NAME, new SimpleString(resourceName));
+      message.putStringProperty(HDR_ATTRIBUTE, new SimpleString(attribute));
    }
 
    public static void putOperationInvocation(final Message message,
-                                             final ObjectName objectName,
+                                             final String resourceName,
                                              final String operationName,
                                              final Object... parameters)
    {
       // store the name of the operation...
-      message.putStringProperty(HDR_JMX_OBJECTNAME, new SimpleString(objectName.toString()));
-      message.putStringProperty(HDR_JMX_OPERATION_NAME, new SimpleString(operationName));
+      message.putStringProperty(HDR_RESOURCE_NAME, new SimpleString(resourceName));
+      message.putStringProperty(HDR_OPERATION_NAME, new SimpleString(operationName));
       // ... and all the parameters (preserving their types)
       for (int i = 0; i < parameters.length; i++)
       {
          Object parameter = parameters[i];
          // use a zero-filled 2-padded index:
          // if there is more than 10 parameters, order is preserved (e.g. 02 will be before 10)
-         SimpleString key = new SimpleString(String.format("%s%02d", HDR_JMX_OPERATION_PREFIX, i));
+         SimpleString key = new SimpleString(String.format("%s%02d", HDR_OPERATION_PREFIX, i));
          storeTypedProperty(message, key, parameter);
       }
    }
@@ -123,7 +121,7 @@ public class ManagementHelper
       Collections.sort(propsNames);
       for (SimpleString propertyName : propsNames)
       {
-         if (propertyName.startsWith(ManagementHelper.HDR_JMX_OPERATION_PREFIX))
+         if (propertyName.startsWith(ManagementHelper.HDR_OPERATION_PREFIX))
          {
             String s = propertyName.toString();
             // split by the dot
@@ -153,7 +151,7 @@ public class ManagementHelper
 
    public static boolean isOperationResult(final Message message)
    {
-      return message.containsProperty(HDR_JMX_OPERATION_SUCCEEDED);
+      return message.containsProperty(HDR_OPERATION_SUCCEEDED);
    }
 
    public static boolean isAttributesResult(final Message message)
@@ -192,18 +190,18 @@ public class ManagementHelper
       {
          return false;
       }
-      if (message.containsProperty(HDR_JMX_OPERATION_SUCCEEDED))
+      if (message.containsProperty(HDR_OPERATION_SUCCEEDED))
       {
-         return (Boolean)message.getProperty(HDR_JMX_OPERATION_SUCCEEDED);
+         return (Boolean)message.getProperty(HDR_OPERATION_SUCCEEDED);
       }
       return false;
    }
 
    public static String getOperationExceptionMessage(final Message message)
    {
-      if (message.containsProperty(HDR_JMX_OPERATION_EXCEPTION))
+      if (message.containsProperty(HDR_OPERATION_EXCEPTION))
       {
-         return ((SimpleString)message.getProperty(HDR_JMX_OPERATION_EXCEPTION)).toString();
+         return ((SimpleString)message.getProperty(HDR_OPERATION_EXCEPTION)).toString();
       }
       return null;
    }

@@ -22,7 +22,17 @@
 
 package org.jboss.test.jms;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import junit.framework.Assert;
+
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;
@@ -30,20 +40,11 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.objectweb.jtests.jms.admin.Admin;
-
-import javax.management.ObjectName;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.Hashtable;
 
 /**
  * A JBossMessagingAdmin
@@ -101,7 +102,7 @@ public class JBossMessagingAdmin implements Admin
    {
       try
       {
-         invokeSyncOperation(ObjectNames.getJMSServerObjectName(),
+         invokeSyncOperation(ResourceNames.JMS_SERVER,
                              "createConnectionFactory",
                              name,
                              NettyConnectorFactory.class.getName(),
@@ -128,7 +129,7 @@ public class JBossMessagingAdmin implements Admin
       Boolean result;
       try
       {
-         result = (Boolean)invokeSyncOperation(ObjectNames.getJMSServerObjectName(), "createQueue", name, name);
+         result = (Boolean)invokeSyncOperation(ResourceNames.JMS_SERVER, "createQueue", name, name);
          Assert.assertEquals(true, result.booleanValue());
       }
       catch (Exception e)
@@ -147,7 +148,7 @@ public class JBossMessagingAdmin implements Admin
       Boolean result;
       try
       {
-         result = (Boolean)invokeSyncOperation(ObjectNames.getJMSServerObjectName(), "createTopic", name, name);
+         result = (Boolean)invokeSyncOperation(ResourceNames.JMS_SERVER, "createTopic", name, name);
          Assert.assertEquals(true, result.booleanValue());
       }
       catch (Exception e)
@@ -165,7 +166,7 @@ public class JBossMessagingAdmin implements Admin
    {
       try
       {
-         invokeSyncOperation(ObjectNames.getJMSServerObjectName(), "destroyConnectionFactory", name);
+         invokeSyncOperation(ResourceNames.JMS_SERVER, "destroyConnectionFactory", name);
       }
       catch (Exception e)
       {
@@ -178,7 +179,7 @@ public class JBossMessagingAdmin implements Admin
       Boolean result;
       try
       {
-         result = (Boolean)invokeSyncOperation(ObjectNames.getJMSServerObjectName(), "destroyQueue", name);
+         result = (Boolean)invokeSyncOperation(ResourceNames.JMS_SERVER, "destroyQueue", name);
          Assert.assertEquals(true, result.booleanValue());
       }
       catch (Exception e)
@@ -197,7 +198,7 @@ public class JBossMessagingAdmin implements Admin
       Boolean result;
       try
       {
-         result = (Boolean)invokeSyncOperation(ObjectNames.getJMSServerObjectName(), "destroyTopic", name);
+         result = (Boolean)invokeSyncOperation(ResourceNames.JMS_SERVER, "destroyTopic", name);
          Assert.assertEquals(true, result.booleanValue());
       }
       catch (Exception e)
@@ -290,10 +291,10 @@ public class JBossMessagingAdmin implements Admin
 
    // Private -------------------------------------------------------
 
-   private Object invokeSyncOperation(ObjectName objectName, String operationName, Object... parameters)
+   private Object invokeSyncOperation(String resourceName, String operationName, Object... parameters)
    {
       ClientMessage message = clientSession.createClientMessage(false);
-      ManagementHelper.putOperationInvocation(message, objectName, operationName, parameters);
+      ManagementHelper.putOperationInvocation(message, resourceName, operationName, parameters);
       ClientMessage reply;
       try
       {
@@ -301,17 +302,17 @@ public class JBossMessagingAdmin implements Admin
       }
       catch (Exception e)
       {
-         throw new IllegalStateException("Exception while invoking " + operationName + " on " + objectName, e);
+         throw new IllegalStateException("Exception while invoking " + operationName + " on " + resourceName, e);
       }
       if (reply == null)
       {
-         throw new IllegalStateException("no reply received when invoking " + operationName + " on " + objectName);
+         throw new IllegalStateException("no reply received when invoking " + operationName + " on " + resourceName);
       }
       if (!ManagementHelper.hasOperationSucceeded(reply))
       {
          throw new IllegalStateException("operation failed when invoking " + operationName +
                                          " on " +
-                                         objectName +
+                                         resourceName +
                                          ": " +
                                          ManagementHelper.getOperationExceptionMessage(reply));
 

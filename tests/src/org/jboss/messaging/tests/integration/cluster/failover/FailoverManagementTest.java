@@ -41,7 +41,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
@@ -114,7 +114,7 @@ public class FailoverManagementTest extends UnitTestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttribute(managementMessage,
-                                        ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
+                                        ResourceNames.CORE_QUEUE + ADDRESS,
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          
@@ -133,7 +133,7 @@ public class FailoverManagementTest extends UnitTestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttribute(managementMessage,
-                                        ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
+                                        ResourceNames.CORE_QUEUE + ADDRESS,
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          
@@ -203,7 +203,7 @@ public class FailoverManagementTest extends UnitTestCase
          ClientMessage managementMessage  = session1.createClientMessage(false);
          
          ManagementHelper.putAttribute(managementMessage,
-                                        ObjectNames.getQueueObjectName(ADDRESS, ADDRESS),
+                                        ResourceNames.CORE_QUEUE + ADDRESS,
                                         "MessageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          

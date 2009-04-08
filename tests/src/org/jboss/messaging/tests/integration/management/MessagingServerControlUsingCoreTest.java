@@ -32,7 +32,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 
 /**
@@ -83,8 +83,8 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
       return new MessagingServerControlMBean()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                                         ObjectNames.getMessagingServerObjectName());
-
+                                                                         ResourceNames.CORE_SERVER);
+         
          public boolean closeConnectionsForAddress(String ipAddress) throws Exception
          {
             return (Boolean)proxy.invokeOperation("closeConnectionsForAddress", ipAddress);

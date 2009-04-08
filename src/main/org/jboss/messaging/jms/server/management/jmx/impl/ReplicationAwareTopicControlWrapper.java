@@ -23,10 +23,10 @@
 package org.jboss.messaging.jms.server.management.jmx.impl;
 
 import javax.management.MBeanInfo;
-import javax.management.ObjectName;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
@@ -51,11 +51,10 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareTopicControlWrapper(final ObjectName objectName,
-                                              final TopicControl localControl,
+   public ReplicationAwareTopicControlWrapper(final TopicControl localControl,
                                               final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(objectName, TopicControlMBean.class, replicationInvoker);
+      super(ResourceNames.JMS_TOPIC + localControl.getName(), TopicControlMBean.class, replicationInvoker);
       
       this.localControl = localControl;
    }

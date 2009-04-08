@@ -99,8 +99,12 @@ public interface ManagementService extends NotificationService, MessagingCompone
 
    void registerInJMX(ObjectName objectName, Object managedResource) throws Exception;
 
-   void registerInRegistry(ObjectName objectName, Object managedResource);
+   void unregisterFromJMX(final ObjectName objectName) throws Exception;
+
+   void registerInRegistry(String resourceName, Object managedResource);
    
+   void unregisterFromRegistry(final String resourceName);
+
    void registerAddress(SimpleString address) throws Exception;
 
    void unregisterAddress(SimpleString address) throws Exception;
@@ -133,11 +137,7 @@ public interface ManagementService extends NotificationService, MessagingCompone
    
    void unregisterCluster(String name) throws Exception;
 
-   void registerResource(ObjectName objectName, Object resource) throws Exception;
-
-   void unregisterResource(ObjectName objectName) throws Exception;
-
-   Object getResource(ObjectName objectName);
+   Object getResource(String resourceName);
 
    ServerMessage handleMessage(ServerMessage message);  
 }

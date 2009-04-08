@@ -31,7 +31,7 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -85,7 +85,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
                      DEFAULT_MANAGEMENT_ADDRESS.toString());
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session,
                                                             managementQueue,
-                                                            ObjectNames.getJMSQueueObjectName(queue.getQueueName()));
+                                                            ResourceNames.JMS_QUEUE + queue.getQueueName());
       
       return new JMSQueueControlMBean()
       {

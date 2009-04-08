@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.integration.management;
 
 import static org.jboss.messaging.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
@@ -49,7 +48,6 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -80,8 +78,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    public void testAttributes() throws Exception
    {
       checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig.getName()));
-      ClusterConnectionControlMBean clusterConnectionControl = ManagementControlHelper.createClusterConnectionControl(clusterConnectionConfig.getName(),
-                                                                                                                      mbeanServer);
+
+      ClusterConnectionControlMBean clusterConnectionControl = createManagementControl(clusterConnectionConfig.getName());
 
       assertEquals(clusterConnectionConfig.getName(), clusterConnectionControl.getName());
       assertEquals(clusterConnectionConfig.getAddress(), clusterConnectionControl.getAddress());
@@ -104,8 +102,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    public void testStartStop() throws Exception
    {
       checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig.getName()));
-      ClusterConnectionControlMBean clusterConnectionControl = ManagementControlHelper.createClusterConnectionControl(clusterConnectionConfig.getName(),
-                                                                                                                      mbeanServer);
+      ClusterConnectionControlMBean clusterConnectionControl = createManagementControl(clusterConnectionConfig.getName());
 
       // started by the server
       assertTrue(clusterConnectionControl.isStarted());
@@ -179,6 +176,11 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       server_1.stop();
 
       super.tearDown();
+   }
+   
+   protected ClusterConnectionControlMBean createManagementControl(String name) throws Exception
+   {
+      return ManagementControlHelper.createClusterConnectionControl(name, mbeanServer);
    }
 
    // Private -------------------------------------------------------

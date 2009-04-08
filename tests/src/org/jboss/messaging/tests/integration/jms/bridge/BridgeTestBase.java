@@ -51,7 +51,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
@@ -61,7 +60,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
@@ -456,8 +455,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          managementService = server1.getManagementService();
       }
-      ObjectName objectName = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
-      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(objectName);
+      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
 
       Integer messageCount = queueControl.getMessageCount();
 
@@ -475,8 +473,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          managementService = server1.getManagementService();
       }
-      ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
-      TopicControlMBean topicControl = (TopicControlMBean)managementService.getResource(objectName);
+      TopicControlMBean topicControl = (TopicControlMBean)managementService.getResource(ResourceNames.JMS_TOPIC + topic.getTopicName());
       assertEquals(0, topicControl.getSubcriptionsCount());
 
    }
@@ -488,8 +485,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          managementService = server1.getManagementService();
       }
-      ObjectName objectName = ObjectNames.getJMSQueueObjectName(queueName);
-      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(objectName);
+      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(ResourceNames.JMS_QUEUE + queueName);
       queueControl.removeAllMessages();
    }
 

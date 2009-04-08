@@ -62,6 +62,7 @@ import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationListener;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
@@ -105,7 +106,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private final boolean jmxManagementEnabled;
 
-   private final Map<ObjectName, Object> registry;
+   private final Map<String, Object> registry;
 
    private final NotificationBroadcasterSupport broadcaster;
 
@@ -143,7 +144,7 @@ public class ManagementServiceImpl implements ManagementService
    {
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = jmxManagementEnabled;
-      registry = new HashMap<ObjectName, Object>();
+      registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       noticationsEnabled = true;
    }
@@ -183,30 +184,29 @@ public class ManagementServiceImpl implements ManagementService
                                                  broadcaster,
                                                  queueFactory);
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
-      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(objectName,
-                                                                                  managedServer,
+      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(managedServer,
                                                                                   replicationInvoker));
-      registerInRegistry(objectName, managedServer);
+      registerInRegistry(ResourceNames.CORE_SERVER, managedServer);
 
       return managedServer;
    }
 
-   public void unregisterServer() throws Exception
+   public synchronized void unregisterServer() throws Exception
    {
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_SERVER);
    }  
    
-   public void registerAddress(final SimpleString address) throws Exception
+   public synchronized void registerAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = ObjectNames.getAddressObjectName(address);
       AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
 
-      registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(objectName,
-                                                                          addressControl,
+      registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(addressControl,
                                                                           replicationInvoker));
 
-      registerInRegistry(objectName, addressControl);
+      registerInRegistry(ResourceNames.CORE_ADDRESS + address, addressControl);
 
       if (log.isDebugEnabled())
       {
@@ -214,14 +214,15 @@ public class ManagementServiceImpl implements ManagementService
       }
    }
 
-   public void unregisterAddress(final SimpleString address) throws Exception
+   public synchronized void unregisterAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = ObjectNames.getAddressObjectName(address);
 
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_ADDRESS + address);
    }
 
-   public void registerQueue(final Queue queue, final SimpleString address, final StorageManager storageManager) throws Exception
+   public synchronized void registerQueue(final Queue queue, final SimpleString address, final StorageManager storageManager) throws Exception
    {
       MessageCounter counter = new MessageCounter(queue.getName().toString(),
                                                   null,
@@ -232,8 +233,8 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
       QueueControl queueControl = new QueueControl(queue, address.toString(), postOffice, addressSettingsRepository, counter);
-      registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(objectName, queueControl, replicationInvoker));
-      registerInRegistry(objectName, queueControl);
+      registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(queueControl, replicationInvoker));
+      registerInRegistry(ResourceNames.CORE_QUEUE + queue.getName(), queueControl);
 
       if (log.isDebugEnabled())
       {
@@ -241,19 +242,20 @@ public class ManagementServiceImpl implements ManagementService
       }
    }
 
-   public void unregisterQueue(final SimpleString name, final SimpleString address) throws Exception
+   public synchronized void unregisterQueue(final SimpleString name, final SimpleString address) throws Exception
    {
       ObjectName objectName = ObjectNames.getQueueObjectName(address, name);
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_QUEUE + name);
       messageCounterManager.unregisterMessageCounter(name.toString());
    }
    
-   public void registerDivert(Divert divert, DivertConfiguration config) throws Exception
+   public synchronized void registerDivert(Divert divert, DivertConfiguration config) throws Exception
    {
       ObjectName objectName = ObjectNames.getDivertObjectName(divert.getUniqueName());
       DivertControlMBean divertControl = new DivertControl(divert, config);
       registerInJMX(objectName, new StandardMBean(divertControl, DivertControlMBean.class));
-      registerInRegistry(objectName, divertControl);
+      registerInRegistry(ResourceNames.CORE_DIVERT + config.getName(), divertControl);
 
       if (log.isDebugEnabled())
       {
@@ -261,80 +263,86 @@ public class ManagementServiceImpl implements ManagementService
       }
    }
 
-   public void unregisterDivert(final SimpleString name) throws Exception
+   public synchronized void unregisterDivert(final SimpleString name) throws Exception
    {
       ObjectName objectName = ObjectNames.getDivertObjectName(name);
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_DIVERT + name);
    }
 
-   public void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
+   public synchronized void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getAcceptorObjectName(configuration.getName());
       AcceptorControlMBean control = new AcceptorControl(acceptor, configuration);
       registerInJMX(objectName, new StandardMBean(control, AcceptorControlMBean.class));
-      registerInRegistry(objectName, control);
+      registerInRegistry(ResourceNames.CORE_ACCEPTOR + configuration.getName(), control);
    }
 
-   public void unregisterAcceptor(final String name) throws Exception
+   public synchronized void unregisterAcceptor(final String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getAcceptorObjectName(name);
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_ACCEPTOR + name);
    }
 
-   public void registerBroadcastGroup(BroadcastGroup broadcastGroup, BroadcastGroupConfiguration configuration) throws Exception
+   public synchronized void registerBroadcastGroup(BroadcastGroup broadcastGroup, BroadcastGroupConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(configuration.getName());
       BroadcastGroupControlMBean control = new BroadcastGroupControl(broadcastGroup, configuration);
       registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControlMBean.class));
-      registerInRegistry(objectName, control);
+      registerInRegistry(ResourceNames.CORE_BROADCAST_GROUP + configuration.getName(), control);
    }
 
-   public void unregisterBroadcastGroup(String name) throws Exception
+   public synchronized void unregisterBroadcastGroup(String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(name);
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_BROADCAST_GROUP + name);
    }
 
-   public void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception
+   public synchronized void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(configuration.getName());
       DiscoveryGroupControlMBean control = new DiscoveryGroupControl(discoveryGroup, configuration);
       registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControlMBean.class));
-      registerInRegistry(objectName, control);
+      registerInRegistry(ResourceNames.CORE_DISCOVERY_GROUP + configuration.getName(), control);
    }
 
-   public void unregisterDiscoveryGroup(String name) throws Exception
+   public synchronized void unregisterDiscoveryGroup(String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(name);
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_DISCOVERY_GROUP + name);
    }
 
-   public void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception
+   public synchronized void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getBridgeObjectName(configuration.getName());
       BridgeControlMBean control = new BridgeControl(bridge, configuration);
       registerInJMX(objectName, new StandardMBean(control, BridgeControlMBean.class));
-      registerInRegistry(objectName, control);
+      registerInRegistry(ResourceNames.CORE_BRIDGE + configuration.getName(), control);
    }
 
-   public void unregisterBridge(String name) throws Exception
+   public synchronized void unregisterBridge(String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getBridgeObjectName(name);
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_BRIDGE + name);
    }
    
-   public void registerCluster(final ClusterConnection cluster, final ClusterConnectionConfiguration configuration) throws Exception
+   public synchronized void registerCluster(final ClusterConnection cluster, final ClusterConnectionConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getClusterConnectionObjectName(configuration.getName());
       ClusterConnectionControlMBean control = new ClusterConnectionControl(cluster, configuration);
       registerInJMX(objectName, new StandardMBean(control, ClusterConnectionControlMBean.class));
-      registerInRegistry(objectName, control);
+      registerInRegistry(ResourceNames.CORE_CLUSTER_CONNECTION + configuration.getName(), control);
    }
 
-   public void unregisterCluster(final String name) throws Exception
+   public synchronized void unregisterCluster(final String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getClusterConnectionObjectName(name);
-      unregisterResource(objectName);
+      unregisterFromJMX(objectName);
+      unregisterFromRegistry(ResourceNames.CORE_CLUSTER_CONNECTION + name);
    }
 
    public ServerMessage handleMessage(final ServerMessage message)
@@ -345,10 +353,10 @@ public class ManagementServiceImpl implements ManagementService
       ServerMessageImpl reply = new ServerMessageImpl(message);
       reply.setType(MessageImpl.OBJECT_TYPE);
       
-      SimpleString objectName = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_OBJECTNAME);
+      SimpleString resourceName = (SimpleString)message.getProperty(ManagementHelper.HDR_RESOURCE_NAME);
       if (log.isDebugEnabled())
       {
-         log.debug("handling management message for " + objectName);
+         log.debug("handling management message for " + resourceName);
       }
       Set<SimpleString> propertyNames = message.getPropertyNames();
       // use an array with all the property names to avoid a
@@ -357,23 +365,23 @@ public class ManagementServiceImpl implements ManagementService
       // properties to the message)
       List<SimpleString> propNames = new ArrayList<SimpleString>(propertyNames);
 
-      if (propNames.contains(ManagementHelper.HDR_JMX_OPERATION_NAME))
+      if (propNames.contains(ManagementHelper.HDR_OPERATION_NAME))
       {
-         SimpleString operation = (SimpleString)message.getProperty(ManagementHelper.HDR_JMX_OPERATION_NAME);
+         SimpleString operation = (SimpleString)message.getProperty(ManagementHelper.HDR_OPERATION_NAME);
          List<Object> operationParameters = ManagementHelper.retrieveOperationParameters(message);
 
          if (operation != null)
          {
             try
             {
-               Object result = invokeOperation(objectName.toString(), operation.toString(), operationParameters);
-               reply.putBooleanProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED, true);
+               Object result = invokeOperation(resourceName.toString(), operation.toString(), operationParameters);
+               reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, true);
                ManagementHelper.storeResult(reply, result);
             }
             catch (Exception e)
             {               
-               log.warn("exception while invoking " + operation + " on " + objectName, e);
-               reply.putBooleanProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED, false);
+               log.warn("exception while invoking " + operation + " on " + resourceName, e);
+               reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
                String exceptionMessage = e.getMessage();
                if (e instanceof InvocationTargetException)
                {
@@ -381,7 +389,7 @@ public class ManagementServiceImpl implements ManagementService
                }
                if (e != null)
                {
-                  reply.putStringProperty(ManagementHelper.HDR_JMX_OPERATION_EXCEPTION,
+                  reply.putStringProperty(ManagementHelper.HDR_OPERATION_EXCEPTION,
                                             new SimpleString(exceptionMessage));
                }
             }
@@ -391,10 +399,10 @@ public class ManagementServiceImpl implements ManagementService
       {
          for (SimpleString propertyName : propNames)
          {
-            if (propertyName.equals(ManagementHelper.HDR_JMX_ATTRIBUTE))
+            if (propertyName.equals(ManagementHelper.HDR_ATTRIBUTE))
             {
                SimpleString attribute = (SimpleString)message.getProperty(propertyName);
-               Object result = getAttribute(objectName.toString(), attribute.toString());
+               Object result = getAttribute(resourceName.toString(), attribute.toString());
                ManagementHelper.storeResult(reply, result);
             }
          }
@@ -403,21 +411,9 @@ public class ManagementServiceImpl implements ManagementService
       return reply;
    }
 
-   public void registerResource(final ObjectName objectName, final Object resource) throws Exception
+   public Object getResource(final String resourceName)
    {
-      registerInRegistry(objectName, resource);
-      registerInJMX(objectName, resource);
-   }
-
-   public void unregisterResource(final ObjectName objectName) throws Exception
-   {
-      unregisterFromRegistry(objectName);
-      unregisterFromJMX(objectName);
-   }
-
-   public Object getResource(final ObjectName objectName)
-   {
-      return registry.get(objectName);
+      return registry.get(resourceName);
    }
 
    public void registerInJMX(final ObjectName objectName, final Object managedResource) throws Exception
@@ -433,10 +429,33 @@ public class ManagementServiceImpl implements ManagementService
       }
    }
 
-   public void registerInRegistry(final ObjectName objectName, final Object managedResource)
+   public synchronized void registerInRegistry(final String resourceName, final Object managedResource)
    {
-      unregisterFromRegistry(objectName);
-      registry.put(objectName, managedResource);
+      unregisterFromRegistry(resourceName);
+      registry.put(resourceName, managedResource);
+   }
+
+   public void unregisterFromRegistry(final String resourceName)
+   {
+      registry.remove(resourceName);
+   }
+
+   // the JMX unregistration is synchronized to avoid race conditions if 2 clients tries to
+   // unregister the same resource (e.g. a queue) at the same time since unregisterMBean()
+   // will throw an exception if the MBean has already been unregistered
+   public void unregisterFromJMX(final ObjectName objectName) throws Exception
+   {
+      if (!jmxManagementEnabled)
+      {
+         return;
+      }
+      synchronized (mbeanServer)
+      {
+         if (mbeanServer.isRegistered(objectName))
+         {
+            mbeanServer.unregisterMBean(objectName);
+         }
+      }
    }
 
    public void addNotificationListener(final NotificationListener listener)
@@ -506,11 +525,11 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void stop() throws Exception
    {
-      Set<ObjectName> objectNames = new HashSet<ObjectName>(registry.keySet());
+      Set<String> resourceNames = new HashSet<String>(registry.keySet());
 
-      for (ObjectName objectName : objectNames)
+      for (String resourceName : resourceNames)
       {
-         unregisterResource(objectName);
+         unregisterFromRegistry(resourceName);
       }
 
       replicationInvoker.stop();
@@ -528,29 +547,6 @@ public class ManagementServiceImpl implements ManagementService
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private void unregisterFromRegistry(final ObjectName objectName)
-   {
-      registry.remove(objectName);
-   }
-
-   // the JMX unregistration is synchronized to avoid race conditions if 2 clients tries to
-   // unregister the same resource (e.g. a queue) at the same time since unregisterMBean()
-   // will throw an exception if the MBean has already been unregistered
-   private void unregisterFromJMX(final ObjectName objectName) throws Exception
-   {
-      if (!jmxManagementEnabled)
-      {
-         return;
-      }
-      synchronized (mbeanServer)
-      {
-         if (mbeanServer.isRegistered(objectName))
-         {
-            mbeanServer.unregisterMBean(objectName);
-         }
-      }
-   }
    
    public void sendNotification(final Notification notification) throws Exception
    {     
@@ -615,12 +611,11 @@ public class ManagementServiceImpl implements ManagementService
       noticationsEnabled = enabled;
    }
 
-   public Object getAttribute(final String objectNameStr, final String attribute)
+   public Object getAttribute(final String resourceName, final String attribute)
    {
       try
       {
-         ObjectName objectName = ObjectName.getInstance(objectNameStr);
-         Object resource = registry.get(objectName);
+         Object resource = registry.get(resourceName);
          Method method = null;
 
          try
@@ -646,10 +641,9 @@ public class ManagementServiceImpl implements ManagementService
       }
    }
 
-   private Object invokeOperation(final String objectNameStr, final String operation, final List<Object> params) throws Exception
+   private Object invokeOperation(final String resourceName, final String operation, final List<Object> params) throws Exception
    {
-      ObjectName objectName = ObjectName.getInstance(objectNameStr);
-      Object resource = registry.get(objectName);
+      Object resource = registry.get(resourceName);
       Method method = null;
 
       Method[] methods = resource.getClass().getMethods();

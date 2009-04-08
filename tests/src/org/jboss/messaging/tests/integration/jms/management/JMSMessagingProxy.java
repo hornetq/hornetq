@@ -28,7 +28,6 @@ import javax.jms.Queue;
 import javax.jms.QueueRequestor;
 import javax.jms.QueueSession;
 import javax.jms.Session;
-import javax.management.ObjectName;
 
 import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;
 
@@ -46,7 +45,7 @@ public class JMSMessagingProxy
 
    // Attributes ----------------------------------------------------
 
-   private final ObjectName on;
+   private final String resourceName;
 
    private Session session;
 
@@ -56,11 +55,11 @@ public class JMSMessagingProxy
 
    // Constructors --------------------------------------------------
 
-   public JMSMessagingProxy(QueueSession session, Queue managementQueue, ObjectName objectName) throws Exception
+   public JMSMessagingProxy(QueueSession session, Queue managementQueue, String resourceName) throws Exception
    {
       this.session = session;
 
-      this.on = objectName;
+      this.resourceName = resourceName;
 
       this.requestor = new QueueRequestor(session, managementQueue);
    }
@@ -76,7 +75,7 @@ public class JMSMessagingProxy
       try
       {
          Message m = session.createMessage();
-         JMSManagementHelper.putAttribute(m, on, attributeName);
+         JMSManagementHelper.putAttribute(m, resourceName, attributeName);
          ObjectMessage reply = (ObjectMessage)requestor.request(m);
          return reply.getObject();
       }
@@ -89,7 +88,7 @@ public class JMSMessagingProxy
    public Object invokeOperation(String operationName, Object... args) throws Exception
    {
       Message m = session.createMessage();
-      JMSManagementHelper.putOperationInvocation(m, on, operationName, args);
+      JMSManagementHelper.putOperationInvocation(m, resourceName, operationName, args);
       ObjectMessage reply = (ObjectMessage)requestor.request(m);
       if (JMSManagementHelper.hasOperationSucceeded(reply))
       {

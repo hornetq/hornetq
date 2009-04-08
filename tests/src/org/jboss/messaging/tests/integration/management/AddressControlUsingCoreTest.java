@@ -22,13 +22,11 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import org.jboss.messaging.core.management.AddressControlMBean;
-import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.core.management.Operation;
-import org.jboss.messaging.core.management.Parameter;
-import org.jboss.messaging.utils.SimpleString;
-
 import javax.management.openmbean.TabularData;
+
+import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.ResourceNames;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A JMXQueueControlTest
@@ -55,13 +53,26 @@ public class AddressControlUsingCoreTest extends AddressControlTest
    {
       return new AddressControlMBean()
       {
-         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                                         ObjectNames.getAddressObjectName(address));
+         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_ADDRESS + address);
 
-         @Operation(desc = "Add a Role to this address")
-         public void addRole(@Parameter(name = "name", desc = "Name of the role to add")String name, @Parameter(name = "send", desc = "Can the user send to an address?")boolean send, @Parameter(name = "consume", desc = "Can the user consume from this address?")boolean consume, @Parameter(name = "createDurableQueue", desc = "Can the user create a durable queue?")boolean createDurableQueue, @Parameter(name = "deleteDurableQueue", desc = "Can the user delete a durable queue?")boolean deleteDurableQueue, @Parameter(name = "createNonDurableQueue", desc = "Can the user create a temp queue?")boolean createNonDurableQueue, @Parameter(name = "deleteNonDurableQueue", desc = "Can the user delete a temp queue?")boolean deleteNonDurableQueue, @Parameter(name = "manage", desc = "Can the user send management messages?")boolean manage) throws Exception
+         public void addRole(String name,
+                             boolean send,
+                             boolean consume,
+                             boolean createDurableQueue,
+                             boolean deleteDurableQueue,
+                             boolean createNonDurableQueue,
+                             boolean deleteNonDurableQueue,
+                             boolean manage) throws Exception
          {
-            proxy.invokeOperation("addRole", name, send, consume,  createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
+            proxy.invokeOperation("addRole",
+                                  name,
+                                  send,
+                                  consume,
+                                  createDurableQueue,
+                                  deleteDurableQueue,
+                                  createNonDurableQueue,
+                                  deleteNonDurableQueue,
+                                  manage);
          }
 
          public String getAddress()
@@ -85,7 +96,6 @@ public class AddressControlUsingCoreTest extends AddressControlTest
          }
       };
    }
-
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

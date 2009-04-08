@@ -25,8 +25,8 @@ package org.jboss.messaging.tests.integration.management;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -57,8 +57,8 @@ public class QueueControlUsingCoreTest extends QueueControlTest
       {
 
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                                         ObjectNames.getQueueObjectName(address, queue));
-
+                                                                         ResourceNames.CORE_QUEUE + queue);
+         
          public boolean changeMessagePriority(long messageID, int newPriority) throws Exception
          {
             return (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);

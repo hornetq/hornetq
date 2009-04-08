@@ -31,11 +31,10 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A SecurityManagementTest
@@ -99,7 +98,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
          ClientRequestor requestor = new ClientRequestor(session, DEFAULT_MANAGEMENT_ADDRESS);
 
          ClientMessage mngmntMessage = session.createClientMessage(false);
-         ManagementHelper.putAttribute(mngmntMessage, ObjectNames.getMessagingServerObjectName(), "Started");
+         ManagementHelper.putAttribute(mngmntMessage, ResourceNames.CORE_SERVER, "Started");
          ClientMessage reply = requestor.request(mngmntMessage, 500);
          if (expectSuccess)
          {

@@ -25,12 +25,12 @@ package org.jboss.messaging.core.management.jmx.impl;
 import java.util.List;
 
 import javax.management.MBeanInfo;
-import javax.management.ObjectName;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
 
@@ -54,11 +54,10 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareMessagingServerControlWrapper(final ObjectName objectName,
-                                                        final MessagingServerControl localControl, 
+   public ReplicationAwareMessagingServerControlWrapper(final MessagingServerControl localControl, 
                                                         final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(objectName, MessagingServerControlMBean.class, replicationInvoker);
+      super(ResourceNames.CORE_SERVER, MessagingServerControlMBean.class, replicationInvoker);
 
       this.localControl = localControl;
    }

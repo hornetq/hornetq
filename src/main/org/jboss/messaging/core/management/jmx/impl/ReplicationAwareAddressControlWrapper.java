@@ -22,14 +22,14 @@
 
 package org.jboss.messaging.core.management.jmx.impl;
 
+import javax.management.MBeanInfo;
+import javax.management.openmbean.TabularData;
+
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.AddressControl;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
-
-import javax.management.MBeanInfo;
-import javax.management.ObjectName;
-import javax.management.openmbean.TabularData;
 
 /**
  * A ReplicationAwareAddressControlWrapper
@@ -50,11 +50,10 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareAddressControlWrapper(final ObjectName objectName, 
-                                                final AddressControl localAddressControl,
+   public ReplicationAwareAddressControlWrapper(final AddressControl localAddressControl,
                                                 final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(objectName, AddressControlMBean.class, replicationInvoker);
+      super(ResourceNames.CORE_ADDRESS + localAddressControl.getAddress(), AddressControlMBean.class, replicationInvoker);
 
       this.localAddressControl = localAddressControl;
    }

@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.ObjectName;
 
 /**
  * A ReplicationOperationInvoker
@@ -32,7 +31,7 @@ import javax.management.ObjectName;
 public interface ReplicationOperationInvoker
 {
 
-   Object invoke(ObjectName objectName, String operationName, Object... parameters) throws Exception;
+   Object invoke(String resourceName, String operationName, Object... parameters) throws Exception;
 
    void stop();
 }

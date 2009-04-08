@@ -27,15 +27,13 @@ import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MAN
 import javax.jms.QueueConnection;
 import javax.jms.QueueSession;
 import javax.jms.Session;
-import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 
 /**
@@ -86,7 +84,7 @@ public class TopicControlUsingJMSTest extends TopicControlTest
                                                   DEFAULT_MANAGEMENT_ADDRESS.toString());
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session,
                                                             managementQueue,
-                                                            ObjectNames.getJMSTopicObjectName(topic.getTopicName()));
+                                                            ResourceNames.JMS_TOPIC + topic.getTopicName());
 
       return new TopicControlMBean()
       {

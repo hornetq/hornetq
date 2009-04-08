@@ -23,11 +23,11 @@
 package org.jboss.messaging.jms.server.management.jmx.impl;
 
 import javax.management.MBeanInfo;
-import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
@@ -52,11 +52,10 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareJMSQueueControlWrapper(final ObjectName objectName, 
-                                                 final JMSQueueControl localControl,
+   public ReplicationAwareJMSQueueControlWrapper(final JMSQueueControl localControl,
                                                  final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(objectName, JMSQueueControlMBean.class, replicationInvoker);
+      super(ResourceNames.JMS_QUEUE + localControl.getName(), JMSQueueControlMBean.class, replicationInvoker);
       this.localControl = localControl;
    }
 

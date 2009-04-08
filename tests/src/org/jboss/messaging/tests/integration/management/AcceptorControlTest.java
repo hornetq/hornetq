@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createAcceptorControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.HashMap;
@@ -36,10 +35,9 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
-import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 
 /**
  * A AcceptorControlTest
@@ -81,7 +79,7 @@ public class AcceptorControlTest extends ManagementTestBase
       service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
-      AcceptorControlMBean acceptorControl = createAcceptorControl(acceptorConfig.getName(), mbeanServer);
+      AcceptorControlMBean acceptorControl = createManagementControl(acceptorConfig.getName());
 
       assertEquals(acceptorConfig.getName(), acceptorControl.getName());
       assertEquals(acceptorConfig.getFactoryClassName(), acceptorControl.getFactoryClassName());
@@ -89,7 +87,7 @@ public class AcceptorControlTest extends ManagementTestBase
 
    public void testStartStop() throws Exception
    {
-      TransportConfiguration acceptorConfig = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
+      TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
                                                                          randomString());
       Configuration conf = new ConfigurationImpl();
@@ -99,12 +97,12 @@ public class AcceptorControlTest extends ManagementTestBase
       service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
       service.start();
 
-      AcceptorControlMBean acceptorControl = createAcceptorControl(acceptorConfig.getName(), mbeanServer);
+      AcceptorControlMBean acceptorControl = createManagementControl(acceptorConfig.getName());
 
       // started by the server
       assertTrue(acceptorControl.isStarted());
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       ClientSession session = sf.createSession(false, true, true);
       assertNotNull(session);
       session.close();
@@ -201,6 +199,11 @@ public class AcceptorControlTest extends ManagementTestBase
       }
 
       super.tearDown();
+   }
+   
+   protected AcceptorControlMBean createManagementControl(String name) throws Exception
+   {
+      return ManagementControlHelper.createAcceptorControl(name, mbeanServer);
    }
    
    // Private -------------------------------------------------------

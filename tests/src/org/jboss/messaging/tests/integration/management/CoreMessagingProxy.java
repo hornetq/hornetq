@@ -24,8 +24,6 @@ package org.jboss.messaging.tests.integration.management;
 
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
 
-import javax.management.ObjectName;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;
@@ -45,7 +43,7 @@ public class CoreMessagingProxy
 
    // Attributes ----------------------------------------------------
 
-   private final ObjectName on;
+   private final String resourceName;
 
    private ClientSession session;
 
@@ -55,11 +53,11 @@ public class CoreMessagingProxy
 
    // Constructors --------------------------------------------------
 
-   public CoreMessagingProxy(ClientSession session, ObjectName objectName) throws Exception
+   public CoreMessagingProxy(ClientSession session, String resourceName) throws Exception
    {
       this.session = session;
 
-      this.on = objectName;
+      this.resourceName = resourceName;
 
       this.requestor = new ClientRequestor(session, DEFAULT_MANAGEMENT_ADDRESS);
 
@@ -74,7 +72,7 @@ public class CoreMessagingProxy
    public Object retrieveAttributeValue(String attributeName)
    {
       ClientMessage m = session.createClientMessage(false);
-      ManagementHelper.putAttribute(m, on, attributeName);
+      ManagementHelper.putAttribute(m, resourceName, attributeName);
       ClientMessage reply;
       try
       {
@@ -90,7 +88,7 @@ public class CoreMessagingProxy
    public Object invokeOperation(String operationName, Object... args) throws Exception
    {
       ClientMessage m = session.createClientMessage(false);
-      ManagementHelper.putOperationInvocation(m, on, operationName, args);
+      ManagementHelper.putOperationInvocation(m, resourceName, operationName, args);
       ClientMessage reply = requestor.request(m);
       if (ManagementHelper.hasOperationSucceeded(reply))
       {

@@ -82,7 +82,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
 
    // Public --------------------------------------------------------
 
-   public synchronized Object invoke(final ObjectName objectName,
+   public synchronized Object invoke(final String resourceName,
                                            final String operationName,
                                            final Object... parameters) throws Exception
    {
@@ -94,7 +94,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
          clientSession.start();
       }
       ClientMessage mngmntMessage = clientSession.createClientMessage(false);
-      ManagementHelper.putOperationInvocation(mngmntMessage, objectName, operationName, parameters);
+      ManagementHelper.putOperationInvocation(mngmntMessage, resourceName, operationName, parameters);
       ClientMessage reply = requestor.request(mngmntMessage, timeout);
 
       if (reply == null)

@@ -772,15 +772,13 @@ public class FileConfiguration extends ConfigurationImpl
 
       NodeList children = dvNode.getChildNodes();
 
+      name = dvNode.getAttribute("name");
+      
       for (int j = 0; j < children.getLength(); j++)
       {
          Node child = children.item(j);
 
-         if (child.getNodeName().equals("name"))
-         {
-            name = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("routing-name"))
+         if (child.getNodeName().equals("routing-name"))
          {
             routingName = child.getTextContent().trim();
          }

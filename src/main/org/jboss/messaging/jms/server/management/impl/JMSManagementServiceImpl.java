@@ -29,6 +29,7 @@ import javax.management.ObjectName;
 
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -71,24 +72,24 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    // JMSManagementRegistration implementation ----------------------
 
-   public void registerJMSServer(final JMSServerManager server) throws Exception
+   public synchronized void registerJMSServer(final JMSServerManager server) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSServerObjectName();
       JMSServerControl control = new JMSServerControl(server);
       managementService.registerInJMX(objectName,
-                                      new ReplicationAwareJMSServerControlWrapper(objectName, 
-                                                                                  control, 
+                                      new ReplicationAwareJMSServerControlWrapper(control, 
                                                                                   managementService.getReplicationOperationInvoker()));
-      managementService.registerInRegistry(objectName, control);
+      managementService.registerInRegistry(ResourceNames.JMS_SERVER, control);
    }
 
-   public void unregisterJMSServer() throws Exception
+   public synchronized void unregisterJMSServer() throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSServerObjectName();
-      managementService.unregisterResource(objectName);
+      managementService.unregisterFromJMX(objectName);
+      managementService.unregisterFromRegistry(ResourceNames.JMS_SERVER);
    }
 
-   public void registerQueue(final JBossQueue queue,
+   public synchronized void registerQueue(final JBossQueue queue,
                              final Queue coreQueue,
                              final String jndiBinding,
                              final PostOffice postOffice,
@@ -111,19 +112,19 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                                     addressSettingsRepository,
                                                     counter);
       managementService.registerInJMX(objectName,
-                                      new ReplicationAwareJMSQueueControlWrapper(objectName, 
-                                                                                 control, 
+                                      new ReplicationAwareJMSQueueControlWrapper(control, 
                                                                                  managementService.getReplicationOperationInvoker()));
-      managementService.registerInRegistry(objectName, control);
+      managementService.registerInRegistry(ResourceNames.JMS_QUEUE + queue.getQueueName(), control);
    }
 
-   public void unregisterQueue(final String name) throws Exception
+   public synchronized void unregisterQueue(final String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSQueueObjectName(name);
-      managementService.unregisterResource(objectName);
+      managementService.unregisterFromJMX(objectName);
+      managementService.unregisterFromRegistry(ResourceNames.JMS_QUEUE + name);
    }
 
-   public void registerTopic(final JBossTopic topic,
+   public synchronized void registerTopic(final JBossTopic topic,
                              final String jndiBinding,
                              final PostOffice postOffice,
                              final StorageManager storageManager,
@@ -131,35 +132,35 @@ public class JMSManagementServiceImpl implements JMSManagementService
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
       TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
-      managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(objectName,
-                                                                                          control,
+      managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(control,
                                                                                           managementService.getReplicationOperationInvoker()));
-      managementService.registerInRegistry(objectName, control);
+      managementService.registerInRegistry(ResourceNames.JMS_TOPIC + topic.getTopicName(), control);
    }
 
-   public void unregisterTopic(final String name) throws Exception
+   public synchronized void unregisterTopic(final String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(name);
-      managementService.unregisterResource(objectName);
+      managementService.unregisterFromJMX(objectName);
+      managementService.unregisterFromRegistry(ResourceNames.JMS_TOPIC + name);
    }
 
-   public void registerConnectionFactory(final String name,
+   public synchronized void registerConnectionFactory(final String name,
                                          final JBossConnectionFactory connectionFactory,
                                          final List<String> bindings) throws Exception
    {
       ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
       ConnectionFactoryControl control = new ConnectionFactoryControl(connectionFactory, name, bindings);
       managementService.registerInJMX(objectName,
-                                      new ReplicationAwareConnectionFactoryControlWrapper(objectName,
-                                                                                          control,
+                                      new ReplicationAwareConnectionFactoryControlWrapper(control,
                                                                                           managementService.getReplicationOperationInvoker()));
-      managementService.registerInRegistry(objectName, control);
+      managementService.registerInRegistry(ResourceNames.JMS_CONNECTION_FACTORY + name, control);
    }
 
-   public void unregisterConnectionFactory(final String name) throws Exception
+   public synchronized void unregisterConnectionFactory(final String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
-      managementService.unregisterResource(objectName);
+      managementService.unregisterFromJMX(objectName);
+      managementService.unregisterFromRegistry(ResourceNames.JMS_CONNECTION_FACTORY + name);
    }
 
    // Package protected ---------------------------------------------

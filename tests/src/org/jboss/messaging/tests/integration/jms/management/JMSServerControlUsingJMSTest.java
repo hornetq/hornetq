@@ -31,7 +31,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -91,8 +91,8 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                      DEFAULT_MANAGEMENT_ADDRESS.toString());
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session,
                                                             managementQueue,
-                                                            ObjectNames.getJMSServerObjectName());
-
+                                                            ResourceNames.JMS_SERVER);
+      
       return new JMSServerControlMBean()
       {
 

@@ -63,8 +63,8 @@ public class DivertControlTest extends ManagementTestBase
    public void testAttributes() throws Exception
    {
       checkResource(ObjectNames.getDivertObjectName(new SimpleString(divertConfig.getName())));
-      DivertControlMBean divertControl = ManagementControlHelper.createDivertControl(divertConfig.getName(),
-                                                                                     mbeanServer);
+      
+      DivertControlMBean divertControl = createManagementControl(divertConfig.getName());
 
       assertEquals(divertConfig.getFilterString(), divertControl.getFilter());
 
@@ -109,7 +109,7 @@ public class DivertControlTest extends ManagementTestBase
       conf.getQueueConfigurations().add(queueConfig);
       conf.getQueueConfigurations().add(fowardQueueConfig);
       conf.getDivertConfigurations().add(divertConfig);
-      
+
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
 
       service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
@@ -122,8 +122,13 @@ public class DivertControlTest extends ManagementTestBase
       service.stop();
 
       checkNoResource(ObjectNames.getDivertObjectName(new SimpleString(divertConfig.getName())));
-      
+
       super.tearDown();
+   }
+
+   protected DivertControlMBean createManagementControl(String name) throws Exception
+   {
+      return ManagementControlHelper.createDivertControl(name, mbeanServer);
    }
 
    // Private -------------------------------------------------------

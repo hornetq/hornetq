@@ -32,9 +32,9 @@ import javax.management.openmbean.TabularData;
  */
 public interface AcceptorControlMBean extends MessagingComponentControlMBean
 {
-   void pause();
+   void pause() throws Exception;
    
-   void resume();
+   void resume() throws Exception;
    
    String getName();
 
