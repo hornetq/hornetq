@@ -21,6 +21,12 @@
    */
 package org.jboss.jms.example;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -29,6 +35,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
+
+import org.jboss.messaging.jms.client.JBossMessage;
 
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends then receives a message.
@@ -46,6 +54,7 @@ public class LargeMessageExample extends JMSExample
    {
       Connection connection = null;
       InitialContext initialContext = null;
+      File tmpFile = File.createTempFile("example", ".jbm");
       try
       {
          //Step 1. Create an initial context to perform the JNDI lookup.
@@ -66,12 +75,25 @@ public class LargeMessageExample extends JMSExample
          //Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
 
+         {
+         FileOutputStream fileOut = new FileOutputStream(tmpFile);
+         BufferedOutputStream buffOut = new BufferedOutputStream(fileOut);
+         byte[] outBuffer = new byte[1024 * 1024]; 
+         for (int i = 0; i < 100 ; i++)
+         {
+            buffOut.write(outBuffer);
+         }
+         buffOut.close();
+         outBuffer = null;
+         }
+         
+         FileInputStream fileInput = new FileInputStream(tmpFile);
+         BufferedInputStream buffered = new BufferedInputStream(fileInput);
+         
          //Step 7. Create a BytesMessage with 1MB arbitrary bytes
          BytesMessage message = session.createBytesMessage();
-         byte[] bytes = new byte[100 * 1024 * 1024];
-         message.writeBytes(bytes);
          
-         System.out.println("Sending message of " + bytes.length + " bytes");
+         ((JBossMessage)message).getCoreMessage().setBodyInputStream(buffered);
          
          //Step 8. Send the Message
          producer.send(message);
@@ -88,8 +110,14 @@ public class LargeMessageExample extends JMSExample
 
          //Step 11. Receive the message
          BytesMessage messageReceived = (BytesMessage) messageConsumer.receive(60000);
+         
+         byte bytes[] = new byte[1024 * 1024];
+         for (int i = 0; i < 100 ; i++)
+         {
+            messageReceived.readBytes(bytes);
+         }
 
-         System.out.println("Received message: " + messageReceived.getBodyLength() + " bytes");
+         System.out.println("Received message: " + /*messageReceived.getBodyLength() + */" bytes");
 
          initialContext.close();
          
@@ -97,6 +125,13 @@ public class LargeMessageExample extends JMSExample
       }
       finally
       {
+         try
+         {
+            tmpFile.delete();
+         }
+         catch (Throwable ignored)
+         {
+         }
          //Step 12. Be sure to close our JMS resources!
          if (initialContext != null)
          {
