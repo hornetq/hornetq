@@ -1,24 +1,31 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Topic Selector Example 2</title>
+    <title>JBoss Messaging JMS Queue Selector Example</title>
     <link rel="stylesheet" type="text/css" href="../common/common.css">
   </head>
   <body>
-     <h1>JMS Topic Selector Example 2</h1>
+     <h1>JMS Queue Selector Example</h1>
      <br>
-     <p>This example shows you how to selectively consume messages using message selectors with topic consumers.</p>
+     <p>This example shows you how to selectively consume messages using message selectors with queue consumers.</p>
      
      <p>Message selectors are strings with special syntax that can be used in creating consumers. Message consumers
      that are thus created only receive messages that match its selector. On message delivering, the JBoss Message
      Server evaluates the corresponding message headers of the messages against each selector, if any, and then delivers
      the 'matched' messages to its consumer. Please consult the JMS 1.1 specification for full details.</p>
      
-     <p>In this example, three message consumers are created on a topic. The first consumer is created with selector
+     <p>In this example, three message consumers are created on a queue. The first consumer is created with selector
      <code>'color=red'</code>, it only receives messages that
      have a 'color' string property of 'red' value; the second is created with selector <code>'color=green'</code>, it 
      only receives messages who have a 'color' string property of 
      'green' value; and the thrid without a selector, which means it receives all messages. To illustrate, three messages 
      with different 'color' property values are created and sent.</p>
+
+     <p>Selectors can be used with both queue consumers and topic consumers. The difference is that with queue consumers,
+     a message is only delivered to one consumer on the queue, while topic consumers the message will be delivered to every
+     matching consumers. In this example, if the third consumer (anyConsumer) were the first consumer created, it will 
+     consume the first message delivered, therefore there is no chance for the next consumer to get the message, even if it
+     matches the selector.</p>
+     
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
@@ -29,9 +36,9 @@
            <code>InitialContext initialContext = getContext();</code>
         </pre>
 
-        <li>We look-up the JMS topic object from JNDI</li>
+        <li>We look-up the JMS queue object from JNDI</li>
         <pre>
-           <code>Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");</code>
+           <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>We look-up the JMS connection factory object from JNDI</li>
@@ -70,7 +77,7 @@
         <li>We Create a JMS Message Consumer that receives 'red' messages.</li>
         <pre>
           <code>
-          MessageConsumer redConsumer = session.createConsumer(topic, redSelector);
+          MessageConsumer redConsumer = session.createConsumer(queue, redSelector);
           redConsumer.setMessageListener(new SimpleMessageListener("red"));
          </code>
         </pre>
@@ -78,16 +85,18 @@
         <li>We Create a second JMS Message Consumer that receives 'green' messages.</li>
         <pre>
           <code>
-          MessageConsumer greenConsumer = session.createConsumer(topic, greenSelector);
+          MessageConsumer greenConsumer = session.createConsumer(queue, greenSelector);
           greenConsumer.setMessageListener(new SimpleMessageListener("green"));
          </code>
         </pre>
 
-        <li>We Create another JMS Message Consumer that receives all messages.</li>
+        <li>We Create another JMS Message Consumer that receives all messages. Please not that the order
+        of consumers on a queue is of significance. If the anyConsumer is created before the above two, the 
+        result will be totally different.</li>
         <pre>
           <code>
-          MessageConsumer allConsumer = session.createConsumer(topic);
-          allConsumer.setMessageListener(new SimpleMessageListener("all"));
+          MessageConsumer anyConsumer = session.createConsumer(queue);
+          anyConsumer.setMessageListener(new SimpleMessageListener("any"));
          </code>
         </pre>
 
@@ -130,7 +139,6 @@
               }
            }</code>
         </pre>
-
      </ol>
   </body>
 </html>
