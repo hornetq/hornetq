@@ -116,11 +116,12 @@ public class JMSServerManagerImpl implements JMSServerManager
       // we can't start any deployments until backup server is initialised
       DeploymentManager deploymentManager = server.getDeploymentManager();
       
-      log.info("deployment manager is " + deploymentManager);
+      if (deploymentManager != null)
+      {      
+         jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());     
       
-      jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());     
-      
-      jmsDeployer.start();
+         jmsDeployer.start();
+      }
       started = true;
    }
 
@@ -132,7 +133,10 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          return;
       }
-      jmsDeployer.stop();     
+      if (jmsDeployer != null)
+      {
+         jmsDeployer.stop();
+      }
       for (String destination : destinations.keySet())
       {
          undeployDestination(destination);
