@@ -61,7 +61,7 @@ public class SpawnedJMSServer
          System.setProperty("java.rmi.server.hostname", "localhost");
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-
+  
          final NamingBeanImpl namingInfo = new NamingBeanImpl();
          namingInfo.start();
          final Main jndiServer = new Main();
@@ -71,10 +71,11 @@ public class SpawnedJMSServer
          jndiServer.setRmiPort(1098);
          jndiServer.setRmiBindAddress("localhost");
          jndiServer.start();
-
+         
          Configuration conf = new ConfigurationImpl();
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
+         conf.setEnableFileDeployment(true);
          final MessagingServer server = Messaging.newMessagingServer(conf);
          server.start();
 
