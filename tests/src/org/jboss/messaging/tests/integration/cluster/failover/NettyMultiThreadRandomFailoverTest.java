@@ -56,7 +56,7 @@ public class NettyMultiThreadRandomFailoverTest extends MultiThreadRandomFailove
                 .add(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = Messaging.newNullStorageMessagingServer(backupConf);
+      backupServer = Messaging.newMessagingServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -72,7 +72,7 @@ public class NettyMultiThreadRandomFailoverTest extends MultiThreadRandomFailove
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+      liveServer = Messaging.newMessagingServer(liveConf, false);
       liveServer.start();
    }
 

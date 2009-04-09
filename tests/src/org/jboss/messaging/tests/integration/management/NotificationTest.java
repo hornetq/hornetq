@@ -209,7 +209,7 @@ public class NotificationTest extends UnitTestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newNullStorageMessagingServer(conf);
+      service = Messaging.newMessagingServer(conf, false);
       service.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

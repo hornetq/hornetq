@@ -54,9 +54,6 @@ public class LVQTest extends UnitTestCase
 
    private SimpleString qName1 = new SimpleString("LVQTestQ1");
 
-   private FakeStorageManager storageManager;
-
-
    public void testSimple() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(address, -1, true, true);
@@ -360,13 +357,13 @@ public class LVQTest extends UnitTestCase
       producer.send(m4);
       producer.send(m5);
       producer.send(m6);
-      assertEquals(1, storageManager.messageIds.size());
       clientSession.start();
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
       assertEquals(m.getBody().readString(), "m6");
-      assertEquals(0, storageManager.messageIds.size());
+      m = consumer.receive(250);
+      assertNull(m);
    }
 
    public void testMultipleMessagesPersistedCorrectlyInTx() throws Exception
@@ -398,14 +395,14 @@ public class LVQTest extends UnitTestCase
       producer.send(m4);
       producer.send(m5);
       producer.send(m6);
-      clientSessionTxSends.commit();
-      assertEquals(1, storageManager.messageIds.size());
+      clientSessionTxSends.commit();      
       clientSessionTxSends.start();
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
       assertEquals(m.getBody().readString(), "m6");
-      assertEquals(0, storageManager.messageIds.size());
+      m = consumer.receive(250);
+      assertNull(m);
    }
 
    public void testMultipleAcksPersistedCorrectly() throws Exception
@@ -461,8 +458,7 @@ public class LVQTest extends UnitTestCase
       m = consumer.receive(1000);
       assertNotNull(m);
       m.acknowledge();
-      assertEquals(m.getBody().readString(), "m6");
-      assertEquals(6, storageManager.ackIds.size());
+      assertEquals(m.getBody().readString(), "m6");      
    }
 
    public void testMultipleAcksPersistedCorrectlyInTx() throws Exception
@@ -519,13 +515,9 @@ public class LVQTest extends UnitTestCase
       assertNotNull(m);
       m.acknowledge();
       assertEquals(m.getBody().readString(), "m6");
-      clientSessionTxReceives.commit();
-      assertEquals(6, storageManager.ackIds.size());
+      clientSessionTxReceives.commit();      
    }
-
    
-
-
    protected void tearDown() throws Exception
    {
       if (clientSession != null)
@@ -563,9 +555,8 @@ public class LVQTest extends UnitTestCase
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
-      storageManager = new FakeStorageManager();
-      server = Messaging.newMessagingServer(configuration, storageManager);
+      configuration.getAcceptorConfigurations().add(transportConfig);     
+      server = Messaging.newMessagingServer(configuration, false);
       // start the server
       server.start();
 

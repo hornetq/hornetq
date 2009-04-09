@@ -57,7 +57,6 @@ import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
 import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
 import org.jboss.messaging.core.management.DivertControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationListener;
 import org.jboss.messaging.core.management.ObjectNames;
@@ -158,22 +157,22 @@ public class ManagementServiceImpl implements ManagementService
       return messageCounterManager;
    }
 
-   public MessagingServerControlMBean registerServer(final PostOffice postOffice,
-                                                     final StorageManager storageManager,
-                                                     final Configuration configuration,
-                                                     final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                                     final HierarchicalRepository<Set<Role>> securityRepository,
-                                                     final ResourceManager resourceManager,
-                                                     final RemotingService remotingService,
-                                                     final MessagingServer messagingServer,
-                                                     final QueueFactory queueFactory,
-                                                     final boolean backup) throws Exception
+   public MessagingServerControl registerServer(final PostOffice postOffice,
+                                                final StorageManager storageManager,
+                                                final Configuration configuration,
+                                                final HierarchicalRepository<AddressSettings> addressSettingsRepository,
+                                                final HierarchicalRepository<Set<Role>> securityRepository,
+                                                final ResourceManager resourceManager,
+                                                final RemotingService remotingService,
+                                                final MessagingServer messagingServer,
+                                                final QueueFactory queueFactory,
+                                                final boolean backup) throws Exception
    {
       this.postOffice = postOffice;
       this.addressSettingsRepository = addressSettingsRepository;
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
-      
+
       managedServer = new MessagingServerControl(postOffice,
                                                  storageManager,
                                                  configuration,
@@ -196,8 +195,8 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_SERVER);
-   }  
-   
+   }
+
    public synchronized void registerAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = ObjectNames.getAddressObjectName(address);
@@ -250,7 +249,7 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(ResourceNames.CORE_QUEUE + name);
       messageCounterManager.unregisterMessageCounter(name.toString());
    }
-   
+
    public synchronized void registerDivert(Divert divert, DivertConfiguration config) throws Exception
    {
       ObjectName objectName = ObjectNames.getDivertObjectName(divert.getUniqueName());
@@ -330,7 +329,7 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_BRIDGE + name);
    }
-   
+
    public synchronized void registerCluster(final ClusterConnection cluster, final ClusterConnectionConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getClusterConnectionObjectName(configuration.getName());
@@ -353,7 +352,7 @@ public class ManagementServiceImpl implements ManagementService
       // as an ObjectMessage when using JMS to send management message
       ServerMessageImpl reply = new ServerMessageImpl(message);
       reply.setType(MessageImpl.OBJECT_TYPE);
-      
+
       SimpleString resourceName = (SimpleString)message.getProperty(ManagementHelper.HDR_RESOURCE_NAME);
       if (log.isDebugEnabled())
       {
@@ -380,7 +379,7 @@ public class ManagementServiceImpl implements ManagementService
                ManagementHelper.storeResult(reply, result);
             }
             catch (Exception e)
-            {               
+            {
                log.warn("exception while invoking " + operation + " on " + resourceName, e);
                reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
                String exceptionMessage = e.getMessage();
@@ -391,7 +390,7 @@ public class ManagementServiceImpl implements ManagementService
                if (e != null)
                {
                   reply.putStringProperty(ManagementHelper.HDR_OPERATION_EXCEPTION,
-                                            new SimpleString(exceptionMessage));
+                                          new SimpleString(exceptionMessage));
                }
             }
          }
@@ -408,7 +407,7 @@ public class ManagementServiceImpl implements ManagementService
             }
          }
       }
-      
+
       return reply;
    }
 
@@ -548,9 +547,9 @@ public class ManagementServiceImpl implements ManagementService
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    public void sendNotification(final Notification notification) throws Exception
-   {     
+   {
       if (managedServer != null && noticationsEnabled)
       {
          // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
@@ -573,7 +572,7 @@ public class ManagementServiceImpl implements ManagementService
             // Now send message
 
             ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
-   
+
             notificationMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
             // Notification messages are always durable so the user can choose whether to add a durable queue to consume
             // them in
@@ -596,10 +595,10 @@ public class ManagementServiceImpl implements ManagementService
             notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
 
             if (notification.getUID() != null)
-            {               
+            {
                notifProps.putStringProperty(new SimpleString("foobar"), new SimpleString(notification.getUID()));
             }
-            
+
             notificationMessage.putTypedProperties(notifProps);
 
             postOffice.route(notificationMessage, null);

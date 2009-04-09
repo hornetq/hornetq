@@ -112,7 +112,7 @@ public class DivertControlTest extends ManagementTestBase
 
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
 
-      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
    }
 

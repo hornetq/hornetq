@@ -98,7 +98,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer server = Messaging.newMessagingServer(conf, false);
       server.start();
       HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
       JBMSecurityManagerImpl securityManager = (JBMSecurityManagerImpl)server.getSecurityManager();

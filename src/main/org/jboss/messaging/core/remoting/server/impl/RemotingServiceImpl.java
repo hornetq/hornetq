@@ -217,7 +217,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
       
       for (RemotingConnection connection: connections.values())
-      {                    
+      {     
          connection.getChannel(0, -1, false).sendAndFlush(new PacketImpl(DISCONNECT));
       }
 

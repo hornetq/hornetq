@@ -666,10 +666,10 @@ public class JMSQueueControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server = Messaging.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
-      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
+      serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
       context = new InVMContext();
       serverManager.setContext(context);

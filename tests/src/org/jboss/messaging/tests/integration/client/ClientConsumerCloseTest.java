@@ -109,7 +109,7 @@ public class ClientConsumerCloseTest extends ServiceTestBase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      server = Messaging.newNullStorageMessagingServer(config);
+      server = Messaging.newMessagingServer(config, false);
       server.start();
       
       SimpleString address = randomSimpleString();

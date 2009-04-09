@@ -82,7 +82,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  params));
-      MessagingServer service = Messaging.newNullStorageMessagingServer(serviceConf);
+      MessagingServer service = Messaging.newMessagingServer(serviceConf, false);
       return service;
    }
 

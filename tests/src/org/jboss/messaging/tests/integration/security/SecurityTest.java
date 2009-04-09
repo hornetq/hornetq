@@ -44,7 +44,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -72,7 +72,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+      JBMSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");
       try
@@ -131,7 +131,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+      JBMSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
       {
@@ -162,7 +162,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+      JBMSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
       {
@@ -197,7 +197,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -228,7 +228,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -267,7 +267,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, true, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -299,7 +299,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -339,7 +339,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -370,7 +370,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -409,7 +409,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, true, false);
          Set<Role> roles = new HashSet<Role>();
@@ -441,7 +441,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -481,7 +481,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", true, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -515,7 +515,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -556,7 +556,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -592,7 +592,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -633,7 +633,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -682,7 +682,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -744,7 +744,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -814,7 +814,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -918,7 +918,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, true);
          Set<Role> roles = new HashSet<Role>();
@@ -951,7 +951,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -992,7 +992,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager)server.getSecurityManager();
+         JBMSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -1027,10 +1027,9 @@ public class SecurityTest extends ServiceTestBase
       String domainName = SimpleLogingModule.class.getName();
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
       JAASSecurityManager securityManager = new JAASSecurityManager();
-      server.setSecurityManager(securityManager);
-
+      MessagingServer server = createServer(false, configuration, securityManager);      
+ 
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
       {
@@ -1070,10 +1069,9 @@ public class SecurityTest extends ServiceTestBase
       String domainName = SimpleLogingModule.class.getName();
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
       JAASSecurityManager securityManager = new JAASSecurityManager();
-      server.setSecurityManager(securityManager);
-
+      MessagingServer server = createServer(false, configuration, securityManager);
+      
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
       {

@@ -31,9 +31,10 @@ import java.util.jar.Manifest;
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.MessagingServerImpl;
 import org.jboss.messaging.jms.client.JBossConnectionMetaData;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -72,7 +73,7 @@ public class ManifestTest extends UnitTestCase
 
       try
       {
-         MessagingServer server = new MessagingServerImpl();
+         MessagingServer server = Messaging.newMessagingServer(new ConfigurationImpl());
 
 	      ConnectionMetaData meta = new JBossConnectionMetaData(server.getVersion());
 

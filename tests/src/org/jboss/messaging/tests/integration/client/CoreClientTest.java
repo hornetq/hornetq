@@ -75,7 +75,7 @@ public class CoreClientTest extends UnitTestCase
       
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactoryClassName));
             
-      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);   
+      MessagingServer server = Messaging.newMessagingServer(conf, false);   
            
       server.start();
       

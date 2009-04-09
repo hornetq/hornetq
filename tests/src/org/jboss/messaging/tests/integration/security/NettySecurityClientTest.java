@@ -84,7 +84,7 @@ public class NettySecurityClientTest extends UnitTestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      messagingService = Messaging.newNullStorageMessagingServer(config);
+      messagingService = Messaging.newMessagingServer(config, false);
       messagingService.start();
    }
 

@@ -1135,7 +1135,7 @@ public class QueueControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server = Messaging.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

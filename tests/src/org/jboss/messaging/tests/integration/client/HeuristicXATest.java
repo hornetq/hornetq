@@ -73,7 +73,7 @@ public class HeuristicXATest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
 
-      MessagingServer server = createService(false,
+      MessagingServer server = createServer(false,
                                                configuration,
                                                mbeanServer,
                                                new HashMap<String, AddressSettings>());
@@ -111,7 +111,7 @@ public class HeuristicXATest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
 
-      MessagingServer server = createService(false,
+      MessagingServer server = createServer(false,
                                                configuration,
                                                mbeanServer,
                                                new HashMap<String, AddressSettings>());

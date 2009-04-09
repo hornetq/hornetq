@@ -26,22 +26,34 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.management.MBeanServer;
+
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
+import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.deployers.impl.AddressSettingsDeployer;
+import org.jboss.messaging.core.deployers.impl.BasicUserCredentialsDeployer;
+import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
+import org.jboss.messaging.core.deployers.impl.QueueDeployer;
+import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
+import org.jboss.messaging.core.persistence.impl.nullpm.NullStorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -57,6 +69,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMe
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateStartupInfoMessage;
 import org.jboss.messaging.core.remoting.server.RemotingService;
+import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
@@ -114,9 +127,13 @@ public class MessagingServerImpl implements MessagingServer
 
    private final Version version;
 
-   private volatile boolean started;
+   private final JBMSecurityManager securityManager;
 
-   // wired components
+   private final Configuration configuration;
+
+   private final MBeanServer mbeanServer;
+
+   private volatile boolean started;
 
    private SecurityStore securityStore;
 
@@ -138,11 +155,27 @@ public class MessagingServerImpl implements MessagingServer
 
    private ResourceManager resourceManager;
 
-   private MessagingServerControlMBean serverManagement;
-
-   private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
+   private MessagingServerControl messagingServerControl;
 
    private ClusterManager clusterManager;
+
+   private StorageManager storageManager;
+
+   private RemotingService remotingService;
+
+   private ManagementService managementService;
+
+   private DeploymentManager deploymentManager;
+
+   private Deployer basicUserCredentialsDeployer;
+
+   private Deployer addressSettingsDeployer;
+
+   private Deployer queueDeployer;
+
+   private Deployer securityDeployer;
+
+   private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
    private ConnectorFactory backupConnectorFactory;
 
@@ -158,26 +191,37 @@ public class MessagingServerImpl implements MessagingServer
 
    private boolean initialised;
 
-   // plugins
-
-   private StorageManager storageManager;
-
-   private RemotingService remotingService;
-
-   private JBMSecurityManager securityManager;
-
-   private Configuration configuration;
-
-   private ManagementService managementService;
-
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public MessagingServerImpl()
+   public MessagingServerImpl(final Configuration configuration,
+                              final MBeanServer mbeanServer,
+                              final JBMSecurityManager securityManager)
    {
+      if (configuration == null)
+      {
+         throw new NullPointerException("Must inject Configuration into MessagingServer constructor");
+      }
+
+      if (mbeanServer == null)
+      {
+         throw new NullPointerException("Must inject MBeanServer into MessagingServer constructor");
+      }
+
+      if (securityManager == null)
+      {
+         throw new NullPointerException("Must inject SecurityManager into MessagingServer constructor");
+      }
+
       // We need to hard code the version information into a source file
 
       version = VersionLoader.getVersion();
+
+      this.configuration = configuration;
+
+      this.mbeanServer = mbeanServer;
+
+      this.securityManager = securityManager;      
    }
 
    // lifecycle methods
@@ -189,49 +233,18 @@ public class MessagingServerImpl implements MessagingServer
 
       executorFactory = new org.jboss.messaging.utils.OrderedExecutorFactory(asyncDeliveryPool);
 
-      /*
-       * The following components are pluggable on the messaging server: Configuration, StorageManager, RemotingService,
-       * SecurityManager and ManagementRegistration They must already be injected by the time the messaging server
-       * starts It's up to the user to make sure the pluggable components are started - their lifecycle will not be
-       * controlled here
-       */
-
-      // We make sure the pluggable components have been injected
-      if (configuration == null)
+      if (configuration.isEnablePersistence())
       {
-         throw new IllegalStateException("Must inject Configuration before starting MessagingServer");
+         storageManager = new JournalStorageManager(configuration);
       }
-
-      if (storageManager == null)
+      else
       {
-         throw new IllegalStateException("Must inject StorageManager before starting MessagingServer");
+         storageManager = new NullStorageManager();
       }
-
-      if (remotingService == null)
-      {
-         throw new IllegalStateException("Must inject RemotingService before starting MessagingServer");
-      }
-
-      if (securityManager == null)
-      {
-         throw new IllegalStateException("Must inject SecurityManager before starting MessagingServer");
-      }
-
-      if (managementService == null)
-      {
-         throw new IllegalStateException("Must inject ManagementRegistration before starting MessagingServer");
-      }
-
-      configuration.start();
 
       storageManager.start();
 
       securityManager.start();
-
-      managementService.start();
-
-      // The rest of the components are not pluggable and created and started
-      // here
 
       initialised = !configuration.isBackup();
 
@@ -277,6 +290,8 @@ public class MessagingServerImpl implements MessagingServer
       managementService.setClusterPassword(configuration.getManagementClusterPassword());
       managementService.setManagementRequestTimeout(configuration.getManagementRequestTimeout());
 
+      managementService.start();
+
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
       storageManager.loadBindingJournal(queueBindingInfos);
@@ -293,14 +308,14 @@ public class MessagingServerImpl implements MessagingServer
 
                storageManager.setPersistentID(uuid);
             }
-            
-            nodeID = new SimpleString(uuid.toString());            
+
+            nodeID = new SimpleString(uuid.toString());
          }
       }
       else
       {
          UUID currentUUID = storageManager.getPersistentID();
-         
+
          if (currentUUID != null)
          {
             if (!currentUUID.equals(uuid))
@@ -313,17 +328,17 @@ public class MessagingServerImpl implements MessagingServer
             storageManager.setPersistentID(uuid);
          }
       }
-      
-      serverManagement = managementService.registerServer(postOffice,
-                                                          storageManager,
-                                                          configuration,
-                                                          addressSettingsRepository,
-                                                          securityRepository,
-                                                          resourceManager,
-                                                          remotingService,
-                                                          this,
-                                                          queueFactory,
-                                                          configuration.isBackup());
+
+      messagingServerControl = managementService.registerServer(postOffice,
+                                                                storageManager,
+                                                                configuration,
+                                                                addressSettingsRepository,
+                                                                securityRepository,
+                                                                resourceManager,
+                                                                remotingService,
+                                                                this,
+                                                                queueFactory,
+                                                                configuration.isBackup());
 
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
@@ -440,8 +455,33 @@ public class MessagingServerImpl implements MessagingServer
       // This is the last thing done at the start, after everything else is up and running
       pagingManager.startGlobalDepage();
 
-      if (!configuration.isBackup())
+      // Start the deployers
+      if (configuration.isEnableFileDeployment())
       {
+         basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
+
+         addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
+
+         queueDeployer = new QueueDeployer(deploymentManager, configuration);
+
+         securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
+
+         basicUserCredentialsDeployer.start();
+
+         addressSettingsDeployer.start();
+
+         queueDeployer.start();
+
+         securityDeployer.start();
+      }
+
+      if (!configuration.isBackup())
+      {         
+         if (deploymentManager != null)
+         {
+            deploymentManager.start();
+         }
+
          // Once we ready we can start the remoting service so we can start accepting connections
          remotingService.start();
       }
@@ -456,7 +496,17 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
+      remotingService = new RemotingServiceImpl(configuration);
+
       remotingService.setMessagingServer(this);
+
+      managementService = new ManagementServiceImpl(mbeanServer, configuration.isJMXManagementEnabled());
+     
+      if (configuration.isEnableFileDeployment())
+      {
+         // We need to create it now but not start it
+         deploymentManager = new FileDeploymentManager(configuration.getFileDeployerScanPeriod());
+      }
 
       if (configuration.isBackup())
       {
@@ -477,7 +527,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-
+      
       if (clusterManager != null)
       {
          clusterManager.stop();
@@ -485,13 +535,25 @@ public class MessagingServerImpl implements MessagingServer
 
       remotingService.stop();
 
+      // Stop the deployers
+      if (configuration.isEnableFileDeployment())
+      {
+         basicUserCredentialsDeployer.stop();
+
+         addressSettingsDeployer.stop();
+
+         queueDeployer.stop();
+
+         securityDeployer.stop();
+
+         deploymentManager.stop();
+      }
+
       managementService.stop();
 
       storageManager.stop();
 
       securityManager.stop();
-      
-      configuration.stop();
 
       asyncDeliveryPool.shutdown();
 
@@ -533,7 +595,7 @@ public class MessagingServerImpl implements MessagingServer
       scheduledExecutor.shutdown();
       queueFactory = null;
       resourceManager = null;
-      serverManagement = null;
+      messagingServerControl = null;
 
       sessions.clear();
 
@@ -546,30 +608,14 @@ public class MessagingServerImpl implements MessagingServer
    // MessagingServer implementation
    // -----------------------------------------------------------
 
-   // The plugabble components
-
-   public void setConfiguration(final Configuration configuration)
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set configuration when started");
-      }
-
-      this.configuration = configuration;
-   }
-
    public Configuration getConfiguration()
    {
       return configuration;
    }
 
-   public void setRemotingService(final RemotingService remotingService)
+   public MBeanServer getMBeanServer()
    {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set remoting server when started");
-      }
-      this.remotingService = remotingService;
+      return mbeanServer;
    }
 
    public RemotingService getRemotingService()
@@ -577,28 +623,9 @@ public class MessagingServerImpl implements MessagingServer
       return remotingService;
    }
 
-   public void setStorageManager(final StorageManager storageManager)
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set storage manager when started");
-      }
-      this.storageManager = storageManager;
-   }
-
    public StorageManager getStorageManager()
    {
       return storageManager;
-   }
-
-   public void setSecurityManager(final JBMSecurityManager securityManager)
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set security Manager when started");
-      }
-
-      this.securityManager = securityManager;
    }
 
    public JBMSecurityManager getSecurityManager()
@@ -606,30 +633,24 @@ public class MessagingServerImpl implements MessagingServer
       return securityManager;
    }
 
-   public void setManagementService(final ManagementService managementService)
-   {
-      if (started)
-      {
-         throw new IllegalStateException("Cannot set management server when started");
-      }
-      this.managementService = managementService;
-   }
-
    public ManagementService getManagementService()
    {
       return managementService;
    }
 
-   // This is needed for the security deployer
    public HierarchicalRepository<Set<Role>> getSecurityRepository()
    {
       return securityRepository;
    }
 
-   // This is needed for the queue settings deployer
    public HierarchicalRepository<AddressSettings> getAddressSettingsRepository()
    {
       return addressSettingsRepository;
+   }
+
+   public DeploymentManager getDeploymentManager()
+   {
+      return deploymentManager;
    }
 
    public ResourceManager getResourceManager()
@@ -670,7 +691,7 @@ public class MessagingServerImpl implements MessagingServer
             }
 
             configuration.setBackup(false);
- 
+
             if (clusterManager != null)
             {
                clusterManager.activate();
@@ -857,9 +878,9 @@ public class MessagingServerImpl implements MessagingServer
          this.uuid = theUUID;
 
          this.nodeID = new SimpleString(uuid.toString());
-         
+
          doStart();
-         
+
          if (currentMessageID != this.storageManager.getCurrentUniqueID())
          {
             throw new IllegalStateException("Backup node current id sequence != live node current id sequence " + this.storageManager.getCurrentUniqueID() +
@@ -869,12 +890,19 @@ public class MessagingServerImpl implements MessagingServer
 
          initialised = true;
 
+         // Now we can start the deploymentManager
+
+         if (deploymentManager != null)
+         {           
+            deploymentManager.start();
+         }
+
          log.info("Backup server is now operational");
       }
    }
 
    public Channel getReplicatingChannel()
-   {
+   {      
       synchronized (replicatingChannelLock)
       {
          if (replicatingChannel == null && backupConnectorFactory != null)
@@ -937,9 +965,9 @@ public class MessagingServerImpl implements MessagingServer
       return replicatingChannel;
    }
 
-   public MessagingServerControlMBean getServerManagement()
+   public MessagingServerControl getMessagingServerControl()
    {
-      return serverManagement;
+      return messagingServerControl;
    }
 
    public int getConnectionCount()
@@ -984,8 +1012,6 @@ public class MessagingServerImpl implements MessagingServer
 
       final Queue queue = queueFactory.createQueue(-1, address, queueName, filter, durable, temporary);
 
-      // The unique name is given by the concatenation of the node id and the queue name - this is because it must be
-      // unique *across the entire cluster*
       binding = new LocalQueueBinding(address, queue, nodeID);
 
       if (durable)
@@ -997,9 +1023,8 @@ public class MessagingServerImpl implements MessagingServer
 
       return queue;
    }
-   
-   public void handleReplicateRedistribution(final SimpleString queueName, final long messageID)
-      throws Exception
+
+   public void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
 
@@ -1009,18 +1034,18 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       Queue queue = (Queue)binding.getBindable();
-      
+
       MessageReference reference = queue.removeFirstReference(messageID);
-      
+
       Transaction tx = new TransactionImpl(storageManager);
 
       boolean routed = postOffice.redistribute(reference.getMessage(), queue.getName(), tx);
 
       if (routed)
-      {         
+      {
          queue.acknowledge(tx, reference);
 
-         tx.commit();           
+         tx.commit();
       }
       else
       {

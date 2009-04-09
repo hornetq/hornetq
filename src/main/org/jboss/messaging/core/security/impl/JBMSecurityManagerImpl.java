@@ -18,14 +18,9 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.security.impl;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
-import org.jboss.messaging.core.security.Role;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,13 +28,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.security.CheckType;
+import org.jboss.messaging.core.security.JBMSecurityManager;
+import org.jboss.messaging.core.security.Role;
+
 /**
  * A basic implementation of the JBMUpdateableSecurityManager. This can be used within an appserver and be deployed by
- * BasicSecurityDeployer or used standalone or embedded.
+ * BasicUserCredentialsDeployer or used standalone or embedded.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
+public class JBMSecurityManagerImpl implements JBMSecurityManager
 {
    private static final Logger log = Logger.getLogger(JBMSecurityManagerImpl.class);
 
@@ -59,49 +59,56 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
     */
    private Map<String, List<String>> roles = new HashMap<String, List<String>>();
 
-   
    // MessagingComponent implementation ------------------------------------------
-   
+
    public void start()
-   {      
+   {
    }
-   
+
    public void stop()
-   {   
+   {
       users.clear();
-      
+
       roles.clear();
-      
+
       defaultUser = null;
    }
-   
+
    public boolean isStarted()
    {
       return true;
    }
 
    // Public ---------------------------------------------------------------------
-   
+
    public boolean validateUser(final String user, final String password)
    {
-      if(user == null && defaultUser == null)
+      if (user == null && defaultUser == null)
       {
          return false;
       }
-      User theUser = users.get(user == null ? defaultUser : user);
-      return theUser != null && theUser.isValid(user == null ? defaultUser : user, password == null ? defaultUser : password);
 
+      User theUser = users.get(user == null ? defaultUser : user);
+
+      boolean ok = theUser != null && theUser.isValid(user == null ? defaultUser : user, password == null ? defaultUser
+                                                                                                   : password);
+      return ok;
    }
 
-   public boolean validateUserAndRole(final String user, final String password, final Set<Role> roles, final CheckType checkType)
-   {
+   public boolean validateUserAndRole(final String user,
+                                      final String password,
+                                      final Set<Role> roles,
+                                      final CheckType checkType)
+   {      
       if (validateUser(user, password))
       {
          List<String> availableRoles = this.roles.get(user == null ? defaultUser : user);
-         if(availableRoles == null)
-         {
+         
+         if (availableRoles == null)
+         {         
             return false;
          }
+         
          for (String availableRole : availableRoles)
          {
             if (roles != null)
@@ -109,13 +116,14 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
                for (Role role : roles)
                {
                   if (role.getName().equals(availableRole) && checkType.hasRole(role))
-                  {
+                  {                    
                      return true;
                   }
                }
             }
          }
       }
+
       return false;
    }
 
@@ -167,6 +175,7 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
    static class User
    {
       final String user;
+
       final String password;
 
       User(final String user, final String password)
@@ -177,12 +186,15 @@ public class JBMSecurityManagerImpl implements JBMUpdateableSecurityManager
 
       public boolean equals(Object o)
       {
-         if (this == o) return true;
-         if (o == null || getClass() != o.getClass()) return false;
+         if (this == o)
+            return true;
+         if (o == null || getClass() != o.getClass())
+            return false;
 
-         User user1 = (User) o;
+         User user1 = (User)o;
 
-         if (!user.equals(user1.user)) return false;
+         if (!user.equals(user1.user))
+            return false;
 
          return true;
       }

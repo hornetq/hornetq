@@ -75,10 +75,10 @@ public class SpawnedJMSServer
          Configuration conf = new ConfigurationImpl();
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
-         final MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
+         final MessagingServer server = Messaging.newMessagingServer(conf);
          server.start();
 
-         JMSServerManager serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
+         JMSServerManager serverManager = new JMSServerManagerImpl(server);
          serverManager.start();
 
          Hashtable<String, String> env = new Hashtable<String, String>();

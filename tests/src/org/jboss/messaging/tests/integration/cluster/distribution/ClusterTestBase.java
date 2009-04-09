@@ -914,7 +914,7 @@ public class ClusterTestBase extends ServiceTestBase
       }
       else
       {
-         server = Messaging.newNullStorageMessagingServer(configuration);
+         server = Messaging.newMessagingServer(configuration, false);
       }
       servers[node] = server;
    }
@@ -1040,7 +1040,7 @@ public class ClusterTestBase extends ServiceTestBase
       }
       else
       {
-         server = Messaging.newNullStorageMessagingServer(configuration);
+         server = Messaging.newMessagingServer(configuration, false);
       }
       servers[node] = server;
    }

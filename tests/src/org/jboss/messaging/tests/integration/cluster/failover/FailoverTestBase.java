@@ -132,7 +132,7 @@ public class FailoverTestBase extends ServiceTestBase
       }
       else
       {
-         backupServer = Messaging.newNullStorageMessagingServer(backupConf);
+         backupServer = Messaging.newMessagingServer(backupConf, false);
       }
 
       backupServer.start();
@@ -173,7 +173,7 @@ public class FailoverTestBase extends ServiceTestBase
       }
       else
       {
-         liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+         liveServer = Messaging.newMessagingServer(liveConf, false);
       }
 
       AddressSettings settings = new AddressSettings();
@@ -216,7 +216,7 @@ public class FailoverTestBase extends ServiceTestBase
       }
       else
       {
-         backupServer = Messaging.newNullStorageMessagingServer(backupConf);
+         backupServer = Messaging.newMessagingServer(backupConf, false);
       }
       
       backupServer.start();
@@ -267,10 +267,10 @@ public class FailoverTestBase extends ServiceTestBase
       }
       else
       {
-         liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+         liveServer = Messaging.newMessagingServer(liveConf, false);
       }
 
-      liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+      liveServer = Messaging.newMessagingServer(liveConf, false);
       liveServer.start();
 
    }

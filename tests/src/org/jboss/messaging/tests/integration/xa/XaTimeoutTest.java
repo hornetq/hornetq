@@ -77,7 +77,7 @@ public class XaTimeoutTest extends UnitTestCase
       configuration.setTransactionTimeoutScanPeriod(500);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = Messaging.newNullStorageMessagingServer(configuration);
+      messagingService = Messaging.newMessagingServer(configuration, false);
       //start the server
       messagingService.start();
       //then we create a client as normal

@@ -2,7 +2,7 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
    <configuration>
-
+   
       <!-- Connectors -->
 
       <connector name="netty-connector">

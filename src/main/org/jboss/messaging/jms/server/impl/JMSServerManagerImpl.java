@@ -24,22 +24,29 @@ package org.jboss.messaging.jms.server.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.management.NotificationBroadcasterSupport;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.management.impl.MessagingServerControl;
-import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
+import org.jboss.messaging.core.persistence.StorageManager;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -54,11 +61,12 @@ import org.jboss.messaging.utils.Pair;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class JMSServerManagerImpl implements JMSServerManager
 {
    private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
-   
+
    private static final String REJECT_FILTER = "__JBMX=-1";
 
    /**
@@ -72,35 +80,28 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    private final Map<String, List<String>> connectionFactoryBindings = new HashMap<String, List<String>>();
 
-   private final MessagingServerControlMBean messagingServer;
+   private final MessagingServer server;
 
    private final JMSManagementService managementService;
 
-   public static JMSServerManagerImpl newJMSServerManagerImpl(final MessagingServer server) throws Exception
+   private Deployer jmsDeployer;
+
+   private boolean started;
+
+   public JMSServerManagerImpl(final MessagingServer server)
    {
-      MessagingServerControlMBean control = new MessagingServerControl(server.getPostOffice(),
-                                                                       server.getStorageManager(),
-                                                                       server.getConfiguration(),                                                                    
-                                                                       server.getResourceManager(),
-                                                                       server.getRemotingService(),
-                                                                       server,
-                                                                       new MessageCounterManagerImpl(),
-                                                                       new NotificationBroadcasterSupport(),
-                                                                       server.getQueueFactory());
-      JMSManagementService jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
-      return new JMSServerManagerImpl(control,
-                                      jmsManagementService);
+      this.server = server;
+
+      managementService = new JMSManagementServiceImpl(server.getManagementService());          
    }
 
-   public JMSServerManagerImpl(final MessagingServerControlMBean server,
-                               final JMSManagementService managementService)
+   public synchronized void start() throws Exception
    {
-      messagingServer = server;
-      this.managementService = managementService;
-   }
+      if (started)
+      {
+         return;
+      }
 
-   public void start() throws Exception
-   {
       try
       {
          context = new InitialContext();
@@ -110,35 +111,66 @@ public class JMSServerManagerImpl implements JMSServerManager
          log.error("Unable to create Initial Context", e);
       }
       managementService.registerJMSServer(this);
+      
+      // The deployment manager is started in the core server - this is necessary since
+      // we can't start any deployments until backup server is initialised
+      DeploymentManager deploymentManager = server.getDeploymentManager();
+      
+      log.info("deployment manager is " + deploymentManager);
+      
+      jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());     
+      
+      jmsDeployer.start();
+      started = true;
    }
-   
+
    // MessagingComponent implementation -----------------------------------
-   
-   public void stop()
-   {      
+
+   public synchronized void stop() throws Exception
+   {
+      if (!started)
+      {
+         return;
+      }
+      jmsDeployer.stop();     
+      for (String destination : destinations.keySet())
+      {
+         undeployDestination(destination);
+      }
+      for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
+      {
+         destroyConnectionFactory(connectionFactory);
+      }
+      destinations.clear();
+      connectionFactories.clear();
+      connectionFactoryBindings.clear();
+      context.close();
+      started = false;
    }
-   
+
    public boolean isStarted()
    {
-      return messagingServer.isStarted();
+      return server.getMessagingServerControl().isStarted();
    }
 
    // JMSServerManager implementation -------------------------------
-   
+
    public void setContext(final Context context)
    {
       this.context = context;
    }
-   
+
    public String getVersion()
    {
-      return messagingServer.getVersion();
+      checkInitialised();
+      return server.getMessagingServerControl().getVersion();
    }
 
    public synchronized boolean createQueue(final String queueName, final String jndiBinding) throws Exception
    {
+      checkInitialised();
       JBossQueue jBossQueue = new JBossQueue(queueName);      
-      messagingServer.createQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
+      server.getMessagingServerControl().createQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
       boolean added = bindToJndi(jndiBinding, jBossQueue);
       if (added)
       {
@@ -151,10 +183,11 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public synchronized boolean createTopic(final String topicName, final String jndiBinding) throws Exception
    {
+      checkInitialised();
       JBossTopic jBossTopic = new JBossTopic(topicName);
       //We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS checks when routing messages to a topic that
       //does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no subscriptions - core has no notion of a topic      
-      messagingServer.createQueue(jBossTopic.getAddress(), jBossTopic.getAddress(), REJECT_FILTER, true);
+      server.getMessagingServerControl().createQueue(jBossTopic.getAddress(), jBossTopic.getAddress(), REJECT_FILTER, true);
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
       {
@@ -166,6 +199,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public synchronized boolean undeployDestination(final String name) throws Exception
    {
+      checkInitialised();
       List<String> jndiBindings = destinations.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
       {
@@ -180,52 +214,55 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public synchronized boolean destroyQueue(final String name) throws Exception
    {
+      checkInitialised();
       undeployDestination(name);
 
       destinations.remove(name);
       managementService.unregisterQueue(name);
-      messagingServer.destroyQueue(JBossQueue.createAddressFromName(name).toString());
+      server.getMessagingServerControl().destroyQueue(JBossQueue.createAddressFromName(name).toString());
 
       return true;
    }
 
    public synchronized boolean destroyTopic(final String name) throws Exception
    {
+      checkInitialised();
       undeployDestination(name);
 
       destinations.remove(name);
       managementService.unregisterTopic(name);
-      messagingServer.destroyQueue(JBossTopic.createAddressFromName(name).toString());
+      server.getMessagingServerControl().destroyQueue(JBossTopic.createAddressFromName(name).toString());
 
       return true;
    }
 
    public synchronized boolean createConnectionFactory(final String name,
-                                          final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                          final String connectionLoadBalancingPolicyClassName,
-                                          final long pingPeriod,
-                                          final long connectionTTL,
-                                          final long callTimeout,
-                                          final String clientID,
-                                          final int dupsOKBatchSize,
-                                          final int transactionBatchSize,
-                                          final int consumerWindowSize,
-                                          final int consumerMaxRate,
-                                          final int sendWindowSize,
-                                          final int producerMaxRate,
-                                          final int minLargeMessageSize,
-                                          final boolean blockOnAcknowledge,
-                                          final boolean blockOnNonPersistentSend,
-                                          final boolean blockOnPersistentSend,
-                                          final boolean autoGroup,
-                                          final int maxConnections,
-                                          final boolean preAcknowledge,                                        
-                                          final long retryInterval,
-                                          final double retryIntervalMultiplier,                                          
-                                          final int reconnectAttempts,
-                                          final boolean failoverOnNodeShutdown,
-                                          final List<String> jndiBindings) throws Exception
+                                                       final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                                       final String connectionLoadBalancingPolicyClassName,
+                                                       final long pingPeriod,
+                                                       final long connectionTTL,
+                                                       final long callTimeout,
+                                                       final String clientID,
+                                                       final int dupsOKBatchSize,
+                                                       final int transactionBatchSize,
+                                                       final int consumerWindowSize,
+                                                       final int consumerMaxRate,
+                                                       final int sendWindowSize,
+                                                       final int producerMaxRate,
+                                                       final int minLargeMessageSize,
+                                                       final boolean blockOnAcknowledge,
+                                                       final boolean blockOnNonPersistentSend,
+                                                       final boolean blockOnPersistentSend,
+                                                       final boolean autoGroup,
+                                                       final int maxConnections,
+                                                       final boolean preAcknowledge,
+                                                       final long retryInterval,
+                                                       final double retryIntervalMultiplier,
+                                                       final int reconnectAttempts,
+                                                       final boolean failoverOnNodeShutdown,
+                                                       final List<String> jndiBindings) throws Exception
    {
+      checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
@@ -247,9 +284,9 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnPersistentSend,
                                          autoGroup,
                                          maxConnections,
-                                         preAcknowledge,                                     
+                                         preAcknowledge,
                                          retryInterval,
-                                         retryIntervalMultiplier,                                         
+                                         retryIntervalMultiplier,
                                          reconnectAttempts,
                                          failoverOnNodeShutdown);
       }
@@ -263,6 +300,7 @@ public class JMSServerManagerImpl implements JMSServerManager
                                                        final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                                        final List<String> jndiBindings) throws Exception
    {
+      checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
@@ -273,19 +311,24 @@ public class JMSServerManagerImpl implements JMSServerManager
 
       return true;
    }
-   
+
    public synchronized boolean createConnectionFactory(String name,
-                                          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                          boolean blockOnAcknowledge,
-                                          boolean blockOnNonPersistentSend,
-                                          boolean blockOnPersistentSend,
-                                          boolean preAcknowledge,
-                                          List<String> jndiBindings) throws Exception
+                                                       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                                       boolean blockOnAcknowledge,
+                                                       boolean blockOnNonPersistentSend,
+                                                       boolean blockOnPersistentSend,
+                                                       boolean preAcknowledge,
+                                                       List<String> jndiBindings) throws Exception
    {
+      checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorConfigs, blockOnAcknowledge, blockOnNonPersistentSend, blockOnPersistentSend, preAcknowledge);
+         cf = new JBossConnectionFactory(connectorConfigs,
+                                         blockOnAcknowledge,
+                                         blockOnNonPersistentSend,
+                                         blockOnPersistentSend,
+                                         preAcknowledge);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -294,32 +337,33 @@ public class JMSServerManagerImpl implements JMSServerManager
    }
 
    public synchronized boolean createConnectionFactory(final String name,
-                                          final DiscoveryGroupConfiguration discoveryGroupConfig,
-                                          final long discoveryInitialWait,
-                                          final String connectionLoadBalancingPolicyClassName,
-                                          final long pingPeriod,
-                                          final long connectionTTL,
-                                          final long callTimeout,
-                                          final String clientID,
-                                          final int dupsOKBatchSize,
-                                          final int transactionBatchSize,
-                                          final int consumerWindowSize,
-                                          final int consumerMaxRate,
-                                          final int sendWindowSize,
-                                          final int producerMaxRate,
-                                          final int minLargeMessageSize,
-                                          final boolean blockOnAcknowledge,
-                                          final boolean blockOnNonPersistentSend,
-                                          final boolean blockOnPersistentSend,
-                                          final boolean autoGroup,
-                                          final int maxConnections,
-                                          final boolean preAcknowledge,                                 
-                                          final long retryInterval,
-                                          final double retryIntervalMultiplier,                                          
-                                          final int reconnectAttempts,
-                                          final boolean failoverOnNodeShutdown,
-                                          final List<String> jndiBindings) throws Exception
+                                                       final DiscoveryGroupConfiguration discoveryGroupConfig,
+                                                       final long discoveryInitialWait,
+                                                       final String connectionLoadBalancingPolicyClassName,
+                                                       final long pingPeriod,
+                                                       final long connectionTTL,
+                                                       final long callTimeout,
+                                                       final String clientID,
+                                                       final int dupsOKBatchSize,
+                                                       final int transactionBatchSize,
+                                                       final int consumerWindowSize,
+                                                       final int consumerMaxRate,
+                                                       final int sendWindowSize,
+                                                       final int producerMaxRate,
+                                                       final int minLargeMessageSize,
+                                                       final boolean blockOnAcknowledge,
+                                                       final boolean blockOnNonPersistentSend,
+                                                       final boolean blockOnPersistentSend,
+                                                       final boolean autoGroup,
+                                                       final int maxConnections,
+                                                       final boolean preAcknowledge,
+                                                       final long retryInterval,
+                                                       final double retryIntervalMultiplier,
+                                                       final int reconnectAttempts,
+                                                       final boolean failoverOnNodeShutdown,
+                                                       final List<String> jndiBindings) throws Exception
    {
+      checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
@@ -344,9 +388,9 @@ public class JMSServerManagerImpl implements JMSServerManager
                                          blockOnPersistentSend,
                                          autoGroup,
                                          maxConnections,
-                                         preAcknowledge,                                   
+                                         preAcknowledge,
                                          retryInterval,
-                                         retryIntervalMultiplier,                                         
+                                         retryIntervalMultiplier,
                                          reconnectAttempts,
                                          failoverOnNodeShutdown);
       }
@@ -358,6 +402,7 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public synchronized boolean destroyConnectionFactory(final String name) throws Exception
    {
+      checkInitialised();
       List<String> jndiBindings = connectionFactoryBindings.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
       {
@@ -371,7 +416,7 @@ public class JMSServerManagerImpl implements JMSServerManager
          }
          catch (NameNotFoundException e)
          {
-            //this is ok.
+            // this is ok.
          }
       }
       connectionFactoryBindings.remove(name);
@@ -384,33 +429,45 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    public String[] listRemoteAddresses() throws Exception
    {
-      return messagingServer.listRemoteAddresses();
+      checkInitialised();
+      return server.getMessagingServerControl().listRemoteAddresses();
    }
 
    public String[] listRemoteAddresses(final String ipAddress) throws Exception
    {
-      return messagingServer.listRemoteAddresses(ipAddress);
+      checkInitialised();
+      return server.getMessagingServerControl().listRemoteAddresses(ipAddress);
    }
 
    public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
    {
-      return messagingServer.closeConnectionsForAddress(ipAddress);
+      checkInitialised();
+      return server.getMessagingServerControl().closeConnectionsForAddress(ipAddress);
    }
 
    public String[] listConnectionIDs() throws Exception
    {
-      return messagingServer.listConnectionIDs();
+      return server.getMessagingServerControl().listConnectionIDs();
    }
 
    public String[] listSessions(final String connectionID) throws Exception
    {
-      return messagingServer.listSessions(connectionID);
+      checkInitialised();
+      return server.getMessagingServerControl().listSessions(connectionID);
    }
 
    // Public --------------------------------------------------------
 
    // Private -------------------------------------------------------
 
+   private void checkInitialised()
+   {
+      if (!server.isInitialised())
+      {
+         throw new IllegalStateException("Cannot access JMS Server, core server is not yet initialised");
+      }
+   }
+   
    private void bindConnectionFactory(final JBossConnectionFactory cf,
                                       final String name,
                                       final List<String> jndiBindings) throws Exception

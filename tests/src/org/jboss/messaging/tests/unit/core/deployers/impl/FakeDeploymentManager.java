@@ -29,6 +29,23 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 */
 class FakeDeploymentManager implements DeploymentManager
 {
+   private boolean started;
+   
+   public boolean isStarted()
+   {
+      return started;
+   }
+
+   public void start() throws Exception
+   {  
+      started = true;
+   }
+
+   public void stop() throws Exception
+   {
+      started = false;
+   }
+
    public void registerDeployer(Deployer deployer) throws Exception
    {
    }

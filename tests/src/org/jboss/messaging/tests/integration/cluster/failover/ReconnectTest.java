@@ -570,7 +570,7 @@ public class ReconnectTest extends UnitTestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = Messaging.newNullStorageMessagingServer(liveConf);
+      service = Messaging.newMessagingServer(liveConf, false);
       service.start();
    }
 

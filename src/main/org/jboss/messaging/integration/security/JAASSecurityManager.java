@@ -131,6 +131,31 @@ public class JAASSecurityManager implements JBMSecurityManager, MessagingCompone
       }
       return authenticated;
    }
+   
+   public void addRole(String user, String role)
+   {
+      // NO-OP
+   }
+
+   public void addUser(String user, String password)
+   {
+      // NO-OP
+   }
+
+   public void removeRole(String user, String role)
+   {
+      // NO-OP
+   }
+
+   public void removeUser(String user)
+   {
+      // NO-OP
+   }
+
+   public void setDefaultUser(String username)
+   {
+      // NO-OP
+   }
 
    // MessagingComponent implementation -----------------------------
 
@@ -176,7 +201,7 @@ public class JAASSecurityManager implements JBMSecurityManager, MessagingCompone
 
       Subject subject = new Subject();
 
-      if(user != null)
+      if (user != null)
       {
          subject.getPrincipals().add(principal);
       }
@@ -280,5 +305,7 @@ public class JAASSecurityManager implements JBMSecurityManager, MessagingCompone
          return name;
       }
    }
+
+   
 
 }

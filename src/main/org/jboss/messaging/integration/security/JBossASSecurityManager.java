@@ -120,6 +120,31 @@ public class JBossASSecurityManager implements JBMSecurityManager, MessagingComp
       }
       return authenticated;
    }
+   
+   public void addRole(String user, String role)
+   {
+      // NO-OP
+   }
+
+   public void addUser(String user, String password)
+   {
+      // NO-OP
+   }
+
+   public void removeRole(String user, String role)
+   {
+      // NO-OP
+   }
+
+   public void removeUser(String user)
+   {
+      // NO-OP
+   }
+
+   public void setDefaultUser(String username)
+   {
+      // NO-OP
+   }
 
    private Set<Principal> getRolePrincipals(final CheckType checkType, final Set<Role> roles)
    {

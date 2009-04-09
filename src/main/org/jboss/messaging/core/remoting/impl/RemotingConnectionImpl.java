@@ -616,7 +616,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             break;
          }
          case DISCONNECT:
-         {
+         {           
             packet = new PacketImpl(DISCONNECT);
             break;
          }

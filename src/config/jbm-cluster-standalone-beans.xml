@@ -31,7 +31,7 @@
    <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
    </bean>
 
-   <bean name="BasicSecurityDeployer" class="org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer">
+   <bean name="BasicSecurityDeployer" class="org.jboss.messaging.core.deployers.impl.BasicUserCredentialsDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>

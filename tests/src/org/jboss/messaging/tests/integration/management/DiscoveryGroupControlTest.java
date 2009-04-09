@@ -66,7 +66,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       DiscoveryGroupControlMBean discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
@@ -86,7 +86,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
-      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       DiscoveryGroupControlMBean discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());

@@ -258,7 +258,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
    public String[] getContainerConfig()
    {
-         return new String[]{ "invm-beans.xml", "AS/config/jbm-jboss-beans.xml"};
+      return new String[]{ "invm-beans.xml", "AS/config/jbm-jboss-beans.xml"};
    }
 
    protected MessagingServer getJmsServer() throws Exception
@@ -422,7 +422,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
    protected static void assertActiveConnectionsOnTheServer(int expectedSize)
    throws Exception
    {
-      assertEquals(expectedSize, servers.get(0).getMessagingServer().getServerManagement().getConnectionCount());
+      assertEquals(expectedSize, servers.get(0).getMessagingServer().getMessagingServerControl().getConnectionCount());
    }
 
    public static void deployConnectionFactory(String clientId, String objectName,

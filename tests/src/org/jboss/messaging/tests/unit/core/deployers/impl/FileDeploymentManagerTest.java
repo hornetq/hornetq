@@ -22,13 +22,14 @@
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
+import java.io.File;
+import java.net.URL;
+
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.tests.util.UnitTestCase;
-
-import java.io.File;
-import java.net.URL;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * 
@@ -41,7 +42,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(FileDeploymentManagerTest.class);
       
-   public void testStartStop() throws Exception
+   public void testStartStop1() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
 
@@ -57,28 +58,45 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       FakeDeployer deployer = new FakeDeployer(filename);
       
-      try
-      {
-         fdm.registerDeployer(deployer);
-         fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-         //Ok
-      }
+      fdm.registerDeployer(deployer);
       
+      fdm.unregisterDeployer(deployer);
+      
+      fdm.registerDeployer(deployer);
+                 
+      fdm.start();
       try
-      {
-         fdm.unregisterDeployer(deployer);
-         fail("Should throw exception");
+      {        
+         assertEquals(file.toURL(), deployer.deployedUrl);
+         deployer.deployedUrl = null;
+         fdm.start();
+         assertNull(deployer.deployedUrl);
+         fdm.stop();
+         
       }
-      catch (IllegalStateException e)
+      finally
       {
-         //Ok
-      }
+         file.delete();
+      }      
+   }
+   
+   public void testStartStop2() throws Exception
+   {
+      FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
+
+      String filename = "fdm_test_file.xml";
+
+      log.debug("Filename is " + filename);
+
+      File file = new File("tests/tmpfiles/" + filename);
+
+      log.debug(file.getAbsoluteFile());
+
+      file.createNewFile();
+
+      FakeDeployer deployer = new FakeDeployer(filename);
       
       fdm.start();
-
 
       try
       {
@@ -87,26 +105,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          deployer.deployedUrl = null;
          fdm.start();
          assertNull(deployer.deployedUrl);
-         fdm.stop();
-         try
-         {
-            fdm.registerDeployer(deployer);
-            fail("Should throw exception");
-         }
-         catch (IllegalStateException e)
-         {
-            //Ok
-         }
-         
-         try
-         {
-            fdm.unregisterDeployer(deployer);
-            fail("Should throw exception");
-         }
-         catch (IllegalStateException e)
-         {
-            //Ok
-         }
+         fdm.stop();         
       }
       finally
       {
@@ -136,6 +135,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       FakeDeployer deployer1 = new FakeDeployer(filename1);
       FakeDeployer deployer2 = new FakeDeployer(filename2);
       FakeDeployer deployer3 = new FakeDeployer(filename3);
+      FakeDeployer deployer4 = new FakeDeployer(filename3); // Can have multiple deployers on the same file
       try
       {
          URL url1 = file1.toURL();      
@@ -147,43 +147,56 @@ public class FileDeploymentManagerTest extends UnitTestCase
          URL url3 = file3.toURL();      
          deployer3.deploy(url3);
          
+         deployer4.deploy(url3);
+         
          fdm.registerDeployer(deployer1);
          fdm.registerDeployer(deployer2);
          fdm.registerDeployer(deployer3);
+         fdm.registerDeployer(deployer4);
 
          
-         assertEquals(3, fdm.getDeployers().size());
+         assertEquals(4, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer1));
          assertTrue(fdm.getDeployers().contains(deployer2));
          assertTrue(fdm.getDeployers().contains(deployer3));
-         assertEquals(3, fdm.getDeployed().size());
+         assertTrue(fdm.getDeployers().contains(deployer4));
+         assertEquals(4, fdm.getDeployed().size());
 
          assertEquals(file1.toURL(), deployer1.deployedUrl);
          assertEquals(file2.toURL(), deployer2.deployedUrl);
          assertEquals(file3.toURL(), deployer3.deployedUrl);
+         assertEquals(file3.toURL(), deployer4.deployedUrl);
          //Registering same again should do nothing
 
          
          fdm.registerDeployer(deployer1);
 
          
-         assertEquals(3, fdm.getDeployers().size());
+         assertEquals(4, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer1));
          assertTrue(fdm.getDeployers().contains(deployer2));
          assertTrue(fdm.getDeployers().contains(deployer3));
-         assertEquals(3, fdm.getDeployed().size());
+         assertTrue(fdm.getDeployers().contains(deployer4));
+         assertEquals(4, fdm.getDeployed().size());
 
          
          fdm.unregisterDeployer(deployer1);
 
          
-         assertEquals(2, fdm.getDeployers().size());
+         assertEquals(3, fdm.getDeployers().size());        
          assertTrue(fdm.getDeployers().contains(deployer2));
          assertTrue(fdm.getDeployers().contains(deployer3));
-         assertEquals(2, fdm.getDeployed().size());
+         assertTrue(fdm.getDeployers().contains(deployer4));
+         assertEquals(3, fdm.getDeployed().size());
 
          fdm.unregisterDeployer(deployer2);
          fdm.unregisterDeployer(deployer3);
+         
+         assertEquals(1, fdm.getDeployers().size());        
+         assertTrue(fdm.getDeployers().contains(deployer4));
+         assertEquals(1, fdm.getDeployed().size());
+         
+         fdm.unregisterDeployer(deployer4);
          
          assertEquals(0, fdm.getDeployers().size());  
          assertEquals(0, fdm.getDeployed().size());
@@ -206,7 +219,6 @@ public class FileDeploymentManagerTest extends UnitTestCase
    public void testRedeploy() throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
-
    
       fdm.start();
       
@@ -236,13 +248,14 @@ public class FileDeploymentManagerTest extends UnitTestCase
          assertTrue(fdm.getDeployers().contains(deployer));
          assertEquals(1, fdm.getDeployed().size());
          assertEquals(file.toURL(), deployer.reDeployedUrl);
-         assertEquals(oldLastModified + 1000, fdm.getDeployed().get(url).lastModified);
+         Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
+         assertEquals(oldLastModified + 1000, fdm.getDeployed().get(pair).lastModified);
          deployer.reDeployedUrl = null; 
          //Scanning again should not redeploy
          
          fdm.run();
          
-         assertEquals(oldLastModified + 1000, fdm.getDeployed().get(url).lastModified);
+         assertEquals(oldLastModified + 1000, fdm.getDeployed().get(pair).lastModified);
          assertNull(deployer.reDeployedUrl);
       }
       finally

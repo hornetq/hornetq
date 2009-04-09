@@ -71,7 +71,7 @@ public class SpawnedVMSupport
       String classPath = System.getProperty("java.class.path");
       String pathSeparater = System.getProperty("path.separator");
       classPath = classPath + pathSeparater + ".";
-      System.out.println("classPath = " + classPath);
+      //System.out.println("classPath = " + classPath);
       // I guess it'd be simpler to check if the OS is Windows...
       if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X"))
       {

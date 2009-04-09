@@ -22,13 +22,15 @@
 
 package org.jboss.messaging.core.deployers;
 
+import org.jboss.messaging.core.server.MessagingComponent;
+
 
 /**
  * This class manages any configuration files available. It will notify any deployers registered with it on changes.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface DeploymentManager
+public interface DeploymentManager extends MessagingComponent
 {
    /**
     * registers a deployable object which will handle the deployment of URL's

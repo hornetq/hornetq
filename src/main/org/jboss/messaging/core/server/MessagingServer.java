@@ -15,16 +15,18 @@ package org.jboss.messaging.core.server;
 import java.util.List;
 import java.util.Set;
 
+import javax.management.MBeanServer;
+
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateRedistributionMessage;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -46,27 +48,23 @@ import org.jboss.messaging.utils.UUID;
  */
 public interface MessagingServer extends MessagingComponent
 {
-   void setConfiguration(Configuration configuration);
-
    Configuration getConfiguration();
-
-   void setRemotingService(RemotingService remotingService);
 
    RemotingService getRemotingService();
 
-   void setStorageManager(StorageManager storageManager);
-
    StorageManager getStorageManager();
-
-   JBMSecurityManager getSecurityManager();
-
-   void setSecurityManager(JBMSecurityManager securityManager);
 
    ManagementService getManagementService();
 
-   void setManagementService(ManagementService managementService);
+   JBMSecurityManager getSecurityManager();
+
+   MBeanServer getMBeanServer();
 
    Version getVersion();
+
+   MessagingServerControl getMessagingServerControl();
+   
+   DeploymentManager getDeploymentManager();
 
    ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
 
@@ -106,8 +104,6 @@ public interface MessagingServer extends MessagingComponent
 
    boolean isStarted();
 
-   MessagingServerControlMBean getServerManagement();
-
    HierarchicalRepository<Set<Role>> getSecurityRepository();
 
    HierarchicalRepository<AddressSettings> getAddressSettingsRepository();
@@ -116,23 +112,27 @@ public interface MessagingServer extends MessagingComponent
 
    PostOffice getPostOffice();
 
+   QueueFactory getQueueFactory();
+
    ResourceManager getResourceManager();
 
    List<ServerSession> getSessions(String connectionID);
 
    ClusterManager getClusterManager();
 
-   QueueFactory getQueueFactory();
-
    SimpleString getNodeID();
 
    Channel getReplicatingChannel();
-   
+
    void initialiseBackup(UUID nodeID, long currentMessageID) throws Exception;
-   
+
    boolean isInitialised();
-   
-   Queue createQueue(SimpleString address, SimpleString queueName, SimpleString filter, boolean durable, boolean temporary) throws Exception;
-   
+
+   Queue createQueue(SimpleString address,
+                     SimpleString queueName,
+                     SimpleString filter,
+                     boolean durable,
+                     boolean temporary) throws Exception;
+
    void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception;
 }

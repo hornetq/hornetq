@@ -219,7 +219,7 @@ public class SplitBrainTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = Messaging.newNullStorageMessagingServer(backupConf);
+      backupServer = Messaging.newMessagingServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -232,7 +232,7 @@ public class SplitBrainTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = Messaging.newNullStorageMessagingServer(liveConf);
+      liveServer = Messaging.newMessagingServer(liveConf, false);
       liveServer.start();
    }
 

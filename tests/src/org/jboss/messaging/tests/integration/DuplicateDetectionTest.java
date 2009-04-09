@@ -1814,7 +1814,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      messagingService = Messaging.newNullStorageMessagingServer(conf);
+      messagingService = Messaging.newMessagingServer(conf, false);
 
       messagingService.start();
    }

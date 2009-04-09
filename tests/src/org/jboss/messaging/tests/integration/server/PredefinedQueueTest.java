@@ -83,7 +83,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer server = Messaging.newMessagingServer(conf, false);
            
       server.start();
       
@@ -153,7 +153,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer server = Messaging.newMessagingServer(conf, false);
            
       server.start();
       
@@ -420,7 +420,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer server = Messaging.newMessagingServer(conf, false);
            
       server.start();
       

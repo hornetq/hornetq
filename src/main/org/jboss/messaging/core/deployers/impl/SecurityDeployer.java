@@ -22,16 +22,17 @@
 
 package org.jboss.messaging.core.deployers.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Deploys the security settings into a security repository and adds them to the security store.
@@ -40,7 +41,8 @@ import java.util.Set;
  */
 public class SecurityDeployer extends XmlDeployer
 {
-
+   private static final Logger log = Logger.getLogger(SecurityDeployer.class);  
+   
    private static final String PERMISSION_ELEMENT_NAME = "permission";
    private static final String TYPE_ATTR_NAME = "type";
    private static final String ROLES_ATTR_NAME = "roles";
@@ -59,12 +61,13 @@ public class SecurityDeployer extends XmlDeployer
    /**
     * The repository to add to
     */
-   private HierarchicalRepository<Set<Role>> securityRepository;
+   private final HierarchicalRepository<Set<Role>> securityRepository;
 
    public SecurityDeployer(final DeploymentManager deploymentManager, final HierarchicalRepository<Set<Role>> securityRepository)
    {
       super(deploymentManager);
-      this.securityRepository = securityRepository;
+      
+      this.securityRepository = securityRepository;      
    }
 
    /**

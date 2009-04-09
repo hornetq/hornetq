@@ -106,7 +106,7 @@ public class ReplicationAwareTestBase extends UnitTestCase
                                                                             backupParams));
       backupConf.setBackup(true);
       backupConf.setJMXManagementEnabled(true);
-      backupServer = Messaging.newNullStorageMessagingServer(backupConf, backupMBeanServer);
+      backupServer = Messaging.newMessagingServer(backupConf, backupMBeanServer, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -120,7 +120,7 @@ public class ReplicationAwareTestBase extends UnitTestCase
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveConf.setJMXManagementEnabled(true);
-      liveServer = Messaging.newNullStorageMessagingServer(liveConf, liveMBeanServer);
+      liveServer = Messaging.newMessagingServer(liveConf, liveMBeanServer, false);
       liveServer.start();
    }
 

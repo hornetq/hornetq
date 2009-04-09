@@ -93,7 +93,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
-      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       BroadcastGroupControlMBean broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
@@ -126,7 +126,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
-      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       BroadcastGroupControlMBean broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());

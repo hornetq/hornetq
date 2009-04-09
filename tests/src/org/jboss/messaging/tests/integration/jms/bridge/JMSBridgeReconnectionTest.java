@@ -21,6 +21,7 @@
  */
 package org.jboss.messaging.tests.integration.jms.bridge;
 
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
@@ -111,7 +112,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          server1.start();
          
          context1 = new InVMContext();
-         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1);
+         jmsServer1 = new JMSServerManagerImpl(server0);
          jmsServer1.start();
          jmsServer1.setContext(context1);
 
@@ -185,7 +186,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          server1.start();
          
          context1 = new InVMContext();
-         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1);
+         jmsServer1 = new JMSServerManagerImpl(server1);
          jmsServer1.start();
          jmsServer1.setContext(context1);
 
@@ -267,7 +268,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          server1.start();
          
          context1 = new InVMContext();
-         jmsServer1 = JMSServerManagerImpl.newJMSServerManagerImpl(server1);
+         jmsServer1 = new JMSServerManagerImpl(server1);
          jmsServer1.start();
          jmsServer1.setContext(context1);
 

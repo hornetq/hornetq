@@ -78,11 +78,11 @@ public class JMSServerControl2Test extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      MessagingServer server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
       context = new InVMContext();
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
+      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(context);
 
@@ -100,11 +100,11 @@ public class JMSServerControl2Test extends ManagementTestBase
                                                "localhost",
                                                discoveryPort,
                                                ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
-      MessagingServer server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
       context = new InVMContext();
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
+      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(context);
 

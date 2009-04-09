@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.deployers.impl;
 
@@ -31,11 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -44,34 +46,39 @@ import org.jboss.messaging.core.logging.Logger;
 public class FileDeploymentManager implements Runnable, DeploymentManager
 {
    private static final Logger log = Logger.getLogger(FileDeploymentManager.class);
-     
+
    private final List<Deployer> deployers = new ArrayList<Deployer>();
-   
-   private final Map<URL, DeployInfo> deployed = new HashMap<URL, DeployInfo>();
+
+   private final Map<Pair<URL, Deployer>, DeployInfo> deployed = new HashMap<Pair<URL, Deployer>, DeployInfo>();
 
    private ScheduledExecutorService scheduler;
-   
+
    private boolean started;
-   
+
    private final long period;
-   
+
+   private ScheduledFuture<?> future;
+
    public FileDeploymentManager(final long period)
    {
       this.period = period;
    }
-         
+
    public synchronized void start() throws Exception
    {
       if (started)
       {
          return;
       }
-      
+
+      started = true;
+
+      // We run once first synchronously to make sure any already registered deployers get deployed
+      run();
+
       scheduler = Executors.newSingleThreadScheduledExecutor();
 
-      scheduler.scheduleWithFixedDelay(this, period, period, TimeUnit.MILLISECONDS);
-      
-      started = true;
+      future = scheduler.scheduleWithFixedDelay(this, period, period, TimeUnit.MILLISECONDS);
    }
 
    public synchronized void stop()
@@ -80,13 +87,24 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       {
          return;
       }
-      
-      scheduler.shutdown();
-      scheduler = null;
-      deployers.clear();
-      deployed.clear();   
-      
+
       started = false;
+
+      if (future != null)
+      {
+         future.cancel(false);
+
+         future = null;
+      }
+
+      scheduler.shutdown();
+
+      scheduler = null;
+   }
+
+   public synchronized boolean isStarted()
+   {
+      return started;
    }
 
    /**
@@ -96,57 +114,52 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
     * @throws Exception .
     */
    public synchronized void registerDeployer(final Deployer deployer) throws Exception
-   {
-      if (!started)
-      {
-         throw new IllegalStateException("Service is not started");
-      }
-      
+   {    
       if (!deployers.contains(deployer))
       {
          deployers.add(deployer);
-         
-         String[] filenames = deployer.getConfigFileNames();
-         
-         for (String filename : filenames)
+
+         if (started)
          {
-            log.debug("the filename is " + filename);
+            String[] filenames = deployer.getConfigFileNames();
 
-            log.debug(System.getProperty("java.class.path"));
-
-            Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
-
-            while (urls.hasMoreElements())
+            for (String filename : filenames)
             {
-               URL url = urls.nextElement();
+               log.debug("the filename is " + filename);
 
-               log.debug("Got url " + url);
+               log.debug(System.getProperty("java.class.path"));
 
-               try
+               Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
+
+               while (urls.hasMoreElements())
                {
-                  log.debug("Deploying " + deployer + " with url " + url);
-                  deployer.deploy(url);
-               }
-               catch (Exception e)
-               {
-                  log.error("Error deploying " + url, e);
-               }
+                  URL url = urls.nextElement();
 
-               deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));            
+                  log.debug("Got url " + url);
+
+                  try
+                  {
+                     log.debug("Deploying " + deployer + " with url " + url);
+                     deployer.deploy(url);
+                  }
+                  catch (Exception e)
+                  {
+                     log.error("Error deploying " + url, e);
+                  }
+                  
+                  Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
+
+                  deployed.put(pair, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+               }
             }
          }
-      }      
-      
+      }
+
       log.debug("Done register");
    }
 
    public synchronized void unregisterDeployer(final Deployer deployer) throws Exception
    {
-      if (!started)
-      {
-         throw new IllegalStateException("Service is not started");
-      }
-      
       if (deployers.remove(deployer))
       {
          String[] filenames = deployer.getConfigFileNames();
@@ -157,8 +170,10 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             {
                URL url = urls.nextElement();
 
-               deployed.remove(url);
-            }         
+               Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer); 
+               
+               deployed.remove(pair);
+            }
          }
       }
    }
@@ -170,36 +185,38 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
    {
       if (!started)
       {
-         throw new IllegalStateException("Service is not started");
+         return;
       }
-      
+
       try
       {
          for (Deployer deployer : deployers)
-         {
+         {   
             String[] filenames = deployer.getConfigFileNames();
-
+            
             for (String filename : filenames)
             {
                Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
-
+               
+               boolean hasUrl = false;
                while (urls.hasMoreElements())
                {
+                  hasUrl = true;
                   URL url = urls.nextElement();
+                  
+                  Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
 
-                  DeployInfo info = deployed.get(url);
+                  DeployInfo info = deployed.get(pair);
 
                   long newLastModified = new File(url.getFile()).lastModified();
 
                   if (info == null)
-                  {                              
+                  {
                      try
                      {
-                        log.debug("Deploying " + deployer + " with url " + url);
-
                         deployer.deploy(url);
 
-                        deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+                        deployed.put(pair, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
                      }
                      catch (Exception e)
                      {
@@ -207,34 +224,34 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                      }
                   }
                   else if (newLastModified > info.lastModified)
-                  {                              
+                  {
                      try
                      {
-                        log.debug("Redeploying " + deployer + " with url " + url);
-
                         deployer.redeploy(url);
 
-                        deployed.put(url, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+                        deployed.put(pair, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
                      }
                      catch (Exception e)
                      {
                         log.error("Error redeploying " + url, e);
                      }
                   }
-               }               
+               }
             }
          }
-         
-         for (Map.Entry<URL, DeployInfo> entry : deployed.entrySet())
+
+         for (Map.Entry<Pair<URL, Deployer>, DeployInfo> entry : deployed.entrySet())
          {
-            if (!new File(entry.getKey().getFile()).exists())
+            Pair<URL, Deployer> pair = entry.getKey();
+            
+            if (!new File(pair.a.getFile()).exists())
             {
                try
                {
                   Deployer deployer = entry.getValue().deployer;
                   log.debug("Undeploying " + deployer + " with url" + entry.getKey());
-                  deployer.undeploy(entry.getKey());
-                  
+                  deployer.undeploy(entry.getKey().a);
+
                   deployed.remove(entry.getKey());
                }
                catch (Exception e)
@@ -254,19 +271,20 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
    {
       return deployers;
    }
-   
-   public synchronized Map<URL, DeployInfo> getDeployed()
+
+   public synchronized Map<Pair<URL, Deployer>, DeployInfo> getDeployed()
    {
       return deployed;
    }
-   
+
    // Inner classes -------------------------------------------------------------------------------------------
-   
+
    public static class DeployInfo
    {
       public Deployer deployer;
+
       public long lastModified;
-      
+
       DeployInfo(final Deployer deployer, final long lastModified)
       {
          this.deployer = deployer;
@@ -274,4 +292,3 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       }
    }
 }
-

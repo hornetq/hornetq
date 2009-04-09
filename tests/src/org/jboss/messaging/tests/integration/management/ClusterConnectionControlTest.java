@@ -162,10 +162,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       conf_0.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       conf_0.getClusterConfigurations().add(clusterConnectionConfig);
 
-      server_1 = Messaging.newNullStorageMessagingServer(conf_1, MBeanServerFactory.createMBeanServer());
+      server_1 = Messaging.newMessagingServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
       server_1.start();
 
-      server_0 = Messaging.newNullStorageMessagingServer(conf_0, mbeanServer);
+      server_0 = Messaging.newMessagingServer(conf_0, mbeanServer, false);
       server_0.start();
    }
 

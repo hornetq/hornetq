@@ -59,6 +59,18 @@ public interface Configuration extends Serializable, MessagingComponent
    boolean isBackup();
 
    void setBackup(boolean backup);
+   
+   boolean isEnableFileDeployment();
+   
+   void setEnableFileDeployment(boolean enable);
+   
+   boolean isEnablePersistence();
+   
+   void setEnablePersistence(boolean enable);
+   
+   long getFileDeployerScanPeriod();
+   
+   void setFileDeployerScanPeriod(long period);
 
    long getQueueActivationTimeout();
 

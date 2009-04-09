@@ -278,6 +278,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    public synchronized void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
+      //FIXME - this should be using the createQueue method in MessagingServerImpl
       SimpleString sAddress = new SimpleString(address);
       SimpleString sName = new SimpleString(name);
       SimpleString sFilter = filterStr == null || filterStr.length() == 0 ? null : new SimpleString(filterStr);
@@ -300,6 +301,8 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    public synchronized void destroyQueue(final String name) throws Exception
    {
+      //FIXME - there should be a destroyqueue method in MessagingServreImpl that does this to avoid
+      //duplicating functionality with ServerSessionImpl
       SimpleString sName = new SimpleString(name);
       Binding binding = postOffice.getBinding(sName);
 

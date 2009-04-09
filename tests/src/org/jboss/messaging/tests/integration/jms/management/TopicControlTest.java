@@ -306,10 +306,10 @@ public class TopicControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server = Messaging.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
-      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
+      serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(new NullInitialContext());
 

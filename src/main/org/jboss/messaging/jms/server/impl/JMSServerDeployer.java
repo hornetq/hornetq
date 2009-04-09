@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class JMSServerDeployer extends XmlDeployer
 {
-   Logger log = Logger.getLogger(JMSServerDeployer.class);
+   private static final Logger log = Logger.getLogger(JMSServerDeployer.class);
 
    private final Configuration configuration;
 
@@ -99,17 +99,15 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String DISCOVERY_INITIAL_WAIT_ELEMENT = "discovery-initial-wait";
 
-   public JMSServerDeployer(final DeploymentManager deploymentManager, final Configuration config)
+   public JMSServerDeployer(final JMSServerManager jmsServerManager, final DeploymentManager deploymentManager, final Configuration config)
    {
       super(deploymentManager);
+      
+      this.jmsServerManager = jmsServerManager;
 
       this.configuration = config;
    }
 
-   public void setJmsServerManager(final JMSServerManager jmsServerManager)
-   {
-      this.jmsServerManager = jmsServerManager;
-   }
 
    /**
     * the names of the elements to deploy

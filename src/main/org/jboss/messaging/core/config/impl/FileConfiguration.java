@@ -95,6 +95,11 @@ public class FileConfiguration extends ConfigurationImpl
       clustered = getBoolean(e, "clustered", clustered);
 
       backup = getBoolean(e, "backup", backup);
+      
+      //Defaults to true when using FileConfiguration
+      enableFileDeployment = getBoolean(e, "enable-file-deployment", true);
+      
+      enablePersistence = getBoolean(e, "enable-persistence", enablePersistence);
 
       persistDeliveryCountBeforeDelivery = getBoolean(e, "persist-delivery-count-before-delivery", persistDeliveryCountBeforeDelivery);
       

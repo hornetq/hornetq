@@ -105,10 +105,17 @@ public abstract class JMSExample
       run(null, args);
    }
 
-   protected void killServer(int id)
+   protected void killServer(int id) throws Exception
    {
+      System.out.println("Killing server " + id);
+      
       servers[id].destroy();
+      
+      int exitValue = servers[id].waitFor();
+      
+      log.info("Process exited with value " + exitValue);
    }
+   
    protected InitialContext getContext(int serverId) throws Exception
    {
       String jndiFilename = "server" + serverId + "/client-jndi.properties";
@@ -164,8 +171,14 @@ public abstract class JMSExample
    {
       for (Process server : servers)
       {
-         server.getInputStream().close();
-         server.getErrorStream().close();
+         if (server.getInputStream() != null)
+         {
+            server.getInputStream().close();
+         }
+         if (server.getErrorStream() != null)
+         {
+            server.getErrorStream().close();
+         }
          server.destroy();
       }
    }

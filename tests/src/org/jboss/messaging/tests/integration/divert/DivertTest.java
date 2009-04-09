@@ -72,7 +72,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       
@@ -160,7 +160,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       
@@ -286,7 +286,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       
@@ -355,7 +355,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       
@@ -454,7 +454,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       
@@ -588,7 +588,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       
@@ -711,7 +711,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       
@@ -823,7 +823,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       
@@ -965,7 +965,7 @@ public class DivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      MessagingServer messagingService = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
            
       messagingService.start();
       

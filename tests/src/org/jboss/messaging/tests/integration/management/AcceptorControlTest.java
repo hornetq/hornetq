@@ -76,7 +76,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       AcceptorControlMBean acceptorControl = createManagementControl(acceptorConfig.getName());
@@ -94,7 +94,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       AcceptorControlMBean acceptorControl = createManagementControl(acceptorConfig.getName());

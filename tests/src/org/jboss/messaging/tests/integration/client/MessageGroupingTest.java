@@ -554,7 +554,7 @@ public class MessageGroupingTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = Messaging.newNullStorageMessagingServer(configuration);
+      server = Messaging.newMessagingServer(configuration, false);
       // start the server
       server.start();
 

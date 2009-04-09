@@ -242,9 +242,6 @@
       <path refid="jboss.jboss.reflect.classpath"/>
       <path refid="jboss.jboss.common.logging.spi.classpath"/>
       <path refid="jboss.jboss.mdr.classpath"/>
-      <!--<path refid="jboss.profiler.jvmti.classpath"/>-->
-      <!--<path refid="jboss.test14.classpath"/>-->
-      <!--<path refid="jboss.jboss.retro.classpath"/>-->
       <path refid="easymock.easymock.classpath"/>
       <path refid="easymock.classextension.classpath"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
@@ -264,9 +261,6 @@
       <path refid="jboss.jboss.reflect.classpath"/>
       <path refid="jboss.jboss.common.logging.spi.classpath"/>
       <path refid="jboss.jboss.mdr.classpath"/>
-      <!--<path refid="jboss.test14.classpath"/>-->
-      <!--<path refid="jboss.jboss.retro.classpath"/>-->
-      <!--<path refid="apache.ant.classpath"/>-->
       <path refid="easymock.easymock.classpath"/>
       <path location="${build.jars.dir}/${core.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
@@ -354,6 +348,7 @@
       <path refid="jboss.jbossxb.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="apache.logging.classpath"/>
+      <path refid="jboss.jnpserver.classpath"/>
    </path>
     
    <path id="joram.test.execution.classpath">

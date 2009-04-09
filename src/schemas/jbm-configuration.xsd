@@ -24,6 +24,10 @@
 			<xsd:sequence>
 				<xsd:element ref="clustered" maxOccurs="1"
 					minOccurs="0" />
+				<xsd:element ref="enable-file-deployment" maxOccurs="1"
+				   minOccurs="0" />	
+				<xsd:element ref="enable-persistence"  maxOccurs="1"
+				   minOccurs="0" />	
 				<xsd:element name="scheduled-max-pool-size"
 					type="xsd:int" maxOccurs="1" minOccurs="0">
 					<xsd:annotation>
@@ -180,6 +184,10 @@
 	</xsd:element>
 
 	<xsd:element name="clustered" type="xsd:boolean"></xsd:element>
+	
+	<xsd:element name="enable-file-deployment" type="xsd:boolean"></xsd:element>
+	
+	<xsd:element name="enable-persistence" type="xsd:boolean"></xsd:element>
 
 	<xsd:element name="local-bind-address" type="xsd:string"></xsd:element>
 

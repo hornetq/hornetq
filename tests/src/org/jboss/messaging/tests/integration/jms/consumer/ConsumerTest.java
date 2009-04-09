@@ -65,9 +65,9 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class ConsumerTest extends UnitTestCase
 {
-   private MessagingServer service;
+   private MessagingServer server;
 
-   private JMSServerManagerImpl serverManager;
+   private JMSServerManagerImpl jmsServer;
 
    private JBossConnectionFactory cf;
 
@@ -85,12 +85,12 @@ public class ConsumerTest extends UnitTestCase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = Messaging.newNullStorageMessagingServer(conf);
-      service.start();
-      serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(service);
-      serverManager.start();
-      serverManager.setContext(new NullInitialContext());
-      serverManager.createQueue(Q_NAME, Q_NAME);
+      server = Messaging.newMessagingServer(conf, false);
+      server.start();
+      jmsServer = new JMSServerManagerImpl(server);
+      jmsServer.start();
+      jmsServer.setContext(new NullInitialContext());
+      jmsServer.createQueue(Q_NAME, Q_NAME);
       cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                       null,
                                       DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
@@ -121,17 +121,17 @@ public class ConsumerTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       cf = null;
-      if (service != null && service.isStarted())
+      if (server != null && server.isStarted())
       {
          try
          {
-            service.stop();
+            server.stop();
          }
          catch (Exception e)
          {
             e.printStackTrace();
          }
-         service = null;
+         server = null;
 
       }
       
@@ -159,8 +159,8 @@ public class ConsumerTest extends UnitTestCase
       }
       // assert that all the messages are there and none have been acked
       SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, ((Queue)service.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)service.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
       session.close();
    }
 }

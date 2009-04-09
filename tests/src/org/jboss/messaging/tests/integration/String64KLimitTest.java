@@ -212,7 +212,7 @@ public class String64KLimitTest extends UnitTestCase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      server = Messaging.newNullStorageMessagingServer(config);
+      server = Messaging.newMessagingServer(config, false);
       server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

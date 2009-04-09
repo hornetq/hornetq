@@ -87,7 +87,6 @@ import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.utils.TokenBucketLimiter;
 import org.jboss.messaging.utils.TokenBucketLimiterImpl;
 
 /*

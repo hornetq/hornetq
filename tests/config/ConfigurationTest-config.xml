@@ -1,6 +1,7 @@
 <deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
    <configuration>
       <clustered>true</clustered>
+      <enable-file-deployment>true</enable-file-deployment>
       <scheduled-max-pool-size>12345</scheduled-max-pool-size>              
       <security-enabled>false</security-enabled>
       <security-invalidation-interval>5423</security-invalidation-interval>

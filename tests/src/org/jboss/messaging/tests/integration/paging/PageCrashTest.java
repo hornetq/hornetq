@@ -44,10 +44,6 @@ import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
 import org.jboss.messaging.core.paging.impl.PagingStoreImpl;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
-import org.jboss.messaging.core.remoting.server.RemotingService;
-import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -230,27 +226,11 @@ public class PageCrashTest extends ServiceTestBase
 
    private MessagingServer newMessagingServer(final Configuration configuration)
    {
-      StorageManager storageManager = new JournalStorageManager(configuration);
-
-      RemotingService remotingService = new RemotingServiceImpl(configuration);
-
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
       ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
-
-      remotingService.setManagementService(managementService);
-
-      MessagingServer server = new FailingMessagingServerImpl();
-
-      server.setConfiguration(configuration);
-
-      server.setStorageManager(storageManager);
-
-      server.setRemotingService(remotingService);
-
-      server.setSecurityManager(securityManager);
-
-      server.setManagementService(managementService);
+      
+      MessagingServer server = new FailingMessagingServerImpl(configuration, securityManager);
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
@@ -267,6 +247,10 @@ public class PageCrashTest extends ServiceTestBase
     *  before the page-file was removed */
    class FailingMessagingServerImpl extends MessagingServerImpl
    {
+      FailingMessagingServerImpl(final Configuration config, final JBMSecurityManager securityManager)
+      {
+         super(config, null, securityManager);
+      }
       @Override
       protected PagingManager createPagingManager()
       {

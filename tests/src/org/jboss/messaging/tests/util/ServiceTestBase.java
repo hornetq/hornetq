@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.util;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +45,7 @@ import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -111,12 +113,12 @@ public class ServiceTestBase extends UnitTestCase
 
    protected void clearData(String testDir)
    {
-      //Need to delete the root
-      
+      // Need to delete the root
+
       File file = new File(testDir);
       deleteDirectory(file);
       file.mkdirs();
-      
+
       recreateDirectory(getJournalDir(testDir));
       recreateDirectory(getBindingsDir(testDir));
       recreateDirectory(getPageDir(testDir));
@@ -147,7 +149,7 @@ public class ServiceTestBase extends UnitTestCase
       }
       else
       {
-         service = Messaging.newNullStorageMessagingServer(configuration);
+         service = Messaging.newMessagingServer(configuration, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -163,12 +165,11 @@ public class ServiceTestBase extends UnitTestCase
       return service;
    }
 
-   protected MessagingServer createService(final boolean realFiles,
-                                           final Configuration configuration,
-                                           final MBeanServer mbeanServer,
-                                           final Map<String, AddressSettings> settings)
+   protected MessagingServer createServer(final boolean realFiles,
+                                          final Configuration configuration,
+                                          final MBeanServer mbeanServer,
+                                          final Map<String, AddressSettings> settings)
    {
-
       MessagingServer service;
 
       if (realFiles)
@@ -177,7 +178,7 @@ public class ServiceTestBase extends UnitTestCase
       }
       else
       {
-         service = Messaging.newNullStorageMessagingServer(configuration, mbeanServer);
+         service = Messaging.newMessagingServer(configuration, mbeanServer, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -201,6 +202,35 @@ public class ServiceTestBase extends UnitTestCase
    protected MessagingServer createServer(final boolean realFiles, final Configuration configuration)
    {
       return createServer(realFiles, configuration, new HashMap<String, AddressSettings>());
+   }
+
+   protected MessagingServer createServer(final boolean realFiles, final Configuration configuration,
+                                          final JBMSecurityManager securityManager)
+   {
+      MessagingServer service;
+
+      if (realFiles)
+      {
+         service = Messaging.newMessagingServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager);
+      }
+      else
+      {
+         service = Messaging.newMessagingServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager, false);
+      }
+      
+      Map<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
+
+      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+      {
+         service.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+      }
+
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
+
+      service.getAddressSettingsRepository().addMatch("#", defaultSetting);
+
+      return service;
    }
 
    protected MessagingServer createClusteredServerWithParams(final int index,

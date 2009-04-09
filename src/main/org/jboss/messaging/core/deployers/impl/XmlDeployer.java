@@ -103,14 +103,12 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
             //if this has never been deployed deploy
             Map<String, Node> map = configuration.get(url); 
             if (map == null || (map != null && map.get(name) == null))
-            {
-               log.info(new StringBuilder(name).append(" doesn't exist deploying"));
+            {              
                deploy(node);
             }
             //or if it has changed redeploy
             else if (hasNodeChanged(url, node, name))
-            {
-               log.info(new StringBuilder(name).append(" has changed redeploying"));
+            {             
                undeploy(node);
                deploy(node);
                addToConfiguration(url, name, node);
@@ -179,8 +177,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
                log.error("key attribute missing for configuration " + node);
                continue;
             }
-            String name = keyNode.getNodeValue();
-            log.info(new StringBuilder("deploying ").append(name));
+            String name = keyNode.getNodeValue();           
             try
             {
                deploy(node);
@@ -211,7 +208,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
       {
          return;
       }
-      
+            
       deploymentManager.registerDeployer(this);
       
       started = true;

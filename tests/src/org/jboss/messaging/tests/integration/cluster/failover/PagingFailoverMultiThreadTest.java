@@ -390,7 +390,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
       }
       else
       {
-         backupService = Messaging.newNullStorageMessagingServer(backupConf);
+         backupService = Messaging.newMessagingServer(backupConf, false);
       }
 
       backupService.start();
@@ -431,7 +431,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
       }
       else
       {
-         liveService = Messaging.newNullStorageMessagingServer(liveConf);
+         liveService = Messaging.newMessagingServer(liveConf, false);
       }
 
       AddressSettings settings = new AddressSettings();

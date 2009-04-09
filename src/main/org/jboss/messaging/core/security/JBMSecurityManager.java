@@ -50,4 +50,36 @@ public interface JBMSecurityManager extends MessagingComponent
     * @return true if the user is valid and they have the correct roles
     */
    boolean validateUserAndRole(String user, String password, Set<Role> roles, CheckType checkType);
+   
+   /**
+    * adds a new user
+    * @param user the user to add
+    * @param password theusers password
+    */
+   void addUser(String user, String password);
+
+   /**
+    * removes a user and any roles they may have.
+    * @param user the user to remove
+    */
+   void removeUser(String user);
+
+   /**
+    * adds a new role for a user.
+    * @param user the user
+    * @param role the role to add
+    */
+   void addRole(String user, String role);
+
+   /**
+    * removes a role from a user
+    * @param user the user
+    * @param role the role to remove
+    */
+   void removeRole(String user, String role);
+
+   /*
+   * set the default user for null users
+   */
+   void setDefaultUser(String username);
 }

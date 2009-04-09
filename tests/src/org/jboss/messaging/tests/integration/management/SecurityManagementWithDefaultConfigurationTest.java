@@ -74,7 +74,7 @@ public class SecurityManagementWithDefaultConfigurationTest extends SecurityMana
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      MessagingServer server = Messaging.newNullStorageMessagingServer(conf);
+      MessagingServer server = Messaging.newMessagingServer(conf, false);
       server.start();
       
       return server;

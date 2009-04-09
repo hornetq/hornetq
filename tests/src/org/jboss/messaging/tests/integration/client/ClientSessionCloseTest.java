@@ -269,7 +269,7 @@ public class ClientSessionCloseTest extends UnitTestCase
 
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
-      server = Messaging.newNullStorageMessagingServer(config);
+      server = Messaging.newMessagingServer(config, false);
       server.start();
    }
 

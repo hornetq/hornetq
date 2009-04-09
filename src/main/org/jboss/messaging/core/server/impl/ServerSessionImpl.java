@@ -963,7 +963,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          });
       }
    }
-
+   
    public void handleSend(final SessionSendMessage packet)
    {
       if (replicatingChannel == null)

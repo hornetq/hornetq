@@ -46,7 +46,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -109,7 +109,7 @@ public class SecurityNotificationTest extends UnitTestCase
       Set<Role> roles = new HashSet<Role>();
       roles.add(role);
       server.getSecurityRepository().addMatch(address.toString(), roles);
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+      JBMSecurityManager securityManager =  server.getSecurityManager();
       securityManager.addRole("guest", "roleCanNotCreateQueue");
       
       flush(notifConsumer);
@@ -148,12 +148,12 @@ public class SecurityNotificationTest extends UnitTestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newNullStorageMessagingServer(conf);
+      server = Messaging.newMessagingServer(conf, false);
       server.start();
 
       notifQueue = randomSimpleString();
 
-      JBMUpdateableSecurityManager securityManager = (JBMUpdateableSecurityManager) server.getSecurityManager();
+      JBMSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("admin", "admin");      
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");

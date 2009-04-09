@@ -22,30 +22,32 @@
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
-import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.deployers.impl.BasicSecurityDeployer;
-import org.jboss.messaging.core.security.CheckType;
-import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
-import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.utils.XMLUtil;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.deployers.impl.BasicUserCredentialsDeployer;
+import org.jboss.messaging.core.security.CheckType;
+import org.jboss.messaging.core.security.JBMSecurityManager;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.utils.XMLUtil;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 /**
- * tests BasicSecurityDeployer
+ * tests BasicUserCredentialsDeployer
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class BasicSecurityDeployerTest extends UnitTestCase
+public class BasicUserCredentialsDeployerTest extends UnitTestCase
 {
-   private BasicSecurityDeployer deployer;
+   private BasicUserCredentialsDeployer deployer;
+   
+   FakeJBMUpdateableSecurityManager securityManager;
 
    private static final String simpleSecurityXml = "<deployment>\n" +
                                                    "<defaultuser name=\"guest\" password=\"guest\">\n" +
@@ -75,7 +77,8 @@ public class BasicSecurityDeployerTest extends UnitTestCase
    {
       super.setUp();
       DeploymentManager deploymentManager = new FakeDeploymentManager();
-      deployer = new BasicSecurityDeployer(deploymentManager);
+      securityManager = new FakeJBMUpdateableSecurityManager();
+      deployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
    }
 
    protected void tearDown() throws Exception
@@ -113,8 +116,6 @@ public class BasicSecurityDeployerTest extends UnitTestCase
 
    public void testSimpleDefaultSecurity() throws Exception
    {
-      FakeJBMUpdateableSecurityManager securityManager = new FakeJBMUpdateableSecurityManager();
-      deployer.setJbmSecurityManager(securityManager);
       deploy(simpleSecurityXml);
       assertEquals("guest", securityManager.defaultUser);
       User user = securityManager.users.get("guest");
@@ -128,9 +129,7 @@ public class BasicSecurityDeployerTest extends UnitTestCase
    }
 
    public void testSingleUserDeploySecurity() throws Exception
-   {
-      FakeJBMUpdateableSecurityManager securityManager = new FakeJBMUpdateableSecurityManager();
-      deployer.setJbmSecurityManager(securityManager);
+   {      
       deploy(singleUserXml);
       assertNull(securityManager.defaultUser);
       User user = securityManager.users.get("guest");
@@ -144,9 +143,7 @@ public class BasicSecurityDeployerTest extends UnitTestCase
    }
 
    public void testMultipleUserDeploySecurity() throws Exception
-   {
-      FakeJBMUpdateableSecurityManager securityManager = new FakeJBMUpdateableSecurityManager();
-      deployer.setJbmSecurityManager(securityManager);
+   {            
       deploy(multipleUserXml);
       assertNull(securityManager.defaultUser);
       User user = securityManager.users.get("guest");
@@ -171,9 +168,7 @@ public class BasicSecurityDeployerTest extends UnitTestCase
    }
 
    public void testUndeploy() throws Exception
-   {
-      FakeJBMUpdateableSecurityManager securityManager = new FakeJBMUpdateableSecurityManager();
-      deployer.setJbmSecurityManager(securityManager);
+   {      
       deploy(multipleUserXml);
       undeploy(singleUserXml);
       assertNull(securityManager.defaultUser);
@@ -193,7 +188,7 @@ public class BasicSecurityDeployerTest extends UnitTestCase
       assertEquals("bar", roles.get(2));
    }
 
-   class FakeJBMUpdateableSecurityManager implements JBMUpdateableSecurityManager
+   class FakeJBMUpdateableSecurityManager implements JBMSecurityManager
    {
       String defaultUser;
 

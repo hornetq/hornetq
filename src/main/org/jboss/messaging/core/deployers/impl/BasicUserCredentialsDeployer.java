@@ -22,7 +22,8 @@
 package org.jboss.messaging.core.deployers.impl;
 
 import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.security.JBMUpdateableSecurityManager;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -31,25 +32,33 @@ import org.w3c.dom.NodeList;
  * deployer for adding security loaded from the file "jbm-security.xml"
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class BasicSecurityDeployer extends XmlDeployer
+public class BasicUserCredentialsDeployer extends XmlDeployer
 {
-   private JBMUpdateableSecurityManager jbmSecurityManager;
+   private static final Logger log = Logger.getLogger(BasicUserCredentialsDeployer.class);
+
+   private final JBMSecurityManager jbmSecurityManager;
+
    private static final String PASSWORD_ATTRIBUTE = "password";
+
    private static final String ROLES_NODE = "role";
+
    private static final String ROLE_ATTR_NAME = "name";
 
-   private static  final String DEFAULT_USER = "defaultuser";
+   private static final String DEFAULT_USER = "defaultuser";
 
-   private static  final String USER = "user";
+   private static final String USER = "user";
 
-   public BasicSecurityDeployer(final DeploymentManager deploymentManager)
+   public BasicUserCredentialsDeployer(final DeploymentManager deploymentManager,
+                                       final JBMSecurityManager jbmSecurityManager)
    {
       super(deploymentManager);
+
+      this.jbmSecurityManager = jbmSecurityManager;
    }
 
    public String[] getElementTagName()
    {
-      return new String[]{DEFAULT_USER, USER};
+      return new String[] { DEFAULT_USER, USER };
    }
 
    @Override
@@ -62,7 +71,8 @@ public class BasicSecurityDeployer extends XmlDeployer
    {
       String username = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
       String password = node.getAttributes().getNamedItem(PASSWORD_ATTRIBUTE).getNodeValue();
-      //add the user
+
+      // add the user
       jbmSecurityManager.addUser(username, password);
       String nodeName = node.getNodeName();
       if (DEFAULT_USER.equalsIgnoreCase(nodeName))
@@ -73,7 +83,7 @@ public class BasicSecurityDeployer extends XmlDeployer
       for (int i = 0; i < children.getLength(); i++)
       {
          Node child = children.item(i);
-         //and add any roles
+         // and add any roles
          if (ROLES_NODE.equalsIgnoreCase(child.getNodeName()))
          {
             String role = child.getAttributes().getNamedItem(ROLE_ATTR_NAME).getNodeValue();
@@ -90,11 +100,6 @@ public class BasicSecurityDeployer extends XmlDeployer
 
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] {"jbm-security.xml"};
-   }
-
-   public void setJbmSecurityManager(final JBMUpdateableSecurityManager jbmSecurityManager)
-   {
-      this.jbmSecurityManager = jbmSecurityManager;
+      return new String[] { "jbm-security.xml" };
    }
 }

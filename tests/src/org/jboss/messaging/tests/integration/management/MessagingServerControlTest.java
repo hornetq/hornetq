@@ -295,7 +295,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      server = Messaging.newNullStorageMessagingServer(conf, mbeanServer);
+      server = Messaging.newMessagingServer(conf, mbeanServer, false);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       server.start();
    }

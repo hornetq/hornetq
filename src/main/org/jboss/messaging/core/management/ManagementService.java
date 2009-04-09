@@ -34,6 +34,7 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
+import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -63,13 +64,13 @@ import org.jboss.messaging.utils.SimpleString;
 public interface ManagementService extends NotificationService, MessagingComponent
 {
    // Configuration
-   
+
    MessageCounterManager getMessageCounterManager();
 
    String getClusterPassword();
 
    void setClusterPassword(String clusterPassword);
-   
+
    SimpleString getManagementAddress();
 
    void setManagementAddress(SimpleString managementAddress);
@@ -83,17 +84,17 @@ public interface ManagementService extends NotificationService, MessagingCompone
    ReplicationOperationInvoker getReplicationOperationInvoker();
 
    // Resource Registration
-   
-   MessagingServerControlMBean registerServer(PostOffice postOffice,
-                                              StorageManager storageManager,
-                                              Configuration configuration,                                            
-                                              HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                              HierarchicalRepository<Set<Role>> securityRepository,
-                                              ResourceManager resourceManager,
-                                              RemotingService remotingService,
-                                              MessagingServer messagingServer,
-                                              QueueFactory queueFactory,
-                                              boolean backup) throws Exception;
+
+   MessagingServerControl registerServer(PostOffice postOffice,
+                                         StorageManager storageManager,
+                                         Configuration configuration,
+                                         HierarchicalRepository<AddressSettings> addressSettingsRepository,
+                                         HierarchicalRepository<Set<Role>> securityRepository,
+                                         ResourceManager resourceManager,
+                                         RemotingService remotingService,
+                                         MessagingServer messagingServer,
+                                         QueueFactory queueFactory,
+                                         boolean backup) throws Exception;
 
    void unregisterServer() throws Exception;
 
@@ -102,7 +103,7 @@ public interface ManagementService extends NotificationService, MessagingCompone
    void unregisterFromJMX(final ObjectName objectName) throws Exception;
 
    void registerInRegistry(String resourceName, Object managedResource);
-   
+
    void unregisterFromRegistry(final String resourceName);
 
    void registerAddress(SimpleString address) throws Exception;
@@ -132,12 +133,12 @@ public interface ManagementService extends NotificationService, MessagingCompone
    void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception;
 
    void unregisterBridge(String name) throws Exception;
-   
+
    void registerCluster(ClusterConnection cluster, ClusterConnectionConfiguration configuration) throws Exception;
-   
+
    void unregisterCluster(String name) throws Exception;
 
    Object getResource(String resourceName);
 
-   ServerMessage handleMessage(ServerMessage message);  
+   ServerMessage handleMessage(ServerMessage message);
 }

@@ -270,7 +270,7 @@ public class ActivationTimeoutTest extends UnitTestCase
                 .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newNullStorageMessagingServer(backupConf);
+      backupService = Messaging.newMessagingServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -283,7 +283,7 @@ public class ActivationTimeoutTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newNullStorageMessagingServer(liveConf);
+      liveService = Messaging.newMessagingServer(liveConf, false);
       liveService.start();
    }
 

@@ -31,6 +31,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
@@ -66,7 +67,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    {
       super.setUp();
 
-      JMSServerManagerImpl serverManager = JMSServerManagerImpl.newJMSServerManagerImpl(server);
+      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(context);
 

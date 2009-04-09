@@ -42,10 +42,16 @@ public class ConfigurationImpl implements Configuration
    private static final long serialVersionUID = 4077088945050267843L;
 
    public static final boolean DEFAULT_CLUSTERED = false;
-   
+
    public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
    public static final boolean DEFAULT_BACKUP = false;
+
+   public static final boolean DEFAULT_ENABLE_FILE_DEPLOYMENT = false;
+   
+   public static final boolean DEFAULT_ENABLE_PERSISTENCE = true;
+
+   public static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
 
    public static final long DEFAULT_QUEUE_ACTIVATION_TIMEOUT = 30000;
 
@@ -136,7 +142,13 @@ public class ConfigurationImpl implements Configuration
    protected boolean clustered = DEFAULT_CLUSTERED;
 
    protected boolean backup = DEFAULT_BACKUP;
-      
+
+   protected boolean enableFileDeployment = DEFAULT_ENABLE_FILE_DEPLOYMENT;
+   
+   protected boolean enablePersistence = DEFAULT_ENABLE_PERSISTENCE;
+
+   protected long fileDeploymentScanPeriod = DEFAULT_FILE_DEPLOYER_SCAN_PERIOD;
+
    protected boolean persistDeliveryCountBeforeDelivery = DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
 
    protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
@@ -232,24 +244,24 @@ public class ConfigurationImpl implements Configuration
    protected String managementClusterPassword = DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
 
    protected long managementRequestTimeout = DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
-   
+
    // MessagingComponent implementation ----------------------------------------------
-   
+
    public void start() throws Exception
-   {      
+   {
    }
-   
+
    public void stop() throws Exception
-   {      
+   {
    }
-   
+
    public boolean isStarted()
    {
       return true;
    }
-   
+
    // Public -------------------------------------------------------------------------
-   
+
    public boolean isClustered()
    {
       return clustered;
@@ -263,6 +275,36 @@ public class ConfigurationImpl implements Configuration
    public boolean isBackup()
    {
       return backup;
+   }
+
+   public boolean isEnableFileDeployment()
+   {
+      return enableFileDeployment;
+   }
+
+   public void setEnableFileDeployment(final boolean enable)
+   {
+      enableFileDeployment = enable;
+   }
+   
+   public boolean isEnablePersistence()
+   {
+      return this.enablePersistence;
+   }
+   
+   public void setEnablePersistence(boolean enable)
+   {
+      this.enablePersistence = enable;
+   }
+   
+   public long getFileDeployerScanPeriod()
+   {
+      return fileDeploymentScanPeriod;
+   }
+
+   public void setFileDeployerScanPeriod(final long period)
+   {
+      fileDeploymentScanPeriod = period;
    }
 
    /**
@@ -632,7 +674,7 @@ public class ConfigurationImpl implements Configuration
    }
 
    public void setSecurityEnabled(final boolean enabled)
-   {      
+   {
       securityEnabled = enabled;
    }
 
@@ -755,7 +797,7 @@ public class ConfigurationImpl implements Configuration
       return cother.isClustered() == isClustered() && cother.isCreateBindingsDir() == isCreateBindingsDir() &&
              cother.isCreateJournalDir() == isCreateJournalDir() &&
              cother.isJournalSyncNonTransactional() == isJournalSyncNonTransactional() &&
-             cother.isJournalSyncTransactional() == isJournalSyncTransactional() &&           
+             cother.isJournalSyncTransactional() == isJournalSyncTransactional() &&
              cother.isSecurityEnabled() == isSecurityEnabled() &&
              cother.isWildcardRoutingEnabled() == isWildcardRoutingEnabled() &&
              cother.getLargeMessagesDirectory().equals(getLargeMessagesDirectory()) &&

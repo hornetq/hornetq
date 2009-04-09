@@ -465,7 +465,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          return false;
       }
-
+      
       if (connectionID != null && !connections.containsKey(connectionID))
       {
          // We already failed over/reconnected - probably the first failure came in, all the connections were failed
@@ -508,9 +508,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // It should then return its connections, with channel 1 lock still held
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
-
+         
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.SERVER_DISCONNECTED);
-
+         
          boolean done = false;
 
          if (attemptFailover || reconnectAttempts != 0)
@@ -579,8 +579,15 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                backupConnectorFactory = null;
 
                backupTransportParams = null;
+               
+               log.info("************ ATTEMPTING FAILOVER");
 
                done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
+               
+               if (done)
+               {
+                  log.info("************* FAILED OVER OK");
+               }
             }
             else if (reconnectAttempts != 0)
             {              
