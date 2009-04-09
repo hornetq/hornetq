@@ -64,6 +64,9 @@
       <fileset dir="${jboss.home}/client">
          <include name="**/*.jar"/>
       </fileset>
+      <fileset dir="${jboss.home}/server/jbm2_default/lib">
+         <include name="netty-3.1.0.BETA1.jar"/>
+      </fileset>
    </path>
 
    <path id="jms.runtime.classpath">
