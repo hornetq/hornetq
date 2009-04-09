@@ -29,25 +29,17 @@ import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessageCounterInfo;
+import org.jboss.messaging.core.management.MessageInfo;
+import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -64,44 +56,35 @@ public class JMSQueueControl implements JMSQueueControlMBean
    // Attributes ----------------------------------------------------
 
    private final JBossQueue managedQueue;
-
-   private final Queue coreQueue;
+   
+   private final QueueControlMBean coreQueueControl;
 
    private final String binding;
-
-   private final PostOffice postOffice;
-
-   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final MessageCounter counter;
 
    // Static --------------------------------------------------------
 
-   public static Filter createFilterFromJMSSelector(final String selectorStr) throws MessagingException
+   public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
    {
-      String filterStr = (selectorStr == null) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
-      return FilterImpl.createFilter(filterStr);
+      return (selectorStr == null) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
    }
 
-   private static Filter createFilterForJMSMessageID(String jmsMessageID) throws Exception
+   private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception
    {
-      return new FilterImpl(new SimpleString(JBossMessage.JBM_MESSAGE_ID + " = '" + jmsMessageID + "'"));
+      return JBossMessage.JBM_MESSAGE_ID + " = '" + jmsMessageID + "'";
    }
 
    // Constructors --------------------------------------------------
 
-   public JMSQueueControl(final JBossQueue queue,
-                          final Queue coreQueue,
+   public JMSQueueControl(final JBossQueue managedQueue,
+                          final QueueControlMBean coreQueueControl,
                           final String jndiBinding,
-                          final PostOffice postOffice,                          
-                          final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                           final MessageCounter counter)
    {
-      this.managedQueue = queue;
-      this.coreQueue = coreQueue;
+      this.managedQueue = managedQueue;
+      this.coreQueueControl = coreQueueControl;
       this.binding = jndiBinding;
-      this.postOffice = postOffice;
-      this.addressSettingsRepository = addressSettingsRepository;
       this.counter = counter;
    }
 
@@ -126,32 +109,32 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public int getMessageCount()
    {
-      return coreQueue.getMessageCount();
+      return coreQueueControl.getMessageCount();
    }
 
    public int getMessagesAdded()
    {
-      return coreQueue.getMessagesAdded();
+      return coreQueueControl.getMessagesAdded();
    }
 
    public int getConsumerCount()
    {
-      return coreQueue.getConsumerCount();
+      return coreQueueControl.getConsumerCount();
    }
 
    public int getDeliveringCount()
    {
-      return coreQueue.getDeliveringCount();
+      return coreQueueControl.getDeliveringCount();
    }
 
    public long getScheduledCount()
    {
-      return coreQueue.getScheduledCount();
+      return coreQueueControl.getScheduledCount();
    }
 
    public boolean isDurable()
    {
-      return coreQueue.isDurable();
+      return coreQueueControl.isDurable();
    }
 
    public String getJNDIBinding()
@@ -161,77 +144,44 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public String getDeadLetterAddress()
    {
-      AddressSettings addressSettings = addressSettingsRepository.getMatch(getAddress());
-      if (addressSettings != null && addressSettings.getDeadLetterAddress() != null)
-      {
-         return addressSettings.getDeadLetterAddress().toString();
-      }
-      else
-      {
-         return null;
-      }
+      return coreQueueControl.getDeadLetterAddress();
    }
 
    public void setDeadLetterAddress(String deadLetterAddress) throws Exception
    {
-      AddressSettings addressSettings = addressSettingsRepository.getMatch(getAddress());
-
-      if (deadLetterAddress != null)
-      {
-         addressSettings.setDeadLetterAddress(new SimpleString(deadLetterAddress));
-      }
+      coreQueueControl.setDeadLetterAddress(deadLetterAddress);
    }
 
    public String getExpiryAddress()
    {
-      AddressSettings addressSettings = addressSettingsRepository.getMatch(getAddress());
-      if (addressSettings != null && addressSettings.getExpiryAddress() != null)
-      {
-         return addressSettings.getExpiryAddress().toString();
-      }
-      else
-      {
-         return null;
-      }
+      return coreQueueControl.getExpiryAddress();
    }
 
-   public void setExpiryAddress(String expiryQueueName)
+   public void setExpiryAddress(String expiryAddres) throws Exception
    {
-      AddressSettings addressSettings = addressSettingsRepository.getMatch(getAddress());
-
-      if (expiryQueueName != null)
-      {
-         addressSettings.setExpiryAddress(new SimpleString(expiryQueueName));
-      }
+      coreQueueControl.setExpiryAddress(expiryAddres);
    }
 
    public boolean removeMessage(final String messageID) throws Exception
    {
-      Filter filter = createFilterForJMSMessageID(messageID);
-      List<MessageReference> refs = coreQueue.list(filter);
-      if (refs.size() != 1)
+      String filter = createFilterForJMSMessageID(messageID);
+      int removed = coreQueueControl.removeMatchingMessages(filter);
+      if (removed != 1)
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.deleteReference(refs.get(0).getMessage().getMessageID());
+      return true;
    }
 
    public int removeMatchingMessages(String filterStr) throws Exception
    {
-      try
-      {
-         Filter filter = createFilterFromJMSSelector(filterStr);
-         return coreQueue.deleteMatchingReferences(filter);
-      }
-      catch (MessagingException e)
-      {
-         throw new IllegalStateException(e.getMessage());
-      }
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.removeMatchingMessages(filter);
    }
 
    public int removeAllMessages() throws Exception
    {
-      return coreQueue.deleteAllReferences();
+      return coreQueueControl.removeAllMessages();
    }
 
    public TabularData listAllMessages() throws Exception
@@ -243,14 +193,13 @@ public class JMSQueueControl implements JMSQueueControlMBean
    {
       try
       {
-         Filter filter = createFilterFromJMSSelector(filterStr);
-
-         List<MessageReference> messageRefs = coreQueue.list(filter);
-         List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs.size());
-         for (MessageReference messageRef : messageRefs)
+         String filter = createFilterFromJMSSelector(filterStr);
+         TabularData coreMessages = coreQueueControl.listMessages(filter);
+         List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(coreMessages.size());
+         MessageInfo[] coreMessageInfos = MessageInfo.from(coreMessages);
+         for (MessageInfo messageInfo : coreMessageInfos)
          {
-            ServerMessage message = messageRef.getMessage();
-            JMSMessageInfo info = JMSMessageInfo.fromServerMessage(message);
+            JMSMessageInfo info = JMSMessageInfo.fromCoreMessage(messageInfo);
             infos.add(info);
          }
          return JMSMessageInfo.toTabularData(infos);
@@ -263,91 +212,67 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    public int countMessages(final String filterStr) throws Exception
    {
-      Filter filter = createFilterFromJMSSelector(filterStr);
-      List<MessageReference> messageRefs = coreQueue.list(filter);
-      return messageRefs.size();
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.countMessages(filter);
    }
 
    public boolean expireMessage(final String messageID) throws Exception
    {
-      Filter filter = createFilterForJMSMessageID(messageID);
-      List<MessageReference> refs = coreQueue.list(filter);
-      if (refs.size() != 1)
+      String filter = createFilterForJMSMessageID(messageID);
+      int expired = coreQueueControl.expireMessages(filter);
+      if (expired != 1)
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.expireReference(refs.get(0).getMessage().getMessageID());
+      return true;
    }
 
    public int expireMessages(final String filterStr) throws Exception
    {
-      try
-      {
-         Filter filter = createFilterFromJMSSelector(filterStr);
-         return coreQueue.expireReferences(filter);
-      }
-      catch (MessagingException e)
-      {
-         throw new IllegalStateException(e.getMessage());
-      }
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.expireMessages(filter);
    }
 
    public boolean sendMessageToDLQ(final String messageID) throws Exception
    {
-      Filter filter = createFilterForJMSMessageID(messageID);
-      List<MessageReference> refs = coreQueue.list(filter);
-      if (refs.size() != 1)
+      String filter = createFilterForJMSMessageID(messageID);
+      int dead = coreQueueControl.sendMessagesToDeadLetterAddress(filter);
+      if (dead != 1)
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.sendMessageToDeadLetterAddress(refs.get(0).getMessage().getMessageID());
+      return true;
    }
 
    public boolean changeMessagePriority(final String messageID, final int newPriority) throws Exception
    {
-      if (newPriority < 0 || newPriority > 9)
-      {
-         throw new IllegalArgumentException("invalid newPriority value: " + newPriority +
-                                            ". It must be between 0 and 9 (both included)");
-      }
-      Filter filter = createFilterForJMSMessageID(messageID);
-      List<MessageReference> refs = coreQueue.list(filter);
-      if (refs.size() != 1)
+      String filter = createFilterForJMSMessageID(messageID);
+      int changed = coreQueueControl.changeMessagesPriority(filter, newPriority);
+      if (changed != 1)
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      return coreQueue.changeReferencePriority(refs.get(0).getMessage().getMessageID(), (byte)newPriority);
+      return true;
    }
 
    public boolean moveMessage(String messageID, String otherQueueName) throws Exception
    {
+      String filter = createFilterForJMSMessageID(messageID);
       JBossQueue otherQueue = new JBossQueue(otherQueueName);
-      Binding binding = postOffice.getBinding(otherQueue.getSimpleAddress());
-      if (binding == null)
-      {
-         throw new IllegalArgumentException("No queue found for " + otherQueueName);
-      }
-      Filter filter = createFilterForJMSMessageID(messageID);
-      List<MessageReference> refs = coreQueue.list(filter);
-      if (refs.size() != 1)
+      int moved = coreQueueControl.moveMatchingMessages(filter, otherQueue.getAddress());
+      if (moved != 1)
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-
-      return coreQueue.moveReference(refs.get(0).getMessage().getMessageID(), binding.getAddress());
+      
+      return true;
    }
 
    public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
    {
+      String filter = createFilterFromJMSSelector(filterStr);
       JBossQueue otherQueue = new JBossQueue(otherQueueName);
-      Binding otherBinding = postOffice.getBinding(otherQueue.getSimpleAddress());
-      if (otherBinding == null)
-      {
-         throw new IllegalArgumentException("No queue found for " + otherQueueName);
-      }
-
-      Filter filter = createFilterFromJMSSelector(filterStr);
-      return coreQueue.moveReferences(filter, otherBinding.getAddress());
+      return coreQueueControl.moveMatchingMessages(filter, otherQueue.getAddress());
    }
 
    public int moveAllMessages(String otherQueueName) throws Exception

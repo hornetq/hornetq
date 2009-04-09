@@ -137,11 +137,15 @@ public interface QueueControlMBean
          @Parameter(name = "messageID", desc = "A message ID") long messageID)
          throws Exception;
    
+   int sendMessagesToDeadLetterAddress(String filterStr) throws Exception;
+
    @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = ACTION)
    boolean changeMessagePriority(
          @Parameter(name = "messageID", desc = "A message ID") long messageID,
          @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority)
          throws Exception;
+
+   int changeMessagesPriority(String filter, int newPriority) throws Exception;
 
    CompositeData listMessageCounter() throws Exception;
 
@@ -152,5 +156,7 @@ public interface QueueControlMBean
    TabularData listMessageCounterHistory() throws Exception;
 
    String listMessageCounterHistoryAsHTML() throws Exception;
+
+
 
 }

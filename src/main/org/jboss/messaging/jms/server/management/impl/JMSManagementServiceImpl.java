@@ -27,16 +27,13 @@ import java.util.List;
 
 import javax.management.ObjectName;
 
+import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -90,26 +87,21 @@ public class JMSManagementServiceImpl implements JMSManagementService
    }
 
    public synchronized void registerQueue(final JBossQueue queue,
-                             final Queue coreQueue,
-                             final String jndiBinding,
-                             final PostOffice postOffice,
-                             final StorageManager storageManager,
-                             HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
+                             final String jndiBinding) throws Exception
    {
+      QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queue.getAddress());
       MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
       MessageCounter counter = new MessageCounter(queue.getName(),
                                                   null,
-                                                  coreQueue,
+                                                  coreQueueControl,
                                                   false,
-                                                  coreQueue.isDurable(),
+                                                  coreQueueControl.isDurable(),
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName(), counter);
       ObjectName objectName = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
       JMSQueueControl control = new JMSQueueControl(queue,
-                                                    coreQueue,
+                                                    coreQueueControl,
                                                     jndiBinding,
-                                                    postOffice,                                                
-                                                    addressSettingsRepository,
                                                     counter);
       managementService.registerInJMX(objectName,
                                       new ReplicationAwareJMSQueueControlWrapper(control, 
@@ -125,13 +117,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
    }
 
    public synchronized void registerTopic(final JBossTopic topic,
-                             final String jndiBinding,
-                             final PostOffice postOffice,
-                             final StorageManager storageManager,
-                             final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
+                             final String jndiBinding) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
-      TopicControl control = new TopicControl(topic, jndiBinding, postOffice);
+      AddressControlMBean addressControl = (AddressControlMBean)managementService.getResource(ResourceNames.CORE_ADDRESS + topic.getAddress());
+      TopicControl control = new TopicControl(topic, addressControl, jndiBinding, managementService);
       managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(control,
                                                                                           managementService.getReplicationOperationInvoker()));
       managementService.registerInRegistry(ResourceNames.JMS_TOPIC + topic.getTopicName(), control);

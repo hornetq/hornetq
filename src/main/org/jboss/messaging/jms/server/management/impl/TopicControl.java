@@ -28,22 +28,20 @@ import java.util.List;
 
 import javax.management.openmbean.TabularData;
 
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
-import org.jboss.messaging.core.postoffice.Bindings;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.MessageInfo;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.SelectorTranslator;
 import org.jboss.messaging.jms.server.management.JMSMessageInfo;
 import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.utils.Pair;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -63,19 +61,28 @@ public class TopicControl implements TopicControlMBean
 
    private final String binding;
 
-   private final PostOffice postOffice;
+   private AddressControlMBean addressControl;
+
+   private ManagementService managementService;
 
    // Static --------------------------------------------------------
 
+   public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
+   {
+      return (selectorStr == null) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
+   }
+   
    // Constructors --------------------------------------------------
 
    public TopicControl(final JBossTopic topic,
+                       final AddressControlMBean addressControl,
                        final String jndiBinding,
-                       final PostOffice postOffice)
+                       final ManagementService managementService)
    {
       this.managedTopic = topic;
+      this.addressControl = addressControl;
       this.binding = jndiBinding;
-      this.postOffice = postOffice;
+      this.managementService = managementService;
    }
 
    // TopicControlMBean implementation ------------------------------
@@ -147,20 +154,17 @@ public class TopicControl implements TopicControlMBean
 
    public TabularData listMessagesForSubscription(final String queueName) throws Exception
    {
-      SimpleString sAddress = new SimpleString(queueName);
-      Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
+      QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
+      if (coreQueueControl == null)
       {
-         throw new IllegalArgumentException("No queue with name " + sAddress);
+         throw new IllegalArgumentException("No subscriptions with name " + queueName);
       }
-      Queue queue = (Queue)binding.getBindable();
-      List<MessageReference> messageRefs = queue.list(null);
-      List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(messageRefs.size());
-
-      for (MessageReference messageRef : messageRefs)
+      TabularData coreMessages = coreQueueControl.listAllMessages();
+      List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(coreMessages.size());
+      MessageInfo[] coreMessageInfos = MessageInfo.from(coreMessages);
+      for (MessageInfo messageInfo : coreMessageInfos)
       {
-         ServerMessage message = messageRef.getMessage();
-         JMSMessageInfo info = JMSMessageInfo.fromServerMessage(message);
+         JMSMessageInfo info = JMSMessageInfo.fromCoreMessage(messageInfo);
          infos.add(info);
       }
       return JMSMessageInfo.toTabularData(infos);
@@ -169,30 +173,23 @@ public class TopicControl implements TopicControlMBean
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
    {
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
-      SimpleString sAddress = new SimpleString(queueName);
-      Binding binding = postOffice.getBinding(sAddress);
-      if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
+      QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
+      if (coreQueueControl == null)
       {
-         throw new IllegalArgumentException("No queue with name " + sAddress);
+         throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
       }
-      Queue queue = (Queue)binding.getBindable();
-      Filter filter = FilterImpl.createFilter(filterStr);
-      List<MessageReference> messageRefs = queue.list(filter);
-      return messageRefs.size();
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.listMessages(filter).size();
    }
 
    public int removeAllMessages() throws Exception
    {
       int count = 0;
-      Bindings bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
-
-      for (Binding binding : bindings.getBindings())
+      String[] queues = addressControl.getQueueNames();
+      for (String queue : queues)
       {
-         if (binding.getType() == BindingType.LOCAL_QUEUE)
-         {
-            Queue queue = (Queue)binding.getBindable();
-            count += queue.deleteAllReferences();
-         }
+         QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
+         count += coreQueueControl.removeAllMessages();
       }
 
       return count;
@@ -201,34 +198,22 @@ public class TopicControl implements TopicControlMBean
    public void dropDurableSubscription(String clientID, String subscriptionName) throws Exception
    {
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
-      Binding binding = postOffice.getBinding(new SimpleString(queueName));
-
-      if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
+      QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
+      if (coreQueueControl == null)
       {
-         throw new IllegalArgumentException("No durable subscription for clientID=" + clientID +
-                                            ", subcription=" +
-                                            subscriptionName);
+         throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
       }
-
-      Queue queue = (Queue)binding.getBindable();
-
-      queue.deleteAllReferences();
-
-      postOffice.removeBinding(queue.getName());
+      MessagingServerControlMBean serverControl = (MessagingServerControlMBean)managementService.getResource(ResourceNames.CORE_SERVER);
+      serverControl.destroyQueue(queueName);
    }
 
    public void dropAllSubscriptions() throws Exception
    {
-      Bindings bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
-
-      for (Binding binding : bindings.getBindings())
+      MessagingServerControlMBean serverControl = (MessagingServerControlMBean)managementService.getResource(ResourceNames.CORE_SERVER);
+      String[] queues = addressControl.getQueueNames();
+      for (String queue : queues)
       {
-         if (binding.getType() == BindingType.LOCAL_QUEUE)
-         {
-            Queue queue = (Queue)binding.getBindable();
-            queue.deleteAllReferences();
-            postOffice.removeBinding(queue.getName());
-         }
+         serverControl.destroyQueue(queue);
       }
    }
 
@@ -240,10 +225,10 @@ public class TopicControl implements TopicControlMBean
 
    private SubscriptionInfo[] listSubscribersInfos(final DurabilityType durability)
    {
-      List<Queue> queues = getQueues(durability);
+      List<QueueControlMBean> queues = getQueues(durability);
       List<SubscriptionInfo> subInfos = new ArrayList<SubscriptionInfo>(queues.size());
 
-      for (Queue queue : queues)
+      for (QueueControlMBean queue : queues)
       {
          String clientID = null;
          String subName = null;
@@ -255,8 +240,8 @@ public class TopicControl implements TopicControlMBean
             subName = pair.b;
          }
 
-         String filter = queue.getFilter() != null ? queue.getFilter().getFilterString().toString() : null;
-         SubscriptionInfo info = new SubscriptionInfo(queue.getName().toString(),
+         String filter = queue.getFilter() != null ? queue.getFilter() : null;
+         SubscriptionInfo info = new SubscriptionInfo(queue.getName(),
                                                       clientID,
                                                       subName,
                                                       queue.isDurable(),
@@ -269,35 +254,32 @@ public class TopicControl implements TopicControlMBean
 
    private int getMessageCount(final DurabilityType durability)
    {
-      List<Queue> queues = getQueues(durability);
+      List<QueueControlMBean> queues = getQueues(durability);
       int count = 0;
-      for (Queue queue : queues)
+      for (QueueControlMBean queue : queues)
       {
          count += queue.getMessageCount();
       }
       return count;
    }
 
-   private List<Queue> getQueues(final DurabilityType durability)
+   private List<QueueControlMBean> getQueues(final DurabilityType durability)
    {
       try
       {
-         Bindings bindings = postOffice.getBindingsForAddress(managedTopic.getSimpleAddress());
-         List<Queue> matchingQueues = new ArrayList<Queue>();
-
-         for (Binding binding : bindings.getBindings())
+         List<QueueControlMBean> matchingQueues = new ArrayList<QueueControlMBean>();
+         String[] queues = addressControl.getQueueNames();
+         for (String queue : queues)
          {
-            if (binding.getType() == BindingType.LOCAL_QUEUE)
+            QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
+
+            //Ignore the "special" subscription
+            if (!coreQueueControl.getName().equals(addressControl.getAddress()))
             {
-               Queue queue = (Queue)binding.getBindable();
-               //Ignore the "special" subscription
-               if (!binding.getUniqueName().equals(binding.getAddress()))
+               if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && coreQueueControl.isDurable()) ||
+                        (durability == DurabilityType.NON_DURABLE && !coreQueueControl.isDurable()))
                {
-                  if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && queue.isDurable()) ||
-                      (durability == DurabilityType.NON_DURABLE && !queue.isDurable()))
-                  {
-                     matchingQueues.add(queue);
-                  }
+                  matchingQueues.add(coreQueueControl);
                }
             }
          }

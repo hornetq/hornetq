@@ -64,6 +64,11 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);
          }
 
+         public int changeMessagesPriority(String filter, int newPriority) throws Exception
+         {
+            return (Integer)proxy.invokeOperation("changeMessagePriority", filter, newPriority);
+         }
+
          public int countMessages(String filter) throws Exception
          {
             return (Integer)proxy.invokeOperation("countMessages", filter);
@@ -222,6 +227,11 @@ public class QueueControlUsingCoreTest extends QueueControlTest
          public boolean sendMessageToDeadLetterAddress(long messageID) throws Exception
          {
             return (Boolean)proxy.invokeOperation("sendMessageToDeadLetterAddress", messageID);
+         }
+         
+         public int sendMessagesToDeadLetterAddress(String filterStr) throws Exception
+         {
+            return (Integer)proxy.invokeOperation("sendMessagesToDeadLetterAddress", filterStr);
          }
 
          public void setDeadLetterAddress(String deadLetterAddress) throws Exception

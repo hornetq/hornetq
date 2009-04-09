@@ -39,6 +39,7 @@ import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.PropertiesInfo;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.jms.client.JBossMessage;
@@ -57,30 +58,59 @@ public class JMSMessageInfo
    private static final Logger log = Logger.getLogger(JMSMessageInfo.class);
 
    public static final CompositeType TYPE;
+
    private static final String MESSAGE_TYPE_NAME = "JMSMessageInfo";
+
    private static final String MESSAGE_TABULAR_TYPE_NAME = "JMSMessageTabularInfo";
+
    private static final String[] ITEM_NAMES = new String[] { "JMSMessageID",
-         "JMSCorrelationID", "JMSDeliveryMode", "JMSPriority", "JMSReplyTo",
-         "JMSTimestamp", "JMSType", "expiration", "properties" };
-   private static final String[] ITEM_DESCRIPTIONS = new String[] {
-         "Message ID", "Correlation ID", "Delivery Mode", "Priority",
-         "Reply To", "Timestamp", "JMS Type", "Expiration", "Properties" };
+                                                            "JMSCorrelationID",
+                                                            "JMSDeliveryMode",
+                                                            "JMSPriority",
+                                                            "JMSReplyTo",
+                                                            "JMSTimestamp",
+                                                            "JMSType",
+                                                            "expiration",
+                                                            "properties" };
+
+   private static final String[] ITEM_DESCRIPTIONS = new String[] { "Message ID",
+                                                                   "Correlation ID",
+                                                                   "Delivery Mode",
+                                                                   "Priority",
+                                                                   "Reply To",
+                                                                   "Timestamp",
+                                                                   "JMS Type",
+                                                                   "Expiration",
+                                                                   "Properties" };
+
    private static final OpenType[] TYPES;
+
    private static final TabularType TABULAR_TYPE;
 
    static
    {
       try
       {
-         TYPES = new OpenType[] { STRING, STRING, STRING, INTEGER, STRING,
-               LONG, STRING, LONG, PropertiesInfo.TABULAR_TYPE };
+         TYPES = new OpenType[] { STRING,
+                                 STRING,
+                                 STRING,
+                                 INTEGER,
+                                 STRING,
+                                 LONG,
+                                 STRING,
+                                 LONG,
+                                 PropertiesInfo.TABULAR_TYPE };
          TYPE = new CompositeType(MESSAGE_TYPE_NAME,
-               "Information for a JMS Message", ITEM_NAMES, ITEM_DESCRIPTIONS,
-               TYPES);
+                                  "Information for a JMS Message",
+                                  ITEM_NAMES,
+                                  ITEM_DESCRIPTIONS,
+                                  TYPES);
          TABULAR_TYPE = new TabularType(MESSAGE_TABULAR_TYPE_NAME,
-               "Information for tabular JMSMessageInfo", TYPE,
-               new String[] { "JMSMessageID" });
-      } catch (OpenDataException e)
+                                        "Information for tabular JMSMessageInfo",
+                                        TYPE,
+                                        new String[] { "JMSMessageID" });
+      }
+      catch (OpenDataException e)
       {
          throw new IllegalStateException(e);
       }
@@ -89,19 +119,26 @@ public class JMSMessageInfo
    // Attributes ----------------------------------------------------
 
    private final String messageID;
+
    private final String correlationID;
+
    private final String deliveryMode;
+
    private final int priority;
+
    private final String replyTo;
+
    private final long timestamp;
+
    private final long expiration;
+
    private final String jmsType;
+
    private PropertiesInfo properties;
 
    // Static --------------------------------------------------------
 
-   public static TabularData toTabularData(JMSMessageInfo[] infos)
-         throws OpenDataException
+   public static TabularData toTabularData(JMSMessageInfo[] infos) throws OpenDataException
    {
       TabularData data = new TabularDataSupport(TABULAR_TYPE);
       for (JMSMessageInfo messageInfo : infos)
@@ -123,27 +160,26 @@ public class JMSMessageInfo
 
    public static JMSMessageInfo fromServerMessage(ServerMessage message)
    {
-      String messageID = message.getProperty(JBossMessage.JBM_MESSAGE_ID)
-            .toString();
-      SimpleString simpleCorrelationID = (SimpleString) message
-            .getProperty(JBossMessage.CORRELATIONID_HEADER_NAME);
-      String correlationID = (simpleCorrelationID == null) ? null
-            : simpleCorrelationID.toString();
-      SimpleString simpleJMSType = (SimpleString) message
-            .getProperty(JBossMessage.TYPE_HEADER_NAME);
-      String jmsType = (simpleJMSType == null) ? null : simpleJMSType
-            .toString();
-      String deliveryMode = message.isDurable() ? "PERSISTENT"
-            : "NON_PERSISTENT";
+      String messageID = message.getProperty(JBossMessage.JBM_MESSAGE_ID).toString();
+      SimpleString simpleCorrelationID = (SimpleString)message.getProperty(JBossMessage.CORRELATIONID_HEADER_NAME);
+      String correlationID = (simpleCorrelationID == null) ? null : simpleCorrelationID.toString();
+      SimpleString simpleJMSType = (SimpleString)message.getProperty(JBossMessage.TYPE_HEADER_NAME);
+      String jmsType = (simpleJMSType == null) ? null : simpleJMSType.toString();
+      String deliveryMode = message.isDurable() ? "PERSISTENT" : "NON_PERSISTENT";
       int priority = message.getPriority();
-      SimpleString replyAddress = (SimpleString) message
-            .getProperty(JBossMessage.REPLYTO_HEADER_NAME);
+      SimpleString replyAddress = (SimpleString)message.getProperty(JBossMessage.REPLYTO_HEADER_NAME);
       String replyTo = (replyAddress == null) ? null : replyAddress.toString();
       long timestamp = message.getTimestamp();
       long expiration = message.getExpiration();
 
-      JMSMessageInfo info = new JMSMessageInfo(messageID, correlationID,
-            deliveryMode, priority, replyTo, timestamp, expiration, jmsType);
+      JMSMessageInfo info = new JMSMessageInfo(messageID,
+                                               correlationID,
+                                               deliveryMode,
+                                               priority,
+                                               replyTo,
+                                               timestamp,
+                                               expiration,
+                                               jmsType);
       for (SimpleString key : message.getPropertyNames())
       {
          info.putProperty(key.toString(), message.getProperty(key).toString());
@@ -151,11 +187,45 @@ public class JMSMessageInfo
       return info;
    }
 
+   public static JMSMessageInfo fromCoreMessage(MessageInfo coreInfo)
+   {
+      String messageID = coreInfo.getProperties().get(JBossMessage.JBM_MESSAGE_ID.toString());
+      String simpleCorrelationID = coreInfo.getProperties().get(JBossMessage.CORRELATIONID_HEADER_NAME.toString());
+      String correlationID = (simpleCorrelationID == null) ? null : simpleCorrelationID.toString();
+      String simpleJMSType = coreInfo.getProperties().get(JBossMessage.TYPE_HEADER_NAME.toString());
+      String jmsType = (simpleJMSType == null) ? null : simpleJMSType.toString();
+      String deliveryMode = coreInfo.isDurable() ? "PERSISTENT" : "NON_PERSISTENT";
+      int priority = coreInfo.getPriority();
+      String replyAddress = coreInfo.getProperties().get(JBossMessage.REPLYTO_HEADER_NAME.toString());
+      String replyTo = (replyAddress == null) ? null : replyAddress.toString();
+      long timestamp = coreInfo.getTimestamp();
+      long expiration = coreInfo.getExpiration();
+
+      JMSMessageInfo info = new JMSMessageInfo(messageID,
+                                               correlationID,
+                                               deliveryMode,
+                                               priority,
+                                               replyTo,
+                                               timestamp,
+                                               expiration,
+                                               jmsType);
+      for (String key : coreInfo.getProperties().keySet())
+      {
+         info.putProperty(key.toString(), coreInfo.getProperties().get(key));
+      }
+      return info;
+   }
+
    // Constructors --------------------------------------------------
 
-   public JMSMessageInfo(final String messageID, final String correlationID,
-         final String deliveryMode, final int priority, final String replyTo,
-         final long timestamp, final long expiration, final String jmsType)
+   public JMSMessageInfo(final String messageID,
+                         final String correlationID,
+                         final String deliveryMode,
+                         final int priority,
+                         final String replyTo,
+                         final long timestamp,
+                         final long expiration,
+                         final String jmsType)
    {
       this.messageID = messageID;
       this.correlationID = correlationID;
@@ -224,10 +294,17 @@ public class JMSMessageInfo
    {
       try
       {
-         return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] {
-               messageID, correlationID, deliveryMode, priority, replyTo,
-               timestamp, jmsType, expiration, properties.toTabularData() });
-      } catch (OpenDataException e)
+         return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { messageID,
+                                                                         correlationID,
+                                                                         deliveryMode,
+                                                                         priority,
+                                                                         replyTo,
+                                                                         timestamp,
+                                                                         jmsType,
+                                                                         expiration,
+                                                                         properties.toTabularData() });
+      }
+      catch (OpenDataException e)
       {
          log.error("Exception when converting a JMS Message to a CompositeData", e);
          return null;

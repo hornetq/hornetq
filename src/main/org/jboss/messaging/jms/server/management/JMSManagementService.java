@@ -24,11 +24,6 @@ package org.jboss.messaging.jms.server.management;
 
 import java.util.List;
 
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -47,19 +42,12 @@ public interface JMSManagementService
    void unregisterJMSServer() throws Exception;
 
    void registerQueue(JBossQueue queue,
-                      Queue coreQueue,
-                      String jndiBinding,
-                      PostOffice postOffice,
-                      StorageManager storageManager,
-                      HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception;
+                      String jndiBinding) throws Exception;
 
    void unregisterQueue(String name) throws Exception;
 
    void registerTopic(JBossTopic topic,
-                      String jndiBinding,
-                      PostOffice postOffice,
-                      StorageManager storageManager,
-                      HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception;
+                      String jndiBinding) throws Exception;
 
    void unregisterTopic(String name) throws Exception;
 

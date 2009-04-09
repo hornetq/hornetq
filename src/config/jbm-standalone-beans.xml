@@ -93,15 +93,6 @@
             <inject bean="MessagingServer" property="serverManagement"/>
          </parameter>
          <parameter>
-            <inject bean="MessagingServer" property="postOffice"/>
-         </parameter>
-         <parameter>
-            <inject bean="MessagingServer" property="storageManager"/>
-         </parameter>
-         <parameter>
-            <inject bean="MessagingServer" property="addressSettingsRepository"/>
-         </parameter>
-         <parameter>
             <inject bean="JMSManagementService"/>
          </parameter>
       </constructor>

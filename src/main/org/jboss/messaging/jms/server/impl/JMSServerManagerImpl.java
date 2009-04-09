@@ -22,19 +22,24 @@
 
 package org.jboss.messaging.jms.server.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.management.NotificationBroadcasterSupport;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -42,16 +47,6 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.utils.Pair;
-
-import javax.management.NotificationBroadcasterSupport;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
@@ -79,12 +74,6 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    private final MessagingServerControlMBean messagingServer;
 
-   private final PostOffice postOffice;
-
-   private final StorageManager storageManager;
-
-   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
-
    private final JMSManagementService managementService;
 
    public static JMSServerManagerImpl newJMSServerManagerImpl(final MessagingServer server) throws Exception
@@ -100,22 +89,13 @@ public class JMSServerManagerImpl implements JMSServerManager
                                                                        server.getQueueFactory());
       JMSManagementService jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
       return new JMSServerManagerImpl(control,
-                                      server.getPostOffice(),
-                                      server.getStorageManager(),
-                                      server.getAddressSettingsRepository(),
                                       jmsManagementService);
    }
 
    public JMSServerManagerImpl(final MessagingServerControlMBean server,
-                               final PostOffice postOffice,
-                               final StorageManager storageManager,
-                               final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                final JMSManagementService managementService)
    {
       messagingServer = server;
-      this.postOffice = postOffice;
-      this.storageManager = storageManager;
-      this.addressSettingsRepository = addressSettingsRepository;
       this.managementService = managementService;
    }
 
@@ -164,13 +144,8 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          addToDestinationBindings(queueName, jndiBinding);
       }
-      Binding binding = postOffice.getBinding(jBossQueue.getSimpleAddress());
       managementService.registerQueue(jBossQueue,
-                                      (Queue)binding.getBindable(),
-                                      jndiBinding,
-                                      postOffice,
-                                      storageManager,
-                                      addressSettingsRepository);
+                                      jndiBinding);
       return added;
    }
 
@@ -185,7 +160,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          addToDestinationBindings(topicName, jndiBinding);
       }
-      managementService.registerTopic(jBossTopic, jndiBinding, postOffice, storageManager, addressSettingsRepository);
+      managementService.registerTopic(jBossTopic, jndiBinding);
       return added;
    }
 

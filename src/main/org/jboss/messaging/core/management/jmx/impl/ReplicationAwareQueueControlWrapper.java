@@ -190,6 +190,11 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
    {
       return (Boolean)replicationAwareInvoke("changeMessagePriority", messageID, newPriority);
    }
+   
+   public int changeMessagesPriority(String filter, int newPriority) throws Exception
+   {
+      return (Integer)replicationAwareInvoke("changeMessagesPriority", filter, newPriority);
+   }
 
    public boolean expireMessage(final long messageID) throws Exception
    {
@@ -234,6 +239,11 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
    public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
       return (Boolean)replicationAwareInvoke("sendMessageToDeadLetterAddress", messageID);
+   }
+   
+   public int sendMessagesToDeadLetterAddress(String filterStr) throws Exception
+   {
+      return (Integer)replicationAwareInvoke("sendMessagesToDeadLetterAddress", filterStr);
    }
 
    // StandardMBean overrides ---------------------------------------

@@ -27,7 +27,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.jboss.messaging.core.server.Queue;
+import org.jboss.messaging.core.management.QueueControlMBean;
 
 /**
  * This class stores message count informations for a given queue
@@ -59,7 +59,7 @@ public class MessageCounter
    private boolean destDurable;
 
    // destination queue
-   private Queue destQueue;
+   private QueueControlMBean destQueue;
 
    // counter
    private int countTotal;
@@ -93,7 +93,7 @@ public class MessageCounter
     * @param durable          durable subsciption flag
     * @param daycountmax      max message history day count
     */
-   public MessageCounter(String name, String subscription, Queue queue, boolean topic, boolean durable, int daycountmax)
+   public MessageCounter(String name, String subscription, QueueControlMBean queue, boolean topic, boolean durable, int daycountmax)
    {
       // store destination related information
       destName = name;

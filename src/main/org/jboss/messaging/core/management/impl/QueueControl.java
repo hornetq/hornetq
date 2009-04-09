@@ -65,7 +65,7 @@ public class QueueControl implements QueueControlMBean
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   private final MessageCounter counter;
+   private MessageCounter counter;
 
    // Static --------------------------------------------------------
 
@@ -74,18 +74,21 @@ public class QueueControl implements QueueControlMBean
    public QueueControl(final Queue queue,
                        final String address,
                        final PostOffice postOffice,
-                       final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                       final MessageCounter counter)
+                       final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
       this.queue = queue;
       this.address = address;
       this.postOffice = postOffice;
       this.addressSettingsRepository = addressSettingsRepository;
-      this.counter = counter;
    }
 
    // Public --------------------------------------------------------
 
+   public void setMessageCounter(MessageCounter counter)
+   {
+      this.counter = counter;
+   }
+   
    // QueueControlMBean implementation ------------------------------
 
    public String getName()
@@ -355,9 +358,31 @@ public class QueueControl implements QueueControlMBean
       return moveMatchingMessages(null, otherQueueName);
    }
 
+   public int sendMessagesToDeadLetterAddress(String filterStr) throws Exception
+   {
+      TabularData messages = listMessages(filterStr);
+      MessageInfo[] infos = MessageInfo.from(messages);
+      for (MessageInfo messageInfo : infos)
+      {
+         sendMessageToDeadLetterAddress(messageInfo.getID());
+      }
+      return infos.length;
+   }
+
    public boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
       return queue.sendMessageToDeadLetterAddress(messageID);
+   }
+
+   public int changeMessagesPriority(String filter, int newPriority) throws Exception
+   {
+      TabularData messages = listMessages(filter);
+      MessageInfo[] infos = MessageInfo.from(messages);
+      for (MessageInfo messageInfo : infos)
+      {
+         changeMessagePriority(messageInfo.getID(), newPriority);
+      }
+      return infos.length;
    }
 
    public boolean changeMessagePriority(final long messageID, final int newPriority) throws Exception
@@ -394,6 +419,7 @@ public class QueueControl implements QueueControlMBean
    {
       return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
    }
+
 
    // Package protected ---------------------------------------------
 

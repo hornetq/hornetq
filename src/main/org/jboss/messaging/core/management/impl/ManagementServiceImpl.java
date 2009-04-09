@@ -224,15 +224,16 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void registerQueue(final Queue queue, final SimpleString address, final StorageManager storageManager) throws Exception
    {
+      QueueControl queueControl = new QueueControl(queue, address.toString(), postOffice, addressSettingsRepository);
       MessageCounter counter = new MessageCounter(queue.getName().toString(),
                                                   null,
-                                                  queue,
+                                                  queueControl,
                                                   false,
                                                   queue.isDurable(),
                                                   messageCounterManager.getMaxDayCount());
+      queueControl.setMessageCounter(counter);
       messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
-      QueueControl queueControl = new QueueControl(queue, address.toString(), postOffice, addressSettingsRepository, counter);
       registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(queueControl, replicationInvoker));
       registerInRegistry(ResourceNames.CORE_QUEUE + queue.getName(), queueControl);
 
