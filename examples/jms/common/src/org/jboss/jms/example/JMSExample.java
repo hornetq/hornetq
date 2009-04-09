@@ -164,8 +164,8 @@ public abstract class JMSExample
    {
       for (Process server : servers)
       {
-         // server.getInputStream().close();
-         // server.getErrorStream().close();
+         server.getInputStream().close();
+         server.getErrorStream().close();
          server.destroy();
       }
    }
