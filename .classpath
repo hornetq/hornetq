@@ -53,6 +53,7 @@
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jnpserver/lib/jnpserver.jar" sourcepath="thirdparty/jboss/jnpserver/lib/jnpserver-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.1.0.BETA1.jar"/>
+	<classpathentry kind="lib" path="thirdparty/sun-jaxb/lib/jaxb-api.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
