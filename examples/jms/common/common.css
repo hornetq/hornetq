@@ -1,2 +1,7 @@
 pre, code { background-color: lightgrey;}
 pre { border: dotted grey 1px;}
+
+.missing-doc {
+    background-color: red;
+    border: dotted black 1px;
+}

@@ -26,5 +26,8 @@ package org.jboss.javaee.example.server;
  */
 public interface SendMessageService
 {
-   void send() throws Exception;
+   void sendAndUpdate(String text) throws Exception;
+
+   void createTable() throws Exception;
+
 }

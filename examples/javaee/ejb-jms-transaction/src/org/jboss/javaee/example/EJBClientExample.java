@@ -21,26 +21,73 @@
  */
 package org.jboss.javaee.example;
 
-import org.jboss.javaee.example.server.SendMessageService;
-
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+
+import org.jboss.javaee.example.server.SendMessageService;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class EJBClientExample
 {
    public static void main(String[] args) throws Exception
    {
-      //Step 1. Obtain an Initial Context
-      InitialContext ctx = new InitialContext();
+      InitialContext initialContext = null;
+      Connection connection = null;
+      try
+      {
+         // Step 1. Obtain an Initial Context
+         initialContext = new InitialContext();
 
-      //Step 2. Lookup the EJB
-      SendMessageService service = (SendMessageService) ctx.lookup("mdb-example/SendMessageBean/remote");
+         // Step 2. Lookup the EJB
+         SendMessageService service = (SendMessageService)initialContext.lookup("mdb-example/SendMessageBean/remote");
 
-      //Step 3. Invoke the send method
-      service.send();
+         // Step 3. Create the DB table which will be updated
+         service.createTable();
 
-      //todo receive the message
+         // Step 4. Invoke the sendAndUpdate method
+         service.sendAndUpdate("This is a text message");
+         System.out.println("invoked the EJB service");
+
+         // Step 5. Lookup the JMS connection factory
+         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+
+         // Step 6. Lookup the queue
+         Queue queue = (Queue)initialContext.lookup("queue/testQueue");
+
+         // Step 7. Create a connection, a session and a message consumer for the queue
+         connection = cf.createConnection();
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageConsumer consumer = session.createConsumer(queue);
+
+         // Step 8. Start the connection
+         connection.start();
+
+         // Step 9. Receive the message sent by the EJB
+         TextMessage messageReceived = (TextMessage)consumer.receive(5000);
+         System.out.println("Received message: " + messageReceived.getText() +
+                            " (" +
+                            messageReceived.getJMSMessageID() +
+                            ")");
+      }
+      finally
+      {
+         // Step 10. Be sure to close the resources!         
+         if (initialContext != null)
+         {
+            initialContext.close();
+         }
+         if (connection != null)
+         {
+            connection.close();
+         }
+      }
    }
 }

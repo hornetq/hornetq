@@ -21,6 +21,8 @@
  */
 package org.jboss.javaee.example.server;
 
+import java.sql.PreparedStatement;
+
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.jms.Connection;
@@ -30,57 +32,116 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 @Stateless
 @Remote(SendMessageService.class)
 public class SendMessageBean implements SendMessageService
 {
-   public void send() throws Exception
+   
+   private static final String TABLE = "jbm_example";
+   
+   public void createTable() throws Exception
+   {
+      InitialContext ic = new InitialContext();
+      DataSource ds = (DataSource)ic.lookup("java:/DefaultDS");
+      java.sql.Connection con = ds.getConnection();
+      
+      // check if the table exists:
+      boolean createTable = false;
+      try {
+         PreparedStatement pr = con.prepareStatement("SELECT * FROM " + TABLE + ";");
+         pr.executeQuery();
+         pr.close();
+      } catch (Exception e)
+      {
+         createTable = true;
+      }
+      
+      if (createTable)
+      {
+         PreparedStatement pr = con.prepareStatement("CREATE TABLE " + TABLE + "(id VARCHAR(100), text VARCHAR(100)) TYPE=innodb;");
+         pr.execute();
+         pr.close();
+         System.out.println("Table " + TABLE + " created");
+      }
+      
+      con.close();
+   }
+
+   public void dropTable() throws Exception
+   {
+   }
+
+   public void sendAndUpdate(String text) throws Exception
    {
       InitialContext ic = null;
-      Connection connection = null;
+      Connection jmsConnection = null;
+      java.sql.Connection jdbcConnection = null
+      ;
       try
       {
-         System.out.println("SendMessageBean.send");
-         //Step 4. Lookup the initial context
+         // Step 1. Lookup the initial context
          ic = new InitialContext();
 
-         //Step 5. Look Up the XA Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) ic.lookup("java:/JmsXA");
+         // JMS operations
+         
+         // Step 2. Look up the XA Connection Factory
+         ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
 
-         //Step 6. Create a connection
-         connection = cf.createConnection();
+         // Step 3. Look up the Queue
+         Queue queue = (Queue)ic.lookup("queue/testQueue");
 
-         //Step 7. Lookup the Queue
-         Queue queue = (Queue) ic.lookup("queue/testQueue");
-
-         //Step 8. Create a session
-         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         //Step 9. Create a Message Producer
+         // Step 4. Create a connection, a session and a message producer for the queue
+         jmsConnection = cf.createConnection();
+         Session session = jmsConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer messageProducer = session.createProducer(queue);
 
-         //Step 10. Create a Text Message
-         TextMessage message = session.createTextMessage("this is a reply!");
+         // Step 5. Create a Text Message
+         TextMessage message = session.createTextMessage(text);
 
-         //Step 11. Send The Text Message
+         // Step 6. Send The Text Message
          messageProducer.send(message);
+         System.out.println("Sent message: " + message.getText() + "(" + message.getJMSMessageID() + ")");
 
-         //todo something else in the same tx, update database
+         // DB operations
+         
+         // Step 7. Look up the XA Data Source
+         DataSource ds = (DataSource)ic.lookup("java:/XADS");
+         
+         // Step 8. Retrieve the JDBC connection
+         jdbcConnection  = ds.getConnection();
+         
+         // Step 9. Create the prepared statement to insert the text and the message's ID in the table
+         PreparedStatement pr = jdbcConnection.prepareStatement("INSERT INTO " + TABLE + " (id, text) VALUES ('" + message.getJMSMessageID() +
+                                                     "', '" +
+                                                     text +
+                                                     "');");
+         
+         // Step 10. execute the prepared statement
+         pr.execute();
+         
+         // Step 11. close the prepared statement
+         pr.close();
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
-         if(ic != null)
+         // Step 12. Be sure to close all resources!
+         if (ic != null)
          {
             ic.close();
          }
-         if(connection != null)
+         if (jmsConnection != null)
          {
-            connection.close();
+            jmsConnection.close();
+         }
+         if (jdbcConnection != null)
+         {
+            jdbcConnection.close();
          }
       }
    }
