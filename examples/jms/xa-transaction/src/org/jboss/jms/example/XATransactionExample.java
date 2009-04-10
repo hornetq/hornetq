@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
@@ -139,6 +140,8 @@ public class XATransactionExample extends JMSExample
             System.out.println("Transaction rolled back, correct!");
          }
          
+         Thread.sleep(2000);
+         
          //Step 17. Check the result, it should receive none!
          checkNoMessageReceived();
 
@@ -162,6 +165,8 @@ public class XATransactionExample extends JMSExample
          //Step 20. Now commit, should be ok.
          fakeTransaction.commit();
          
+         Thread.sleep(2000);
+         
          //Step 21. Check the result, all message received
          checkAllMessageReceived();
          
@@ -169,7 +174,7 @@ public class XATransactionExample extends JMSExample
 
          initialContext.close();
          
-         return true;
+         return result;
       }
       finally
       {
@@ -189,7 +194,7 @@ public class XATransactionExample extends JMSExample
    {
       if (receiveHolder.size() != 2)
       {
-         System.out.println("Message received not correct!");
+         System.out.println("Number of messages received not correct ! -- " + receiveHolder.size());
       }
       receiveHolder.clear();
    }
@@ -212,11 +217,12 @@ public class XATransactionExample extends JMSExample
       
       public void sentMessage(String msg)
       {
-         helloWorld = helloWorld + " " + msg;
+         helloWorld = helloWorld + msg;
       }
 
       public void commit(Xid arg0, boolean arg1) throws XAException
       {
+         helloWorld = "";
       }
 
       public void end(Xid arg0, int arg1) throws XAException
@@ -232,14 +238,14 @@ public class XATransactionExample extends JMSExample
          return 0;
       }
 
-      public boolean isSameRM(XAResource arg0) throws XAException
+      public boolean isSameRM(XAResource res) throws XAException
       {
-         return false;
+         return res instanceof SimpleXAResource;
       }
 
       public int prepare(Xid arg0) throws XAException
       {
-         if (helloWorld.equals("hello world"))
+         if (helloWorld.equals("helloworld"))
          {
             return XA_RDONLY;
          }
@@ -253,6 +259,7 @@ public class XATransactionExample extends JMSExample
 
       public void rollback(Xid arg0) throws XAException
       {
+         helloWorld = "";
       }
 
       public boolean setTransactionTimeout(int arg0) throws XAException
@@ -286,10 +293,13 @@ public class XATransactionExample extends JMSExample
             Xid xid = xids.get(i);
             try
             {
-               int n = res.prepare(xid);
+               System.out.println("----Preparing res: " + res);
+               res.prepare(xid);
             }
             catch (XAException e)
             {
+               System.out.println("-----Preparing error "  + res);
+               e.printStackTrace();
                ifCommit = false;
             }
          }
@@ -314,6 +324,7 @@ public class XATransactionExample extends JMSExample
             }
             catch (XAException e)
             {
+               e.printStackTrace();
                throw new HeuristicRollbackException();
             }
          }
@@ -325,7 +336,9 @@ public class XATransactionExample extends JMSExample
          {
             XAResource res = txResources.get(i);
             Xid xid = xids.get(i);
+            System.err.println("---------committing res: " + res);
             res.commit(xid, false);
+            System.err.println("---------committed res: " + res);
          }
          
       }
@@ -336,27 +349,31 @@ public class XATransactionExample extends JMSExample
          {
             XAResource res = txResources.get(i);
             Xid xid = xids.get(i);
+            System.out.println("rolling back------------- " + res);
             res.rollback(xid);
+            System.out.println("rolled back------------- " + res);
          }
       }
 
       public boolean delistResource(XAResource res, int arg1) throws IllegalStateException, SystemException
       {
+         System.out.println("----------delisting: " + res);
          boolean result = false;
          for (int i = 0; i < txResources.size(); i++)
          {
             try
             {
                if (txResources.get(i).isSameRM(res)) {
-                  XAResource deRes = txResources.remove(i);
+                  XAResource deRes = txResources.get(i);
                   deRes.end(xids.get(i), XAResource.TMSUCCESS);
-                  xids.remove(i);
+                  System.out.println("------delisted: " + deRes);
                   result = true;
                   break;
                }
             }
             catch (XAException e)
             {
+               e.printStackTrace();
             }
          }
          return result;
@@ -364,6 +381,7 @@ public class XATransactionExample extends JMSExample
 
       public boolean enlistResource(XAResource res) throws RollbackException, IllegalStateException, SystemException
       {
+         System.out.println("--Enlisting: " + res);
          txResources.add(res);
          Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes()); 
          xids.add(xid);
@@ -373,8 +391,9 @@ public class XATransactionExample extends JMSExample
          }
          catch (XAException e)
          {
-            //ignore
+            e.printStackTrace();
          }
+         System.out.println("--Enlisted: " + res);
          return true;
       }
 
@@ -409,14 +428,18 @@ public class XATransactionExample extends JMSExample
    
    public class SimpleMessageListener implements MessageListener
    {
-
-      /* (non-Javadoc)
-       * @see javax.jms.MessageListener#onMessage(javax.jms.Message)
-       */
-      public void onMessage(Message arg0)
+      public void onMessage(Message message)
       {
-         // TODO Auto-generated method stub
-         
+         try
+         {
+            System.out.println("-----Message received: " + message);
+            receiveHolder.add(((TextMessage)message).getText());
+         }
+         catch (JMSException e)
+         {
+            result = false;
+            e.printStackTrace();
+         }
       }
       
    }
