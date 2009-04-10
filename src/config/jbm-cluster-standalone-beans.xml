@@ -83,10 +83,7 @@
    <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
       <constructor>
          <parameter>
-            <inject bean="MessagingServer" property="serverManagement"/>
-         </parameter>
-         <parameter>
-            <inject bean="JMSManagementService"/>
+            <inject bean="MessagingServer" />
          </parameter>
       </constructor>
    </bean>
