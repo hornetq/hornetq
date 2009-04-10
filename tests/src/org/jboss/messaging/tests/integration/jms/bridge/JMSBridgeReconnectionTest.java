@@ -112,7 +112,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          server1.start();
          
          context1 = new InVMContext();
-         jmsServer1 = new JMSServerManagerImpl(server0);
+         jmsServer1 = new JMSServerManagerImpl(server1);
          jmsServer1.start();
          jmsServer1.setContext(context1);
 
