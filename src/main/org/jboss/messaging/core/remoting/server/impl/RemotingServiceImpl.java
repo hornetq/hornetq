@@ -46,7 +46,6 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.MessagingServerPacketHandler;
-import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -88,7 +87,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Constructors --------------------------------------------------
 
-   public RemotingServiceImpl(final Configuration config)
+   public RemotingServiceImpl(final Configuration config, final MessagingServer server, final ManagementService managementService)
    {
       transportConfigs = config.getAcceptorConfigurations();
 
@@ -107,14 +106,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       this.config = config;
+      this.server = server;
+      this.managementService = managementService;
    }
 
    // RemotingService implementation -------------------------------
-
-   public void setManagementService(final ManagementService managementService)
-   {
-      this.managementService = managementService;
-   }
 
    public synchronized void start() throws Exception
    {
@@ -246,11 +242,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public synchronized Set<RemotingConnection> getConnections()
    {
       return new HashSet<RemotingConnection>(connections.values());
-   }
-
-   public void setMessagingServer(final MessagingServer server)
-   {
-      this.server = server;
    }
 
    // ConnectionLifeCycleListener implementation -----------------------------------

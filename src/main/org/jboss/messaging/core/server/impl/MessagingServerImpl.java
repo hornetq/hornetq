@@ -496,12 +496,10 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
-      remotingService = new RemotingServiceImpl(configuration);
-
-      remotingService.setMessagingServer(this);
-
       managementService = new ManagementServiceImpl(mbeanServer, configuration.isJMXManagementEnabled());
-     
+
+      remotingService = new RemotingServiceImpl(configuration, this, managementService);
+      
       if (configuration.isEnableFileDeployment())
       {
          // We need to create it now but not start it

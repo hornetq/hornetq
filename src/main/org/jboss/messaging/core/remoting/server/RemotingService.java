@@ -24,11 +24,9 @@ package org.jboss.messaging.core.remoting.server;
 
 import java.util.Set;
 
-import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.server.MessagingComponent;
-import org.jboss.messaging.core.server.MessagingServer;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -42,13 +40,9 @@ public interface RemotingService extends MessagingComponent
 
    Set<RemotingConnection> getConnections();
    
-   void setMessagingServer(MessagingServer server);
-   
    void addInterceptor(Interceptor interceptor);
    
    boolean removeInterceptor(Interceptor interceptor);
-   
-   void setManagementService(ManagementService managementService);
    
    void freeze();
 }
