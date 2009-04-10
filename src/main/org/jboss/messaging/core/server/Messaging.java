@@ -68,7 +68,7 @@ public class Messaging
    {
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
-      MessagingServer server = newMessagingServer(config, mbeanServer, securityManager, true);
+      MessagingServer server = newMessagingServer(config, mbeanServer, securityManager, enablePersistence);
 
       return server;
    }

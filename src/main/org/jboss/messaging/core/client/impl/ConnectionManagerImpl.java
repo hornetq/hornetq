@@ -580,14 +580,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                backupTransportParams = null;
                
-               log.info("************ ATTEMPTING FAILOVER");
-
                done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
-               
-               if (done)
-               {
-                  log.info("************* FAILED OVER OK");
-               }
             }
             else if (reconnectAttempts != 0)
             {              
@@ -772,12 +765,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
 
-         connections.clear();
+         connections.clear();                 
 
          for (ConnectionEntry entry : copy)
          {
             try
-            {
+            {               
                entry.connection.destroy();
             }
             catch (Throwable ignore)
@@ -915,7 +908,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          refCount--;
       }
-
+      
       if (entry != null)
       {
          checkCloseConnections();
