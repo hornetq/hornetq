@@ -65,7 +65,7 @@ public class XASendExample extends JMSExample
          //Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. Perfom a lookup on the queue
+         //Step 2. Lookup on the queue
          Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
 
          //Step 3. Perform a lookup on the XA Connection Factory
@@ -77,88 +77,88 @@ public class XASendExample extends JMSExample
          //Step 5. Start the connection
          connection.start();
 
-         //Step 5. Create a JMS XASession
+         //Step 6. Create a JMS XASession
          XASession xaSession = connection.createXASession();
          
-         //Step 6. Create a normal session
+         //Step 7. Create a normal session
          Session normalSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          //Step 8. Create a normal Message Consumer
          MessageConsumer normalConsumer = normalSession.createConsumer(queue);
          normalConsumer.setMessageListener(new SimpleMessageListener());
 
-         //Step 6. Get the JMS Session
+         //Step 9. Get the JMS Session
          Session session = xaSession.getSession();
          
-         //Step 8. Create a message producer
+         //Step 10. Create a message producer
          MessageProducer producer = session.createProducer(queue);
          
-         //Step 7. Create two Text Messages
+         //Step 11. Create two Text Messages
          TextMessage helloMessage = session.createTextMessage("hello");
          TextMessage worldMessage = session.createTextMessage("world");
          
-         //Step 10. create a transaction
+         //Step 12. create a transaction
          Xid xid1 = new XidImpl("xa-example1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          
-         //Step 12. Get the JMS XAResource
+         //Step 13. Get the JMS XAResource
          XAResource xaRes = xaSession.getXAResource();
          
-         //Step 12. Begin the Transaction work
+         //Step 14. Begin the Transaction work
          xaRes.start(xid1, XAResource.TMNOFLAGS);
          
-         //Step 19. do work, sending two messages.
+         //Step 15. do work, sending two messages.
          producer.send(helloMessage);
          producer.send(worldMessage);
          
          Thread.sleep(2000);
          
-         //Step 17. Check the result, it should receive none!
+         //Step 16. Check the result, it should receive none!
          checkNoMessageReceived();
          
-         //Step 19. Stop the work
+         //Step 17. Stop the work
          xaRes.end(xid1, XAResource.TMSUCCESS);
          
-         //Step 20. Prepare
+         //Step 18. Prepare
          xaRes.prepare(xid1);
          
-         //Step 18. Roll back the transaction
+         //Step 19. Roll back the transaction
          xaRes.rollback(xid1);
          
-         //Step. No messages should be received!
+         //Step 20. No messages should be received!
          checkNoMessageReceived();
          
-         //Step 19. Create another transaction
+         //Step 21. Create another transaction
          Xid xid2 = new XidImpl("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          
-         //Step 20. Start the transaction
+         //Step 22. Start the transaction
          xaRes.start(xid2, XAResource.TMNOFLAGS);
          
-         //Step 21. Re-send those messages
+         //Step 23. Re-send those messages
          producer.send(helloMessage);
          producer.send(worldMessage);
          
-         //Step 22. Stop the work
+         //Step 24. Stop the work
          xaRes.end(xid2, XAResource.TMSUCCESS);
          
-         //Step 23. Prepare
+         //Step 25. Prepare
          xaRes.prepare(xid2);
          
-         //Step 23. No messages should be received at this moment
+         //Step 26. No messages should be received at this moment
          checkNoMessageReceived();
          
-         //Step 23. Commit!
+         //Step 27. Commit!
          xaRes.commit(xid2, true);
          
          Thread.sleep(2000);
          
-         //Step 21. Check the result, all message received
+         //Step 28. Check the result, all message received
          checkAllMessageReceived();
          
          return result;
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
+         //Step 29. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
@@ -197,7 +197,7 @@ public class XASendExample extends JMSExample
       {
          try
          {
-            System.out.println("-----Message received: " + message);
+            System.out.println("Message received: " + message);
             receiveHolder.add(((TextMessage)message).getText());
          }
          catch (JMSException e)
