@@ -22,13 +22,7 @@
 package org.jboss.jms.example;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -41,13 +35,6 @@ import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.naming.InitialContext;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -59,14 +46,14 @@ import org.jboss.messaging.utils.UUIDGenerator;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class XATransactionExample extends JMSExample
+public class XASendExample extends JMSExample
 {
    private volatile boolean result = true;
    private ArrayList<String> receiveHolder = new ArrayList<String>();
    
    public static void main(String[] args)
    {
-      new XATransactionExample().run(args);
+      new XASendExample().run(args);
    }
 
    public boolean runExample() throws Exception
@@ -95,9 +82,6 @@ public class XATransactionExample extends JMSExample
          
          //Step 6. Create a normal session
          Session normalSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
-         //Step 7. Create a normal Message Producer
-         MessageProducer normalProducer = normalSession.createProducer(queue);
          
          //Step 8. Create a normal Message Consumer
          MessageConsumer normalConsumer = normalSession.createConsumer(queue);
