@@ -92,87 +92,83 @@ public class XATransactionExample extends JMSExample
 
          //Step 5. Create a JMS XASession
          XASession xaSession = connection.createXASession();
+         
+         //Step 6. Create a normal session
+         Session normalSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         //Step 7. Create a normal Message Producer
+         MessageProducer normalProducer = normalSession.createProducer(queue);
+         
+         //Step 8. Create a normal Message Consumer
+         MessageConsumer normalConsumer = normalSession.createConsumer(queue);
+         normalConsumer.setMessageListener(new SimpleMessageListener());
 
          //Step 6. Get the JMS Session
          Session session = xaSession.getSession();
+         
+         //Step 8. Create a message producer
+         MessageProducer producer = session.createProducer(queue);
          
          //Step 7. Create two Text Messages
          TextMessage helloMessage = session.createTextMessage("hello");
          TextMessage worldMessage = session.createTextMessage("world");
          
-         //Step 8. Create a message producer
-         MessageProducer producer = session.createProducer(queue);
-         
-         //Step 9. Create a message consumer
-         MessageConsumer consumer = session.createConsumer(queue);
-         consumer.setMessageListener(new SimpleMessageListener());
-         
-         //Step 10. Create a fake transaction
-         Transaction fakeTransaction = new SimpleTransaction();
-         
-         //Step 11. Create a fake XAResource
-         SimpleXAResource xaRes1 = new SimpleXAResource();
+         //Step 10. create a transaction
+         Xid xid1 = new XidImpl("xa-example1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          
          //Step 12. Get the JMS XAResource
-         XAResource xaRes2 = xaSession.getXAResource();
+         XAResource xaRes = xaSession.getXAResource();
          
-         //Step 13. Enlist the resources
-         fakeTransaction.enlistResource(xaRes1);
-         fakeTransaction.enlistResource(xaRes2);
+         //Step 12. Begin the Transaction work
+         xaRes.start(xid1, XAResource.TMNOFLAGS);
          
-         //Step 14. Now do the work
+         //Step 19. do work, sending two messages.
          producer.send(helloMessage);
-         xaRes1.sentMessage(helloMessage.getText());
          producer.send(worldMessage);
-         
-         //Step 15. Delist resources
-         fakeTransaction.delistResource(xaRes1, XAResource.TMSUCCESS);
-         fakeTransaction.delistResource(xaRes2, XAResource.TMSUCCESS);
-         
-         //Step 16. Now finish the transaction, it will result in rollback!
-         try
-         {
-            fakeTransaction.commit();
-            result = false;
-         }
-         catch (RollbackException e)
-         {
-            System.out.println("Transaction rolled back, correct!");
-         }
          
          Thread.sleep(2000);
          
          //Step 17. Check the result, it should receive none!
          checkNoMessageReceived();
-
-         //Step 17. Now create a new Transaction
-         fakeTransaction = new SimpleTransaction();
          
-         //Step 18. enlist the resources again
-         fakeTransaction.enlistResource(xaRes1);
-         fakeTransaction.enlistResource(xaRes2);
+         //Step 19. Stop the work
+         xaRes.end(xid1, XAResource.TMSUCCESS);
          
-         //Step 19. do work
+         //Step 20. Prepare
+         xaRes.prepare(xid1);
+         
+         //Step 18. Roll back the transaction
+         xaRes.rollback(xid1);
+         
+         //Step. No messages should be received!
+         checkNoMessageReceived();
+         
+         //Step 19. Create another transaction
+         Xid xid2 = new XidImpl("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         
+         //Step 20. Start the transaction
+         xaRes.start(xid2, XAResource.TMNOFLAGS);
+         
+         //Step 21. Re-send those messages
          producer.send(helloMessage);
-         xaRes1.sentMessage(helloMessage.getText());
          producer.send(worldMessage);
-         xaRes1.sentMessage(worldMessage.getText());
          
-         //Step 15. Delist resources
-         fakeTransaction.delistResource(xaRes1, XAResource.TMSUCCESS);
-         fakeTransaction.delistResource(xaRes2, XAResource.TMSUCCESS);
+         //Step 22. Stop the work
+         xaRes.end(xid2, XAResource.TMSUCCESS);
          
-         //Step 20. Now commit, should be ok.
-         fakeTransaction.commit();
+         //Step 23. Prepare
+         xaRes.prepare(xid2);
+         
+         //Step 23. No messages should be received at this moment
+         checkNoMessageReceived();
+         
+         //Step 23. Commit!
+         xaRes.commit(xid2, true);
          
          Thread.sleep(2000);
          
          //Step 21. Check the result, all message received
          checkAllMessageReceived();
-         
-         //Step 22. Now create new transaction, to show XA at the receiving end
-
-         initialContext.close();
          
          return result;
       }
@@ -195,6 +191,7 @@ public class XATransactionExample extends JMSExample
       if (receiveHolder.size() != 2)
       {
          System.out.println("Number of messages received not correct ! -- " + receiveHolder.size());
+         result = false;
       }
       receiveHolder.clear();
    }
@@ -209,222 +206,6 @@ public class XATransactionExample extends JMSExample
       receiveHolder.clear();
    }
 
-
-   //A simple XAResource used to create different transaction decisions
-   public class SimpleXAResource implements XAResource
-   {
-      String helloWorld = "";
-      
-      public void sentMessage(String msg)
-      {
-         helloWorld = helloWorld + msg;
-      }
-
-      public void commit(Xid arg0, boolean arg1) throws XAException
-      {
-         helloWorld = "";
-      }
-
-      public void end(Xid arg0, int arg1) throws XAException
-      {
-      }
-
-      public void forget(Xid arg0) throws XAException
-      {
-      }
-
-      public int getTransactionTimeout() throws XAException
-      {
-         return 0;
-      }
-
-      public boolean isSameRM(XAResource res) throws XAException
-      {
-         return res instanceof SimpleXAResource;
-      }
-
-      public int prepare(Xid arg0) throws XAException
-      {
-         if (helloWorld.equals("helloworld"))
-         {
-            return XA_RDONLY;
-         }
-         throw new XAException();
-      }
-
-      public Xid[] recover(int arg0) throws XAException
-      {
-         return null;
-      }
-
-      public void rollback(Xid arg0) throws XAException
-      {
-         helloWorld = "";
-      }
-
-      public boolean setTransactionTimeout(int arg0) throws XAException
-      {
-         return false;
-      }
-
-      public void start(Xid arg0, int arg1) throws XAException
-      {
-      }
-      
-   }
-   
-   public static class SimpleTransaction implements Transaction
-   {
-      List<XAResource> txResources = new ArrayList<XAResource>();
-      List<Xid> xids = new ArrayList<Xid>();
-      
-//      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
-      public void commit() throws RollbackException,
-                          HeuristicMixedException,
-                          HeuristicRollbackException,
-                          SecurityException,
-                          SystemException
-      {
-         boolean ifCommit = true;
-         for (int i = 0; i < txResources.size(); i++)
-         {
-            XAResource res = txResources.get(i);
-            Xid xid = xids.get(i);
-            try
-            {
-               System.out.println("----Preparing res: " + res);
-               res.prepare(xid);
-            }
-            catch (XAException e)
-            {
-               System.out.println("-----Preparing error "  + res);
-               e.printStackTrace();
-               ifCommit = false;
-            }
-         }
-        
-         if (ifCommit)
-         {
-            try
-            {
-               doCommit();
-            }
-            catch (XAException e)
-            {
-               throw new HeuristicMixedException();
-            }
-         }
-         else
-         {
-            try
-            {
-               doRollback();
-               throw new RollbackException();
-            }
-            catch (XAException e)
-            {
-               e.printStackTrace();
-               throw new HeuristicRollbackException();
-            }
-         }
-      }
-      
-      private void doCommit() throws XAException
-      {
-         for (int i = 0; i < txResources.size(); i++)
-         {
-            XAResource res = txResources.get(i);
-            Xid xid = xids.get(i);
-            System.err.println("---------committing res: " + res);
-            res.commit(xid, false);
-            System.err.println("---------committed res: " + res);
-         }
-         
-      }
-      
-      private void doRollback() throws XAException
-      {
-         for (int i = 0; i < txResources.size(); i++)
-         {
-            XAResource res = txResources.get(i);
-            Xid xid = xids.get(i);
-            System.out.println("rolling back------------- " + res);
-            res.rollback(xid);
-            System.out.println("rolled back------------- " + res);
-         }
-      }
-
-      public boolean delistResource(XAResource res, int arg1) throws IllegalStateException, SystemException
-      {
-         System.out.println("----------delisting: " + res);
-         boolean result = false;
-         for (int i = 0; i < txResources.size(); i++)
-         {
-            try
-            {
-               if (txResources.get(i).isSameRM(res)) {
-                  XAResource deRes = txResources.get(i);
-                  deRes.end(xids.get(i), XAResource.TMSUCCESS);
-                  System.out.println("------delisted: " + deRes);
-                  result = true;
-                  break;
-               }
-            }
-            catch (XAException e)
-            {
-               e.printStackTrace();
-            }
-         }
-         return result;
-      }
-
-      public boolean enlistResource(XAResource res) throws RollbackException, IllegalStateException, SystemException
-      {
-         System.out.println("--Enlisting: " + res);
-         txResources.add(res);
-         Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes()); 
-         xids.add(xid);
-         try
-         {
-            res.start(xid, XAResource.TMNOFLAGS);
-         }
-         catch (XAException e)
-         {
-            e.printStackTrace();
-         }
-         System.out.println("--Enlisted: " + res);
-         return true;
-      }
-
-      public int getStatus() throws SystemException
-      {
-         return 0;
-      }
-
-      public void registerSynchronization(Synchronization arg0) throws RollbackException,
-                                                               IllegalStateException,
-                                                               SystemException
-      {
-      }
-
-      public void rollback() throws IllegalStateException, SystemException
-      {
-         try
-         {
-            doRollback();
-         }
-         catch (XAException e)
-         {
-            throw new SystemException();
-         }
-      }
-
-      public void setRollbackOnly() throws IllegalStateException, SystemException
-      {
-      }
-
-   }
    
    public class SimpleMessageListener implements MessageListener
    {
