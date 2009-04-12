@@ -60,11 +60,10 @@
           <code>Session normalSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
        </pre>
 
-        <li>We create a normal Message Consumer</li>
+        <li>We create a normal Message Producer</li>
         <pre>
            <code>
-           MessageConsumer normalConsumer = normalSession.createConsumer(queue);
-           normalConsumer.setMessageListener(new SimpleMessageListener());
+           MessageProducer normalProducer = normalSession.createProducer(queue);
            </code>
        </pre>
 
@@ -73,9 +72,9 @@
           <code>Session session = xaSession.getSession();</code>
        </pre>
 
-        <li>We create a message producer</li>
+        <li>We create a message consumer</li>
         <pre>
-          <code>MessageProducer producer = session.createProducer(queue);</code>
+          <code>MessageConsumer xaConsumer = session.createConsumer(queue); </code>
        </pre>
 
         <li>We create two Text Messages</li>
@@ -101,17 +100,22 @@
           <code>xaRes.start(xid1, XAResource.TMNOFLAGS);</code>
        </pre>
 
-        <li>We do work, sending two messages.</li>
+        <li>We send two messages.</li>
         <pre>
           <code>
-          producer.send(helloMessage);
-          producer.send(worldMessage);
+         normalProducer.send(helloMessage);
+         normalProducer.send(worldMessage);
           </code>
        </pre>
 
-        <li>We check the result, it should receive none!</li>
+        <li>We receive the messages</li>
         <pre>
-          <code>checkNoMessageReceived();</code>
+          <code>
+          TextMessage rm1 = (TextMessage)xaConsumer.receive();
+          System.out.println("Message received: " + rm1.getText());
+          TextMessage rm2 = (TextMessage)xaConsumer.receive();
+          System.out.println("Message received: " + rm2.getText());
+          </code>
        </pre>
 
         <li>We stop the work</li>
@@ -129,12 +133,7 @@
           <code>xaRes.rollback(xid1);</code>
        </pre>
 
-        <li>We check no messages should be received! </li>
-        <pre>
-          <code>checkNoMessageReceived();</code>
-       </pre>
-
-        <li>We create another transaction</li>
+        <li>We create another transaction </li>
         <pre>
           <code>Xid xid2 = new XidImpl("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());</code>
        </pre>
@@ -144,12 +143,14 @@
           <code>xaRes.start(xid2, XAResource.TMNOFLAGS);</code>
        </pre>
 
-        <li>We re-send those messages</li>
+        <li>We receive those messages again</li>
         <pre>
            <code>
-           producer.send(helloMessage);
-           producer.send(worldMessage);
-           </code>
+           rm1 = (TextMessage)xaConsumer.receive();
+           System.out.println("Message received again: " + rm1.getText());
+           rm2 = (TextMessage)xaConsumer.receive();
+           System.out.println("Message received again: " + rm2.getText());
+            </code>
        </pre>
 
         <li>We stop the work</li>
@@ -162,19 +163,24 @@
           <code>xaRes.prepare(xid2);</code>
        </pre>
 
-        <li>We check that no messages should be received at this moment</li>
-        <pre>
-          <code>checkNoMessageReceived();</code>
-       </pre>
-
-        <li>We commit!</li>
-        <pre>
+       <li>We commit!</li>
+       <pre>
           <code>xaRes.commit(xid2, false);</code>
        </pre>
 
-        <li>We check that all messages are received.</li>
+        <li>We check that no more messages are received.</li>
         <pre>
-          <code>checkAllMessageReceived();</code>
+          <code>
+          TextMessage rm3 = (TextMessage)xaConsumer.receive(2000);
+          if (rm3 == null)
+          {
+             System.out.println("No message received after commit.");
+          }
+          else
+          {
+             result = false;
+          }
+          </code>
        </pre>
 
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>

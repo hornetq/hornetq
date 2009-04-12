@@ -105,11 +105,11 @@ public class XAReceiveExample extends JMSExample
          //Step 14. Begin the Transaction work
          xaRes.start(xid1, XAResource.TMNOFLAGS);
          
-         //Step 12. Send two messages.
+         //Step 15. Send two messages.
          normalProducer.send(helloMessage);
          normalProducer.send(worldMessage);
 
-         //Step 13. Receive the message
+         //Step 16. Receive the message
          TextMessage rm1 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received: " + rm1.getText());
          TextMessage rm2 = (TextMessage)xaConsumer.receive();
@@ -124,28 +124,28 @@ public class XAReceiveExample extends JMSExample
          //Step 19. Roll back the transaction
          xaRes.rollback(xid1);
          
-         //Step 21. Create another transaction
+         //Step 20. Create another transaction
          Xid xid2 = new XidImpl("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          
-         //Step 22. Start the transaction
+         //Step 21. Start the transaction
          xaRes.start(xid2, XAResource.TMNOFLAGS);
          
-         //Step 23. receive those messages again
+         //Step 22. receive those messages again
          rm1 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received again: " + rm1.getText());
          rm2 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received again: " + rm2.getText());
          
-         //Step 24. Stop the work
+         //Step 23. Stop the work
          xaRes.end(xid2, XAResource.TMSUCCESS);
          
-         //Step 25. Prepare
+         //Step 24. Prepare
          xaRes.prepare(xid2);
          
-         //Step 27. Commit!
-         xaRes.commit(xid2, true);
+         //Step 25. Commit!
+         xaRes.commit(xid2, false);
          
-         //Step 28. Check no more message is received.
+         //Step 26. Check no more messages are received.
          TextMessage rm3 = (TextMessage)xaConsumer.receive(2000);
          if (rm3 == null)
          {
@@ -160,7 +160,7 @@ public class XAReceiveExample extends JMSExample
       }
       finally
       {
-         //Step 29. Be sure to close our JMS resources!
+         //Step 27. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
