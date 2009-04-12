@@ -147,7 +147,7 @@ public class XASendExample extends JMSExample
          checkNoMessageReceived();
          
          //Step 27. Commit!
-         xaRes.commit(xid2, true);
+         xaRes.commit(xid2, false);
          
          Thread.sleep(2000);
          
