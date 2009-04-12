@@ -6,18 +6,20 @@
   <body>
      <h1>JMS XA Send Example</h1>
      <br>
-     <p>This example shows you how message sending behaves in an XA transaction in JBoss Messaging. In an XA
-     Transaction, only if the associated XAResource are commited, will the messages be sent to the queue. 
-     Otherwise, the messages to be sent will be discarded.</p>
+     <p>This example shows you how message receiving behaves in an XA transaction in JBoss Messaging. In an XA
+     Transaction, only if the associated XAResource are commited, will the messages be removed from the queue. 
+     Otherwise, the messages maybe redelivered after rollback or during the XA recovery.</p>
      
      <p>JBoss Messaging is JTA aware, meaning you can use JBoss Messaging in a XA transactional environment
      and participate in XA transactions. It provides the javax.transaction.xa.XAResource interface for that
      purpose. Users can get a XAConnectionFactory to create XAConnections and XASessions.</p>
      
      <p>In this example we simulate a transaction manager to control the transactions. First we create an XASession
-     and enlist it in a transaction through its XAResource. We then send two words, 'hello' and 'world', with 
-     the session, let the transaction roll back. The messages are discarded and never be received. Next we start
-     a new transaction with the same XAResource, but this time we commit the transaction. Both messages are received.</p>
+      for receiiving and a normal session for sending. Then it starts a new xa transaction and enlist the receiving
+      XASession through its XAResource. We then send two words, 'hello' and 'world', receive them, and let the 
+      transaction roll back. The received messages are cancelled back to the queue. Next we start
+      a new transaction with the same XAResource enlisted, but this time we commit the transaction after receiving the 
+      messages. Then we check that no more messages are to be received.</p>
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
