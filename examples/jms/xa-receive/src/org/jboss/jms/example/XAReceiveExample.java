@@ -21,12 +21,7 @@
    */
 package org.jboss.jms.example;
 
-import java.util.ArrayList;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -49,7 +44,6 @@ import org.jboss.messaging.utils.UUIDGenerator;
 public class XAReceiveExample extends JMSExample
 {
    private volatile boolean result = true;
-   private ArrayList<String> receiveHolder = new ArrayList<String>();
    
    public static void main(String[] args)
    {
