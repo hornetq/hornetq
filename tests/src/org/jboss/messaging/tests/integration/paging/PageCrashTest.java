@@ -228,7 +228,7 @@ public class PageCrashTest extends ServiceTestBase
    {
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
 
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false);
+      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(), false, false);
       
       MessagingServer server = new FailingMessagingServerImpl(configuration, securityManager);
 

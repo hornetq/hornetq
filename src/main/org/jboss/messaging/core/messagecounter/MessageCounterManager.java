@@ -34,6 +34,8 @@ public interface MessageCounterManager
 
    void stop();
 
+   void clear();
+
    void registerMessageCounter(String name, MessageCounter counter);
 
    MessageCounter unregisterMessageCounter(String name);

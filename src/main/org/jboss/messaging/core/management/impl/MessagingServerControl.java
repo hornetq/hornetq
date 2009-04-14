@@ -130,13 +130,8 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
       this.queueFactory = queueFactory;
-
-      messageCounterEnabled = configuration.isMessageCounterEnabled();
-      if (messageCounterEnabled)
-      {
-         messageCounterManager.start();
-      }
       this.nodeID = server.getNodeID();
+      messageCounterEnabled = configuration.isMessageCounterEnabled();
    }
 
    // Public --------------------------------------------------------

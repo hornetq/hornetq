@@ -119,8 +119,8 @@ public class ManagementServiceImpl implements ManagementService
 
    private MessagingServerControl managedServer;
 
-   private final MessageCounterManager messageCounterManager = new MessageCounterManagerImpl();
-
+   private final MessageCounterManager messageCounterManager;
+   
    private SimpleString managementNotificationAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
 
    private SimpleString managementAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
@@ -131,6 +131,8 @@ public class ManagementServiceImpl implements ManagementService
 
    private boolean started = false;
 
+   private boolean messageCounterEnabled;
+
    private boolean noticationsEnabled;
 
    private final Set<NotificationListener> listeners = new org.jboss.messaging.utils.ConcurrentHashSet<NotificationListener>();
@@ -139,13 +141,15 @@ public class ManagementServiceImpl implements ManagementService
 
    // Constructor ----------------------------------------------------
 
-   public ManagementServiceImpl(final MBeanServer mbeanServer, final boolean jmxManagementEnabled)
+   public ManagementServiceImpl(final MBeanServer mbeanServer, final boolean jmxManagementEnabled, final boolean messageCounterEnabled)
    {
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = jmxManagementEnabled;
+      this.messageCounterEnabled = messageCounterEnabled;
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       noticationsEnabled = true;
+      messageCounterManager = new MessageCounterManagerImpl();
    }
 
    // Public --------------------------------------------------------
@@ -520,6 +524,12 @@ public class ManagementServiceImpl implements ManagementService
       replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterPassword,
                                                                managementAddress,
                                                                managementRequestTimeout);
+      
+      if (messageCounterEnabled)
+      {
+         messageCounterManager.start();
+      }
+
       started = true;
    }
 
@@ -540,7 +550,15 @@ public class ManagementServiceImpl implements ManagementService
             mbeanServer.unregisterMBean(name);
          }
       }
+      
+      messageCounterManager.stop();
+      
+      messageCounterManager.resetAllCounters();
+      
+      messageCounterManager.resetAllCounterHistories();
 
+      messageCounterManager.clear();
+      
       replicationInvoker.stop();
 
       started = false;

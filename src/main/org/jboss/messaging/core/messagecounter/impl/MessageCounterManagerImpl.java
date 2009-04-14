@@ -106,6 +106,11 @@ public class MessageCounterManagerImpl implements MessageCounterManager
       started = false;
    }
    
+   public synchronized void clear()
+   { 
+      messageCounters.clear();     
+   }   
+   
    public synchronized void reschedule(long newPeriod)
    {
       boolean wasStarted = this.started;
