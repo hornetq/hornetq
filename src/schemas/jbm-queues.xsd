@@ -73,7 +73,10 @@
         <xsd:element name="message-counter-history-day-limit" type="xsd:positiveInteger"
             maxOccurs="1" minOccurs="0">
         </xsd:element>
-         <xsd:element name="solo-queue" type="xsd:boolean"
+        <xsd:element name="last-value-queue" type="xsd:boolean"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="redistribution-delay" type="xsd:unsignedLong"
             maxOccurs="1" minOccurs="0">
         </xsd:element>
       </xsd:sequence>
