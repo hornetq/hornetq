@@ -60,7 +60,7 @@ public abstract class JMSExample
       {
          if (runServer)
          {
-            startServer(serverVMArgs, args, logServerOutput);
+            startServers(serverVMArgs, args, logServerOutput);
          }
          if (!runExample())
          {
@@ -109,11 +109,12 @@ public abstract class JMSExample
    {
       System.out.println("Killing server " + id);
       
-      servers[id].destroy();
+      //We kill the server by creating a new file in the server dir which is checked for by the server
+      //We can't use Process.destroy() since this does not do a hard kill - it causes shutdown hooks
+      //to be called which cleanly shutdown the server
+      File file = new File("server" + id + "/KILL_ME");
       
-      int exitValue = servers[id].waitFor();
-      
-      log.info("Process exited with value " + exitValue);
+      file.createNewFile();
    }
    
    protected InitialContext getContext(int serverId) throws Exception
@@ -138,7 +139,7 @@ public abstract class JMSExample
       return new InitialContext(props);
    }
   
-   private void startServer(String[] vmArgs, String[] args, boolean logServerOutput) throws Throwable
+   private void startServers(String[] vmArgs, String[] args, boolean logServerOutput) throws Throwable
    {
       List<String> allVMArgsList = new ArrayList<String>();
       if (vmArgs != null)

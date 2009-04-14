@@ -65,7 +65,7 @@ import java.util.Set;
  *          $Id$
  */
 public class JBossConnection implements Connection, QueueConnection, TopicConnection, XAConnection, XAQueueConnection,
-                                        XATopicConnection
+         XATopicConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -280,9 +280,9 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
          finally
          {
             if (initialSession != null)
-               {
-                  initialSession.close();
-               }
+            {
+               initialSession.close();
+            }
          }
 
          closed = true;
@@ -501,8 +501,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       try
       {
-         initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0);
-         initialSession.addFailureListener(listener);
+         initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0);        
       }
       catch (MessagingException me)
       {

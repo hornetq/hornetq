@@ -35,34 +35,37 @@
             <xsd:element name="entry" type="entryType"
    				maxOccurs="unbounded" minOccurs="1">
    			</xsd:element>
-   			<xsd:element name="ping-period" type="period"
+   			<xsd:element name="ping-period" type="xsd:unsignedLong"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>
-            <xsd:element name="call-timeout" type="period"
-                maxOccurs="1" minOccurs="0">
-            </xsd:element>
-            <xsd:element name="client-id" type="xsd:string"
-                maxOccurs="1" minOccurs="0">
-            </xsd:element>
-            <xsd:element name="dups-ok-batch-size" type="xsd:unsignedLong"
-                maxOccurs="1" minOccurs="0">
-            </xsd:element>
-            <xsd:element name="transaction-batch-size" type="xsd:unsignedLong"
-                maxOccurs="1" minOccurs="0">
-            </xsd:element>
-            <xsd:element name="producer-window-size" type="xsd:positiveInteger"
-                maxOccurs="1" minOccurs="0">
-            </xsd:element>
-            <xsd:element name="producer-max-rate" type="xsd:int"
-                maxOccurs="1" minOccurs="0">
-            </xsd:element>
-            <xsd:element name="big-message-size" type="xsd:positiveInteger"
+   			<xsd:element name="connection-ttl" type="xsd:unsignedLong"
+   				maxOccurs="1" minOccurs="0">
+   			</xsd:element>
+   			 <xsd:element name="call-timeout" type="xsd:unsignedLong"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="consumer-window-size" type="xsd:positiveInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="consumer-max-rate" type="xsd:int"
+            <xsd:element name="consumer-max-rate" type="xsd:positiveInteger"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="producer-window-size" type="xsd:positiveInteger"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="producer-max-rate" type="xsd:positiveInteger"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>            
+   			<xsd:element name="min-large-message-size" type="xsd:unsignedLong"
+   				maxOccurs="1" minOccurs="0">
+   			</xsd:element>   			          
+            <xsd:element name="client-id" type="xsd:string"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>            
+            <xsd:element name="dups-ok-batch-size" type="xsd:positiveInteger"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="transaction-batch-size" type="xsd:positiveInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="block-on-acknowledge" type="xsd:boolean"
@@ -77,7 +80,28 @@
             <xsd:element name="auto-group-id" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-   			<xsd:element name="pre-acknowledge" type="xsd:boolean"
+            <xsd:element name="max-connections" type="xsd:positiveInteger"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="pre-acknowledge" type="xsd:boolean"
+   				maxOccurs="1" minOccurs="0">
+   			</xsd:element>
+            <xsd:element name="retry-interval" type="xsd:unsignedLong"
+   				maxOccurs="1" minOccurs="0">
+   			</xsd:element>
+   			<xsd:element name="retry-interval-multiplier" type="xsd:float"
+   				maxOccurs="1" minOccurs="0">
+   			</xsd:element>            
+            <xsd:element name="connect-attempts" type="xsd:positiveInteger"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="failover-on-server-shutdown" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="load-balancing-policy-class-name" type="xsd:string"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element> 
+            <xsd:element name="discovery-initial-wait" type="xsd:unsignedLong"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>
    		</xsd:sequence>
@@ -101,8 +125,6 @@
     </xsd:complexType>
 
     <xsd:element name="queue" type="destinationType"></xsd:element>
-
-
     
     <xsd:complexType name="destinationType">
     	<xsd:sequence>
@@ -112,9 +134,5 @@
     </xsd:complexType>
 
     <xsd:element name="topic" type="destinationType"></xsd:element>
-    
-    <xsd:simpleType name="period">
-        <xsd:restriction base="xsd:unsignedLong"></xsd:restriction>
-    </xsd:simpleType>
     
 </xsd:schema>

@@ -19,6 +19,7 @@
 	<classpathentry kind="src" path="examples/jms/queue-selector/src"/>
 	<classpathentry kind="src" path="examples/jms/message-priority/src"/>
 	<classpathentry kind="src" path="examples/jms/automatic-failover/src"/>
+	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-topic/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-durable-subscription/src"/>

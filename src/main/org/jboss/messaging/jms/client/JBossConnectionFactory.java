@@ -358,7 +358,6 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
-   
    public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                  final boolean blockOnAcknowledge,
                                  final boolean blockOnNonPersistentSend,
@@ -389,11 +388,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
       this.preAcknowledge = preAcknowledge;
       this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;      
+      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
       this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
       this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
-   
+
    public JBossConnectionFactory(final TransportConfiguration connectorConfig)
    {
       this.discoveryGroupAddress = null;
@@ -532,12 +531,12 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       return dupsOKBatchSize;
    }
-   
+
    public int getTransactionBatchSize()
    {
       return transactionBatchSize;
    }
-   
+
    public long getConnectionTTL()
    {
       return connectionTTL;
@@ -567,22 +566,22 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       return minLargeMessageSize;
    }
-   
+
    public int getMaxConnections()
    {
       return maxConnections;
    }
-   
+
    public int getReconnectAttempts()
    {
       return reconnectAttempts;
    }
-   
+
    public boolean isFailoverOnServerShutdown()
    {
       return failoverOnServerShutdown;
    }
-   
+
    public boolean isBlockOnAcknowledge()
    {
       return blockOnAcknowledge;
@@ -612,7 +611,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       return retryInterval;
    }
-   
+
    public double getRetryIntervalMultiplier()
    {
       return retryIntervalMultiplier;
@@ -638,15 +637,17 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       {
          throw JMSExceptionHelper.convertFromMessagingException(me);
       }
+
       JBossConnection connection = new JBossConnection(username,
-                                 password,
-                                 type,
-                                 clientID,
-                                 dupsOKBatchSize,
-                                 transactionBatchSize,
-                                 sessionFactory);
+                                                       password,
+                                                       type,
+                                                       clientID,
+                                                       dupsOKBatchSize,
+                                                       transactionBatchSize,
+                                                       sessionFactory);
 
       connection.authorize();
+      
       return connection;
    }
 

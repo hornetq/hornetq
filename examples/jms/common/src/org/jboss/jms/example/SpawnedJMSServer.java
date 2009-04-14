@@ -33,6 +33,10 @@ public class SpawnedJMSServer
       JBMBootstrapServer bootstrap;
       try
       {
+         Thread killChecker = new KillChecker(".");
+         killChecker.setDaemon(true);
+         killChecker.start();
+         
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
          System.setProperty("org.jboss.logging.Logger.pluginClass", "org.jboss.messaging.integration.logging.JBMLoggerPlugin");

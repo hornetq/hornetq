@@ -59,7 +59,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String PRODUCER_MAX_RATE_ELEMENT = "producer-max-rate";
 
-   private static final String BIG_MESSAGE_ELEMENT = "big-message-size";
+   private static final String MIN_LARGE_MESSAGE_SIZE = "min-large-message-size";
 
    private static final String BLOCK_ON_ACKNOWLEDGE_ELEMENT = "block-on-acknowledge";
 
@@ -73,15 +73,13 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String PRE_ACKNOWLEDGE_ELEMENT = "pre-acknowledge";
 
-   private static final String RETRY_ON_FAILURE_ELEMENT = "retry-on-failure";
-
    private static final String RETRY_INTERVAL = "retry-interval";
 
    private static final String RETRY_INTERVAL_MULTIPLIER = "retry-interval-multiplier";
 
    private static final String CONNECT_ATTEMPTS = "reconnect-attempts";
    
-   private static final String FAILOVER_ON_NODE_SHUTDOWN = "failover-on-node-shutdown";
+   private static final String FAILOVER_ON_NODE_SHUTDOWN = "failover-on-server-shutdown";
 
    private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
@@ -210,7 +208,7 @@ public class JMSServerDeployer extends XmlDeployer
             {
                producerMaxRate = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
-            else if (BIG_MESSAGE_ELEMENT.equals(child.getNodeName()))
+            else if (MIN_LARGE_MESSAGE_SIZE.equals(child.getNodeName()))
             {
                minLargeMessageSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
@@ -250,10 +248,6 @@ public class JMSServerDeployer extends XmlDeployer
             {
                preAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);;
             }
-            else if (RETRY_ON_FAILURE_ELEMENT.equals(child.getNodeName()))
-            {
-               preAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);;
-            }
             else if (RETRY_INTERVAL.equals(child.getNodeName()))
             {
                retryInterval = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
@@ -275,6 +269,14 @@ public class JMSServerDeployer extends XmlDeployer
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                
                jndiBindings.add(jndiName);
+            }
+            else if (CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT.equals(child.getNodeName()))
+            {
+               connectionLoadBalancingPolicyClassName = child.getTextContent().trim();
+            }
+            else if (DISCOVERY_INITIAL_WAIT_ELEMENT.equals(child.getNodeName()))
+            {
+               discoveryInitialWait = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (CONNECTOR_LINK_ELEMENT.equals(child.getNodeName()))
             {
@@ -321,15 +323,7 @@ public class JMSServerDeployer extends XmlDeployer
 
                   return;
                }
-            }
-            else if (CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT.equals(child.getNodeName()))
-            {
-               connectionLoadBalancingPolicyClassName = child.getTextContent().trim();
-            }
-            else if (DISCOVERY_INITIAL_WAIT_ELEMENT.equals(child.getNodeName()))
-            {
-               discoveryInitialWait = org.jboss.messaging.utils.XMLUtil.parseInt(child);
-            }
+            }            
          }
 
          String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
