@@ -90,7 +90,7 @@ public class AutomaticFailoverExample extends JMSExample
 
          // We now cause the server to crash
 
-         //killServer(1);
+         killServer(1);
          
          // Step 14.
 

@@ -32,18 +32,27 @@
 
    <import file="../common/build.xml"/>
 
-   <target name="run">
+   <target name="run" depends="delete-files">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.AutomaticFailoverExample"/>
          <param name="jbm.example.beans.file" value="server0 server1"/>
       </antcall>
    </target>
 
-   <target name="runRemote">
+   <target name="runRemote" depends="delete-files">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.AutomaticFailoverExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
+   </target>
+   
+   <target name="delete-files">
+      <delete file="./server1/KILL_ME"/>
+      <!-- Need to delete the server data dirs before each run since after failover cannot just rerun test since backup is now live -->
+      <delete dir="./server0/data"/>
+      <delete dir="./server0/logs"/>
+      <delete dir="./server1/data"/>
+      <delete dir="./server1/logs"/>
    </target>
 
 </project>
