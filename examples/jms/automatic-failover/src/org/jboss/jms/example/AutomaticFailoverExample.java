@@ -60,22 +60,22 @@ public class AutomaticFailoverExample extends JMSExample
          // Step 3. Look-up a JMS Connection Factory object from JNDI on server 1
          ConnectionFactory connectionFactory = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
 
-         // Step 6. We create a JMS Connection connection0
+         // Step 4. We create a JMS Connection connection
          connection = connectionFactory.createConnection();
 
-         // Step 8. We create a JMS Session
+         // Step 5. We create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         // Step 10. We start the connections to ensure delivery occurs on them
+         // Step 6. We start the connection to ensure delivery occurs
          connection.start();
 
-         // Step 11. We create a JMS MessageConsumer object
+         // Step 7. We create a JMS MessageConsumer object
          MessageConsumer consumer = session.createConsumer(queue);
 
-         // Step 12. We create a JMS MessageProducer object
+         // Step 8. We create a JMS MessageProducer object
          MessageProducer producer = session.createProducer(queue);
 
-         // Step 13. We send some messages to server 1
+         // Step 9. We send some messages to server 1, the live server
 
          final int numMessages = 10;
 
@@ -88,11 +88,15 @@ public class AutomaticFailoverExample extends JMSExample
             System.out.println("Sent message: " + message.getText());
          }
 
-         // We now cause the server to crash
+         // Step 10. We now cause server 1, the live server to crash, and wait a little while to make sure
+         // it has really crashed
 
          killServer(1);
          
-         // Step 14.
+         Thread.sleep(2000);
+         
+         // Step 11. We consume the messages sent before the crash of the live server. We are now transparently
+         // reconnected to server 0 - the backup server.
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -101,7 +105,7 @@ public class AutomaticFailoverExample extends JMSExample
             System.out.println("Got message: " + message0.getText());
          }
 
-         // Now send some more messages
+         // Step 12. We now send some more messages
 
          for (int i = numMessages; i < numMessages * 2; i++)
          {
@@ -112,6 +116,8 @@ public class AutomaticFailoverExample extends JMSExample
             System.out.println("Sent message: " + message.getText());
          }
 
+         // Step 13. And consume them.
+         
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage message0 = (TextMessage)consumer.receive(5000);
@@ -123,7 +129,7 @@ public class AutomaticFailoverExample extends JMSExample
       }
       finally
       {
-         // Step 15. Be sure to close our resources!
+         // Step 14. Be sure to close our resources!
 
          if (connection != null)
          {
