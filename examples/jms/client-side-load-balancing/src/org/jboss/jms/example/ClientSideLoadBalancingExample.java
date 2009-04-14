@@ -82,38 +82,35 @@ public class ClientSideLoadBalancingExample extends JMSExample
          
          connectionC = connectionFactory.createConnection();
          
-         // Step 8. We create a JMS Session on each of those connections
+         // Step 5. We create a JMS Session on each of those connections
          Session sessionA = connectionA.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          Session sessionB = connectionB.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          Session sessionC = connectionC.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         // Step 10. We start the connections to ensure delivery occurs on them
+         // Step 6. We start the connections to ensure delivery occurs on them
          connectionA.start();
 
          connectionB.start();
          
          connectionC.start();
 
-         // Step 11. We create JMS MessageConsumer objects on the sessions
+         // Step 7. We create JMS MessageConsumer objects on the sessions
          MessageConsumer consumerA = sessionA.createConsumer(queue);
          
          MessageConsumer consumerB = sessionB.createConsumer(queue);
          
          MessageConsumer consumerC = sessionC.createConsumer(queue);
 
-
-         Thread.sleep(1000);
-
-         // Step 12. We create JMS MessageProducer objects on the sessions
+         // Step 8. We create JMS MessageProducer objects on the sessions
          MessageProducer producerA = sessionA.createProducer(queue);
          
          MessageProducer producerB = sessionB.createProducer(queue);
          
          MessageProducer producerC = sessionC.createProducer(queue);
 
-         // Step 13. We send some messages on each producer
+         // Step 9. We send some messages on each producer
 
          final int numMessages = 10;
 
@@ -138,7 +135,7 @@ public class ClientSideLoadBalancingExample extends JMSExample
             System.out.println("Sent message: " + messageC.getText());            
          }
          
-         // Step 14. We now consume the messages from each node. The connections must be on different nodes
+         // Step 10. We now consume the messages from each node. The connections must be on different nodes
          // since if they shared nodes then the consumers would receive the messages sent from different connections.
 
          for (int i = 0; i < numMessages; i ++)
@@ -160,7 +157,7 @@ public class ClientSideLoadBalancingExample extends JMSExample
       }
       finally
       {
-         // Step 15. Be sure to close our resources!
+         // Step 11. Be sure to close our resources!
 
          if (connectionA != null)
          {
