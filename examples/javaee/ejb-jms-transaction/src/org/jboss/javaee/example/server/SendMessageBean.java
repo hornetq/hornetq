@@ -73,16 +73,12 @@ public class SendMessageBean implements SendMessageService
       con.close();
    }
 
-   public void dropTable() throws Exception
-   {
-   }
-
    public void sendAndUpdate(String text) throws Exception
    {
       InitialContext ic = null;
       Connection jmsConnection = null;
-      java.sql.Connection jdbcConnection = null
-      ;
+      java.sql.Connection jdbcConnection = null;
+
       try
       {
          // Step 1. Lookup the initial context
