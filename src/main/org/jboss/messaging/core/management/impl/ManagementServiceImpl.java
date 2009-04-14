@@ -529,7 +529,16 @@ public class ManagementServiceImpl implements ManagementService
 
       for (String resourceName : resourceNames)
       {
-         unregisterFromRegistry(resourceName);
+         unregisterFromRegistry(resourceName);         
+      }
+      
+      if (jmxManagementEnabled)
+      {
+         Set<ObjectName> names = mbeanServer.queryNames(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
+         for (ObjectName name : names)
+         {
+            mbeanServer.unregisterMBean(name);
+         }
       }
 
       replicationInvoker.stop();
