@@ -28,7 +28,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging JMS Clustered Queue Example">
+<project default="run" name="JBoss Messaging JMS Queue Message Redistribution Example">
 
    <import file="../common/build.xml"/>
 

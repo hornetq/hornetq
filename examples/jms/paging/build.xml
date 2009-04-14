@@ -28,7 +28,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging paging Example">
+<project default="run" name="JBoss Messaging Paging Example">
 
    <import file="../common/build.xml"/>
 

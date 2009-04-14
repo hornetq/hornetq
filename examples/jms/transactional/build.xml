@@ -28,7 +28,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging Transactional Example">
+<project default="run" name="JBoss Messaging JMS Transactional Example">
 
    <import file="../common/build.xml"/>
 

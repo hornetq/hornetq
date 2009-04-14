@@ -28,31 +28,22 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging JMS Application Layer Failover Example">
+<project default="run" name="JBoss Messaging JMS Client Side Load Balancing Example">
 
    <import file="../common/build.xml"/>
 
-   <target name="run" depends="delete-files">
+   <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.ApplicationLayerFailoverExample"/>
-         <param name="jbm.example.beans.file" value="server0 server1"/>
+         <param name="example.classname" value="org.jboss.jms.example.ClientSideLoadBalancingExample"/>
+         <param name="jbm.example.beans.file" value="server0 server1 server2"/>
       </antcall>
    </target>
 
-   <target name="runRemote" depends="delete-files">
+   <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.ApplicationLayerFailoverExample"/>
+         <param name="example.classname" value="org.jboss.jms.example.ClientSideLoadBalancingExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
-   </target>
-   
-   <target name="delete-files">
-      <delete file="./server1/KILL_ME"/>
-      <!-- Need to delete the server data dirs before each run since after failover cannot just rerun test since backup is now live -->
-      <delete dir="./server0/data"/>
-      <delete dir="./server0/logs"/>
-      <delete dir="./server1/data"/>
-      <delete dir="./server1/logs"/>
    </target>
 
 </project>

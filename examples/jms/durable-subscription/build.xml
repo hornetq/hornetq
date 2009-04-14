@@ -28,7 +28,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging JMS Durable Subscriber Example">
+<project default="run" name="JBoss Messaging JMS Durable Subscription Example">
 
    <import file="../common/build.xml"/>
 

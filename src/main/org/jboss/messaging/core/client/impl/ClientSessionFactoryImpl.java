@@ -230,7 +230,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final double retryIntervalMultiplier,
                                    final int reconnectAttempts,
                                    final boolean failoverOnServerShutdown) throws MessagingException
-   {
+   {            
       try
       {
          InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
@@ -792,7 +792,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager>> iter = connectionManagerMap.entrySet()
                                                                                                                               .iterator();
-
       while (iter.hasNext())
       {
          Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager> entry = iter.next();
@@ -810,7 +809,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          if (!connectionManagerMap.containsKey(connectorPair))
          {
             // Create a new ConnectionManager
-
+            
             ConnectionManager connectionManager = new ConnectionManagerImpl(connectorPair.a,
                                                                             connectorPair.b,
                                                                             failoverOnServerShutdown,
@@ -822,7 +821,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                             retryIntervalMultiplier,
                                                                             reconnectAttempts);
 
-            connectionManagerMap.put(connectorPair, connectionManager);
+            connectionManagerMap.put(connectorPair, connectionManager);                       
          }
       }
 

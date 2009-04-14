@@ -28,7 +28,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging JMS Queue Example">
+<project default="run" name="JBoss Messaging JMS HTTP Transport Example">
 
    <import file="../common/build.xml"/>
 

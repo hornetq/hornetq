@@ -23,8 +23,9 @@
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-topic/src"/>
-	<classpathentry kind="src" path="examples/jms/queue-message-redistribution/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-durable-subscription/src"/>
+	<classpathentry kind="src" path="examples/jms/queue-message-redistribution/src"/>
+	<classpathentry kind="src" path="examples/jms/client-side-load-balancing/src"/>
 	<classpathentry kind="src" path="examples/jms/browser/src"/>
 	<classpathentry kind="src" path="examples/jms/durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>
