@@ -48,6 +48,7 @@
 	<classpathentry kind="src" path="examples/jms/management/src"/>
 	<classpathentry kind="src" path="examples/javaee/ejb-jms-transaction/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb/src"/>
+	<classpathentry kind="src" path="examples/javaee/xarecovery/src"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>

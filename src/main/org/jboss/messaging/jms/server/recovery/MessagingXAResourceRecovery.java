@@ -23,9 +23,11 @@
 package org.jboss.messaging.jms.server.recovery;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.tm.XAResourceRecovery;
 
 import javax.transaction.xa.XAResource;
+
+import com.arjuna.ats.jta.recovery.XAResourceRecovery;
+
 import java.util.StringTokenizer;
 
 /**
@@ -45,7 +47,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
 
    private static final Logger log = Logger.getLogger(MessagingXAResourceRecovery.class);
    
-   private String providerAdaptorName;
+   private String xaConnectionFactoryLookupName;
    
    private boolean hasMore;
    
@@ -57,7 +59,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
 
    public MessagingXAResourceRecovery()
    {
-      if(trace) log.trace("Constructing BridgeXAResourceRecovery");
+      if(trace) log.trace("Constructing MessagingXAResourceRecovery");
    }
 
    public boolean initialise(String config)
@@ -73,7 +75,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
          throw new IllegalArgumentException("Must specify provider adaptor name in config");
       }
       
-      providerAdaptorName = tok.nextToken();
+      xaConnectionFactoryLookupName = tok.nextToken();
                   
       //Next two (optional) parameters are the username and password to use for creating the connection
       //for recovery
@@ -90,7 +92,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
          password = tok.nextToken();
       }
          
-      res = new MessagingXAResourceWrapper(providerAdaptorName, username, password);
+      res = new MessagingXAResourceWrapper(xaConnectionFactoryLookupName, username, password);
              
       if (log.isTraceEnabled()) { log.trace(this + " initialised"); }      
       

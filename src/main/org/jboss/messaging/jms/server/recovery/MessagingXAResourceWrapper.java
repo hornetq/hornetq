@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.jms.server.recovery;
 
@@ -27,6 +27,8 @@ import javax.jms.JMSException;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
+import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -43,8 +45,8 @@ import org.jboss.messaging.core.logging.Logger;
  * to retry on failure without having to manually retry
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
- * 
  * @author <a href="tim.fox@jboss.com">Tim Fox/a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * @version $Revision: 45341 $
  */
@@ -53,54 +55,34 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
    /** The log */
    private static final Logger log = Logger.getLogger(MessagingXAResourceWrapper.class);
 
-   /** The jms provider name */
-   private String providerName;
-   
+   /** The JNDI lookup for the XA connection factory */
+   private final String xaConnectionFactoryLookupName;
+
    /** The state lock */
    private static final Object lock = new Object();
-   
+
    /** The connection */
    private XAConnection connection;
-   
+
    /** The connectionFactory XAResource */
    private XAResource delegate;
-   
-   private String username;
-   
-   private String password;
-   
-   public MessagingXAResourceWrapper(String providerName, String username, String password)
+
+   private final String username;
+
+   private final String password;
+
+   public MessagingXAResourceWrapper(final String xaConnectionFactoryLookupName, final String username, final String password)
    {
-   	this.providerName = providerName;
-   	
-   	this.username = username;
-   	
-   	this.password = password;
+      this.xaConnectionFactoryLookupName = xaConnectionFactoryLookupName;
+
+      this.username = username;
+
+      this.password = password;
    }
 
-   /**
-    * Get the providerName.
-    * 
-    * @return the providerName.
-    */
-   public String getProviderName()
-   {
-      return providerName;
-   }
-
-   /**
-    * Set the providerName.
-    * 
-    * @param providerName the providerName.
-    */
-   public void setProviderName(String providerName)
-   {
-      this.providerName = providerName;
-   }
-   
    public Xid[] recover(int flag) throws XAException
    {
-      log.debug("Recover " + providerName);
+      log.debug("Recover " + xaConnectionFactoryLookupName);
       XAResource xaResource = getDelegate();
       try
       {
@@ -114,7 +96,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
    public void commit(Xid xid, boolean onePhase) throws XAException
    {
-      log.debug("Commit " + providerName + " xid " + " onePhase=" + onePhase);
+      log.debug("Commit " + xaConnectionFactoryLookupName + " xid " + " onePhase=" + onePhase);
       XAResource xaResource = getDelegate();
       try
       {
@@ -128,7 +110,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
    public void rollback(Xid xid) throws XAException
    {
-      log.debug("Rollback " + providerName + " xid ");
+      log.debug("Rollback " + xaConnectionFactoryLookupName + " xid ");
       XAResource xaResource = getDelegate();
       try
       {
@@ -142,7 +124,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
    public void forget(Xid xid) throws XAException
    {
-      log.debug("Forget " + providerName + " xid ");
+      log.debug("Forget " + xaConnectionFactoryLookupName + " xid ");
       XAResource xaResource = getDelegate();
       try
       {
@@ -157,7 +139,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
    public boolean isSameRM(XAResource xaRes) throws XAException
    {
       if (xaRes instanceof MessagingXAResourceWrapper)
-         xaRes = ((MessagingXAResourceWrapper) xaRes).getDelegate();
+         xaRes = ((MessagingXAResourceWrapper)xaRes).getDelegate();
 
       XAResource xaResource = getDelegate();
       try
@@ -237,10 +219,10 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
    public void onException(JMSException exception)
    {
-      log.warn("Notified of connection failure in recovery connectionFactory for provider " + providerName, exception);
+      log.warn("Notified of connection failure in recovery connectionFactory for provider " + xaConnectionFactoryLookupName, exception);
       close();
    }
-   
+
    /**
     * Get the connectionFactory XAResource
     * 
@@ -257,23 +239,23 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
       }
       catch (Exception e)
       {
-      	log.error("********************************Failed to connect to server", e);
+         log.error("********************************Failed to connect to server", e);
          error = e;
       }
 
       if (result == null)
       {
-         XAException xae = new XAException("Error trying to connect to provider " + providerName);
+         XAException xae = new XAException("Error trying to connect to provider " + xaConnectionFactoryLookupName);
          xae.errorCode = XAException.XAER_RMERR;
          if (error != null)
             xae.initCause(error);
          log.debug("Cannot get connectionFactory XAResource", xae);
          throw xae;
       }
-      
+
       return result;
    }
-   
+
    /**
     * Connect to the server if not already done so
     * 
@@ -288,19 +270,19 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
          if (delegate != null)
             return delegate;
       }
-      
+
       // Create the connection
       XAConnection xaConnection;
-      
+
       if (username == null)
       {
-      	xaConnection = getConnectionFactory().createXAConnection();
+         xaConnection = getConnectionFactory().createXAConnection();
       }
       else
       {
-      	xaConnection = getConnectionFactory().createXAConnection(username, password);
-      }      
-      
+         xaConnection = getConnectionFactory().createXAConnection(username, password);
+      }
+
       synchronized (lock)
       {
          connection = xaConnection;
@@ -332,30 +314,20 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
     */
    protected XAConnectionFactory getConnectionFactory() throws Exception
    {
-      // Get the JMS Provider Adapter
-      /*if (providerName == null)
-         throw new IllegalArgumentException("Null provider name");
+      // Get the XA Connection Factory
+      if (xaConnectionFactoryLookupName == null)
+         throw new IllegalArgumentException("Null XA ConnectionFactory lookup name");
       Context ctx = new InitialContext();
-      
-      JMSProviderAdapter adapter = (JMSProviderAdapter) ctx.lookup(providerName);
-
-      // Determine the XAConnectionFactory name
-      String connectionFactoryRef = adapter.getFactoryRef();
-      if (connectionFactoryRef == null)
-         throw new IllegalStateException("Provider '" + providerName + "' has no FactoryRef");
-      
-      // Lookup the connection factory
-      ctx = adapter.getInitialContext();
       try
       {
-         return (XAConnectionFactory) Util.lookup(ctx, connectionFactoryRef, XAConnectionFactory.class);
+         return (XAConnectionFactory)ctx.lookup(xaConnectionFactoryLookupName);
       }
       finally
       {
          ctx.close();
-      }*/                             return null;
+      }
    }
-   
+
    /**
     * Close the connection
     */
@@ -391,7 +363,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
    {
       if (e.errorCode == XAException.XA_RETRY)
       {
-         log.debug("Fatal error in provider " + providerName, e);
+         log.debug("Fatal error in provider " + xaConnectionFactoryLookupName, e);
          close();
       }
       throw new XAException(XAException.XAER_RMFAIL);
