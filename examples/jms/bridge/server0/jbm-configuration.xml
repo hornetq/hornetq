@@ -1,0 +1,48 @@
+<deployment xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
+   <configuration>
+
+      <clustered>true</clustered>
+
+      <!-- Connectors -->
+
+      <connector name="netty-connector">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+      </connector>
+      
+      <!-- Connector to the other node -->
+      <connector name="remote-connector">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
+      </connector>
+
+      <!-- Acceptors -->
+
+      <acceptor name="netty-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+      </acceptor>
+            
+      <queue name="jms.queue.sausage-factory" address="jms.queue.sausage-factory"/>
+	         
+      <!-- We set-up a bridge that forwards from a queue on this node to an address on another node.
+      We specify a filter with the bridge, and a transformer too. The filter and transformer are optional -->
+
+	   <bridge name="my-bridge">
+          <queue-name>jms.queue.sausage-factory</queue-name>
+          <forwarding-address>jms.queue.mincing-machine</forwarding-address>
+          <filter string="president='bush'"/>
+          <transformer-class-name>org.jboss.jms.example.PokeEyeTransformer</transformer-class-name>
+          <reconnect-attempts>-1</reconnect-attempts>
+          <connector-ref connector-name="remote-connector"/>          
+      </bridge>
+
+      <!-- Other config -->
+
+      <journal-min-files>2</journal-min-files>
+
+   </configuration>
+
+</deployment>

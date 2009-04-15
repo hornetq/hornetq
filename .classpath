@@ -22,6 +22,7 @@
 	<classpathentry kind="src" path="examples/jms/clustered-durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-topic/src"/>
+	<classpathentry kind="src" path="examples/jms/bridge/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>
 	<classpathentry kind="src" path="examples/jms/dead-letter/src"/>
 	<classpathentry kind="src" path="examples/jms/durable-subscription/src"/>

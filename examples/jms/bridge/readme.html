@@ -1,0 +1,194 @@
+<html>
+  <head>
+    <title>JBoss Messaging Core Bridge Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>JBoss Messaging Core Bridge Example</h1>
+     <br>
+     
+     <p>This example demonstrates a core bridge deployed on a single server, which consumes messages from a
+     particular local queue and forwards them to an address on a second server.</p>
+     
+     <p>Core bridges are used to create message flows between any two JBoss Messaging servers which are remotely separated.
+     Core bridges are resilient and will cope with temporary connection failure allowing them to be an ideal
+     choice for forwarding over unreliable connections, e.g. WANS.</p>
+     <p>They can also be configured with an optional filter expression, and will only forward messages that
+     match that filter.</p>
+     <p>Furthermore they can be configured to use an optional Transformer class. A user defined Transformer class
+     can be specified which is called at forwarding time. This gives the user the opportunity to transform
+     the message in some way, e.g. changing it's properties or body</p>
+     <p>JBoss Messaging also includes a <b>JMS Bridge</b>. This is similar in some ways to a core bridge, but uses the JMS API
+     and can be used to bridge between any two JMS 1.1 compliant messaging systems. The core bridge is limited to bridging
+     between JBoss Messaging instances, but may provide better performance than the JMS bridge.</p>
+     <p>For more information on bridges, please see the JBoss Messaging user manual.</p>
+     
+     <h1>TODO not finished</h1>
+     
+     <p>This example demonstrates a JMS queue deployed on two different nodes. The two nodes are configured to form a cluster.</p>
+     <p>We then create a consumer on the queue on each node, and we create a producer on only one of the nodes.</p>
+     <p>We then send some messages via the producer, and we verify that <b>both</b> consumers receive the sent messages
+     in a round-robin fashion.</p>
+     <p>In other words, JBoss Messaging <b>load balances</b> the sent messages across all consumers on the cluster</p>
+     <p>This example uses JNDI to lookup the JMS Queue and ConnectionFactory objects. If you prefer not to use
+     JNDI, these could be instantiated directly.</p>     
+     <p>Here's the relevant snippet from the server configuration, which tells the server to form a cluster between the two nodes
+     and to load balance the messages between the nodes.</p>     
+     <pre>
+     <code>
+   &lt;cluster-connection name="my-cluster"&gt;
+      &lt;address&gt;jms&lt;/address&gt;
+	   &lt;retry-interval&gt;500&lt;/retry-interval&gt;
+	   &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
+	   &lt;forward-when-no-consumers&gt;true&lt;/forward-when-no-consumers&gt;
+	   &lt;max-hops&gt;1&lt;/max-hops&gt;
+	   &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
+   &lt;/cluster-connection&gt;
+   </code>
+     </pre>    
+     <p>For more information on JBoss Messaging load balancing, and clustering in general, please see the clustering
+     section of the user manual.</p>      
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <br>
+     <ol>
+        <li> Get an initial context for looking up JNDI from server 0.</li>
+        <pre>
+           <code>
+   ic0 = getContext(0);
+   </code>
+        </pre>
+
+        <li>Look-up the JMS Queue object from JNDI</li>
+        <pre>
+           <code>Queue queue = (Queue)ic0.lookup("/queue/exampleQueue");</code>
+        </pre>
+
+        <li>Look-up a JMS Connection Factory object from JNDI on server 0</li>
+        <pre>
+           <code>ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");</code>
+        </pre>
+
+        <li>Get an initial context for looking up JNDI from server 1.</li>
+        <pre>
+           <code>ic1 = getContext(1);</code>
+        </pre>
+
+        <li>Look-up a JMS Connection Factory object from JNDI on server 1</li>
+        <pre>
+           <code>ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+           </code>
+        </pre>
+
+        <li>We create a JMS Connection connection0 which is a connection to server 0</li>
+        <pre>
+          <code>
+   connection0 = cf0.createConnection();
+          </code>
+        </pre>
+        
+        <li>We create a JMS Connection connection1 which is a connection to server 1</li>
+        <pre>
+          <code>
+   connection1 = cf1.createConnection();
+          </code>
+        </pre>
+
+        <li>We create a JMS Session on server 0</li>
+        <pre>
+           <code>
+   Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           </code>
+        </pre>
+        
+        <li>We create a JMS Session on server 1</li>
+        <pre>
+           <code>
+   Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            </code>
+        </pre>
+
+        <li>We start the connections to ensure delivery occurs on them</li>
+        <pre>
+           <code>
+   connection0.start();
+
+   connection1.start();
+           </code>
+        </pre>
+
+        <li>We create JMS MessageConsumer objects on server 0 and server 1</li>
+        <pre>
+           <code>
+   MessageConsumer consumer0 = session0.createConsumer(queue);
+
+   MessageConsumer consumer1 = session1.createConsumer(queue);
+           </code>
+        </pre>
+
+        <li>We create a JMS MessageProducer object on server 0.</li>
+        <pre>
+           <code>
+   MessageProducer producer = session0.createProducer(queue);</code>
+        </pre>
+
+        <li>We send some messages to server 0.</li>
+        <pre>
+           <code>
+	final int numMessages = 10;
+
+	for (int i = 0; i < numMessages; i++)
+	{
+	   TextMessage message = session0.createTextMessage("This is text message " + i);
+	      
+	   producer.send(message);
+	
+	   System.out.println("Sent message: " + message.getText());
+	}
+           </code>
+        </pre>
+        
+        <li>We now consume those messages on *both* server 0 and server 1.
+         We note the messages have been distributed between servers in a round robin fashion.
+         JBoss Messaging has <b>load balanced</b> the messages between the available consumers on the different nodes.
+         JBoss Messaging can be configured to always load balance messages to all nodes, or to only balance messages
+         to nodes which have consumers with no or matching selectors. See the user manual for more details.</li>
+         JMS Queues implement point-to-point message where each message is only ever consumed by a
+         maximum of one consumer.
+        <pre>
+           <code>
+	for (int i = 0; i < numMessages; i += 2)
+	{
+	   TextMessage message0 = (TextMessage)consumer0.receive(5000);
+	
+	   System.out.println("Got message: " + message0.getText() + " from node 0");
+	
+	   TextMessage message1 = (TextMessage)consumer1.receive(5000);
+	
+	   System.out.println("Got message: " + message1.getText() + " from node 1");
+	}
+           </code>
+        </pre> 
+
+        <li>And finally (no pun intended), <b>always</b> remember to close your JMS resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre>
+           <code>
+	finally
+	{
+	   if (connection0 != null)
+	   {
+	      connection0.close();
+	   }
+	      
+	   if (connection1 != null)
+	   {
+	      connection1.close();
+	   }
+	}
+           </code>
+        </pre>
+
+     </ol>
+  </body>
+</html>

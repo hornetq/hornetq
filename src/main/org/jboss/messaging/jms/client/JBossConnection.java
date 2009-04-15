@@ -413,6 +413,11 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       sessions.remove(session);
    }
+   
+   public ClientSession getInitialSession()
+   {
+      return initialSession;
+   }
 
    // Package protected ----------------------------------------------------------------------------
 
@@ -501,7 +506,9 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       try
       {
-         initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0);        
+         initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0); 
+         
+         initialSession.addFailureListener(listener);
       }
       catch (MessagingException me)
       {
@@ -513,8 +520,16 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private class JMSFailureListener implements FailureListener
    {
-      public boolean connectionFailed(final MessagingException me)
+      //Make sure it's only called once
+      private boolean failed;
+      
+      public synchronized boolean connectionFailed(final MessagingException me)
       {
+         if (failed)
+         {
+            return true;
+         }
+         
          if (me == null)
          {
             return true;
@@ -528,6 +543,8 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
             exceptionListener.onException(je);
          }
+         
+         failed = true;
 
          return true;
       }

@@ -388,9 +388,6 @@ public class MessagingServerImpl implements MessagingServer
 
       resourceManager.start();
 
-      // Deploy any pre-defined queues
-      deployQueues();
-
       // Deply any pre-defined diverts
       deployDiverts();
 
@@ -446,8 +443,6 @@ public class MessagingServerImpl implements MessagingServer
                                                  uuid,
                                                  replicatingChannel,
                                                  configuration.isBackup());
-
-         clusterManager.start();
       }
 
       // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode
@@ -484,6 +479,14 @@ public class MessagingServerImpl implements MessagingServer
 
          // Once we ready we can start the remoting service so we can start accepting connections
          remotingService.start();
+      }
+      
+      // Deploy any pre-defined queues
+      deployQueues();
+      
+      if (clusterManager != null)
+      {
+         clusterManager.start();
       }
 
       started = true;

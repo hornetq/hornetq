@@ -32,7 +32,6 @@ import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.ExecutorFactory;
-import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.UUIDGenerator;
