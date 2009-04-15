@@ -7,12 +7,12 @@
      <h1>JBoss Messaging Core Bridge Example</h1>
      <br>
      
-     <p>This example demonstrates a core bridge deployed on a single server, which consumes messages from a
-     particular local queue and forwards them to an address on a second server.</p>
+     <p>This example demonstrates a core bridge deployed on one server, which consumes messages from a
+     local queue and forwards them to an address on a second server.</p>
      
      <p>Core bridges are used to create message flows between any two JBoss Messaging servers which are remotely separated.
      Core bridges are resilient and will cope with temporary connection failure allowing them to be an ideal
-     choice for forwarding over unreliable connections, e.g. WANS.</p>
+     choice for forwarding over unreliable connections, e.g. a WAN.</p>
      <p>They can also be configured with an optional filter expression, and will only forward messages that
      match that filter.</p>
      <p>Furthermore they can be configured to use an optional Transformer class. A user defined Transformer class
@@ -20,66 +20,72 @@
      the message in some way, e.g. changing it's properties or body</p>
      <p>JBoss Messaging also includes a <b>JMS Bridge</b>. This is similar in some ways to a core bridge, but uses the JMS API
      and can be used to bridge between any two JMS 1.1 compliant messaging systems. The core bridge is limited to bridging
-     between JBoss Messaging instances, but may provide better performance than the JMS bridge.</p>
+     between JBoss Messaging instances, but may provide better performance than the JMS bridge. The JMS bridge is covered in
+     a separate example.</p>
      <p>For more information on bridges, please see the JBoss Messaging user manual.</p>
-     
-     <h1>TODO not finished</h1>
-     
-     <p>This example demonstrates a JMS queue deployed on two different nodes. The two nodes are configured to form a cluster.</p>
-     <p>We then create a consumer on the queue on each node, and we create a producer on only one of the nodes.</p>
-     <p>We then send some messages via the producer, and we verify that <b>both</b> consumers receive the sent messages
-     in a round-robin fashion.</p>
-     <p>In other words, JBoss Messaging <b>load balances</b> the sent messages across all consumers on the cluster</p>
-     <p>This example uses JNDI to lookup the JMS Queue and ConnectionFactory objects. If you prefer not to use
-     JNDI, these could be instantiated directly.</p>     
-     <p>Here's the relevant snippet from the server configuration, which tells the server to form a cluster between the two nodes
-     and to load balance the messages between the nodes.</p>     
+     <br>
+     <p>In this example we will demonstrate a simple sausage factory for aardvarks.</p>
+     <p>We have a JMS queue on server 0 named <code>sausage-factory</code>, and we have a 
+     JMS queue on server 1 named <code>mincing-machine</code></p>
+     <p>We want to forward any messages that are sent to the <code>sausage-factory</code> queue on server 0, to the <code>mincing-machine</code>
+     on server 1.</p>
+     <p>We only want to make aardvark sausages, so we only forward messages where the property "name" is set
+     to "aardvark". It is known that other things, such are Sasquatches are also sent to the <code>sausage-factory</code> and we
+     want to reject those.</p>
+     <p>Moreover it is known that Aardvarks normally wear blue hats, and it's important that we only make sausages using
+     Aardvarks with green hats, so on the way we are going transform the property "hat" from "green" to "blue".</p>  
+     <p>Here's a snippet from <code>jbm-configuration.xml</code> showing the bridge configuration</p>
      <pre>
      <code>
-   &lt;cluster-connection name="my-cluster"&gt;
-      &lt;address&gt;jms&lt;/address&gt;
-	   &lt;retry-interval&gt;500&lt;/retry-interval&gt;
-	   &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
-	   &lt;forward-when-no-consumers&gt;true&lt;/forward-when-no-consumers&gt;
-	   &lt;max-hops&gt;1&lt;/max-hops&gt;
-	   &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
-   &lt;/cluster-connection&gt;
-   </code>
-     </pre>    
-     <p>For more information on JBoss Messaging load balancing, and clustering in general, please see the clustering
-     section of the user manual.</p>      
+     &lt;bridge name="my-bridge"&gt;
+          &lt;queue-name&gt;jms.queue.sausage-factory&lt;/queue-name&gt;
+          &lt;forwarding-address&gt;jms.queue.mincing-machine&lt;/forwarding-address&gt;
+          &lt;filter string="name='aardvark'"/&gt;
+          &lt;transformer-class-name&gt;org.jboss.jms.example.HatColourChangeTransformer&lt;/transformer-class-name&gt;
+          &lt;reconnect-attempts&gt;-1&lt;/reconnect-attempts&gt;
+          &lt;connector-ref connector-name="remote-connector"/&gt;          
+     &lt;/bridge&gt;
+     </code>
+     </pre>              
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <br>
      <ol>
-        <li> Get an initial context for looking up JNDI from server 0.</li>
+        <li>We create an initial context for looking up JNDI on node 0</li>
         <pre>
            <code>
    ic0 = getContext(0);
    </code>
         </pre>
 
-        <li>Look-up the JMS Queue object from JNDI</li>
+        <li>We look up the sausage-factory queue from node 0</li>
         <pre>
-           <code>Queue queue = (Queue)ic0.lookup("/queue/exampleQueue");</code>
+           <code>Queue sausageFactory = (Queue)ic0.lookup("/queue/sausage-factory");</code>
         </pre>
 
-        <li>Look-up a JMS Connection Factory object from JNDI on server 0</li>
+        <li>We look up a JMS ConnectionFactory object from node 0</li>
         <pre>
            <code>ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");</code>
         </pre>
 
-        <li>Get an initial context for looking up JNDI from server 1.</li>
+        <li>We create an initial context for looking up JNDI on node 1</li>
         <pre>
            <code>ic1 = getContext(1);</code>
         </pre>
 
-        <li>Look-up a JMS Connection Factory object from JNDI on server 1</li>
+        <li>We look up the mincing-machine queue on node 1</li>
         <pre>
-           <code>ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+           <code>Queue mincingMachine = (Queue)ic1.lookup("/queue/mincing-machine");
            </code>
         </pre>
 
+        <li>We look up a JMS ConnectionFactory object from node 1</li>
+        <pre>
+          <code>
+   ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+          </code>
+        </pre>
+        
         <li>We create a JMS Connection connection0 which is a connection to server 0</li>
         <pre>
           <code>
@@ -108,67 +114,69 @@
             </code>
         </pre>
 
-        <li>We start the connections to ensure delivery occurs on them</li>
+        <li>We start the connection to ensure delivery occurs on them</li>
         <pre>
            <code>
-   connection0.start();
-
    connection1.start();
            </code>
         </pre>
 
-        <li>We create JMS MessageConsumer objects on server 0 and server 1</li>
+        <li>We create a JMS MessageConsumer object on server 1</li>
         <pre>
            <code>
-   MessageConsumer consumer0 = session0.createConsumer(queue);
-
-   MessageConsumer consumer1 = session1.createConsumer(queue);
+   MessageConsumer consumer = session1.createConsumer(mincingMachine);
            </code>
         </pre>
 
         <li>We create a JMS MessageProducer object on server 0.</li>
         <pre>
            <code>
-   MessageProducer producer = session0.createProducer(queue);</code>
+   MessageProducer producer = session0.createProducer(sausageFactory);</code>
         </pre>
 
-        <li>We send some messages to server 0.</li>
+        <li>We create and send a message representing an aardvark with a green hat to the sausage-factory
+         on node 0</li>
         <pre>
            <code>
-	final int numMessages = 10;
+         Message message = session0.createMessage();
 
-	for (int i = 0; i < numMessages; i++)
-	{
-	   TextMessage message = session0.createTextMessage("This is text message " + i);
-	      
-	   producer.send(message);
-	
-	   System.out.println("Sent message: " + message.getText());
-	}
+         message.setStringProperty("name", "aardvark");
+
+         message.setStringProperty("hat", "green");
+
+         producer.send(message);
            </code>
         </pre>
         
-        <li>We now consume those messages on *both* server 0 and server 1.
-         We note the messages have been distributed between servers in a round robin fashion.
-         JBoss Messaging has <b>load balanced</b> the messages between the available consumers on the different nodes.
-         JBoss Messaging can be configured to always load balance messages to all nodes, or to only balance messages
-         to nodes which have consumers with no or matching selectors. See the user manual for more details.</li>
-         JMS Queues implement point-to-point message where each message is only ever consumed by a
-         maximum of one consumer.
+        <li>We successfully receive the aardvark message from the mincing-machine one node 1. The aardvark's
+         hat is now blue since it has been transformed!</li>
         <pre>
            <code>
-	for (int i = 0; i < numMessages; i += 2)
-	{
-	   TextMessage message0 = (TextMessage)consumer0.receive(5000);
-	
-	   System.out.println("Got message: " + message0.getText() + " from node 0");
-	
-	   TextMessage message1 = (TextMessage)consumer1.receive(5000);
-	
-	   System.out.println("Got message: " + message1.getText() + " from node 1");
-	}
+        Message receivedMessage = consumer.receive(5000);
            </code>
-        </pre> 
+        </pre>
+        
+        <li>We create and send another message, this time representing a sasquatch with a mauve hat to the
+          sausage-factory on node 0. This won't be bridged to the mincing-machine since we only want aardvarks, not sasquatches.</li>
+        <pre>
+           <code>
+         message = session0.createMessage();
+
+         message.setStringProperty("name", "sasquatch");
+
+         message.setStringProperty("hat", "mauve");
+
+         producer.send(message);
+           </code>
+        </pre>
+        
+        <li>We don't receive the sasquatch message since it's not an aardvark!</li>
+        <pre>
+           <code>
+         receivedMessage = (TextMessage)consumer.receive(1000);
+           </code>
+        </pre>
+        
 
         <li>And finally (no pun intended), <b>always</b> remember to close your JMS resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
@@ -176,15 +184,25 @@
            <code>
 	finally
 	{
-	   if (connection0 != null)
-	   {
-	      connection0.close();
-	   }
-	      
-	   if (connection1 != null)
-	   {
-	      connection1.close();
-	   }
+	      if (connection0 != null)
+         {
+            connection0.close();
+         }
+
+         if (connection1 != null)
+         {
+            connection1.close();
+         }
+
+         if (ic0 != null)
+         {
+            ic0.close();
+         }
+
+         if (ic1 != null)
+         {
+            ic1.close();
+         }
 	}
            </code>
         </pre>

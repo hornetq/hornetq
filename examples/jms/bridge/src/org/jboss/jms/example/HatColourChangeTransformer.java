@@ -28,24 +28,24 @@ import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
- * A PokeEyeTransformer
+ * A HatColourChangeTransformer
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */
-public class PokeEyeTransformer implements Transformer
+public class HatColourChangeTransformer implements Transformer
 {
    public ServerMessage transform(final ServerMessage message)     
    {
-      SimpleString propName = new SimpleString("eye");
+      SimpleString propName = new SimpleString("hat");
       
       SimpleString oldProp = (SimpleString)message.getProperty(propName);
       
-      System.out.println("Old property is " + oldProp);
+      System.out.println("Old hat colour is " + oldProp);
       
-      //Change the property
-      message.putStringProperty(propName, new SimpleString("Poked!"));
+      //Change the colour
+      message.putStringProperty(propName, new SimpleString("blue"));
       
       return message;
    }
