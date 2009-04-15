@@ -50,6 +50,13 @@ public class JMSManagementHelper
       message.setStringProperty(HDR_RESOURCE_NAME.toString(), resourceName);
       message.setStringProperty(HDR_ATTRIBUTE.toString(), attribute);
    }
+   
+   public static void putOperationInvocation(final Message message,
+                                             final String resourceName,
+                                             final String operationName) throws JMSException
+   {
+      putOperationInvocation(message, resourceName, operationName, (Object[])null);
+   }
 
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
@@ -60,13 +67,16 @@ public class JMSManagementHelper
       message.setStringProperty(HDR_RESOURCE_NAME.toString(), resourceName);
       message.setStringProperty(HDR_OPERATION_NAME.toString(), operationName);
       // ... and all the parameters (preserving their types)
-      for (int i = 0; i < parameters.length; i++)
+      if (parameters != null)
       {
-         Object parameter = parameters[i];
-         // use a zero-filled 2-padded index:
-         // if there is more than 10 parameters, order is preserved (e.g. 02 will be before 10)
-         String key = String.format("%s%02d", HDR_OPERATION_PREFIX, i);
-         storeTypedProperty(message, key, parameter);
+         for (int i = 0; i < parameters.length; i++)
+         {
+            Object parameter = parameters[i];
+            // use a zero-filled 2-padded index:
+            // if there is more than 10 parameters, order is preserved (e.g. 02 will be before 10)
+            String key = String.format("%s%02d", HDR_OPERATION_PREFIX, i);
+            storeTypedProperty(message, key, parameter);
+         }
       }
    }
 

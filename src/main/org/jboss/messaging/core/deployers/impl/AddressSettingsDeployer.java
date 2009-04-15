@@ -98,8 +98,7 @@ public class AddressSettingsDeployer extends XmlDeployer
     * @throws Exception .
     */
    public void deploy(Node node) throws Exception
-   {
-      log.info("** address setings deployer, deploying");
+   {      
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
 
       NodeList children = node.getChildNodes();

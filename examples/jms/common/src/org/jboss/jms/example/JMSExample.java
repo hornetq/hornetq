@@ -23,8 +23,6 @@ package org.jboss.jms.example;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -48,20 +46,38 @@ public abstract class JMSExample
    private boolean failure = false;
 
    public abstract boolean runExample() throws Exception;
-
-   protected void run(String[] serverVMArgs, String[] args)
+   
+   private boolean logServerOutput;
+   
+   private String[] allVMArgs;
+   
+   private String[] configs;
+   
+   protected void run(String[] serverVMArgs, String[] configs)
    {
       String runServerProp = System.getProperty("jbm.example.runServer");
       String logServerOutputProp = System.getProperty("jbm.example.logserveroutput");
       boolean runServer = runServerProp == null ? true : Boolean.valueOf(runServerProp);
-      boolean logServerOutput = logServerOutputProp == null?false:Boolean.valueOf(logServerOutputProp);
+      logServerOutput = logServerOutputProp == null?false:Boolean.valueOf(logServerOutputProp);
       log.info("jbm.example.runServer is " + runServer);
+            
+      allVMArgs = new String[serverVMArgs == null ? 1 : serverVMArgs.length + 1];
+      if (serverVMArgs != null)
+      {
+         System.arraycopy(serverVMArgs, 0, allVMArgs, 0, serverVMArgs.length);
+      }      
+      String logProps = System.getProperty("java.util.logging.config.file");
+      allVMArgs[allVMArgs.length - 1] = "-Djava.util.logging.config.file=" + logProps;
+      
+      this.configs = configs;
+
       try
       {
          if (runServer)
          {
-            startServers(serverVMArgs, args, logServerOutput);
+            startServers();
          }
+         
          if (!runExample())
          {
             failure = true;
@@ -89,7 +105,7 @@ public abstract class JMSExample
          {
             try
             {
-               stopServer();
+               stopServers();
             }
             catch (Throwable throwable)
             {
@@ -117,6 +133,13 @@ public abstract class JMSExample
       file.createNewFile();
    }
    
+   protected void stopServer(int id) throws Exception 
+   {
+      System.out.println("Stopping server " + id);
+      
+      stopServer(servers[id]);
+   }
+   
    protected InitialContext getContext(int serverId) throws Exception
    {
       String jndiFilename = "server" + serverId + "/client-jndi.properties";
@@ -138,51 +161,51 @@ public abstract class JMSExample
       }
       return new InitialContext(props);
    }
-  
-   private void startServers(String[] vmArgs, String[] args, boolean logServerOutput) throws Throwable
+   
+   protected void startServer(int index) throws Exception
    {
-      List<String> allVMArgsList = new ArrayList<String>();
-      if (vmArgs != null)
+      String config = configs[index];
+      log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
+      servers[index] = SpawnedVMSupport.spawnVM(
+            SpawnedJMSServer.class.getName(),
+            allVMArgs,
+            logServerOutput,
+            "STARTED::",
+            "FAILED::",
+            config,
+            "jbm-standalone-beans.xml");   
+   }
+   
+   private void startServers() throws Exception
+   {     
+      servers = new Process[configs.length];
+      for (int i = 0; i < configs.length; i++)
       {
-         for (String arg : vmArgs)
-         {
-            allVMArgsList.add(arg);
-         }
-      }
-      String logProps = System.getProperty("java.util.logging.config.file");
-      allVMArgsList.add("-Djava.util.logging.config.file=" + logProps);
-      String[] allVMArgs = (String[])allVMArgsList.toArray(new String[allVMArgsList.size()]);
-      
-      servers = new Process[args.length];
-      for (int i = 0; i < args.length; i++)
-      {
-         log.info("starting server with config '" + args[i] + "' " + "logServerOutput " + logServerOutput);
-         servers[i] = SpawnedVMSupport.spawnVM(
-               SpawnedJMSServer.class.getName(),
-               allVMArgs,
-               logServerOutput,
-               "STARTED::",
-               "FAILED::",
-               args[i],
-               "jbm-standalone-beans.xml");
+         startServer(i);
       }      
    }
-
-   private void stopServer() throws Throwable
+   
+   private void stopServers() throws Exception
    {
       for (Process server : servers)
       {
-         if (server.getInputStream() != null)
-         {
-            server.getInputStream().close();
-         }
-         if (server.getErrorStream() != null)
-         {
-            server.getErrorStream().close();
-         }
-         server.destroy();
+         stopServer(server);
       }
    }
+   
+   private void stopServer(Process server) throws Exception
+   {
+      if (server.getInputStream() != null)
+      {
+         server.getInputStream().close();
+      }
+      if (server.getErrorStream() != null)
+      {
+         server.getErrorStream().close();
+      }
+      server.destroy();
+   }
+
    
    private void reportResultAndExit()
    {

@@ -41,7 +41,7 @@
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="security-invalidation-interval"
-					type="period" maxOccurs="1" minOccurs="0">
+					type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="wild-card-routing-enabled"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -56,7 +56,7 @@
                     type="xsd:string" maxOccurs="1" minOccurs="0">
                 </xsd:element>				
                 <xsd:element name="management-request-timeout"
-                    type="period" maxOccurs="1" minOccurs="0">
+                    type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
                 </xsd:element>              
 				<xsd:element name="jmx-management-enabled"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -65,19 +65,19 @@
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="connection-scan-period"
-					type="period" maxOccurs="1" minOccurs="0">
+					type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="connection-ttl-override"
 					type="xsd:long" maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="transaction-timeout" type="period"
+				<xsd:element name="transaction-timeout" type="xsd:unsignedLong"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="transaction-timeout-scan-period"
-					type="period" maxOccurs="1" minOccurs="0">
+					type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="message-expiry-scan-period"
-					type="period" maxOccurs="1" minOccurs="0">
+					type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="message-expiry-thread-priority"
 					type="xsd:positiveInteger" maxOccurs="1" minOccurs="0">
@@ -197,7 +197,7 @@
 
 	<xsd:element name="group-port" type="portRange"></xsd:element>
 
-	<xsd:element name="broadcast-period" type="period"></xsd:element>
+	<xsd:element name="broadcast-period" type="xsd:unsignedLong"></xsd:element>
 
 	<xsd:element name="connector-ref" type="connector-refType">
 	</xsd:element>
@@ -225,7 +225,7 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="refresh-timeout" type="period"></xsd:element>
+	<xsd:element name="refresh-timeout" type="xsd:unsignedLong"></xsd:element>
 
 	<xsd:element name="discovery-group">
 		<xsd:complexType>
@@ -326,14 +326,14 @@
 			<xsd:element name="transformer-class-name" type="xsd:string"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
-			<xsd:element name="retry-interval" type="period"
+			<xsd:element name="retry-interval" type="xsd:unsignedLong"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="retry-interval-multiplier"
 				type="xsd:double" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="reconnect-attempts"
-				type="xsd:nonNegativeInteger" maxOccurs="1" minOccurs="0">
+				type="minusOneOrMoreInteger" maxOccurs="1" minOccurs="0">
 			</xsd:element>
 			<xsd:element name="failover-on-server-shutdown"
 				type="xsd:boolean" maxOccurs="1" minOccurs="0">
@@ -363,7 +363,7 @@
 			<xsd:element name="address" type="xsd:string"
 				maxOccurs="1" minOccurs="1">
 			</xsd:element>
-			<xsd:element name="retry-interval" type="period"
+			<xsd:element name="retry-interval" type="xsd:unsignedLong"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>			
 			<xsd:element name="use-duplicate-detection"
@@ -434,14 +434,16 @@
 		<xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
 	</xsd:complexType>
 
-
 	<xsd:simpleType name="portRange">
 		<xsd:restriction base="xsd:int">
 		      <xsd:minExclusive value="1024"></xsd:minExclusive>
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+   <xsd:simpleType name="minusOneOrMoreInteger">
+      <xsd:restriction base="xsd:int">
+         <xsd:minInclusive value="-1"></xsd:minInclusive>
+      </xsd:restriction>
+   </xsd:simpleType>	
 
-    <xsd:simpleType name="period">
-        <xsd:restriction base="xsd:unsignedLong"></xsd:restriction>
-    </xsd:simpleType>
 </xsd:schema>

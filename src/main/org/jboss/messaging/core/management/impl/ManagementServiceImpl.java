@@ -426,6 +426,7 @@ public class ManagementServiceImpl implements ManagementService
       {
          return;
       }
+      
       synchronized (mbeanServer)
       {
          unregisterFromJMX(objectName);
@@ -436,6 +437,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerInRegistry(final String resourceName, final Object managedResource)
    {
       unregisterFromRegistry(resourceName);
+      
       registry.put(resourceName, managedResource);
    }
 
@@ -643,6 +645,12 @@ public class ManagementServiceImpl implements ManagementService
       try
       {
          Object resource = registry.get(resourceName);
+         
+         if (resource == null)
+         {
+            throw new IllegalArgumentException("Cannot find resource with name " + resourceName);
+         }
+         
          Method method = null;
 
          try
@@ -671,6 +679,12 @@ public class ManagementServiceImpl implements ManagementService
    private Object invokeOperation(final String resourceName, final String operation, final List<Object> params) throws Exception
    {
       Object resource = registry.get(resourceName);
+      
+      if (resource == null)
+      {
+         throw new IllegalArgumentException("Cannot find resource with name " + resourceName);
+      }
+      
       Method method = null;
 
       Method[] methods = resource.getClass().getMethods();

@@ -213,10 +213,10 @@ public class NettyAcceptor implements Acceptor
    }
 
    public synchronized void start() throws Exception
-   {
+   {      
       if (channelFactory != null)
       {
-         // Already started
+         // Already started        
          return;
       }
       bossExecutor = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-netty-acceptor-boss-threads"));

@@ -26,6 +26,7 @@
 	<classpathentry kind="src" path="examples/jms/clustered-durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/queue-message-redistribution/src"/>
 	<classpathentry kind="src" path="examples/jms/client-side-load-balancing/src"/>
+	<classpathentry kind="src" path="examples/jms/reconnect-same-node/src"/>
 	<classpathentry kind="src" path="examples/jms/browser/src"/>
 	<classpathentry kind="src" path="examples/jms/durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>

@@ -77,7 +77,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String RETRY_INTERVAL_MULTIPLIER = "retry-interval-multiplier";
 
-   private static final String CONNECT_ATTEMPTS = "reconnect-attempts";
+   private static final String RECONNECT_ATTEMPTS = "reconnect-attempts";
    
    private static final String FAILOVER_ON_NODE_SHUTDOWN = "failover-on-server-shutdown";
 
@@ -256,7 +256,7 @@ public class JMSServerDeployer extends XmlDeployer
             {
                retryIntervalMultiplier = org.jboss.messaging.utils.XMLUtil.parseDouble(child);
             }
-            else if (CONNECT_ATTEMPTS.equals(child.getNodeName()))
+            else if (RECONNECT_ATTEMPTS.equals(child.getNodeName()))
             {
                reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
             }

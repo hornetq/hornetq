@@ -34,6 +34,7 @@ import javax.naming.InitialContext;
  * A simple example that shows a JMS Topic clustered across two nodes of a cluster.
  * Messages are sent on one node and received by consumers on both nodes.
  *
+ * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
 public class ClusteredTopicExample extends JMSExample
 {

@@ -1655,9 +1655,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          {
             // Error - didn't get pong back
             final MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED,
-                                                                 "Did not receive pong from server, active " + createdActive +
-                                                                          " client " +
-                                                                          client);
+                                                                 "Did not receive pong from server");
 
             future.cancel(true);
             

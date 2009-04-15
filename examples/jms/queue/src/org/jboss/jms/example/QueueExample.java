@@ -85,8 +85,6 @@ public class QueueExample extends JMSExample
 
          System.out.println("Received message: " + messageReceived.getText());
 
-         initialContext.close();
-         
          return true;
       }
       finally

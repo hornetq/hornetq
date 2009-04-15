@@ -23,7 +23,6 @@ package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;

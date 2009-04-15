@@ -92,7 +92,7 @@
    			<xsd:element name="retry-interval-multiplier" type="xsd:float"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>            
-            <xsd:element name="connect-attempts" type="xsd:positiveInteger"
+            <xsd:element name="reconnect-attempts" type="minusOneOrMoreInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="failover-on-server-shutdown" type="xsd:boolean"
@@ -134,5 +134,11 @@
     </xsd:complexType>
 
     <xsd:element name="topic" type="destinationType"></xsd:element>
+    
+    <xsd:simpleType name="minusOneOrMoreInteger">
+      <xsd:restriction base="xsd:int">
+         <xsd:minInclusive value="-1"></xsd:minInclusive>
+      </xsd:restriction>
+   </xsd:simpleType>	
     
 </xsd:schema>

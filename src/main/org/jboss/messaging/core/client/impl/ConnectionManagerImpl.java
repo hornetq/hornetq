@@ -150,8 +150,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private boolean inFailoverOrReconnect;
 
-   private volatile boolean failureSignalled;
-
    // debug
 
    private static Map<TransportConfiguration, Set<RemotingConnection>> debugConns;
@@ -278,21 +276,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                   if (connection == null)
                   {
-                     if (!failureSignalled)
-                     {
-                        // This can happen if the connection manager gets closed - e.g. the server gets shut down
+                     // This can happen if the connection manager gets closed - e.g. the server gets shut down
 
-                        throw new MessagingException(MessagingException.NOT_CONNECTED, "Unable to connect to server");
-                     }
-                     else
-                     {
-                        // This means an async failure came in while getConnectionForCreateSession was executing, we
-                        // need
-                        // to allow the failover/reconnection to occur and let the create session retry after
-                        retry = true;
-
-                        continue;
-                     }
+                     throw new MessagingException(MessagingException.NOT_CONNECTED, "Unable to connect to server");
                   }
 
                   channel1 = connection.getChannel(1, -1, false);
@@ -468,10 +454,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // --------------------------------------------------------------------------------------
 
    private boolean handleConnectionFailure(final MessagingException me, final Object connectionID)
-   {
-      boolean callNext = !failoverOrReconnect(me, connectionID);
-
-      return callNext;
+   {     
+      return !failoverOrReconnect(me, connectionID);
    }
 
    private boolean failoverOrReconnect(final MessagingException me, final Object connectionID)
@@ -482,23 +466,17 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          return false;
       }
 
-      if (connectionID != null && !connections.containsKey(connectionID))
-      {
-         // We already failed over/reconnected - probably the first failure came in, all the connections were failed
-         // over then a async connection exception or disconnect
-         // came in for one of the already closed connections, so we return true - we don't want to call the
-         // listeners again
-
-         return true;
-      }
-
-      failureSignalled = true;
-
       synchronized (failoverLock)
       {
-         failureSignalled = false;
+         if (connectionID != null && !connections.containsKey(connectionID))
+         {
+            // We already failed over/reconnected - probably the first failure came in, all the connections were failed
+            // over then a async connection exception or disconnect
+            // came in for one of the already closed connections, so we return true - we don't want to call the
+            // listeners again
 
-         inFailoverOrReconnect = true;
+            return true;
+         }
 
          // Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
          // There are either no threads executing in createSession, or one is blocking on a createSession
@@ -599,9 +577,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
             }
             else if (reconnectAttempts != 0)
-            {
+            {              
                done = reattachSessions(reconnectAttempts);
             }
+
+            inFailoverOrReconnect = true;
 
             if (done)
             {
@@ -728,7 +708,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       while (true)
       {
-         if (closed || failureSignalled)
+         if (closed)
          {
             return null;
          }

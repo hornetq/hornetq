@@ -34,6 +34,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
@@ -80,7 +81,7 @@ public class ReconnectTest extends UnitTestCase
 
       final double retryMultiplier = 1d;
 
-      final int reconnectAttempts = 1;      
+      final int reconnectAttempts = 1;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
@@ -90,15 +91,15 @@ public class ReconnectTest extends UnitTestCase
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false);
-      
+
       final int numIterations = 100;
-      
+
       for (int j = 0; j < numIterations; j++)
-      {  
+      {
          ClientProducer producer = session.createProducer(ADDRESS);
-   
+
          final int numMessages = 1000;
-                    
+
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
@@ -112,40 +113,40 @@ public class ReconnectTest extends UnitTestCase
          }
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
-   
+
          RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-   
+
          conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-   
+
          session.start();
-   
+
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = consumer.receive(500);
-   
+
             assertNotNull(message);
-   
+
             assertEquals("aardvarks", message.getBody().readString());
-   
+
             assertEquals(i, message.getProperty(new SimpleString("count")));
-   
+
             message.acknowledge();
          }
-   
+
          ClientMessage message = consumer.receiveImmediate();
-   
+
          assertNull(message);
-         
+
          producer.close();
-         
+
          consumer.close();
       }
-      
+
       session.close();
-      
+
       sf.close();
    }
-   
+
    /*
     * Test failure on connection, simulate failure to create connection for a while, then 
     * allow connection to be recreated
@@ -157,10 +158,10 @@ public class ReconnectTest extends UnitTestCase
       final double retryMultiplier = 1d;
 
       final int reconnectAttempts = -1;
-      
+
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
-                                                                     retryMultiplier,                                                                     
+                                                                     retryMultiplier,
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -186,9 +187,9 @@ public class ReconnectTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
-      
+
       RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-      
+
       Thread t = new Thread()
       {
          public void run()
@@ -198,13 +199,13 @@ public class ReconnectTest extends UnitTestCase
                Thread.sleep(retryInterval * 3);
             }
             catch (InterruptedException ignore)
-            {               
+            {
             }
-            
+
             InVMConnector.failOnCreateConnection = false;
          }
       };
-      
+
       t.start();
 
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -227,21 +228,145 @@ public class ReconnectTest extends UnitTestCase
       ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
-      
+
       session.close();
-      
+
       sf.close();
-      
+
       t.join();
    }
-   
+
+   // Test an async (e.g. pinger) failure coming in while a connection manager is already reconnecting
+   public void testAsyncFailureWhileReconnecting() throws Exception
+   {
+      final long retryInterval = 500;
+
+      final double retryMultiplier = 1d;
+
+      final int reconnectAttempts = -1;
+
+      final long asyncFailDelay = 2000;
+
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     retryInterval,
+                                                                     retryMultiplier,
+                                                                     reconnectAttempts);
+
+      ClientSession session = sf.createSession(false, true, true);
+           
+      ClientSession session2 = sf.createSession(false, true, true);
+      
+      class MyFailureListener implements FailureListener
+      {
+         volatile boolean failed;
+         
+         public boolean connectionFailed(MessagingException me)
+         {
+            failed = true;
+            
+            return true;
+         }
+      }
+      
+      MyFailureListener listener = new MyFailureListener();
+      
+      session2.addFailureListener(listener);
+
+      session.createQueue(ADDRESS, ADDRESS, null, false);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      final int numMessages = 1000;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().writeString("aardvarks");
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      InVMConnector.numberOfFailures = 10;
+      InVMConnector.failOnCreateConnection = true;
+
+      //We need to fail on different connections.
+      
+      //We fail on one connection then the connection manager tries to reconnect all connections
+      //Then we fail the other, and the connection  manager is then called while the reconnection is occurring
+      //We can't use the same connection since RemotingConnectionImpl only allows one fail to be in process
+      //at same time
+      
+      final RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      
+      final RemotingConnection conn2 = ((ClientSessionImpl)session2).getConnection();
+      
+      assertTrue(conn != conn2);
+
+      Thread t = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               Thread.sleep(asyncFailDelay);
+            }
+            catch (InterruptedException ignore)
+            {
+            }
+            
+            log.info("calling fail async");
+
+            conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED, "Did not receive pong from server"));
+         }
+      };
+
+      t.start();
+      
+      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      
+      assertFalse(listener.failed);
+      
+      session.start();            
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(500);
+
+         assertNotNull(message);
+
+         assertEquals("aardvarks", message.getBody().readString());
+
+         assertEquals(i, message.getProperty(new SimpleString("count")));
+
+         message.acknowledge();
+      }
+
+      ClientMessage message = consumer.receiveImmediate();
+
+      assertNull(message);
+
+      session.close();
+      
+      session2.close();
+
+      sf.close();
+
+      t.join();
+   }
+
    public void testReconnectAttemptsFailsToReconnect() throws Exception
    {
       final long retryInterval = 500;
 
       final double retryMultiplier = 1d;
 
-      final int reconnectAttempts = 3;      
+      final int reconnectAttempts = 3;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
@@ -271,11 +396,11 @@ public class ReconnectTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
-      
+
       RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-      
-      //Sleep for longer than max retries so should fail to reconnect
-      
+
+      // Sleep for longer than max retries so should fail to reconnect
+
       Thread t = new Thread()
       {
          public void run()
@@ -285,42 +410,42 @@ public class ReconnectTest extends UnitTestCase
                Thread.sleep(retryInterval * (reconnectAttempts + 1));
             }
             catch (InterruptedException ignore)
-            {               
+            {
             }
-            
+
             InVMConnector.failOnCreateConnection = false;
          }
       };
-      
+
       t.start();
 
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
       session.start();
 
-      //Should be null since failed to reconnect
+      // Should be null since failed to reconnect
       ClientMessage message = consumer.receive(500);
 
       assertNull(message);
-      
+
       session.close();
-      
+
       sf.close();
-      
+
       t.join();
    }
-   
+
    public void testReconnectAttemptsSucceedsInReconnecting() throws Exception
    {
       final long retryInterval = 500;
 
       final double retryMultiplier = 1d;
 
-      final int reconnectAttempts = 10;      
+      final int reconnectAttempts = 10;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
-                                                                     retryMultiplier,                                                      
+                                                                     retryMultiplier,
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -347,11 +472,11 @@ public class ReconnectTest extends UnitTestCase
 
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
-      
+
       RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-      
+
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-      
+
       session.start();
 
       for (int i = 0; i < numMessages; i++)
@@ -370,23 +495,23 @@ public class ReconnectTest extends UnitTestCase
       ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
-      
+
       session.close();
-      
+
       sf.close();
    }
-     
+
    public void testRetryInterval() throws Exception
    {
       final long retryInterval = 500;
 
       final double retryMultiplier = 1d;
 
-      final int reconnectAttempts = -1;      
+      final int reconnectAttempts = -1;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
-                                                                     retryMultiplier,                                                                    
+                                                                     retryMultiplier,
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -412,11 +537,11 @@ public class ReconnectTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
-      
+
       RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-      
+
       long start = System.currentTimeMillis();
-      
+
       Thread t = new Thread()
       {
          public void run()
@@ -426,16 +551,16 @@ public class ReconnectTest extends UnitTestCase
                Thread.sleep(retryInterval / 2);
             }
             catch (InterruptedException ignore)
-            {               
+            {
             }
             InVMConnector.failOnCreateConnection = false;
          }
       };
-      
+
       t.start();
-      
+
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-                  
+
       session.start();
 
       for (int i = 0; i < numMessages; i++)
@@ -454,29 +579,29 @@ public class ReconnectTest extends UnitTestCase
       ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
-      
+
       long end = System.currentTimeMillis();
-      
+
       assertTrue((end - start) >= retryInterval);
-      
+
       session.close();
-      
+
       sf.close();
-      
+
       t.join();
    }
-   
+
    public void testExponentialBackoff() throws Exception
    {
       final long retryInterval = 500;
 
       final double retryMultiplier = 4d;
 
-      final int reconnectAttempts = -1;      
+      final int reconnectAttempts = -1;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      retryInterval,
-                                                                     retryMultiplier,                                                  
+                                                                     retryMultiplier,
                                                                      reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
@@ -502,11 +627,11 @@ public class ReconnectTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
       InVMConnector.failOnCreateConnection = true;
-      
+
       RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
-      
+
       long start = System.currentTimeMillis();
-      
+
       Thread t = new Thread()
       {
          public void run()
@@ -516,17 +641,17 @@ public class ReconnectTest extends UnitTestCase
                Thread.sleep(retryInterval * 2);
             }
             catch (InterruptedException ignore)
-            {               
+            {
             }
-            
+
             InVMConnector.failOnCreateConnection = false;
          }
       };
-      
+
       t.start();
-      
+
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
-                  
+
       session.start();
 
       for (int i = 0; i < numMessages; i++)
@@ -545,15 +670,15 @@ public class ReconnectTest extends UnitTestCase
       ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
-      
+
       long end = System.currentTimeMillis();
-      
+
       assertTrue((end - start) >= retryInterval * (1 + retryMultiplier));
-      
+
       session.close();
-      
+
       sf.close();
-      
+
       t.join();
    }
 
@@ -565,7 +690,7 @@ public class ReconnectTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
@@ -578,11 +703,11 @@ public class ReconnectTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       InVMConnector.resetFailures();
-      
+
       service.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
-      
+
       super.tearDown();
    }
 
