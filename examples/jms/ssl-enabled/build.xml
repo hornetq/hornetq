@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "../../../thirdparty/libraries.ent">
+      ]>
 
 <!-- =========================================================================================== -->
 <!--                                                                                             -->
@@ -25,26 +28,21 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging Servlet Transport Example">
+<project default="run" name="JBoss Messaging JMS SSL Example">
 
    <import file="../common/build.xml"/>
-   
-   <target name="deploy-servlet">
-      <copy todir="${jboss.home}/server/jbm2_default/deploy/jms-servlet.war">
-         <fileset dir="config/jms-servlet.war"/>
-      </copy>
-      <sleep seconds="5"/>
-   </target>
-   
-   <target name="undeploy-servlet">
-      <delete dir="${jboss.home}/server/jbm2_default/deploy/jms-servlet.war" quiet="true"/>
+
+   <target name="run">
+      <antcall target="runExample">
+         <param name="example.classname" value="org.jboss.jms.example.SSLExample"/>
+      </antcall>
    </target>
 
-   <target name="run" depends="deploy-servlet">
+   <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.javaee.example.ServletTransportExample"/>
+         <param name="example.classname" value="org.jboss.jms.example.SSLExample"/>
+         <param name="jbm.example.runServer" value="false"/>
       </antcall>
-      <antcall target="undeploy-servlet"/>
    </target>
 
 </project>

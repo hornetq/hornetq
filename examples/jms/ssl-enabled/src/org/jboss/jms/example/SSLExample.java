@@ -19,7 +19,7 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.javaee.example;
+package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -31,31 +31,34 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 /**
- * A simple JMS Queue example that uses servlet protocol.
+ * A simple JMS Queue example that uses SSL secure transport.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class ServletTransportExample
+public class SSLExample extends JMSExample
 {
-   public static void main(String[] args) throws Exception
+   public static void main(String[] args)
+   {
+      new SSLExample().run(args);
+   }
+
+   public boolean runExample() throws Exception
    {
       Connection connection = null;
       InitialContext initialContext = null;
       try
       {
          //Step 1. Create an initial context to perform the JNDI lookup.
-         initialContext = new InitialContext();
+         initialContext = getContext(0);
 
          //Step 2. Perfom a lookup on the queue
-         Queue queue = (Queue) initialContext.lookup("/queue/testQueue");
+         Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
 
          //Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/TestServletConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
 
          //Step 4.Create a JMS Connection
          connection = cf.createConnection();
-         
-         System.out.println("connection created: " + connection);
 
          //Step 5. Create a JMS Session
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -82,6 +85,9 @@ public class ServletTransportExample
 
          System.out.println("Received message: " + messageReceived.getText());
 
+         initialContext.close();
+         
+         return true;
       }
       finally
       {
