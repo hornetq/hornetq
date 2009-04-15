@@ -165,6 +165,13 @@ public class ChannelBufferWrapper implements MessagingBuffer
    {
       buffer.writeBytes(src, srcIndex, length);
    }
+   
+   public void writeBytes(MessagingBuffer src, int srcIndex, int length)
+   {
+      byte bytes[] = new byte[length];
+      src.readBytes(bytes, srcIndex, length);
+      this.writeBytes(bytes);      
+   }
 
    public void writeBytes(final byte[] src)
    {

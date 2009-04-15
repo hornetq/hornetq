@@ -38,6 +38,7 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -48,7 +49,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class MessageExpirationTest extends UnitTestCase
+public class MessageExpirationTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -142,12 +143,10 @@ public class MessageExpirationTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration config = new ConfigurationImpl();
-      config.setSecurityEnabled(false);
-      server = Messaging.newMessagingServer(config);
+      server = createServer(false);
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = createInVMFactory();
       session = sf.createSession(false, true, true);
    }
 

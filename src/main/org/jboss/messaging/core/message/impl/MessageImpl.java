@@ -27,6 +27,7 @@ import static org.jboss.messaging.utils.DataConstants.SIZE_BYTE;
 import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
 
+import java.io.InputStream;
 import java.util.Set;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
@@ -96,6 +97,10 @@ public abstract class MessageImpl implements Message
    private byte priority;
 
    private MessagingBuffer body;
+
+   /** Used on LargeMessages */
+   private InputStream bodyInputStream;
+
      
    // Constructors --------------------------------------------------
 
@@ -221,7 +226,7 @@ public abstract class MessageImpl implements Message
    // Used on Message chunk
    public void encodeBody(MessagingBuffer buffer, long start, int size)
    {
-      buffer.writeBytes(body.array(), (int)start, size);
+      buffer.writeBytes(body, (int)start, size);
    }
 
    public void decode(final MessagingBuffer buffer)
@@ -322,6 +327,24 @@ public abstract class MessageImpl implements Message
 
       return System.currentTimeMillis() - expiration >= 0;
    }
+   
+   /**
+    * @return the bodyInputStream
+    */
+   public InputStream getBodyInputStream()
+   {
+      return bodyInputStream;
+   }
+
+   /**
+    * @param bodyInputStream the bodyInputStream to set
+    */
+   public void setBodyInputStream(InputStream bodyInputStream)
+   {
+      this.bodyInputStream = bodyInputStream;
+   }
+
+
    
    // Properties
    // ---------------------------------------------------------------------------------------

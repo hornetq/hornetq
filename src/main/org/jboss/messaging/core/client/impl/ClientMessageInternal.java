@@ -45,5 +45,12 @@ public interface ClientMessageInternal extends ClientMessage
 
    boolean isLargeMessage();
    
-   boolean isFileMessage();    
+   void setLargeMessage(boolean largeMessage);
+   
+   boolean isFileMessage();
+
+   /**
+    * Discard unused packets (used on large-message)
+    */
+   void discardLargeBody();    
 }

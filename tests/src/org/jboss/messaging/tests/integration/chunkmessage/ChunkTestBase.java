@@ -25,20 +25,22 @@ package org.jboss.messaging.tests.integration.chunkmessage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -82,45 +84,41 @@ public class ChunkTestBase extends ServiceTestBase
 
    protected void testChunks(final boolean isXA,
                              final boolean realFiles,
-                             final boolean useFile,
                              final boolean preAck,
                              final boolean sendingBlocking,
                              final boolean testBrowser,
+                             final boolean useMessageConsumer,
                              final int numberOfMessages,
-                             final int numberOfIntegers,
+                             final int numberOfBytes,
                              final int waitOnConsumer,
                              final long delayDelivery) throws Exception
    {
       testChunks(isXA,
                  realFiles,
-                 useFile,
                  preAck,
                  sendingBlocking,
                  testBrowser,
+                 useMessageConsumer,
                  numberOfMessages,
-                 numberOfIntegers,
+                 numberOfBytes,
                  waitOnConsumer,
                  delayDelivery,
                  -1,
-                 100 * 1024,
-                 10 * 1024,
-                 false);
+                 10 * 1024);
    }
 
    protected void testChunks(final boolean isXA,
                              final boolean realFiles,
-                             final boolean useFile,
                              final boolean preAck,
                              final boolean sendingBlocking,
                              final boolean testBrowser,
+                             final boolean useMessageConsumer,
                              final int numberOfMessages,
-                             final int numberOfIntegers,
+                             final int numberOfBytes,
                              final int waitOnConsumer,
                              final long delayDelivery,
                              final int producerWindow,
-                             final int minSizeProducer,
-                             final int minSizeConsumer,
-                             final boolean testTime) throws Exception
+                             final int minSize) throws Exception
    {
       clearData();
 
@@ -143,7 +141,7 @@ public class ChunkTestBase extends ServiceTestBase
             sf.setSendWindowSize(producerWindow);
          }
 
-         sf.setMinLargeMessageSize(minSizeProducer);
+         sf.setMinLargeMessageSize(minSize);
 
          ClientSession session;
 
@@ -160,7 +158,7 @@ public class ChunkTestBase extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         sendMessages(useFile, numberOfMessages, numberOfIntegers, delayDelivery, testTime, session, producer);
+         sendMessages(numberOfMessages, numberOfBytes, delayDelivery, session, producer);
 
          if (isXA)
          {
@@ -176,7 +174,7 @@ public class ChunkTestBase extends ServiceTestBase
 
          validateNoFilesOnLargeDir();
 
-         sendMessages(useFile, numberOfMessages, numberOfIntegers, delayDelivery, testTime, session, producer);
+         sendMessages(numberOfMessages, numberOfBytes, delayDelivery, session, producer);
 
          if (isXA)
          {
@@ -202,8 +200,6 @@ public class ChunkTestBase extends ServiceTestBase
             sf = createInVMFactory();
          }
 
-         sf.setMinLargeMessageSize(minSizeConsumer);
-
          session = sf.createSession(null, null, isXA, false, false, preAck, 0);
 
          if (isXA)
@@ -214,99 +210,139 @@ public class ChunkTestBase extends ServiceTestBase
 
          ClientConsumer consumer = null;
 
-         // If delayed deliveries... it doesn't make sense with Browsing
-         for (int iteration = (testBrowser ? 0 : 1); iteration < 2; iteration++)
+         for (int iteration = testBrowser ? 0 : 1; iteration < 2; iteration++)
          {
 
+            System.out.println("Iteration: " + iteration);
+
+            session.stop();
+
             // first time with a browser
-            if (realFiles)
+            consumer = session.createConsumer(ADDRESS, null, iteration == 0);
+
+            if (useMessageConsumer)
             {
-               consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()),
-                                                     ADDRESS,
-                                                     null,
-                                                     iteration == 0);
+               final CountDownLatch latchDone = new CountDownLatch(numberOfMessages);
+               final AtomicInteger errrors = new AtomicInteger(0);
+
+               MessageHandler handler = new MessageHandler()
+               {
+                  int msgCounter;
+
+                  public void onMessage(final ClientMessage message)
+                  {
+
+                     try
+                     {
+                        latchDone.countDown();
+
+                        System.out.println("Message on consumer: " + msgCounter);
+
+                        if (delayDelivery > 0)
+                        {
+                           long originalTime = (Long)message.getProperty(new SimpleString("original-time"));
+                           assertTrue(System.currentTimeMillis() - originalTime + "<" + delayDelivery,
+                                      System.currentTimeMillis() - originalTime >= delayDelivery);
+                        }
+
+                        if (!preAck)
+                        {
+                           message.acknowledge();
+                        }
+
+                        assertNotNull(message);
+
+                        if (delayDelivery <= 0)
+                        {
+                           // right now there is no guarantee of ordered delivered on multiple scheduledMessages with
+                           // the same
+                           // scheduled delivery time
+                           assertEquals(msgCounter,
+                                        ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
+                        }
+
+                        MessagingBuffer buffer = message.getBody();
+                        buffer.resetReaderIndex();
+                        assertEquals(numberOfBytes, buffer.writerIndex());
+                        for (int b = 0; b < numberOfBytes; b++)
+                        {
+                           assertEquals((byte)'a', buffer.readByte());
+                        }
+                     }
+                     catch (Throwable e)
+                     {
+                        e.printStackTrace();
+                        errrors.incrementAndGet();
+                     }
+                     finally
+                     {
+                        msgCounter++;
+                     }
+                  }
+               };
+
+               session.start();
+               
+               Thread.sleep(1000);
+
+               consumer.setMessageHandler(handler);
+
+               assertTrue(latchDone.await(20, TimeUnit.SECONDS));
+               assertEquals(0, errrors.get());
+
             }
             else
             {
-               consumer = session.createConsumer(ADDRESS, null, iteration == 0);
-            }
 
-            session.start();
+               session.start();
 
-            for (int i = 0; i < numberOfMessages; i++)
-            {
-               long start = System.currentTimeMillis();
-
-               ClientMessage message = consumer.receive(waitOnConsumer + delayDelivery);
-
-               assertNotNull(message);
-
-               if (realFiles)
+               for (int i = 0; i < numberOfMessages; i++)
                {
-                  assertTrue(message instanceof ClientFileMessage);
-               }
+                  System.currentTimeMillis();
 
-               if (testTime)
-               {
-                  System.out.println("Message received in " + (System.currentTimeMillis() - start));
-               }
-               start = System.currentTimeMillis();
+                  ClientMessage message = consumer.receive(waitOnConsumer + delayDelivery);
 
-               if (delayDelivery > 0)
-               {
-                  long originalTime = (Long)message.getProperty(new SimpleString("original-time"));
-                  assertTrue((System.currentTimeMillis() - originalTime) + "<" + delayDelivery,
-                             System.currentTimeMillis() - originalTime >= delayDelivery);
-               }
+                  assertNotNull(message);
 
-               if (!preAck)
-               {
-                  message.acknowledge();
-               }
+                  System.out.println("Message: " + i);
 
-               if (isXA)
-               {
-                  session.end(xid, XAResource.TMSUCCESS);
-                  session.commit(xid, true);
-                  xid = newXID();
-                  session.start(xid, XAResource.TMNOFLAGS);
-               }
-               else
-               {
-                  session.commit();
-               }
+                  System.currentTimeMillis();
 
-               assertNotNull(message);
-
-               if (delayDelivery <= 0)
-               {
-                  // right now there is no guarantee of ordered delivered on multiple scheduledMessages with the same
-                  // scheduled delivery time
-                  assertEquals(i, ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
-               }
-
-               if (!testTime)
-               {
-                  if (message instanceof ClientFileMessage)
+                  if (delayDelivery > 0)
                   {
-                     checkFileRead(((ClientFileMessage)message).getFile(), numberOfIntegers);
+                     long originalTime = (Long)message.getProperty(new SimpleString("original-time"));
+                     assertTrue(System.currentTimeMillis() - originalTime + "<" + delayDelivery,
+                                System.currentTimeMillis() - originalTime >= delayDelivery);
                   }
-                  else
+
+                  if (!preAck)
                   {
-                     MessagingBuffer buffer = message.getBody();
-                     buffer.resetReaderIndex();
-                     assertEquals(numberOfIntegers * DataConstants.SIZE_INT, buffer.writerIndex());
-                     for (int b = 0; b < numberOfIntegers; b++)
-                     {
-                        assertEquals(b, buffer.readInt());
-                     }
+                     message.acknowledge();
+                  }
+
+                  assertNotNull(message);
+
+                  if (delayDelivery <= 0)
+                  {
+                     // right now there is no guarantee of ordered delivered on multiple scheduledMessages with the same
+                     // scheduled delivery time
+                     assertEquals(i, ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
+                  }
+
+                  MessagingBuffer buffer = message.getBody();
+                  buffer.resetReaderIndex();
+                  assertEquals(numberOfBytes, buffer.writerIndex());
+                  for (int b = 0; b < numberOfBytes; b++)
+                  {
+                     assertEquals((byte)'a', buffer.readByte());
                   }
                }
+
             }
+            consumer.close();
 
             if (iteration == 0)
             {
-               consumer.close();
                if (isXA)
                {
                   session.end(xid, XAResource.TMSUCCESS);
@@ -317,6 +353,20 @@ public class ChunkTestBase extends ServiceTestBase
                else
                {
                   session.rollback();
+               }
+            }
+            else
+            {
+               if (isXA)
+               {
+                  session.end(xid, XAResource.TMSUCCESS);
+                  session.commit(xid, true);
+                  xid = newXID();
+                  session.start(xid, XAResource.TMNOFLAGS);
+               }
+               else
+               {
+                  session.commit();
                }
             }
          }
@@ -355,68 +405,44 @@ public class ChunkTestBase extends ServiceTestBase
     * @throws IOException
     * @throws MessagingException
     */
-   private void sendMessages(final boolean useFile,
-                             final int numberOfMessages,
-                             final int numberOfIntegers,
+   private void sendMessages(final int numberOfMessages,
+                             final int numberOfBytes,
                              final long delayDelivery,
-                             final boolean testTime,
-                             ClientSession session,
-                             ClientProducer producer) throws FileNotFoundException, IOException, MessagingException
+                             final ClientSession session,
+                             final ClientProducer producer) throws Exception
    {
-      if (useFile)
+      for (int i = 0; i < numberOfMessages; i++)
       {
-         File tmpData = createLargeFile(getTemporaryDir(), "someFile.dat", numberOfIntegers);
-
-         for (int i = 0; i < numberOfMessages; i++)
+         ClientMessage message = session.createClientMessage(true);
+         
+         // If the test is using more than 1M, we will only use the Streaming, as it require too much memory from the test
+         if (numberOfBytes > 1024 * 1024 || i % 2 == 0)
          {
-            ClientMessage message = session.createFileMessage(true);
-            ((ClientFileMessage)message).setFile(tmpData);
-            message.putIntProperty(new SimpleString("counter-message"), i);
-            long timeStart = System.currentTimeMillis();
-            if (delayDelivery > 0)
-            {
-               long time = System.currentTimeMillis();
-               message.putLongProperty(new SimpleString("original-time"), time);
-               message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time + delayDelivery);
-
-               producer.send(message);
-            }
-            else
-            {
-               producer.send(message);
-            }
-            if (testTime)
-            {
-               System.out.println("Message sent in " + (System.currentTimeMillis() - timeStart));
-            }
+            System.out.println("Sending message (stream)" + i);
+            message.setBodyInputStream(createFakeLargeStream(numberOfBytes, (byte)'a'));
          }
-
-      }
-      else
-      {
-         for (int i = 0; i < numberOfMessages; i++)
+         else
          {
-            ClientMessage message = session.createClientMessage(true);
-            message.putIntProperty(new SimpleString("counter-message"), i);
-            message.setBody(createLargeBuffer(numberOfIntegers));
-            long timeStart = System.currentTimeMillis();
-            if (delayDelivery > 0)
+            System.out.println("Sending message (array)" + i);
+            byte[] bytes = new byte[numberOfBytes];
+            for (int j = 0; j < bytes.length; j++)
             {
-               long time = System.currentTimeMillis();
-               message.putLongProperty(new SimpleString("original-time"), time);
-               message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time + delayDelivery);
+               bytes[j] = 'a';
+            }
+            message.getBody().writeBytes(bytes);
+         }
+         message.putIntProperty(new SimpleString("counter-message"), i);
+         if (delayDelivery > 0)
+         {
+            long time = System.currentTimeMillis();
+            message.putLongProperty(new SimpleString("original-time"), time);
+            message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time + delayDelivery);
 
-               producer.send(message);
-            }
-            else
-            {
-               producer.send(message);
-            }
-
-            if (testTime)
-            {
-               System.out.println("Message sent in " + (System.currentTimeMillis() - timeStart));
-            }
+            producer.send(message);
+         }
+         else
+         {
+            producer.send(message);
          }
       }
    }
@@ -434,63 +460,21 @@ public class ChunkTestBase extends ServiceTestBase
 
    }
 
-   protected ClientFileMessage createLargeClientMessage(final ClientSession session, final int numberOfIntegers) throws Exception
+   protected ClientMessage createLargeClientMessage(final ClientSession session, final int numberOfBytes) throws Exception
    {
-      return createLargeClientMessage(session, numberOfIntegers, true);
+      return createLargeClientMessage(session, numberOfBytes, true);
    }
 
-   protected ClientFileMessage createLargeClientMessage(final ClientSession session,
-                                                        final int numberOfIntegers,
-                                                        boolean persistent) throws Exception
+   protected ClientMessage createLargeClientMessage(final ClientSession session,
+                                                    final int numberOfBytes,
+                                                    final boolean persistent) throws Exception
    {
 
-      ClientFileMessage clientMessage = session.createFileMessage(persistent);
+      ClientMessage clientMessage = session.createClientMessage(persistent);
 
-      File tmpFile = createLargeFile(getTemporaryDir(), "tmpUpload.data", numberOfIntegers);
-
-      clientMessage.setFile(tmpFile);
+      clientMessage.setBodyInputStream(createFakeLargeStream(numberOfBytes, (byte)'a'));
 
       return clientMessage;
-   }
-
-   /**
-    * @param name
-    * @param numberOfIntegers
-    * @return
-    * @throws FileNotFoundException
-    * @throws IOException
-    */
-   protected File createLargeFile(final String directory, final String name, final int numberOfIntegers) throws FileNotFoundException,
-                                                                                                        IOException
-   {
-      File tmpFile = new File(directory + "/" + name);
-
-      RandomAccessFile random = new RandomAccessFile(tmpFile, "rw");
-      FileChannel channel = random.getChannel();
-
-      ByteBuffer buffer = ByteBuffer.allocate(4 * 1000);
-
-      for (int i = 0; i < numberOfIntegers; i++)
-      {
-         if (buffer.position() > 0 && i % 1000 == 0)
-         {
-            buffer.flip();
-            channel.write(buffer);
-            buffer.clear();
-         }
-         buffer.putInt(i);
-      }
-
-      if (buffer.position() > 0)
-      {
-         buffer.flip();
-         channel.write(buffer);
-      }
-
-      channel.close();
-      random.close();
-
-      return tmpFile;
    }
 
    /**
@@ -501,72 +485,23 @@ public class ChunkTestBase extends ServiceTestBase
     * @throws FileNotFoundException
     * @throws IOException
     */
-   protected void readMessage(final ClientSession session, final SimpleString queueToRead, final int numberOfIntegers) throws MessagingException,
-                                                                                                                      FileNotFoundException,
-                                                                                                                      IOException
+   protected void readMessage(final ClientSession session, final SimpleString queueToRead, final int numberOfBytes) throws MessagingException,
+                                                                                                                   FileNotFoundException,
+                                                                                                                   IOException
    {
       session.start();
 
-      ClientConsumer consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), queueToRead);
+      ClientConsumer consumer = session.createConsumer(queueToRead);
 
       ClientMessage clientMessage = consumer.receive(5000);
 
       assertNotNull(clientMessage);
-
-      if (!(clientMessage instanceof ClientFileMessage))
-      {
-         System.out.println("Size = " + clientMessage.getBodySize());
-      }
-
-      if (clientMessage instanceof ClientFileMessage)
-      {
-         assertTrue(clientMessage instanceof ClientFileMessage);
-
-         ClientFileMessage fileClientMessage = (ClientFileMessage)clientMessage;
-
-         assertNotNull(fileClientMessage);
-         File receivedFile = fileClientMessage.getFile();
-
-         checkFileRead(receivedFile, numberOfIntegers);
-
-      }
 
       clientMessage.acknowledge();
 
       session.commit();
 
       consumer.close();
-   }
-
-   /**
-    * @param receivedFile
-    * @throws FileNotFoundException
-    * @throws IOException
-    */
-   protected void checkFileRead(final File receivedFile, final int numberOfIntegers) throws FileNotFoundException,
-                                                                                    IOException
-   {
-      RandomAccessFile random2 = new RandomAccessFile(receivedFile, "r");
-      FileChannel channel2 = random2.getChannel();
-
-      ByteBuffer buffer2 = ByteBuffer.allocate(1000 * 4);
-
-      channel2.position(0l);
-
-      for (int i = 0; i < numberOfIntegers;)
-      {
-         channel2.read(buffer2);
-
-         buffer2.flip();
-         for (int j = 0; j < buffer2.limit() / 4; j++, i++)
-         {
-            assertEquals(i, buffer2.getInt());
-         }
-
-         buffer2.clear();
-      }
-
-      channel2.close();
    }
 
    /**
@@ -592,8 +527,75 @@ public class ChunkTestBase extends ServiceTestBase
       assertEquals(0, largeMessagesFileDir.listFiles().length);
    }
 
+   protected InputStream createFakeLargeStream(final int size, final byte byteUsed) throws Exception
+   {
+      return new InputStream()
+      {
+         private int count;
+
+         private boolean closed = false;
+
+         @Override
+         public void close() throws IOException
+         {
+            super.close();
+            closed = true;
+         }
+
+         @Override
+         public int read() throws IOException
+         {
+            if (closed)
+            {
+               throw new IOException("Stream was closed");
+            }
+            if (count++ < size)
+            {
+               return byteUsed;
+            }
+            else
+            {
+               return -1;
+            }
+         }
+      };
+
+   }
+
+   protected OutputStream createFakeOutputStream() throws Exception
+   {
+
+      return new OutputStream()
+      {
+         private boolean closed = false;
+
+         private int count;
+
+         @Override
+         public void close() throws IOException
+         {
+            super.close();
+            closed = true;
+         }
+
+         @Override
+         public void write(final int b) throws IOException
+         {
+            if (count++ % 1024 * 1024 == 0)
+            {
+               System.out.println("OutputStream received " + count + " bytes");
+            }
+            if (closed)
+            {
+               throw new IOException("Stream was closed");
+            }
+         }
+
+      };
+
+   }
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }

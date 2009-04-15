@@ -28,17 +28,15 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.impl.ServerSessionImpl;
-import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -53,7 +51,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class TemporaryQueueTest extends UnitTestCase
+public class TemporaryQueueTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -64,7 +62,7 @@ public class TemporaryQueueTest extends UnitTestCase
 
    private ClientSession session;
 
-   private ClientSessionFactoryImpl sf;
+   private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
 
@@ -215,12 +213,10 @@ public class TemporaryQueueTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration config = new ConfigurationImpl();
-      config.setSecurityEnabled(false);
-      server = Messaging.newMessagingServer(config);
+      server = createServer(false);
       server.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf = createInVMFactory();
       session = sf.createSession(false, true, true);
    }
 

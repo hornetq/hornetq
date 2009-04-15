@@ -28,14 +28,12 @@ import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -43,7 +41,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class DurableQueueTest extends UnitTestCase
+public class DurableQueueTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -54,7 +52,7 @@ public class DurableQueueTest extends UnitTestCase
 
    private ClientSession session;
 
-   private ClientSessionFactoryImpl sf;
+   private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
 
@@ -153,12 +151,12 @@ public class DurableQueueTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration config = new ConfigurationImpl();
-      config.setSecurityEnabled(false);
-      server = Messaging.newMessagingServer(config);
-      server.start();
+      server = createServer(true);
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      server.start();
+      
+      sf = createInVMFactory();
+      
       session = sf.createSession(false, true, true);
    }
 

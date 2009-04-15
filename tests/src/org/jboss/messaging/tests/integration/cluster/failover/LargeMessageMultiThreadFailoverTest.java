@@ -32,6 +32,8 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnection;
+import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Messaging;
@@ -80,8 +82,15 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
 
    }
 
-   @Override
    protected void start() throws Exception
+   {
+      InVMRegistry.instance.clear();
+
+      //startNullPersistence();
+      startJournal();
+   }
+   
+   protected void startJournal() throws Exception
    {
 
       deleteDirectory(new File(getTestDir()));
@@ -135,11 +144,42 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
       liveServer.start();
 
    }
+   
+   
+   protected void startNullPersistence() throws Exception
+   {
+      Configuration backupConf = new ConfigurationImpl();
+      backupConf.setSecurityEnabled(false);
+      backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
+      backupConf.getAcceptorConfigurations()
+                .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
+                                                backupParams));
+      backupConf.setBackup(true);
+      backupConf.setJMXManagementEnabled(false);
+      backupServer = Messaging.newMessagingServer(backupConf, false);
+      backupServer.start();
+
+      Configuration liveConf = new ConfigurationImpl();
+      liveConf.setSecurityEnabled(false);
+      liveConf.getAcceptorConfigurations()
+              .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+      TransportConfiguration backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                   backupParams,
+                                                                   "backup-connector");
+      connectors.put(backupTC.getName(), backupTC);
+      liveConf.setConnectorConfigurations(connectors);
+      liveConf.setBackupConnectorName(backupTC.getName());
+      liveConf.setJMXManagementEnabled(false);
+      liveServer = Messaging.newMessagingServer(liveConf, false);
+      liveServer.start();
+   }
+
+
 
    @Override
    protected void setBody(final ClientMessage message) throws Exception
    {
-      
       message.getBody().writeBytes(FIVE_HUNDRED_BYTES);
 
    }

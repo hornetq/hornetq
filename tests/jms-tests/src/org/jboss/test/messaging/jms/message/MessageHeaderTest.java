@@ -43,7 +43,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
@@ -1069,11 +1068,6 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       public ClientMessage createClientMessage(boolean durable)
       {
          return message;
-      }
-
-      public ClientFileMessage createFileMessage(boolean durable)
-      {
-         return null;
       }
 
       public void start() throws MessagingException

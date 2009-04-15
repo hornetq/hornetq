@@ -137,13 +137,13 @@ public class ServerConsumerImpl implements ServerConsumer
    private final ManagementService managementService;
 
    private final Binding binding;
-   
-   
+
    private MessagingServer server;
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public ServerConsumerImpl(final MessagingServer server, final long id,
+   public ServerConsumerImpl(final MessagingServer server,
+                             final long id,
                              final long replicatedSessionID,
                              final ServerSession session,
                              final QueueBinding binding,
@@ -160,7 +160,7 @@ public class ServerConsumerImpl implements ServerConsumer
                              final ManagementService managementService) throws Exception
    {
       this.server = server;
-      
+
       this.id = id;
 
       this.replicatedSessionID = replicatedSessionID;
@@ -217,8 +217,13 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public void close() throws Exception
-   {    
+   {
       setStarted(false);
+
+      if (largeMessageDeliverer != null)
+      {
+         largeMessageDeliverer.close();
+      }
 
       messageQueue.removeConsumer(this);
 
@@ -414,23 +419,27 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    public void deliverReplicated(final long messageID) throws Exception
-   {      
+   {
       MessageReference ref = messageQueue.removeFirstReference(messageID);
 
       if (ref == null)
       {
          // The order is correct, but it hasn't been depaged yet, so we need to force a depage
          PagingStore store = pagingManager.getPageStore(binding.getAddress());
-         
+
          // force a depage
          if (!store.readPage()) // This returns false if there are no pages
          {
-            throw new IllegalStateException("Cannot find ref " + messageID + " server " + System.identityHashCode(server) + " queue " + this.messageQueue.getName());
+            throw new IllegalStateException("Cannot find ref " + messageID +
+                                            " server " +
+                                            System.identityHashCode(server) +
+                                            " queue " +
+                                            this.messageQueue.getName());
          }
          else
          {
             ref = messageQueue.removeFirstReference(messageID);
-            
+
             if (ref == null)
             {
                throw new IllegalStateException("Cannot find ref after depaging");
@@ -451,7 +460,7 @@ public class ServerConsumerImpl implements ServerConsumer
                                          handled);
       }
    }
-   
+
    public void failedOver()
    {
       if (messageQueue.consumerFailedOver())
@@ -732,6 +741,9 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          pendingLargeMessage = message;
 
+         // we must hold one reference, or the file will be deleted before it could be delivered
+         pendingLargeMessage.incrementRefCount();
+
          sizePendingLargeMessage = pendingLargeMessage.getBodySize();
 
          this.ref = ref;
@@ -766,7 +778,10 @@ public class ServerConsumerImpl implements ServerConsumer
 
                pendingLargeMessage.encodeProperties(headerBuffer);
 
-               initialMessage = new SessionReceiveMessage(id, headerBuffer.array(), ref.getDeliveryCount());
+               initialMessage = new SessionReceiveMessage(id,
+                                                          headerBuffer.array(),
+                                                          pendingLargeMessage.getBodySize(),
+                                                          ref.getDeliveryCount());
             }
 
             int precalculateAvailableCredits;
@@ -838,31 +853,7 @@ public class ServerConsumerImpl implements ServerConsumer
                trace("Finished deliverLargeMessage isBackup = " + messageQueue.isBackup());
             }
 
-            pendingLargeMessage.releaseResources();
-
-            if (preAcknowledge && !browseOnly)
-            {
-               // We added a reference for pre-ack, to avoid deleting the file before it was delivered
-               if (pendingLargeMessage.decrementRefCount() == 0)
-               {
-                  // On pre-acks for Large messages, the decrement was deferred to large-message, hence we need to
-                  // subtract the size inside largeMessage
-                  try
-                  {
-                     PagingStore store = pagingManager.getPageStore(binding.getAddress());
-                     store.addSize(-pendingLargeMessage.getMemoryEstimate());
-                  }
-                  catch (Exception e)
-                  {
-                     // This shouldn't happen on getPageStore
-                     log.error("Error getting pageStore", e);
-                  }
-               }
-            }
-
-            largeMessageDeliverer = null;
-
-            pendingLargeMessagesCounter.decrementAndGet();
+            close();
 
             return true;
          }
@@ -870,6 +861,47 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             lock.unlock();
          }
+      }
+
+      /**
+       * 
+       */
+      public void close()
+      {
+         pendingLargeMessage.releaseResources();
+
+         int counter = pendingLargeMessage.decrementRefCount();
+         
+         if (preAcknowledge && !browseOnly)
+         {
+            // PreAck will have an extra reference
+            counter = pendingLargeMessage.decrementRefCount();
+         }
+
+         if (!browseOnly)
+         {
+            // We added a reference to avoid deleting the file before it was delivered
+            // if (pendingLargeMessage.decrementRefCount() == 0)
+            if (counter == 0)
+            {
+               // The decrement was deferred to large-message, hence we need to
+               // subtract the size inside largeMessage
+               try
+               {
+                  PagingStore store = pagingManager.getPageStore(binding.getAddress());
+                  store.addSize(-pendingLargeMessage.getMemoryEstimate());
+               }
+               catch (Exception e)
+               {
+                  // This shouldn't happen as the pageStore should have been initialized already.
+                  log.error("Error getting pageStore", e);
+               }
+            }
+         }
+
+         largeMessageDeliverer = null;
+
+         pendingLargeMessagesCounter.decrementAndGet();
       }
 
       /**

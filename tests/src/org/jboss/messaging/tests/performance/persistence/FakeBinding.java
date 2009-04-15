@@ -39,79 +39,79 @@ public class FakeBinding implements Binding
    
    public SimpleString getClusterName()
    {
-      // TODO Auto-generated method stub
+     
       return null;
    }
 
    public BindingType getType()
    {
-      // TODO Auto-generated method stub
+     
       return null;
    }
 
    public int getDistance()
    {
-      // TODO Auto-generated method stub
+     
       return 0;
    }
 
    public SimpleString getOriginatingNodeID()
    {
-      // TODO Auto-generated method stub
+     
       return null;
    }
 
    public Filter getFilter()
    {
-      // TODO Auto-generated method stub
+     
       return null;
    }
 
    public int getID()
    {
-      // TODO Auto-generated method stub
+     
       return 0;
    }
 
    public void setID(int id)
    {
-      // TODO Auto-generated method stub
+     
       
    }
 
    public void willRoute(ServerMessage message)
    {
-      // TODO Auto-generated method stub
+     
       
    }
 
    public boolean filterMatches(ServerMessage message) throws Exception
    {
-      // TODO Auto-generated method stub
+     
       return false;
    }
 
    public boolean isHighAcceptPriority(ServerMessage message)
    {
-      // TODO Auto-generated method stub
+     
       return false;
    }
 
    public SimpleString getRoutingName()
    {
-      // TODO Auto-generated method stub
+     
       return null;
    }
 
    public SimpleString getUniqueName()
    {
-      // TODO Auto-generated method stub
+     
       return null;
    }
 
    public boolean isExclusive()
    {
-      // TODO Auto-generated method stub
+     
       return false;
    }
 

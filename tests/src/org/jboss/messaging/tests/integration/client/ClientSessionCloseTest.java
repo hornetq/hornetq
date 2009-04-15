@@ -26,8 +26,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomXid;
 
-import java.io.File;
-
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 
@@ -91,14 +89,6 @@ public class ClientSessionCloseTest extends UnitTestCase
          public void run() throws MessagingException
          {
             session.createConsumer(randomSimpleString());
-         }
-      });
-
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
-      {
-         public void run() throws MessagingException
-         {
-            session.createFileConsumer(new File("."), randomSimpleString());
          }
       });
 

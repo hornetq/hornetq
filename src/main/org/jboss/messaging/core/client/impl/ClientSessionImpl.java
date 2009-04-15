@@ -38,7 +38,6 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.SendAcknowledgementHandler;
@@ -369,77 +368,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString), windowSize, maxRate, browseOnly);
    }
 
-   public ClientConsumer createFileConsumer(final File directory, final SimpleString queueName) throws MessagingException
-   {
-      return createFileConsumer(directory, queueName, null, false);
-   }
-
-   public ClientConsumer createFileConsumer(final File directory, final String queueName) throws MessagingException
-   {
-      return createFileConsumer(directory, toSimpleString(queueName));
-   }
-
-   public ClientConsumer createFileConsumer(final File directory,
-                                            final SimpleString queueName,
-                                            final SimpleString filterString) throws MessagingException
-   {
-      return createFileConsumer(directory, queueName, filterString, consumerWindowSize, consumerMaxRate, false);
-   }
-
-   public ClientConsumer createFileConsumer(final File directory, final String queueName, final String filterString) throws MessagingException
-   {
-      return createFileConsumer(directory, toSimpleString(queueName), toSimpleString(filterString));
-   }
-
-   public ClientConsumer createFileConsumer(final File directory,
-                                            final SimpleString queueName,
-                                            final SimpleString filterString,
-                                            final boolean browseOnly) throws MessagingException
-   {
-      return createFileConsumer(directory, queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
-   }
-
-   public ClientConsumer createFileConsumer(final File directory,
-                                            final String queueName,
-                                            final String filterString,
-                                            final boolean browseOnly) throws MessagingException
-   {
-      return createFileConsumer(directory, toSimpleString(queueName), toSimpleString(filterString), browseOnly);
-   }
-
-   /*
-    * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on the remoting thread.
-    * Direct consumers have issues with blocking and failover.
-    * E.g. if direct then inside MessageHandler call a blocking method like rollback or acknowledge (blocking)
-    * This can block until failove completes, which disallows the thread to be used to deliver any responses to the client
-    * during that period, so failover won't occur.
-    * If we want direct consumers we need to rethink how they work
-   */
-   public ClientConsumer createFileConsumer(final File directory,
-                                            final SimpleString queueName,
-                                            final SimpleString filterString,
-                                            final int windowSize,
-                                            final int maxRate,
-                                            final boolean browseOnly) throws MessagingException
-   {
-      return internalCreateConsumer(queueName, filterString, windowSize, maxRate, browseOnly, directory);
-   }
-
-   public ClientConsumer createFileConsumer(final File directory,
-                                            final String queueName,
-                                            final String filterString,
-                                            final int windowSize,
-                                            final int maxRate,
-                                            final boolean browseOnly) throws MessagingException
-   {
-      return createFileConsumer(directory,
-                                toSimpleString(queueName),
-                                toSimpleString(filterString),
-                                windowSize,
-                                maxRate,
-                                browseOnly);
-   }
-
    public ClientProducer createProducer() throws MessagingException
    {
       return createProducer((SimpleString)null);
@@ -564,11 +492,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public MessagingBuffer createBuffer(final int size)
    {
       return ChannelBuffers.dynamicBuffer(size);
-   }
-
-   public ClientFileMessage createFileMessage(final boolean durable)
-   {
-      return new ClientFileMessageImpl(durable);
    }
 
    public boolean isClosed()
@@ -1295,7 +1218,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                     final boolean temp) throws MessagingException
    {
       checkClosed();
-      
+
       if (durable && temp)
       {
          throw new MessagingException(MessagingException.INTERNAL_ERROR, "Queue can not be both durable and temporay");

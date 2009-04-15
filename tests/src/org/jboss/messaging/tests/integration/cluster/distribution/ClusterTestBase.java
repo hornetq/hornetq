@@ -959,6 +959,7 @@ public class ClusterTestBase extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(node, false));
       configuration.setJournalFileSize(100 * 1024);
+      configuration.setJournalType(JournalType.NIO);
       configuration.setPagingDirectory(getPageDir(node, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));
       configuration.setClustered(true);

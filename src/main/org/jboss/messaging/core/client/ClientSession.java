@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.core.client;
 
-import java.io.File;
-
 import javax.transaction.xa.XAResource;
 
 import org.jboss.messaging.core.exception.MessagingException;
@@ -90,35 +88,6 @@ public interface ClientSession extends XAResource
 
    ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException;
 
-   ClientConsumer createFileConsumer(File directory, SimpleString queueName) throws MessagingException;
-
-   ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString) throws MessagingException;
-
-   ClientConsumer createFileConsumer(File directory,
-                                     SimpleString queueName,
-                                     SimpleString filterString,
-                                     boolean browseOnly) throws MessagingException;
-
-   ClientConsumer createFileConsumer(File directory,
-                                     SimpleString queueName,
-                                     SimpleString filterString,
-                                     int windowSize,
-                                     int maxRate,
-                                     boolean browseOnly) throws MessagingException;
-
-   ClientConsumer createFileConsumer(File directory, String queueName) throws MessagingException;
-
-   ClientConsumer createFileConsumer(File directory, String queueName, String filterString) throws MessagingException;
-
-   ClientConsumer createFileConsumer(File directory, String queueName, String filterString, boolean browseOnly) throws MessagingException;
-
-   ClientConsumer createFileConsumer(File directory,
-                                     String queueName,
-                                     String filterString,
-                                     int windowSize,
-                                     int maxRate,
-                                     boolean browseOnly) throws MessagingException;
-
    /**
     * Create a producer with no default address.
     * Address must be specified every time a message is sent
@@ -182,8 +151,6 @@ public interface ClientSession extends XAResource
    ClientMessage createClientMessage(final byte type, final boolean durable);
 
    ClientMessage createClientMessage(final boolean durable);
-
-   ClientFileMessage createFileMessage(final boolean durable);
 
    void start() throws MessagingException;
 

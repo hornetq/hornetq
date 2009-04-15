@@ -44,19 +44,15 @@ public class SessionSendLargeMessage extends PacketImpl
    /** We need to set the MessageID when replicating this on the server */
    private long largeMessageId = -1;
 
-   private boolean requiresResponse;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionSendLargeMessage(final byte[] largeMessageHeader, final boolean requiresResponse)
+   public SessionSendLargeMessage(final byte[] largeMessageHeader)
    {
       super(SESS_SEND_LARGE);
 
       this.largeMessageHeader = largeMessageHeader;
-
-      this.requiresResponse = requiresResponse;
    }
 
    public SessionSendLargeMessage()
@@ -69,11 +65,6 @@ public class SessionSendLargeMessage extends PacketImpl
    public byte[] getLargeMessageHeader()
    {
       return largeMessageHeader;
-   }
-
-   public boolean isRequiresResponse()
-   {
-      return requiresResponse;
    }
 
    /**
@@ -98,7 +89,6 @@ public class SessionSendLargeMessage extends PacketImpl
       buffer.writeInt(largeMessageHeader.length);
       buffer.writeBytes(largeMessageHeader);
       buffer.writeLong(largeMessageId);
-      buffer.writeBoolean(requiresResponse);
    }
 
    @Override
@@ -111,16 +101,13 @@ public class SessionSendLargeMessage extends PacketImpl
       buffer.readBytes(largeMessageHeader);
 
       largeMessageId = buffer.readLong();
-
-      requiresResponse = buffer.readBoolean();
    }
 
    public int getRequiredBufferSize()
    {
       int size = BASIC_PACKET_SIZE + DataConstants.SIZE_INT +
                  largeMessageHeader.length +
-                 DataConstants.SIZE_LONG +
-                 DataConstants.SIZE_BOOLEAN;
+                 DataConstants.SIZE_LONG;
 
       return size;
    }

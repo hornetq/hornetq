@@ -24,7 +24,11 @@ package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.utils.SimpleString.toSimpleString;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -220,8 +224,8 @@ public class ClientProducerImpl implements ClientProducerInternal
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
 
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
-
-      if (msg.getEncodeSize() >= minLargeMessageSize)
+      
+      if (msg.getBodyInputStream() != null ||  msg.getEncodeSize() >= minLargeMessageSize || msg.getBody() instanceof LargeMessageBuffer)
       {
          sendMessageInChunks(sendBlocking, (ClientMessageInternal)msg);
       }
@@ -248,54 +252,96 @@ public class ClientProducerImpl implements ClientProducerInternal
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
                                       "Header size (" + headerSize + ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
       }
+      
+      if (msg.getBodyInputStream() == null)
+      {
+         msg.getBody().readerIndex(0);
+      }
 
       MessagingBuffer headerBuffer = ChannelBuffers.buffer(headerSize); 
       msg.encodeProperties(headerBuffer);
 
-      final int bodySize = msg.getBodySize();
-
-      SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.array(), false);
+      SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.array());
 
       channel.send(initialChunk);
       
-      for (int pos = 0; pos < bodySize;)
+      
+      if (msg.getBodyInputStream() != null)
       {
-         final boolean lastChunk;
-                  
-         final int chunkLength = Math.min(bodySize - pos, minLargeMessageSize); 
          
-         final MessagingBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength); 
-
-         msg.encodeBody(bodyBuffer, pos, chunkLength);
-
-         pos += chunkLength;
-         
-         lastChunk = pos >= bodySize;
-
-         final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(), !lastChunk, lastChunk && sendBlocking);
-
-         if (sendBlocking && lastChunk)
+         boolean lastChunk = false;
+         InputStream input = msg.getBodyInputStream();
+         while (!lastChunk)
          {
-            // When sending it blocking, only the last chunk will be blocking.
-            channel.sendBlocking(chunk);
+            byte[] bytesRead = new byte[minLargeMessageSize];
+            int numberOfBytesRead;
+            
+            try
+            {
+               numberOfBytesRead = input.read(bytesRead);
+            }
+            catch (IOException e)
+            {
+               throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY, "Error reading the LargeMessageBody", e);
+            }
+            
+            if (numberOfBytesRead < 0)
+            {
+               numberOfBytesRead = 0;
+               lastChunk = true;
+            }
+            
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bytesRead, numberOfBytesRead, !lastChunk, lastChunk && sendBlocking);
+
+            if (sendBlocking && lastChunk)
+            {
+               // When sending it blocking, only the last chunk will be blocking.
+               channel.sendBlocking(chunk);
+            }
+            else
+            {
+               channel.send(chunk);
+            }         
          }
-         else
-         {
-            channel.send(chunk);
-         }         
-      }
-
-      // Note: This could be either a regular message, with a huge body,
-      //       or a ClientFileMessage.
-      if (msg.isFileMessage())
-      {
+         
          try
          {
-            ((ClientFileMessageInternal)msg).closeChannel();
+            input.close();
          }
-         catch (Exception e)
+         catch (IOException e)
          {
-            log.warn(e.getMessage(), e);
+            throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY, "Error closing stream from LargeMessageBody", e);
+         }
+      }
+      else
+      {
+         final int bodySize = msg.getBodySize();
+   
+         for (int pos = 0; pos < bodySize;)
+         {
+            final boolean lastChunk;
+                     
+            final int chunkLength = Math.min(bodySize - pos, minLargeMessageSize); 
+            
+            final MessagingBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength); 
+   
+            msg.encodeBody(bodyBuffer, pos, chunkLength);
+   
+            pos += chunkLength;
+            
+            lastChunk = pos >= bodySize;
+   
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(), chunkLength, !lastChunk, lastChunk && sendBlocking);
+   
+            if (sendBlocking && lastChunk)
+            {
+               // When sending it blocking, only the last chunk will be blocking.
+               channel.sendBlocking(chunk);
+            }
+            else
+            {
+               channel.send(chunk);
+            }         
          }
       }
    }

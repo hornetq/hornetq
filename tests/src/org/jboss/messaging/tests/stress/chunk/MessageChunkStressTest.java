@@ -48,8 +48,7 @@ public class MessageChunkStressTest extends ChunkTestBase
       
    public void testMessageChunkFilePersistence1M() throws Exception
    {
-      // testChunks(true, true, false, true, false, 1000, 262144, 120000, 0, -1, false);
-      // Hudson seems to be failing because of disk full. Temporarily commenting it out
+      testChunks(false, true, false, false, true, false, 100, 1024 * 1024, 50000, 0);
    }
 
    // Package protected ---------------------------------------------

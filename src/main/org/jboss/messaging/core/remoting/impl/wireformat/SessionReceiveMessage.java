@@ -42,6 +42,7 @@ public class SessionReceiveMessage extends PacketImpl
 
    public static final int SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE = BASIC_PACKET_SIZE + DataConstants.SIZE_LONG +
                                                                        DataConstants.SIZE_INT +
+                                                                       DataConstants.SIZE_INT +
                                                                        DataConstants.SIZE_BOOLEAN +
                                                                        DataConstants.SIZE_INT;
 
@@ -60,12 +61,15 @@ public class SessionReceiveMessage extends PacketImpl
    private ServerMessage serverMessage;
 
    private int deliveryCount;
+   
+   /** Since we receive the message before the entire message was received, */
+   private int largeMessageSize;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionReceiveMessage(final long consumerID, final byte[] largeMessageHeader, final int deliveryCount)
+   public SessionReceiveMessage(final long consumerID, final byte[] largeMessageHeader, final int largeMessageSize, final int deliveryCount)
    {
       super(SESS_RECEIVE_MSG);
 
@@ -76,6 +80,8 @@ public class SessionReceiveMessage extends PacketImpl
       this.deliveryCount = deliveryCount;
 
       this.largeMessage = true;
+      
+      this.largeMessageSize = largeMessageSize;
    }
 
    public SessionReceiveMessage(final long consumerID, final ServerMessage message, final int deliveryCount)
@@ -133,6 +139,14 @@ public class SessionReceiveMessage extends PacketImpl
       return deliveryCount;
    }
 
+   /**
+    * @return the largeMessageSize
+    */
+   public int getLargeMessageSize()
+   {
+      return largeMessageSize;
+   }
+
    public int getRequiredBufferSize()
    {
       if (largeMessage)
@@ -154,6 +168,7 @@ public class SessionReceiveMessage extends PacketImpl
       buffer.writeBoolean(largeMessage);
       if (largeMessage)
       {
+         buffer.writeInt(largeMessageSize);
          buffer.writeInt(largeMessageHeader.length);
          buffer.writeBytes(largeMessageHeader);
       }
@@ -175,6 +190,7 @@ public class SessionReceiveMessage extends PacketImpl
 
       if (largeMessage)
       {
+         largeMessageSize = buffer.readInt();
          int size = buffer.readInt();
          largeMessageHeader = new byte[size];
          buffer.readBytes(largeMessageHeader);

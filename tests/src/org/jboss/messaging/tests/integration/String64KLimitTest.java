@@ -121,25 +121,25 @@ public class String64KLimitTest extends UnitTestCase
 
       assertNotNull(rm1);
 
+      assertEquals(s1, rm1.getBody().readString());
+
       ClientMessage rm2 = consumer.receive(1000);
 
       assertNotNull(rm2);
 
+      assertEquals(s2, rm2.getBody().readString());
+
       ClientMessage rm3 = consumer.receive(1000);
+
+      assertEquals(s3, rm3.getBody().readString());
 
       assertNotNull(rm3);
 
       ClientMessage rm4 = consumer.receive(1000);
 
-      assertNotNull(rm4);
-
-      assertEquals(s1, rm1.getBody().readString());
-
-      assertEquals(s2, rm2.getBody().readString());
-
-      assertEquals(s3, rm3.getBody().readString());
-
       assertEquals(s4, rm4.getBody().readString());
+
+      assertNotNull(rm4);
    }
 
    public void test64KLimitWithWriteUTF() throws Exception

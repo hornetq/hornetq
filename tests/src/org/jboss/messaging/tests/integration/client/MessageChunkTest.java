@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.integration.client;
 
-import java.io.File;
 import java.util.HashMap;
 
 import javax.transaction.xa.XAResource;
@@ -32,15 +31,17 @@ import junit.framework.AssertionFailedError;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.integration.chunkmessage.ChunkTestBase;
 import org.jboss.messaging.utils.DataConstants;
@@ -62,6 +63,8 @@ public class MessageChunkTest extends ChunkTestBase
 
    final static int RECEIVE_WAIT_TIME = 10000;
 
+   private final int LARGE_MESSAGE_SIZE = 20 * 1024;
+
    // Attributes ----------------------------------------------------
 
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
@@ -73,65 +76,237 @@ public class MessageChunkTest extends ChunkTestBase
 
    // Public --------------------------------------------------------
 
+   public void testResendSmallStreamMessage() throws Exception
+   {
+      internalTestResendMessage(50000);
+   }
+   
+   public void testResendLargeStreamMessage() throws Exception
+   {
+      internalTestResendMessage(150 * 1024);
+   }
+   
+   public void internalTestResendMessage(int messageSize) throws Exception
+   {
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+         
+         SimpleString ADDRESS2 = ADDRESS.concat("-2");
+
+         session.createQueue(ADDRESS2, ADDRESS2, true);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         ClientProducer producer2 = session.createProducer(ADDRESS2);
+
+         Message clientFile = createLargeClientMessage(session, messageSize, false);
+
+         producer.send(clientFile);
+
+         session.commit();
+         
+         session.start();
+         
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientConsumer consumer2 = session.createConsumer(ADDRESS2);
+         
+         ClientMessage msg1 = consumer.receive(10000);
+         msg1.acknowledge();
+
+         producer2.send(msg1);
+         
+         
+         try
+         {
+            producer2.send(msg1);
+            fail("Expected Exception");
+         }
+         catch (Throwable e)
+         {
+         }
+
+         session.commit();
+         
+         ClientMessage msg2 = consumer2.receive(10000);
+         
+         assertNotNull(msg2);
+         
+         msg2.acknowledge();
+         
+         session.commit();
+         
+         assertEquals(messageSize, msg2.getBodySize());
+         
+         
+         for (int i = 0 ; i < messageSize; i++)
+         {
+            assertEquals((byte)'a', msg2.getBody().readByte());
+         }
+         
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+      // Reusing a largemessage should throw an exception
+   }
+
+   public void testMessageChunkFilePersistenceOneMessage() throws Exception
+   {
+      testChunks(false, true, false, false, true, false, 10, 1024 * 1024, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceOneMessageConsumer() throws Exception
+   {
+      testChunks(false, true, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
 
    public void testMessageChunkFilePersistence() throws Exception
    {
-      testChunks(false, true, false, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, false, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceConsumer() throws Exception
+   {
+      testChunks(false, true, false, false, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceXA() throws Exception
    {
-      testChunks(true, true, false, false, false, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceXAConsumer() throws Exception
+   {
+      testChunks(true, true, false, false, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlocked() throws Exception
    {
-      testChunks(false, true, false, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceBlockedConsumer() throws Exception
+   {
+      testChunks(false, true, false, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedXA() throws Exception
    {
-      testChunks(true, true, false, false, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceBlockedXAConsumer() throws Exception
+   {
+      testChunks(true, true, false, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedPreACK() throws Exception
    {
-      testChunks(false, true, false, true, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, true, true, true, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceBlockedPreACKConsumer() throws Exception
+   {
+      testChunks(false, true, true, true, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedPreACKXA() throws Exception
    {
-      testChunks(true, true, false, true, true, true, 100, 262144, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, true, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceBlockedPreACKXAConsumer() throws Exception
+   {
+      testChunks(true, true, true, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceDelayed() throws Exception
    {
-      testChunks(false, true, false, false, false, false, 1, 50000, RECEIVE_WAIT_TIME, 2000);
+      testChunks(false, true, false, false, false, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+   }
+
+   public void testMessageChunkFilePersistenceDelayedConsumer() throws Exception
+   {
+      testChunks(false, true, false, false, false, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkFilePersistenceDelayedXA() throws Exception
    {
-      testChunks(true, true, false, false, false, false, 1, 50000, RECEIVE_WAIT_TIME, 2000);
+      testChunks(true, true, false, false, false, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+   }
+
+   public void testMessageChunkFilePersistenceDelayedXAConsumer() throws Exception
+   {
+      testChunks(true, true, false, false, false, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkNullPersistence() throws Exception
    {
-      testChunks(false, false, false, false, false, true, 1, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkNullPersistenceConsumer() throws Exception
+   {
+      testChunks(false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceXA() throws Exception
    {
-      testChunks(true, false, false, false, false, true, 1, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, false, false, false, true, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkNullPersistenceXAConsumer() throws Exception
+   {
+      testChunks(true, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, false, false, false, 100, 50000, RECEIVE_WAIT_TIME, 100);
+      testChunks(false, false, false, false, false, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+   }
+
+   public void testMessageChunkNullPersistenceDelayedConsumer() throws Exception
+   {
+      testChunks(false, false, false, false, false, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testMessageChunkNullPersistenceDelayedXA() throws Exception
    {
-      testChunks(true, false, false, false, false, false, 100, 50000, RECEIVE_WAIT_TIME, 100);
+      testChunks(true, false, false, false, false, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+   }
+
+   public void testMessageChunkNullPersistenceDelayedXAConsumer() throws Exception
+   {
+      testChunks(true, false, false, false, false, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testPageOnLargeMessage() throws Exception
@@ -145,54 +320,24 @@ public class MessageChunkTest extends ChunkTestBase
 
    }
 
-   public void testSendfileMessage() throws Exception
+   public void testSendSmallMessageXA() throws Exception
    {
-      testChunks(false, true, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, true, false, 100, 4, RECEIVE_WAIT_TIME, 0);
    }
 
-   public void testSendfileMessageXA() throws Exception
+   public void testSendSmallMessageXAConsumer() throws Exception
    {
-      testChunks(true, true, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, true, true, 100, 4, RECEIVE_WAIT_TIME, 0);
    }
 
-   public void testSendfileMessageOnNullPersistence() throws Exception
+   public void testSendSmallMessageNullPersistenceXA() throws Exception
    {
-      testChunks(false, false, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, false, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
-   public void testSendfileMessageOnNullPersistenceXA() throws Exception
+   public void testSendSmallMessageNullPersistenceXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, false, true, 100, 50000, RECEIVE_WAIT_TIME, 0);
-   }
-
-   public void testSendfileMessageOnNullPersistenceSmallMessage() throws Exception
-   {
-      testChunks(false, false, true, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
-   }
-
-   public void testSendfileMessageOnNullPersistenceSmallMessageXA() throws Exception
-   {
-      testChunks(true, false, true, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
-   }
-
-   public void testSendfileMessageSmallMessage() throws Exception
-   {
-      testChunks(false, true, true, false, false, true, 100, 4, RECEIVE_WAIT_TIME, 0);
-   }
-
-   public void testSendfileMessageSmallMessageXA() throws Exception
-   {
-      testChunks(true, true, true, false, false, true, 100, 4, RECEIVE_WAIT_TIME, 0);
-   }
-
-   public void testSendRegularMessageNullPersistence() throws Exception
-   {
-      testChunks(false, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
-   }
-
-   public void testSendRegularMessageNullPersistenceXA() throws Exception
-   {
-      testChunks(true, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, false, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
@@ -200,19 +345,39 @@ public class MessageChunkTest extends ChunkTestBase
       testChunks(false, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
+   public void testSendRegularMessageNullPersistenceDelayedConsumer() throws Exception
+   {
+      testChunks(false, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+   }
+
    public void testSendRegularMessageNullPersistenceDelayedXA() throws Exception
    {
       testChunks(true, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
+   public void testSendRegularMessageNullPersistenceDelayedXAConsumer() throws Exception
+   {
+      testChunks(true, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+   }
+
    public void testSendRegularMessagePersistence() throws Exception
    {
-      testChunks(false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testSendRegularMessagePersistenceConsumer() throws Exception
+   {
+      testChunks(false, true, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceXA() throws Exception
    {
-      testChunks(true, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testSendRegularMessagePersistenceXAConsumer() throws Exception
+   {
+      testChunks(true, true, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceDelayed() throws Exception
@@ -220,17 +385,25 @@ public class MessageChunkTest extends ChunkTestBase
       testChunks(false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
+   public void testSendRegularMessagePersistenceDelayedConsumer() throws Exception
+   {
+      testChunks(false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+   }
+
    public void testSendRegularMessagePersistenceDelayedXA() throws Exception
    {
       testChunks(false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+   }
+
+   public void testSendRegularMessagePersistenceDelayedXAConsumer() throws Exception
+   {
+      testChunks(false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testTwoBindingsTwoStartedConsumers() throws Exception
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
       // The other binding is acked... The file must be deleted
-
-      clearData();
 
       try
       {
@@ -248,10 +421,9 @@ public class MessageChunkTest extends ChunkTestBase
          session.createQueue(ADDRESS, queue[0], null, true);
          session.createQueue(ADDRESS, queue[1], null, true);
 
-         int numberOfIntegers = 100000;
+         int numberOfBytes = 400000;
 
-         Message clientFile = createLargeClientMessage(session, numberOfIntegers);
-         // Message clientFile = createLargeClientMessage(session, numberOfIntegers);
+         Message clientFile = createLargeClientMessage(session, numberOfBytes);
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -261,7 +433,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          producer.close();
 
-         ClientConsumer consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), queue[1]);
+         ClientConsumer consumer = session.createConsumer(queue[1]);
          ClientMessage msg = consumer.receive(RECEIVE_WAIT_TIME);
          assertNull(consumer.receive(1000));
          assertNotNull(msg);
@@ -273,7 +445,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          session.stop();
 
-         ClientConsumer consumer1 = session.createFileConsumer(new File(getClientLargeMessagesDir()), queue[0]);
+         ClientConsumer consumer1 = session.createConsumer(queue[0]);
 
          session.start();
 
@@ -316,8 +488,6 @@ public class MessageChunkTest extends ChunkTestBase
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
       // The other binding is acked... The file must be deleted
 
-      clearData();
-
       try
       {
 
@@ -334,17 +504,16 @@ public class MessageChunkTest extends ChunkTestBase
          session.createQueue(ADDRESS, queue[0], null, true);
          session.createQueue(ADDRESS, queue[1], null, true);
 
-         int numberOfIntegers = 100000;
+         int numberOfBytes = 400000;
 
-         Message clientFile = createLargeClientMessage(session, numberOfIntegers);
-         // Message clientFile = createLargeClientMessage(session, numberOfIntegers);
+         Message clientFile = createLargeClientMessage(session, numberOfBytes);
 
          ClientProducer producer = session.createProducer(ADDRESS);
          producer.send(clientFile);
 
          producer.close();
 
-         readMessage(session, queue[1], numberOfIntegers);
+         readMessage(session, queue[1], numberOfBytes);
 
          if (restart)
          {
@@ -363,7 +532,7 @@ public class MessageChunkTest extends ChunkTestBase
             session = sf.createSession(null, null, false, true, true, false, 0);
          }
 
-         readMessage(session, queue[0], numberOfIntegers);
+         readMessage(session, queue[0], numberOfBytes);
 
          session.close();
 
@@ -394,51 +563,71 @@ public class MessageChunkTest extends ChunkTestBase
 
    private void internalTestSendRollback(final boolean isXA) throws Exception
    {
-      clearData();
 
-      server = createServer(true);
+      ClientSession session = null;
 
-      server.start();
-
-      ClientSessionFactory sf = createInVMFactory();
-
-      ClientSession session = sf.createSession(isXA, false, false);
-
-      session.createQueue(ADDRESS, ADDRESS, true);
-
-      Xid xid = null;
-
-      if (isXA)
+      try
       {
-         xid = newXID();
-         session.start(xid, XAResource.TMNOFLAGS);
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         session = sf.createSession(isXA, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+         Xid xid = null;
+
+         if (isXA)
+         {
+            xid = newXID();
+            session.start(xid, XAResource.TMNOFLAGS);
+         }
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         Message clientFile = createLargeClientMessage(session, 50000, false);
+
+         for (int i = 0; i < 1; i++)
+         {
+            producer.send(clientFile);
+         }
+
+         if (isXA)
+         {
+            session.end(xid, XAResource.TMSUCCESS);
+            session.prepare(xid);
+            session.rollback(xid);
+         }
+         else
+         {
+            session.rollback();
+         }
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
       }
-
-      ClientProducer producer = session.createProducer(ADDRESS);
-
-      Message clientFile = createLargeClientMessage(session, 50000, false);
-
-      for (int i = 0; i < 1; i++)
+      finally
       {
-         producer.send(clientFile);
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
       }
-
-      if (isXA)
-      {
-         session.end(xid, XAResource.TMSUCCESS);
-         session.prepare(xid);
-         session.rollback(xid);
-      }
-      else
-      {
-         session.rollback();
-      }
-
-      session.close();
-
-      validateNoFilesOnLargeDir();
-
-      server.stop();
 
    }
 
@@ -452,12 +641,10 @@ public class MessageChunkTest extends ChunkTestBase
       simpleRollbackInternalTest(true);
    }
 
-   public void simpleRollbackInternalTest(boolean isXA) throws Exception
+   public void simpleRollbackInternalTest(final boolean isXA) throws Exception
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
       // The other binding is acked... The file must be deleted
-
-      clearData();
 
       try
       {
@@ -480,7 +667,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          session.createQueue(ADDRESS, ADDRESS, null, true);
 
-         int numberOfIntegers = 50000;
+         int numberOfBytes = 200000;
 
          session.start();
 
@@ -492,7 +679,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          for (int n = 0; n < 10; n++)
          {
-            Message clientFile = createLargeClientMessage(session, numberOfIntegers, n % 2 == 0);
+            Message clientFile = createLargeClientMessage(session, numberOfBytes, n % 2 == 0);
 
             producer.send(clientFile);
 
@@ -509,6 +696,8 @@ public class MessageChunkTest extends ChunkTestBase
             {
                session.rollback();
             }
+
+            clientFile = createLargeClientMessage(session, numberOfBytes, n % 2 == 0);
 
             producer.send(clientFile);
 
@@ -533,7 +722,7 @@ public class MessageChunkTest extends ChunkTestBase
 
                assertNotNull(clientMessage);
 
-               assertEquals(numberOfIntegers * 4, clientMessage.getBody().writerIndex());
+               assertEquals(numberOfBytes, clientMessage.getBody().writerIndex());
 
                clientMessage.acknowledge();
 
@@ -586,6 +775,270 @@ public class MessageChunkTest extends ChunkTestBase
 
    }
 
+   public void testBufferMultipleLargeMessages() throws Exception
+   {
+      ClientSession session = null;
+      MessagingServer server = null;
+
+      final int SIZE = 10 * 1024;
+      final int NUMBER_OF_MESSAGES = 30;
+      try
+      {
+
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         sf.setMinLargeMessageSize(1024);
+         sf.setConsumerWindowSize(1024 * 1024);
+
+         session = sf.createSession(null, null, false, false, false, false, 0);
+
+         session.createQueue(ADDRESS, ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            Message clientFile = session.createClientMessage(true);
+            clientFile.setBodyInputStream(createFakeLargeStream(SIZE, (byte)i));
+            producer.send(clientFile);
+
+         }
+         session.commit();
+         producer.close();
+
+         session.start();
+
+         ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(ADDRESS);
+
+         // Wait the consumer to be complete with 10 messages before getting others
+         long timeout = System.currentTimeMillis() + 10000;
+         while (consumer.getBufferSize() < NUMBER_OF_MESSAGES && timeout > System.currentTimeMillis())
+         {
+            Thread.sleep(10);
+         }
+         assertEquals(NUMBER_OF_MESSAGES, consumer.getBufferSize());
+
+         // Reads the messages, rollback.. read them again
+         for (int trans = 0; trans < 2; trans++)
+         {
+
+            for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+            {
+               ClientMessage msg = consumer.receive(10000);
+               assertNotNull(msg);
+
+               // it will ignore the buffer (not read it) on the first try
+               if (trans == 0)
+               {
+                  for (int byteRead = 0; byteRead < SIZE; byteRead++)
+                  {
+                     assertEquals((byte)i, msg.getBody().readByte());
+                  }
+               }
+
+               msg.acknowledge();
+            }
+            if (trans == 0)
+            {
+               session.rollback();
+            }
+            else
+            {
+               session.commit();
+            }
+         }
+
+         assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+
+      }
+      finally
+      {
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testSendStreamingSingleMessage() throws Exception
+   {
+      ClientSession session = null;
+      MessagingServer server = null;
+
+      final int SIZE = 10 * 1024 * 1024;
+      try
+      {
+
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         sf.setMinLargeMessageSize(100 * 1024);
+
+         session = sf.createSession(null, null, false, true, true, false, 0);
+
+         session.createQueue(ADDRESS, ADDRESS, null, true);
+
+         Message clientFile = session.createClientMessage(true);
+         clientFile.setBodyInputStream(createFakeLargeStream(SIZE, (byte)'a'));
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         session.start();
+
+         System.out.println("Sending");
+         producer.send(clientFile);
+
+         producer.close();
+
+         System.out.println("Waiting");
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+         ClientMessage msg2 = consumer.receive(10000);
+
+         msg2.acknowledge();
+
+         msg2.setOutputStream(createFakeOutputStream());
+         assertTrue(msg2.waitOutputStreamCompletion(60000));
+
+         // for (int i = 0; i < SIZE; i++)
+         // {
+         // byte value = msg2.getBody().readByte();
+         // assertEquals("Error position " + i, (byte)'a', value);
+         // }
+
+         session.commit();
+
+         assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+
+      }
+      finally
+      {
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   /** Receive messages but never reads them, leaving the buffer pending */
+   public void testIgnoreStreaming() throws Exception
+   {
+      ClientSession session = null;
+      MessagingServer server = null;
+
+      final int SIZE = 10 * 1024;
+      final int NUMBER_OF_MESSAGES = 1;
+      try
+      {
+
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         sf.setMinLargeMessageSize(1024);
+
+         session = sf.createSession(null, null, false, true, true, false, 0);
+
+         session.createQueue(ADDRESS, ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            Message msg = session.createClientMessage(true);
+            msg.setBodyInputStream(createFakeLargeStream(SIZE, (byte)'a'));
+            msg.putIntProperty(new SimpleString("key"), i);
+            producer.send(msg);
+
+            System.out.println("Sent msg " + i);
+         }
+
+         session.start();
+
+         System.out.println("Sending");
+
+         producer.close();
+
+         System.out.println("Waiting");
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            ClientMessage msg = consumer.receive(50000);
+            assertNotNull(msg);
+
+            assertEquals(i, msg.getProperty(new SimpleString("key")));
+
+            msg.acknowledge();
+         }
+
+         consumer.close();
+
+         session.commit();
+
+         assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+
+         System.out.println("Thread done");
+      }
+      finally
+      {
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -594,22 +1047,21 @@ public class MessageChunkTest extends ChunkTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      log.info("\n*********************************************************************************\n Starting " + this.getName() +
+      clearData();
+      log.info("\n*********************************************************************************\n Starting " + getName() +
                "\n*********************************************************************************");
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      log.info("\n*********************************************************************************\nDone with  " + this.getName() +
+      log.info("\n*********************************************************************************\nDone with  " + getName() +
                "\n*********************************************************************************");
       super.tearDown();
    }
 
    protected void testPageOnLargeMessage(final boolean realFiles, final boolean sendBlocking) throws Exception
    {
-      clearData();
-
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
@@ -619,9 +1071,9 @@ public class MessageChunkTest extends ChunkTestBase
 
       server.start();
 
-      final int numberOfIntegers = 256;
+      final int numberOfBytes = 1024;
 
-      final int numberOfIntegersBigMessage = 100000;
+      final int numberOfBytesBigMessage = 400000;
 
       try
       {
@@ -648,9 +1100,9 @@ public class MessageChunkTest extends ChunkTestBase
 
          for (int i = 0; i < 100; i++)
          {
-            MessagingBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
+            MessagingBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfBytes);
 
-            for (int j = 1; j <= numberOfIntegers; j++)
+            for (int j = 1; j <= numberOfBytes; j++)
             {
                bodyLocal.writeInt(j);
             }
@@ -666,7 +1118,7 @@ public class MessageChunkTest extends ChunkTestBase
             producer.send(message);
          }
 
-         ClientFileMessage clientFile = createLargeClientMessage(session, numberOfIntegersBigMessage);
+         ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
 
          producer.send(clientFile);
 
@@ -718,7 +1170,7 @@ public class MessageChunkTest extends ChunkTestBase
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
-         readMessage(session, ADDRESS, numberOfIntegersBigMessage);
+         readMessage(session, ADDRESS, numberOfBytesBigMessage);
 
          // printBuffer("message received : ", message2.getBody());
 

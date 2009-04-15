@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UTF8Util;
@@ -447,6 +448,12 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    {
       setBytes(writerIndex, src, srcIndex, length);
       writerIndex += length;
+   }
+
+
+   public void writeBytes(final MessagingBuffer src, final int srcIndex, final int length)
+   {
+      writeBytes((ChannelBuffer)src, srcIndex, length);
    }
 
    public void writeBytes(final ByteBuffer src)

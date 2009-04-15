@@ -23,11 +23,10 @@
 package org.jboss.messaging.tests.integration.chunkmessage;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
@@ -44,7 +43,6 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnector;
 import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnectorFactory;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ChunkCleanupTest
@@ -67,11 +65,17 @@ public class ChunkCleanupTest extends ChunkTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   
+   
    public void testCleanup() throws Exception
    {
       clearData();
-
-      createLargeFile(getLargeMessagesDir(), "1234.tmp", 13333);
+      
+      FileOutputStream fileOut = new FileOutputStream(new File(getLargeMessagesDir(), "1234.tmp"));
+      
+      fileOut.write(new byte[1024]); // anything
+      
+      fileOut.close();
 
       Configuration config = createDefaultConfig();
 
@@ -84,7 +88,7 @@ public class ChunkCleanupTest extends ChunkTestBase
 
          File directoryLarge = new File(getLargeMessagesDir());
 
-         assertEquals(0, directoryLarge.list().length);
+         assertEquals("The startup should have been deleted 1234.tmp", 0, directoryLarge.list().length);
       }
       finally
       {
@@ -105,7 +109,7 @@ public class ChunkCleanupTest extends ChunkTestBase
 
       server.start();
 
-      final int numberOfIntegersBigMessage = 150000;
+      final int numberOfBytes = 2 * 1024 * 1024;
 
       ClientSession session = null;
 
@@ -154,7 +158,7 @@ public class ChunkCleanupTest extends ChunkTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         ClientFileMessage clientLarge = createLargeClientMessage(session, numberOfIntegersBigMessage);
+         ClientMessage clientLarge = createLargeClientMessage(session, numberOfBytes);
 
          try
          {
@@ -182,94 +186,6 @@ public class ChunkCleanupTest extends ChunkTestBase
       }
 
    }
-
-   // Validate the functions to create and verify files
-   public void testFiles() throws Exception
-   {
-      clearData();
-
-      File file = createLargeFile(getTemporaryDir(), "test.tst", 13333);
-
-      checkFileRead(file, 13333);
-   }
-
-   public void testClearOnClientBuffer() throws Exception
-   {
-      clearData();
-
-      server = createServer(true);
-      server.start();
-
-      final int numberOfIntegers = 10;
-      final int numberOfMessages = 100;
-
-      try
-      {
-         ClientSessionFactory sf = createInVMFactory();
-
-         sf.setBlockOnNonPersistentSend(true);
-         sf.setBlockOnPersistentSend(true);
-         sf.setBlockOnAcknowledge(true);
-
-         ClientSession session = sf.createSession(null, null, false, true, false, false, 0);
-
-         session.createQueue(ADDRESS, ADDRESS, null, true);
-
-         server.getPostOffice().getPagingManager().getGlobalSize();
-
-         ClientProducer producer = session.createProducer(ADDRESS);
-
-         File tmpData = createLargeFile(getTemporaryDir(), "someFile.dat", numberOfIntegers);
-
-         for (int i = 0; i < numberOfMessages; i++)
-         {
-            ClientMessage message = session.createFileMessage(true);
-            ((ClientFileMessage)message).setFile(tmpData);
-            message.putIntProperty(new SimpleString("counter-message"), i);
-            System.currentTimeMillis();
-            producer.send(message);
-         }
-
-         ClientConsumer consumer = session.createFileConsumer(new File(getClientLargeMessagesDir()), ADDRESS);;
-
-         File clientfiles = new File(getClientLargeMessagesDir());
-
-         session.start();
-
-         ClientMessage msg = consumer.receive(1000);
-         msg.acknowledge();
-
-         for (int i = 0; i < 100; i++)
-         {
-            if (clientfiles.listFiles().length > 0)
-            {
-               break;
-            }
-            Thread.sleep(100);
-         }
-
-         assertTrue(clientfiles.listFiles().length > 0);
-
-         session.close();
-
-         assertEquals(1, clientfiles.list().length); // 1 message was received, that should be kept
-
-         validateNoFilesOnLargeDir();
-
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

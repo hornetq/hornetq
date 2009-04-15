@@ -22,6 +22,9 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -138,6 +141,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       this.largeMessage = largeMessage;
    }
+   
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.client.impl.ClientMessageInternal#isFileMessage()
@@ -146,5 +150,71 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       return false;
    }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.client.impl.ClientMessageInternal#discardLargeBody()
+    */
+   public void discardLargeBody()
+   {
+      if (largeMessage)
+      {
+         ((LargeMessageBuffer)getBody()).discardUnusedPackets();
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
+    */
+   public void saveToOutputStream(OutputStream out) throws MessagingException
+   {
+      if (largeMessage)
+      {
+         ((LargeMessageBuffer)this.getBody()).saveBuffer(out);
+      }
+      else
+      {
+         try
+         {
+            out.write(this.getBody().array());
+         }
+         catch (IOException e)
+         {
+            throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY, "Error saving the message body", e);
+         }
+      }
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
+    */
+   public void setOutputStream(OutputStream out) throws MessagingException
+   {
+      if (largeMessage)
+      {
+         ((LargeMessageBuffer)this.getBody()).setOutputStream(out);
+      }
+      else
+      {
+         saveToOutputStream(out);
+      }
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.client.ClientMessage#waitOutputStreamCompletion()
+    */
+   public boolean waitOutputStreamCompletion(long timeMilliseconds) throws MessagingException
+   {
+      if (largeMessage)
+      {
+         return ((LargeMessageBuffer)this.getBody()).waitCompletion(timeMilliseconds);
+      }
+      else
+      {
+         return true;
+      }
+   }
+
 
 }

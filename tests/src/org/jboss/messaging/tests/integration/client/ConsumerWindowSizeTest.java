@@ -479,6 +479,17 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    public void testSlowConsumerOnMessageHandlerNoBuffers() throws Exception
    {
+      internalTestSlowConsumerOnMessageHandlerNoBuffers(false);
+   }
+   
+   public void testSlowConsumerOnMessageHandlerNoBuffersLargeMessage() throws Exception
+   {
+      internalTestSlowConsumerOnMessageHandlerNoBuffers(true);
+   }
+
+   public void internalTestSlowConsumerOnMessageHandlerNoBuffers(boolean largeMessages) throws Exception
+   {
+      
       MessagingServer server = createServer(false);
 
       ClientSession sessionB = null;
@@ -492,6 +503,12 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerWindowSize(0);
+
+         if (largeMessages)
+         {
+            sf.setMinLargeMessageSize(100);
+         }
+
 
          session = sf.createSession(false, true, true);
 
@@ -561,7 +578,12 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            prod.send(createTextMessage(session, "Msg" + i));
+            ClientMessage msg = createTextMessage(session, "Msg" + i);
+            if (largeMessages)
+            {
+               msg.getBody().writeBytes(new byte[600]);
+            }
+            prod.send(msg);
          }
 
          consReceiveOneAndHold.setMessageHandler(handler);
@@ -622,11 +644,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       internalTestSlowConsumerOnMessageHandlerBufferOne(false);
    }
 
-   public void testSlowConsumerOnMessageHandlerBufferOneLargeMessages() throws Exception
-   {
-      internalTestSlowConsumerOnMessageHandlerBufferOne(true);
-   }
-
    private void internalTestSlowConsumerOnMessageHandlerBufferOne(final boolean largeMessage) throws Exception
    {
       MessagingServer server = createServer(false);
@@ -682,7 +699,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                {
                   String str = getTextMessage(message);
 
-                  System.out.println("Received " + str);
+                  System.out.println("Received " + str + " on consumer");
 
                   failed = failed || !str.equals("Msg" + count);
 
@@ -692,6 +709,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
                   if (count++ == 1)
                   {
+                     System.out.println("Waiting on Consumer");
                      // it will hold here for a while
                      if (!latchDone.await(TIMEOUT, TimeUnit.SECONDS))
                      {
@@ -735,7 +753,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
             ClientMessage msg = cons1.receive(1000);
             assertNotNull("expected message at i = " + i, msg);
-            assertEquals("Msg" + i, getTextMessage(msg));
+            String text = getTextMessage(msg);
+            System.out.println("Received message " + text);
+            assertEquals("Msg" + i, text);
             msg.acknowledge();
          }
 

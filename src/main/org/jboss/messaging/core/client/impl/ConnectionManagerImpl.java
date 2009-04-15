@@ -110,9 +110,25 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private final Object failoverLock = new Object();
 
-   // TODO - allow this to be configurable
-   private static final ScheduledThreadPoolExecutor pingExecutor = new ScheduledThreadPoolExecutor(5,
-                                                                                                   new org.jboss.messaging.utils.JBMThreadFactory("jbm-pinger-threads"));
+   private static ScheduledThreadPoolExecutor pingExecutor;
+
+   static
+   {
+      recreatePingExecutor();
+   }
+
+   public static void recreatePingExecutor()
+   {
+      if (pingExecutor != null)
+      {
+         pingExecutor.shutdown();
+      }
+
+      // TODO - allow this to be configurable
+      pingExecutor = new ScheduledThreadPoolExecutor(5,
+                                                     new org.jboss.messaging.utils.JBMThreadFactory("jbm-pinger-threads"));
+
+   }
 
    private final Map<Object, ConnectionEntry> connections = Collections.synchronizedMap(new LinkedHashMap<Object, ConnectionEntry>());
 
@@ -165,7 +181,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                 final long retryInterval,
                                 final double retryIntervalMultiplier,
                                 final int reconnectAttempts)
-   {      
+   {
       this.connectorConfig = connectorConfig;
 
       this.backupConfig = backupConfig;
@@ -259,17 +275,17 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                synchronized (failoverLock)
                {
                   connection = getConnectionWithRetry(1, reconnectAttempts);
-                  
+
                   if (connection == null)
-                  {                     
+                  {
                      if (!failureSignalled)
                      {
                         // This can happen if the connection manager gets closed - e.g. the server gets shut down
-                        
+
                         throw new MessagingException(MessagingException.NOT_CONNECTED, "Unable to connect to server");
                      }
                      else
-                     {                        
+                     {
                         // This means an async failure came in while getConnectionForCreateSession was executing, we
                         // need
                         // to allow the failover/reconnection to occur and let the create session retry after
@@ -465,7 +481,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          return false;
       }
-      
+
       if (connectionID != null && !connections.containsKey(connectionID))
       {
          // We already failed over/reconnected - probably the first failure came in, all the connections were failed
@@ -508,9 +524,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // It should then return its connections, with channel 1 lock still held
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
-         
+
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.SERVER_DISCONNECTED);
-         
+
          boolean done = false;
 
          if (attemptFailover || reconnectAttempts != 0)
@@ -571,7 +587,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             if (attemptFailover)
             {
                // Now try failing over to backup
-               
+
                connectorFactory = backupConnectorFactory;
 
                transportParams = backupTransportParams;
@@ -579,11 +595,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                backupConnectorFactory = null;
 
                backupTransportParams = null;
-               
+
                done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
             }
             else if (reconnectAttempts != 0)
-            {              
+            {
                done = reattachSessions(reconnectAttempts);
             }
 
@@ -709,7 +725,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       long interval = retryInterval;
 
       int count = 0;
-      
+
       while (true)
       {
          if (closed || failureSignalled)
@@ -718,7 +734,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          }
 
          RemotingConnection connection = getConnection(initialRefCount);
-         
+
          if (connection == null)
          {
             // Failed to get connection
@@ -733,7 +749,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                   return null;
                }
-               
+
                try
                {
                   Thread.sleep(interval);
@@ -765,12 +781,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
 
-         connections.clear();                 
+         connections.clear();
 
          for (ConnectionEntry entry : copy)
          {
             try
-            {               
+            {
                entry.connection.destroy();
             }
             catch (Throwable ignore)
@@ -908,7 +924,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          refCount--;
       }
-      
+
       if (entry != null)
       {
          checkCloseConnections();
@@ -981,19 +997,19 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          channel1.returnBlocking();
       }
    }
-   
+
    private void failConnection(final Object connectionID, final MessagingException me)
    {
       ConnectionEntry entry = connections.get(connectionID);
-      
+
       if (entry != null)
       {
          RemotingConnection conn = entry.connection;
-         
+
          conn.fail(me);
-      }     
+      }
    }
-   
+
    private static class ConnectionEntry
    {
       ConnectionEntry(final RemotingConnection connection, final Connector connector)

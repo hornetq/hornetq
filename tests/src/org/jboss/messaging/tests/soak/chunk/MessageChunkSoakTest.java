@@ -49,20 +49,18 @@ public class MessageChunkSoakTest extends ChunkTestBase
 
    public void testMessageChunkFilePersistence1G() throws Exception
    {
-      testChunks(false, 
-                 true,
-                 true,
-                 false,
+      testChunks(false,
                  true,
                  false,
-                 2,
-                 268435456,
+                 false,
+                 false,
+                 false,
+                 1,
+                 1024 * 1024 * 1024,
                  300000,
                  0,
                  -1,
-                 ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                 ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                 true);
+                 ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
    }
 
    // Package protected ---------------------------------------------

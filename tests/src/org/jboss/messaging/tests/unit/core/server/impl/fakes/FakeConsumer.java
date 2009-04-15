@@ -60,7 +60,6 @@ public class FakeConsumer implements Consumer
 
    public Filter getFilter()
    {
-      // TODO Auto-generated method stub
       return null;
    }
 

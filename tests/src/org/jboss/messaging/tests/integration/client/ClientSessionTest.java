@@ -26,7 +26,6 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientFileMessageInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.FailureListener;
@@ -337,48 +336,6 @@ public class ClientSessionTest extends ServiceTestBase
          assertEquals(100l, clientMessage.getExpiration());
          assertEquals(300l, clientMessage.getTimestamp());
          assertEquals((byte) 33, clientMessage.getPriority());
-         clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-   }
-
-   public void testCreateClientFileMessageNonDurable() throws Exception
-   {
-      MessagingServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = createInVMFactory();
-         ClientSession clientSession = cf.createSession(false, true, true);
-         ClientFileMessageInternal clientMessage = (ClientFileMessageInternal) clientSession.createFileMessage(false);
-         assertEquals(false, clientMessage.isDurable());
-         clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-   }
-
-   public void testCreateClientFileMessageDurable() throws Exception
-   {
-      MessagingServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = createInVMFactory();
-         ClientSession clientSession = cf.createSession(false, true, true);
-         ClientFileMessageInternal clientMessage = (ClientFileMessageInternal) clientSession.createFileMessage(true);
-         assertEquals(true, clientMessage.isDurable());
          clientSession.close();
       }
       finally

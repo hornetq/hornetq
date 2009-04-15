@@ -46,19 +46,19 @@ public class NettyConnectionTest extends UnitTestCase
 
       public void connectionCreated(Connection connection)
       {
-         // TODO Auto-generated method stub
+        
          
       }
 
       public void connectionDestroyed(Object connectionID)
       {
-         // TODO Auto-generated method stub
+        
          
       }
 
       public void connectionException(Object connectionID, MessagingException me)
       {
-         // TODO Auto-generated method stub
+        
          
       }
       

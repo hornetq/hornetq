@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.client;
 
+import java.io.OutputStream;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.Message;
 
@@ -30,6 +32,7 @@ import org.jboss.messaging.core.message.Message;
  * A ClientMessage
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public interface ClientMessage extends Message
@@ -37,6 +40,21 @@ public interface ClientMessage extends Message
    int getDeliveryCount();
    
    void setDeliveryCount(int deliveryCount);
+   
+   /** Sets the outputStream of large messages. It doesn't block on waiting the large-message to complete 
+    * @throws MessagingException */
+   void setOutputStream(OutputStream out) throws MessagingException;
+   
+   /** Save the content of the message to the outputStream. It blocks until the entire data was received */
+   void saveToOutputStream(OutputStream out) throws MessagingException;
+
+   /**
+    * Wait the outputStream completion of the message.
+    * @param timeMilliseconds - 0 means wait forever
+    * @return true if it reached the end
+    * @throws MessagingException
+    */
+   boolean waitOutputStreamCompletion(long timeMilliseconds) throws MessagingException;
 
    void acknowledge() throws MessagingException;   
 }

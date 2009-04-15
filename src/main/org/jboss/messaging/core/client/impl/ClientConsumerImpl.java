@@ -13,13 +13,9 @@
 package org.jboss.messaging.core.client.impl;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
-import org.jboss.messaging.core.client.ClientFileMessage;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -31,7 +27,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerCloseMes
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.TokenBucketLimiter;
 
@@ -79,6 +74,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private ClientMessageInternal currentChunkMessage;
    
+   private LargeMessageBuffer currentLargeMessageBuffer;
+   
+   // When receiving LargeMessages, the user may choose to not read the body, on this case we need to discard te body before moving to the next message.
+   private ClientMessageInternal largeMessageReceived;
+
    private final TokenBucketLimiter rateLimiter;
 
    private volatile Thread receiverThread;
@@ -118,7 +118,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.channel = channel;
 
       this.session = session;
-      
+
       this.rateLimiter = rateLimiter;
 
       sessionExecutor = executor;
@@ -137,11 +137,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       checkClosed();
       
+      if (largeMessageReceived != null)
+      {
+         // Check if there are pending packets to be received
+         largeMessageReceived.discardLargeBody();
+         largeMessageReceived = null;
+      }
+
       if (rateLimiter != null)
       {
          rateLimiter.limit();
       }
-
 
       if (handler != null)
       {
@@ -171,11 +177,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          while (true)
          {
             ClientMessageInternal m = null;
-            
+
             synchronized (this)
             {
-               while ((stopped || (m = buffer.removeFirst()) == null) &&
-                      !closed && toWait > 0)
+               while ((stopped || (m = buffer.removeFirst()) == null) && !closed && toWait > 0)
 
                {
                   if (start == -1)
@@ -190,7 +195,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   catch (InterruptedException e)
                   {
                   }
-                  
+
                   if (m != null || closed)
                   {
                      break;
@@ -212,6 +217,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
                if (expired)
                {
+                  m.discardLargeBody();
+                  
                   session.expire(id, m.getMessageID());
 
                   if (toWait > 0)
@@ -224,6 +231,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   }
                }
 
+               if (m.isLargeMessage())
+               {
+                  this.largeMessageReceived = m;
+               }
+               
                return m;
             }
             else
@@ -268,7 +280,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       boolean noPreviousHandler = handler == null;
-      
+
       if (handler != theHandler && clientWindowSize == 0)
       {
          sendCredits(1);
@@ -323,14 +335,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public void stop() throws MessagingException
    {
       waitForOnMessageToComplete();
-      
+
       synchronized (this)
       {
          if (stopped)
          {
             return;
          }
-         
+
          stopped = true;
       }
    }
@@ -365,18 +377,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       ClientMessageInternal messageToHandle = message;
 
-      if (isFileConsumer())
-      {
-         messageToHandle = cloneAsFileMessage(message);
-      }
-
       messageToHandle.onReceipt(this);
+
+      // Add it to the buffer
+      buffer.addLast(messageToHandle, messageToHandle.getPriority());
 
       if (handler != null)
       {
          // Execute using executor
-
-         buffer.addLast(messageToHandle, messageToHandle.getPriority());
          if (!stopped)
          {
             queueExecutor();
@@ -384,9 +392,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
       else
       {
-         // Add it to the buffer
-         buffer.addLast(messageToHandle, messageToHandle.getPriority());
-
          notify();
       }
    }
@@ -398,11 +403,23 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // This is ok - we just ignore the message
          return;
       }
-
+      
       // Flow control for the first packet, we will have others
       flowControl(packet.getPacketSize(), true);
 
-      currentChunkMessage = createFileMessage(packet.getLargeMessageHeader());
+      currentChunkMessage = new ClientMessageImpl();
+      
+      currentChunkMessage.decodeProperties(ChannelBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
+      
+      currentChunkMessage.setLargeMessage(true);
+
+      currentLargeMessageBuffer = new LargeMessageBuffer(this, packet.getLargeMessageSize(), 60);
+
+      currentChunkMessage.setBody(currentLargeMessageBuffer);
+
+      currentChunkMessage.setFlowControlSize(0);
+
+      handleMessage(currentChunkMessage);
    }
 
    public synchronized void handleLargeMessageContinuation(final SessionReceiveContinuationMessage chunk) throws Exception
@@ -411,45 +428,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
-
-      if (chunk.isContinues())
-      {
-         flowControl(chunk.getPacketSize(), true);
-      }
-
-      if (isFileConsumer())
-      {
-         ClientFileMessageInternal fileMessage = (ClientFileMessageInternal)currentChunkMessage;
-         addBytesBody(fileMessage, chunk.getBody());
-      }
-      else
-      {
-         if (currentChunkMessage.getBody() == null)
-         {
-            currentChunkMessage.setBody(ChannelBuffers.dynamicBuffer(chunk.getBody()));
-         }
-         else
-         {
-            currentChunkMessage.getBody().writeBytes(chunk.getBody());
-         }
-      }
-
-      if (!chunk.isContinues())
-      {
-         // Close the file that was being generated
-         if (isFileConsumer())
-         {
-            ((ClientFileMessageInternal)currentChunkMessage).closeChannel();
-         }
-
-         currentChunkMessage.setFlowControlSize(chunk.getPacketSize());
-
-         ClientMessageInternal msgToSend = currentChunkMessage;
-
-         currentChunkMessage = null;
-
-         handleMessage(msgToSend);
-      }
+      
+      currentLargeMessageBuffer.addPacket(chunk);
    }
 
    public void clear()
@@ -499,7 +479,52 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   // Public7
+   public void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException
+   {
+      if (clientWindowSize >= 0)
+      {
+         creditsToSend += messageBytes;
+         
+         if (creditsToSend >= clientWindowSize)
+         {
+            
+            if (isLargeMessage)
+            {
+               // Flowcontrol on largeMessages continuations needs to be done in a separate thread or failover would
+               // block
+               final int credits = creditsToSend;
+
+               creditsToSend = 0;
+
+               sendCredits(credits);
+
+               // sessionExecutor.execute(new Runnable()
+               // {
+               // public void run()
+               // {
+               // sendCredits(credits);
+               // }
+               // });
+            }
+            else
+            {
+               if (clientWindowSize == 0)
+               {
+                  // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be
+                  // always buffering one after received the first message
+                  sendCredits(creditsToSend - 1);
+               }
+               else
+               {
+                  sendCredits(creditsToSend);
+               }
+               creditsToSend = 0;
+            }
+         }
+      }
+   }
+
+   // Public
    // ---------------------------------------------------------------------------------------
 
    // Package protected
@@ -522,49 +547,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private void queueExecutor()
    {
       sessionExecutor.execute(runner);
-   }
-
-   private void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException
-   {
-      if (clientWindowSize >= 0)
-      {
-         creditsToSend += messageBytes;
-
-         if (creditsToSend >= clientWindowSize)
-         {
-
-            if (isLargeMessage)
-            {
-               // Flowcontrol on largeMessages continuations needs to be done in a separate thread or failover would
-               // block
-               final int credits = creditsToSend;
-
-               creditsToSend = 0;
-               sessionExecutor.execute(new Runnable()
-               {
-                  public void run()
-                  {
-                     sendCredits(credits);
-                  }
-
-
-               });
-            }
-            else
-            {
-               if (clientWindowSize == 0)
-               {
-                  // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be always buffering one after received the first message
-                  sendCredits(creditsToSend - 1);
-               }
-               else
-               {
-                  sendCredits(creditsToSend);
-               }
-               creditsToSend = 0;
-            }
-         }
-      }
    }
 
    /**
@@ -625,7 +607,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       MessageHandler theHandler = handler;
 
       if (theHandler != null)
-      {         
+      {
          if (rateLimiter != null)
          {
             rateLimiter.limit();
@@ -647,12 +629,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                onMessageThread = Thread.currentThread();
 
                theHandler.onMessage(message);
+               
+               if (message.isLargeMessage())
+               {
+                  message.discardLargeBody();
+               }
             }
             else
             {
                session.expire(id, message.getMessageID());
             }
-            
+
             // If slow consumer, we need to send 1 credit to make sure we get another message
             if (clientWindowSize == 0)
             {
@@ -669,7 +656,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private void flowControlBeforeConsumption(final ClientMessageInternal message) throws MessagingException
    {
       // Chunk messages will execute the flow control while receiving the chunks
-      flowControl(message.getFlowControlSize(), false);
+      if (message.getFlowControlSize() != 0)
+      {
+         flowControl(message.getFlowControlSize(), false);
+      }
    }
 
    private void doCleanUp(final boolean sendCloseMessage) throws MessagingException
@@ -688,6 +678,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete();
+         
+         if (currentLargeMessageBuffer != null)
+         {
+            currentLargeMessageBuffer.close();
+            currentLargeMessageBuffer = null;
+         }
+         
 
          closed = true;
 
@@ -721,16 +718,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void clearBuffer()
    {
-      if (isFileConsumer())
-      {
-         for (ClientMessage message : buffer)
-         {
-            if (message instanceof ClientFileMessage)
-            {
-               ((ClientFileMessage)message).getFile().delete();
-            }
-         }
-      }
       buffer.clear();
    }
 
@@ -741,89 +728,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       lastAckedMessage = null;
 
       session.acknowledge(id, message.getMessageID());
-   }
-
-   private ClientMessageInternal cloneAsFileMessage(final ClientMessageInternal message) throws Exception
-   {
-      if (message instanceof ClientFileMessageImpl)
-      {
-         // nothing to be done
-         return message;
-      }
-      else
-      {
-         int propertiesSize = message.getPropertiesEncodeSize();
-
-         MessagingBuffer bufferProperties = session.createBuffer(propertiesSize);
-
-         // FIXME: Find a better way to clone this ClientMessageImpl as ClientFileMessageImpl without using the
-         // MessagingBuffer.
-         // There is no direct access into the Properties, and I couldn't add a direct cast to this method without loose
-         // abstraction
-         message.encodeProperties(bufferProperties);
-
-         bufferProperties.resetReaderIndex();
-
-         ClientFileMessageImpl cloneMessage = new ClientFileMessageImpl();
-
-         cloneMessage.decodeProperties(bufferProperties);
-
-         cloneMessage.setDeliveryCount(message.getDeliveryCount());
-
-         cloneMessage.setLargeMessage(message.isLargeMessage());
-
-         cloneMessage.setFile(new File(directory, cloneMessage.getMessageID() + "-" +
-                                                  session.getName() +
-                                                  "-" +
-                                                  getID() +
-                                                  ".jbm"));
-
-         cloneMessage.setFlowControlSize(message.getFlowControlSize());
-
-         addBytesBody(cloneMessage, message.getBody().array());
-
-         cloneMessage.closeChannel();
-
-         return cloneMessage;
-      }
-   }
-
-   private ClientMessageInternal createFileMessage(final byte[] header) throws Exception
-   {
-
-      MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
-
-      if (isFileConsumer())
-      {
-         if (!directory.exists())
-         {
-            boolean ok = directory.mkdirs();
-
-            if (!ok)
-            {
-               throw new IOException("Failed to create directory " + directory.getCanonicalPath());
-            }
-         }
-
-         ClientFileMessageImpl message = new ClientFileMessageImpl();
-         message.decodeProperties(headerBuffer);
-         message.setFile(new File(directory, message.getMessageID() + "-" + session.getName() + "-" + getID() + ".jbm"));
-         message.setLargeMessage(true);
-         return message;
-      }
-      else
-      {
-         ClientMessageImpl message = new ClientMessageImpl();
-         message.decodeProperties(headerBuffer);
-         message.setLargeMessage(true);
-         return message;
-      }
-   }
-
-   private void addBytesBody(final ClientFileMessageInternal fileMessage, final byte[] body) throws Exception
-   {
-      FileChannel channel = fileMessage.getChannel();
-      channel.write(ByteBuffer.wrap(body));
    }
 
    // Inner classes

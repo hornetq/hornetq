@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.message;
 
+import java.io.InputStream;
 import java.util.Set;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -85,6 +86,13 @@ public interface Message
          
    // Used on Message chunk
    void encodeBody(MessagingBuffer buffer, long start, int size);
+   
+   /** Used to set the MessageBody out of a File or any other Streaming you choose */
+   void setBodyInputStream(InputStream stream);
+   
+   /** Used to set the MessageBody out of a File or any other Streaming you choose */
+   InputStream getBodyInputStream();
+   
    
    void encodeBody(MessagingBuffer buffer);
    

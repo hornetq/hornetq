@@ -2201,17 +2201,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          log.error("Failed to create large message", e);
          Packet response = null;
-         if (packet.isRequiresResponse())
-         {
-            if (e instanceof MessagingException)
-            {
-               response = new MessagingExceptionMessage((MessagingException)e);
-            }
-            else
-            {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-            }
-         }
+
+         
          channel.confirm(packet);
          if (response != null)
          {
@@ -2236,15 +2227,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private void doSendLargeMessage(final SessionSendLargeMessage packet)
    {
-      Packet response = null;
-
       try
       {
-         if (packet.isRequiresResponse())
-         {
-            response = new NullResponseMessage();
-         }
-         
          long id = storageManager.generateUniqueID();
                  
          currentLargeMessage.setMessageID(id);
@@ -2252,26 +2236,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       catch (Exception e)
       {
          log.error("Failed to send message", e);
-
-         if (packet.isRequiresResponse())
-         {
-            if (e instanceof MessagingException)
-            {
-               response = new MessagingExceptionMessage((MessagingException)e);
-            }
-            else
-            {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
-            }
-         }
       }
 
       channel.confirm(packet);
-
-      if (response != null)
-      {
-         channel.send(response);
-      }
    }
 
    private void doSend(final SessionSendMessage packet)

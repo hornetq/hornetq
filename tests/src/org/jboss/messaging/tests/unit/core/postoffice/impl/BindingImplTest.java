@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
+import java.io.InputStream;
 import java.util.Set;
 
 import javax.transaction.xa.Xid;
@@ -722,6 +723,21 @@ public class BindingImplTest extends UnitTestCase
       public void setTimestamp(final long timestamp)
       {
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#getBodyInputStream()
+       */
+      public InputStream getBodyInputStream()
+      {
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#setBodyInputStream(java.io.InputStream)
+       */
+      public void setBodyInputStream(InputStream stream)
+      {
       }
 
    }

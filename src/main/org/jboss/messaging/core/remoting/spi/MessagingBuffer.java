@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.remoting.spi;
 
+import org.jboss.messaging.core.buffers.ChannelBuffer;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -38,6 +39,8 @@ public interface MessagingBuffer
    void writeBytes(byte[] bytes);
 
    void writeBytes(byte[] bytes, int offset, int length);
+   
+   void writeBytes(MessagingBuffer src, int srcIndex, int length);
 
    void writeInt(int val);
 
