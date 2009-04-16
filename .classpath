@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
+	<classpathentry kind="src" path="examples/jms/security/src"/>
+	<classpathentry kind="src" path="examples/jms/divert/src"/>
+	<classpathentry kind="src" path="examples/jms/message-group/src"/>
+	<classpathentry kind="src" path="examples/jms/ssl-enabled/src"/>
 	<classpathentry kind="src" path="build/src"/>
 	<classpathentry kind="src" path="tests/jms-tests/config"/>
 	<classpathentry kind="src" path="tests/config"/>

@@ -1,0 +1,209 @@
+<html>
+  <head>
+    <title>JBoss Messaging JMS Security Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>JMS Security Example</h1>
+     <br>
+     <p>This example shows you how configure security with JBoss Messaging.</p>
+     
+     <p>With security properly configured, JBoss Messaging can restrict client access to its resouces, including 
+     connection creation, message sending/receiving, etc. This is done by configuring users and roles as well as permissions in 
+     the configuration files. </p>
+     <p>In this example, two users jbm-sender and jbm-consumer are configured. User jbm-sender belongs to user role and sender role. User
+     jbm-consumer belongs to user role and consumer role. They are configured in server0/jbm-security.xml, as below: </p>
+     
+     <pre>
+     <code>
+        &lt;user name=&quot;jbm-sender&quot; password=&quot;jbossmessaging1&quot;&gt;
+        &lt;role name=&quot;user&quot;/&gt;
+        &lt;role name=&quot;sender&quot;/&gt;
+        &lt;/user&gt;
+   
+        &lt;user name=&quot;jbm-consumer&quot; password=&quot;jbossmessaging2&quot;&gt;
+        &lt;role name=&quot;user&quot;/&gt;
+        &lt;role name=&quot;consumer&quot;/&gt;
+        &lt;/user&gt;
+     </code>
+     </pre>
+     <p>
+     The above configuration makes sure that only 'jbm-sender' and 'jbm-consumer' with correct passwords can create connections to JBoss 
+     Messaging server. In another file server0/jbm-queues.xml, permissions are configured in order to give proper rights to the users to 
+     do the job: 
+     </p>
+     
+     <pre>
+     <code>
+      &lt;security match=&quot;jms.topic.exampleTopic&quot;&gt;
+         &lt;permission type=&quot;createDurableQueue&quot; roles=&quot;user&quot;/&gt;
+         &lt;permission type=&quot;deleteDurableQueue&quot; roles=&quot;user&quot;/&gt;
+         &lt;permission type=&quot;createTempQueue&quot; roles=&quot;user&quot;/&gt;
+         &lt;permission type=&quot;deleteTempQueue&quot; roles=&quot;user&quot;/&gt;
+         &lt;permission type=&quot;send&quot; roles=&quot;sender&quot;/&gt;
+         &lt;permission type=&quot;consume&quot; roles=&quot;consumer&quot;/&gt;
+      &lt;/security&gt;
+     </code>
+     </pre>
+     
+     <p>As you can see, both users can access queue resources (role user). However, user jbm-sender (of role sender) can only send messages 
+     and user jbm-consumer (of role consumer) can only consume messages. In this example the jbm-consumer tries to send message but failed 
+     as it doesn't has the right to do so.</p>
+
+     <br>
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <br>
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
+        <pre>
+           <code>InitialContext initialContext = getContext(0);</code>
+        </pre>
+
+        <li>We look-up the JMS topic object from JNDI</li>
+        <pre>
+           <code>Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");</code>
+        </pre>
+
+        <li>We look-up the JMS connection factory object from JNDI</li>
+        <pre>
+           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
+        </pre>
+
+        <li>We try to create a JMS Connection without user/password. It will fail.</li>
+        <pre>
+           <code>
+         try
+         {
+            connection1 = cf.createConnection();
+            result = false;
+         }
+         catch (JMSSecurityException e)
+         {
+            System.out.println("Error creating connection, detail: " + e.getMessage());
+         }
+           </code>
+        </pre>
+
+        <li>We create a Connection using wrong password, it will fail again.</li>
+        <pre>
+           <code>
+         try
+         {
+            connection1 = cf.createConnection("jbm-sender", "wrong-password");
+            result = false;
+         }
+         catch (JMSSecurityException e)
+         {
+            System.out.println("Error creating connection, detail: " + e.getMessage());
+         }
+           </code>
+        </pre>
+
+        <li>We now create two connections with correct credentials. connection1 is used for sending, and connection2 receiving.</li>
+        <pre>
+          <code>
+         connection1 = cf.createConnection("jbm-sender", "jbossmessaging1");
+         connection2 = cf.createConnection("jbm-consumer", "jbossmessaging2");
+          </code>
+       </pre>
+
+        <li>We create 2 JMS Sessions.</li>
+         <pre>
+           <code>
+         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           </code>
+         </pre>
+
+        <li>We create 2 Message Producers, where producer2 has no right to send.</li>
+        <pre>
+          <code>
+         MessageProducer producer1 = session1.createProducer(topic);
+         MessageProducer producer2 = session2.createProducer(topic);
+          </code>
+        </pre>
+
+        <li>We create 2 JMS Message Consumers.</li>
+        <pre>
+           <code>
+         MessageConsumer messageConsumer1 = session2.createConsumer(topic);
+         MessageConsumer messageConsumer2 = session2.createConsumer(topic);
+           </code>
+        </pre>
+
+        <li>We start the connections</li>
+        <pre>
+           <code>
+         connection1.start();
+         connection2.start();
+           </code>
+        </pre>
+
+        <li>We create a Text Message</li>
+        <pre>
+           <code>TextMessage message = session1.createTextMessage("This is a text message");</code>
+        </pre>
+
+        <li>We send the message by producer2</li>
+        <pre>
+           <code>
+         producer2.send(message);
+         System.out.println("Producer2 sent message: " + message.getText());
+           </code>
+        </pre>
+
+        <li>We check no messages are received by either consumer.</li>
+        <pre>
+           <code>
+         TextMessage messageReceived1 = (TextMessage) messageConsumer1.receive(2000);
+         TextMessage messageReceived2 = (TextMessage) messageConsumer2.receive(2000);
+         if (messageReceived1 != null) 
+         {
+            System.out.println("Message received! " + messageReceived1.getText());
+            result = false;
+         }
+         if (messageReceived2 != null) 
+         {
+            System.out.println("Message received! " + messageReceived2.getText());
+            result = false;
+         }
+           </code>
+        </pre>
+
+        <li>We send the message by producer1.</li>
+        <pre>
+           <code>producer1.send(message);</code>
+        </pre>
+
+        <li>We receive the message.</li>
+        <pre>
+           <code>
+         messageReceived1 = (TextMessage) messageConsumer1.receive(1000);
+         messageReceived2 = (TextMessage) messageConsumer2.receive(1000);
+         System.out.println("Consumer 1 Received message: " + messageReceived1.getText());
+         System.out.println("Consumer 2 Received message: " + messageReceived2.getText());
+           </code>
+        </pre>
+        
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre>
+           <code>finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }</code>
+        </pre>
+
+
+
+     </ol>
+  </body>
+</html>
