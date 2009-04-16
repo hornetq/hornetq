@@ -52,7 +52,7 @@ import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
- * A ChunkTestBase
+ * A LargeMessageTestBase
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -60,11 +60,11 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class ChunkTestBase extends ServiceTestBase
+public class LargeMessageTestBase extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(ChunkTestBase.class);
+   private static final Logger log = Logger.getLogger(LargeMessageTestBase.class);
 
    protected final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
@@ -280,6 +280,10 @@ public class ChunkTestBase extends ServiceTestBase
                                  {
                                     bytesRead.addAndGet(b.length);
                                     System.out.println("Read position " + bytesRead.get() + " on consumer");
+                                    if (bytesRead.get() == 1126400l)
+                                    {
+                                       System.out.println("I'm here");
+                                    }
                                  }
                                  else
                                  {
@@ -290,8 +294,7 @@ public class ChunkTestBase extends ServiceTestBase
                               @Override
                               public void write(int b) throws IOException
                               {
-                                 bytesRead.incrementAndGet();
-                                 if (b == (byte)'a')
+                                 if (b == getSamplebyte(bytesRead.get()))
                                  {
                                     bytesRead.incrementAndGet();
                                  }

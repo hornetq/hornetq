@@ -22,6 +22,7 @@
 package org.jboss.test.messaging.jms.message;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,7 +36,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
@@ -72,7 +72,7 @@ public class LargeMessageTest extends JMSTestCase
 
          BytesMessage m = session.createBytesMessage();
 
-         ((JBossMessage)m).setInputStream(UnitTestCase.createFakeLargeStream(1024 * 1024));
+         ((JBossMessage)m).setInputStream(createFakeLargeStream(1024 * 1024));
 
          prod.send(m);
 
@@ -99,7 +99,7 @@ public class LargeMessageTest extends JMSTestCase
             assertEquals(1024, numberOfBytes);
             for (int j = 0; j < 1024; j++)
             {
-               assertEquals(UnitTestCase.getSamplebyte(i + j), data[j]);
+               assertEquals(getSamplebyte(i + j), data[j]);
             }
          }
 
@@ -131,7 +131,7 @@ public class LargeMessageTest extends JMSTestCase
 
          BytesMessage m = session.createBytesMessage();
 
-         ((JBossMessage)m).setInputStream(UnitTestCase.createFakeLargeStream(10));
+         ((JBossMessage)m).setInputStream(createFakeLargeStream(10));
 
          prod.send(m);
 
@@ -155,7 +155,7 @@ public class LargeMessageTest extends JMSTestCase
          assertEquals(10, numberOfBytes);
          for (int j = 0; j < numberOfBytes; j++)
          {
-            assertEquals(UnitTestCase.getSamplebyte(j), data[j]);
+            assertEquals(getSamplebyte(j), data[j]);
          }
 
          assertNotNull(rm);
@@ -189,7 +189,7 @@ public class LargeMessageTest extends JMSTestCase
 
          BytesMessage m = session.createBytesMessage();
 
-         ((JBossMessage)m).setInputStream(UnitTestCase.createFakeLargeStream(msgSize));
+         ((JBossMessage)m).setInputStream(createFakeLargeStream(msgSize));
 
          prod.send(m);
 
@@ -218,7 +218,7 @@ public class LargeMessageTest extends JMSTestCase
             public void write(int b) throws IOException
             {
                numberOfBytes.incrementAndGet();
-               if (UnitTestCase.getSamplebyte(position++) != b)
+               if (getSamplebyte(position++) != b)
                {
                   System.out.println("Wrong byte at position " + position);
                   numberOfErrors.incrementAndGet();
@@ -251,6 +251,50 @@ public class LargeMessageTest extends JMSTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   protected  byte getSamplebyte(final long position)
+   {
+      return (byte)('a' + (position) % ('z' - 'a' + 1));
+   }
+
+   // Creates a Fake LargeStream without using a real file
+   protected  InputStream createFakeLargeStream(final long size) throws Exception
+   {
+      return new InputStream()
+      {
+         private long count;
+
+         private boolean closed = false;
+
+         @Override
+         public void close() throws IOException
+         {
+            super.close();
+            System.out.println("Sent " + count + " bytes over fakeOutputStream, while size = " + size);
+            closed = true;
+         }
+
+         @Override
+         public int read() throws IOException
+         {
+            if (closed)
+            {
+               throw new IOException("Stream was closed");
+            }
+            if (count++ < size)
+            {
+               return getSamplebyte(count - 1);
+            }
+            else
+            {
+               return -1;
+            }
+         }
+      };
+
+   }
+
+   
 
    // Private -------------------------------------------------------
 

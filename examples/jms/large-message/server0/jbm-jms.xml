@@ -10,9 +10,6 @@
          <entry name="java:/ConnectionFactory"/>
          <entry name="java:/XAConnectionFactory"/>
       </entries>
-      <!-- When using this ConnectionFactory, messages beyond this limit are considered largeMessages and will be sent using smaller packets -->
-      <min-large-message-size>10240</min-large-message-size>
-      
    </connection-factory>
 
    <!--the queue used by the example-->

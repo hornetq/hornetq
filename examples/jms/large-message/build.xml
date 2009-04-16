@@ -33,8 +33,11 @@
    <import file="../common/build.xml"/>
 
    <target name="run">
+   	
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.LargeMessageExample"/>
+     	 <param name="java-min-memory" value="128M"/>
+     	 <param name="java-max-memory" value="128M"/>
       </antcall>
    </target>
 

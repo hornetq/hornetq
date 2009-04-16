@@ -45,17 +45,17 @@ import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnector;
 import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnectorFactory;
 
 /**
- * A ChunkCleanupTest
+ * A LargeMessageCleanupTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */
-public class ChunkCleanupTest extends ChunkTestBase
+public class LargeMessageCleanupTest extends LargeMessageTestBase
 {
    // Constants -----------------------------------------------------
    
-   private static final Logger log = Logger.getLogger(ChunkCleanupTest.class);
+   private static final Logger log = Logger.getLogger(LargeMessageCleanupTest.class);
 
 
    // Attributes ----------------------------------------------------

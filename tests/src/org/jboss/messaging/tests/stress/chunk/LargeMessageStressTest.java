@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.tests.stress.chunk;
 
-import org.jboss.messaging.tests.integration.chunkmessage.ChunkTestBase;
+import org.jboss.messaging.tests.integration.chunkmessage.LargeMessageTestBase;
 
 /**
  * A MessageChunkSoakTest
@@ -33,7 +33,7 @@ import org.jboss.messaging.tests.integration.chunkmessage.ChunkTestBase;
  *
  *
  */
-public class MessageChunkStressTest extends ChunkTestBase
+public class LargeMessageStressTest extends LargeMessageTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -48,7 +48,7 @@ public class MessageChunkStressTest extends ChunkTestBase
       
    public void testMessageChunkFilePersistenceOneHugeMessage() throws Exception
    {
-      testChunks(false, false, true, true, false, false, false, false, 1, 4l * 1024 * 1024l * 1024l + 1024l, 120000, 0, 10 * 1024 * 1024, 1024 * 1024);
+      testChunks(false, false, true, true, false, false, false, true, 1, 200 * 1024l * 1024l + 1024l, 120000, 0, 10 * 1024 * 1024, 1024 * 1024);
    }
 
    // Package protected ---------------------------------------------

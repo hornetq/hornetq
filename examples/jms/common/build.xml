@@ -103,10 +103,12 @@
 
 
    <target name="runExample" depends="compile">
+ 	  <property name="java-min-memory" value="512M"/>
+ 	  <property name="java-max-memory" value="2048M"/>
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
          <jvmarg value="-XX:+UseParallelGC"/>
-         <jvmarg value="-Xms512M"/>
-         <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-Xms${java-min-memory}"/>
+         <jvmarg value="-Xmx${java-max-memory}"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
          <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Dcom.sun.management.jmxremote"/>

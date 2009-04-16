@@ -1,14 +1,14 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Queue Example</title>
+    <title>JBoss Messaging Large Message Example</title>
     <link rel="stylesheet" type="text/css" href="../common/common.css">
   </head>
   <body>
-     <h1>JMS Queue Example</h1>
+     <h1>Large Message Example</h1>
      <br>
-     <p>This example shows you how to send and receive a message to a JMS Queue with JBoss Messaging.</p>
-     <p>Queues are a standard part of JMS, please consult the JMS 1.1 specification for full details.</p>
-     <p>A Queue is used to send messages point to point, from a producer to a consumer. The queue guarantees message ordering between these 2 points.</p>
+     <p>This example shows you how to send and receive very large messages with JBoss Messaging.</p>
+     <p>JBossMessaging provides an extension to JMS where you can use an InputStream or OutputStream as the source and destination for your messages. You can send messages as large as it would fit in your disk.</p>
+     <p>You may also choose to read LargeMessages using the regular ByteStream or ByteMessage methods, but using the OutputStream will provide you a much better performance</p>
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
