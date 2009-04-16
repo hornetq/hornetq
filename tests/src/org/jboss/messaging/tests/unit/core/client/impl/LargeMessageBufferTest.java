@@ -39,7 +39,7 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
 import org.jboss.messaging.core.client.impl.ClientMessageInternal;
-import org.jboss.messaging.core.client.impl.LargeMessageBuffer;
+import org.jboss.messaging.core.client.impl.LargeMessageBufferImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
@@ -69,7 +69,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    // Test Simple getBytes
    public void testGetBytes() throws Exception
    {
-      LargeMessageBuffer buffer = create15BytesSample();
+      LargeMessageBufferImpl buffer = create15BytesSample();
 
       for (int i = 1; i <= 15; i++)
       {
@@ -96,7 +96,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    // Test for void getBytes(final int index, final byte[] dst)
    public void testGetBytesIByteArray() throws Exception
    {
-      LargeMessageBuffer buffer = create15BytesSample();
+      LargeMessageBufferImpl buffer = create15BytesSample();
 
       byte[] bytes = new byte[15];
       buffer.getBytes(0, bytes);
@@ -119,7 +119,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    // testing void getBytes(int index, ChannelBuffer dst, int dstIndex, int length)
    public void testGetBytesILChannelBufferII() throws Exception
    {
-      LargeMessageBuffer buffer = create15BytesSample();
+      LargeMessageBufferImpl buffer = create15BytesSample();
 
       ChannelBuffer dstBuffer = ChannelBuffers.buffer(20);
 
@@ -136,7 +136,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    // testing void getBytes(int index, ChannelBuffer dst, int dstIndex, int length)
    public void testReadIntegers() throws Exception
    {
-      LargeMessageBuffer buffer = createBufferWithIntegers(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+      LargeMessageBufferImpl buffer = createBufferWithIntegers(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
 
       for (int i = 1; i <= 15; i++)
       {
@@ -156,7 +156,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    // testing void getBytes(int index, ChannelBuffer dst, int dstIndex, int length)
    public void testReadLongs() throws Exception
    {
-      LargeMessageBuffer buffer = createBufferWithLongs(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+      LargeMessageBufferImpl buffer = createBufferWithLongs(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
 
       for (int i = 1; i <= 15; i++)
       {
@@ -187,7 +187,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       dynamic.writeDouble(d1);
       dynamic.writeFloat(f1);
 
-      LargeMessageBuffer readBuffer = splitBuffer(3, dynamic.array());
+      LargeMessageBufferImpl readBuffer = splitBuffer(3, dynamic.array());
 
       assertEquals(str1, readBuffer.readUTF());
       assertEquals(str2, readBuffer.readString());
@@ -198,7 +198,7 @@ public class LargeMessageBufferTest extends UnitTestCase
    public void testReadPartialData() throws Exception
    {
 
-      final LargeMessageBuffer buffer = new LargeMessageBuffer(new FakeConsumerInternal(), 10, 10);
+      final LargeMessageBufferImpl buffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), 10, 10);
 
       buffer.addPacket(new SessionReceiveContinuationMessage(-1, new byte[] { 0, 1, 2, 3, 4 }, true, true));
 
@@ -249,7 +249,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    public void testInterruptData() throws Exception
    {
-      LargeMessageBuffer readBuffer = splitBuffer(3, new byte[] { 0, 1, 2, 3, 4 });
+      LargeMessageBufferImpl readBuffer = splitBuffer(3, new byte[] { 0, 1, 2, 3, 4 });
 
       byte bytes[] = new byte[30];
       readBuffer.readBytes(bytes, 0, 5);
@@ -262,7 +262,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    public void testStreamData() throws Exception
    {
-      final LargeMessageBuffer outBuffer = new LargeMessageBuffer(new FakeConsumerInternal(), 1024 * 11 + 123, 1);
+      final LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), 1024 * 11 + 123, 1);
 
       final PipedOutputStream output = new PipedOutputStream();
       final PipedInputStream input = new PipedInputStream(output);
@@ -373,11 +373,25 @@ public class LargeMessageBufferTest extends UnitTestCase
       assertEquals(0, errors.get());
 
    }
+   
+   public void testStreamDataWaitCompletionOnCompleteBuffer() throws Exception
+   {
+      final LargeMessageBufferImpl outBuffer = create15BytesSample();
+      
+      outBuffer.saveBuffer(new OutputStream()
+      {
+         @Override
+         public void write(int b) throws IOException
+         {
+            // nohting to be done
+         }
+      });
+   }
 
    public void testErrorOnSetStreaming() throws Exception
    {
       long start = System.currentTimeMillis();
-      final LargeMessageBuffer outBuffer = new LargeMessageBuffer(new FakeConsumerInternal(), 5, 30);
+      final LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), 5, 30);
 
       outBuffer.addPacket(new SessionReceiveContinuationMessage(-1, new byte[] { 0, 1, 2, 3, 4 }, true, false));
 
@@ -415,12 +429,12 @@ public class LargeMessageBufferTest extends UnitTestCase
    /**
     * @return
     */
-   private LargeMessageBuffer create15BytesSample() throws Exception
+   private LargeMessageBufferImpl create15BytesSample() throws Exception
    {
       return splitBuffer(5, new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
    }
 
-   private LargeMessageBuffer createBufferWithIntegers(int splitFactor, int... values) throws Exception
+   private LargeMessageBufferImpl createBufferWithIntegers(int splitFactor, int... values) throws Exception
    {
       ByteArrayOutputStream byteOut = new ByteArrayOutputStream(values.length * 4);
       DataOutputStream dataOut = new DataOutputStream(byteOut);
@@ -433,7 +447,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       return splitBuffer(splitFactor, byteOut.toByteArray());
    }
 
-   private LargeMessageBuffer createBufferWithLongs(int splitFactor, long... values) throws Exception
+   private LargeMessageBufferImpl createBufferWithLongs(int splitFactor, long... values) throws Exception
    {
       ByteArrayOutputStream byteOut = new ByteArrayOutputStream(values.length * 8);
       DataOutputStream dataOut = new DataOutputStream(byteOut);
@@ -446,9 +460,9 @@ public class LargeMessageBufferTest extends UnitTestCase
       return splitBuffer(splitFactor, byteOut.toByteArray());
    }
 
-   private LargeMessageBuffer splitBuffer(int splitFactor, byte[] bytes) throws Exception
+   private LargeMessageBufferImpl splitBuffer(int splitFactor, byte[] bytes) throws Exception
    {
-      LargeMessageBuffer outBuffer = new LargeMessageBuffer(new FakeConsumerInternal(), bytes.length, 5);
+      LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), bytes.length, 5);
 
       ByteArrayInputStream input = new ByteArrayInputStream(bytes);
 

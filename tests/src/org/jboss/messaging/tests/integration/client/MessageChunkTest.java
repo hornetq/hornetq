@@ -61,7 +61,7 @@ public class MessageChunkTest extends ChunkTestBase
 
    // Constants -----------------------------------------------------
 
-   final static int RECEIVE_WAIT_TIME = 10000;
+   final static int RECEIVE_WAIT_TIME = 60000;
 
    private final int LARGE_MESSAGE_SIZE = 20 * 1024;
 
@@ -86,7 +86,7 @@ public class MessageChunkTest extends ChunkTestBase
       internalTestResendMessage(150 * 1024);
    }
    
-   public void internalTestResendMessage(int messageSize) throws Exception
+   public void internalTestResendMessage(long messageSize) throws Exception
    {
       ClientSession session = null;
 
@@ -151,7 +151,7 @@ public class MessageChunkTest extends ChunkTestBase
          
          for (int i = 0 ; i < messageSize; i++)
          {
-            assertEquals((byte)'a', msg2.getBody().readByte());
+            assertEquals(getSamplebyte(i), msg2.getBody().readByte());
          }
          
          session.close();
@@ -176,137 +176,150 @@ public class MessageChunkTest extends ChunkTestBase
          {
          }
       }
-      // Reusing a largemessage should throw an exception
+   }
+   public void testMessageChunkFilePersistenceOneHugeMessage() throws Exception
+   {
+      testChunks(false, false, true, true, false, false, false, false, 1, 100 * 1024l * 1024l, RECEIVE_WAIT_TIME, 0, 10 * 1024 * 1024, 1024 * 1024);
    }
 
-   public void testMessageChunkFilePersistenceOneMessage() throws Exception
+   public void testMessageChunkFilePersistenceOneMessageStreaming() throws Exception
    {
-      testChunks(false, true, false, false, true, false, 10, 1024 * 1024, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, true, true, false, false, false, false, 1, 100 * 1024l * 1024l, RECEIVE_WAIT_TIME, 0);
    }
 
-   public void testMessageChunkFilePersistenceOneMessageConsumer() throws Exception
+   public void testMessageChunkFilePersistenceSmallMessageStreaming() throws Exception
    {
-      testChunks(false, true, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, false, true, true, false, false, false, false, 100, 1024, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceOneHugeMessageConsumer() throws Exception
+   {
+      testChunks(false, false, true, true, false, false, false, true, 1, 100 * 1024 * 1024, 120000, 0, 10 * 1024 * 1024, 1024 * 1024);
    }
 
    public void testMessageChunkFilePersistence() throws Exception
    {
-      testChunks(false, true, false, false, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, false, false, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceConsumer() throws Exception
    {
-      testChunks(false, true, false, false, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, false, false, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceXA() throws Exception
    {
-      testChunks(true, true, false, false, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, false, false, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+   }
+
+   public void testMessageChunkFilePersistenceXAStream() throws Exception
+   {
+      testChunks(true, false, true, true, false, false, false, false, 1, 1024 * 1024, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceXAConsumer() throws Exception
    {
-      testChunks(true, true, false, false, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, false, false, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlocked() throws Exception
    {
-      testChunks(false, true, false, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, false, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedConsumer() throws Exception
    {
-      testChunks(false, true, false, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, false, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedXA() throws Exception
    {
-      testChunks(true, true, false, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, false, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedXAConsumer() throws Exception
    {
-      testChunks(true, true, false, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, false, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedPreACK() throws Exception
    {
-      testChunks(false, true, true, true, true, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, true, true, true, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedPreACKConsumer() throws Exception
    {
-      testChunks(false, true, true, true, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, true, true, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedPreACKXA() throws Exception
    {
-      testChunks(true, true, true, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, true, true, true, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceBlockedPreACKXAConsumer() throws Exception
    {
-      testChunks(true, true, true, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, true, true, true, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkFilePersistenceDelayed() throws Exception
    {
-      testChunks(false, true, false, false, false, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+      testChunks(false, true, false, true, false, false, false, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkFilePersistenceDelayedConsumer() throws Exception
    {
-      testChunks(false, true, false, false, false, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+      testChunks(false, true, false, true, false, false, false, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkFilePersistenceDelayedXA() throws Exception
    {
-      testChunks(true, true, false, false, false, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+      testChunks(true, true, false, true, false, false, false, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkFilePersistenceDelayedXAConsumer() throws Exception
    {
-      testChunks(true, true, false, false, false, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+      testChunks(true, true, false, true, false, false, false, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
    }
 
    public void testMessageChunkNullPersistence() throws Exception
    {
-      testChunks(false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceConsumer() throws Exception
    {
-      testChunks(false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceXA() throws Exception
    {
-      testChunks(true, false, false, false, true, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, false, false, true, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceXAConsumer() throws Exception
    {
-      testChunks(true, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testMessageChunkNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, false, false, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+      testChunks(false, true, false, false, false, false, false, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testMessageChunkNullPersistenceDelayedConsumer() throws Exception
    {
-      testChunks(false, false, false, false, false, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+      testChunks(false, true, false, false, false, false, false, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testMessageChunkNullPersistenceDelayedXA() throws Exception
    {
-      testChunks(true, false, false, false, false, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+      testChunks(true, true, false, false, false, false, false, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testMessageChunkNullPersistenceDelayedXAConsumer() throws Exception
    {
-      testChunks(true, false, false, false, false, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+      testChunks(true, true, false, false, false, false, false, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
    }
 
    public void testPageOnLargeMessage() throws Exception
@@ -322,82 +335,82 @@ public class MessageChunkTest extends ChunkTestBase
 
    public void testSendSmallMessageXA() throws Exception
    {
-      testChunks(true, true, false, false, true, false, 100, 4, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, false, false, true, false, 100, 4, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendSmallMessageXAConsumer() throws Exception
    {
-      testChunks(true, true, false, false, true, true, 100, 4, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, false, false, true, true, 100, 4, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendSmallMessageNullPersistenceXA() throws Exception
    {
-      testChunks(true, false, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendSmallMessageNullPersistenceXAConsumer() throws Exception
    {
-      testChunks(true, false, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, false, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessageNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, true, false, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessageNullPersistenceDelayedConsumer() throws Exception
    {
-      testChunks(false, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, true, false, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessageNullPersistenceDelayedXA() throws Exception
    {
-      testChunks(true, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(true, true, false, false, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessageNullPersistenceDelayedXAConsumer() throws Exception
    {
-      testChunks(true, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(true, true, false, false, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessagePersistence() throws Exception
    {
-      testChunks(false, true, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceConsumer() throws Exception
    {
-      testChunks(false, true, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(false, true, false, true, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceXA() throws Exception
    {
-      testChunks(true, true, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, false, false, true, false, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceXAConsumer() throws Exception
    {
-      testChunks(true, true, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
+      testChunks(true, true, false, true, false, false, true, true, 100, 100, RECEIVE_WAIT_TIME, 0);
    }
 
    public void testSendRegularMessagePersistenceDelayed() throws Exception
    {
-      testChunks(false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, true, false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessagePersistenceDelayedConsumer() throws Exception
    {
-      testChunks(false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, true, false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessagePersistenceDelayedXA() throws Exception
    {
-      testChunks(false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, true, false, true, false, false, false, false, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testSendRegularMessagePersistenceDelayedXAConsumer() throws Exception
    {
-      testChunks(false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
+      testChunks(false, true, false, true, false, false, false, true, 100, 100, RECEIVE_WAIT_TIME, 1000);
    }
 
    public void testTwoBindingsTwoStartedConsumers() throws Exception
@@ -803,7 +816,7 @@ public class MessageChunkTest extends ChunkTestBase
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             Message clientFile = session.createClientMessage(true);
-            clientFile.setBodyInputStream(createFakeLargeStream(SIZE, (byte)i));
+            clientFile.setBodyInputStream(createFakeLargeStream(SIZE));
             producer.send(clientFile);
 
          }
@@ -836,7 +849,7 @@ public class MessageChunkTest extends ChunkTestBase
                {
                   for (int byteRead = 0; byteRead < SIZE; byteRead++)
                   {
-                     assertEquals((byte)i, msg.getBody().readByte());
+                     assertEquals(getSamplebyte(byteRead), msg.getBody().readByte());
                   }
                }
 
@@ -899,7 +912,7 @@ public class MessageChunkTest extends ChunkTestBase
          session.createQueue(ADDRESS, ADDRESS, null, true);
 
          Message clientFile = session.createClientMessage(true);
-         clientFile.setBodyInputStream(createFakeLargeStream(SIZE, (byte)'a'));
+         clientFile.setBodyInputStream(createFakeLargeStream(SIZE));
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -982,7 +995,7 @@ public class MessageChunkTest extends ChunkTestBase
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
             Message msg = session.createClientMessage(true);
-            msg.setBodyInputStream(createFakeLargeStream(SIZE, (byte)'a'));
+            msg.setBodyInputStream(createFakeLargeStream(SIZE));
             msg.putIntProperty(new SimpleString("key"), i);
             producer.send(msg);
 

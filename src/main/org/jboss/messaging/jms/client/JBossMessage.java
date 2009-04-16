@@ -12,6 +12,8 @@
 
 package org.jboss.messaging.jms.client;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -757,6 +759,7 @@ public class JBossMessage implements javax.jms.Message
       {
          return String.valueOf(message.getDeliveryCount());
       }
+      
       Object val = message.getProperty(new SimpleString(name));
       if (val instanceof SimpleString)
       {
@@ -928,6 +931,29 @@ public class JBossMessage implements javax.jms.Message
    {
       return JBossMessage.TYPE;
    }
+   
+   
+   public void setInputStream(final InputStream input) throws MessagingException
+   {
+      message.setBodyInputStream(input);
+   }
+   
+   
+   public void setOutputStream(final OutputStream output) throws MessagingException
+   {
+      message.setOutputStream(output);
+   }
+
+   public void saveToOutputStream(final OutputStream output) throws MessagingException
+   {
+      message.saveToOutputStream(output);
+   }
+
+   public boolean waitCompletionOnStream(long timeWait) throws MessagingException
+   {
+      return message.waitOutputStreamCompletion(timeWait);
+   }
+   
 
    public String toString()
    {

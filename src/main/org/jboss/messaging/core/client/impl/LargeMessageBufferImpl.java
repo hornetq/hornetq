@@ -32,6 +32,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.buffers.ChannelBuffer;
+import org.jboss.messaging.core.client.LargeMessageBuffer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -47,7 +48,7 @@ import org.jboss.messaging.utils.UTF8Util;
  *
  *
  */
-public class LargeMessageBuffer implements ChannelBuffer
+public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 {
    // Constants -----------------------------------------------------
 
@@ -61,19 +62,19 @@ public class LargeMessageBuffer implements ChannelBuffer
 
    private SessionReceiveContinuationMessage currentPacket = null;
 
-   private final int totalSize;
+   private final long totalSize;
 
    private boolean streamEnded = false;
 
    private final int readTimeout;
 
-   private int readerIndex = 0;
+   private long readerIndex = 0;
 
-   private int packetPosition = -1;
+   private long packetPosition = -1;
 
-   private int lastIndex = 0;
+   private long lastIndex = 0;
 
-   private int packetLastPosition = -1;
+   private long packetLastPosition = -1;
 
    private OutputStream outStream;
 
@@ -83,7 +84,7 @@ public class LargeMessageBuffer implements ChannelBuffer
 
    // Constructors --------------------------------------------------
 
-   public LargeMessageBuffer(final ClientConsumerInternal consumerInternal, final int totalSize, final int readTimeout)
+   public LargeMessageBufferImpl(final ClientConsumerInternal consumerInternal, final long totalSize, final int readTimeout)
    {
       this.consumerInternal = consumerInternal;
       this.readTimeout = readTimeout;
@@ -113,7 +114,9 @@ public class LargeMessageBuffer implements ChannelBuffer
          }
       }
    }
-
+   
+   long size;
+   
    /**
     * Add a buff to the List, or save it to the OutputStream if set
     * @param packet
@@ -133,12 +136,12 @@ public class LargeMessageBuffer implements ChannelBuffer
 
             consumerInternal.flowControl(packet.getPacketSize(), true);
 
+            notifyAll();
+
             if (streamEnded)
             {
                outStream.close();
             }
-
-            notifyAll();
          }
          catch (Exception e)
          {
@@ -161,6 +164,11 @@ public class LargeMessageBuffer implements ChannelBuffer
 
    public synchronized void setOutputStream(final OutputStream output) throws MessagingException
    {
+      if (currentPacket != null)
+      {
+         sendPacketToOutput(output, currentPacket);
+         currentPacket = null;
+      }
       while (true)
       {
          SessionReceiveContinuationMessage packet = this.packets.poll();
@@ -168,19 +176,34 @@ public class LargeMessageBuffer implements ChannelBuffer
          {
             break;
          }
-         try
-         {
-            output.write(packet.getBody());
-         }
-         catch (IOException e)
-         {
-            throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
-                                         "Error writing body of message",
-                                         e);
-         }
+         consumerInternal.flowControl(packet.getPacketSize(), true);
+         sendPacketToOutput(output, packet);
       }
 
       this.outStream = output;
+   }
+
+   /**
+    * @param output
+    * @param packet
+    * @throws MessagingException
+    */
+   private void sendPacketToOutput(final OutputStream output, SessionReceiveContinuationMessage packet) throws MessagingException
+   {
+      try
+      {
+         if (!packet.isContinues())
+         {
+            streamEnded = true;
+         }
+         output.write(packet.getBody());
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
+                                      "Error writing body of message",
+                                      e);
+      }
    }
 
    public synchronized void saveBuffer(final OutputStream output) throws MessagingException
@@ -225,7 +248,7 @@ public class LargeMessageBuffer implements ChannelBuffer
       if (this.handledException != null)
       {
          throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
-                                      "Error on saving LargeMessageBuffer",
+                                      "Error on saving LargeMessageBufferImpl",
                                       this.handledException);
       }
 
@@ -240,7 +263,7 @@ public class LargeMessageBuffer implements ChannelBuffer
     */
    public byte[] array()
    {
-      throw new IllegalAccessError("array not supported on LargeMessageBuffer");
+      throw new IllegalAccessError("array not supported on LargeMessageBufferImpl");
    }
 
    /* (non-Javadoc)
@@ -262,13 +285,29 @@ public class LargeMessageBuffer implements ChannelBuffer
    public byte getByte(final int index)
    {
       checkForPacket(index);
-      return currentPacket.getBody()[index - packetPosition];
+      return currentPacket.getBody()[(int)(index - packetPosition)];
+   }
+   
+   private byte getByte(final long index)
+   {
+      checkForPacket(index);
+      return currentPacket.getBody()[(int)(index - packetPosition)];
    }
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.buffers.ChannelBuffer#getBytes(int, org.jboss.messaging.core.buffers.ChannelBuffer, int, int)
     */
    public void getBytes(final int index, final ChannelBuffer dst, final int dstIndex, final int length)
+   {
+      byte[] destBytes = new byte[length];
+      getBytes(index, destBytes);
+      dst.setBytes(dstIndex, destBytes);
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.buffers.ChannelBuffer#getBytes(int, org.jboss.messaging.core.buffers.ChannelBuffer, int, int)
+    */
+   public void getBytes(final long index, final ChannelBuffer dst, final int dstIndex, final int length)
    {
       byte[] destBytes = new byte[length];
       getBytes(index, destBytes);
@@ -287,6 +326,15 @@ public class LargeMessageBuffer implements ChannelBuffer
       System.arraycopy(bytesToGet, 0, dst, dstIndex, length);
    }
 
+   public void getBytes(final long index, final byte[] dst, final int dstIndex, final int length)
+   {
+      byte bytesToGet[] = new byte[length];
+
+      getBytes(index, bytesToGet);
+
+      System.arraycopy(bytesToGet, 0, dst, dstIndex, length);
+   }
+
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.buffers.ChannelBuffer#getBytes(int, java.nio.ByteBuffer)
     */
@@ -297,10 +345,24 @@ public class LargeMessageBuffer implements ChannelBuffer
       dst.put(bytesToGet);
    }
 
+   public void getBytes(final long index, final ByteBuffer dst)
+   {
+      byte bytesToGet[] = new byte[dst.remaining()];
+      getBytes(index, bytesToGet);
+      dst.put(bytesToGet);
+   }
+
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.buffers.ChannelBuffer#getBytes(int, java.io.OutputStream, int)
     */
    public void getBytes(final int index, final OutputStream out, final int length) throws IOException
+   {
+      byte bytesToGet[] = new byte[length];
+      getBytes(index, bytesToGet);
+      out.write(bytesToGet);
+   }
+
+   public void getBytes(final long index, final OutputStream out, final int length) throws IOException
    {
       byte bytesToGet[] = new byte[length];
       getBytes(index, bytesToGet);
@@ -327,10 +389,28 @@ public class LargeMessageBuffer implements ChannelBuffer
              (getByte(index + 3) & 0xff) << 0;
    }
 
+   public int getInt(final long index)
+   {
+      return (getByte(index) & 0xff) << 24 | (getByte(index + 1) & 0xff) << 16 |
+             (getByte(index + 2) & 0xff) << 8 |
+             (getByte(index + 3) & 0xff) << 0;
+   }
+
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.buffers.ChannelBuffer#getLong(int)
     */
    public long getLong(final int index)
+   {
+      return ((long)getByte(index) & 0xff) << 56 | ((long)getByte(index + 1) & 0xff) << 48 |
+             ((long)getByte(index + 2) & 0xff) << 40 |
+             ((long)getByte(index + 3) & 0xff) << 32 |
+             ((long)getByte(index + 4) & 0xff) << 24 |
+             ((long)getByte(index + 5) & 0xff) << 16 |
+             ((long)getByte(index + 6) & 0xff) << 8 |
+             ((long)getByte(index + 7) & 0xff) << 0;
+   }
+
+   public long getLong(final long index)
    {
       return ((long)getByte(index) & 0xff) << 56 | ((long)getByte(index + 1) & 0xff) << 48 |
              ((long)getByte(index + 2) & 0xff) << 40 |
@@ -349,10 +429,20 @@ public class LargeMessageBuffer implements ChannelBuffer
       return (short)(getByte(index) << 8 | getByte(index + 1) & 0xFF);
    }
 
+   public short getShort(final long index)
+   {
+      return (short)(getByte(index) << 8 | getByte(index + 1) & 0xFF);
+   }
+
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.buffers.ChannelBuffer#getUnsignedMedium(int)
     */
    public int getUnsignedMedium(final int index)
+   {
+      return (getByte(index) & 0xff) << 16 | (getByte(index + 1) & 0xff) << 8 | (getByte(index + 2) & 0xff) << 0;
+   }
+
+   public int getUnsignedMedium(final long index)
    {
       return (getByte(index) & 0xff) << 16 | (getByte(index + 1) & 0xff) << 8 | (getByte(index + 2) & 0xff) << 0;
    }
@@ -455,7 +545,7 @@ public class LargeMessageBuffer implements ChannelBuffer
 
    public int readerIndex()
    {
-      return readerIndex;
+      return (int)readerIndex;
    }
 
    public void readerIndex(final int readerIndex)
@@ -465,6 +555,11 @@ public class LargeMessageBuffer implements ChannelBuffer
    }
 
    public int writerIndex()
+   {
+      return (int)totalSize;
+   }
+
+   public long getSize()
    {
       return totalSize;
    }
@@ -496,7 +591,16 @@ public class LargeMessageBuffer implements ChannelBuffer
 
    public int readableBytes()
    {
-      return this.totalSize - this.readerIndex;
+      long readableBytes = this.totalSize - this.readerIndex;
+      
+      if (readableBytes > Integer.MAX_VALUE)
+      {
+         return Integer.MAX_VALUE;
+      }
+      else
+      {
+         return (int)(this.totalSize - this.readerIndex);
+      }
    }
 
    public int writableBytes()
@@ -555,6 +659,15 @@ public class LargeMessageBuffer implements ChannelBuffer
    }
 
    public void getBytes(int index, final byte[] dst)
+   {
+      // TODO: optimize this by using System.arraycopy
+      for (int i = 0; i < dst.length; i++)
+      {
+         dst[i] = getByte(index++);
+      }
+   }
+
+   public void getBytes(long index, final byte[] dst)
    {
       // TODO: optimize this by using System.arraycopy
       for (int i = 0; i < dst.length; i++)
@@ -692,7 +805,7 @@ public class LargeMessageBuffer implements ChannelBuffer
 
    public int readBytes(final GatheringByteChannel out, final int length) throws IOException
    {
-      int readBytes = getBytes(readerIndex, out, length);
+      int readBytes = getBytes((int)readerIndex, out, length);
       readerIndex += readBytes;
       return readBytes;
    }
@@ -706,7 +819,7 @@ public class LargeMessageBuffer implements ChannelBuffer
    public void skipBytes(final int length)
    {
 
-      int newReaderIndex = readerIndex + length;
+      long newReaderIndex = readerIndex + length;
       checkForPacket(newReaderIndex);
       readerIndex = newReaderIndex;
    }
@@ -1037,7 +1150,7 @@ public class LargeMessageBuffer implements ChannelBuffer
       }
    }
 
-   private void checkForPacket(final int index)
+   private void checkForPacket(final long index)
    {
       if (this.outStream != null)
       {

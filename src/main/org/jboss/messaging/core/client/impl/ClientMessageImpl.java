@@ -25,6 +25,7 @@ package org.jboss.messaging.core.client.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.jboss.messaging.core.client.LargeMessageBuffer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -111,6 +112,18 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
          consumer.acknowledge(this);
       }
    }
+   
+   public long getLargeBodySize()
+   {
+      if (largeMessage)
+      {
+         return ((LargeMessageBuffer)getBody()).getSize();
+      }
+      else
+      {
+         return this.getBodySize();
+      }
+   }
 
    public int getFlowControlSize()
    {
@@ -141,15 +154,6 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       this.largeMessage = largeMessage;
    }
-   
-
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.client.impl.ClientMessageInternal#isFileMessage()
-    */
-   public boolean isFileMessage()
-   {
-      return false;
-   }
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.client.impl.ClientMessageInternal#discardLargeBody()
@@ -169,7 +173,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBuffer)this.getBody()).saveBuffer(out);
+         ((LargeMessageBufferImpl)this.getBody()).saveBuffer(out);
       }
       else
       {
@@ -192,7 +196,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBuffer)this.getBody()).setOutputStream(out);
+         ((LargeMessageBufferImpl)this.getBody()).setOutputStream(out);
       }
       else
       {
@@ -208,7 +212,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         return ((LargeMessageBuffer)this.getBody()).waitCompletion(timeMilliseconds);
+         return ((LargeMessageBufferImpl)this.getBody()).waitCompletion(timeMilliseconds);
       }
       else
       {

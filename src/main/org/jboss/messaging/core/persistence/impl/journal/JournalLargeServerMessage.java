@@ -156,6 +156,19 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       // FIXME: The file could be bigger than MAX_INT
       return (int)bodySize;
    }
+   
+   public synchronized long getLargeBodySize()
+   {
+      try
+      {
+         validateFile();
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException(e.getMessage(), e);
+      }
+      return bodySize;
+   }
 
    @Override
    public synchronized int getEncodeSize()

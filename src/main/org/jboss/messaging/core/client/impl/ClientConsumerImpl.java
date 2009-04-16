@@ -74,7 +74,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private ClientMessageInternal currentChunkMessage;
    
-   private LargeMessageBuffer currentLargeMessageBuffer;
+   private LargeMessageBufferImpl currentLargeMessageBuffer;
    
    // When receiving LargeMessages, the user may choose to not read the body, on this case we need to discard te body before moving to the next message.
    private ClientMessageInternal largeMessageReceived;
@@ -413,7 +413,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       
       currentChunkMessage.setLargeMessage(true);
 
-      currentLargeMessageBuffer = new LargeMessageBuffer(this, packet.getLargeMessageSize(), 60);
+      currentLargeMessageBuffer = new LargeMessageBufferImpl(this, packet.getLargeMessageSize(), 60);
 
       currentChunkMessage.setBody(currentLargeMessageBuffer);
 

@@ -21,10 +21,9 @@
  */
 package org.jboss.messaging.tests.integration.jms.bridge;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
-import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
-import org.jboss.messaging.jms.client.JBossMessage;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -35,9 +34,11 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
+import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
+import org.jboss.messaging.jms.client.JBossMessage;
 
 /**
  * A JMSBridgeTest
@@ -559,7 +560,19 @@ public class JMSBridgeTest extends BridgeTestBase
       }                  
    }
    
-   public void testStartBridgeWithJTATransactionAlreadyRunning() throws Exception
+   
+   
+   public void testStartBridgeWithJTATransactionAlreadyRunningLargeMessage() throws Exception
+   {
+      internalTestStartBridgeWithJTATransactionAlreadyRunning(true);
+   }
+   
+   public void testStartBridgeWithJTATransactionAlreadyRunningRegularMessage() throws Exception
+   {
+      internalTestStartBridgeWithJTATransactionAlreadyRunning(false);
+   }
+   
+   public void internalTestStartBridgeWithJTATransactionAlreadyRunning(boolean largeMessage) throws Exception
    {  
       JMSBridgeImpl bridge = null;
       
@@ -588,9 +601,9 @@ public class JMSBridgeTest extends BridgeTestBase
          bridge.setTransactionManager(mgr);
          bridge.start();
          
-         this.sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
+         this.sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false, largeMessage);
             
-         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);                          
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, largeMessage);                          
       }
       finally
       {      
@@ -623,8 +636,17 @@ public class JMSBridgeTest extends BridgeTestBase
          }     
       }                  
    }   
+   public void testNonDurableSubscriberLargeMessage() throws Exception
+   {
+      internalTestNonDurableSubscriber(true, 1);
+   }
    
-   public void testNonDurableSubscriber() throws Exception
+   public void testNonDurableSubscriberRegularMessage() throws Exception
+   {
+      internalTestNonDurableSubscriber(false, 1);
+   }
+   
+   public void internalTestNonDurableSubscriber(boolean largeMessage, int batchSize) throws Exception
    { 
       JMSBridgeImpl bridge = null;
             
@@ -635,15 +657,15 @@ public class JMSBridgeTest extends BridgeTestBase
          bridge = new JMSBridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
-                  1, -1,
+                  batchSize, -1,
                   null, null, false);
          bridge.setTransactionManager(newTransactionManager());
 
          bridge.start();
             
-         sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false);
+         sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, false, largeMessage);
          
-         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);                    
+         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, largeMessage);                    
       }
       finally
       {                        
@@ -653,8 +675,18 @@ public class JMSBridgeTest extends BridgeTestBase
          }
       }                  
    }
+
+   public void testDurableSubscriberLargeMessage() throws Exception
+   {
+      internalTestDurableSubscriber(true, 1);
+   }
    
-   public void testDurableSubscriber() throws Exception
+   public void testDurableSubscriberRegularMessage() throws Exception
+   {
+      internalTestDurableSubscriber(false, 1);
+   }
+
+   public void internalTestDurableSubscriber(boolean largeMessage, int batchSize) throws Exception
    {
       JMSBridgeImpl bridge = null;
             
@@ -665,15 +697,15 @@ public class JMSBridgeTest extends BridgeTestBase
          bridge = new JMSBridgeImpl(cff0, cff1, sourceTopicFactory, targetQueueFactory,
                   null, null, null, null,
                   null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
-                  1, -1,
+                  batchSize, -1,
                   "subTest", "clientid123", false);
          bridge.setTransactionManager(newTransactionManager());
 
          bridge.start();
             
-         sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, true);
+         sendMessages(cf0, sourceTopic, 0, NUM_MESSAGES, true, largeMessage);
          
-         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);              
+         checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, largeMessage);              
       }
       finally
       {                      
@@ -1162,7 +1194,7 @@ public class JMSBridgeTest extends BridgeTestBase
          
          t.start();
          
-         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, false);
                                               
          t.join();
          
@@ -1236,7 +1268,7 @@ public class JMSBridgeTest extends BridgeTestBase
          
          t.start();
          
-         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, false);
                                               
          t.join();
          
@@ -1311,7 +1343,7 @@ public class JMSBridgeTest extends BridgeTestBase
          
          t.start();
          
-         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES, false);
                          
          t.join();
          
@@ -1368,7 +1400,7 @@ public class JMSBridgeTest extends BridgeTestBase
             
          //Send half the messges
 
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent, false);
                          
          //Verify none are received
          
@@ -1376,27 +1408,27 @@ public class JMSBridgeTest extends BridgeTestBase
          
          //Send the other half
          
-         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
+         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent, false);
          
          //This should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, false);
          
          //Send another batch with one more than batch size
          
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES + 1, persistent);
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES + 1, persistent, false);
                   
          //Make sure only batch size are received
          
-         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, false);
          
          //Final batch
          
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, persistent);
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, persistent, false);
          
-         this.checkAllMessageReceivedInOrder(cf1, targetQueue, NUM_MESSAGES, 1);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, NUM_MESSAGES, 1, false );
          
-         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES - 1);
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES - 1, false);
       }
       finally
       {      
@@ -1425,18 +1457,18 @@ public class JMSBridgeTest extends BridgeTestBase
 
          bridge.start();
             
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent, false);
          
          this.checkEmpty(targetQueue, 1);                
          
          //Send the other half
          
-         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES /2, persistent);
+         this.sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES /2, persistent, false);
          
          
          //This should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES, false);
          
          this.checkEmpty(localTargetQueue, 0);
          
@@ -1444,19 +1476,19 @@ public class JMSBridgeTest extends BridgeTestBase
          
          //Send another batch with one more than batch size
          
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES + 1, persistent);
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES + 1, persistent, false);
          
          //Make sure only batch size are received
          
-         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES, false);
          
          //Final batch
          
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, persistent);
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES - 1, persistent, false);
          
-         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, NUM_MESSAGES, 1);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, NUM_MESSAGES, 1, false);
          
-         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES - 1);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES - 1, false);
       }
       finally
       {               
@@ -1490,7 +1522,7 @@ public class JMSBridgeTest extends BridgeTestBase
          
          //Send some message
 
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES, persistent);                 
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES, persistent, false);                 
          
          //Verify none are received
          
@@ -1498,7 +1530,7 @@ public class JMSBridgeTest extends BridgeTestBase
          
          //Messages should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES);         
+         this.checkAllMessageReceivedInOrder(cf1, targetQueue, 0, NUM_MESSAGES, false);         
       }
       finally
       {      
@@ -1534,7 +1566,7 @@ public class JMSBridgeTest extends BridgeTestBase
 
          //Send some message
 
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES, persistent);                 
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES, persistent, false);                 
          
          //Verify none are received
          
@@ -1542,7 +1574,7 @@ public class JMSBridgeTest extends BridgeTestBase
          
          //Messages should now be receivable
          
-         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES);
+         this.checkAllMessageReceivedInOrder(cf0, localTargetQueue, 0, NUM_MESSAGES, false);
       }
       finally
       {              
@@ -1587,4 +1619,6 @@ public class JMSBridgeTest extends BridgeTestBase
       }
       
    } 
+   
+   
 }

@@ -53,8 +53,6 @@ public interface ServerMessage extends Message, EncodingSupport
 
    int getMemoryEstimate();
 
-   boolean isLargeMessage();
-
    void setStored();
 
    boolean isStored();

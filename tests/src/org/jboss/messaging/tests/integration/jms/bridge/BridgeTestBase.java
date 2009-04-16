@@ -41,10 +41,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -69,6 +71,7 @@ import org.jboss.messaging.jms.bridge.ConnectionFactoryFactory;
 import org.jboss.messaging.jms.bridge.DestinationFactory;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
@@ -307,7 +310,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       localTargetQueue = (Queue)localTargetQueueFactory.createDestination();
    }
 
-   protected void sendMessages(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean persistent) throws Exception
+   protected void sendMessages(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean persistent, boolean largeMessage) throws Exception
    {
       Connection conn = null;
 
@@ -323,9 +326,19 @@ public abstract class BridgeTestBase extends UnitTestCase
 
          for (int i = start; i < start + numMessages; i++)
          {
-            TextMessage tm = sess.createTextMessage("message" + i);
+            if (largeMessage)
+            {
+               BytesMessage msg = sess.createBytesMessage();
+               ((JBossMessage)msg).setInputStream(createFakeLargeStream(1024l * 1024l));
+               msg.setStringProperty("msg", "message" + i);
+               prod.send(msg);
+            }
+            else
+            {
+               TextMessage tm = sess.createTextMessage("message" + i);
+               prod.send(tm);
+            }
 
-            prod.send(tm);
          }
       }
       finally
@@ -341,7 +354,8 @@ public abstract class BridgeTestBase extends UnitTestCase
                                         Destination dest,
                                         QualityOfServiceMode qosMode,
                                         int numMessages,
-                                        boolean longWaitForFirst) throws Exception
+                                        boolean longWaitForFirst,
+                                        boolean largeMessage) throws Exception
    {
       Connection conn = null;
 
@@ -357,7 +371,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
          // Consume the messages
 
-         Set msgs = new HashSet();
+         Set<String> msgs = new HashSet<String>();
 
          int count = 0;
 
@@ -365,7 +379,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          // waiting for recovery to kick in
          while (true)
          {
-            TextMessage tm = (TextMessage)cons.receive(count == 0 ? (longWaitForFirst ? 60000 : 10000) : 5000);
+            Message tm = cons.receive(count == 0 ? (longWaitForFirst ? 60000 : 10000) : 5000);
 
             if (tm == null)
             {
@@ -373,8 +387,22 @@ public abstract class BridgeTestBase extends UnitTestCase
             }
 
             // log.info("Got message " + tm.getText());
+            
+            if (largeMessage)
+            {
+               BytesMessage bmsg = (BytesMessage)tm;
+               msgs.add(tm.getStringProperty("msg"));
+               byte buffRead[] = new byte[1024];
+               for (int i = 0; i < 1024; i++)
+               {
+                  assertEquals(1024, bmsg.readBytes(buffRead));
+               }
+            }
+            else
+            {
+               msgs.add(((TextMessage)tm).getText());
+            }
 
-            msgs.add(tm.getText());
 
             count++;
 
@@ -413,7 +441,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       }
    }
 
-   protected void checkAllMessageReceivedInOrder(ConnectionFactory cf, Destination dest, int start, int numMessages) throws Exception
+   protected void checkAllMessageReceivedInOrder(ConnectionFactory cf, Destination dest, int start, int numMessages, boolean largeMessage) throws Exception
    {
       Connection conn = null;
       try
@@ -430,13 +458,25 @@ public abstract class BridgeTestBase extends UnitTestCase
 
          for (int i = 0; i < numMessages; i++)
          {
-            TextMessage tm = (TextMessage)cons.receive(30000);
+            Message tm = cons.receive(30000);
 
             assertNotNull(tm);
-
-            // log.info("Got message " + tm.getText());
-
-            assertEquals("message" + (i + start), tm.getText());
+            
+            
+            if (largeMessage)
+            {
+               BytesMessage bmsg = (BytesMessage)tm;
+               assertEquals("message" + (i + start), tm.getStringProperty("msg"));
+               byte buffRead[] = new byte[1024];
+               for (int j = 0; j < 1024; j++)
+               {
+                  assertEquals(1024, bmsg.readBytes(buffRead));
+               }
+            }
+            else
+            {
+               assertEquals("message" + (i + start),((TextMessage)tm).getText());
+            }
          }
       }
       finally
@@ -495,5 +535,4 @@ public abstract class BridgeTestBase extends UnitTestCase
    }
 
    // Inner classes -------------------------------------------------------------------
-
 }

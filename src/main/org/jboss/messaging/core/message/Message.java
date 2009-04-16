@@ -83,6 +83,10 @@ public interface Message
    void decodeProperties(MessagingBuffer buffer);
       
    int getBodySize();
+
+   boolean isLargeMessage();
+   
+   long getLargeBodySize();
          
    // Used on Message chunk
    void encodeBody(MessagingBuffer buffer, long start, int size);

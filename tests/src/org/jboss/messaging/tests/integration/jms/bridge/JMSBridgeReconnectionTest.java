@@ -21,7 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.jms.bridge;
 
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
@@ -45,36 +44,42 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, false);
    }
+
+//  The bridge won't work with largeMessages & failures
+//   public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P_LargeMessage() throws Exception
+//   {
+//      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, true);
+//   }
    
    public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, false, false);
    }
 
    // dups ok
 
    public void testCrashAndReconnectDestBasic_DuplicatesOk_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, true);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, true, false);
    }
 
    public void testCrashAndReconnectDestBasic_DuplicatesOk_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, false);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.DUPLICATES_OK, false, false);
    }
 
    // At most once
 
    public void testCrashAndReconnectDestBasic_AtMostOnce_P() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, true);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, true, false);
    }
 
    public void testCrashAndReconnectDestBasic_AtMostOnce_NP() throws Exception
    {
-      testCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, false);
+      testCrashAndReconnectDestBasic(QualityOfServiceMode.AT_MOST_ONCE, false, false);
    }
 
    // Crash tests specific to XA transactions
@@ -144,7 +149,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
     * Send some more messages
     * Verify all messages are received
     */
-   private void testCrashAndReconnectDestBasic(QualityOfServiceMode qosMode, boolean persistent) throws Exception
+   private void testCrashAndReconnectDestBasic(QualityOfServiceMode qosMode, boolean persistent, boolean largeMessage) throws Exception
    {
       JMSBridgeImpl bridge = null;
          
@@ -162,7 +167,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          
          //Send some messages
          
-         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2 , persistent);
+         sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2 , persistent, largeMessage);
          
          //Verify none are received
          
@@ -198,11 +203,11 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          
          log.info("Sending more messages");
          
-         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
+         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent, largeMessage);
          
          log.info("Sent messages");
          
-         checkMessagesReceived(cf1, targetQueue, qosMode, NUM_MESSAGES, false);                  
+         checkMessagesReceived(cf1, targetQueue, qosMode, NUM_MESSAGES, false, largeMessage);                  
       }
       finally
       {      
@@ -247,7 +252,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          final int NUM_MESSAGES = 10;            
          //Send some messages
          
-         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent);
+         this.sendMessages(cf0, sourceQueue, 0, NUM_MESSAGES / 2, persistent, false);
                   
          //verify none are received
          
@@ -276,9 +281,9 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          
          setUpAdministeredObjects();
          
-         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent);
+         sendMessages(cf0, sourceQueue, NUM_MESSAGES / 2, NUM_MESSAGES / 2, persistent, false);
                            
-         checkMessagesReceived(cf1, targetQueue, QualityOfServiceMode.ONCE_AND_ONLY_ONCE, NUM_MESSAGES, false);         
+         checkMessagesReceived(cf1, targetQueue, QualityOfServiceMode.ONCE_AND_ONLY_ONCE, NUM_MESSAGES, false, false);         
       }
       finally
       {      

@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
-import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
@@ -225,9 +224,9 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
       
-      if (msg.getBodyInputStream() != null ||  msg.getEncodeSize() >= minLargeMessageSize || msg.getBody() instanceof LargeMessageBuffer)
+      if (msg.getBodyInputStream() != null ||  msg.getEncodeSize() >= minLargeMessageSize || msg.isLargeMessage())
       {
-         sendMessageInChunks(sendBlocking, (ClientMessageInternal)msg);
+         sendMessageInChunks(sendBlocking, msg);
       }
       else if (sendBlocking)
       {
@@ -243,7 +242,7 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @param msg
     * @throws MessagingException
     */
-   private void sendMessageInChunks(final boolean sendBlocking, final ClientMessageInternal msg) throws MessagingException
+   private void sendMessageInChunks(final boolean sendBlocking, final Message msg) throws MessagingException
    {
       int headerSize = msg.getPropertiesEncodeSize();
 
@@ -253,7 +252,9 @@ public class ClientProducerImpl implements ClientProducerInternal
                                       "Header size (" + headerSize + ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
       }
       
-      if (msg.getBodyInputStream() == null)
+      
+      // msg.getBody() could be Null on LargeServerMessage
+      if (msg.getBodyInputStream() == null && msg.getBody() != null)
       {
          msg.getBody().readerIndex(0);
       }
@@ -315,13 +316,13 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
       else
       {
-         final int bodySize = msg.getBodySize();
+         final long bodySize = msg.getLargeBodySize();
    
          for (int pos = 0; pos < bodySize;)
          {
             final boolean lastChunk;
                      
-            final int chunkLength = Math.min(bodySize - pos, minLargeMessageSize); 
+            final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize); 
             
             final MessagingBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength); 
    

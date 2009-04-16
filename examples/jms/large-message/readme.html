@@ -44,11 +44,18 @@
           <code>MessageProducer messageProducer = session.createProducer(topic);</code>
        </pre>
 
-        <li>Create a BytesMessage with 1MB arbitrary bytes</li>
+        <li>Create a BytesMessage</li>
         <pre><code>
          BytesMessage message = session.createBytesMessage();
-         message.writeBytes(new byte[1024 * 1024]);
         </code></pre>
+        
+        <li>Set the File Stream</li>
+        <pre><code>
+         FileInputStream fileInputStream = new FileInputStream(fileInput);
+         BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
+         ((JBossMessage)message).setInputStream(bufferedInput);
+         </code></pre>
+        
 
         <li>We send message to the queue. After the send completion the message file will be located at ./build/data/largeMessages</li>
         <pre>
@@ -65,11 +72,25 @@
            <code>connection.start();</code>
         </pre>
 
-        <li>The message arrives at the consumer. In this case we use a timeout of 5000 milliseconds but we could use a blocking 'receive()'</li>
+        <li>Receive the message'</li>
         <pre><code>
-        BytesMessage messageReceived = (BytesMessage) messageConsumer.receive(5000);
+        BytesMessage messageReceived = (BytesMessage) messageConsumer.receive(120000);
         System.out.println("Received message: " + messageReceived.getBodyLength() + " bytes");
         </code></pre>
+        
+
+         <li>Setting a stream to receive the message. You may choose to use the regular BytesMessage or STreamMessage interface but this method is much faster for large messages.</li>
+        <pre><code>
+         FileOutputStream fileOutputStream = new FileOutputStream(fileOutput);
+         BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream);
+         ((JBossMessage)messageReceived).setOutputStream(bufferedOutput);
+        </code></pre>
+         
+         <li>setOutputStream is a non-blocking operation. You may choose to wait the streaming completion.</li> 
+        <pre><code>
+         ((JBossMessage)messageReceived).waitCompletionOnStream(300000);
+        </code></pre>
+        
 
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 

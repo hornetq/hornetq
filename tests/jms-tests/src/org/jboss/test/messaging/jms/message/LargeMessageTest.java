@@ -21,12 +21,11 @@
   */
 package org.jboss.test.messaging.jms.message;
 
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -36,6 +35,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.jboss.messaging.jms.client.JBossMessage;
+import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
@@ -71,13 +71,13 @@ public class LargeMessageTest extends JMSTestCase
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          BytesMessage m = session.createBytesMessage();
-         
-         ((JBossMessage)m).getCoreMessage().setBodyInputStream(createFakeLargeStream((byte)'j', 1024 * 1024));
+
+         ((JBossMessage)m).setInputStream(UnitTestCase.createFakeLargeStream(1024 * 1024));
 
          prod.send(m);
 
          conn.close();
-         
+
          conn = cf.createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -87,9 +87,9 @@ public class LargeMessageTest extends JMSTestCase
          conn.start();
 
          BytesMessage rm = (BytesMessage)cons.receive(10000);
-         
+
          byte data[] = new byte[1024];
-         
+
          System.out.println("Message = " + rm);
 
          for (int i = 0; i < 1024 * 1024; i += 1024)
@@ -97,12 +97,12 @@ public class LargeMessageTest extends JMSTestCase
             System.out.println("Read message chunk " + i);
             int numberOfBytes = rm.readBytes(data);
             assertEquals(1024, numberOfBytes);
-            for (int j = 0 ; j < 1024; j++)
+            for (int j = 0; j < 1024; j++)
             {
-               assertEquals((byte)'j', data[j]);
+               assertEquals(UnitTestCase.getSamplebyte(i + j), data[j]);
             }
          }
-         
+
          assertNotNull(rm);
 
       }
@@ -115,8 +115,7 @@ public class LargeMessageTest extends JMSTestCase
       }
 
    }
-   
-   
+
    public void testSimpleLargeMessage2() throws Exception
    {
       Connection conn = null;
@@ -131,13 +130,13 @@ public class LargeMessageTest extends JMSTestCase
          prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          BytesMessage m = session.createBytesMessage();
-         
-         ((JBossMessage)m).getCoreMessage().setBodyInputStream(createFakeLargeStream((byte)'j', 10));
+
+         ((JBossMessage)m).setInputStream(UnitTestCase.createFakeLargeStream(10));
 
          prod.send(m);
 
          conn.close();
-         
+
          conn = cf.createConnection();
 
          session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -147,18 +146,18 @@ public class LargeMessageTest extends JMSTestCase
          conn.start();
 
          BytesMessage rm = (BytesMessage)cons.receive(10000);
-         
+
          byte data[] = new byte[1024];
-         
+
          System.out.println("Message = " + rm);
 
          int numberOfBytes = rm.readBytes(data);
          assertEquals(10, numberOfBytes);
-         for (int j = 0 ; j < numberOfBytes; j++)
+         for (int j = 0; j < numberOfBytes; j++)
          {
-            assertEquals((byte)'j', data[j]);
+            assertEquals(UnitTestCase.getSamplebyte(j), data[j]);
          }
-         
+
          assertNotNull(rm);
 
       }
@@ -171,11 +170,82 @@ public class LargeMessageTest extends JMSTestCase
       }
 
    }
-   
-   
-   public void testReceiveAfterACK() throws Exception
+
+
+   public void testWaitOnOutputStream() throws Exception
    {
-      // Make sure ACK will not delete the file while deliver is done
+      int msgSize = 1024 * 1024;
+      
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = session.createProducer(queue1);
+         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+         BytesMessage m = session.createBytesMessage();
+
+         ((JBossMessage)m).setInputStream(UnitTestCase.createFakeLargeStream(msgSize));
+
+         prod.send(m);
+
+         conn.close();
+
+         conn = cf.createConnection();
+
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = session.createConsumer(queue1);
+
+         conn.start();
+
+         BytesMessage rm = (BytesMessage)cons.receive(10000);
+         assertNotNull(rm);
+
+         final AtomicLong numberOfBytes = new AtomicLong(0);
+         
+         final AtomicInteger numberOfErrors = new AtomicInteger(0);
+
+         OutputStream out = new OutputStream()
+         {
+
+            int position = 0;
+            @Override
+            public void write(int b) throws IOException
+            {
+               numberOfBytes.incrementAndGet();
+               if (UnitTestCase.getSamplebyte(position++) != b)
+               {
+                  System.out.println("Wrong byte at position " + position);
+                  numberOfErrors.incrementAndGet();
+               }
+            }
+            
+         };
+
+         
+         ((JBossMessage)rm).setOutputStream(out);
+         
+         assertTrue(((JBossMessage)rm).waitCompletionOnStream(10000));
+         
+         assertEquals(msgSize, numberOfBytes.get());
+         
+         assertEquals(0, numberOfErrors.get());
+         
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+
    }
 
    // Package protected ---------------------------------------------
@@ -183,69 +253,21 @@ public class LargeMessageTest extends JMSTestCase
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
-   
-   private InputStream createFakeLargeStream(final byte byteToWrite, final long size) throws Exception
-   {
-      
-      final PipedInputStream pipedInput = new PipedInputStream();
-      final PipedOutputStream pipedOut = new PipedOutputStream(pipedInput);
-      final OutputStream out = new BufferedOutputStream(pipedOut);
-      
-      
-      new Thread()
-      {
-         public void run()
-         {
-            try
-            {
-               for (long i = 0; i < size; i++)
-               {
-                  out.write(byteToWrite);
-               }
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-            finally
-            {
-               try
-               {
-                  out.close();
-               }
-               catch (Throwable ignored)
-               {
-               }
-            }
-         }
-         
-      }.start();
-      
-      
-      return pipedInput;
-      
-   }
-   
-
-   
 
    // Inner classes -------------------------------------------------
-   
-   
+
    class ThreadReader extends Thread
    {
       CountDownLatch latch;
-      
+
       ThreadReader(CountDownLatch latch)
       {
          this.latch = latch;
       }
-      
+
       public void run()
       {
       }
    }
-   
 
 }

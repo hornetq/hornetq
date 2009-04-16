@@ -46,9 +46,9 @@ public class MessageChunkStressTest extends ChunkTestBase
 
    // Public --------------------------------------------------------
       
-   public void testMessageChunkFilePersistence1M() throws Exception
+   public void testMessageChunkFilePersistenceOneHugeMessage() throws Exception
    {
-      testChunks(false, true, false, false, true, false, 100, 1024 * 1024, 50000, 0);
+      testChunks(false, false, true, true, false, false, false, false, 1, 4l * 1024 * 1024l * 1024l + 1024l, 120000, 0, 10 * 1024 * 1024, 1024 * 1024);
    }
 
    // Package protected ---------------------------------------------

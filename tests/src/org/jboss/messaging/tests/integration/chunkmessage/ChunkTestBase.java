@@ -25,11 +25,11 @@ package org.jboss.messaging.tests.integration.chunkmessage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -83,17 +83,21 @@ public class ChunkTestBase extends ServiceTestBase
    // Protected -----------------------------------------------------
 
    protected void testChunks(final boolean isXA,
+                             final boolean rollbackFirstSend,
+                             final boolean useStreamOnConsume,
                              final boolean realFiles,
                              final boolean preAck,
                              final boolean sendingBlocking,
                              final boolean testBrowser,
                              final boolean useMessageConsumer,
                              final int numberOfMessages,
-                             final int numberOfBytes,
+                             final long numberOfBytes,
                              final int waitOnConsumer,
                              final long delayDelivery) throws Exception
    {
       testChunks(isXA,
+                 rollbackFirstSend,
+                 useStreamOnConsume,
                  realFiles,
                  preAck,
                  sendingBlocking,
@@ -108,13 +112,15 @@ public class ChunkTestBase extends ServiceTestBase
    }
 
    protected void testChunks(final boolean isXA,
+                             final boolean rollbackFirstSend,
+                             final boolean useStreamOnConsume,
                              final boolean realFiles,
                              final boolean preAck,
                              final boolean sendingBlocking,
                              final boolean testBrowser,
                              final boolean useMessageConsumer,
                              final int numberOfMessages,
-                             final int numberOfBytes,
+                             final long numberOfBytes,
                              final int waitOnConsumer,
                              final long delayDelivery,
                              final int producerWindow,
@@ -158,21 +164,24 @@ public class ChunkTestBase extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         sendMessages(numberOfMessages, numberOfBytes, delayDelivery, session, producer);
-
-         if (isXA)
+         if (rollbackFirstSend)
          {
-            session.end(xid, XAResource.TMSUCCESS);
-            session.rollback(xid);
-            xid = newXID();
-            session.start(xid, XAResource.TMNOFLAGS);
-         }
-         else
-         {
-            session.rollback();
-         }
+            sendMessages(numberOfMessages, numberOfBytes, delayDelivery, session, producer);
 
-         validateNoFilesOnLargeDir();
+            if (isXA)
+            {
+               session.end(xid, XAResource.TMSUCCESS);
+               session.rollback(xid);
+               xid = newXID();
+               session.start(xid, XAResource.TMNOFLAGS);
+            }
+            else
+            {
+               session.rollback();
+            }
+
+            validateNoFilesOnLargeDir();
+         }
 
          sendMessages(numberOfMessages, numberOfBytes, delayDelivery, session, producer);
 
@@ -223,7 +232,7 @@ public class ChunkTestBase extends ServiceTestBase
             if (useMessageConsumer)
             {
                final CountDownLatch latchDone = new CountDownLatch(numberOfMessages);
-               final AtomicInteger errrors = new AtomicInteger(0);
+               final AtomicInteger errors = new AtomicInteger(0);
 
                MessageHandler handler = new MessageHandler()
                {
@@ -234,8 +243,6 @@ public class ChunkTestBase extends ServiceTestBase
 
                      try
                      {
-                        latchDone.countDown();
-
                         System.out.println("Message on consumer: " + msgCounter);
 
                         if (delayDelivery > 0)
@@ -261,34 +268,79 @@ public class ChunkTestBase extends ServiceTestBase
                                         ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
                         }
 
-                        MessagingBuffer buffer = message.getBody();
-                        buffer.resetReaderIndex();
-                        assertEquals(numberOfBytes, buffer.writerIndex());
-                        for (int b = 0; b < numberOfBytes; b++)
+                        if (useStreamOnConsume)
                         {
-                           assertEquals((byte)'a', buffer.readByte());
+                           final AtomicLong bytesRead = new AtomicLong(0);
+                           message.saveToOutputStream(new OutputStream()
+                           {
+
+                              public void write(byte b[]) throws IOException
+                              {
+                                 if (b[0] == getSamplebyte(bytesRead.get()))
+                                 {
+                                    bytesRead.addAndGet(b.length);
+                                    System.out.println("Read position " + bytesRead.get() + " on consumer");
+                                 }
+                                 else
+                                 {
+                                    System.out.println("Received invalid packet at position " + bytesRead.get());
+                                 }
+                              }
+
+                              @Override
+                              public void write(int b) throws IOException
+                              {
+                                 bytesRead.incrementAndGet();
+                                 if (b == (byte)'a')
+                                 {
+                                    bytesRead.incrementAndGet();
+                                 }
+                                 else
+                                 {
+                                    System.out.println("byte not as expected!");
+                                 }
+                              }
+                           });
+
+                           assertEquals(numberOfBytes, bytesRead.get());
+                        }
+                        else
+                        {
+
+                           MessagingBuffer buffer = message.getBody();
+                           buffer.resetReaderIndex();
+                           assertEquals(numberOfBytes, buffer.writerIndex());
+                           for (long b = 0; b < numberOfBytes; b++)
+                           {
+                              if (b % (1024l * 1024l) == 0)
+                              {
+                                 System.out.println("Read " + b + " bytes");
+                              }
+                              
+                              assertEquals(getSamplebyte(b), buffer.readByte());
+                           }
                         }
                      }
                      catch (Throwable e)
                      {
                         e.printStackTrace();
-                        errrors.incrementAndGet();
+                        System.out.println("Got an error");
+                        errors.incrementAndGet();
                      }
                      finally
                      {
+                        latchDone.countDown();
                         msgCounter++;
                      }
                   }
                };
 
                session.start();
-               
-               Thread.sleep(1000);
 
                consumer.setMessageHandler(handler);
 
-               assertTrue(latchDone.await(20, TimeUnit.SECONDS));
-               assertEquals(0, errrors.get());
+               assertTrue(latchDone.await(waitOnConsumer, TimeUnit.SECONDS));
+               assertEquals(0, errors.get());
 
             }
             else
@@ -331,11 +383,58 @@ public class ChunkTestBase extends ServiceTestBase
 
                   MessagingBuffer buffer = message.getBody();
                   buffer.resetReaderIndex();
-                  assertEquals(numberOfBytes, buffer.writerIndex());
-                  for (int b = 0; b < numberOfBytes; b++)
+
+                  if (useStreamOnConsume)
                   {
-                     assertEquals((byte)'a', buffer.readByte());
+                     final AtomicLong bytesRead = new AtomicLong(0);
+                     message.saveToOutputStream(new OutputStream()
+                     {
+
+                        public void write(byte b[]) throws IOException
+                        {
+                           if (b[0] == getSamplebyte(bytesRead.get()))
+                           {
+                              bytesRead.addAndGet(b.length);
+                           }
+                           else
+                           {
+                              System.out.println("Received invalid packet at position " + bytesRead.get());
+                           }
+
+                        }
+
+                        @Override
+                        public void write(int b) throws IOException
+                        {
+                           if (bytesRead.get() % (1024l * 1024l) == 0)
+                           {
+                              System.out.println("Read " + bytesRead.get() + " bytes");
+                           }
+                           if (b == (byte)'a')
+                           {
+                              bytesRead.incrementAndGet();
+                           }
+                           else
+                           {
+                              System.out.println("byte not as expected!");
+                           }
+                        }
+                     });
+
+                     assertEquals(numberOfBytes, bytesRead.get());
                   }
+                  else
+                  {
+                     for (long b = 0; b < numberOfBytes; b++)
+                     {
+                        if (b % (1024l * 1024l) == 0l)
+                        {
+                           System.out.println("Read " + b + " bytes");
+                        }
+                        assertEquals(getSamplebyte(b), buffer.readByte());
+                     }
+                  }
+
                }
 
             }
@@ -406,28 +505,30 @@ public class ChunkTestBase extends ServiceTestBase
     * @throws MessagingException
     */
    private void sendMessages(final int numberOfMessages,
-                             final int numberOfBytes,
+                             final long numberOfBytes,
                              final long delayDelivery,
                              final ClientSession session,
                              final ClientProducer producer) throws Exception
    {
+      System.out.println("NumberOfBytes = " + numberOfBytes);
       for (int i = 0; i < numberOfMessages; i++)
       {
          ClientMessage message = session.createClientMessage(true);
-         
-         // If the test is using more than 1M, we will only use the Streaming, as it require too much memory from the test
+
+         // If the test is using more than 1M, we will only use the Streaming, as it require too much memory from the
+         // test
          if (numberOfBytes > 1024 * 1024 || i % 2 == 0)
          {
             System.out.println("Sending message (stream)" + i);
-            message.setBodyInputStream(createFakeLargeStream(numberOfBytes, (byte)'a'));
+            message.setBodyInputStream(createFakeLargeStream(numberOfBytes));
          }
          else
          {
             System.out.println("Sending message (array)" + i);
-            byte[] bytes = new byte[numberOfBytes];
+            byte[] bytes = new byte[(int)numberOfBytes];
             for (int j = 0; j < bytes.length; j++)
             {
-               bytes[j] = 'a';
+               bytes[j] = getSamplebyte(j);
             }
             message.getBody().writeBytes(bytes);
          }
@@ -466,13 +567,13 @@ public class ChunkTestBase extends ServiceTestBase
    }
 
    protected ClientMessage createLargeClientMessage(final ClientSession session,
-                                                    final int numberOfBytes,
+                                                    final long numberOfBytes,
                                                     final boolean persistent) throws Exception
    {
 
       ClientMessage clientMessage = session.createClientMessage(persistent);
 
-      clientMessage.setBodyInputStream(createFakeLargeStream(numberOfBytes, (byte)'a'));
+      clientMessage.setBodyInputStream(createFakeLargeStream(numberOfBytes));
 
       return clientMessage;
    }
@@ -525,41 +626,6 @@ public class ChunkTestBase extends ServiceTestBase
       }
 
       assertEquals(0, largeMessagesFileDir.listFiles().length);
-   }
-
-   protected InputStream createFakeLargeStream(final int size, final byte byteUsed) throws Exception
-   {
-      return new InputStream()
-      {
-         private int count;
-
-         private boolean closed = false;
-
-         @Override
-         public void close() throws IOException
-         {
-            super.close();
-            closed = true;
-         }
-
-         @Override
-         public int read() throws IOException
-         {
-            if (closed)
-            {
-               throw new IOException("Stream was closed");
-            }
-            if (count++ < size)
-            {
-               return byteUsed;
-            }
-            else
-            {
-               return -1;
-            }
-         }
-      };
-
    }
 
    protected OutputStream createFakeOutputStream() throws Exception

@@ -744,7 +744,7 @@ public class ServerConsumerImpl implements ServerConsumer
          // we must hold one reference, or the file will be deleted before it could be delivered
          pendingLargeMessage.incrementRefCount();
 
-         sizePendingLargeMessage = pendingLargeMessage.getBodySize();
+         sizePendingLargeMessage = pendingLargeMessage.getLargeBodySize();
 
          this.ref = ref;
       }
@@ -780,7 +780,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
                initialMessage = new SessionReceiveMessage(id,
                                                           headerBuffer.array(),
-                                                          pendingLargeMessage.getBodySize(),
+                                                          pendingLargeMessage.getLargeBodySize(),
                                                           ref.getDeliveryCount());
             }
 

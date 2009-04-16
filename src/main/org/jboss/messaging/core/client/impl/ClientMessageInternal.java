@@ -42,12 +42,8 @@ public interface ClientMessageInternal extends ClientMessage
    void setFlowControlSize(int flowControlSize);
 
    void onReceipt(ClientConsumerInternal consumer);
-
-   boolean isLargeMessage();
    
    void setLargeMessage(boolean largeMessage);
-   
-   boolean isFileMessage();
 
    /**
     * Discard unused packets (used on large-message)

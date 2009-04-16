@@ -47,6 +47,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -362,6 +363,51 @@ public class UnitTestCase extends TestCase
          assertEquals(errorCode, ((XAException)e).errorCode);
       }
    }
+   
+   
+   public static byte getSamplebyte(final long position)
+   {
+      return (byte)('a' + (position) % ('z' - 'a' + 1));
+   }
+
+   // Creates a Fake LargeStream without using a real file
+   public static InputStream createFakeLargeStream(final long size) throws Exception
+   {
+      return new InputStream()
+      {
+         private long count;
+
+         private boolean closed = false;
+
+         @Override
+         public void close() throws IOException
+         {
+            super.close();
+            System.out.println("Sent " + count + " bytes over fakeOutputStream, while size = " + size);
+            closed = true;
+         }
+
+         @Override
+         public int read() throws IOException
+         {
+            if (closed)
+            {
+               throw new IOException("Stream was closed");
+            }
+            if (count++ < size)
+            {
+               return getSamplebyte(count - 1);
+            }
+            else
+            {
+               return -1;
+            }
+         }
+      };
+
+   }
+
+   
    
    // Package protected ---------------------------------------------
 

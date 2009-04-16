@@ -740,6 +740,14 @@ public class BindingImplTest extends UnitTestCase
       {
       }
 
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#getLargeBodySize()
+       */
+      public long getLargeBodySize()
+      {
+         return 0;
+      }
+
    }
 
    class FakeFilter implements Filter

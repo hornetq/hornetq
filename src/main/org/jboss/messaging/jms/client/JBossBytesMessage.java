@@ -31,6 +31,7 @@ import javax.jms.MessageFormatException;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.impl.LargeMessageBufferImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
@@ -422,8 +423,8 @@ public class JBossBytesMessage extends JBossMessage implements BytesMessage
    public long getBodyLength() throws JMSException
    {
       checkRead();
-
-      return getBody().writerIndex();
+      
+      return message.getLargeBodySize();
    }
 
    public void doBeforeSend() throws Exception

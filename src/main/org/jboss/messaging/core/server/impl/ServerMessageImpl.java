@@ -148,6 +148,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return false;
    }
+   
+   public long getLargeBodySize()
+   {
+      return (long)getBodySize();
+   }
 
    public int getMemoryEstimate()
    {

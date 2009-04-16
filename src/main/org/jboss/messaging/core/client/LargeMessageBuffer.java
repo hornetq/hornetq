@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,27 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.server;
+package org.jboss.messaging.core.client;
+
+import java.io.OutputStream;
+
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
- * A LargeMessage
+ * A LargeMessageBufferImpl
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
- * Created 30-Sep-08 10:58:04 AM
  *
  *
  */
-public interface LargeServerMessage extends ServerMessage
+public interface LargeMessageBuffer extends MessagingBuffer
 {
-   void addBytes(byte[] bytes) throws Exception;
+   long getSize();
 
-   /** Close the files if opened */
-   void releaseResources();
-   
-   long getLargeBodySize();
-   
-   void complete() throws Exception;
-   
-   void deleteFile() throws Exception;
+   void discardUnusedPackets();
+
+   void close();
+
+   void setOutputStream(final OutputStream output) throws MessagingException;
+
+   void saveBuffer(final OutputStream output) throws MessagingException;
+
+   boolean waitCompletion(long timeWait) throws MessagingException;
+
 }
