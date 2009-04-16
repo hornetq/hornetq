@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
-	<classpathentry kind="src" path="examples/jms/divert/src"/>
-	<classpathentry kind="src" path="examples/jms/ssl-enabled/src"/>
-	<classpathentry kind="src" path="examples/jms/security/src"/>
 	<classpathentry kind="src" path="build/src"/>
 	<classpathentry kind="src" path="tests/jms-tests/config"/>
 	<classpathentry kind="src" path="tests/config"/>
@@ -27,12 +24,15 @@
 	<classpathentry kind="src" path="examples/jms/bridge/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>
 	<classpathentry kind="src" path="examples/jms/dead-letter/src"/>
+	<classpathentry kind="src" path="examples/jms/divert/src"/>
 	<classpathentry kind="src" path="examples/jms/durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/expiry/src"/>
 	<classpathentry kind="src" path="examples/jms/http-transport/src"/>
 	<classpathentry kind="src" path="examples/jms/jmx/src"/>
 	<classpathentry kind="src" path="examples/jms/large-message/src"/>
+	<classpathentry kind="src" path="examples/jms/last-value-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/management/src"/>
+	<classpathentry kind="src" path="examples/jms/message-group/src"/>
 	<classpathentry kind="src" path="examples/jms/message-priority/src"/>
 	<classpathentry kind="src" path="examples/jms/paging/src"/>
 	<classpathentry kind="src" path="examples/jms/queue/src"/>
@@ -42,6 +42,7 @@
 	<classpathentry kind="src" path="examples/jms/reconnect-same-node/src"/>
 	<classpathentry kind="src" path="examples/jms/request-reply/src"/>
 	<classpathentry kind="src" path="examples/jms/scheduled-message/src"/>
+	<classpathentry kind="src" path="examples/jms/ssl-enabled/src"/>
 	<classpathentry kind="src" path="examples/jms/temp-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/topic/src"/>
 	<classpathentry kind="src" path="examples/jms/topic-selector-example1/src"/>
