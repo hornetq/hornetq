@@ -26,6 +26,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.util.List;
 
@@ -98,26 +99,28 @@ public class QueueDeployer extends XmlDeployer
    private QueueConfiguration parseQueueConfiguration(final Node node)
    {
       String name = node.getAttributes().getNamedItem("name").getNodeValue();
-
-      String address = node.getAttributes().getNamedItem("address").getNodeValue();
-
+      String address = null;
       String filterString = null;
-
-      Node filterNode = node.getAttributes().getNamedItem("filter");
-      if (filterNode != null)
-      {
-         String filterValue = filterNode.getNodeValue();
-         if (!"".equals(filterValue.trim()))
-         {
-            filterString = filterValue;
-         }
-      }
-
       boolean durable = false;
-      Node durableNode = node.getAttributes().getNamedItem("durable");
-      if (durableNode != null)
+      
+      NodeList children = node.getChildNodes();
+
+      for (int j = 0; j < children.getLength(); j++)
       {
-         durable = Boolean.parseBoolean(durableNode.getNodeValue());
+         Node child = children.item(j);
+
+         if (child.getNodeName().equals("address"))
+         {
+            address = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("filter"))
+         {
+            filterString = child.getAttributes().getNamedItem("string").getNodeValue();
+         }
+         else if (child.getNodeName().equals("durable"))
+         {
+            durable = Boolean.parseBoolean(child.getTextContent().trim());
+         }
       }
 
       return new QueueConfiguration(address, name, filterString, durable);

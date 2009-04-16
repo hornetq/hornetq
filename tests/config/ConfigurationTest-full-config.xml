@@ -119,8 +119,16 @@
          </divert>
       </diverts>
       <queues>
-         <queue name="foo" address="bar" filter="color = 'red'" durable="false" />
-         <queue name="foo2" address="bar2" filter="color = 'red'" durable="false" />
+         <queue name="foo">
+            <address>bar</address>
+            <filter string="color='red'" />
+            <durable>false</durable>
+         </queue>
+         <queue name="foo2">
+            <address>bar2</address>
+            <filter string="color='red'" />
+            <durable>false</durable>
+         </queue>
       </queues>
       <bridges>
          <bridge name="bridge">
@@ -181,7 +189,9 @@
    </configuration>
    
    <settings>
-      <queue name="foo3" address="bar" />
+      <queue name="foo3">
+        <address>bar</address>
+      </queue>
    </settings>
 
 </deployment>

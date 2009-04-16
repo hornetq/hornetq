@@ -86,13 +86,23 @@
    <xsd:element name="queue" type="queueType"></xsd:element>
    
     <xsd:complexType name="queueType">
-        <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
-        <xsd:attribute name="address" type="xsd:string"
-            use="required">
-        </xsd:attribute>
-        <xsd:attribute name="filter" type="xsd:string" use="optional"></xsd:attribute>
-        <xsd:attribute name="durable" type="xsd:boolean"
-            use="optional">
-        </xsd:attribute>
+        <xsd:all>
+            <xsd:element name="address" type="xsd:string"
+                maxOccurs="1" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="filter" type="filterType"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="durable" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+        </xsd:all>
+        <xsd:attribute name="name" type="xsd:ID" use="required"></xsd:attribute>
     </xsd:complexType>
+    
+    <xsd:complexType name="filterType">
+        <xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
+    </xsd:complexType>
+
+    
 </xsd:schema>

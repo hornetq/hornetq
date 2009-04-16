@@ -56,7 +56,11 @@ public class QueueDeployerTest extends UnitTestCase
       QueueDeployer deployer = new QueueDeployer(new FileDeploymentManager(500), configuration);
 
       String xml = "<settings xmlns='urn:jboss:messaging'>"
-                 + "<queue name='foo' address='bar' filter='speed > 88' durable='false' />"
+                 + "   <queue name='foo'>"
+                 + "      <address>bar</address>"
+                 + "      <filter string='speed > 88' />"
+                 + "      <durable>false</durable>" 
+                 + "   </queue>"
                  + "</settings>";
       
       Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
@@ -85,11 +89,19 @@ public class QueueDeployerTest extends UnitTestCase
                  + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
                  + "</acceptors>"
                  + "<queues>"
-                 + "<queue name='foo' address='bar' filter='speed > 88' durable='false' />"
+                 + "   <queue name='foo'>"
+                 + "      <address>bar</address>"
+                 + "      <filter string='speed > 88' />"
+                 + "      <durable>false</durable>" 
+                 + "   </queue>"
                  + "</queues>"
                  + "</configuration>"
                  + "<settings>"
-                 + "<queue name='foo2' address='bar2' filter='speed > 88' durable='true' />"
+                 + "   <queue name='foo2'>"
+                 + "      <address>bar2</address>"
+                 + "      <filter string='speed > 88' />"
+                 + "      <durable>true</durable>" 
+                 + "   </queue>"
                  + "</settings>"
                  + "</deployment>";
       

@@ -360,7 +360,7 @@
 
 	<xsd:complexType name="bridgeType">	   
 		<xsd:sequence>
-			<xsd:element name="queue-name" type="xsd:string"
+			<xsd:element name="queue-name" type="xsd:IDREF"
 				maxOccurs="1" minOccurs="1">
 			</xsd:element>
 			<xsd:element name="forwarding-address" type="xsd:string"
@@ -474,10 +474,6 @@
 		<xsd:attribute name="connector-name" type="xsd:IDREF"
 			use="required">
 		</xsd:attribute>
-	</xsd:complexType>
-
-	<xsd:complexType name="filterType">
-		<xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
 	</xsd:complexType>
 
 	<xsd:simpleType name="portRange">
