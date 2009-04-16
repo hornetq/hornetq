@@ -359,7 +359,7 @@ public class QueueImpl implements Queue
    }
 
    public void addLast(final MessageReference ref)
-   {
+   {    
       add(ref, false);
    }
 

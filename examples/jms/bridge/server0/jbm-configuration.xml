@@ -19,7 +19,7 @@
          </connector>
       </connectors>
       
-      <!-- Acceptors -->
+      <!-- Acceptors -->     
       <acceptors>
          <acceptor name="netty-acceptor">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
@@ -27,10 +27,12 @@
          </acceptor>
       </acceptors>
       
-      <queues>   
-         <queue name="jms.queue.sausage-factory" address="jms.queue.sausage-factory"/>
-	  </queues>
-	           
+	   <!-- We need to create a core queue for the JMS queue explicitly because the bridge will be deployed
+      before the JMS queue is deployed, so the first time, it otherwise won't find the queue --> 
+      <queues>     
+      	<queue name="jms.queue.sausage-factory" address="jms.queue.sausage-factory"/>
+      </queues>
+
       <!-- We set-up a bridge that forwards from a queue on this node to an address on another node.
       We specify a filter with the bridge, and a transformer too. The filter and transformer are optional -->
       <bridges>

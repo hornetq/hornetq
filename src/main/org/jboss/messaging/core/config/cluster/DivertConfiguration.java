@@ -24,6 +24,9 @@ package org.jboss.messaging.core.config.cluster;
 
 import java.io.Serializable;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.UUIDGenerator;
+
 /**
  * A DivertConfiguration
  *
@@ -36,6 +39,9 @@ import java.io.Serializable;
 public class DivertConfiguration implements Serializable
 {
    private static final long serialVersionUID = 6910543740464269629L;
+   
+   private static final Logger log = Logger.getLogger(DivertConfiguration.class);
+
 
    private final String name;
 
@@ -60,11 +66,18 @@ public class DivertConfiguration implements Serializable
                               final String transformerClassName)
    {
       this.name = name;
-      this.routingName = routingName;
+      if (routingName == null)
+      {
+         this.routingName = UUIDGenerator.getInstance().generateStringUUID();
+      }
+      else
+      {
+         this.routingName = routingName;
+      }
       this.address = address;
       this.forwardingAddress = forwardingAddress;
       this.exclusive = exclusive;
-      this.filterString = filterString;
+      this.filterString = filterString;      
       this.transformerClassName = transformerClassName;
    }
 

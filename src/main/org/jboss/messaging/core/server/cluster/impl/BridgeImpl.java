@@ -296,7 +296,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       if (activated)
       {
          executor.execute(new CreateObjectsRunnable());
-      }           
+      }                     
    }
 
    private void cancelRefs() throws Exception
@@ -441,7 +441,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    // Consumer implementation ---------------------------------------
 
    public HandleStatus handle(final MessageReference ref) throws Exception
-   {
+   {     
       if (filter != null && !filter.match(ref.getMessage()))
       {
          return HandleStatus.NO_MATCH;
@@ -704,7 +704,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          active = true;
 
          queue.deliverAsync(executor);
-
+         
          return true;
       }
       catch (Exception e)

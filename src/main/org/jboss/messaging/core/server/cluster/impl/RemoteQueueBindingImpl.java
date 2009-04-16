@@ -38,7 +38,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
 import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * A RemoteQueueBindingImpl

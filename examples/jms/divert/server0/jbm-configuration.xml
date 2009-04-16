@@ -1,0 +1,69 @@
+<deployment xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
+   <configuration>
+   
+      <!-- We need to make it clustered otherwise the bridge won't deploy -->
+      <clustered>true</clustered>
+
+      <!-- Connectors -->
+
+      <connectors>
+	      <connector name="netty-connector">
+	         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+	         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+	      </connector>
+      
+	      <!-- This connector corresponds to the New York server -->
+	      
+	      <connector name="newyork-connector">
+	         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+	         <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
+	      </connector>
+      </connectors>
+
+      <!-- Acceptors -->
+
+      <acceptors>
+	      <acceptor name="netty-acceptor">
+	         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+	         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+	      </acceptor>
+      </acceptors>
+      
+      <!-- Divert configuration -->
+
+	   <diverts>
+	      <divert name="order-divert">                 
+	         <address>jms.queue.orders</address>
+	         <forwarding-address>jms.topic.spyTopic</forwarding-address>         
+	         <exclusive>false</exclusive>
+	      </divert>
+	      
+	      <divert name="prices-divert">                  
+	         <address>jms.topic.priceUpdates</address>
+	         <forwarding-address>jms.queue.priceForwarding</forwarding-address>    
+	         <filter string="office='New York'"/>
+	         <transformer-class-name>org.jboss.jms.example.AddForwardingTimeTransformer</transformer-class-name>     
+	         <exclusive>true</exclusive>
+	      </divert>
+      </diverts>
+      
+      <!-- Bridge configuration -->
+      
+      <bridges>
+	      <bridge name="price-forward-bridge">
+	         <queue-name>jms.queue.priceForwarding</queue-name>
+	         <forwarding-address>jms.topic.newYorkPriceUpdates</forwarding-address>         
+	         <reconnect-attempts>-1</reconnect-attempts>
+	         <connector-ref connector-name="newyork-connector"/>          
+	      </bridge>
+      </bridges>
+
+      <!-- Other config -->
+
+      <journal-min-files>2</journal-min-files>
+
+   </configuration>
+
+</deployment>

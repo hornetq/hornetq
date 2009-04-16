@@ -479,10 +479,10 @@ public class MessagingServerImpl implements MessagingServer
 
          // Once we ready we can start the remoting service so we can start accepting connections
          remotingService.start();
+         
+         // Deploy any pre-defined queues - must be done *after* deploymentManager has started
+         deployQueues();
       }
-      
-      // Deploy any pre-defined queues
-      deployQueues();
       
       if (clusterManager != null)
       {
@@ -897,6 +897,9 @@ public class MessagingServerImpl implements MessagingServer
          {           
             deploymentManager.start();
          }
+         
+         //Queues must be deployed *after* deploymentManager has started
+         deployQueues();
 
          log.info("Backup server is now operational");
       }
@@ -1171,7 +1174,7 @@ public class MessagingServerImpl implements MessagingServer
          Filter filter = null;
 
          if (config.getFilterString() != null)
-         {
+         {           
             filter = new FilterImpl(new SimpleString(config.getFilterString()));
          }
 
