@@ -37,7 +37,7 @@
       before the JMS queue is deployed, so the first time, it otherwise won't find the queue --> 
       <queues>     
       	<queue name="jms.queue.priceForwarding">
-      	    <address>jms.queue.sausage-factory</address>
+      	    <address>jms.queue.priceForwarding</address>
       	</queue>
       </queues>
 
