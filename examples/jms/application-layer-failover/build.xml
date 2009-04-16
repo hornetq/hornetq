@@ -46,13 +46,9 @@
       </antcall>
    </target>
    
-   <target name="delete-files">
-      <delete file="./server1/KILL_ME"/>
-      <!-- Need to delete the server data dirs before each run since after failover cannot just rerun test since backup is now live -->
-      <delete dir="./server0/data"/>
-      <delete dir="./server0/logs"/>
-      <delete dir="./server1/data"/>
-      <delete dir="./server1/logs"/>
+   <!-- Need to delete the server data dirs before each run since after failover cannot just rerun test since backup is now live -->
+   <target name="delete-files" depends="clean">
+      <delete file="./server1/KILL_ME"/>           
    </target>
 
 </project>
