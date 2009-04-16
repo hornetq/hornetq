@@ -42,7 +42,7 @@
    <xsd:element name="address-settings" type="address-settingsType"></xsd:element>
 
    <xsd:complexType name="address-settingsType">
-   	<xsd:sequence>
+   	<xsd:all>
         <xsd:element name="clustered" type="xsd:boolean"
             maxOccurs="1" minOccurs="0">
         </xsd:element>
@@ -79,7 +79,7 @@
         <xsd:element name="redistribution-delay" type="xsd:unsignedLong"
             maxOccurs="1" minOccurs="0">
         </xsd:element>
-      </xsd:sequence>
+      </xsd:all>
    	<xsd:attribute name="match" type="xsd:string" use="required"></xsd:attribute>
    </xsd:complexType>   
    

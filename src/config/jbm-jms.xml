@@ -4,50 +4,62 @@
 
    <connection-factory name="testConnectionFactory">
       <connector-ref connector-name="netty"/>
-      <entry name="testConnectionFactory"/>
+      <entries>
+          <entry name="testConnectionFactory"/>
+      </entries>
    </connection-factory>
 
    <connection-factory name="ConnectionFactory">
       <connector-ref connector-name="netty"/>
-      <entry name="ConnectionFactory"/>
-      <entry name="/ConnectionFactory"/>
-      <entry name="/XAConnectionFactory"/>
-      <entry name="java:/ConnectionFactory"/>
-      <entry name="java:/XAConnectionFactory"/>
+      <entries>
+         <entry name="ConnectionFactory"/>
+         <entry name="/ConnectionFactory"/>
+         <entry name="/XAConnectionFactory"/>
+         <entry name="java:/ConnectionFactory"/>
+         <entry name="java:/XAConnectionFactory"/>
+      </entries>
    </connection-factory>
 
    <connection-factory name="ServerAckConnectionFactory">
       <connector-ref connector-name="netty"/>
-      <entry name="ServerAckConnectionFactory"/>
-      <entry name="/ServerAckConnectionFactory"/>
-      <entry name="/ServerAckXAConnectionFactory"/>
-      <entry name="java:/ServerAckConnectionFactory"/>
-      <entry name="java:/ServerAckXAConnectionFactory"/>
+      <entries>      
+         <entry name="ServerAckConnectionFactory"/>
+         <entry name="/ServerAckConnectionFactory"/>
+         <entry name="/ServerAckXAConnectionFactory"/>
+         <entry name="java:/ServerAckConnectionFactory"/>
+         <entry name="java:/ServerAckXAConnectionFactory"/>
+      </entries>
       <pre-acknowledge>true</pre-acknowledge>
    </connection-factory>
 
    <connection-factory name="ClusteredConnectionFactory">
       <connector-ref connector-name="netty" backup-connector-name="netty-backup"/>
-      <entry name="/ClusteredConnectionFactory"/>
-      <entry name="/ClusteredXAConnectionFactory"/>
-      <entry name="java:/ClusteredConnectionFactory"/>
-      <entry name="java:/ClusteredXAConnectionFactory"/>
+      <entries>
+         <entry name="/ClusteredConnectionFactory"/>
+         <entry name="/ClusteredXAConnectionFactory"/>
+         <entry name="java:/ClusteredConnectionFactory"/>
+         <entry name="java:/ClusteredXAConnectionFactory"/>
+      </entries>
    </connection-factory>
    
    <connection-factory name="ClusteredConnectionFactoryWithDiscovery">
       <discovery-group-ref discovery-group-name="dg-group1"/> 
-      <entry name="/ClusteredConnectionFactory"/>
-      <entry name="/ClusteredXAConnectionFactory"/>
-      <entry name="java:/ClusteredConnectionFactory"/>
-      <entry name="java:/ClusteredXAConnectionFactory"/>
+      <entries>
+         <entry name="/ClusteredConnectionFactory"/>
+         <entry name="/ClusteredXAConnectionFactory"/>
+         <entry name="java:/ClusteredConnectionFactory"/>
+         <entry name="java:/ClusteredXAConnectionFactory"/>
+      </entries>
    </connection-factory>
 
    <connection-factory name="MyExampleConnectionFactory">
       <connector-ref connector-name="netty"/>
-      <entry name="/MyExampleConnectionFactory"/>
-      <entry name="/acme/MyExampleConnectionFactoryDupe"/>
-      <entry name="java:/xyz/CF1"/>
-      <entry name="java:/connectionfactories/acme/connection_factory"/>
+      <entries>
+         <entry name="/MyExampleConnectionFactory"/>
+         <entry name="/acme/MyExampleConnectionFactoryDupe"/>
+         <entry name="java:/xyz/CF1"/>
+         <entry name="java:/connectionfactories/acme/connection_factory"/>
+      </entries>
       <ping-period>5000</ping-period>
       <call-timeout>30000</call-timeout>
       <!-- This is the window size in bytes to use when using consumer window based flow control -->
@@ -80,22 +92,30 @@
 
    <connection-factory name="TestInVMConnectionFactory">
       <connector-ref connector-name="in-vm"/>
-      <entry name="/TestInVMConnectionFactory"/>
+      <entries>
+         <entry name="/TestInVMConnectionFactory"/>
+      </entries>
    </connection-factory>
 
    <connection-factory name="TestSSLConnectionFactory">
       <connector-ref connector-name="netty-ssl"/>
-      <entry name="/TestSSLConnectionFactory"/>
+      <entries>
+         <entry name="/TestSSLConnectionFactory"/>
+      </entries>
    </connection-factory>
 
    <connection-factory name="TestHttpConnectionFactory">
       <connector-ref connector-name="netty-http"/>
-      <entry name="/TestHttpConnectionFactory"/>
+      <entries>
+         <entry name="/TestHttpConnectionFactory"/>
+      </entries>
    </connection-factory>
 
    <connection-factory name="TestServletConnectionFactory">
       <connector-ref connector-name="netty-servlet"/>
-      <entry name="/TestServletConnectionFactory"/>
+      <entries>
+         <entry name="/TestServletConnectionFactory"/>
+      </entries>
    </connection-factory>
 
    <queue name="MyQueue">

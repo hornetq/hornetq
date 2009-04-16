@@ -5,15 +5,19 @@
 
       <management-address>jbm.management</management-address>
 
-      <connector name="netty">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-      </connector>
-
+      <connectors>
+         <connector name="netty">
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         </connector>
+      </connectors>
+      
       <!-- Netty standard TCP acceptor -->
-      <acceptor name="netty">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-      </acceptor>
-
+      <acceptors>
+         <acceptor name="netty">
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         </acceptor>
+      </acceptors>
+      
    </configuration>
 
 </deployment>

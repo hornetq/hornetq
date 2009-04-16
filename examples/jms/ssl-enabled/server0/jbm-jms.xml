@@ -4,10 +4,12 @@
    <!--the connection factory used by the example-->
    <connection-factory name="ConnectionFactory">
       <connector-ref connector-name="netty-ssl-connector"/>
-      <entry name="ConnectionFactory"/>
-      <entry name="XAConnectionFactory"/>
-      <entry name="java:/ConnectionFactory"/>
-      <entry name="java:/XAConnectionFactory"/>
+      <entries>
+         <entry name="ConnectionFactory"/>
+         <entry name="XAConnectionFactory"/>
+         <entry name="java:/ConnectionFactory"/>
+         <entry name="java:/XAConnectionFactory"/>
+      </entries>
    </connection-factory>
 
    <!--the queue used by the example-->

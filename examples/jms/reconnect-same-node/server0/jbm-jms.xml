@@ -4,11 +4,13 @@
    <!--the connection factory used by the example-->
    <connection-factory name="ConnectionFactory">
       <connector-ref connector-name="netty-connector"/>
-      <entry name="ConnectionFactory"/>
-      <entry name="XAConnectionFactory"/>
-      <entry name="java:/ConnectionFactory"/>
-      <entry name="java:/XAConnectionFactory"/>
-                  
+      <entries>
+         <entry name="ConnectionFactory"/>
+         <entry name="XAConnectionFactory"/>
+         <entry name="java:/ConnectionFactory"/>
+         <entry name="java:/XAConnectionFactory"/>
+      </entries>
+               
       <!-- Pause 1 second between connect attempts -->
       <retry-interval>1000</retry-interval>
       
@@ -29,7 +31,9 @@
    <!-- This is used by the example to send the management operations, it's not central to the example -->
    <connection-factory name="ConnectionFactory2">
       <connector-ref connector-name="netty-connector2"/>
-      <entry name="ConnectionFactory2"/>                     
+      <entries>
+         <entry name="ConnectionFactory2"/>                     
+      </entries>
    </connection-factory>
 
    <!--the queue used by the example-->

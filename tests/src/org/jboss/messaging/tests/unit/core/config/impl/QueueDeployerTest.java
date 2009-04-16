@@ -81,8 +81,12 @@ public class QueueDeployerTest extends UnitTestCase
 
       String xml = "<deployment xmlns='urn:jboss:messaging'> " 
                  + "<configuration>"
+                 + "<acceptors>"
                  + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
+                 + "</acceptors>"
+                 + "<queues>"
                  + "<queue name='foo' address='bar' filter='speed > 88' durable='false' />"
+                 + "</queues>"
                  + "</configuration>"
                  + "<settings>"
                  + "<queue name='foo2' address='bar2' filter='speed > 88' durable='true' />"

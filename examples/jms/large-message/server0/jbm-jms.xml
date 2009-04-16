@@ -4,13 +4,14 @@
    <!--the connection factory used by the example-->
    <connection-factory name="ConnectionFactory">
       <connector-ref connector-name="netty-connector"/>
-      <entry name="ConnectionFactory"/>
-      <entry name="XAConnectionFactory"/>
-      <entry name="java:/ConnectionFactory"/>
-      <entry name="java:/XAConnectionFactory"/>
-      
+      <entries>
+         <entry name="ConnectionFactory"/>
+         <entry name="XAConnectionFactory"/>
+         <entry name="java:/ConnectionFactory"/>
+         <entry name="java:/XAConnectionFactory"/>
+      </entries>
       <!-- When using this ConnectionFactory, messages beyond this limit are considered largeMessages and will be sent using smaller packets -->
-      <big-message-size>10240</big-message-size>
+      <min-large-message-size>10240</min-large-message-size>
       
    </connection-factory>
 

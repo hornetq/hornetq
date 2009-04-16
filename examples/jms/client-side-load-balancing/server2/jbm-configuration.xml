@@ -6,33 +6,38 @@
       <clustered>true</clustered>
 
       <!-- Connectors -->
-
-      <connector name="netty-connector">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="jbm.remoting.netty.port" value="5447" type="Integer"/>
-      </connector>
-
+      <connectors>
+         <connector name="netty-connector">
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+            <param key="jbm.remoting.netty.port" value="5447" type="Integer"/>
+         </connector>
+      </connectors>
+      
       <!-- Acceptors -->
-
-      <acceptor name="netty-acceptor">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="jbm.remoting.netty.port" value="5447" type="Integer"/>
-      </acceptor>
-
+      <acceptors>
+         <acceptor name="netty-acceptor">
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+            <param key="jbm.remoting.netty.port" value="5447" type="Integer"/>
+         </acceptor>
+      </acceptors>
+      
       <!-- Clustering configuration -->
-
-      <broadcast-group name="my-broadcast-group">
-         <group-address>231.7.7.7</group-address>
-         <group-port>9876</group-port>
-         <broadcast-period>100</broadcast-period>
-         <connector-ref connector-name="netty-connector"/>
-      </broadcast-group>
-
-      <discovery-group name="my-discovery-group">
-         <group-address>231.7.7.7</group-address>
-         <group-port>9876</group-port>
-         <refresh-timeout>10000</refresh-timeout>
-      </discovery-group>
+      <broadcast-groups>
+         <broadcast-group name="my-broadcast-group">
+            <group-address>231.7.7.7</group-address>
+            <group-port>9876</group-port>
+            <broadcast-period>100</broadcast-period>
+            <connector-ref connector-name="netty-connector"/>
+         </broadcast-group>
+      </broadcast-groups>
+      
+      <discovery-groups>
+         <discovery-group name="my-discovery-group">
+            <group-address>231.7.7.7</group-address>
+            <group-port>9876</group-port>
+            <refresh-timeout>10000</refresh-timeout>
+         </discovery-group>
+      </discovery-groups>
 
       <!-- Other config -->
 

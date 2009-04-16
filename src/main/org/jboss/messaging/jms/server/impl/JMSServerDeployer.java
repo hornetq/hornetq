@@ -85,6 +85,8 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String DISCOVERY_GROUP_ELEMENT = "discovery-group-ref";
 
+   private static final String ENTRIES_NODE_NAME = "entries";
+
    private static final String ENTRY_NODE_NAME = "entry";
 
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
@@ -264,11 +266,19 @@ public class JMSServerDeployer extends XmlDeployer
             {
                failoverOnNodeShutdown = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);;
             }            
-            else if (ENTRY_NODE_NAME.equals(child.getNodeName()))
+            else if (ENTRIES_NODE_NAME.equals(child.getNodeName()))
             {
-               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               
-               jndiBindings.add(jndiName);
+               NodeList entries = child.getChildNodes();
+               for (int i = 0; i < entries.getLength(); i++)
+               {
+                  Node entry = entries.item(i);
+                  if (ENTRY_NODE_NAME.equals(entry.getNodeName()))
+                  {
+                     String jndiName = entry.getAttributes().getNamedItem("name").getNodeValue();
+
+                     jndiBindings.add(jndiName);                  
+                  }
+               }
             }
             else if (CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT.equals(child.getNodeName()))
             {

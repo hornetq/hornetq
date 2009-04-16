@@ -20,27 +20,32 @@
       <queue-activation-timeout>12456</queue-activation-timeout>
       <backup>true</backup>
       <backup-connector-ref connector-name="backup-connector"/>
-      <connector name="backup-connector">
-         <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
-         <param key="c_mykey1" value="c_foovalue1" type="String"/>
-         <param key="c_mykey2" value="6000" type="Long"/>
-         <param key="c_mykey3" value="60" type="Integer"/>
-         <param key="c_mykey4" value="c_foovalue4" type="String"/>      
-      </connector>
-      <acceptor>
-         <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
-         <param key="a_mykey1" value="a_foovalue1" type="String"/>
-         <param key="a_mykey2" value="1234567" type="Long"/>
-         <param key="a_mykey3" value="123" type="Integer"/>
-         <param key="a_mykey4" value="a_foovalue4" type="String"/>                     
-      </acceptor>
-	   <acceptor>
-	      <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>           
-	      <param key="b_mykey1" value="b_foovalue1" type="String"/>
-	      <param key="b_mykey2" value="7654321" type="Long"/>
-	      <param key="b_mykey3" value="321" type="Integer"/>
-	      <param key="b_mykey4" value="b_foovalue4" type="String"/>            
-	   </acceptor>
+      <connectors>
+         <connector name="backup-connector">
+            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
+            <param key="c_mykey1" value="c_foovalue1" type="String"/>
+            <param key="c_mykey2" value="6000" type="Long"/>
+            <param key="c_mykey3" value="60" type="Integer"/>
+            <param key="c_mykey4" value="c_foovalue4" type="String"/>      
+         </connector>
+      </connectors>
+      <acceptors>
+         <acceptor>
+            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
+            <param key="a_mykey1" value="a_foovalue1" type="String"/>
+            <param key="a_mykey2" value="1234567" type="Long"/>
+            <param key="a_mykey3" value="123" type="Integer"/>
+            <param key="a_mykey4" value="a_foovalue4" type="String"/>                     
+         </acceptor>
+	     <acceptor>
+	        <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>           
+	        <param key="b_mykey1" value="b_foovalue1" type="String"/>
+	        <param key="b_mykey2" value="7654321" type="Long"/>
+	        <param key="b_mykey3" value="321" type="Integer"/>
+	        <param key="b_mykey4" value="b_foovalue4" type="String"/>            
+	      </acceptor>
+	  </acceptors>
+      
       <bindings-directory>somedir</bindings-directory>
       <create-bindings-dir>false</create-bindings-dir>
       <journal-directory>somedir2</journal-directory>

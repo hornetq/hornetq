@@ -66,7 +66,9 @@ public class ConfigurationValidationTest extends UnitTestCase
       }
 
       xml = "<deployment xmlns='urn:jboss:messaging'> " + "<configuration>"
+            + "<acceptors>"
             + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
+            + "</acceptors>"
             + "</configuration>"
             + "</deployment>";
       element = XMLUtil.stringToElement(xml);
