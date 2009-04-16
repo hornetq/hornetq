@@ -11,5 +11,9 @@
       <permission type="consume" roles="guest"/>
       <permission type="send" roles="guest"/>
    </security>
+   
+   <address-settings match="jms.queue.exampleQueue">
+      <distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor</distribution-policy-class>
+   </address-settings>
 
 </settings>
