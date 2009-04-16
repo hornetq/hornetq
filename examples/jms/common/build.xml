@@ -137,7 +137,7 @@
       <delete dir="./server0/logs" quiet="true" />
       <delete dir="./server0/data" quiet="true" />
       <delete dir="./server1/logs" quiet="true" />
-      <delete dir="./server2/data" quiet="true" />
+      <delete dir="./server1/data" quiet="true" />
    </target>
     
    <target name="all" description="Run all the JMS examples">
