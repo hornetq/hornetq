@@ -49,6 +49,9 @@
      <p>As you can see, both users can access queue resources (role user). However, user jbm-sender (of role sender) can only send messages 
      and user jbm-consumer (of role consumer) can only consume messages. In this example the jbm-consumer tries to send message but failed 
      as it doesn't has the right to do so.</p>
+     
+     <p>With JBoss Messaging, the security manager is configurable. You can use JAASSecurityManager or JBossASSecurityManager based on you need. Please
+     check out the jbm-standalone-beans.xml for how to do.</p>
 
      <br>
      <h2>Example step-by-step</h2>
