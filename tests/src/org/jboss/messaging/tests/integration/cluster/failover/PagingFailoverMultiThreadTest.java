@@ -328,7 +328,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
       final ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                            new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                       backupParams));
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
       return sf;
    }
 

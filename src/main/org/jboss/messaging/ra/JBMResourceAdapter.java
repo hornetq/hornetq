@@ -1374,7 +1374,7 @@ public class JBMResourceAdapter implements ResourceAdapter
                                                                                             : getConsumerWindowSize(),
                                                              getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE
                                                                                          : getConsumerMaxRate(),
-                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE
+                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE
                                                                                         : getSendWindowSize(),
                                                              getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE
                                                                                          : getProducerMaxRate(),
@@ -1426,7 +1426,7 @@ public class JBMResourceAdapter implements ResourceAdapter
                                                                                             : getConsumerWindowSize(),
                                                              getConsumerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE
                                                                                          : getConsumerMaxRate(),
-                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE
+                                                             getSendWindowSize() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE
                                                                                         : getSendWindowSize(),
                                                              getProducerMaxRate() == null ? ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE
                                                                                          : getProducerMaxRate(),

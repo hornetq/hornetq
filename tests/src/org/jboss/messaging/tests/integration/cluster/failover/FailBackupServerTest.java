@@ -86,7 +86,7 @@ public class FailBackupServerTest extends UnitTestCase
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
 
-      sf1.setSendWindowSize(32 * 1024);
+      sf1.setProducerWindowSize(32 * 1024);
 
       ClientSession session1 = sf1.createSession(false, true, true);
 
@@ -171,7 +171,7 @@ public class FailBackupServerTest extends UnitTestCase
       
       sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      sf1.setSendWindowSize(32 * 1024);
+      sf1.setProducerWindowSize(32 * 1024);
 
       session1 = sf1.createSession(false, true, true);
 

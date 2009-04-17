@@ -66,7 +66,7 @@ public class JMSTestCase extends JBMServerTestCase
                                                     ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
                                                     ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                                                     ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                                    ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                                                    ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                                                     ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                                                     ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                     true,

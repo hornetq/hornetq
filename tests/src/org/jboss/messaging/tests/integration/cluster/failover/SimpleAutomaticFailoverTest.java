@@ -86,7 +86,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -135,7 +135,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -213,7 +213,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -294,7 +294,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -362,7 +362,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -432,7 +432,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
 
@@ -520,7 +520,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
 
@@ -551,7 +551,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       final int numSessions = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2;
 
@@ -597,7 +597,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      retryMultiplier,
                                                                      reconnectAttempts);
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -700,7 +700,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                         1,
                                                                         -1);
 
-         sf.setSendWindowSize(32 * 1024);
+         sf.setProducerWindowSize(32 * 1024);
 
          for (int i = 0; i < 10; i++)
          {
@@ -770,7 +770,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
 
       ClientSession sess = sf.createSession(false, true, true);
 

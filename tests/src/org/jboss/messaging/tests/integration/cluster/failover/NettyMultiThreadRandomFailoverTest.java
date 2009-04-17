@@ -83,7 +83,7 @@ public class NettyMultiThreadRandomFailoverTest extends MultiThreadRandomFailove
                                                                            new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory",
                                                                                                       backupParams));
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
       return sf;
    }
 

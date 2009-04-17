@@ -90,8 +90,8 @@ public class ActivationTimeoutTest extends UnitTestCase
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
 
-      sf1.setSendWindowSize(32 * 1024);
-      sf2.setSendWindowSize(32 * 1024);
+      sf1.setProducerWindowSize(32 * 1024);
+      sf2.setProducerWindowSize(32 * 1024);
 
       ClientSession session1 = sf1.createSession(false, true, true);
 
@@ -175,8 +175,8 @@ public class ActivationTimeoutTest extends UnitTestCase
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
 
-      sf1.setSendWindowSize(32 * 1024);
-      sf2.setSendWindowSize(32 * 1024);
+      sf1.setProducerWindowSize(32 * 1024);
+      sf2.setProducerWindowSize(32 * 1024);
 
       ClientSession session1 = sf1.createSession(false, true, true);
 

@@ -82,7 +82,7 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
                                                                       new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
       
-      sf1.setSendWindowSize(32 * 1024);
+      sf1.setProducerWindowSize(32 * 1024);
 
       ClientSession session1 = sf1.createSession(false, true, true);
 
@@ -132,7 +132,7 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
       ClientSessionFactoryInternal sf2 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                  backupParams));
       
-      sf2.setSendWindowSize(32 * 1024);
+      sf2.setProducerWindowSize(32 * 1024);
 
       ClientSession session2 = sf2.createSession(false, true, true);
       

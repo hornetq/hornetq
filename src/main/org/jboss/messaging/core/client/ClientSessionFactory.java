@@ -47,9 +47,9 @@ public interface ClientSessionFactory
 
    int getConsumerWindowSize();
 
-   void setSendWindowSize(int size);
+   void setProducerWindowSize(int size);
 
-   int getSendWindowSize();
+   int getProducerWindowSize();
 
    void setConsumerMaxRate(int rate);
 

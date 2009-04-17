@@ -40,7 +40,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
@@ -707,7 +707,7 @@ public class JMSQueueControlTest extends ManagementTestBase
                                                              DEFAULT_ACK_BATCH_SIZE,
                                                              DEFAULT_CONSUMER_WINDOW_SIZE,
                                                              DEFAULT_CONSUMER_MAX_RATE,
-                                                             DEFAULT_SEND_WINDOW_SIZE,
+                                                             DEFAULT_PRODUCER_WINDOW_SIZE,
                                                              DEFAULT_PRODUCER_MAX_RATE,
                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                              DEFAULT_BLOCK_ON_ACKNOWLEDGE,

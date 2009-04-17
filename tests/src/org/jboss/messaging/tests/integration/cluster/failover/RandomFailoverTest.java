@@ -228,7 +228,7 @@ public class RandomFailoverTest extends UnitTestCase
                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                backupParams));
 
-         sf.setSendWindowSize(32 * 1024);
+         sf.setProducerWindowSize(32 * 1024);
 
          ClientSession session = sf.createSession(false, false, false);
 

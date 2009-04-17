@@ -1346,7 +1346,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
                                                                            ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                                            -1);
 
-      sf.setSendWindowSize(32 * 1024);
+      sf.setProducerWindowSize(32 * 1024);
       return sf;
    }
 

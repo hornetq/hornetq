@@ -55,7 +55,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String CONSUMER_MAX_RATE_ELEMENT = "consumer-max-rate";
 
-   private static final String SEND_WINDOW_SIZE = "send-window-size";
+   private static final String PRODUCER_WINDOW_SIZE = "producer-window-size";
 
    private static final String PRODUCER_MAX_RATE_ELEMENT = "producer-max-rate";
 
@@ -158,7 +158,7 @@ public class JMSServerDeployer extends XmlDeployer
          int transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
          int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
          int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-         int sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+         int producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
          int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
          int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
          boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
@@ -202,9 +202,9 @@ public class JMSServerDeployer extends XmlDeployer
             {
                consumerMaxRate = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
-            else if (SEND_WINDOW_SIZE.equals(child.getNodeName()))
+            else if (PRODUCER_WINDOW_SIZE.equals(child.getNodeName()))
             {
-               sendWindowSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
+               producerWindowSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (PRODUCER_MAX_RATE_ELEMENT.equals(child.getNodeName()))
             {
@@ -352,7 +352,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      transactionBatchSize,
                                                      consumerWindowSize,
                                                      consumerMaxRate,
-                                                     sendWindowSize,
+                                                     producerWindowSize,
                                                      producerMaxRate,
                                                      minLargeMessageSize,
                                                      blockOnAcknowledge,
@@ -380,7 +380,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      transactionBatchSize,
                                                      consumerWindowSize,
                                                      consumerMaxRate,
-                                                     sendWindowSize,
+                                                     producerWindowSize,
                                                      producerMaxRate,
                                                      minLargeMessageSize,
                                                      blockOnAcknowledge,

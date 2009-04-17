@@ -64,7 +64,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final int DEFAULT_CONSUMER_MAX_RATE = -1;
 
-   public static final int DEFAULT_SEND_WINDOW_SIZE = 1024 * 1024;
+   public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
 
    public static final int DEFAULT_PRODUCER_MAX_RATE = -1;
 
@@ -118,7 +118,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private volatile int consumerMaxRate;
 
-   private volatile int sendWindowSize;
+   private volatile int producerWindowSize;
 
    private volatile int producerMaxRate;
 
@@ -190,7 +190,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.callTimeout = DEFAULT_CALL_TIMEOUT;
       this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
       this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      this.sendWindowSize = DEFAULT_SEND_WINDOW_SIZE;
+      this.producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
       this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
       this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
@@ -216,7 +216,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final long callTimeout,
                                    final int consumerWindowSize,
                                    final int consumerMaxRate,
-                                   final int sendWindowSize,
+                                   final int producerWindowSize,
                                    final int producerMaxRate,
                                    final int minLargeMessageSize,
                                    final boolean blockOnAcknowledge,
@@ -258,7 +258,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
-      this.sendWindowSize = sendWindowSize;
+      this.producerWindowSize = producerWindowSize;
       this.producerMaxRate = producerMaxRate;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -302,7 +302,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
-      this.sendWindowSize = sendWindowSize;
+      this.producerWindowSize = sendWindowSize;
       this.producerMaxRate = producerMaxRate;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -353,7 +353,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.callTimeout = DEFAULT_CALL_TIMEOUT;
       this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
       this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      this.sendWindowSize = DEFAULT_SEND_WINDOW_SIZE;
+      this.producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
       this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
       this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
@@ -402,7 +402,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.callTimeout = DEFAULT_CALL_TIMEOUT;
       this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
       this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      this.sendWindowSize = DEFAULT_SEND_WINDOW_SIZE;
+      this.producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
       this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
       this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
@@ -449,7 +449,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.connectionTTL = DEFAULT_CONNECTION_TTL;
       this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
       this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      this.sendWindowSize = DEFAULT_SEND_WINDOW_SIZE;
+      this.producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
       this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
       this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
@@ -516,7 +516,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.callTimeout = callTimeout;
       this.consumerWindowSize = consumerWindowSize;
       this.consumerMaxRate = consumerMaxRate;
-      this.sendWindowSize = sendWindowSize;
+      this.producerWindowSize = sendWindowSize;
       this.producerMaxRate = producerMaxRate;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -608,14 +608,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       consumerWindowSize = size;
    }
 
-   public int getSendWindowSize()
+   public int getProducerWindowSize()
    {
-      return sendWindowSize;
+      return producerWindowSize;
    }
 
-   public void setSendWindowSize(final int size)
+   public void setProducerWindowSize(final int size)
    {
-      sendWindowSize = size;
+      producerWindowSize = size;
    }
 
    public int getProducerMaxRate()
@@ -876,7 +876,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                 minLargeMessageSize,
                                                 blockOnAcknowledge,
                                                 autoGroup,
-                                                sendWindowSize,
+                                                producerWindowSize,
                                                 consumerWindowSize,
                                                 consumerMaxRate,
                                                 producerMaxRate,

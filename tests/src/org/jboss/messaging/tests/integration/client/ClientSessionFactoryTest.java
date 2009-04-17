@@ -73,7 +73,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -105,7 +105,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -250,7 +250,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -284,7 +284,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -315,7 +315,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -404,7 +404,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -436,7 +436,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -487,7 +487,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -503,7 +503,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
          cf.setMinLargeMessageSize(minLargeMessageSize);
          cf.setPreAcknowledge(preAcknowledge);
          cf.setProducerMaxRate(producerMaxRate);
-         cf.setSendWindowSize(windowSize);
+         cf.setProducerWindowSize(windowSize);
          assertFactoryParams(cf,
                              batchSize,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
@@ -609,7 +609,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       assertEquals(cf.getMinLargeMessageSize(), minLargeMessageSize);
       assertEquals(cf.getPingPeriod(), pingPeriod);
       assertEquals(cf.getProducerMaxRate(), producerMaxRate);
-      assertEquals(cf.getSendWindowSize(), sendWindowSize);
+      assertEquals(cf.getProducerWindowSize(), sendWindowSize);
       assertEquals(cf.isAutoGroup(), autoGroup);
       assertEquals(cf.isBlockOnAcknowledge(), blockOnAcknowledge);
       assertEquals(cf.isBlockOnNonPersistentSend(), blockOnNonPersistentSend);

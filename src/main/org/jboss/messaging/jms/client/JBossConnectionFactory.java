@@ -92,7 +92,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final int consumerMaxRate;
 
-   private final int sendWindowSize;
+   private final int producerWindowSize;
 
    private final int producerMaxRate;
 
@@ -133,7 +133,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                  final int transactionBatchSize,
                                  final int consumerWindowSize,
                                  final int consumerMaxRate,
-                                 final int sendWindowSize,
+                                 final int producerWindowSize,
                                  final int producerMaxRate,
                                  final int minLargeMessageSize,
                                  final boolean blockOnAcknowledge,
@@ -162,7 +162,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.consumerMaxRate = consumerMaxRate;
       this.consumerWindowSize = consumerWindowSize;
       this.producerMaxRate = producerMaxRate;
-      this.sendWindowSize = sendWindowSize;
+      this.producerWindowSize = producerWindowSize;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.minLargeMessageSize = minLargeMessageSize;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -196,7 +196,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
       this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
       this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-      this.sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+      this.producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
       this.blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
       this.blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
@@ -257,7 +257,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.consumerMaxRate = consumerMaxRate;
       this.consumerWindowSize = consumerWindowSize;
       this.producerMaxRate = producerMaxRate;
-      this.sendWindowSize = sendWindowSize;
+      this.producerWindowSize = sendWindowSize;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.minLargeMessageSize = minLargeMessageSize;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -313,7 +313,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.consumerMaxRate = consumerMaxRate;
       this.consumerWindowSize = consumerWindowSize;
       this.producerMaxRate = producerMaxRate;
-      this.sendWindowSize = sendWindowSize;
+      this.producerWindowSize = sendWindowSize;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.minLargeMessageSize = minLargeMessageSize;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -344,7 +344,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
       this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
       this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-      this.sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+      this.producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
       this.blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
       this.blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
@@ -379,7 +379,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
       this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
       this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-      this.sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+      this.producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
       this.blockOnAcknowledge = blockOnAcknowledge;
       this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -414,7 +414,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
       this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
       this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-      this.sendWindowSize = ClientSessionFactoryImpl.DEFAULT_SEND_WINDOW_SIZE;
+      this.producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
       this.blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
       this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
       this.blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
@@ -554,7 +554,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public int getProducerWindowSize()
    {
-      return sendWindowSize;
+      return producerWindowSize;
    }
 
    public int getProducerMaxRate()
@@ -662,7 +662,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        callTimeout,
                                                        consumerWindowSize,
                                                        consumerMaxRate,
-                                                       sendWindowSize,
+                                                       producerWindowSize,
                                                        producerMaxRate,
                                                        minLargeMessageSize,
                                                        blockOnAcknowledge,
@@ -689,7 +689,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        callTimeout,
                                                        consumerWindowSize,
                                                        consumerMaxRate,
-                                                       sendWindowSize,
+                                                       producerWindowSize,
                                                        producerMaxRate,
                                                        minLargeMessageSize,
                                                        blockOnAcknowledge,

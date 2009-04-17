@@ -81,7 +81,7 @@ public class ClientSessionSendAcknowledgementHandlerTest extends ServiceTestBase
 
       ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
 
-      csf.setSendWindowSize(1024);
+      csf.setProducerWindowSize(1024);
 
       session.createQueue(address, queueName, false);
 
