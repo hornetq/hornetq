@@ -69,17 +69,9 @@ public interface ManagementService extends NotificationService, MessagingCompone
 
    String getClusterPassword();
 
-   void setClusterPassword(String clusterPassword);
-
    SimpleString getManagementAddress();
 
-   void setManagementAddress(SimpleString managementAddress);
-
    SimpleString getManagementNotificationAddress();
-
-   void setManagementNotificationAddress(SimpleString managementNotificationAddress);
-
-   void setManagementRequestTimeout(long timeout);
 
    ReplicationOperationInvoker getReplicationOperationInvoker();
 

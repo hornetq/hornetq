@@ -285,11 +285,6 @@ public class MessagingServerImpl implements MessagingServer
 
       pagingManager.start();
 
-      managementService.setManagementAddress(configuration.getManagementAddress());
-      managementService.setManagementNotificationAddress(configuration.getManagementNotificationAddress());
-      managementService.setClusterPassword(configuration.getManagementClusterPassword());
-      managementService.setManagementRequestTimeout(configuration.getManagementRequestTimeout());
-
       managementService.start();
 
       // Start the deployers

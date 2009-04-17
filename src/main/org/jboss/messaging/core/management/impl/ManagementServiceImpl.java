@@ -48,7 +48,6 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.management.BridgeControlMBean;
@@ -121,14 +120,14 @@ public class ManagementServiceImpl implements ManagementService
 
    private final MessageCounterManager messageCounterManager;
    
-   private SimpleString managementNotificationAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
-
-   private SimpleString managementAddress = ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
-
-   private String managementClusterPassword = ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
-
-   private long managementRequestTimeout = ConfigurationImpl.DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
-
+   private final SimpleString managementNotificationAddress;
+   
+   private final SimpleString managementAddress;
+   
+   private final String managementClusterPassword;
+   
+   private final long managementRequestTimeout;
+   
    private boolean started = false;
 
    private boolean messageCounterEnabled;
@@ -146,6 +145,11 @@ public class ManagementServiceImpl implements ManagementService
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = configuration.isJMXManagementEnabled();
       this.messageCounterEnabled = configuration.isMessageCounterEnabled();
+      this.managementAddress = configuration.getManagementAddress();
+      this.managementNotificationAddress = configuration.getManagementNotificationAddress();
+      this.managementClusterPassword = configuration.getManagementClusterPassword();
+      this.managementRequestTimeout = configuration.getManagementRequestTimeout();
+
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       noticationsEnabled = true;
@@ -481,19 +485,9 @@ public class ManagementServiceImpl implements ManagementService
       return managementAddress;
    }
 
-   public void setManagementAddress(SimpleString managementAddress)
-   {
-      this.managementAddress = managementAddress;
-   }
-
    public SimpleString getManagementNotificationAddress()
    {
       return managementNotificationAddress;
-   }
-
-   public void setManagementNotificationAddress(SimpleString managementNotificationAddress)
-   {
-      this.managementNotificationAddress = managementNotificationAddress;
    }
 
    public String getClusterPassword()
@@ -501,19 +495,9 @@ public class ManagementServiceImpl implements ManagementService
       return managementClusterPassword;
    }
 
-   public void setClusterPassword(String clusterPassword)
-   {
-      this.managementClusterPassword = clusterPassword;
-   }
-
    public long getManagementRequestTimeout()
    {
       return managementRequestTimeout;
-   }
-
-   public void setManagementRequestTimeout(long timeout)
-   {
-      this.managementRequestTimeout = timeout;
    }
 
    public ReplicationOperationInvoker getReplicationOperationInvoker()

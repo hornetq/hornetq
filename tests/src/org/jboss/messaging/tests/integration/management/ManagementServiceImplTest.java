@@ -24,8 +24,29 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+
+import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.ManagementService;
+import org.jboss.messaging.core.management.ResourceNames;
+import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.security.Role;
+import org.jboss.messaging.core.server.Messaging;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.ServerMessage;
+import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.utils.SimpleString;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -48,121 +69,57 @@ public class ManagementServiceImplTest extends UnitTestCase
 
    public void testHandleManagementMessageWithOperation() throws Exception
    {
-      /*MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-      ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
-      assertNotNull(managementService);
-      managementService.start();
-
-      Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
-
-      AddressControlMBean resource = createMock(AddressControlMBean.class);
-      resource.addRole(role.getName(), role.isCheckType(CREATE), role.isCheckType(READ), role.isCheckType(WRITE));
-      replay(resource);
-
-      SimpleString address = RandomUtil.randomSimpleString();
-      ObjectName on = ObjectNames.getAddressObjectName(address);
-      managementService.registerResource(on, resource);
+      String queue = randomString();
+      String address = randomString();
+      
+      Configuration conf = new ConfigurationImpl();
+      conf.setJMXManagementEnabled(false);
+      
+      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
       MessagingBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
-                                              on,
-                                              "addRole",
-                                              role.getName(),
-                                              role.isCheckType(CREATE),
-                                              role.isCheckType(READ),
-                                              role.isCheckType(WRITE));
+                                              ResourceNames.CORE_SERVER,
+                                              "createQueue",
+                                              queue,
+                                              address);
+      
+      ServerMessage reply = server.getManagementService().handleMessage(message);
+      
+      assertTrue(ManagementHelper.hasOperationSucceeded(reply));
 
-      ServerMessage reply = managementService.handleMessage(message);
-
-      boolean success = (Boolean)reply.getProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED);
-      assertTrue(success);
-
-      verify(resource);
-
-      managementService.stop();*/
+      server.stop();
    }
 
-   /*public void testHandleManagementMessageWithOperationWhichFails() throws Exception
+   public void testHandleManagementMessageWithOperationWhichFails() throws Exception
    {
-      MBeanServer mbeanServer = MBeanServerFactory.createMBeanServer();
-      ManagementService managementService = new ManagementServiceImpl(mbeanServer, false);
-      assertNotNull(managementService);
-      managementService.start();
-
-      Role role = new Role(randomString(), randomBoolean(), randomBoolean(), randomBoolean());
-
-      String exceptionMessage = randomString();
-      AddressControlMBean resource = createMock(AddressControlMBean.class);
-      resource.addRole(role.getName(), role.isCheckType(CREATE), role.isCheckType(READ), role.isCheckType(WRITE));
-      expectLastCall().andThrow(new Exception(exceptionMessage));
-      replay(resource);
-
-      SimpleString address = RandomUtil.randomSimpleString();
-      ObjectName on = ObjectNames.getAddressObjectName(address);
-      managementService.registerResource(on, resource);
+      Configuration conf = new ConfigurationImpl();
+      conf.setJMXManagementEnabled(false);
+      
+      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
       MessagingBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
-                                              on,
-                                              "addRole",
-                                              role.getName(),
-                                              role.isCheckType(CREATE),
-                                              role.isCheckType(READ),
-                                              role.isCheckType(WRITE));
+                                              ResourceNames.CORE_SERVER,
+                                              "thereIsNoSuchOperation");
+      
+      ServerMessage reply = server.getManagementService().handleMessage(message);
 
-      ServerMessage reply = managementService.handleMessage(message);
-
-      boolean success = (Boolean)reply.getProperty(ManagementHelper.HDR_JMX_OPERATION_SUCCEEDED);
-      assertFalse(success);
-      SimpleString exceptionMsg = (SimpleString)reply.getProperty(ManagementHelper.HDR_JMX_OPERATION_EXCEPTION);
-      assertNotNull(exceptionMsg);
-      assertEquals(exceptionMessage, exceptionMsg.toString());
-
-      verify(resource);
-
-      managementService.stop();
+      
+      assertFalse(ManagementHelper.hasOperationSucceeded(reply));
+      assertNotNull(ManagementHelper.getOperationExceptionMessage(reply));
+      server.stop();
    }
-
 
    // Package protected ---------------------------------------------
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-
-      Set set = mbeanServer.queryNames(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
-
-      for (Object objectName : set)
-      {
-         mbeanServer.unregisterMBean((ObjectName)objectName);
-      }
-   }
-   
-   @Override
-   protected void tearDown() throws Exception
-   {
-      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
-
-      Set set = mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
-
-      for (Object obj : set)
-      {
-         log.info("mbean:" + set);
-      }
-
-      assertEquals(0, mbeanServer.queryMBeans(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null).size());
-
-      super.tearDown();
-   }*/
 
    // Protected -----------------------------------------------------
 
