@@ -22,14 +22,19 @@
 
 package org.jboss.messaging.core.security.impl;
 
-import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
+import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.management.NotificationType;
-import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -40,10 +45,6 @@ import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * The JBM SecurityStore implementation
@@ -75,9 +76,9 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private boolean trace = log.isTraceEnabled();
 
-   private HierarchicalRepository<Set<Role>> securityRepository;
+   private final HierarchicalRepository<Set<Role>> securityRepository;
 
-   private JBMSecurityManager securityManager;
+   private final JBMSecurityManager securityManager;
 
    private final ConcurrentMap<CheckType, ConcurrentHashSet<SimpleString>> cache = new ConcurrentHashMap<CheckType, ConcurrentHashSet<SimpleString>>();
 
@@ -93,10 +94,14 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    
    // Constructors --------------------------------------------------
 
-   public SecurityStoreImpl(final long invalidationInterval, final boolean securityEnabled)
+   public SecurityStoreImpl(final HierarchicalRepository<Set<Role>> securityRepository,
+                            final JBMSecurityManager securityManager,
+                            final long invalidationInterval,
+                            final boolean securityEnabled)
    {
-   	this.invalidationInterval = invalidationInterval;
-   	
+      this.securityRepository = securityRepository;
+      this.securityManager = securityManager;
+   	this.invalidationInterval = invalidationInterval;   	
    	this.securityEnabled = securityEnabled;   	   
    }
 
@@ -199,22 +204,11 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    // Public --------------------------------------------------------
 
-   public void setSecurityRepository(HierarchicalRepository<Set<Role>> securityRepository)
-   {
-      this.securityRepository = securityRepository;
-      securityRepository.registerListener(this);
-   }
-
    public void setNotificationService(NotificationService notificationService)
    {
       this.notificationService = notificationService;
    }
    
-   public void setSecurityManager(JBMSecurityManager securityManager)
-   {
-      this.securityManager = securityManager;
-   }
-
    public void setManagementClusterPassword(String password)
    {           
       this.managementClusterPassword = password;

@@ -248,7 +248,12 @@ public class MessagingServerImpl implements MessagingServer
 
       initialised = !configuration.isBackup();
 
-      securityStore = new SecurityStoreImpl(configuration.getSecurityInvalidationInterval(),
+      securityRepository = new HierarchicalObjectRepository<Set<Role>>();
+      securityRepository.setDefault(new HashSet<Role>());
+
+      securityStore = new SecurityStoreImpl(securityRepository,
+                                            securityManager,
+                                            configuration.getSecurityInvalidationInterval(),
                                             configuration.isSecurityEnabled());
       securityStore.setManagementClusterPassword(configuration.getManagementClusterPassword());
       securityStore.setNotificationService(managementService);
@@ -275,11 +280,6 @@ public class MessagingServerImpl implements MessagingServer
                                       configuration.isPersistIDCache(),
                                       executorFactory,
                                       addressSettingsRepository);
-
-      securityRepository = new HierarchicalObjectRepository<Set<Role>>();
-      securityRepository.setDefault(new HashSet<Role>());
-      securityStore.setSecurityRepository(securityRepository);
-      securityStore.setSecurityManager(securityManager);
 
       postOffice.start();
 

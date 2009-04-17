@@ -22,11 +22,8 @@
 
 package org.jboss.messaging.core.security;
 
-import java.util.Set;
-
 import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.server.ServerSession;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.utils.SimpleString;
 
 
@@ -42,10 +39,6 @@ public interface SecurityStore
    void authenticate(String user, String password) throws Exception;
    
    void check(SimpleString address, CheckType checkType, ServerSession session) throws Exception;
-
-   void setSecurityRepository(HierarchicalRepository<Set<Role>> securityRepository);
-   
-   void setSecurityManager(JBMSecurityManager securityManager);
 
    void setManagementClusterPassword(String clusterAdminPassword);
 
