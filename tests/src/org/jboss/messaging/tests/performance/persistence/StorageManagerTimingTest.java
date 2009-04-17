@@ -129,11 +129,9 @@ public class StorageManagerTimingTest extends UnitTestCase
       final JournalStorageManager journal = new JournalStorageManager(configuration);
       journal.start();
 
-      FakePostOffice office = new FakePostOffice();
-
       HashMap<Long, Queue> queues = new HashMap<Long, Queue>();
 
-      journal.loadMessageJournal(office, null, null, queues, null, null);
+      journal.loadMessageJournal(null, null, queues, null);
 
       final byte[] bytes = new byte[900];
 

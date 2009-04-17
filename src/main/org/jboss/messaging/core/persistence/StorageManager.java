@@ -28,15 +28,13 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.paging.PageTransactionInfo;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -108,11 +106,9 @@ public interface StorageManager extends MessagingComponent
 
    void deletePageTransactional(long txID, long recordID) throws Exception;
 
-   void loadMessageJournal(PostOffice postOffice,
-                           StorageManager storageManager,
-                           HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                           Map<Long, Queue> queues,
+   void loadMessageJournal(PagingManager pagingManager,
                            ResourceManager resourceManager,
+                           Map<Long, Queue> queues,
                            Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
 
    // Bindings related operations

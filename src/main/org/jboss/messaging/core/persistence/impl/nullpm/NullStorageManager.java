@@ -30,16 +30,14 @@ import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PageTransactionInfo;
+import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -228,12 +226,10 @@ public class NullStorageManager implements StorageManager
    public void deleteMessageTransactional(final long txID, final long messageID, final long queueID) throws Exception
    {
    }
-
-   public void loadMessageJournal(PostOffice postOffice,
-                                  StorageManager storageManager,
-                                  HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                  Map<Long, Queue> queues,
+   
+   public void loadMessageJournal(PagingManager pagingManager,
                                   ResourceManager resourceManager,
+                                  Map<Long, Queue> queues,
                                   Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
    }

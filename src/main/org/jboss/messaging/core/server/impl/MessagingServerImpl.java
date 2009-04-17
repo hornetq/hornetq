@@ -387,11 +387,9 @@ public class MessagingServerImpl implements MessagingServer
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
-      storageManager.loadMessageJournal(postOffice,
-                                        storageManager,
-                                        addressSettingsRepository,
-                                        queues,
+      storageManager.loadMessageJournal(pagingManager,
                                         resourceManager,
+                                        queues,
                                         duplicateIDMap);
 
       for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())

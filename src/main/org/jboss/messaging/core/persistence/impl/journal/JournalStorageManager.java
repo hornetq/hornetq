@@ -60,7 +60,6 @@ import org.jboss.messaging.core.paging.impl.PageTransactionInfoImpl;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.impl.wireformat.XidCodecSupport;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.JournalType;
@@ -69,8 +68,6 @@ import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
@@ -458,11 +455,9 @@ public class JournalStorageManager implements StorageManager
       int deliveryCount;
    }
 
-   public void loadMessageJournal(final PostOffice postOffice,
-                                  final StorageManager storageManager,
-                                  final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                  final Map<Long, Queue> queues,
+   public void loadMessageJournal(final PagingManager pagingManager,
                                   final ResourceManager resourceManager,
+                                  final Map<Long, Queue> queues,
                                   final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {      
       List<RecordInfo> records = new ArrayList<RecordInfo>();
@@ -593,8 +588,6 @@ public class JournalStorageManager implements StorageManager
 
                pageTransactionInfo.setRecordID(record.id);
 
-               PagingManager pagingManager = postOffice.getPagingManager();
-
                pagingManager.addTransaction(pageTransactionInfo);
 
                break;
@@ -679,25 +672,19 @@ public class JournalStorageManager implements StorageManager
          }
       }
 
-      loadPreparedTransactions(postOffice,
-                               storageManager,
-                               addressSettingsRepository,
-                               queues,
+      loadPreparedTransactions(pagingManager,
                                resourceManager,
+                               queues,
                                preparedTransactions,
                                duplicateIDMap);
    }
 
-   private void loadPreparedTransactions(final PostOffice postOffice,
-                                         final StorageManager storageManager,
-                                         final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                         final Map<Long, Queue> queues,
+   private void loadPreparedTransactions(final PagingManager pagingManager,
                                          final ResourceManager resourceManager,
+                                         final Map<Long, Queue> queues,
                                          final List<PreparedTransactionInfo> preparedTransactions,
                                          final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
-      final PagingManager pagingManager = postOffice.getPagingManager();
-
       // recover prepared transactions
       for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
       {

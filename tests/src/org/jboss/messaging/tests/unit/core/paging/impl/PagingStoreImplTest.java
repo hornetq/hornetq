@@ -1007,16 +1007,13 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.jboss.messaging.core.persistence.StorageManager#loadMessageJournal(org.jboss.messaging.core.postoffice.PostOffice, org.jboss.messaging.core.persistence.StorageManager, org.jboss.messaging.core.settings.HierarchicalRepository, java.util.Map, org.jboss.messaging.core.transaction.ResourceManager, java.util.Map)
+       * @see org.jboss.messaging.core.persistence.StorageManager#loadMessageJournal(org.jboss.messaging.core.paging.PagingManager, java.util.Map, org.jboss.messaging.core.transaction.ResourceManager, java.util.Map)
        */
-      public void loadMessageJournal(final PostOffice postOffice,
-                                     final StorageManager storageManager,
-                                     final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                     final Map<Long, Queue> queues,
-                                     final ResourceManager resourceManager,
-                                     final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+      public void loadMessageJournal(PagingManager pagingManager,
+                                     ResourceManager resourceManager,
+                                     Map<Long, Queue> queues,
+                                     Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
       {
-
       }
 
       /* (non-Javadoc)
