@@ -84,7 +84,9 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    // Constructors --------------------------------------------------
 
-   public LargeMessageBufferImpl(final ClientConsumerInternal consumerInternal, final long totalSize, final int readTimeout)
+   public LargeMessageBufferImpl(final ClientConsumerInternal consumerInternal,
+                                 final long totalSize,
+                                 final int readTimeout)
    {
       this.consumerInternal = consumerInternal;
       this.readTimeout = readTimeout;
@@ -107,16 +109,16 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       {
          try
          {
-            checkForPacket(this.totalSize - 1);
+            checkForPacket(totalSize - 1);
          }
          catch (Exception ignored)
          {
          }
       }
    }
-   
+
    long size;
-   
+
    /**
     * Add a buff to the List, or save it to the OutputStream if set
     * @param packet
@@ -157,8 +159,8 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    public synchronized void close()
    {
-      this.packets.offer(new SessionReceiveContinuationMessage());
-      this.streamEnded = true;
+      packets.offer(new SessionReceiveContinuationMessage());
+      streamEnded = true;
       notifyAll();
    }
 
@@ -171,7 +173,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       }
       while (true)
       {
-         SessionReceiveContinuationMessage packet = this.packets.poll();
+         SessionReceiveContinuationMessage packet = packets.poll();
          if (packet == null)
          {
             break;
@@ -180,30 +182,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
          sendPacketToOutput(output, packet);
       }
 
-      this.outStream = output;
-   }
-
-   /**
-    * @param output
-    * @param packet
-    * @throws MessagingException
-    */
-   private void sendPacketToOutput(final OutputStream output, SessionReceiveContinuationMessage packet) throws MessagingException
-   {
-      try
-      {
-         if (!packet.isContinues())
-         {
-            streamEnded = true;
-         }
-         output.write(packet.getBody());
-      }
-      catch (IOException e)
-      {
-         throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
-                                      "Error writing body of message",
-                                      e);
-      }
+      outStream = output;
    }
 
    public synchronized void saveBuffer(final OutputStream output) throws MessagingException
@@ -217,7 +196,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
     * @param timeWait Milliseconds to Wait. 0 means forever
     * @throws Exception
     */
-   public synchronized boolean waitCompletion(long timeWait) throws MessagingException
+   public synchronized boolean waitCompletion(final long timeWait) throws MessagingException
    {
 
       if (outStream == null)
@@ -231,7 +210,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       {
          try
          {
-            this.wait(readTimeout == 0 ? 1 : (readTimeout * 1000));
+            this.wait(readTimeout == 0 ? 1 : readTimeout * 1000);
          }
          catch (InterruptedException e)
          {
@@ -245,14 +224,14 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
          }
       }
 
-      if (this.handledException != null)
+      if (handledException != null)
       {
          throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
                                       "Error on saving LargeMessageBufferImpl",
-                                      this.handledException);
+                                      handledException);
       }
 
-      return this.streamEnded;
+      return streamEnded;
 
    }
 
@@ -287,7 +266,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       checkForPacket(index);
       return currentPacket.getBody()[(int)(index - packetPosition)];
    }
-   
+
    private byte getByte(final long index)
    {
       checkForPacket(index);
@@ -591,15 +570,15 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    public int readableBytes()
    {
-      long readableBytes = this.totalSize - this.readerIndex;
-      
+      long readableBytes = totalSize - readerIndex;
+
       if (readableBytes > Integer.MAX_VALUE)
       {
          return Integer.MAX_VALUE;
       }
       else
       {
-         return (int)(this.totalSize - this.readerIndex);
+         return (int)(totalSize - readerIndex);
       }
    }
 
@@ -869,7 +848,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
    }
 
-   public void writeBytes(MessagingBuffer src, int srcIndex, int length)
+   public void writeBytes(final MessagingBuffer src, final int srcIndex, final int length)
    {
       throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
    }
@@ -1109,6 +1088,27 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    // Private -------------------------------------------------------
 
+   /**
+    * @param output
+    * @param packet
+    * @throws MessagingException
+    */
+   private void sendPacketToOutput(final OutputStream output, final SessionReceiveContinuationMessage packet) throws MessagingException
+   {
+      try
+      {
+         if (!packet.isContinues())
+         {
+            streamEnded = true;
+         }
+         output.write(packet.getBody());
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY, "Error writing body of message", e);
+      }
+   }
+
    private void popPacket()
    {
       try
@@ -1152,7 +1152,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    private void checkForPacket(final long index)
    {
-      if (this.outStream != null)
+      if (outStream != null)
       {
          throw new IllegalAccessError("Can't read the messageBody after setting outputStream");
       }
