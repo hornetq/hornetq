@@ -22,7 +22,6 @@
 package org.jboss.jms.example;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.Connection;
@@ -63,7 +62,7 @@ public class MessageGroupExample extends JMSExample
          //Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. Perfom a lookup on the queue
+         //Step 2. Perform a lookup on the queue
          Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
 
          //Step 3. Perform a lookup on the Connection Factory

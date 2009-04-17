@@ -1,14 +1,35 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Queue Example</title>
+    <title>JBoss Messaging Message Group Example</title>
     <link rel="stylesheet" type="text/css" href="../common/common.css">
   </head>
   <body>
-     <h1>JMS Queue Example</h1>
+     <h1>Message Group Example</h1>
      <br>
-     <p>This example shows you how to send and receive a message to a JMS Queue with JBoss Messaging.</p>
-     <p>Queues are a standard part of JMS, please consult the JMS 1.1 specification for full details.</p>
-     <p>A Queue is used to send messages point to point, from a producer to a consumer. The queue guarantees message ordering between these 2 points.</p>
+     <p>This example shows you how to configure and use message groups with JBoss Messaging.</p>
+     
+     <p>Message groups are sets of messages that has the following characteristics: </p>
+     <li>Messages in a message group share the same group id, i.e. they have same JMSXGroupID string property values.</li>
+     <li>Messages in a message group will be all delivered to no more than one of the queue's consumers. The consumer that receives the
+     first message of a group will receive all the messages that belongs to the group.</li>
+     
+     <p>To enable message group, you need to configure the 'distribution-policy-class' for the queue 
+     to be "org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor" in jbm-queues.xml. This configure parameter
+     is part of the 'address-settings' configuration element, as shown in the following </p>
+     
+     <pre>
+     <code>
+      &lt;address-settings match=&quot;jms.queue.exampleQueue&quot;&gt;
+         &lt;distribution-policy-class&gt;org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor&lt;/distribution-policy-class&gt;
+      &lt;/address-settings&gt;
+     </code>
+     </pre>
+     
+     <p>After the configuration, you can make any message belong to a message group by setting its 'JMXGroupID' string property to the group id.
+     In this example we create a message group 'Group-0'. And make such a message group of 10 messages. It also create two consumers on the queue
+     where the 10 'Group-0' group messages are to be sent. You can see that with message grouping enabled, all the 10 messages will be received by
+     the first consumer. The second consumer will receive none. </p>
+
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
@@ -44,29 +65,50 @@
           <code>MessageProducer messageProducer = session.createProducer(topic);</code>
        </pre>
 
-        <li>We create a JMS text message that we are going to send.</li>
+        <li>We create two consumers.</li>
         <pre>
-           <code>TextMessage message = session.createTextMessage("This is a text message");</code>
+           <code>
+          MessageConsumer consumer1 = session.createConsumer(queue);
+          consumer1.setMessageListener(new SimpleMessageListener("consumer-1"));
+          MessageConsumer consumer2 = session.createConsumer(queue);
+          consumer2.setMessageListener(new SimpleMessageListener("consumer-2"));
+          </code>
         </pre>
 
-        <li>We send message to the queue</li>
+        <li>We create and send 10 text messages with group id 'Group-0'</li>
         <pre>
-           <code>messageProducer.send(message);</code>
+           <code>
+         int msgCount = 10;
+         TextMessage[] groupMessages = new TextMessage[msgCount];
+         for (int i = 0; i < msgCount; i++)
+         {
+            groupMessages[i] = session.createTextMessage("Group-0 message " + i);
+            groupMessages[i].setStringProperty(JBossMessage.JMSXGROUPID, "Group-0");
+            producer.send(groupMessages[i]);
+            System.out.println("Sent message: " + groupMessages[i].getText());
+         }
+           </code>
         </pre>
 
-        <li>We create a JMS Message Consumer to receive the message.</li>
+        <li>We start the connection.</li>
           <pre>
-           <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
-        </pre>
-
-        <li>We start the connection. In order for delivery to occur on any consumers or subscribers on a connection, the connection must be started</li>
-        <pre>
            <code>connection.start();</code>
         </pre>
 
-        <li>The message arrives at the consumer. In this case we use a timeout of 5000 milliseconds but we could use a blocking 'receive()'</li>
+        <li>We check the group messages are received by only one consumer</li>
         <pre>
-           <code>TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);</code>
+           <code>
+         String trueReceiver = messageReceiverMap.get(groupMessages[0].getText());
+         for (TextMessage grpMsg : groupMessages)
+         {
+            String receiver = messageReceiverMap.get(grpMsg.getText());
+            if (!trueReceiver.equals(receiver))
+            {
+               System.out.println("Group message [" + grpMsg.getText() + "[ went to wrong receiver: " + receiver);
+               result = false;
+            }
+         }
+           </code>
         </pre>
 
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
