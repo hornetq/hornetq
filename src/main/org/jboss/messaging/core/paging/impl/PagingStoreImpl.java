@@ -223,10 +223,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public void addSize(final long size) throws Exception
    {
-      final long maxSize = getMaxSizeBytes();
-
-      final long pageSize = getPageSizeBytes();
-
       if (isDropWhenMaxSize())
       {
          addAddressSize(size);
@@ -1052,8 +1048,9 @@ public class PagingStoreImpl implements TestSupportPageStore
                }
             }
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
+            e.printStackTrace();
             log.error(e, e);
          }
       }
