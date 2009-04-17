@@ -12,7 +12,7 @@
       <permission type="send" roles="guest"/>
    </security>
    
-   <address-settings match="jms.queue.exampleQueue">
+   <address-settings match="#">
       <distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor</distribution-policy-class>
    </address-settings>
 
