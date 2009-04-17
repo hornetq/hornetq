@@ -169,7 +169,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
     */
-   public void saveToOutputStream(OutputStream out) throws MessagingException
+   public void saveToOutputStream(final OutputStream out) throws MessagingException
    {
       if (largeMessage)
       {
@@ -192,7 +192,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
     */
-   public void setOutputStream(OutputStream out) throws MessagingException
+   public void setOutputStream(final OutputStream out) throws MessagingException
    {
       if (largeMessage)
       {
@@ -208,7 +208,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.client.ClientMessage#waitOutputStreamCompletion()
     */
-   public boolean waitOutputStreamCompletion(long timeMilliseconds) throws MessagingException
+   public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws MessagingException
    {
       if (largeMessage)
       {

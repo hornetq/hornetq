@@ -53,6 +53,12 @@ public abstract class JMSExample
    
    private String[] configs;
    
+   private static final String[] defaultArgs = new String[] {"-Xms512M",
+                                                             "-Xmx512M",
+                                                             "-XX:+UseParallelGC",
+                                                             "-XX:+AggressiveOpts",
+                                                             "-XX:+UseFastAccessorMethods"};
+      
    protected void run(String[] serverVMArgs, String[] configs)
    {
       String runServerProp = System.getProperty("jbm.example.runServer");
@@ -98,7 +104,7 @@ public abstract class JMSExample
             }
             catch (JMSException e)
             {
-               //ignore
+               // ignore
             }
          }
          if (runServer)
@@ -118,16 +124,16 @@ public abstract class JMSExample
 
    protected void run(String[] args)
    {
-      run(null, args);
+      run(defaultArgs, args);
    }
 
    protected void killServer(int id) throws Exception
    {
       System.out.println("Killing server " + id);
       
-      //We kill the server by creating a new file in the server dir which is checked for by the server
-      //We can't use Process.destroy() since this does not do a hard kill - it causes shutdown hooks
-      //to be called which cleanly shutdown the server
+      // We kill the server by creating a new file in the server dir which is checked for by the server
+      // We can't use Process.destroy() since this does not do a hard kill - it causes shutdown hooks
+      // to be called which cleanly shutdown the server
       File file = new File("server" + id + "/KILL_ME");
       
       file.createNewFile();
@@ -165,7 +171,17 @@ public abstract class JMSExample
    protected void startServer(int index) throws Exception
    {
       String config = configs[index];
-      log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
+      log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);      
+      StringBuilder args = new StringBuilder();
+      for (int i = 0; i < allVMArgs.length; i++)
+      {
+         args.append(allVMArgs[i]);
+         if (i != allVMArgs.length - 1)
+         {
+            args.append(",");
+         }
+      }
+      log.info("and vm args: " + args.toString());
       servers[index] = SpawnedVMSupport.spawnVM(
             SpawnedJMSServer.class.getName(),
             allVMArgs,

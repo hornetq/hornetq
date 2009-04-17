@@ -497,14 +497,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                creditsToSend = 0;
 
                sendCredits(credits);
-
-               // sessionExecutor.execute(new Runnable()
-               // {
-               // public void run()
-               // {
-               // sendCredits(credits);
-               // }
-               // });
             }
             else
             {

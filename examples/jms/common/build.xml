@@ -103,8 +103,8 @@
 
 
    <target name="runExample" depends="compile">
- 	  <property name="java-min-memory" value="512M"/>
- 	  <property name="java-max-memory" value="2048M"/>
+ 	   <property name="java-min-memory" value="512M"/>
+ 	   <property name="java-max-memory" value="2048M"/>
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms${java-min-memory}"/>

@@ -50,6 +50,9 @@ public class SimpleInterceptor implements Interceptor
          Message msg = realPacket.getServerMessage();
          msg.putStringProperty(new SimpleString("newproperty"), new SimpleString("Hello from interceptor!"));
       }
+      //We return true which means "call next interceptor" (if there is one) or target.
+      //If we returned false, it means "abort call" - no more interceptors would be called and neither would
+      //the target
       return true;
    }
 

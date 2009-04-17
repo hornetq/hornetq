@@ -32,20 +32,26 @@
 
    <import file="../common/build.xml"/>
 
-   <target name="run">
-   	
+   <target name="run"  depends="delete-large-messages">   	
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.LargeMessageExample"/>
-     	 <param name="java-min-memory" value="128M"/>
-     	 <param name="java-max-memory" value="128M"/>
+         
+         <!-- We limit the client to running in only 50MB of RAM -->
+     	   <param name="java-min-memory" value="50M"/>
+     	   <param name="java-max-memory" value="50M"/>
       </antcall>
    </target>
 
-   <target name="runRemote">
+   <target name="runRemote" depends="delete-large-messages">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.LargeMessageExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
+   </target>
+   
+   <target name="delete-large-messages">
+      <delete file="huge_message_to_send.dat"/>
+      <delete file="huge_message_received.dat"/>
    </target>
 
 </project>

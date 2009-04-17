@@ -45,8 +45,7 @@
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>
-   
-   <!-- Need to delete the server data dirs before each run since after failover cannot just rerun test since backup is now live -->
+     
    <target name="delete-files" depends="clean">
       <delete file="./server1/KILL_ME"/>           
    </target>

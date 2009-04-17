@@ -60,14 +60,12 @@ public class SpawnedVMSupport
       StringBuffer sb = new StringBuffer();
 
       sb.append("java").append(' ');
-
-      sb.append("-Xms512m -Xmx512m ");
-
+      
       for (String vmarg : vmargs)
       {
          sb.append(vmarg).append(' ');
       }
-
+      
       String classPath = System.getProperty("java.class.path");
       String pathSeparater = System.getProperty("path.separator");
       classPath = classPath + pathSeparater + ".";
