@@ -292,6 +292,26 @@ public class MessagingServerImpl implements MessagingServer
 
       managementService.start();
 
+      // Start the deployers
+      if (configuration.isEnableFileDeployment())
+      {
+         basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
+
+         addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
+
+         queueDeployer = new QueueDeployer(deploymentManager, configuration);
+
+         securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
+
+         basicUserCredentialsDeployer.start();
+
+         addressSettingsDeployer.start();
+
+         queueDeployer.start();
+
+         securityDeployer.start();
+      }
+      
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
       storageManager.loadBindingJournal(queueBindingInfos);
@@ -449,26 +469,6 @@ public class MessagingServerImpl implements MessagingServer
       // during last stop
       // This is the last thing done at the start, after everything else is up and running
       pagingManager.startGlobalDepage();
-
-      // Start the deployers
-      if (configuration.isEnableFileDeployment())
-      {
-         basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
-
-         addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
-
-         queueDeployer = new QueueDeployer(deploymentManager, configuration);
-
-         securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
-
-         basicUserCredentialsDeployer.start();
-
-         addressSettingsDeployer.start();
-
-         queueDeployer.start();
-
-         securityDeployer.start();
-      }
 
       if (!configuration.isBackup())
       {         
@@ -882,6 +882,13 @@ public class MessagingServerImpl implements MessagingServer
 
          doStart();
 
+         initialised = true;
+
+         if (deploymentManager != null)
+         {           
+            deploymentManager.start();
+         }
+         
          if (currentMessageID != this.storageManager.getCurrentUniqueID())
          {
             throw new IllegalStateException("Backup node current id sequence != live node current id sequence " + this.storageManager.getCurrentUniqueID() +
@@ -889,15 +896,6 @@ public class MessagingServerImpl implements MessagingServer
                                             currentMessageID);
          }
 
-         initialised = true;
-
-         // Now we can start the deploymentManager
-
-         if (deploymentManager != null)
-         {           
-            deploymentManager.start();
-         }
-         
          //Queues must be deployed *after* deploymentManager has started
          deployQueues();
 
