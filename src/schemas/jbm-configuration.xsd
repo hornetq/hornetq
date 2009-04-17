@@ -64,6 +64,12 @@
 				<xsd:element name="message-counter-enabled"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
 				</xsd:element>
+                <xsd:element name="message-counter-sample-period"
+                    type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
+                </xsd:element>
+                <xsd:element name="message-counter-max-day-history"
+                    type="xsd:positiveInteger" maxOccurs="1" minOccurs="0">
+                </xsd:element>
 				<xsd:element name="connection-scan-period"
 					type="xsd:unsignedLong" maxOccurs="1" minOccurs="0">
 				</xsd:element>

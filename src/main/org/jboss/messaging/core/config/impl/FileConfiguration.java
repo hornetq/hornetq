@@ -306,6 +306,10 @@ public class FileConfiguration extends ConfigurationImpl
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 
       messageCounterEnabled = getBoolean(e, "message-counter-enabled", messageCounterEnabled);
+
+      messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", messageCounterSamplePeriod);
+
+      messageCounterMaxDayHistory = getInteger(e, "message-counter-max-day-history", messageCounterMaxDayHistory);
       
       started = true;
    }

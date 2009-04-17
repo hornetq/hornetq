@@ -8,6 +8,9 @@
       <wild-card-routing-enabled>true</wild-card-routing-enabled>
       <management-address>Giraffe</management-address>
       <management-request-timeout>91</management-request-timeout>
+      <message-counter-enabled>true</message-counter-enabled>
+      <message-counter-sample-period>5678</message-counter-sample-period>
+      <message-counter-max-day-history>78910</message-counter-max-day-history>
       <connection-scan-period>6543</connection-scan-period>
       <transaction-timeout>98765</transaction-timeout>
       <transaction-timeout-scan-period>56789</transaction-timeout-scan-period>

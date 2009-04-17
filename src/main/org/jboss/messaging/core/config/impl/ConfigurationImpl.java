@@ -103,6 +103,10 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_MESSAGE_COUNTER_ENABLED = false;
 
+   public static final long DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD = 10000;
+   
+   public static final int DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY = 10;
+   
    public static final long DEFAULT_TRANSACTION_TIMEOUT = 60000;
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
@@ -233,6 +237,10 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean messageCounterEnabled = DEFAULT_MESSAGE_COUNTER_ENABLED;
 
+   protected long messageCounterSamplePeriod = DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD;
+
+   protected int messageCounterMaxDayHistory = DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
+   
    protected long transactionTimeout = DEFAULT_TRANSACTION_TIMEOUT;
 
    protected long transactionTimeoutScanPeriod = DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
@@ -737,6 +745,16 @@ public class ConfigurationImpl implements Configuration
    public boolean isMessageCounterEnabled()
    {
       return messageCounterEnabled;
+   }
+
+   public long getMessageCounterSamplePeriod()
+   {
+      return messageCounterSamplePeriod;
+   }
+
+   public int getMessageCounterMaxDayHistory()
+   {
+      return messageCounterMaxDayHistory;
    }
 
    public SimpleString getManagementAddress()

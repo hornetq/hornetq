@@ -499,7 +499,7 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
-      managementService = new ManagementServiceImpl(mbeanServer, configuration.isJMXManagementEnabled(), configuration.isMessageCounterEnabled());
+      managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
       remotingService = new RemotingServiceImpl(configuration, this, managementService);
       

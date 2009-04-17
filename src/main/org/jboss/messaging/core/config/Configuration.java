@@ -238,6 +238,10 @@ public interface Configuration extends Serializable, MessagingComponent
 
    boolean isMessageCounterEnabled();
 
+   long getMessageCounterSamplePeriod();
+
+   int getMessageCounterMaxDayHistory();
+
    long getTransactionTimeoutScanPeriod();
 
    void setTransactionTimeoutScanPeriod(long period);
@@ -249,5 +253,6 @@ public interface Configuration extends Serializable, MessagingComponent
    int getMessageExpiryThreadPriority();
 
    void setMessageExpiryThreadPriority(int messageExpiryThreadPriority);
+
 
 }

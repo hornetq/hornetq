@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
@@ -46,11 +47,11 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 public class MessageCounterManagerImpl implements MessageCounterManager
 {
    
-   public static final long DEFAULT_SAMPLE_PERIOD = 10000;
+   public static final long DEFAULT_SAMPLE_PERIOD = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD;
 
    public static final long MIN_SAMPLE_PERIOD = 1000;
 
-   public static final int DEFAULT_MAX_DAY_COUNT = 10;
+   public static final int DEFAULT_MAX_DAY_COUNT = ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
 
    private static final Logger log = Logger.getLogger(MessageCounterManagerImpl.class);
    

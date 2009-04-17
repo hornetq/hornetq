@@ -141,15 +141,17 @@ public class ManagementServiceImpl implements ManagementService
 
    // Constructor ----------------------------------------------------
 
-   public ManagementServiceImpl(final MBeanServer mbeanServer, final boolean jmxManagementEnabled, final boolean messageCounterEnabled)
+   public ManagementServiceImpl(final MBeanServer mbeanServer, final Configuration configuration)
    {
       this.mbeanServer = mbeanServer;
-      this.jmxManagementEnabled = jmxManagementEnabled;
-      this.messageCounterEnabled = messageCounterEnabled;
+      this.jmxManagementEnabled = configuration.isJMXManagementEnabled();
+      this.messageCounterEnabled = configuration.isMessageCounterEnabled();
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       noticationsEnabled = true;
       messageCounterManager = new MessageCounterManagerImpl();
+      messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
+      messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
    }
 
    // Public --------------------------------------------------------

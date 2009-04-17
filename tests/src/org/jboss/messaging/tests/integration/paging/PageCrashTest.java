@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.integration.paging;
 
 import java.io.File;
 import java.io.ObjectInputStream;
-import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
@@ -59,8 +58,6 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
 import org.jboss.messaging.core.paging.Page;
 import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingManager;
@@ -251,10 +248,6 @@ public class PageCrashTest extends ServiceTestBase
    private MessagingServer newMessagingServer(final Configuration configuration)
    {
       JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
-
-      ManagementService managementService = new ManagementServiceImpl(ManagementFactory.getPlatformMBeanServer(),
-                                                                      false,
-                                                                      false);
 
       MessagingServer server = new FailingMessagingServerImpl(configuration, securityManager);
 

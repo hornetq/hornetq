@@ -65,6 +65,9 @@ public class FileConfigurationTest extends ConfigurationImplTest
       
       assertNotNull(conf.getBackupConnectorName());
       
+      assertEquals(true, conf.isMessageCounterEnabled());
+      assertEquals(5678, conf.getMessageCounterSamplePeriod());
+      assertEquals(78910, conf.getMessageCounterMaxDayHistory());
       //TODO - sort this out
       
 //      assertEquals("org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1", conf.getBackupConnectorConfiguration().getFactoryClassName());
