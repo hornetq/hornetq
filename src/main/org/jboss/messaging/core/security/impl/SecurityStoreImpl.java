@@ -88,21 +88,30 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    
    private final boolean securityEnabled;
    
-   private String managementClusterPassword;
+   private final String managementClusterPassword;
 
-   private NotificationService notificationService;
+   private final NotificationService notificationService;
    
    // Constructors --------------------------------------------------
 
+   /**
+    * @param notificationService can be <code>null</code>
+    */
    public SecurityStoreImpl(final HierarchicalRepository<Set<Role>> securityRepository,
                             final JBMSecurityManager securityManager,
                             final long invalidationInterval,
-                            final boolean securityEnabled)
+                            final boolean securityEnabled,
+                            final String managementClusterPassword,
+                            final NotificationService notificationService)
    {
       this.securityRepository = securityRepository;
       this.securityManager = securityManager;
    	this.invalidationInterval = invalidationInterval;   	
-   	this.securityEnabled = securityEnabled;   	   
+   	this.securityEnabled = securityEnabled;
+   	this.managementClusterPassword = managementClusterPassword;
+   	this.notificationService = notificationService;
+   	
+      checkDefaultManagementClusterPassword(managementClusterPassword);      
    }
 
    // SecurityManager implementation --------------------------------
@@ -203,18 +212,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    }
 
    // Public --------------------------------------------------------
-
-   public void setNotificationService(NotificationService notificationService)
-   {
-      this.notificationService = notificationService;
-   }
-   
-   public void setManagementClusterPassword(String password)
-   {           
-      this.managementClusterPassword = password;
-      
-      checkDefaultManagementClusterPassword(password);      
-   }
 
    // Protected -----------------------------------------------------
 

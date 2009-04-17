@@ -254,9 +254,9 @@ public class MessagingServerImpl implements MessagingServer
       securityStore = new SecurityStoreImpl(securityRepository,
                                             securityManager,
                                             configuration.getSecurityInvalidationInterval(),
-                                            configuration.isSecurityEnabled());
-      securityStore.setManagementClusterPassword(configuration.getManagementClusterPassword());
-      securityStore.setNotificationService(managementService);
+                                            configuration.isSecurityEnabled(),
+                                            configuration.getManagementClusterPassword(),
+                                            managementService);
 
       addressSettingsRepository.setDefault(new AddressSettings());
       scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
