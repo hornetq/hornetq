@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.IllegalStateException;
 import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -52,7 +53,9 @@ import org.jboss.messaging.utils.SimpleString;
  * @author Hiram Chirino (Cojonudo14@hotmail.com)
  * @author David Maplesden (David.Maplesden@orion.co.nz)
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a> $Id: JBossMessage.java 3466 2007-12-10 18:44:52Z timfox $
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a> 
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a> 
+ * $Id: JBossMessage.java 3466 2007-12-10 18:44:52Z timfox $
  */
 public class JBossMessage implements javax.jms.Message
 {
@@ -73,6 +76,12 @@ public class JBossMessage implements javax.jms.Message
    private static final SimpleString JMS_ = new SimpleString("JMS_");
 
    public static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
+   
+   public static final String JMS_JBM_INPUT_STREAM = "JMS_JBM_InputStream";
+
+   public static final String JMS_JBM_OUTPUT_STREAM = "JMS_JBM_OutputStream";
+
+   public static final String JMS_JBM_SAVE_STREAM = "JMS_JBM_SaveStream";
 
    public static final String JMSXGROUPID = "JMSXGroupID";
 
@@ -755,6 +764,11 @@ public class JBossMessage implements javax.jms.Message
 
    public Object getObjectProperty(final String name) throws JMSException
    {
+      if (JMS_JBM_INPUT_STREAM.equals(name))
+      {
+         return message.getBodyInputStream();
+      }
+      else
       if (JMSXDELIVERYCOUNT.equals(name))
       {
          return String.valueOf(message.getDeliveryCount());
@@ -849,8 +863,28 @@ public class JBossMessage implements javax.jms.Message
 
    public void setObjectProperty(final String name, final Object value) throws JMSException
    {
+      
+      if (JMS_JBM_OUTPUT_STREAM.equals(name))
+      {
+         this.setOutputStream((OutputStream)value);
+         return;
+      }
+      else
+      if (JMS_JBM_SAVE_STREAM.equals(name))
+      {
+         this.saveToOutputStream((OutputStream)value);
+         return;
+      }
+      
       checkProperty(name, value);
+      
 
+      if (JMS_JBM_INPUT_STREAM.equals(name))
+      {
+         this.setInputStream((InputStream)value);
+         return;
+      }
+      
       SimpleString key = new SimpleString(name);
 
       if (value instanceof Boolean)
@@ -933,25 +967,64 @@ public class JBossMessage implements javax.jms.Message
    }
    
    
-   public void setInputStream(final InputStream input) throws MessagingException
+   public void setInputStream(final InputStream input) throws JMSException
    {
+      checkStream();
+      if (readOnly)
+      {
+         throw new MessageNotWriteableException("Message is read-only");
+      }
+
       message.setBodyInputStream(input);
    }
    
-   
-   public void setOutputStream(final OutputStream output) throws MessagingException
+   public void setOutputStream(final OutputStream output) throws JMSException
    {
-      message.setOutputStream(output);
+      checkStream();
+      if (!readOnly)
+      {
+         throw new IllegalStateException("OutputStream property is only valid on received messages");
+      }
+      
+      try
+      {
+         message.setOutputStream(output);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);
+      }
    }
 
-   public void saveToOutputStream(final OutputStream output) throws MessagingException
+   public void saveToOutputStream(final OutputStream output) throws JMSException
    {
-      message.saveToOutputStream(output);
+      checkStream();
+      if (!readOnly)
+      {
+         throw new IllegalStateException("OutputStream property is only valid on received messages");
+      }
+      
+      try
+      {
+         message.saveToOutputStream(output);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);
+      }
    }
 
-   public boolean waitCompletionOnStream(long timeWait) throws MessagingException
+   public boolean waitCompletionOnStream(long timeWait) throws JMSException
    {
-      return message.waitOutputStreamCompletion(timeWait);
+      checkStream();
+      try
+      {
+         return message.waitOutputStreamCompletion(timeWait);
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);
+      }
    }
    
 
@@ -992,6 +1065,14 @@ public class JBossMessage implements javax.jms.Message
 
    // Private ------------------------------------------------------------
 
+   private void checkStream() throws JMSException
+   {
+      if (!(message.getType() == JBossBytesMessage.TYPE || message.getType() == JBossStreamMessage.TYPE))
+      {
+         throw new IllegalStateException("LargeMessage streaming is only possible on ByteMessage or StreamMessage");
+      }
+   }
+   
    private void checkProperty(final String name, final Object value) throws JMSException
    {
       if (propertiesReadOnly)

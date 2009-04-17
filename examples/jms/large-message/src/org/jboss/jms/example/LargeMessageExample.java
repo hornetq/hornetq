@@ -38,8 +38,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
-import org.jboss.messaging.jms.client.JBossMessage;
-
 /**
  * This example demonstrates the ability of JBoss Messaging to send and consume a very large message, much
  * bigger than can fit in RAM.
@@ -111,7 +109,8 @@ public class LargeMessageExample extends JMSExample
          // file, however we could use any InputStream not just a FileInputStream.
          FileInputStream fileInputStream = new FileInputStream(fileInput);
          BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
-         ((JBossMessage)message).setInputStream(bufferedInput);
+         
+         message.setObjectProperty("JMS_JBM_InputStream", bufferedInput);
 
          System.out.println("Sending the huge message.");
 
@@ -178,10 +177,8 @@ public class LargeMessageExample extends JMSExample
 
          BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream);
 
-         ((JBossMessage)messageReceived).setOutputStream(bufferedOutput);
-
-         // Step 14. We wait until the entire message is written before continuing.
-         ((JBossMessage)messageReceived).waitCompletionOnStream(300000);
+         // Step 14. This will save the stream and wait until the entire message is written before continuing.
+         messageReceived.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
 
          fileOutputStream.close();
 

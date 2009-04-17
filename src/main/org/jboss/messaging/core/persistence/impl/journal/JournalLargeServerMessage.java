@@ -270,7 +270,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       }
    }
 
-   // TODO: Optimize this per https://jira.jboss.org/jira/browse/JBMESSAGING-1468
+   // TODO: Optimise this per https://jira.jboss.org/jira/browse/JBMESSAGING-1496
    @Override
    public synchronized ServerMessage copy(final long newID) throws Exception
    {

@@ -77,7 +77,7 @@
          
          BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
          
-         ((JBossMessage)message).setInputStream(bufferedInput);
+         message.setObjectProperty("JMS_JBM_InputStream", bufferedInput);
         </code></pre>
         
         <li>Send the Message.</li>
@@ -149,15 +149,13 @@
 
          BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream);
          
-         ((JBossMessage)messageReceived).setOutputStream(bufferedOutput);
         </code></pre>
          
-         <li>We wait until the entire message is written before continuing.</li> 
+         <li>This will save the stream and wait until the entire message is written before continuing.</li> 
         <pre><code>
-         ((JBossMessage)messageReceived).waitCompletionOnStream(300000);
+         messageReceived.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
         </code></pre>
         
-
         <li>Be sure to close our resources!</li>
 
         <pre>

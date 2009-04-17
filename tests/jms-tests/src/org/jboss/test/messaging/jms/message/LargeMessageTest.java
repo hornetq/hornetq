@@ -30,12 +30,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
-import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 
-import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
@@ -68,11 +68,10 @@ public class LargeMessageTest extends JMSTestCase
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          BytesMessage m = session.createBytesMessage();
 
-         ((JBossMessage)m).setInputStream(createFakeLargeStream(1024 * 1024));
+         m.setObjectProperty("JMS_JBM_InputStream", createFakeLargeStream(1024 * 1024));
 
          prod.send(m);
 
@@ -127,11 +126,10 @@ public class LargeMessageTest extends JMSTestCase
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          BytesMessage m = session.createBytesMessage();
 
-         ((JBossMessage)m).setInputStream(createFakeLargeStream(10));
+         m.setObjectProperty("JMS_JBM_InputStream", createFakeLargeStream(10));
 
          prod.send(m);
 
@@ -171,11 +169,82 @@ public class LargeMessageTest extends JMSTestCase
 
    }
 
+   public void testExceptionsOnSettingNonStreaming() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = cf.createConnection();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         TextMessage msg = session.createTextMessage();
+
+         try
+         {
+            msg.setObjectProperty("JMS_JBM_InputStream", createFakeLargeStream(10));
+            fail("Exception was expected");
+         }
+         catch (JMSException e)
+         {
+         }
+
+         msg.setText("hello");
+
+         MessageProducer prod = session.createProducer(queue1);
+
+         prod.send(msg);
+
+         conn.close();
+
+         conn = cf.createConnection();
+
+         session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageConsumer cons = session.createConsumer(queue1);
+
+         conn.start();
+
+         TextMessage rm = (TextMessage)cons.receive(10000);
+
+         try
+         {
+            rm.setObjectProperty("JMS_JBM_OutputStream", new OutputStream()
+            {
+               @Override
+               public void write(int b) throws IOException
+               {
+                  System.out.println("b = " + b);
+               }
+
+            });
+            fail("Exception was expected");
+         }
+         catch (JMSException e)
+         {
+         }
+
+         
+         assertEquals("hello", rm.getText());
+
+         assertNotNull(rm);
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+
+   }
 
    public void testWaitOnOutputStream() throws Exception
    {
       int msgSize = 1024 * 1024;
-      
+
       Connection conn = null;
 
       try
@@ -185,11 +254,10 @@ public class LargeMessageTest extends JMSTestCase
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = session.createProducer(queue1);
-         prod.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          BytesMessage m = session.createBytesMessage();
 
-         ((JBossMessage)m).setInputStream(createFakeLargeStream(msgSize));
+         m.setObjectProperty("JMS_JBM_InputStream", createFakeLargeStream(msgSize));
 
          prod.send(m);
 
@@ -207,13 +275,14 @@ public class LargeMessageTest extends JMSTestCase
          assertNotNull(rm);
 
          final AtomicLong numberOfBytes = new AtomicLong(0);
-         
+
          final AtomicInteger numberOfErrors = new AtomicInteger(0);
 
          OutputStream out = new OutputStream()
          {
 
             int position = 0;
+
             @Override
             public void write(int b) throws IOException
             {
@@ -224,18 +293,14 @@ public class LargeMessageTest extends JMSTestCase
                   numberOfErrors.incrementAndGet();
                }
             }
-            
+
          };
 
-         
-         ((JBossMessage)rm).setOutputStream(out);
-         
-         assertTrue(((JBossMessage)rm).waitCompletionOnStream(10000));
-         
+         rm.setObjectProperty("JMS_JBM_SaveStream", out);
+
          assertEquals(msgSize, numberOfBytes.get());
-         
+
          assertEquals(0, numberOfErrors.get());
-         
 
       }
       finally
@@ -251,14 +316,14 @@ public class LargeMessageTest extends JMSTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
-   protected  byte getSamplebyte(final long position)
+
+   protected byte getSamplebyte(final long position)
    {
       return (byte)('a' + (position) % ('z' - 'a' + 1));
    }
 
    // Creates a Fake LargeStream without using a real file
-   protected  InputStream createFakeLargeStream(final long size) throws Exception
+   protected InputStream createFakeLargeStream(final long size) throws Exception
    {
       return new InputStream()
       {
@@ -293,8 +358,6 @@ public class LargeMessageTest extends JMSTestCase
       };
 
    }
-
-   
 
    // Private -------------------------------------------------------
 

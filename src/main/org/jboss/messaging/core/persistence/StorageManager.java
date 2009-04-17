@@ -45,6 +45,7 @@ import org.jboss.messaging.utils.UUID;
  * A StorageManager
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
