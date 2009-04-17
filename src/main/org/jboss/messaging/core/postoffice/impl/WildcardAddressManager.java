@@ -23,8 +23,10 @@ package org.jboss.messaging.core.postoffice.impl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.postoffice.Address;
@@ -59,9 +61,10 @@ public class WildcardAddressManager extends SimpleAddressManager
 
    private final Map<SimpleString, Address> wildCardAddresses = new HashMap<SimpleString, Address>();
 
-   public Bindings getBindings(final SimpleString address)
+   public Bindings getBindingsForRoutingAddress(final SimpleString address)
    {
-      Bindings bindings = super.getBindings(address);
+      Bindings bindings = super.getBindingsForRoutingAddress(address);
+      
       //this should only happen if we're routing to an address that has no mappings when we're running checkAllowable
       if (bindings == null && !wildCardAddresses.isEmpty())
       {
@@ -70,7 +73,7 @@ public class WildcardAddressManager extends SimpleAddressManager
          {
             for (Address destAdd : add.getLinkedAddresses())
             {
-               Bindings b = super.getBindings(destAdd.getAddress());
+               Bindings b = super.getBindingsForRoutingAddress(destAdd.getAddress());
                if (b != null)
                {
                   Collection<Binding> theBindings = b.getBindings();
@@ -81,11 +84,11 @@ public class WildcardAddressManager extends SimpleAddressManager
                }
             }
          }
-         bindings = super.getBindings(address);
+         bindings = super.getBindingsForRoutingAddress(address);
       }
       return bindings;
    }
-
+      
    /**
     * If the address to add the binding to contains a wildcard then a copy of the binding (with the same underlying queue)
     * will be added to the actual mappings. Otherwise the binding is added as normal.
@@ -110,7 +113,7 @@ public class WildcardAddressManager extends SimpleAddressManager
          {
             for (Address destAdd : add.getLinkedAddresses())
             {
-               Bindings bindings = super.getBindings(destAdd.getAddress());
+               Bindings bindings = super.getBindingsForRoutingAddress(destAdd.getAddress());
                for (Binding b : bindings.getBindings())
                {
                   super.addMappingInternal(binding.getAddress(), b);
@@ -139,7 +142,7 @@ public class WildcardAddressManager extends SimpleAddressManager
          {
             for (Address destination : add.getLinkedAddresses())
             {
-               Bindings bindings = super.getBindings(destination.getAddress());
+               Bindings bindings = super.getBindingsForRoutingAddress(destination.getAddress());
                if (bindings != null)
                {
                   for (Binding b : bindings.getBindings())
@@ -241,14 +244,14 @@ public class WildcardAddressManager extends SimpleAddressManager
    private synchronized void removeAndUpdateAddressMap(final Address address)
    {
       //we only remove if there are no bindings left
-      Bindings bindings = super.getBindings(address.getAddress());
+      Bindings bindings = super.getBindingsForRoutingAddress(address.getAddress());
       if (bindings == null || bindings.getBindings().size() == 0)
       {
          List<Address> addresses = address.getLinkedAddresses();
          for (Address address1 : addresses)
          {
             address1.removeLinkedAddress(address);
-            Bindings linkedBindings = super.getBindings(address1.getAddress());
+            Bindings linkedBindings = super.getBindingsForRoutingAddress(address1.getAddress());
             if (linkedBindings == null || linkedBindings.getBindings().size() == 0)
             {
                removeAddress(address1);

@@ -531,7 +531,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       {
          managementService.unregisterQueue(uniqueName, binding.getAddress());
 
-         if (addressManager.getBindings(binding.getAddress()) == null)
+         if (addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
          {
             managementService.unregisterAddress(binding.getAddress());
          }
@@ -540,7 +540,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       {
          managementService.unregisterDivert(uniqueName);
 
-         if (addressManager.getBindings(binding.getAddress()) == null)
+         if (addressManager.getBindingsForRoutingAddress(binding.getAddress()) == null)
          {
             managementService.unregisterAddress(binding.getAddress());
          }
@@ -565,7 +565,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    public Bindings getBindingsForAddress(final SimpleString address)
    {
-      Bindings bindings = addressManager.getBindings(address);
+      Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
 
       if (bindings == null)
       {
@@ -578,6 +578,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public Binding getBinding(final SimpleString name)
    {
       return addressManager.getBinding(name);
+   }
+   
+   public Bindings getMatchingBindings(final SimpleString address)
+   {
+      return addressManager.getMatchingBindings(address);
    }
 
    public void route(final ServerMessage message, Transaction tx) throws Exception
@@ -646,7 +651,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          }
       }
 
-      Bindings bindings = addressManager.getBindings(address);
+      Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
 
       if (bindings != null)
       {
@@ -666,7 +671,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    public boolean redistribute(final ServerMessage message, final SimpleString routingName, final Transaction tx) throws Exception
    {
-      Bindings bindings = addressManager.getBindings(message.getDestination());
+      Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getDestination());
 
       if (bindings != null)
       {

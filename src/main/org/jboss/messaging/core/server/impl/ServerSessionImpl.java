@@ -1474,7 +1474,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          List<SimpleString> names = new ArrayList<SimpleString>();
 
-         Bindings bindings = postOffice.getBindingsForAddress(address);
+         Bindings bindings = postOffice.getMatchingBindings(address);
+         
+         for (Binding binding: bindings.getBindings())
+         {
+            log.info("Got binding " + binding.getAddress() + " : " + binding.getUniqueName());
+         }
 
          for (Binding binding : bindings.getBindings())
          {

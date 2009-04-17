@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.postoffice.Address;
 import org.jboss.messaging.core.postoffice.AddressManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
@@ -72,7 +73,7 @@ public class SimpleAddressManager implements AddressManager
       return binding;
    }
 
-   public Bindings getBindings(final SimpleString address)
+   public Bindings getBindingsForRoutingAddress(final SimpleString address)
    {
       return mappings.get(address);
    }
@@ -86,7 +87,27 @@ public class SimpleAddressManager implements AddressManager
    {
       return nameMap;
    }
-
+   
+   public Bindings getMatchingBindings(final SimpleString address)
+   {
+      Address add = new AddressImpl(address);
+      
+      Bindings bindings = new BindingsImpl();
+      
+      for (Binding binding: nameMap.values())
+      {
+         Address addCheck = new AddressImpl(binding.getAddress());
+         
+         if (addCheck.matches(add))
+         {
+            bindings.addBinding(binding);
+         }
+      }
+      
+      return bindings;
+   }
+   
+   
    public void clear()
    {
       nameMap.clear();

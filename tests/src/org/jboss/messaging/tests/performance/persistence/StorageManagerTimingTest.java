@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.buffers.ChannelBuffers;
-import org.jboss.messaging.core.buffers.HeapChannelBuffer;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;

@@ -1120,7 +1120,7 @@ public class MessagingServerImpl implements MessagingServer
             {
                storageManager.addQueueBinding(queueBinding);
             }
-         }
+         }         
       }
    }
 

@@ -34,7 +34,7 @@ import javax.naming.InitialContext;
  * This example demonstrates how a message producer can be limited to produce messages at a maximum rate
  * specified in messages per sec.
  *
- * @author <a href="ataylor@redhat.com">Andy Taylor</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class ProducerRateLimitExample extends JMSExample
 {

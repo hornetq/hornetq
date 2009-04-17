@@ -1169,6 +1169,12 @@ public class PagingStoreImplTest extends UnitTestCase
    class FakePostOffice implements PostOffice
    {
 
+      public Bindings getMatchingBindings(SimpleString address)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.postoffice.PostOffice#activate()
        */

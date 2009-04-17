@@ -58,6 +58,8 @@ public interface PostOffice extends MessagingComponent
    Bindings getBindingsForAddress(SimpleString address) throws Exception;
 
    Binding getBinding(SimpleString uniqueName);
+   
+   Bindings getMatchingBindings(SimpleString address);
 
    void route(ServerMessage message) throws Exception;
    

@@ -38,7 +38,9 @@ public interface AddressManager
 
    Binding removeBinding(SimpleString uniqueName);
 
-   Bindings getBindings(SimpleString address);
+   Bindings getBindingsForRoutingAddress(SimpleString address);
+   
+   Bindings getMatchingBindings(SimpleString address);
 
    void clear();
 
