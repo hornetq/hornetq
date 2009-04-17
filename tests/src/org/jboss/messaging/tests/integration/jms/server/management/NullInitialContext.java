@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.messaging.tests.integration.jms.management;
+package org.jboss.messaging.tests.integration.jms.server.management;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;

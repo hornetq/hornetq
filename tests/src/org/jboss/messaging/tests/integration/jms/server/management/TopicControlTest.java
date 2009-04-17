@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.jms.management;
+package org.jboss.messaging.tests.integration.jms.server.management;
 
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createTopicControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;

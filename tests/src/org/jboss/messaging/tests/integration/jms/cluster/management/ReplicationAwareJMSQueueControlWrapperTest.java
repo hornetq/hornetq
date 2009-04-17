@@ -38,8 +38,8 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.tests.integration.cluster.management.ReplicationAwareTestBase;
-import org.jboss.messaging.tests.integration.jms.management.JMSUtil;
-import org.jboss.messaging.tests.integration.jms.management.NullInitialContext;
+import org.jboss.messaging.tests.integration.jms.server.management.JMSUtil;
+import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 
 /**
  * A ReplicationAwareQueueControlWrapperTest
