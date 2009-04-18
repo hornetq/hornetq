@@ -11,10 +11,12 @@
       <permission type="consume" roles="guest"/>
       <permission type="send" roles="guest"/>
    </security>
-
-   <!--override the expiry address for the example-->
+   
+   <!--override the redelivery-delay  for the example queue-->
    <address-settings match="jms.queue.exampleQueue">
-      <expiry-address>jms.queue.expiryQueue</expiry-address>
+   
+      <redelivery-delay>5000</redelivery-delay>
+      
    </address-settings>
-
+   
 </settings>

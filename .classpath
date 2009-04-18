@@ -29,6 +29,7 @@
 	<classpathentry kind="src" path="examples/jms/bridge/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>
 	<classpathentry kind="src" path="examples/jms/dead-letter/src"/>
+	<classpathentry kind="src" path="examples/jms/delayed-redelivery/src"/>
 	<classpathentry kind="src" path="examples/jms/divert/src"/>
 	<classpathentry kind="src" path="examples/jms/durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/expiry/src"/>
