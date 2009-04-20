@@ -2,8 +2,7 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
 
-   <!--security for example topic-->
-   <security match="jms.topic.#">
+   <security match="jms.#">
       <permission type="createDurableQueue" roles="user"/>
       <permission type="deleteDurableQueue" roles="user"/>
       <permission type="createTempQueue" roles="user"/>

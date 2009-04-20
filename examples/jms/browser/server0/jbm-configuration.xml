@@ -23,7 +23,7 @@
       <!-- Other config -->
 
       <journal-min-files>2</journal-min-files>
-
+      
    </configuration>
 
 </deployment>
