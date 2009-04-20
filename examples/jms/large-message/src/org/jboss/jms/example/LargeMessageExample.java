@@ -49,17 +49,17 @@ public class LargeMessageExample extends JMSExample
    public static void main(String[] args)
    {
       // We limit the server to running in only 50MB of RAM
-      String[] serverJMXArgs = new String[] {"-Xms50M",
-                                             "-Xmx50M",
-                                             "-XX:+UseParallelGC",
-                                             "-XX:+AggressiveOpts",
-                                             "-XX:+UseFastAccessorMethods"};
+      String[] serverArgs = new String[] { "-Xms50M",
+                                          "-Xmx50M",
+                                          "-XX:+UseParallelGC",
+                                          "-XX:+AggressiveOpts",
+                                          "-XX:+UseFastAccessorMethods" };
 
-      new LargeMessageExample().run(serverJMXArgs, args);
+      new LargeMessageExample().run(serverArgs, args);
    }
 
-   //The message we will send is size 256MB, even though we are only running in 50MB of RAM on both client and server.
-   //JBoss Messaging will support much larger message sizes, but we use 512MB so the example runs in reasonable time.
+   // The message we will send is size 256MB, even though we are only running in 50MB of RAM on both client and server.
+   // JBoss Messaging will support much larger message sizes, but we use 512MB so the example runs in reasonable time.
    private final long FILE_SIZE = 256 * 1024 * 1024;
 
    public boolean runExample() throws Exception
@@ -109,7 +109,7 @@ public class LargeMessageExample extends JMSExample
          // file, however we could use any InputStream not just a FileInputStream.
          FileInputStream fileInputStream = new FileInputStream(fileInput);
          BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
-         
+
          message.setObjectProperty("JMS_JBM_InputStream", bufferedInput);
 
          System.out.println("Sending the huge message.");

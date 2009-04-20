@@ -40,7 +40,13 @@ public class PagingExample extends JMSExample
 {
    public static void main(String[] args)
    {
-      new PagingExample().run(args);
+      String[] serverArgs = new String[] { "-Xms50M",
+                                          "-Xmx50M",
+                                          "-XX:+UseParallelGC",
+                                          "-XX:+AggressiveOpts",
+                                          "-XX:+UseFastAccessorMethods" };
+
+    new PagingExample().run(serverArgs, args);
    }
 
    public boolean runExample() throws Exception
@@ -112,15 +118,16 @@ public class PagingExample extends JMSExample
          
          for (int i = 0; i < 30000; i++)
          {
-            message = (BytesMessage)messageConsumer.receive(1000);
+            message = (BytesMessage)messageConsumer.receive(3000);
 
             if (i % 1000 == 0)
             {
                System.out.println("Received " + i + " messages");
-               
                message.acknowledge();
             }
          }
+         
+         message.acknowledge();
          
          
          // Step 18. Receive the messages from the Queue names pageQueue. Create the proper consumer for that

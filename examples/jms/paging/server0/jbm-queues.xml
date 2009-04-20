@@ -26,4 +26,8 @@
       <page-size-bytes>20000</page-size-bytes>
    </address-settings>
 
+   <address-settings match="jms.queue.exampleQueue">
+      <page-size-bytes>1048576</page-size-bytes>
+   </address-settings>
+
 </settings>

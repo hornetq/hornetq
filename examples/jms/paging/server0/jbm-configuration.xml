@@ -23,6 +23,10 @@
       <!-- Other config -->
 
       <journal-min-files>2</journal-min-files>
+      
+      <paging-max-global-size-bytes>20485760</paging-max-global-size-bytes>
+      <paging-global-watermark-size>1048576</paging-global-watermark-size>
+      
 
    </configuration>
 
