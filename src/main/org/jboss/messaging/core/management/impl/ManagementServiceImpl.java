@@ -132,7 +132,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private boolean messageCounterEnabled;
 
-   private boolean noticationsEnabled;
+   private boolean notificationsEnabled;
 
    private final Set<NotificationListener> listeners = new org.jboss.messaging.utils.ConcurrentHashSet<NotificationListener>();
 
@@ -152,7 +152,7 @@ public class ManagementServiceImpl implements ManagementService
 
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
-      noticationsEnabled = true;
+      notificationsEnabled = true;
       messageCounterManager = new MessageCounterManagerImpl();
       messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
       messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
@@ -565,7 +565,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void sendNotification(final Notification notification) throws Exception
    {
-      if (managedServer != null && noticationsEnabled)
+      if (managedServer != null && notificationsEnabled)
       {
          // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
          synchronized (this)
@@ -623,7 +623,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void enableNotifications(boolean enabled)
    {
-      noticationsEnabled = enabled;
+      notificationsEnabled = enabled;
    }
 
    public Object getAttribute(final String resourceName, final String attribute)
