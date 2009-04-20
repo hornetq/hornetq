@@ -5,7 +5,7 @@
 
       <jmx-management-enabled>true</jmx-management-enabled>
       <message-counter-enabled>true</message-counter-enabled>
-      <message-counter-sample-period>10000</message-counter-sample-period>
+      <message-counter-sample-period>2000</message-counter-sample-period>
       <message-counter-max-day-history>2</message-counter-max-day-history>
 
       <!-- Connectors -->

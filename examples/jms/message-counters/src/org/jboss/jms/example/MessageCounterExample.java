@@ -83,14 +83,16 @@ public class MessageCounterExample extends JMSExample
          QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(queue);
 
-         // Step 7. Create and send a Text Message
+         // Step 5. Create and send a Text Message
          TextMessage message = session.createTextMessage("This is a text message");
          producer.send(message);
          System.out.println("Sent message: " + message.getText());
 
-         System.out.println("Sleep a little bit to have the message counters sampled...");
-         Thread.sleep(12000);
-         
+         // Step 6. Sleep a little bit so that the queue is sampled
+         System.out.println("Sleep a little bit to have the queue sampled...");
+         Thread.sleep(3000);
+
+         // Step 7. Use JMX to retrieve the message counters using the JMSQueueControlMBean
          ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
@@ -99,38 +101,46 @@ public class MessageCounterExample extends JMSExample
                                                                                                                  JMSQueueControlMBean.class,
                                                                                                                  false);
 
+         // Step 8. List the message counters and convert them to MessageCounterInfo data structure.
          CompositeData compositeData = queueControl.listMessageCounter();
          MessageCounterInfo messageCounter = MessageCounterInfo.from(compositeData);
+         
+         // Step 9. Display the message counter
          displayMessageCounter(messageCounter);
 
+         // Step 10. Sleep again to have the queue sampled again
          System.out.println("Sleep a little bit again...");
-         Thread.sleep(12000);
-         
+         Thread.sleep(3000);
+
+         // Step 11. List the messages counters again
          compositeData = queueControl.listMessageCounter();
          messageCounter = MessageCounterInfo.from(compositeData);
-
          displayMessageCounter(messageCounter);
 
+         // Step 12. Create a JMS consumer on the queue
          MessageConsumer consumer = session.createConsumer(queue);
          
+         // Step 13. Start the connection to receive messages on the consumer
          connection.start();
          
+         // Step 14. Receive a JMS message from the queue. It corresponds to the message sent at step #5
          TextMessage messageReceived = (TextMessage)consumer.receive(5000);
          System.out.format("Received message: %s\n\n", messageReceived.getText());
+
+         // Step 15. Sleep on last time to have the queue sampled
+         System.out.println("Sleep a little bit one last time...");
+         Thread.sleep(3000);
          
-         System.out.println("Sleep a little bit on last time...");
-         Thread.sleep(12000);
-         
+         // Step 16. Display one last time the message counter
          compositeData = queueControl.listMessageCounter();
          messageCounter = MessageCounterInfo.from(compositeData);
-
          displayMessageCounter(messageCounter);
          
          return true;
       }
       finally
       {
-         // Step 20. Be sure to close our JMS resources!
+         // Step 17. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
