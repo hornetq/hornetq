@@ -283,12 +283,32 @@ public class MessagingServerImpl implements MessagingServer
 
       postOffice.start();
 
+      pagingManager.start();
+
       managementService.start();
+
+      // Start the deployers
+      if (configuration.isEnableFileDeployment())
+      {
+         basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
+
+         addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
+
+         queueDeployer = new QueueDeployer(deploymentManager, configuration);
+
+         securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
+
+         basicUserCredentialsDeployer.start();
+
+         addressSettingsDeployer.start();
+
+         queueDeployer.start();
+
+         securityDeployer.start();
+      }
       
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
-      // the bindings info must be loaded now since it has the side-effect
-      // to setup the ID generator of the storage manager
       storageManager.loadBindingJournal(queueBindingInfos);
 
       if (!configuration.isBackup())
@@ -334,6 +354,50 @@ public class MessagingServerImpl implements MessagingServer
                                                                 this,
                                                                 queueFactory,
                                                                 configuration.isBackup());
+
+      Map<Long, Queue> queues = new HashMap<Long, Queue>();
+
+      for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
+      {
+         Filter filter = null;
+
+         if (queueBindingInfo.getFilterString() != null)
+         {
+            filter = new FilterImpl(queueBindingInfo.getFilterString());
+         }
+
+         Queue queue = queueFactory.createQueue(queueBindingInfo.getPersistenceID(),
+                                                queueBindingInfo.getAddress(),
+                                                queueBindingInfo.getQueueName(),
+                                                filter,
+                                                true,
+                                                false);
+
+         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeID);
+
+         queues.put(queueBindingInfo.getPersistenceID(), queue);
+
+         postOffice.addBinding(binding);
+      }
+
+      Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
+
+      storageManager.loadMessageJournal(pagingManager,
+                                        resourceManager,
+                                        queues,
+                                        duplicateIDMap);
+
+      for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
+      {
+         SimpleString address = entry.getKey();
+
+         DuplicateIDCache cache = postOffice.getDuplicateIDCache(address);
+
+         if (configuration.isPersistIDCache())
+         {
+            cache.load(entry.getValue());
+         }
+      }
 
       resourceManager.start();
 
@@ -394,27 +458,10 @@ public class MessagingServerImpl implements MessagingServer
                                                  configuration.isBackup());
       }
 
-      // Start the deployers
-      if (configuration.isEnableFileDeployment())
-      {
-         basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
-
-         addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
-
-         queueDeployer = new QueueDeployer(deploymentManager, configuration);
-
-         securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
-
-         basicUserCredentialsDeployer.start();
-
-         addressSettingsDeployer.start();
-
-         queueDeployer.start();
-
-         securityDeployer.start();
-      }
-      
-      pagingManager.start();
+      // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode
+      // during last stop
+      // This is the last thing done at the start, after everything else is up and running
+      pagingManager.startGlobalDepage();
 
       if (!configuration.isBackup())
       {         
@@ -429,67 +476,13 @@ public class MessagingServerImpl implements MessagingServer
          // Deploy any pre-defined queues - must be done *after* deploymentManager has started
          deployQueues();
       }
-
       
-      // TODO all queues should be deployed from deployQueues() wether they come from the journal or the conf
-      Map<Long, Queue> queues = new HashMap<Long, Queue>();
-
-
-      for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
-      {
-         Filter filter = null;
-
-         if (queueBindingInfo.getFilterString() != null)
-         {
-            filter = new FilterImpl(queueBindingInfo.getFilterString());
-         }
-
-         Queue queue = queueFactory.createQueue(queueBindingInfo.getPersistenceID(),
-                                                queueBindingInfo.getAddress(),
-                                                queueBindingInfo.getQueueName(),
-                                                filter,
-                                                true,
-                                                false);
-
-         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeID);
-
-         queues.put(queueBindingInfo.getPersistenceID(), queue);
-
-         postOffice.addBinding(binding);
-      }
-
-      Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
-
-      storageManager.loadMessageJournal(pagingManager,
-                                        resourceManager,
-                                        queues,
-                                        duplicateIDMap);
-
-      for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
-      {
-         SimpleString address = entry.getKey();
-
-         DuplicateIDCache cache = postOffice.getDuplicateIDCache(address);
-
-         if (configuration.isPersistIDCache())
-         {
-            cache.load(entry.getValue());
-         }
-      }
-
       if (clusterManager != null)
       {
          clusterManager.start();
       }
 
       started = true;
-
-      // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode
-      // during last stop
-      // This is the last thing done at the start, after everything else is up and running
-      // it needs to be done after the duplicateIDMap cache was reloaded
-      pagingManager.startGlobalDepage();
-
    }
 
    public synchronized void start() throws Exception
