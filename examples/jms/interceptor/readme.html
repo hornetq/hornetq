@@ -35,6 +35,10 @@
      When the example is running, the interceptor will print out each events that are passed in the interceptor. And it will add a string property to the message being 
      delivered. You can see that after the message is received, there will be a new string property appears in the received message.</p>
      
+     <p>With our interceptor we always return <code>true</code> from the <code>intercept</code> method. If we were
+     to return <code>false</code> that signifies that no more interceptors are to run or the target
+     is not to be called. Return <code>false</code> to abort processing of the packet.</p>
+     
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
