@@ -130,13 +130,11 @@ public class JMXExample extends JMSExample
          TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
          System.out.println("Received message: " + messageReceived);
 
-         initialContext.close();
-
          return true;
       }
       finally
       {
-         // Step 20. Be sure to close our JMS resources!
+         // Step 20. Be sure to close the resources!
          if (initialContext != null)
          {
             initialContext.close();
