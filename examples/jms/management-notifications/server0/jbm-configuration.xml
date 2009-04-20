@@ -1,0 +1,32 @@
+<deployment xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../../../../src/schemas/jbm-configuration.xsd">
+   <configuration>
+
+      <management-notification-address>example.notifications</management-notification-address>
+ 
+      <!--  create a default queue for the notification -->     
+      <queues>
+         <queue name="example.notifications">
+            <address>example.notifications</address>
+         </queue>
+      </queues>
+
+      <connectors>
+         <connector name="netty">
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         </connector>
+      </connectors>
+      
+      <!-- Netty standard TCP acceptor -->
+      <acceptors>
+         <acceptor name="netty">
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         </acceptor>
+      </acceptors>
+
+      <!--  Other configs -->      
+      <journal-min-files>2</journal-min-files>
+   </configuration>
+
+</deployment>

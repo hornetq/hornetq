@@ -114,7 +114,7 @@ public class JBossTopic extends JBossDestination implements Topic
       super(JMS_TOPIC_ADDRESS_PREFIX + name, name);
    }
 
-   protected JBossTopic(final String address, final String name)
+   public JBossTopic(final String address, final String name)
    {
       super(address, name);
    }

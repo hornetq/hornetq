@@ -40,6 +40,7 @@
 	<classpathentry kind="src" path="examples/jms/large-message/src"/>
 	<classpathentry kind="src" path="examples/jms/last-value-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/management/src"/>
+	<classpathentry kind="src" path="examples/jms/management-notifications/src"/>
 	<classpathentry kind="src" path="examples/jms/message-counters/src"/>
 	<classpathentry kind="src" path="examples/jms/message-group/src"/>
 	<classpathentry kind="src" path="examples/jms/message-priority/src"/>
