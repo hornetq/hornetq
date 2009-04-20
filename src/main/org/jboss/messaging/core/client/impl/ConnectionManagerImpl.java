@@ -278,7 +278,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   {
                      // This can happen if the connection manager gets closed - e.g. the server gets shut down
 
-                     throw new MessagingException(MessagingException.NOT_CONNECTED, "Unable to connect to server");
+                     throw new MessagingException(MessagingException.NOT_CONNECTED, "Unable to connect to server using configuration " + connectorConfig);
                   }
 
                   channel1 = connection.getChannel(1, -1, false);
