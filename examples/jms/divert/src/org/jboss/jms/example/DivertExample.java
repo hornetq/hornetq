@@ -49,86 +49,86 @@ public class DivertExample extends JMSExample
 
    public boolean runExample() throws Exception
    {
-      Connection connection0 = null;
+      Connection connectionLondon = null;
 
-      Connection connection1 = null;
+      Connection connectionNewYork = null;
 
-      InitialContext initialContext0 = null;
+      InitialContext initialContextLondon = null;
 
-      InitialContext initialContext1 = null;
+      InitialContext initialContextNewYork = null;
       try
       {
          // Step 1. Create an initial context to perform the JNDI lookup on the London server
-         initialContext0 = getContext(0);
+         initialContextLondon = getContext(0);
 
          // Step 2. Look-up the queue orderQueue on the London server - this is the queue any orders are sent to
-         Queue orderQueue0 = (Queue)initialContext0.lookup("/queue/orders");
+         Queue orderQueue = (Queue)initialContextLondon.lookup("/queue/orders");
 
          // Step 3. Look-up the topic priceUpdates on the London server- this is the topic that any price updates are sent to
-         Topic priceUpdates0 = (Topic)initialContext0.lookup("/topic/priceUpdates");
+         Topic priceUpdates = (Topic)initialContextLondon.lookup("/topic/priceUpdates");
 
          // Step 4. Look-up the spy topic on the London server- this is what we will use to snoop on any orders
-         Topic spyTopic0 = (Topic)initialContext0.lookup("/topic/spyTopic");
+         Topic spyTopic = (Topic)initialContextLondon.lookup("/topic/spyTopic");
 
          // Step 6. Create an initial context to perform the JNDI lookup on the New York server
-         initialContext1 = getContext(1);
+         initialContextNewYork = getContext(1);
 
          // Step 7. Look-up the topic newYorkPriceUpdates on the New York server - any price updates sent to priceUpdates on the London server will
          // be diverted to the queue priceForward on the London server, and a bridge will consume from that queue and forward
          // them to the address newYorkPriceUpdates on the New York server where they will be distributed to the topic subscribers on
          // the New York server
-         Topic newYorkPriceUpdates = (Topic)initialContext1.lookup("/topic/newYorkPriceUpdates");
+         Topic newYorkPriceUpdates = (Topic)initialContextNewYork.lookup("/topic/newYorkPriceUpdates");
 
          // Step 8. Perform a lookup on the Connection Factory on the London server
-         ConnectionFactory cf0 = (ConnectionFactory)initialContext0.lookup("/ConnectionFactory");
+         ConnectionFactory cfLondon = (ConnectionFactory)initialContextLondon.lookup("/ConnectionFactory");
 
          // Step 9. Perform a lookup on the Connection Factory on the New York server
-         ConnectionFactory cf1 = (ConnectionFactory)initialContext1.lookup("/ConnectionFactory");
+         ConnectionFactory cfNewYork = (ConnectionFactory)initialContextNewYork.lookup("/ConnectionFactory");
 
          // Step 10. Create a JMS Connection on the London server
-         connection0 = cf0.createConnection();
+         connectionLondon = cfLondon.createConnection();
 
          // Step 11. Create a JMS Connection on the New York server
-         connection1 = cf1.createConnection();
+         connectionNewYork = cfNewYork.createConnection();
 
          // Step 12. Create a JMS Session on the London server
-         Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionLondon = connectionLondon.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          // Step 13. Create a JMS Session on the New York server
-         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionNewYork = connectionNewYork.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          // Step 14. Create a JMS MessageProducer orderProducer that sends to the queue orderQueue on the London server
-         MessageProducer orderProducer = session0.createProducer(orderQueue0);
+         MessageProducer orderProducer = sessionLondon.createProducer(orderQueue);
 
          // Step 15. Create a JMS MessageProducer priceProducer that sends to the topic priceUpdates on the London server
-         MessageProducer priceProducer = session0.createProducer(priceUpdates0);
+         MessageProducer priceProducer = sessionLondon.createProducer(priceUpdates);
 
          // Step 15. Create a JMS subscriber which subscribes to the spyTopic on the London server
-         MessageConsumer spySubscriberA = session0.createConsumer(spyTopic0);
+         MessageConsumer spySubscriberA = sessionLondon.createConsumer(spyTopic);
 
          // Step 16. Create another JMS subscriber which also subscribes to the spyTopic on the London server
-         MessageConsumer spySubscriberB = session0.createConsumer(spyTopic0);
+         MessageConsumer spySubscriberB = sessionLondon.createConsumer(spyTopic);
 
          // Step 17. Create a JMS MessageConsumer which consumes orders from the order queue on the London server
-         MessageConsumer orderConsumer = session0.createConsumer(orderQueue0);
+         MessageConsumer orderConsumer = sessionLondon.createConsumer(orderQueue);
 
          // Step 18. Create a JMS subscriber which subscribes to the priceUpdates topic on the London server
-         MessageConsumer priceUpdatesSubscriber0 = session0.createConsumer(priceUpdates0);
+         MessageConsumer priceUpdatesSubscriberLondon = sessionLondon.createConsumer(priceUpdates);
 
          // Step 19. Create a JMS subscriber which subscribes to the newYorkPriceUpdates topic on the New York server
-         MessageConsumer newYorkPriceUpdatesSubscriberA = session1.createConsumer(newYorkPriceUpdates);
+         MessageConsumer newYorkPriceUpdatesSubscriberA = sessionNewYork.createConsumer(newYorkPriceUpdates);
 
          // Step 20. Create another JMS subscriber which also subscribes to the newYorkPriceUpdates topic on the New York server
-         MessageConsumer newYorkPriceUpdatesSubscriberB = session1.createConsumer(newYorkPriceUpdates);
+         MessageConsumer newYorkPriceUpdatesSubscriberB = sessionNewYork.createConsumer(newYorkPriceUpdates);
 
          // Step 21. Start the connections
 
-         connection0.start();
+         connectionLondon.start();
 
-         connection1.start();
+         connectionNewYork.start();
 
          // Step 22. Create an order message
-         TextMessage orderMessage = session0.createTextMessage("This is an order");
+         TextMessage orderMessage = sessionLondon.createTextMessage("This is an order");
 
          // Step 23. Send the order message to the order queue on the London server
          orderProducer.send(orderMessage);
@@ -149,8 +149,8 @@ public class DivertExample extends JMSExample
 
          System.out.println("Snooped on order: " + spiedOrder2.getText());
 
-         // Step 26. Create a price update message, destined for London
-         TextMessage priceUpdateMessageLondon = session0.createTextMessage("This is a price update for London");
+         // Step 26. Create and send a price update message, destined for London
+         TextMessage priceUpdateMessageLondon = sessionLondon.createTextMessage("This is a price update for London");
                  
          priceUpdateMessageLondon.setStringProperty("office", "London");
          
@@ -158,7 +158,7 @@ public class DivertExample extends JMSExample
          
          // Step 27. The price update *should* be received by the local subscriber since we only divert messages
          // where office = New York
-         TextMessage receivedUpdate = (TextMessage)priceUpdatesSubscriber0.receive(2000);
+         TextMessage receivedUpdate = (TextMessage)priceUpdatesSubscriberLondon.receive(2000);
 
          System.out.println("Received price update locally: " + receivedUpdate.getText());
          
@@ -184,7 +184,7 @@ public class DivertExample extends JMSExample
 
          // Step 29. Create a price update message, destined for New York
          
-         TextMessage priceUpdateMessageNewYork = session0.createTextMessage("This is a price update for New York");
+         TextMessage priceUpdateMessageNewYork = sessionLondon.createTextMessage("This is a price update for New York");
          
          priceUpdateMessageNewYork.setStringProperty("office", "New York");
       
@@ -194,7 +194,7 @@ public class DivertExample extends JMSExample
          // Step 31. The price update *should not* be received by the local subscriber to the priceUpdates topic
          // since it has been *exclusively* diverted to the priceForward queue, because it has a header saying
          // it is destined for the New York office
-         Message message = priceUpdatesSubscriber0.receive(1000);
+         Message message = priceUpdatesSubscriberLondon.receive(1000);
 
          if (message != null)
          {
@@ -224,21 +224,21 @@ public class DivertExample extends JMSExample
       finally
       {
          // Step 12. Be sure to close our resources!
-         if (initialContext0 != null)
+         if (initialContextLondon != null)
          {
-            initialContext0.close();
+            initialContextLondon.close();
          }
-         if (initialContext1 != null)
+         if (initialContextNewYork != null)
          {
-            initialContext1.close();
+            initialContextNewYork.close();
          }
-         if (connection0 != null)
+         if (connectionLondon != null)
          {
-            connection0.close();
+            connectionLondon.close();
          }
-         if (connection1 != null)
+         if (connectionNewYork != null)
          {
-            connection1.close();
+            connectionNewYork.close();
          }
       }
    }
