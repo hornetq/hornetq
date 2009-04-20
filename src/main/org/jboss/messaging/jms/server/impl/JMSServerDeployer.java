@@ -247,12 +247,12 @@ public class JMSServerDeployer extends XmlDeployer
                maxConnections = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (PRE_ACKNOWLEDGE_ELEMENT.equals(child.getNodeName()))
-            {
-               preAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);;
+            {               
+               preAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);  
             }
             else if (RETRY_INTERVAL.equals(child.getNodeName()))
             {
-               retryInterval = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
+               retryInterval = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (RETRY_INTERVAL_MULTIPLIER.equals(child.getNodeName()))
             {
@@ -260,11 +260,11 @@ public class JMSServerDeployer extends XmlDeployer
             }
             else if (RECONNECT_ATTEMPTS.equals(child.getNodeName()))
             {
-               reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);;
+               reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (FAILOVER_ON_NODE_SHUTDOWN.equals(child.getNodeName()))
             {
-               failoverOnNodeShutdown = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);;
+               failoverOnNodeShutdown = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }            
             else if (ENTRIES_NODE_NAME.equals(child.getNodeName()))
             {

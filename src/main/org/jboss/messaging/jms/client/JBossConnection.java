@@ -460,7 +460,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
          {
             session = sessionFactory.createSession(username, password, isXA, true, false, false, transactionBatchSize);
          }
-         else if (acknowledgeMode == JBossSession.SERVER_ACKNOWLEDGE)
+         else if (acknowledgeMode == JBossSession.PRE_ACKNOWLEDGE)
          {
             session = sessionFactory.createSession(username, password, isXA, true, false, true, transactionBatchSize);
          }

@@ -264,7 +264,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.blockOnPersistentSend = blockOnPersistentSend;
       this.autoGroup = autoGroup;
       this.maxConnections = maxConnections;
-      this.preAcknowledge = preAcknowledge;
+      this.preAcknowledge = preAcknowledge;     
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.reconnectAttempts = reconnectAttempts;

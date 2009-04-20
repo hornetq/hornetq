@@ -39,7 +39,7 @@ public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
    
 	private static final long serialVersionUID = -4624930377557954624L;
 
-	public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "queuetempjms.";
+	public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
    
    // Static --------------------------------------------------------
    

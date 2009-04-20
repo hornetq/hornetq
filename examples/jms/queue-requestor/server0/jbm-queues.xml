@@ -13,7 +13,7 @@
    </security>
    <!-- needed so
     the queue requester can create a temporary queue-->
-   <security match="queuetempjms.*">
+   <security match="jms.tempqueue.#">
       <permission type="createDurableQueue" roles="guest"/>
       <permission type="deleteDurableQueue" roles="guest"/>
       <permission type="createTempQueue" roles="guest"/>

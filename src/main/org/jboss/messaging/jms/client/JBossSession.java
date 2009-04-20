@@ -97,7 +97,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    public static final int TYPE_TOPIC_SESSION = 2;
 
-   public static final int SERVER_ACKNOWLEDGE = 4;
+   public static final int PRE_ACKNOWLEDGE = 100;
 
    private static SimpleString REJECTING_FILTER = new SimpleString("_JBMX=-1");
 

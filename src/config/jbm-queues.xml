@@ -44,14 +44,14 @@
       <permission type="send" roles="guest,publisher"/>
    </security>
 
-   <security match="queuetempjms.*">
+   <security match="jms.tempqueue.#">
       <permission type="createTempQueue" roles="guest,def"/>
       <permission type="deleteTempQueue" roles="guest,def"/>
       <permission type="consume" roles="guest,def"/>
       <permission type="send" roles="guest,def"/>
    </security>
 
-   <security match="topictempjms.*">
+   <security match="jms.temptopic.#">
       <permission type="createTempQueue" roles="guest,def"/>
       <permission type="deleteTempQueue" roles="guest,def"/>
       <permission type="consume" roles="guest,def"/>

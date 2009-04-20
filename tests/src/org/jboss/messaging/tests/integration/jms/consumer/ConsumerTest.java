@@ -141,7 +141,7 @@ public class ConsumerTest extends UnitTestCase
    public void testPreCommitAcks() throws Exception
    {
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, JBossSession.SERVER_ACKNOWLEDGE);
+      Session session = conn.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
       jBossQueue = new JBossQueue(Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);

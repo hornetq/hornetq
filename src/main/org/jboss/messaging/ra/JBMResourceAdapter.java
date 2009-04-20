@@ -1309,7 +1309,7 @@ public class JBMResourceAdapter implements ResourceAdapter
                                                   actPreAck,
                                                   actTxBatchSize);
             break;
-         case JBossSession.SERVER_ACKNOWLEDGE:
+         case JBossSession.PRE_ACKNOWLEDGE:
             result = sessionFactory.createSession(user,
                                                   pass,
                                                   deliveryTransacted,
