@@ -283,8 +283,6 @@ public class MessagingServerImpl implements MessagingServer
 
       postOffice.start();
 
-      pagingManager.start();
-
       managementService.start();
       
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
@@ -396,11 +394,6 @@ public class MessagingServerImpl implements MessagingServer
                                                  configuration.isBackup());
       }
 
-      // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode
-      // during last stop
-      // This is the last thing done at the start, after everything else is up and running
-      pagingManager.startGlobalDepage();
-
       // Start the deployers
       if (configuration.isEnableFileDeployment())
       {
@@ -434,9 +427,13 @@ public class MessagingServerImpl implements MessagingServer
          // Deploy any pre-defined queues - must be done *after* deploymentManager has started
          deployQueues();
       }
+
+      
+      pagingManager.start();
       
       // TODO all queues should be deployed from deployQueues() wether they come from the journal or the conf
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
+
 
       for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
       {
@@ -486,6 +483,13 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       started = true;
+
+      // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode
+      // during last stop
+      // This is the last thing done at the start, after everything else is up and running
+      // it needs to be done after the duplicateIDMap cache was reloaded
+      pagingManager.startGlobalDepage();
+
    }
 
    public synchronized void start() throws Exception
