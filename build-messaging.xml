@@ -597,9 +597,9 @@
                  file="src/schemas/jbm-configuration.xsd"/>
       </schemavalidate>
       <echo>validating security credentials</echo>
-      <schemavalidate file="src/config/jbm-security.xml">
+      <schemavalidate file="src/config/jbm-users.xml">
          <schema namespace="urn:jboss:messaging" 
-                 file="src/schemas/jbm-security.xsd"/>
+                 file="src/schemas/jbm-users.xsd"/>
       </schemavalidate>
       <echo>validating queue settings</echo>
       <schemavalidate file="src/config/jbm-queues.xml">
