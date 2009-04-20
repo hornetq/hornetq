@@ -413,6 +413,8 @@ public class MessagingServerImpl implements MessagingServer
 
          securityDeployer.start();
       }
+      
+      pagingManager.start();
 
       if (!configuration.isBackup())
       {         
@@ -428,8 +430,6 @@ public class MessagingServerImpl implements MessagingServer
          deployQueues();
       }
 
-      
-      pagingManager.start();
       
       // TODO all queues should be deployed from deployQueues() wether they come from the journal or the conf
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
