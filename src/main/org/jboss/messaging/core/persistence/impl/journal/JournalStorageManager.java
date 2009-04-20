@@ -190,7 +190,7 @@ public class JournalStorageManager implements StorageManager
       else if (config.getJournalType() == JournalType.NIO)
       {
          log.info("NIO Journal selected");
-         journalFF = new NIOSequentialFileFactory(bindingsDir);
+         journalFF = new NIOSequentialFileFactory(journalDir);
       }
       else
       {
