@@ -121,13 +121,11 @@ public class ExpiryExample extends JMSExample
          // Step 21. the actual expiration time is stored in the _JBM_ORIG_DESTINATION property
          System.out.println("*Actual expiration time* of the expired message: " + messageReceived.getLongProperty("_JBM_ACTUAL_EXPIRY"));
 
-         initialContext.close();
-         
          return true;
       }
       finally
       {
-         // Step 22. Be sure to close our JMS resources!
+         // Step 22. Be sure to close the resources!
          if (initialContext != null)
          {
             initialContext.close();
