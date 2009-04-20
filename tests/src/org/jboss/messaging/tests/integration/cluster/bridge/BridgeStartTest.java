@@ -678,5 +678,17 @@ public class BridgeStartTest extends ServiceTestBase
 
       server1.stop();
    }
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      clearData();
+   }
+
+   protected void tearDown() throws Exception
+   {
+      clearData();
+      super.tearDown();
+   }
 
 }
