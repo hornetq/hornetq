@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <title>JBoss Messaging Java EE HAJNDI Example</title>
+    <link rel="stylesheet" type="text/css" href="../../jms/common/common.css">
+  </head>
+  <body>
+     <h1>Java EE HAJNDI Example</h1>
+     <br>
+     <p>This example demonstrates a simple symmetric clustering configuration, and failover on JNDI (HAJNDI).</p>
+     <h2>Configuring the example:</h2>
+     <ol>
+     <li>define the property JBOSS_HOME pointing to a JBoss 5.1 distribution</li>
+     <li>Install JBossMessaging by typing <code>ant</code> under <code>/messaging-distribution/AS</code></li>
+     <li>Copy the directory $JBOSS_HOME/server/jbm2_symmetric as $JBOSS_HOME/server/jbm2_symmetric_2</li>
+     <li>Start the first server with <code>./run.sh -c jbm2_symmetric</code></li>
+     <li>Start the second server with <code>./run.sh -c jbm2_symmetric_2 -Djboss.service.binding.set=ports-01</li>
+     </ol>
+     <h1>Example step by step</h1>
+     <ol>
+        <li>Create a JNDI Context using HAJNDI Properties.
+            <p>This JNDI is performing auto-discovery of the servers, by using the default UDP properties.</p>
+            <p>You will find more information about these properties at the <a href="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/5/html/clustering-jndi.html">JBoss Application Documentation</a></p>
+        </li>
+        <pre>
+           <code>         
+         Hashtable jndiParameters = new Hashtable();
+         jndiParameters.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+         jndiParameters.put("java.naming.factory.url.pkgs=", "org.jboss.naming:org.jnp.interfaces");
+         
+         initialContext = new InitialContext(jndiParameters);
+         </code>
+        </pre>
+        
+        
+        <li>Perform lookups in a loop. As long as you have at least one server alive, these lookups will still work fine
+         <pre>
+         <code>
+         for (int i = 0; i < 100; i++)
+         {
+            ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+         </code>
+         </pre>
+        </li>
+
+        <li>Create and close a JMS Connection, just to show the downloaded Connection Factory is working
+        <pre>
+        <code>
+            connection = cf.createConnection();
+            connection.close();
+        </code>
+        </pre>
+        </li>
+        
+        
+        <li>As the example sleeps here, use this time to kill one of the servers. You will realize that lookups will still work as long as you have a live server
+        
+        <pre>
+        <code>
+            System.out.println("Connection " + i + " was created and closed. If you kill any of the servers now, the lookup operation on Step 2 will still work fine");
+            Thread.sleep(5000);
+         }
+        </code>
+        </pre>
+        </li>
+        
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre>
+           <code>finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }</code>
+        </pre>
+
+
+
+     </ol>
+  </body>
+</html>

@@ -35,13 +35,18 @@
    <property name="lib.dir" value="../lib"/>
 
    <target name="default">
-      <antcall target="build">
-         <param name="messaging.config.source" value="default"/>
-         <param name="messaging.config.name" value="jbm2_default"/>
-      </antcall>
+    <antcall target="build">
+       <param name="messaging.config.source" value="default"/>
+       <param name="messaging.profile.name" value="default"/>
+    </antcall>
+    <antcall target="build">
+       <param name="messaging.config.source" value="all"/>
+       <param name="messaging.profile.name" value="symmetric"/>
+    </antcall>
    </target>
 
    <target name="build">
+      <property name="messaging.config.name" value="jbm2_${messaging.profile.name}"/>
       <antcall target="validate-jboss"/>
       <property name="src.dir" value="${jboss.home}/server/${messaging.config.source}"/>
       <property name="dest.dir" value="${jboss.home}/server/${messaging.config.name}"/>
@@ -73,17 +78,8 @@
       <property name="messaging.sar.dir" value="${dest.dir}/deploy/messaging.sar"/>
       <mkdir dir="${messaging.sar.dir}"/>
       <copy todir="${messaging.sar.dir}">
-         <fileset dir="${config.dir}">
-            <include name="jbm-jboss-beans.xml"/>
-            <include name="jms-ds.xml"/>
-         </fileset>
-      </copy>
-      <copy todir="${messaging.sar.dir}">
-         <fileset dir="${main.config.dir}">
-            <include name="jbm-configuration.xml"/>
-            <include name="jbm-jms.xml"/>
-            <include name="jbm-queues.xml"/>
-         </fileset>
+        <fileset dir="${config.dir}/independent" includes="*"/>
+        <fileset dir="${config.dir}/${messaging.profile.name}" includes="*"/>
       </copy>
       <copy file="jbm-ra.rar" tofile="${dest.dir}/deploy/jms-ra.rar"/>
    </target>

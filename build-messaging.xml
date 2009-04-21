@@ -920,19 +920,8 @@
          </fileset>
       </copy>
 
-      <antcall target="userdoc"/>
-      <copy todir="${build.distro.dir}/docs/userguide">
-         <fileset dir="${doc.build.dir}">
-            <include name="**"/>
-         </fileset>
-      </copy>
-      <antcall target="javadoc"/>
-      <copy todir="${build.distro.api.dir}/">
-         <fileset dir="${build.api.dir}">
-            <include name="**"/>
-         </fileset>
-      </copy>
-
+      <antcall target="dist-doc"/>
+   	
       <copy todir="${build.distro.licenses.dir}/">
          <fileset dir="${licenses.dir}">
             <include name="**"/>
@@ -985,6 +974,22 @@
             destfile="${build.dir}/${build.artifact}.tar.gz"/>
    </target>
 
+   <target name="dist-doc" unless="no-doc">
+    <antcall target="userdoc"/>
+    <copy todir="${build.distro.dir}/docs/userguide">
+       <fileset dir="${doc.build.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+    <antcall target="javadoc"/>
+    <copy todir="${build.distro.api.dir}/">
+       <fileset dir="${build.api.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+   </target>
+
+	
    <target name="userdoc">
       <ant dir="./docs/userguide" antfile="build.xml" target="all"/>
    </target>

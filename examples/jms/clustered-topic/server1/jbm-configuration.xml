@@ -23,7 +23,7 @@
       
       <!-- Clustering configuration -->
       <broadcast-groups>
-         <broadcast-group name="my-broacast-group">
+         <broadcast-group name="my-broadcast-group">
             <group-address>231.7.7.7</group-address>
             <group-port>9876</group-port>
             <broadcast-period>100</broadcast-period>
