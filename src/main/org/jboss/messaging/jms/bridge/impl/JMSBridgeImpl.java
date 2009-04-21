@@ -1004,7 +1004,7 @@ public class JMSBridgeImpl implements MessagingComponent, JMSBridge
       }
       catch (Exception e)
       {
-         log.warn("Failed to set up bridge connections");
+         log.warn("Failed to set up bridge connections", e);
          
          //If this fails we should attempt to cleanup or we might end up in some weird state
          
