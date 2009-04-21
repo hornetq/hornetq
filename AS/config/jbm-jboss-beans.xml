@@ -2,19 +2,6 @@
 
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
 
-   <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
-
-   <!-- JNDI server. Disable this if you don't want JNDI -->
-   <bean name="JNDIServer" class="org.jnp.server.Main">
-      <property name="namingInfo">
-         <inject bean="Naming"/>
-      </property>
-      <property name="port">1099</property>
-      <property name="bindAddress">localhost</property>
-      <property name="rmiPort">1098</property>
-      <property name="rmiBindAddress">localhost</property>
-   </bean>
-   
    <!-- MBean server -->
    <bean name="MBeanServer" class="javax.management.MBeanServer">
       <constructor factoryClass="java.lang.management.ManagementFactory"
