@@ -23,7 +23,6 @@
 	<classpathentry kind="src" path="examples/jms/interceptor/src"/>
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/automatic-failover/src"/>
-	<classpathentry kind="src" path="examples/jms/symmetric-cluster/src"/>
 	<classpathentry kind="src" path="examples/jms/browser/src"/>
 	<classpathentry kind="src" path="examples/jms/client-side-load-balancing/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-durable-subscription/src"/>
