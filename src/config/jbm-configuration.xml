@@ -85,11 +85,13 @@
             <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
             <param key="jbm.remoting.netty.port" value="8080" type="Integer"/>
             <param key="jbm.remoting.netty.useservlet" value="true" type="Boolean"/>
+            <param key="jbm.remoting.netty.servletpath" value="/jms-servlet/JBMServlet" type="String"/>
          </connector>
       
          <connector name="in-vm">
             <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
          </connector>
+
       </connectors>
       <!-- Acceptors -->
       
@@ -99,10 +101,13 @@
             <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
             <param key="jbm.remoting.invm.serverid" value="0" type="Integer"/>
          </acceptor>
-         <!-- Netty standard TCP acceptor -->
-         <acceptor name="netty">
+
+      
+         <acceptor name="netty-servlet">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         </acceptor>   
+            <param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
+            <param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
+         </acceptor>
          <!-- Netty SSL Acceptor
          <acceptor name="netty-ssl">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
