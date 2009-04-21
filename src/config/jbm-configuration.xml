@@ -93,8 +93,8 @@
          </connector>
 
       </connectors>
+
       <!-- Acceptors -->
-      
       <acceptors>
          <!-- In VM acceptor -->
          <acceptor name="in-vm">            
@@ -102,13 +102,22 @@
             <param key="jbm.remoting.invm.serverid" value="0" type="Integer"/>
          </acceptor>
 
+         <!-- Netty TCP Acceptor -->
+         <acceptor name="netty">
+            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         </acceptor>
       
+         <!-- Netty Servlet Acceptor -->
+         <!--
          <acceptor name="netty-servlet">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
             <param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
             <param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
          </acceptor>
-         <!-- Netty SSL Acceptor
+         -->
+         
+         <!-- Netty SSL Acceptor -->
+         <!--
          <acceptor name="netty-ssl">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
             <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
@@ -116,21 +125,27 @@
             <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
          </acceptor> 
          -->
-           <!--Netty HTTP Acceptor-->
-         <!--<acceptor name-"netty-http">
+         
+         <!--Netty HTTP Acceptor-->
+         <!--
+         <acceptor name-"netty-http">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
             <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
             <param key="jbm.remoting.netty.port" value="6100" type="Integer"/>
             <param key="jbm.remoting.netty.httpenabled" value="true" type="Boolean"/>
             <param key="jbm.remoting.netty.httpresponsetime" value="10000" type="Long"/>
             <param key="jbm.remoting.netty.httpserverscanperiod" value="5000" type="Long"/>
-         </acceptor>-->
-        <!-- netty invm acceptor, needed for the servlet transport-->
-        <!-- <acceptor name="netty-invm">
+         </acceptor>
+         
+         -->
+         <!-- Netty In VM Acceptor, needed for the servlet transport-->
+         <!--
+         <acceptor name="netty-invm">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
             <param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
             <param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
-         </acceptor>-->
+         </acceptor>
+         -->
       </acceptors>
       
       <!-- Clustering configuration -->
