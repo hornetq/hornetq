@@ -56,12 +56,13 @@ public class JMSBridgeExample
          Session sourceSession = sourceConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer sourceProducer = sourceSession.createProducer(sourceQueue);
 
-         // Step 5. Create and send a text message on the *source* queue
+         // Step 5. Create and send a text message to the *source* queue
          TextMessage message = sourceSession.createTextMessage("this is a text message");
          sourceProducer.send(message);
          System.out.format("Sent message to %s: %s\n",
                            ((Queue)message.getJMSDestination()).getQueueName(),
                            message.getText());
+         System.out.format("Message ID : %s\n", message.getJMSMessageID());
 
          // Step 6. Close the *source* connection
          sourceConnection.close();
@@ -79,11 +80,13 @@ public class JMSBridgeExample
 
          // Step 10. Receive a message from the *target* queue
          TextMessage messageReceived = (TextMessage)targetConsumer.receive(5000);
-         System.out.format("Received from %s: %s\n",
+         System.out.format("\nReceived from %s: %s\n",
                            ((Queue)messageReceived.getJMSDestination()).getQueueName(),
                            messageReceived.getText());
+         
          // Step 11. Display the received message's ID
          System.out.format("Message ID         : %s\n", messageReceived.getJMSMessageID());
+
          // Step 12. Display the message ID of the message received by the *bridge*
          System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("JBM_BRIDGE_MSG_ID_LIST"));
       }
