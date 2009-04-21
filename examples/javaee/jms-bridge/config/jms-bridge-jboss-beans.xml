@@ -6,31 +6,47 @@
            <!-- JBoss Messaging must be started before the bridge -->
            <depends>MessagingServer</depends>
            <constructor>
+               <!-- Source ConnectionFactory Factory -->
                <parameter>
                    <inject bean="SourceCFF"/>
                </parameter>
+               <!-- Target ConnectionFactory Factory -->
                <parameter>
                    <inject bean="TargetCFF"/>
                </parameter>
+               <!-- Source DestinationFactory -->
                <parameter>
                    <inject bean="SourceDestinationFactory"/>
                </parameter>
+               <!-- Target DestinationFactory -->
                <parameter>
                    <inject bean="TargetDestinationFactory"/>
                </parameter>
+               <!-- Source username -->
                <parameter><null /></parameter>
+               <!-- Source password -->
                <parameter><null /></parameter>
+               <!-- Target username -->
                <parameter><null /></parameter>
+               <!-- Target password -->
                <parameter><null /></parameter>
+               <!-- Selector -->
                <parameter><null /></parameter>
+               <!-- Interval to retry in case of failure (in ms) -->
                <parameter>5000</parameter>
+               <!-- Maximum number of retries to connect to the source and target -->
                <parameter>10</parameter>
-               <parameter>2</parameter>
+               <!-- Quality of service -->
+               <parameter>ONCE_AND_ONLY_ONCE</parameter>
+               <!-- Maximum batch size -->
                <parameter>1</parameter>
+               <!-- Maximum batch time (-1 means infinite) -->
                <parameter>-1</parameter>
+               <!-- Suscription name -->
                <parameter><null /></parameter>
+               <!-- client ID  -->
                <parameter><null /></parameter>
-               <parameter>true</parameter>
+               <!-- concatenate JMS messageID to the target's message header -->
                <parameter>true</parameter>
            </constructor>
            <property name="transactionManager">
