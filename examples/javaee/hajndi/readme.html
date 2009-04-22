@@ -28,8 +28,9 @@
      <h2>Please follow these steps to configure the example:</h2>
      <ol>
      <li>Define the property JBOSS_HOME pointing to the root of a JBoss 5.1 distribution</li>
-     <li>Install JBoss Messaging by typing <code>ant</code> under <code>/messaging-distribution/AS</code></li>
-     <li>Copy the directory $JBOSS_HOME/server/jbm2_symmetric as $JBOSS_HOME/server/jbm2_symmetric_2</li>
+     <li>Create a JBoss messaging clustered profile by typing <code>ant</code> int the <code>AS</code> directory off the root of
+     the JBoss Messaging distribution. This will create a server profile called <code>$JBOSS_HOME/server/jbm2_symmetric</code>.</li>
+     <li>Copy the directory <code>$JBOSS_HOME/server/jbm2_symmetric</code> to <code>$JBOSS_HOME/server/jbm2_symmetric_2</code></li>
      <li>Start the first server with <code>./run.sh -c jbm2_symmetric</code></li>
      <li>Start the second server with <code>./run.sh -c jbm2_symmetric_2 -Djboss.service.binding.set=ports-01</li>
      </ol>
@@ -70,7 +71,7 @@
         </li>
         
         
-        <li>As the example sleeps here, use this time to kill one of the servers. You will realize that lookups will still work as long as you have a live server
+        <li>As the example sleeps here, use this time to kill one of the servers. You will realise that lookups will still work as long as you have a live server
         
         <pre>
         <code>
