@@ -22,6 +22,8 @@
 package org.jboss.javaee.example.server;
 
 /**
+ *  The interface of an EJB which sends a JMS message and updates a JDBC table in the same transaction.
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 public interface SendMessageService

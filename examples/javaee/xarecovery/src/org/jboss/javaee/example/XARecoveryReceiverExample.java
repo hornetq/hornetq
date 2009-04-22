@@ -30,6 +30,9 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 /**
+ * An example showing how to receive a JMS message.
+ * The JMS message was recovered after the server was crashed and restarted.
+ *  
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

@@ -26,6 +26,9 @@ import javax.naming.InitialContext;
 import org.jboss.javaee.example.server.XARecoveryExampleService;
 
 /**
+ * An example which invokes an EJB. The EJB will "pause" the server so that it
+ * can be "crashed" to show how recovery works when the server is restarted.
+ * 
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

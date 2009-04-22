@@ -39,6 +39,10 @@ import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 /**
+ * An EJB which sends a JMS message in the transaction and "pauses" while the transaction
+ * is prepared so that the server can be crashed in this state.
+ * The JMS message will be recovered when the server is restarted.
+ * 
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
