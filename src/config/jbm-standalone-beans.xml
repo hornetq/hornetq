@@ -23,8 +23,6 @@
 
    <!-- The core configuration -->
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration">
-      <start ignored="true"/>
-      <stop ignored="true"/>
    </bean>
 
 	<!-- The security manager -->
