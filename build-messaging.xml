@@ -349,6 +349,7 @@
       <path refid="apache.xerces.classpath"/>
       <path refid="apache.logging.classpath"/>
       <path refid="jboss.jnpserver.classpath"/>
+      <path refid="jboss.jboss.common.logging.log4j.classpath"/> 
    </path>
     
    <path id="joram.test.execution.classpath">

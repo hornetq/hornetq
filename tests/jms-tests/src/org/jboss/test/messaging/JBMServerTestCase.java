@@ -258,7 +258,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
 
    public String[] getContainerConfig()
    {
-      return new String[]{ "invm-beans.xml", "AS/config/jbm-jboss-beans.xml"};
+      return new String[]{ "invm-beans.xml", "AS/config/independent/jbm-jboss-beans.xml"};
    }
 
    protected MessagingServer getJmsServer() throws Exception
