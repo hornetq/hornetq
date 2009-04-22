@@ -14,21 +14,14 @@
 	<classpathentry kind="src" path="src/schemas"/>
 	<classpathentry kind="src" path="tests/joram-tests/src"/>
 	<classpathentry kind="src" path="tests/joram-tests/config"/>
-	<classpathentry kind="src" path="examples/jms/instantiate-connection-factory/src"/>
-	<classpathentry kind="src" path="examples/jms/pre-acknowledge/src"/>
-	<classpathentry kind="src" path="examples/jms/static-selector/src"/>
-	<classpathentry kind="src" path="examples/jms/topic-hierarchies/src"/>
-	<classpathentry kind="src" path="examples/jms/security/src"/>
-	<classpathentry kind="src" path="examples/jms/producer-rate-limit/src"/>
-	<classpathentry kind="src" path="examples/jms/interceptor/src"/>
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/automatic-failover/src"/>
+	<classpathentry kind="src" path="examples/jms/bridge/src"/>
 	<classpathentry kind="src" path="examples/jms/browser/src"/>
 	<classpathentry kind="src" path="examples/jms/client-side-load-balancing/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-topic/src"/>
-	<classpathentry kind="src" path="examples/jms/bridge/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>
 	<classpathentry kind="src" path="examples/jms/dead-letter/src"/>
 	<classpathentry kind="src" path="examples/jms/delayed-redelivery/src"/>
@@ -36,6 +29,8 @@
 	<classpathentry kind="src" path="examples/jms/durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/expiry/src"/>
 	<classpathentry kind="src" path="examples/jms/http-transport/src"/>
+	<classpathentry kind="src" path="examples/jms/instantiate-connection-factory/src"/>
+	<classpathentry kind="src" path="examples/jms/interceptor/src"/>
 	<classpathentry kind="src" path="examples/jms/jmx/src"/>
 	<classpathentry kind="src" path="examples/jms/large-message/src"/>
 	<classpathentry kind="src" path="examples/jms/last-value-queue/src"/>
@@ -45,6 +40,8 @@
 	<classpathentry kind="src" path="examples/jms/message-group/src"/>
 	<classpathentry kind="src" path="examples/jms/message-priority/src"/>
 	<classpathentry kind="src" path="examples/jms/paging/src"/>
+	<classpathentry kind="src" path="examples/jms/pre-acknowledge/src"/>
+	<classpathentry kind="src" path="examples/jms/producer-rate-limit/src"/>
 	<classpathentry kind="src" path="examples/jms/queue/src"/>
 	<classpathentry kind="src" path="examples/jms/queue-message-redistribution/src"/>
 	<classpathentry kind="src" path="examples/jms/queue-requestor/src"/>
@@ -52,9 +49,12 @@
 	<classpathentry kind="src" path="examples/jms/reconnect-same-node/src"/>
 	<classpathentry kind="src" path="examples/jms/request-reply/src"/>
 	<classpathentry kind="src" path="examples/jms/scheduled-message/src"/>
+	<classpathentry kind="src" path="examples/jms/security/src"/>
 	<classpathentry kind="src" path="examples/jms/ssl-enabled/src"/>
+	<classpathentry kind="src" path="examples/jms/static-selector/src"/>
 	<classpathentry kind="src" path="examples/jms/temp-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/topic/src"/>
+	<classpathentry kind="src" path="examples/jms/topic-hierarchies/src"/>
 	<classpathentry kind="src" path="examples/jms/topic-selector-example1/src"/>
 	<classpathentry kind="src" path="examples/jms/topic-selector-example2/src"/>
 	<classpathentry kind="src" path="examples/jms/transactional/src"/>
@@ -62,9 +62,9 @@
 	<classpathentry kind="src" path="examples/jms/xa-receive/src"/>
 	<classpathentry kind="src" path="examples/jms/xa-send/src"/>
 	<classpathentry kind="src" path="examples/javaee/ejb-jms-transaction/src"/>
+	<classpathentry kind="src" path="examples/javaee/hajndi/src"/>
 	<classpathentry kind="src" path="examples/javaee/jms-bridge/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb/src"/>
-	<classpathentry kind="src" path="examples/javaee/hajndi/src"/>
 	<classpathentry kind="src" path="examples/javaee/xarecovery/src"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
