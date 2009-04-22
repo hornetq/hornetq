@@ -25,6 +25,7 @@ package org.jboss.messaging.jms.server.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,20 +34,12 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -209,9 +202,12 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          return false;
       }
-      for (String jndiBinding : jndiBindings)
+      Iterator<String> iter = jndiBindings.iterator();
+      while (iter.hasNext())
       {
+         String jndiBinding = (String)iter.next();
          context.unbind(jndiBinding);
+         iter.remove();
       }
       return true;
    }
