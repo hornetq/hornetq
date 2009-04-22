@@ -6,11 +6,29 @@
   <body>
      <h1>Java EE HAJNDI Example</h1>
      <br>
+     <p>This example demonstrates the use of High Availability JNDI (HA-JNDI) to look-up JBoss
+     Messaging JMS Connection Factories, Queues and Topics.</p>
+     <p>With normal JNDI you need to configure the client with the specific connection parameters
+     (i.e. host and port) of the JNDI server from which you want to perform look-ups.</p>
+     <p>This means if that server crashes, or is not available you won't be able to perform lookups.</p>
+     <p>One solution would be for the client to maintain the connection params of all JNDI servers
+     in the cluster, but this is not practicle.</p>
+     <p>With HA-JNDI the client can be simplify configured with UDP address parameters and can transparently
+     perform JNDI lookups without having to worry about a particular server being unavailable.</p>
+     <p>HA-JNDI is a service of JBoss Application Server and is not available by default when running against
+     a stand-alone JBoss Messaging instance.</>
+     <p>An alternative approach is to avoid JNDI together and directly instantiate JMS Connection Factory,
+     Queue and Topic instances on the client side. JBoss Messaging Connection Factory instances can
+     also be configured to use UDP discovery so the specific details of the available servers are 
+     not required on the client side.</p>
+     <p>For more information on instantiating Connection Factory objects directly please see the user
+     manual and the <i>Instantiate Connection Factory</i> example.</p>
+     <p>For more information on HA-JNDI, please consult the <a href="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/5/html/clustering-jndi.html">JBoss Application Server Clustering Documentation</a>.</p>
      <p>This example demonstrates a simple symmetric clustering configuration, and failover on JNDI (HAJNDI).</p>
-     <h2>Configuring the example:</h2>
+     <h2>Please follow these steps to configure the example:</h2>
      <ol>
-     <li>define the property JBOSS_HOME pointing to a JBoss 5.1 distribution</li>
-     <li>Install JBossMessaging by typing <code>ant</code> under <code>/messaging-distribution/AS</code></li>
+     <li>Define the property JBOSS_HOME pointing to the root of a JBoss 5.1 distribution</li>
+     <li>Install JBoss Messaging by typing <code>ant</code> under <code>/messaging-distribution/AS</code></li>
      <li>Copy the directory $JBOSS_HOME/server/jbm2_symmetric as $JBOSS_HOME/server/jbm2_symmetric_2</li>
      <li>Start the first server with <code>./run.sh -c jbm2_symmetric</code></li>
      <li>Start the second server with <code>./run.sh -c jbm2_symmetric_2 -Djboss.service.binding.set=ports-01</li>
@@ -19,7 +37,7 @@
      <ol>
         <li>Create a JNDI Context using HAJNDI Properties.
             <p>This JNDI is performing auto-discovery of the servers, by using the default UDP properties.</p>
-            <p>You will find more information about these properties at the <a href="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/5/html/clustering-jndi.html">JBoss Application Documentation</a></p>
+            <p>You will find more information about these properties at the </p>
         </li>
         <pre>
            <code>         
