@@ -25,7 +25,6 @@
       <entries>      
          <entry name="ServerAckConnectionFactory"/>
          <entry name="/ServerAckConnectionFactory"/>
-         <entry name="/ServerAckXAConnectionFactory"/>
          <entry name="java:/ServerAckConnectionFactory"/>
          <entry name="java:/ServerAckXAConnectionFactory"/>
       </entries>
@@ -42,6 +41,7 @@
       </entries>
    </connection-factory>
    
+   <!--  
    <connection-factory name="ClusteredConnectionFactoryWithDiscovery">
       <discovery-group-ref discovery-group-name="dg-group1"/> 
       <entries>
@@ -51,7 +51,8 @@
          <entry name="java:/ClusteredXAConnectionFactory"/>
       </entries>
    </connection-factory>
-
+   -->
+   
    <connection-factory name="MyExampleConnectionFactory">
       <connector-ref connector-name="netty"/>
       <entries>
