@@ -1,5 +1,14 @@
-pre, code { background-color: lightgrey;}
-pre { border: dotted grey 1px;}
+h1 {height:89px;
+    background: url(./images/title_hdr.png) top left no-repeat;
+    vertical-align: middle;
+    line-height:89px;
+    font-size: 250%;}
+
+pre, code { background-color: lightgrey;
+            color:#333; }
+pre {display:block;     
+    overflow:auto; 
+    border: dotted grey 1px;}
 
 .missing-doc {
     background-color: red;
