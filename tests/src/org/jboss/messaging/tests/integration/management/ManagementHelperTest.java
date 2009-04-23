@@ -67,6 +67,7 @@ public class ManagementHelperTest extends TestCase
       Object parameter_2 = parameters.get(1);
       assertTrue(parameter_2 instanceof String[]);
       String[] retrievedParams = (String[])parameter_2;
+      assertEquals(params.length, retrievedParams.length);
       for (int i = 0; i < retrievedParams.length; i++)
       {
          assertEquals(params[i], retrievedParams[i]);
