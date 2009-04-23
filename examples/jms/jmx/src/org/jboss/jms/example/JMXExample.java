@@ -49,12 +49,12 @@ import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
  */
 public class JMXExample extends JMSExample
 {
-   private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
+   private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
 
    public static void main(String[] args)
    {
       String[] serverJMXArgs = new String[] { "-Dcom.sun.management.jmxremote",
-                                             "-Dcom.sun.management.jmxremote.port=3001",
+                                             "-Dcom.sun.management.jmxremote.port=3000",
                                              "-Dcom.sun.management.jmxremote.ssl=false",
                                              "-Dcom.sun.management.jmxremote.authenticate=false"
       };
