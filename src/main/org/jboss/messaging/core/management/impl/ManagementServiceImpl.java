@@ -412,8 +412,26 @@ public class ManagementServiceImpl implements ManagementService
             if (propertyName.equals(ManagementHelper.HDR_ATTRIBUTE))
             {
                SimpleString attribute = (SimpleString)message.getProperty(propertyName);
-               Object result = getAttribute(resourceName.toString(), attribute.toString());
-               ManagementHelper.storeResult(reply, result);
+               try
+               {
+                  Object result = getAttribute(resourceName.toString(), attribute.toString());
+                  ManagementHelper.storeResult(reply, result);
+               }
+               catch (Exception e)
+               {
+                  log.warn("exception while retrieving attribute " + attribute + " on " + resourceName, e);
+                  reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
+                  String exceptionMessage = e.getMessage();
+                  if (e instanceof InvocationTargetException)
+                  {
+                     exceptionMessage = ((InvocationTargetException)e).getTargetException().getMessage();
+                  }
+                  if (e != null)
+                  {
+                     reply.putStringProperty(ManagementHelper.HDR_OPERATION_EXCEPTION,
+                                             new SimpleString(exceptionMessage));
+                  }
+               }
             }
          }
       }
