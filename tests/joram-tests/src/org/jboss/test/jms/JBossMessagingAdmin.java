@@ -110,7 +110,7 @@ public class JBossMessagingAdmin implements Admin
                              true,
                              true,
                              false,
-                             name);
+                             new String[] {name});
       }
       catch (Exception e)
       {
