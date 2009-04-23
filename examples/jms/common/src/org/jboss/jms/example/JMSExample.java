@@ -213,11 +213,11 @@ public abstract class JMSExample
    {
       if (server.getInputStream() != null)
       {
-         //server.getInputStream().close();
+         server.getInputStream().close();
       }
       if (server.getErrorStream() != null)
       {
-         //server.getErrorStream().close();
+         server.getErrorStream().close();
       }
       server.destroy();
    }
