@@ -48,6 +48,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    }
 
 //  The bridge won't work with largeMessages & failures
+//   https://jira.jboss.org/jira/browse/JBMESSAGING-1601 
 //   public void testCrashAndReconnectDestBasic_OnceAndOnlyOnce_P_LargeMessage() throws Exception
 //   {
 //      testCrashAndReconnectDestBasic(QualityOfServiceMode.ONCE_AND_ONLY_ONCE, true, true);
