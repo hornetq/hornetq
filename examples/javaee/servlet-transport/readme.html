@@ -1,20 +1,72 @@
 <html>
   <head>
-    <title>JBoss Messaging Java EE MDB Example</title>
+    <title>JBoss Messaging Java EE Servlet Example</title>
     <link rel="stylesheet" type="text/css" href="../../jms/common/common.css">
   </head>
   <body>
-     <h1>Java EE MDB Example</h1>
+     <h1>Java EE Servlet Example</h1>
      <br>
-     <p>This example shows you how to end a message to an MDB</p>
+     <p>This example shows you how to configure and use servlet transport with JBoss Messaging.</p>
      <p>
-         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
+         JBoss Messaging supports different transports through configuration. In fact JBoss Messaging provides a set of
+         simple SPI that allow new transports can be plugged in easily. In this example, netty's servlet transport is 
+         configured and used in sending and receiving messages with JBoss Message Server.
+         
+         To enable netty's servlet transport, following these steps
+
+         <ol>         
+         <li>Create a servlet</li>
+            There is a servlet for this example under config. Please take a look at config/jms-servlet/WEB-INF/web.xml for 
+            details of the servlet configuration. The servlet is used to accept requests and send response.
+            
+         <li>Add servlet connector/acceptor entries in jbm-configuration.xml</li>
+            The corresponding connector/acceptor need to be configured to tell JBoss Messaging to use netty servlet transport.
+            The configure looks like:
+            <p>
+
+      <pre><code>
+      &lt;connectors&gt;
+         ...
+         &lt;connector name=&quot;netty-servlet&quot;&gt;
+            &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class&gt;
+            &lt;param key=&quot;jbm.remoting.netty.host&quot; value=&quot;localhost&quot; type=&quot;String&quot;/&gt;
+            &lt;param key=&quot;jbm.remoting.netty.port&quot; value=&quot;8080&quot; type=&quot;Integer&quot;/&gt;
+            &lt;param key=&quot;jbm.remoting.netty.useservlet&quot; value=&quot;true&quot; type=&quot;Boolean&quot;/&gt;
+            &lt;param key=&quot;jbm.remoting.netty.servletpath&quot; value=&quot;/jms-servlet/JBMServlet&quot; type=&quot;String&quot;/&gt;
+         &lt;/connector&gt;
+         ...
+      &lt;/connectors&gt;
+
+      &lt;acceptors&gt;
+         ...
+         &lt;acceptor name=&quot;netty-servlet&quot;&gt;
+            &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
+            &lt;param key=&quot;jbm.remoting.netty.useinvm&quot; value=&quot;true&quot; type=&quot;Boolean&quot;/&gt;
+            &lt;param key=&quot;jbm.remoting.netty.host&quot; value=&quot;org.jboss.jbm&quot; type=&quot;String&quot;/&gt;
+         &lt;/acceptor&gt;
+         ...
+      &lt;/acceptor&gt;
+      </code></pre>
+            </p>
+     <li>You also need to use the Connection Factory that has configured to use the servlet connector in jbm-jms.xml, as</li>
+        <p>
+        <pre><code>
+        &lt;connection-factory name=&quot;TestServletConnectionFactory&quot;&gt;
+           &lt;connector-ref connector-name=&quot;netty-servlet&quot;/&gt;
+           &lt;entries&gt;
+              &lt;entry name=&quot;/TestServletConnectionFactory&quot;/&gt;
+           &lt;/entries&gt;
+        &lt;/connection-factory&gt;
+        </code></pre>
+        </p>
+     </ol>
      </p>
      <h2>Example step-by-step</h2>
-     <p><i>To deploy the example, simply type <code>ant deploy</code> from this directory **</i></p>
-     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
-     <p><i>To undeploy the example, simply type <code>ant undeploy</code> from this directory **</i></p>
-     <p><i> ** make sure that JBOSS_HOME is set to the Jboss installation directory</i></p>
+     <p><i>To run the example, first you need to install a JBoss AS 5 server and set JBOSS_HOME environment accordingly.
+     Then you need to create a AS server profile with JBoss Messaging service, and start AS with that profile. 
+     From this directory, type <code>ant</code>. This will cause the servlet to be deployed to AS and then it runs
+     the example undeploy the servlet in the end.</i></p>
+
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
@@ -29,7 +81,7 @@
 
         <li>We look up the JMS connection factory object from JNDI</li>
         <pre>
-           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
+           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/TestServletConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS connection</li>
@@ -57,19 +109,19 @@
            <code>messageProducer.send(message);</code>
         </pre>
         
-        <li>The MDB receives the message<br />
-            We know the message is a TextMessage so we cast to it.
-            </li>
+        <li>We create a JMS Message Consumer</li>
         <pre>
-           <code>TextMessage tm = (TextMessage)message;</code>
+           <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
         </pre>
             
-        <li>The MDB gets the text and prints it
-        </li>
+        <li>We start the connection</li>
         <pre>
-            <code>String text = tm.getText();
-            System.out.println("message " + text + " received");
-            </code>
+            <code>connection.start();</code>
+        </pre>
+            
+        <li>We receive the message</li>
+        <pre>
+            <code>TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);</code>
         </pre>
         
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
