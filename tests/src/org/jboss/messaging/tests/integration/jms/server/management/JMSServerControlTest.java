@@ -163,33 +163,42 @@ public class JMSServerControlTest extends ManagementTestBase
 
    public void testCreateConnectionFactory() throws Exception
    {
-      String cfJNDIBinding = randomString();
+      String[] cfJNDIBindings = new String[] { randomString(), randomString(), randomString() };
       String cfName = randomString();
 
-      checkNoBinding(context, cfJNDIBinding);
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         checkNoBinding(context, cfJNDIBinding);
+      }
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
-      control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), cfJNDIBinding);
+      control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), cfJNDIBindings);
 
-      Object o = checkBinding(context, cfJNDIBinding);
-      assertTrue(o instanceof ConnectionFactory);
-      ConnectionFactory cf = (ConnectionFactory)o;
-      Connection connection = cf.createConnection();
-      connection.close();
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         Object o = checkBinding(context, cfJNDIBinding);
+         assertTrue(o instanceof ConnectionFactory);
+         ConnectionFactory cf = (ConnectionFactory)o;
+         Connection connection = cf.createConnection();
+         connection.close();
+      }
       checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
    }
 
    public void testCreateConnectionFactory_2() throws Exception
    {
-      String cfJNDIBinding = randomString();
+      String[] cfJNDIBindings = new String[] { randomString(), randomString(), randomString() };
       String cfName = randomString();
       boolean preAcknowledge = randomBoolean();
       boolean blockOnAcknowledge = randomBoolean();
       boolean blockOnNonPersistentSend = randomBoolean();
       boolean blockOnPersistentSend = randomBoolean();
 
-      checkNoBinding(context, cfJNDIBinding);
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         checkNoBinding(context, cfJNDIBinding);         
+      }
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
@@ -199,13 +208,16 @@ public class JMSServerControlTest extends ManagementTestBase
                                       blockOnNonPersistentSend,
                                       blockOnPersistentSend,
                                       preAcknowledge,
-                                      cfJNDIBinding);
+                                      cfJNDIBindings);
 
-      Object o = checkBinding(context, cfJNDIBinding);
-      assertTrue(o instanceof ConnectionFactory);
-      ConnectionFactory cf = (ConnectionFactory)o;
-      Connection connection = cf.createConnection();
-      connection.close();
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         Object o = checkBinding(context, cfJNDIBinding);
+         assertTrue(o instanceof ConnectionFactory);
+         ConnectionFactory cf = (ConnectionFactory)o;
+         Connection connection = cf.createConnection();
+         connection.close();
+      }
 
       checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
       ConnectionFactoryControlMBean cfControl = ManagementControlHelper.createConnectionFactoryControl(cfName,
@@ -315,7 +327,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
-      control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), cfJNDIBinding);
+      control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), new String[] {cfJNDIBinding});
 
       Object o = checkBinding(context, cfJNDIBinding);
       assertTrue(o instanceof ConnectionFactory);

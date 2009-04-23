@@ -70,9 +70,9 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
 
    public void createConnectionFactory(final String name,
                                        final String connectorFactoryClassName,
-                                       final String jndiBinding) throws Exception
+                                       final String[] jndiBindings) throws Exception
    {
-      replicationAwareInvoke("createConnectionFactory", name, connectorFactoryClassName, jndiBinding);
+      replicationAwareInvoke("createConnectionFactory", name, connectorFactoryClassName, jndiBindings);
    }
 
    public void createConnectionFactory(final String name,
@@ -81,7 +81,7 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final boolean blockOnNonPersistentSend,
                                        final boolean blockOnPersistentSend,
                                        final boolean preAcknowledge,
-                                       final String jndiBinding) throws Exception
+                                       final String[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
                              name,
@@ -90,7 +90,7 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                              blockOnNonPersistentSend,
                              blockOnPersistentSend,
                              preAcknowledge,
-                             jndiBinding);
+                             jndiBindings);
    }
 
    public void createSimpleConnectionFactory(final String name,

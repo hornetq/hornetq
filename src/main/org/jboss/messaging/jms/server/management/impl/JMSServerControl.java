@@ -23,6 +23,7 @@
 package org.jboss.messaging.jms.server.management.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -143,17 +144,14 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
    
    public void createConnectionFactory(String name,
                                              String connectorFactoryClassName,
-                                             String jndiBinding) throws Exception
+                                             String[] jndiBindings) throws Exception
    {
-      List<String> bindings = new ArrayList<String>();
-      bindings.add(jndiBinding);
-
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
 
       boolean created = server.createConnectionFactory(name,
                                                        connectorConfigs,
-                                                       bindings);
+                                                       Arrays.asList(jndiBindings));
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -166,11 +164,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                              boolean blockOnNonPersistentSend,
                                              boolean blockOnPersistentSend,
                                              boolean preAcknowledge,
-                                             String jndiBinding) throws Exception
+                                             String[] jndiBindings) throws Exception
    {
-      List<String> bindings = new ArrayList<String>();
-      bindings.add(jndiBinding);
-
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
 
@@ -180,7 +175,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        blockOnNonPersistentSend,
                                                        blockOnPersistentSend,
                                                        preAcknowledge,
-                                                       bindings);
+                                                       Arrays.asList(jndiBindings));
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);

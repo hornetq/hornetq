@@ -31,7 +31,6 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
@@ -104,9 +103,9 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public void createConnectionFactory(final String name,
                                              final String connectorFactoryClassName,
-                                             final String jndiBinding) throws Exception
+                                             final String[] jndiBindings) throws Exception
          {
-            proxy.invokeOperation("createConnectionFactory", name, connectorFactoryClassName, jndiBinding);
+            proxy.invokeOperation("createConnectionFactory", name, connectorFactoryClassName, jndiBindings);
          }
 
          public void createConnectionFactory(final String name,
@@ -115,7 +114,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              final boolean blockOnNonPersistentSend,
                                              final boolean blockOnPersistentSend,
                                              final boolean preAcknowledge,
-                                             final String jndiBinding) throws Exception
+                                             final String[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                  name,
@@ -124,7 +123,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                  blockOnNonPersistentSend,
                                  blockOnPersistentSend,
                                  preAcknowledge,
-                                 jndiBinding);
+                                 jndiBindings);
          }
 
          public void createSimpleConnectionFactory(final String name,

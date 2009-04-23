@@ -138,6 +138,12 @@ public class ManagementHelper
                {
                   value = null;
                }
+               if (value.toString().startsWith("L["))
+               {
+                  String str = value.toString().substring(2);
+                  String[] strings = str.split("\\|\\|");
+                  value = strings;
+               }
                params.add(index, value);
             }
             catch (NumberFormatException e)
@@ -252,6 +258,16 @@ public class ManagementHelper
       {
          message.putStringProperty(key, new SimpleString((String)typedProperty));
       }
+      else if (typedProperty instanceof String[])
+      {
+         String str = "L[";
+         String[] strings = (String[])typedProperty;
+         for (String string : strings)
+         {
+            str += string + "||";
+         }
+         message.putStringProperty(key, new SimpleString(str));         
+      }
       // serialize as a SimpleString
       else
       {
@@ -268,7 +284,9 @@ public class ManagementHelper
             (o instanceof Long) ||
             (o instanceof Float) ||
             (o instanceof Double) ||
-            (o instanceof String) || (o instanceof SimpleString)))
+            (o instanceof String) || 
+            (o instanceof String[]) || 
+            (o instanceof SimpleString)))
       {
          throw new IllegalStateException("Can not store object as a message property: " + o);
       }

@@ -66,7 +66,7 @@ public interface JMSServerControlMBean
    boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy")
    String name) throws Exception;
 
-   void createConnectionFactory(String name, String connectorFactoryClassName, String jndiBinding) throws Exception;
+   void createConnectionFactory(String name, String connectorFactoryClassName, String[] jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String connectorFactoryClassName,
@@ -74,7 +74,7 @@ public interface JMSServerControlMBean
                                 boolean blockOnNonPersistentSend,
                                 boolean blockOnPersistentSend,
                                 boolean preAcknowledge,
-                                String jndiBinding) throws Exception;
+                                String[] jndiBindings) throws Exception;
 
    void createSimpleConnectionFactory(String name,
                                       String connectorFactoryClassName,
