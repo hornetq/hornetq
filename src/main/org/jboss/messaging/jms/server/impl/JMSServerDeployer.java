@@ -12,6 +12,9 @@
 
 package org.jboss.messaging.jms.server.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -20,12 +23,10 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.utils.Pair;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -37,7 +38,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private final Configuration configuration;
 
-   private JMSServerManager jmsServerManager;
+   private JMSServerManager jmsServerControl;
 
    private static final String CLIENTID_ELEMENT = "client-id";
 
@@ -103,7 +104,7 @@ public class JMSServerDeployer extends XmlDeployer
    {
       super(deploymentManager);
       
-      this.jmsServerManager = jmsServerManager;
+      this.jmsServerControl = jmsServerManager;
 
       this.configuration = config;
    }
@@ -340,7 +341,7 @@ public class JMSServerDeployer extends XmlDeployer
 
          if (discoveryGroupConfiguration != null)
          {
-            jmsServerManager.createConnectionFactory(name,
+            jmsServerControl.createConnectionFactory(name,
                                                      discoveryGroupConfiguration,
                                                      discoveryInitialWait,
                                                      connectionLoadBalancingPolicyClassName,
@@ -369,7 +370,7 @@ public class JMSServerDeployer extends XmlDeployer
          }
          else
          {
-            jmsServerManager.createConnectionFactory(name,
+            jmsServerControl.createConnectionFactory(name,
                                                      connectorConfigs,
                                                      connectionLoadBalancingPolicyClassName,
                                                      pingPeriod,
@@ -407,7 +408,7 @@ public class JMSServerDeployer extends XmlDeployer
             if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               jmsServerManager.createQueue(queueName, jndiName);
+               jmsServerControl.createQueue(queueName, jndiName);
             }
          }
       }
@@ -422,7 +423,7 @@ public class JMSServerDeployer extends XmlDeployer
             if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               jmsServerManager.createTopic(topicName, jndiName);
+               jmsServerControl.createTopic(topicName, jndiName);
             }
          }
       }
@@ -440,17 +441,17 @@ public class JMSServerDeployer extends XmlDeployer
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {
          String cfName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         jmsServerManager.destroyConnectionFactory(cfName);
+         jmsServerControl.destroyConnectionFactory(cfName);
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {
          String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         jmsServerManager.undeployDestination(queueName);
+         jmsServerControl.undeployDestination(queueName);
       }
       else if (node.getNodeName().equals(TOPIC_NODE_NAME))
       {
          String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         jmsServerManager.undeployDestination(topicName);
+         jmsServerControl.undeployDestination(topicName);
       }
    }
 

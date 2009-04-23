@@ -574,7 +574,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                backupTransportParams = null;
 
-               done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
+               done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);                             
             }
             else if (reconnectAttempts != 0)
             {              

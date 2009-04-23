@@ -697,6 +697,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
+      serverManager.activated();
       context = new InVMContext();
       serverManager.setContext(context);
 

@@ -22,28 +22,28 @@
 
 package org.jboss.messaging.core.deployers.impl;
 
-import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.List;
 
 /**
  * A QueueDeployer
  * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
 public class QueueDeployer extends XmlDeployer
 {
-   private final Configuration serverConfiguration;
+   private final MessagingServerControlMBean serverControl;
 
-   public QueueDeployer(final DeploymentManager deploymentManager, final Configuration configuration)
+   public QueueDeployer(final DeploymentManager deploymentManager, final MessagingServerControlMBean serverControl)
    {
       super(deploymentManager);
-      this.serverConfiguration = configuration;
+
+      this.serverControl = serverControl;
    }
 
    /**
@@ -76,14 +76,17 @@ public class QueueDeployer extends XmlDeployer
    public void deploy(Node node) throws Exception
    {
       QueueConfiguration queueConfig = parseQueueConfiguration(node);
-      List<QueueConfiguration> configurations = serverConfiguration.getQueueConfigurations();
-      configurations.add(queueConfig);
-      serverConfiguration.setQueueConfigurations(configurations);
+
+      serverControl.deployQueue(queueConfig.getAddress(),
+                                queueConfig.getName(),
+                                queueConfig.getFilterString(),
+                                queueConfig.isDurable());
    }
 
    @Override
    public void undeploy(Node node) throws Exception
    {
+      // Undeploy means nothing for core queues
    }
 
    /**
@@ -102,7 +105,7 @@ public class QueueDeployer extends XmlDeployer
       String address = null;
       String filterString = null;
       boolean durable = false;
-      
+
       NodeList children = node.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)

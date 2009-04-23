@@ -210,9 +210,9 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
-   public JBossConnectionFactory(final String discoveryGroupName, final int discoveryGroupPort)
+   public JBossConnectionFactory(final String discoveryGroupAddress, final int discoveryGroupPort)
    {
-      this(discoveryGroupName,
+      this(discoveryGroupAddress,
            discoveryGroupPort,
            ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
            ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT);

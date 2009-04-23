@@ -601,11 +601,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          {
             if (tx == null)
             {
-               log.warn("Duplicate message detected - message will not be routed");
+               log.trace("Duplicate message detected - message will not be routed");
             }
             else
             {
-               log.warn("Duplicate message detected - transaction will be rejected");
+               log.trace("Duplicate message detected - transaction will be rejected");
 
                tx.markAsRollbackOnly(null);
             }

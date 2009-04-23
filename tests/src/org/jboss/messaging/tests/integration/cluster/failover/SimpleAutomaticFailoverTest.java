@@ -47,6 +47,7 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossTextMessage;
@@ -813,6 +814,105 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       sess.close();
 
+   }
+
+   /*
+    * When a real connection fails due to the server actually dying, the backup server will receive 
+    * a connection exception on the server side, since the live server has died taking the replicating
+    * connection with it.
+    * We cannot just fail the connection on the server side when this happens since this will cause the session
+    * on the backup to be closed, so clients won't be able to re-attach.
+    * This test verifies that server session is not closed on server side connection failure.
+    */
+   public void testFailoverFailBothOnClientAndServerSide() throws Exception
+   {
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                     new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                backupParams));
+
+      sf.setProducerWindowSize(32 * 1024);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(ADDRESS, ADDRESS, null, false);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      final int numMessages = 1000;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBody().writeString("aardvarks");
+         producer.send(message);
+      }
+
+      RemotingConnection conn1 = ((ClientSessionImpl)session).getConnection();
+
+      // Simulate failure on connection
+      // We fail on the replicating connection and the client connection
+
+      MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED);
+      
+      //Note we call the remoting service impl handler which is what would happen in event
+      //of real connection failure
+      
+      RemotingConnection serverSideReplicatingConnection = backupService.getRemotingService()
+                                                                        .getServerSideReplicatingConnection();
+      
+            
+      ((ConnectionLifeCycleListener)backupService.getRemotingService()).connectionException(serverSideReplicatingConnection.getID(), me);
+
+      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage message2 = consumer.receive();
+
+         assertEquals("aardvarks", message2.getBody().readString());
+
+         assertEquals(i, message2.getProperty(new SimpleString("count")));
+
+         message2.acknowledge();
+      }
+
+      session.close();
+
+      session = sf.createSession(false, true, true);
+
+      consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+
+      for (int i = numMessages / 2; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer.receive();
+
+         assertEquals("aardvarks", message2.getBody().readString());
+
+         assertEquals(i, message2.getProperty(new SimpleString("count")));
+
+         message2.acknowledge();
+      }
+
+      ClientMessage message3 = consumer.receive(250);
+
+      session.close();
+
+      assertNull(message3);
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
    }
 
    // Package protected ---------------------------------------------

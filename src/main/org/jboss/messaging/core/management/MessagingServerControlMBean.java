@@ -30,6 +30,7 @@ import java.util.List;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * This interface describes the core management interface exposed by the server
@@ -112,6 +113,18 @@ public interface MessagingServerControlMBean
    String filter, @Parameter(name = "durable", desc = "Is the queue durable?")
    boolean durable) throws Exception;
 
+   @Operation(desc = "Deploy a queue", impact = ACTION)
+   void deployQueue(@Parameter(name = "address", desc = "Address of the queue")
+   String address, @Parameter(name = "name", desc = "Name of the queue")
+   String name) throws Exception;
+
+   @Operation(desc = "Deploy a queue", impact = ACTION)
+   void deployQueue(@Parameter(name = "address", desc = "Address of the queue")
+   String address, @Parameter(name = "name", desc = "Name of the queue")
+   String name, @Parameter(name = "filter", desc = "Filter of the queue")
+   String filter, @Parameter(name = "durable", desc = "Is the queue durable?")
+   boolean durable) throws Exception;
+
    @Operation(desc = "Destroy a queue", impact = ACTION)
    void destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy")
    String name) throws Exception;
@@ -154,7 +167,7 @@ public interface MessagingServerControlMBean
    String connectionID) throws Exception;
 
    TabularData getConnectors() throws Exception;
-   
+
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;
 
    boolean isPersistDeliveryCountBeforeDelivery();
@@ -162,32 +175,31 @@ public interface MessagingServerControlMBean
    long getQueueActivationTimeout();
 
    long getConnectionTTLOverride();
-   
+
    String getManagementAddress();
-   
+
    String getManagementNotificationAddress();
-   
+
    long getManagementRequestTimeout();
-   
+
    int getIDCacheSize();
-   
+
    boolean isPersistIDCache();
-   
+
    int getPagingMaxThreads();
-   
+
    int getPagingGlobalWatermarkSize();
-   
+
    String getLargeMessagesDirectory();
-   
+
    boolean isWildcardRoutingEnabled();
-   
+
    long getTransactionTimeout();
-   
+
    long getTransactionTimeoutScanPeriod();
 
    long getMessageExpiryScanPeriod();
 
    long getMessageExpiryThreadPriority();
-
 
 }

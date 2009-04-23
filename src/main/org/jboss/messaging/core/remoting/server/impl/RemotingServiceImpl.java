@@ -82,6 +82,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private volatile MessagingServer server;
 
    private ManagementService managementService;
+   
+   private volatile RemotingConnection serverSideReplicatingConnection;
+   
 
    // Static --------------------------------------------------------
 
@@ -243,9 +246,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       return new HashSet<RemotingConnection>(connections.values());
    }
+   
+   public RemotingConnection getServerSideReplicatingConnection()
+   {
+      return serverSideReplicatingConnection;
+   }
 
    // ConnectionLifeCycleListener implementation -----------------------------------
-
+ 
    public void connectionCreated(final Connection connection)
    {
       if (server == null)
@@ -263,7 +271,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       Object id = connection.getID();
 
-      connections.put(id, rc);           
+      connections.put(id, rc);    
+      
+      if (config.isBackup())
+      {
+         serverSideReplicatingConnection = rc;
+      }
    }
 
    public void connectionDestroyed(final Object connectionID)
@@ -277,12 +290,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void connectionException(final Object connectionID, final MessagingException me)
    {
-      RemotingConnection rc = connections.remove(connectionID);
-
-      if (rc != null)
-      {
-         rc.fail(me);
-      }     
+      //We DO NOT call fail on connection exception, otherwise in event of real connection failure, the
+      //connection  will be failed, the session will be closed and won't be able to reconnect
+      
+      //E.g. if live server fails, then this handler wil be called on backup server for the server
+      //side replicating connection.
+      //If the connection fail() is called then the sessions on the backup will get closed.
+      
+      //Connections should only fail when TTL is exceeded
    }
 
    public void addInterceptor(final Interceptor interceptor)

@@ -233,7 +233,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       {
          return;
       }
-
+      
       if (discoveryGroup != null)
       {
          discoveryGroup.registerListener(this);
@@ -335,11 +335,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    private void updateConnectors(final Map<String, DiscoveryEntry> connectors) throws Exception
    {
-      // Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new
-      // HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
-
-      // connectorSet.addAll(connectors);
-
       Iterator<Map.Entry<String, MessageFlowRecord>> iter = records.entrySet().iterator();
 
       while (iter.hasNext())

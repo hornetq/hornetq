@@ -377,8 +377,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void handleCreateQueue(final CreateQueueMessage packet)
    {
       if (replicatingChannel == null)
-      {
-         
+      {         
          doHandleCreateQueue(packet);
       }
       else
@@ -1091,7 +1090,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       try
       {
-         log.warn("Client connection failed, clearing up resources for session " + name);
+         log.warn("Client connection failed, clearing up resources for session " + name, new Exception());
 
          for (Runnable runner : failureRunners)
          {
@@ -1352,38 +1351,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       try
       {
-         //server.deleteQueue(name);
-         
-         Binding binding = postOffice.removeBinding(name);
+         Binding binding = postOffice.getBinding(name);
 
          if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
          {
             throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
          }
 
-         Queue queue = (Queue)binding.getBindable();
-
-         if (queue.getConsumerCount() != 0)
-         {
-            throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
-         }
-         
-         if (queue.isDurable())
-         {
-            // make sure the user has privileges to delete this queue
-            securityStore.check(binding.getAddress(), CheckType.DELETE_DURABLE_QUEUE, this);
-         }
-         else
-         {
-            securityStore.check(binding.getAddress(), CheckType.DELETE_NON_DURABLE_QUEUE, this);  
-         }
-         
-         queue.deleteAllReferences();
-
-         if (queue.isDurable())
-         {
-            storageManager.deleteQueueBinding(queue.getPersistenceID());
-         } 
+         server.destroyQueue(name, this);
 
          response = new NullResponseMessage();
       }
@@ -1476,11 +1451,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          Bindings bindings = postOffice.getMatchingBindings(address);
          
-         for (Binding binding: bindings.getBindings())
-         {
-            log.info("Got binding " + binding.getAddress() + " : " + binding.getUniqueName());
-         }
-
          for (Binding binding : bindings.getBindings())
          {
             if (binding.getType() == BindingType.LOCAL_QUEUE)

@@ -32,7 +32,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
@@ -309,16 +308,17 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
    @Override
    protected void setUp() throws Exception
    {
-      super.setUp();
+      doSetup(false);
 
       liveServerManager = new JMSServerManagerImpl(liveServer);
-      liveServerManager.start();
       liveServerManager.setContext(new NullInitialContext());
+      liveServerManager.start();
+      
 
       backupServerManager = new JMSServerManagerImpl(backupServer);
-      backupServerManager.start();
       backupServerManager.setContext(new NullInitialContext());
-
+      backupServerManager.start();
+      
       String queueName = randomString();
       liveServerManager.createQueue(queueName, queueName);
       backupServerManager.createQueue(queueName, queueName);

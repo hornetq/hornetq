@@ -85,11 +85,10 @@ public class ConsumerTest extends UnitTestCase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = Messaging.newMessagingServer(conf, false);
-      server.start();
+      server = Messaging.newMessagingServer(conf, false);      
       jmsServer = new JMSServerManagerImpl(server);
-      jmsServer.start();
       jmsServer.setContext(new NullInitialContext());
+      jmsServer.start();      
       jmsServer.createQueue(Q_NAME, Q_NAME);
       cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                       null,

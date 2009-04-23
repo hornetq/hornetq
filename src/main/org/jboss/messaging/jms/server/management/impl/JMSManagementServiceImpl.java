@@ -39,6 +39,7 @@ import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
+import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareConnectionFactoryControlWrapper;
 import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareJMSQueueControlWrapper;
 import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareJMSServerControlWrapper;
@@ -69,14 +70,16 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    // JMSManagementRegistration implementation ----------------------
 
-   public synchronized void registerJMSServer(final JMSServerManager server) throws Exception
+   public synchronized JMSServerControlMBean registerJMSServer(final JMSServerManager server) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSServerObjectName();
       JMSServerControl control = new JMSServerControl(server);
+      JMSServerControlMBean replicatingProxy = new ReplicationAwareJMSServerControlWrapper(control, 
+                                                                                      managementService.getReplicationOperationInvoker());
       managementService.registerInJMX(objectName,
-                                      new ReplicationAwareJMSServerControlWrapper(control, 
-                                                                                  managementService.getReplicationOperationInvoker()));
+                                      replicatingProxy);
       managementService.registerInRegistry(ResourceNames.JMS_SERVER, control);
+      return replicatingProxy;
    }
 
    public synchronized void unregisterJMSServer() throws Exception

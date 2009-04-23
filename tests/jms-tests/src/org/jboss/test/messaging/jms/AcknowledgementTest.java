@@ -984,8 +984,6 @@ public class AcknowledgementTest extends JMSTestCase
          {
             conn.close();
          }
-
-         destroyQueue("MyQueue2");
       }
    }
 

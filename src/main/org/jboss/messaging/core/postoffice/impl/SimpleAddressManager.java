@@ -51,11 +51,9 @@ public class SimpleAddressManager implements AddressManager
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
-         //throw new IllegalStateException("Binding already exists " + binding);
-         log.error("Binding already exists " + binding.getUniqueName(), new Exception());
-         
-         System.exit(1);
+         throw new IllegalStateException("Binding already exists " + binding);         
       }
+      
       return addMappingInternal(binding.getAddress(), binding);
    }
 

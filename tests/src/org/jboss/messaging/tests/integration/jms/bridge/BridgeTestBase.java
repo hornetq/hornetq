@@ -130,12 +130,12 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf0.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       server0 = Messaging.newMessagingServer(conf0, false);
-      server0.start();
 
       context0 = new InVMContext();
       jmsServer0 = new JMSServerManagerImpl(server0);
-      jmsServer0.start();
       jmsServer0.setContext(context0);
+      jmsServer0.start();
+      
 
       Configuration conf1 = new ConfigurationImpl();
       conf1.setSecurityEnabled(false);
@@ -145,12 +145,12 @@ public abstract class BridgeTestBase extends UnitTestCase
            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory", params1));
 
       server1 = Messaging.newMessagingServer(conf1, false);
-      server1.start();
 
       context1 = new InVMContext();
       jmsServer1 = new JMSServerManagerImpl(server1);
-      jmsServer1.start();
       jmsServer1.setContext(context1);
+      jmsServer1.start();
+      
 
       createQueue("sourceQueue", 0);
 

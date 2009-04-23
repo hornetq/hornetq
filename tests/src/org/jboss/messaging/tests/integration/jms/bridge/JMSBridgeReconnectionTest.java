@@ -98,7 +98,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
    public void testRetryConnectionOnStartup() throws Exception
    {
-      server1.stop();
+      jmsServer1.stop();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl(cff0, cff1, sourceQueueFactory, targetQueueFactory,
             null, null, null, null,
@@ -114,7 +114,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          assertTrue(bridge.isFailed());
 
          //Restart the server         
-         server1.start();
+         jmsServer1.start();
          
          context1 = new InVMContext();
          jmsServer1 = new JMSServerManagerImpl(server1);
@@ -177,7 +177,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          
          log.info("About to crash server");
          
-         server1.stop();
+         jmsServer1.stop();
          
          //Wait a while before starting up to simulate the dest being down for a while
          log.info("Waiting 5 secs before bringing server back up");
@@ -188,13 +188,15 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          
          log.info("Restarting server");
          
-         server1.start();
-         
-         context1 = new InVMContext();
-         jmsServer1 = new JMSServerManagerImpl(server1);
          jmsServer1.start();
-         jmsServer1.setContext(context1);
+         
+//         context1 = new InVMContext();
+//         jmsServer1 = new JMSServerManagerImpl(server1);
+//         jmsServer1.start();
+//         jmsServer1.setContext(context1);
 
+         jmsServer1.createQueue("targetQueue", "queue/targetQueue");
+         
          createQueue("targetQueue", 1);
          
          setUpAdministeredObjects();
@@ -262,7 +264,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          
          log.info("About to crash server");
          
-         server1.stop();
+         jmsServer1.stop();
          
          //Wait a while before starting up to simulate the dest being down for a while
          log.info("Waiting 5 secs before bringing server back up");
@@ -270,7 +272,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          log.info("Done wait");
          
          //Restart the server         
-         server1.start();
+         jmsServer1.start();
          
          context1 = new InVMContext();
          jmsServer1 = new JMSServerManagerImpl(server1);

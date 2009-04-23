@@ -73,9 +73,6 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
       started = true;
 
-      // We run once first synchronously to make sure any already registered deployers get deployed
-      run();
-
       scheduler = Executors.newSingleThreadScheduledExecutor();
 
       future = scheduler.scheduleWithFixedDelay(this, period, period, TimeUnit.MILLISECONDS);
@@ -119,43 +116,38 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       {
          deployers.add(deployer);
 
-         if (started)
+         String[] filenames = deployer.getConfigFileNames();
+
+         for (String filename : filenames)
          {
-            String[] filenames = deployer.getConfigFileNames();
+            log.debug("the filename is " + filename);
 
-            for (String filename : filenames)
+            log.debug(System.getProperty("java.class.path"));
+
+            Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
+
+            while (urls.hasMoreElements())
             {
-               log.debug("the filename is " + filename);
+               URL url = urls.nextElement();
 
-               log.debug(System.getProperty("java.class.path"));
+               log.debug("Got url " + url);
 
-               Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
-
-               while (urls.hasMoreElements())
+               try
                {
-                  URL url = urls.nextElement();
-
-                  log.debug("Got url " + url);
-
-                  try
-                  {
-                     log.debug("Deploying " + deployer + " with url " + url);
-                     deployer.deploy(url);
-                  }
-                  catch (Exception e)
-                  {
-                     log.error("Error deploying " + url, e);
-                  }
-                  
-                  Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
-
-                  deployed.put(pair, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+                  log.debug("Deploying " + deployer + " with url " + url);
+                  deployer.deploy(url);
                }
-            }
-         }
-      }
+               catch (Exception e)
+               {
+                  log.error("Error deploying " + url, e);
+               }
+               
+               Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
 
-      log.debug("Done register");
+               deployed.put(pair, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+            }
+         }        
+      }
    }
 
    public synchronized void unregisterDeployer(final Deployer deployer) throws Exception
@@ -197,11 +189,9 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             for (String filename : filenames)
             {
                Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
-               
-               boolean hasUrl = false;
+
                while (urls.hasMoreElements())
                {
-                  hasUrl = true;
                   URL url = urls.nextElement();
                   
                   Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);

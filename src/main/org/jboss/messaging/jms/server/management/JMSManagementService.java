@@ -37,7 +37,7 @@ import org.jboss.messaging.jms.server.JMSServerManager;
  */
 public interface JMSManagementService
 {
-   void registerJMSServer(JMSServerManager server) throws Exception;
+   JMSServerControlMBean registerJMSServer(JMSServerManager server) throws Exception;
 
    void unregisterJMSServer() throws Exception;
 

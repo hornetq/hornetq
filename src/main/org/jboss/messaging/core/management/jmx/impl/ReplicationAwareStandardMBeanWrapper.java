@@ -24,6 +24,7 @@ package org.jboss.messaging.core.management.jmx.impl;
 
 import javax.management.StandardMBean;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 
 /**
@@ -37,8 +38,10 @@ import org.jboss.messaging.core.management.ReplicationOperationInvoker;
  */
 public class ReplicationAwareStandardMBeanWrapper extends StandardMBean
 {
-
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ReplicationAwareStandardMBeanWrapper.class);
+
 
    // Attributes ----------------------------------------------------
 
@@ -57,6 +60,7 @@ public class ReplicationAwareStandardMBeanWrapper extends StandardMBean
       super(mbeanInterface);
 
       this.resourceName = resourceName;
+      
       this.replicationInvoker = replicationInvoker;
    }
 

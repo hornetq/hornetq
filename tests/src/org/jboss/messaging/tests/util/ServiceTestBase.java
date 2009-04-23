@@ -141,28 +141,28 @@ public class ServiceTestBase extends UnitTestCase
                                           final Configuration configuration,
                                           final Map<String, AddressSettings> settings)
    {
-      MessagingServer service;
+      MessagingServer server;
 
       if (realFiles)
       {
-         service = Messaging.newMessagingServer(configuration);
+         server = Messaging.newMessagingServer(configuration);
       }
       else
       {
-         service = Messaging.newMessagingServer(configuration, false);
+         server = Messaging.newMessagingServer(configuration, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
       {
-         service.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
 
-      service.getAddressSettingsRepository().addMatch("#", defaultSetting);
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
-      return service;
+      return server;
    }
 
    protected MessagingServer createServer(final boolean realFiles,
@@ -170,28 +170,28 @@ public class ServiceTestBase extends UnitTestCase
                                           final MBeanServer mbeanServer,
                                           final Map<String, AddressSettings> settings)
    {
-      MessagingServer service;
+      MessagingServer server;
 
       if (realFiles)
       {
-         service = Messaging.newMessagingServer(configuration, mbeanServer);
+         server = Messaging.newMessagingServer(configuration, mbeanServer);
       }
       else
       {
-         service = Messaging.newMessagingServer(configuration, mbeanServer, false);
+         server = Messaging.newMessagingServer(configuration, mbeanServer, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
       {
-         service.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
 
-      service.getAddressSettingsRepository().addMatch("#", defaultSetting);
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
-      return service;
+      return server;
    }
 
    protected MessagingServer createServer(final boolean realFiles)
@@ -207,30 +207,30 @@ public class ServiceTestBase extends UnitTestCase
    protected MessagingServer createServer(final boolean realFiles, final Configuration configuration,
                                           final JBMSecurityManager securityManager)
    {
-      MessagingServer service;
+      MessagingServer server;
 
       if (realFiles)
       {
-         service = Messaging.newMessagingServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager);
+         server = Messaging.newMessagingServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager);
       }
       else
       {
-         service = Messaging.newMessagingServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager, false);
+         server = Messaging.newMessagingServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager, false);
       }
       
       Map<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
       {
-         service.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
       }
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
 
-      service.getAddressSettingsRepository().addMatch("#", defaultSetting);
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
-      return service;
+      return server;
    }
 
    protected MessagingServer createClusteredServerWithParams(final int index,

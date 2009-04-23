@@ -54,7 +54,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareMessagingServerControlWrapper(final MessagingServerControl localControl, 
+   public ReplicationAwareMessagingServerControlWrapper(final MessagingServerControl localControl,
                                                         final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
       super(ResourceNames.CORE_SERVER, MessagingServerControlMBean.class, replicationInvoker);
@@ -193,7 +193,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       return localControl.isMessageCounterEnabled();
    }
-   
+
    public boolean isSecurityEnabled()
    {
       return localControl.isSecurityEnabled();
@@ -233,9 +233,9 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       return localControl.getConnectors();
    }
-   
+
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
-   {      
+   {
       replicationAwareInvoke("sendQueueInfoToQueue", queueName, address);
    }
 
@@ -262,6 +262,16 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    public void createQueue(final String address, final String name, final String filter, final boolean durable) throws Exception
    {
       replicationAwareInvoke("createQueue", address, name, filter, durable);
+   }
+
+   public void deployQueue(String address, String name, String filter, boolean durable) throws Exception
+   {
+      replicationAwareInvoke("deployQueue", address, name, filter, durable);
+   }
+
+   public void deployQueue(String address, String name) throws Exception
+   {
+      replicationAwareInvoke("deployQueue", address, name);
    }
 
    public void destroyQueue(final String name) throws Exception
@@ -308,7 +318,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       replicationAwareInvoke("setMessageCounterSamplePeriod", newPeriod);
    }
-   
+
    public long getConnectionTTLOverride()
    {
       return localControl.getConnectionTTLOverride();

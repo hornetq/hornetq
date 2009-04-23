@@ -64,8 +64,10 @@ public interface MessagingServer extends MessagingComponent
 
    MessagingServerControl getMessagingServerControl();
    
-   DeploymentManager getDeploymentManager();
-
+   void registerActivateCallback(ActivateCallback callback);
+   
+   void unregisterActivateCallback(ActivateCallback callback);
+    
    ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
 
    CreateSessionResponseMessage createSession(String name,
@@ -133,6 +135,14 @@ public interface MessagingServer extends MessagingComponent
                      SimpleString filter,
                      boolean durable,
                      boolean temporary) throws Exception;
+
+   Queue deployQueue(SimpleString address,
+                     SimpleString queueName,
+                     SimpleString filterString,
+                     boolean durable,
+                     boolean temporary) throws Exception;
+   
+   void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 
    void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception;
 }

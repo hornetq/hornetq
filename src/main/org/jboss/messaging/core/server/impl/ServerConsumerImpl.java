@@ -430,11 +430,9 @@ public class ServerConsumerImpl implements ServerConsumer
          // force a depage
          if (!store.readPage()) // This returns false if there are no pages
          {
-            throw new IllegalStateException("Cannot find ref " + messageID +
-                                            " server " +
-                                            System.identityHashCode(server) +
-                                            " queue " +
-                                            this.messageQueue.getName());
+            throw new IllegalStateException("Cannot find ref " + messageID +                                          
+                                            " in queue " +
+                                            messageQueue.getName());
          }
          else
          {

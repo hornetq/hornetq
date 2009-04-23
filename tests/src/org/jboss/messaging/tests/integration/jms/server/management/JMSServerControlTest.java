@@ -428,13 +428,13 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newMessagingServer(conf, mbeanServer, false);
-      server.start();
+      server = Messaging.newMessagingServer(conf, mbeanServer, false);      
 
       context = new InVMContext();
-      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
-      serverManager.start();
+      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);      
       serverManager.setContext(context);
+      serverManager.start();
+      serverManager.activated();
    }
 
    @Override

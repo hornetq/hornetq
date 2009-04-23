@@ -116,7 +116,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   private MessagingServerControl managedServer;
+   private MessagingServerControl messagingServerControl;
 
    private final MessageCounterManager messageCounterManager;
    
@@ -156,6 +156,10 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager = new MessageCounterManagerImpl();
       messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
       messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
+      
+      replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterPassword,
+                                                               managementAddress,
+                                                               managementRequestTimeout);
    }
 
    // Public --------------------------------------------------------
@@ -183,21 +187,19 @@ public class ManagementServiceImpl implements ManagementService
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
 
-      managedServer = new MessagingServerControl(postOffice,
-                                                 storageManager,
+      messagingServerControl = new MessagingServerControl(postOffice,                                                 
                                                  configuration,
                                                  resourceManager,
                                                  remotingService,
                                                  messagingServer,
                                                  messageCounterManager,
-                                                 broadcaster,
-                                                 queueFactory);
+                                                 broadcaster);
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
-      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(managedServer,
+      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(messagingServerControl,
                                                                                   replicationInvoker));
-      registerInRegistry(ResourceNames.CORE_SERVER, managedServer);
+      registerInRegistry(ResourceNames.CORE_SERVER, messagingServerControl);
 
-      return managedServer;
+      return messagingServerControl;
    }
 
    public synchronized void unregisterServer() throws Exception
@@ -527,15 +529,11 @@ public class ManagementServiceImpl implements ManagementService
 
    public void start() throws Exception
    {
-      replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterPassword,
-                                                               managementAddress,
-                                                               managementRequestTimeout);
-      
       if (messageCounterEnabled)
       {
          messageCounterManager.start();
       }
-
+      
       started = true;
    }
 
@@ -583,7 +581,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public void sendNotification(final Notification notification) throws Exception
    {
-      if (managedServer != null && notificationsEnabled)
+      if (messagingServerControl != null && notificationsEnabled)
       {
          // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
          synchronized (this)
@@ -703,7 +701,9 @@ public class ManagementServiceImpl implements ManagementService
       {
          throw new IllegalArgumentException("no operation " + operation + "/" + params.size());
       }
+      
       Object[] p = params.toArray(new Object[params.size()]);
+      
       Object result = method.invoke(resource, p);
       return result;
    }

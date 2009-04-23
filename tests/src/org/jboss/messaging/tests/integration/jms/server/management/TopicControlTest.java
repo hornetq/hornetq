@@ -215,15 +215,15 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
 
       JMSUtil.createDurableSubscriber(connection, topic, clientID, subscriptionName);
-
+      
       TopicControlMBean topicControl = createManagementControl();
       assertEquals(1, topicControl.getDurableSubcriptionsCount());
+      
+      connection.close();
 
       topicControl.dropDurableSubscription(clientID, subscriptionName);
 
-      assertEquals(0, topicControl.getDurableSubcriptionsCount());
-      
-      connection.close();
+      assertEquals(0, topicControl.getDurableSubcriptionsCount());            
    }
 
    public void testDropDurableSubscriptionWithUnknownSubscription() throws Exception
@@ -357,6 +357,7 @@ public class TopicControlTest extends ManagementTestBase
       serverManager = new JMSServerManagerImpl(server);
       serverManager.start();
       serverManager.setContext(new NullInitialContext());
+      serverManager.activated();
 
       clientID = randomString();
       subscriptionName = randomString();

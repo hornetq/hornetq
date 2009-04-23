@@ -38,7 +38,9 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.ActivateCallback;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
@@ -56,7 +58,7 @@ import org.jboss.messaging.utils.Pair;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class JMSServerManagerImpl implements JMSServerManager
+public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 {
    private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
@@ -75,18 +77,46 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    private final MessagingServer server;
 
-   private final JMSManagementService managementService;
+   private JMSManagementService jmsManagementService;
 
    private Deployer jmsDeployer;
 
    private boolean started;
 
-   public JMSServerManagerImpl(final MessagingServer server)
+   private boolean active;
+
+   private DeploymentManager deploymentManager;
+
+   public JMSServerManagerImpl(final MessagingServer server) throws Exception
    {
       this.server = server;
-
-      managementService = new JMSManagementServiceImpl(server.getManagementService());          
    }
+
+   // ActivateCallback implementation -------------------------------------
+
+   public synchronized void activated()
+   {
+      active = true;
+
+      jmsManagementService = new JMSManagementServiceImpl(server.getManagementService());
+
+      try
+      {
+         jmsManagementService.registerJMSServer(this);
+
+         jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());
+
+         jmsDeployer.start();
+
+         deploymentManager.start();
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to start jms deployer");
+      }
+   }
+
+   // MessagingComponent implementation -----------------------------------
 
    public synchronized void start() throws Exception
    {
@@ -95,30 +125,19 @@ public class JMSServerManagerImpl implements JMSServerManager
          return;
       }
 
-      try
+      if (context == null)
       {
          context = new InitialContext();
       }
-      catch (NamingException e)
-      {
-         log.error("Unable to create Initial Context", e);
-      }
-      managementService.registerJMSServer(this);
-      
-      // The deployment manager is started in the core server - this is necessary since
-      // we can't start any deployments until backup server is initialised
-      DeploymentManager deploymentManager = server.getDeploymentManager();
-      
-      if (deploymentManager != null)
-      {      
-         jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());     
-      
-         jmsDeployer.start();
-      }
+
+      deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
+
+      server.registerActivateCallback(this);
+
+      server.start();
+
       started = true;
    }
-
-   // MessagingComponent implementation -----------------------------------
 
    public synchronized void stop() throws Exception
    {
@@ -126,22 +145,32 @@ public class JMSServerManagerImpl implements JMSServerManager
       {
          return;
       }
+
       if (jmsDeployer != null)
       {
          jmsDeployer.stop();
       }
+
+      deploymentManager.stop();
+
       for (String destination : destinations.keySet())
       {
          undeployDestination(destination);
       }
+
       for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
       {
          destroyConnectionFactory(connectionFactory);
       }
+
       destinations.clear();
       connectionFactories.clear();
       connectionFactoryBindings.clear();
+
       context.close();
+
+      server.stop();
+
       started = false;
    }
 
@@ -152,29 +181,29 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    // JMSServerManager implementation -------------------------------
 
-   public void setContext(final Context context)
+   public synchronized void setContext(final Context context)
    {
       this.context = context;
    }
 
-   public String getVersion()
+   public synchronized String getVersion()
    {
       checkInitialised();
+
       return server.getMessagingServerControl().getVersion();
    }
 
    public synchronized boolean createQueue(final String queueName, final String jndiBinding) throws Exception
    {
       checkInitialised();
-      JBossQueue jBossQueue = new JBossQueue(queueName);      
-      server.getMessagingServerControl().createQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
+      JBossQueue jBossQueue = new JBossQueue(queueName);
+      server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
       boolean added = bindToJndi(jndiBinding, jBossQueue);
       if (added)
       {
          addToDestinationBindings(queueName, jndiBinding);
       }
-      managementService.registerQueue(jBossQueue,
-                                      jndiBinding);
+      jmsManagementService.registerQueue(jBossQueue, jndiBinding);
       return added;
    }
 
@@ -182,15 +211,20 @@ public class JMSServerManagerImpl implements JMSServerManager
    {
       checkInitialised();
       JBossTopic jBossTopic = new JBossTopic(topicName);
-      //We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS checks when routing messages to a topic that
-      //does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no subscriptions - core has no notion of a topic      
-      server.getMessagingServerControl().createQueue(jBossTopic.getAddress(), jBossTopic.getAddress(), REJECT_FILTER, true);
+      // We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS
+      // checks when routing messages to a topic that
+      // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
+      // subscriptions - core has no notion of a topic
+      server.getMessagingServerControl().deployQueue(jBossTopic.getAddress(),
+                                                     jBossTopic.getAddress(),
+                                                     REJECT_FILTER,
+                                                     true);
       boolean added = bindToJndi(jndiBinding, jBossTopic);
       if (added)
       {
          addToDestinationBindings(topicName, jndiBinding);
       }
-      managementService.registerTopic(jBossTopic, jndiBinding);
+      jmsManagementService.registerTopic(jBossTopic, jndiBinding);
       return added;
    }
 
@@ -218,7 +252,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       undeployDestination(name);
 
       destinations.remove(name);
-      managementService.unregisterQueue(name);
+      jmsManagementService.unregisterQueue(name);
       server.getMessagingServerControl().destroyQueue(JBossQueue.createAddressFromName(name).toString());
 
       return true;
@@ -230,7 +264,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       undeployDestination(name);
 
       destinations.remove(name);
-      managementService.unregisterTopic(name);
+      jmsManagementService.unregisterTopic(name);
       server.getMessagingServerControl().destroyQueue(JBossTopic.createAddressFromName(name).toString());
 
       return true;
@@ -422,7 +456,7 @@ public class JMSServerManagerImpl implements JMSServerManager
       connectionFactoryBindings.remove(name);
       connectionFactories.remove(name);
 
-      managementService.unregisterConnectionFactory(name);
+      jmsManagementService.unregisterConnectionFactory(name);
 
       return true;
    }
@@ -460,14 +494,14 @@ public class JMSServerManagerImpl implements JMSServerManager
 
    // Private -------------------------------------------------------
 
-   private void checkInitialised()
+   private synchronized void checkInitialised()
    {
-      if (!server.isInitialised())
+      if (!active)
       {
-         throw new IllegalStateException("Cannot access JMS Server, core server is not yet initialised");
+         throw new IllegalStateException("Cannot access JMS Server, core server is not yet active");
       }
    }
-   
+
    private void bindConnectionFactory(final JBossConnectionFactory cf,
                                       final String name,
                                       final List<String> jndiBindings) throws Exception
@@ -483,7 +517,7 @@ public class JMSServerManagerImpl implements JMSServerManager
          connectionFactoryBindings.get(name).add(jndiBinding);
       }
 
-      managementService.registerConnectionFactory(name, cf, jndiBindings);
+      jmsManagementService.registerConnectionFactory(name, cf, jndiBindings);
    }
 
    private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException

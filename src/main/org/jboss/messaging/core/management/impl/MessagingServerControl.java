@@ -45,24 +45,16 @@ import javax.transaction.xa.Xid;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
-import org.jboss.messaging.core.persistence.StorageManager;
-import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.PostOffice;
-import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.ServerSession;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
@@ -87,8 +79,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    private final PostOffice postOffice;
 
-   private final StorageManager storageManager;
-
    private final Configuration configuration;
 
    private final ResourceManager resourceManager;
@@ -101,37 +91,28 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    private final NotificationBroadcasterSupport broadcaster;
 
-   private final QueueFactory queueFactory;
-
    private boolean messageCounterEnabled;
    
-   private final SimpleString nodeID;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MessagingServerControl(final PostOffice postOffice,
-                                 final StorageManager storageManager,
+   public MessagingServerControl(final PostOffice postOffice,                                
                                  final Configuration configuration,
                                  final ResourceManager resourceManager,
                                  final RemotingService remotingService,
                                  final MessagingServer messagingServer,
                                  final MessageCounterManager messageCounterManager,
-                                 final NotificationBroadcasterSupport broadcaster,
-                                 final QueueFactory queueFactory) throws Exception
+                                 final NotificationBroadcasterSupport broadcaster) throws Exception
    {
-      this.postOffice = postOffice;
-      this.storageManager = storageManager;
+      this.postOffice = postOffice;      
       this.configuration = configuration;
       this.resourceManager = resourceManager;
       this.remotingService = remotingService;
-      server = messagingServer;
+      this.server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
-      this.queueFactory = queueFactory;
-      this.nodeID = server.getNodeID();
-      messageCounterEnabled = configuration.isMessageCounterEnabled();
+      this.messageCounterEnabled = configuration.isMessageCounterEnabled();
    }
 
    // Public --------------------------------------------------------
@@ -257,66 +238,36 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    {
       return configuration.isSecurityEnabled();
    }
-
-   public synchronized void createQueue(final String address, final String name) throws Exception
+   
+   public void deployQueue(final String address, final String name) throws Exception
    {
-      SimpleString sAddress = new SimpleString(address);
-      SimpleString sName = new SimpleString(name);
-      if (postOffice.getBinding(sName) == null)
-      {
-         Queue queue = queueFactory.createQueue(-1, sAddress, sName, null, true, false);
-         Binding binding = new LocalQueueBinding(sAddress, queue, nodeID);
-         storageManager.addQueueBinding(binding);
-         postOffice.addBinding(binding);
-      }
+      server.deployQueue(new SimpleString(address), new SimpleString(name), null, true, false);
    }
 
-   public synchronized void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
+   public void deployQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
-      //FIXME - this should be using the createQueue method in MessagingServerImpl
-      SimpleString sAddress = new SimpleString(address);
-      SimpleString sName = new SimpleString(name);
-      SimpleString sFilter = filterStr == null || filterStr.length() == 0 ? null : new SimpleString(filterStr);
-      Filter filter = null;
-      if (sFilter != null)
-      {
-         filter = new FilterImpl(sFilter);
-      }
-      if (postOffice.getBinding(sName) == null)
-      {
-         Queue queue = queueFactory.createQueue(-1, sAddress, sName, filter, durable, false);
-         Binding binding = new LocalQueueBinding(sAddress, queue, nodeID);
-         if (durable)
-         {
-            storageManager.addQueueBinding(binding);
-         }
-         postOffice.addBinding(binding);
-      }
+      SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
+      
+      server.deployQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
    }
 
-   public synchronized void destroyQueue(final String name) throws Exception
+   public void createQueue(final String address, final String name) throws Exception
    {
-      //FIXME - there should be a destroyqueue method in MessagingServreImpl that does this to avoid
-      //duplicating functionality with ServerSessionImpl
-      SimpleString sName = new SimpleString(name);
-      Binding binding = postOffice.getBinding(sName);
+      server.createQueue(new SimpleString(address), new SimpleString(name), null, true, false);
+   }
 
-      if (binding != null)
-      {
-         if (binding.getType() == BindingType.LOCAL_QUEUE)
-         {
-            Queue queue = (Queue)binding.getBindable();
+   public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
+   {
+      SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
+      
+      server.createQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
+   }
 
-            queue.deleteAllReferences();
+   public void destroyQueue(final String name) throws Exception
+   {
+      SimpleString queueName = new SimpleString(name);
 
-            postOffice.removeBinding(sName);
-
-            if (queue.isDurable())
-            {
-               storageManager.deleteQueueBinding(queue.getPersistenceID());
-            }
-         }
-      }
+      server.destroyQueue(queueName, null);
    }
 
    public int getConnectionCount()

@@ -360,7 +360,7 @@ public class QueueImpl implements Queue
 
    public void addLast(final MessageReference ref)
    {    
-      add(ref, false);
+      add(ref, false);      
    }
 
    public void addFirst(final MessageReference ref)

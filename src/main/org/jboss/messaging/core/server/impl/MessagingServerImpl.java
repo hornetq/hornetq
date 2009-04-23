@@ -73,10 +73,12 @@ import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
+import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
+import org.jboss.messaging.core.server.ActivateCallback;
 import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -132,12 +134,14 @@ public class MessagingServerImpl implements MessagingServer
    private final Configuration configuration;
 
    private final MBeanServer mbeanServer;
+   
+   private final Set<ActivateCallback> activateCallbacks = new HashSet<ActivateCallback>();
 
    private volatile boolean started;
 
    private SecurityStore securityStore;
 
-   private final HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
+   private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private ScheduledExecutorService scheduledExecutor;
 
@@ -212,7 +216,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          throw new NullPointerException("Must inject SecurityManager into MessagingServer constructor");
       }
-
+      
       // We need to hard code the version information into a source file
 
       version = VersionLoader.getVersion();
@@ -221,270 +225,17 @@ public class MessagingServerImpl implements MessagingServer
 
       this.mbeanServer = mbeanServer;
 
-      this.securityManager = securityManager;      
+      this.securityManager = securityManager;
+
+      this.addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
+
+      addressSettingsRepository.setDefault(new AddressSettings());
    }
 
    // lifecycle methods
    // ----------------------------------------------------------------
 
-   private void doStart() throws Exception
-   {
-      asyncDeliveryPool = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("JBM-async-session-delivery-threads"));
-
-      executorFactory = new org.jboss.messaging.utils.OrderedExecutorFactory(asyncDeliveryPool);
-
-      if (configuration.isEnablePersistence())
-      {
-         storageManager = new JournalStorageManager(configuration);
-      }
-      else
-      {
-         storageManager = new NullStorageManager();
-      }
-
-      storageManager.start();
-
-      securityManager.start();
-
-      initialised = !configuration.isBackup();
-
-      securityRepository = new HierarchicalObjectRepository<Set<Role>>();
-      securityRepository.setDefault(new HashSet<Role>());
-
-      securityStore = new SecurityStoreImpl(securityRepository,
-                                            securityManager,
-                                            configuration.getSecurityInvalidationInterval(),
-                                            configuration.isSecurityEnabled(),
-                                            configuration.getManagementClusterPassword(),
-                                            managementService);
-
-      addressSettingsRepository.setDefault(new AddressSettings());
-      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                          new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads"));
-      queueFactory = new QueueFactoryImpl(scheduledExecutor, addressSettingsRepository, storageManager);
-
-      pagingManager = createPagingManager();
-
-      resourceManager = new ResourceManagerImpl((int)configuration.getTransactionTimeout() / 1000,
-                                                configuration.getTransactionTimeoutScanPeriod());
-      postOffice = new PostOfficeImpl(this,
-                                      storageManager,
-                                      pagingManager,
-                                      queueFactory,
-                                      managementService,
-                                      configuration.getMessageExpiryScanPeriod(),
-                                      configuration.getMessageExpiryThreadPriority(),
-                                      configuration.isWildcardRoutingEnabled(),
-                                      configuration.isBackup(),
-                                      configuration.getIDCacheSize(),
-                                      configuration.isPersistIDCache(),
-                                      executorFactory,
-                                      addressSettingsRepository);
-
-      postOffice.start();
-
-      pagingManager.start();
-
-      managementService.start();
-
-      // Start the deployers
-      if (configuration.isEnableFileDeployment())
-      {
-         basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
-
-         addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
-
-         queueDeployer = new QueueDeployer(deploymentManager, configuration);
-
-         securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
-
-         basicUserCredentialsDeployer.start();
-
-         addressSettingsDeployer.start();
-
-         queueDeployer.start();
-
-         securityDeployer.start();
-      }
-      
-      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
-
-      storageManager.loadBindingJournal(queueBindingInfos);
-
-      if (!configuration.isBackup())
-      {
-         if (uuid == null)
-         {
-            uuid = storageManager.getPersistentID();
-
-            if (uuid == null)
-            {
-               uuid = UUIDGenerator.getInstance().generateUUID();
-
-               storageManager.setPersistentID(uuid);
-            }
-
-            nodeID = new SimpleString(uuid.toString());
-         }
-      }
-      else
-      {
-         UUID currentUUID = storageManager.getPersistentID();
-
-         if (currentUUID != null)
-         {
-            if (!currentUUID.equals(uuid))
-            {
-               throw new IllegalStateException("Backup server already has an id but it's not the same as live");
-            }
-         }
-         else
-         {
-            storageManager.setPersistentID(uuid);
-         }
-      }
-
-      messagingServerControl = managementService.registerServer(postOffice,
-                                                                storageManager,
-                                                                configuration,
-                                                                addressSettingsRepository,
-                                                                securityRepository,
-                                                                resourceManager,
-                                                                remotingService,
-                                                                this,
-                                                                queueFactory,
-                                                                configuration.isBackup());
-
-      Map<Long, Queue> queues = new HashMap<Long, Queue>();
-
-      for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
-      {
-         Filter filter = null;
-
-         if (queueBindingInfo.getFilterString() != null)
-         {
-            filter = new FilterImpl(queueBindingInfo.getFilterString());
-         }
-
-         Queue queue = queueFactory.createQueue(queueBindingInfo.getPersistenceID(),
-                                                queueBindingInfo.getAddress(),
-                                                queueBindingInfo.getQueueName(),
-                                                filter,
-                                                true,
-                                                false);
-
-         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeID);
-
-         queues.put(queueBindingInfo.getPersistenceID(), queue);
-
-         postOffice.addBinding(binding);
-      }
-
-      Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
-
-      storageManager.loadMessageJournal(pagingManager,
-                                        resourceManager,
-                                        queues,
-                                        duplicateIDMap);
-
-      for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
-      {
-         SimpleString address = entry.getKey();
-
-         DuplicateIDCache cache = postOffice.getDuplicateIDCache(address);
-
-         if (configuration.isPersistIDCache())
-         {
-            cache.load(entry.getValue());
-         }
-      }
-
-      resourceManager.start();
-
-      // Deply any pre-defined diverts
-      deployDiverts();
-
-      String backupConnectorName = configuration.getBackupConnectorName();
-
-      if (backupConnectorName != null)
-      {
-         TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
-
-         if (backupConnector == null)
-         {
-            log.warn("connector with name '" + backupConnectorName + "' is not defined in the configuration.");
-         }
-         else
-         {
-
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            try
-            {
-               Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
-               backupConnectorFactory = (ConnectorFactory)clz.newInstance();
-            }
-            catch (Exception e)
-            {
-               throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() +
-                                                           "\"",
-                                                  e);
-            }
-
-            backupConnectorParams = backupConnector.getParams();
-         }
-      }
-
-      Channel replicatingChannel = getReplicatingChannel();
-
-      if (replicatingChannel == null && backupConnectorFactory != null)
-      {
-         log.warn("Please start backup server before starting live server");
-
-         remotingService.stop();
-
-         return;
-      }
-
-      if (configuration.isClustered())
-      {
-         clusterManager = new ClusterManagerImpl(executorFactory,
-                                                 this,
-                                                 postOffice,
-                                                 scheduledExecutor,
-                                                 managementService,
-                                                 configuration,
-                                                 uuid,
-                                                 replicatingChannel,
-                                                 configuration.isBackup());
-      }
-
-      // We need to startDepage when we restart the server to eventually resume destinations that were in depage mode
-      // during last stop
-      // This is the last thing done at the start, after everything else is up and running
-      pagingManager.startGlobalDepage();
-
-      if (!configuration.isBackup())
-      {         
-         if (deploymentManager != null)
-         {
-            deploymentManager.start();
-         }
-
-         // Once we ready we can start the remoting service so we can start accepting connections
-         remotingService.start();
-         
-         // Deploy any pre-defined queues - must be done *after* deploymentManager has started
-         deployQueues();
-      }
-      
-      if (clusterManager != null)
-      {
-         clusterManager.start();
-      }
-
-      started = true;
-   }
-
+   
    public synchronized void start() throws Exception
    {
       if (started)
@@ -492,27 +243,21 @@ public class MessagingServerImpl implements MessagingServer
          return;
       }
 
-      managementService = new ManagementServiceImpl(mbeanServer, configuration);
-
-      remotingService = new RemotingServiceImpl(configuration, this, managementService);
-      
-      if (configuration.isEnableFileDeployment())
-      {
-         // We need to create it now but not start it
-         deploymentManager = new FileDeploymentManager(configuration.getFileDeployerScanPeriod());
-      }
+      initialisePart1();
 
       if (configuration.isBackup())
       {
-         remotingService.start();
-
          // We defer actually initialisation until the live node has contacted the backup
          log.info("Backup server will await live server before becoming operational");
       }
       else
       {
-         doStart();
+         initialisePart2();
       }
+
+      // We start the remoting service here - if the server is a backup remoting service needs to be started
+      // so it can be initialised by the live node
+      remotingService.start();
    }
 
    public synchronized void stop() throws Exception
@@ -521,7 +266,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-      
+
       if (clusterManager != null)
       {
          clusterManager.stop();
@@ -665,71 +410,7 @@ public class MessagingServerImpl implements MessagingServer
    public ClusterManager getClusterManager()
    {
       return clusterManager;
-   }
-
-   private void checkActivate(final RemotingConnection connection)
-   {
-      if (configuration.isBackup())
-      {
-         synchronized (this)
-         {
-            freezeBackupConnection();
-
-            List<Queue> toActivate = postOffice.activate();
-
-            for (Queue queue : toActivate)
-            {
-               scheduledExecutor.schedule(new ActivateRunner(queue),
-                                          configuration.getQueueActivationTimeout(),
-                                          TimeUnit.MILLISECONDS);
-            }
-
-            configuration.setBackup(false);
-
-            if (clusterManager != null)
-            {
-               clusterManager.activate();
-            }
-         }
-      }
-
-      connection.activate();
-   }
-
-   // We need to prevent any more packets being handled on replicating connection as soon as first live connection
-   // is created or re-attaches, to prevent a situation like the following:
-   // connection 1 create queue A
-   // connection 2 fails over
-   // A gets activated since no consumers
-   // connection 1 create consumer on A
-   // connection 1 delivery
-   // connection 1 delivery gets replicated
-   // can't find message in queue since active was delivered immediately
-   private void freezeBackupConnection()
-   {
-      // Sanity check
-      // All replicated sessions should be on the same connection
-      RemotingConnection replConnection = null;
-
-      for (ServerSession session : sessions.values())
-      {
-         RemotingConnection rc = session.getChannel().getConnection();
-
-         if (replConnection == null)
-         {
-            replConnection = rc;
-         }
-         else if (replConnection != rc)
-         {
-            throw new IllegalStateException("More than one replicating connection!");
-         }
-      }
-
-      if (replConnection != null)
-      {
-         replConnection.freeze();
-      }
-   }
+   }  
 
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
                                                          final String name,
@@ -873,31 +554,23 @@ public class MessagingServerImpl implements MessagingServer
 
          this.nodeID = new SimpleString(uuid.toString());
 
-         doStart();
+         initialisePart2();
 
-         initialised = true;
-
-         if (deploymentManager != null)
-         {           
-            deploymentManager.start();
-         }
-         
          if (currentMessageID != this.storageManager.getCurrentUniqueID())
          {
+            initialised = false;
+
             throw new IllegalStateException("Backup node current id sequence != live node current id sequence " + this.storageManager.getCurrentUniqueID() +
                                             ", " +
                                             currentMessageID);
          }
 
-         //Queues must be deployed *after* deploymentManager has started
-         deployQueues();
-
          log.info("Backup server is now operational");
       }
    }
-
+   
    public Channel getReplicatingChannel()
-   {      
+   {
       synchronized (replicatingChannelLock)
       {
          if (replicatingChannel == null && backupConnectorFactory != null)
@@ -985,40 +658,6 @@ public class MessagingServerImpl implements MessagingServer
       return nodeID;
    }
 
-   public Queue createQueue(final SimpleString address,
-                            final SimpleString queueName,
-                            final SimpleString filterString,
-                            final boolean durable,
-                            final boolean temporary) throws Exception
-   {
-      Binding binding = postOffice.getBinding(queueName);
-      
-      if (binding != null)
-      {
-         throw new MessagingException(MessagingException.QUEUE_EXISTS);
-      }
-
-      Filter filter = null;
-
-      if (filterString != null)
-      {
-         filter = new FilterImpl(filterString);
-      }
-
-      final Queue queue = queueFactory.createQueue(-1, address, queueName, filter, durable, temporary);
-
-      binding = new LocalQueueBinding(address, queue, nodeID);
-
-      if (durable)
-      {
-         storageManager.addQueueBinding(binding);
-      }
-
-      postOffice.addBinding(binding);
-
-      return queue;
-   }
-
    public void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
@@ -1048,6 +687,74 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
+   public Queue createQueue(final SimpleString address,
+                            final SimpleString queueName,
+                            final SimpleString filterString,
+                            final boolean durable,
+                            final boolean temporary) throws Exception
+   {
+      return createQueue(address, queueName, filterString, durable, temporary, false);
+   }
+
+   public Queue deployQueue(final SimpleString address,
+                            final SimpleString queueName,
+                            final SimpleString filterString,
+                            final boolean durable,
+                            final boolean temporary) throws Exception
+   {
+      return createQueue(address, queueName, filterString, durable, temporary, true);
+   }
+
+   public void destroyQueue(final SimpleString queueName, final ServerSession session) throws Exception
+   {
+      Binding binding = postOffice.getBinding(queueName);
+      
+      if (binding == null)
+      {
+         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, "No such queue " + queueName);
+      }
+
+      Queue queue = (Queue)binding.getBindable();
+
+      if (queue.getConsumerCount() != 0)
+      {
+         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
+      }
+
+      if (session != null)
+      {
+         if (queue.isDurable())
+         {
+            // make sure the user has privileges to delete this queue
+            securityStore.check(binding.getAddress(), CheckType.DELETE_DURABLE_QUEUE, session);
+         }
+         else
+         {
+            securityStore.check(binding.getAddress(), CheckType.DELETE_NON_DURABLE_QUEUE, session);
+         }
+      }
+
+      queue.deleteAllReferences();
+
+      if (queue.isDurable())
+      {
+         storageManager.deleteQueueBinding(queue.getPersistenceID());
+      }
+
+      postOffice.removeBinding(queueName);
+   }
+   
+   public synchronized void registerActivateCallback(final ActivateCallback callback)
+   {
+      activateCallbacks.add(callback);
+   }
+
+   public synchronized void unregisterActivateCallback(final ActivateCallback callback)
+   {
+      activateCallbacks.remove(callback);
+   }
+
+
    // Public
    // ---------------------------------------------------------------------------------------
 
@@ -1057,9 +764,6 @@ public class MessagingServerImpl implements MessagingServer
    // Protected
    // ------------------------------------------------------------------------------------
 
-   /**
-    * Method could be replaced for test purposes 
-    */
    protected PagingManager createPagingManager()
    {
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
@@ -1075,53 +779,429 @@ public class MessagingServerImpl implements MessagingServer
    // Private
    // --------------------------------------------------------------------------------------
 
-   private void deployQueues() throws Exception
+   private synchronized void callActivateCallbacks()
+   {
+      for (ActivateCallback callback: activateCallbacks)
+      {
+         callback.activated();
+      }
+   }
+   
+   private void checkActivate(final RemotingConnection connection)
+   {
+      if (configuration.isBackup())
+      {
+         synchronized (this)
+         {
+            freezeBackupConnection();
+
+            List<Queue> toActivate = postOffice.activate();
+
+            for (Queue queue : toActivate)
+            {
+               scheduledExecutor.schedule(new ActivateRunner(queue),
+                                          configuration.getQueueActivationTimeout(),
+                                          TimeUnit.MILLISECONDS);
+            }
+
+            configuration.setBackup(false);
+
+            if (clusterManager != null)
+            {
+               clusterManager.activate();
+            }
+         }
+      }
+
+      connection.activate();
+   }
+
+   // We need to prevent any more packets being handled on replicating connection as soon as first live connection
+   // is created or re-attaches, to prevent a situation like the following:
+   // connection 1 create queue A
+   // connection 2 fails over
+   // A gets activated since no consumers
+   // connection 1 create consumer on A
+   // connection 1 delivery
+   // connection 1 delivery gets replicated
+   // can't find message in queue since active was delivered immediately
+   private void freezeBackupConnection()
+   {
+      // Sanity check
+      // All replicated sessions should be on the same connection
+      RemotingConnection replConnection = null;
+
+      for (ServerSession session : sessions.values())
+      {
+         RemotingConnection rc = session.getChannel().getConnection();
+
+         if (replConnection == null)
+         {
+            replConnection = rc;
+         }
+         else if (replConnection != rc)
+         {
+            throw new IllegalStateException("More than one replicating connection!");
+         }
+      }
+
+      if (replConnection != null)
+      {
+         replConnection.freeze();
+      }
+   }
+   
+   private void initialisePart1() throws Exception
+   {
+      managementService = new ManagementServiceImpl(mbeanServer, configuration);
+
+      remotingService = new RemotingServiceImpl(configuration, this, managementService);
+   }
+
+   private void initialisePart2() throws Exception
+   {
+      // Create the pools and executor related objects
+      asyncDeliveryPool = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("JBM-async-session-delivery-threads"));
+
+      executorFactory = new org.jboss.messaging.utils.OrderedExecutorFactory(asyncDeliveryPool);
+
+      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
+                                                          new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads"));
+
+      // Create the hard-wired components
+
+      if (configuration.isEnableFileDeployment())
+      {
+         deploymentManager = new FileDeploymentManager(configuration.getFileDeployerScanPeriod());
+      }
+
+      if (configuration.isEnablePersistence())
+      {
+         storageManager = new JournalStorageManager(configuration);
+      }
+      else
+      {
+         storageManager = new NullStorageManager();
+      }
+
+      securityRepository = new HierarchicalObjectRepository<Set<Role>>();
+      securityRepository.setDefault(new HashSet<Role>());
+
+      securityStore = new SecurityStoreImpl(securityRepository,
+                                            securityManager,
+                                            configuration.getSecurityInvalidationInterval(),
+                                            configuration.isSecurityEnabled(),
+                                            configuration.getManagementClusterPassword(),
+                                            managementService);
+
+      queueFactory = new QueueFactoryImpl(scheduledExecutor, addressSettingsRepository, storageManager);
+
+      pagingManager = createPagingManager();
+
+      resourceManager = new ResourceManagerImpl((int)(configuration.getTransactionTimeout() / 1000),
+                                                configuration.getTransactionTimeoutScanPeriod());
+      postOffice = new PostOfficeImpl(this,
+                                      storageManager,
+                                      pagingManager,
+                                      queueFactory,
+                                      managementService,
+                                      configuration.getMessageExpiryScanPeriod(),
+                                      configuration.getMessageExpiryThreadPriority(),
+                                      configuration.isWildcardRoutingEnabled(),
+                                      configuration.isBackup(),
+                                      configuration.getIDCacheSize(),
+                                      configuration.isPersistIDCache(),
+                                      executorFactory,
+                                      addressSettingsRepository);
+
+      messagingServerControl = managementService.registerServer(postOffice,
+                                                                storageManager,
+                                                                configuration,
+                                                                addressSettingsRepository,
+                                                                securityRepository,
+                                                                resourceManager,
+                                                                remotingService,
+                                                                this,
+                                                                queueFactory,
+                                                                configuration.isBackup());
+
+      // Address settings need to deployed initially, since they're require on paging manager.start()
+
+      if (configuration.isEnableFileDeployment())
+      {
+         addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
+
+         addressSettingsDeployer.start();
+      }
+
+      storageManager.start();
+
+      securityManager.start();
+
+      postOffice.start();
+
+      pagingManager.start();
+
+      log.info("starting management service");
+      managementService.start();
+
+      resourceManager.start();
+
+      // Deploy all security related config
+      if (configuration.isEnableFileDeployment())
+      {
+         basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
+
+         securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
+
+         basicUserCredentialsDeployer.start();
+
+         securityDeployer.start();
+      }
+
+      // Load the journal and populate queues, transactions and caches in memory
+      loadJournal();
+
+      // Deploy any queues in the Configuration class - if there's no file deployment we still need
+      // to load those
+      deployQueuesFromConfiguration();
+      
+      // Deploy any predefined queues - on backup we don't start queue deployer - instead deployments
+      // are replicated from live
+
+      if (configuration.isEnableFileDeployment() && !configuration.isBackup())
+      {
+         queueDeployer = new QueueDeployer(deploymentManager, messagingServerControl);
+
+         queueDeployer.start();
+      }
+      
+      // We need to call this here, this gives any dependent server a chance to deploy its own destinations
+      // this needs to be done before clustering is initialised, and in the same order on live and backup
+      callActivateCallbacks();
+
+      // Deply any pre-defined diverts
+      deployDiverts();
+     
+      // Set-up the replicating connection 
+      if (!setupReplicatingConnection())
+      {
+         return;
+      }
+      
+      if (configuration.isClustered())
+      {
+         // This can't be created until node id is set
+         clusterManager = new ClusterManagerImpl(executorFactory,
+                                                 this,
+                                                 postOffice,
+                                                 scheduledExecutor,
+                                                 managementService,
+                                                 configuration,
+                                                 uuid,
+                                                 replicatingChannel,
+                                                 configuration.isBackup());
+
+         clusterManager.start();
+      }
+      
+      if (deploymentManager != null)
+      {
+         deploymentManager.start();
+      }
+      
+      pagingManager.startGlobalDepage();
+
+      initialised = true;
+
+      started = true;
+   }
+
+   private void deployQueuesFromConfiguration() throws Exception
    {
       for (QueueConfiguration config : configuration.getQueueConfigurations())
       {
-         if (config.getName() == null)
-         {
-            log.warn("Must specify a unique name for each queue. This one will not be deployed.");
-
-            continue;
-         }
-
-         if (config.getAddress() == null)
-         {
-            log.warn("Must specify an address for each queue. This one will not be deployed.");
-
-            continue;
-         }
-
-         SimpleString name = new SimpleString(config.getName());
-
-         SimpleString address = new SimpleString(config.getAddress());
-
-         Binding binding = postOffice.getBinding(name);
-
-         if (binding == null)
-         {
-            Filter filter = null;
-
-            if (config.getFilterString() != null)
-            {
-               filter = new FilterImpl(new SimpleString(config.getFilterString()));
-            }
-
-            Queue queue = queueFactory.createQueue(-1, address, name, filter, config.isDurable(), false);
-
-            Binding queueBinding = new LocalQueueBinding(new SimpleString(config.getAddress()), queue, nodeID);
-
-            binding = queueBinding;
-
-            postOffice.addBinding(binding);
-
-            if (config.isDurable())
-            {
-               storageManager.addQueueBinding(queueBinding);
-            }
-         }         
+         messagingServerControl.deployQueue(config.getAddress(),
+                                            config.getName(),
+                                            config.getFilterString(),
+                                            config.isDurable());
       }
+   }
+
+   private boolean setupReplicatingConnection() throws Exception
+   {
+      String backupConnectorName = configuration.getBackupConnectorName();
+
+      if (backupConnectorName != null)
+      {
+         TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
+
+         if (backupConnector == null)
+         {
+            log.warn("connector with name '" + backupConnectorName + "' is not defined in the configuration.");
+         }
+         else
+         {
+
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            try
+            {
+               Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
+               backupConnectorFactory = (ConnectorFactory)clz.newInstance();
+            }
+            catch (Exception e)
+            {
+               throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() +
+                                                           "\"",
+                                                  e);
+            }
+
+            backupConnectorParams = backupConnector.getParams();
+         }
+      }
+
+      Channel replicatingChannel = getReplicatingChannel();
+
+      if (replicatingChannel == null && backupConnectorFactory != null)
+      {
+         log.warn("Backup server MUST be started before live server. Initialisation will proceed.");
+
+         return false;
+      }
+      else
+      {
+         return true;
+      }
+   }
+
+   private void loadJournal() throws Exception
+   {
+      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
+
+      storageManager.loadBindingJournal(queueBindingInfos);
+
+      // Set the node id - must be before we load the queues into the postoffice, but after we load the journal
+      setNodeID();
+
+      Map<Long, Queue> queues = new HashMap<Long, Queue>();
+
+      for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
+      {
+         Filter filter = null;
+
+         if (queueBindingInfo.getFilterString() != null)
+         {
+            filter = new FilterImpl(queueBindingInfo.getFilterString());
+         }
+
+         Queue queue = queueFactory.createQueue(queueBindingInfo.getPersistenceID(),
+                                                queueBindingInfo.getAddress(),
+                                                queueBindingInfo.getQueueName(),
+                                                filter,
+                                                true,
+                                                false);
+
+         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeID);
+
+         queues.put(queueBindingInfo.getPersistenceID(), queue);
+
+         postOffice.addBinding(binding);
+      }
+
+      Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
+
+      storageManager.loadMessageJournal(pagingManager, resourceManager, queues, duplicateIDMap);
+
+      for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
+      {
+         SimpleString address = entry.getKey();
+
+         DuplicateIDCache cache = postOffice.getDuplicateIDCache(address);
+
+         if (configuration.isPersistIDCache())
+         {
+            cache.load(entry.getValue());
+         }
+      }
+   }
+
+   private void setNodeID() throws Exception
+   {
+      if (!configuration.isBackup())
+      {
+         if (uuid == null)
+         {
+            uuid = storageManager.getPersistentID();
+
+            if (uuid == null)
+            {
+               uuid = UUIDGenerator.getInstance().generateUUID();
+
+               storageManager.setPersistentID(uuid);
+            }
+
+            nodeID = new SimpleString(uuid.toString());
+         }
+      }
+      else
+      {
+         UUID currentUUID = storageManager.getPersistentID();
+
+         if (currentUUID != null)
+         {
+            if (!currentUUID.equals(uuid))
+            {
+               throw new IllegalStateException("Backup server already has an id but it's not the same as live");
+            }
+         }
+         else
+         {
+            storageManager.setPersistentID(uuid);
+         }
+      }
+   }
+
+   
+   private Queue createQueue(final SimpleString address,
+                             final SimpleString queueName,
+                             final SimpleString filterString,
+                             final boolean durable,
+                             final boolean temporary,
+                             final boolean ignoreIfExists) throws Exception
+   {      
+      Binding binding = postOffice.getBinding(queueName);
+
+      if (binding != null)
+      {
+         if (ignoreIfExists)
+         {
+            return null;
+         }
+         else
+         {
+            throw new MessagingException(MessagingException.QUEUE_EXISTS);
+         }
+      }
+
+      Filter filter = null;
+
+      if (filterString != null)
+      {
+         filter = new FilterImpl(filterString);
+      }
+            
+      final Queue queue = queueFactory.createQueue(-1, address, queueName, filter, durable, temporary);
+
+      binding = new LocalQueueBinding(address, queue, nodeID);
+
+      if (durable)
+      {
+         storageManager.addQueueBinding(binding);
+      }
+
+      postOffice.addBinding(binding);
+      
+      return queue;
    }
 
    private void deployDiverts() throws Exception
@@ -1165,7 +1245,7 @@ public class MessagingServerImpl implements MessagingServer
          Filter filter = null;
 
          if (config.getFilterString() != null)
-         {           
+         {
             filter = new FilterImpl(new SimpleString(config.getFilterString()));
          }
 

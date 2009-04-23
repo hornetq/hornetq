@@ -34,7 +34,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -94,6 +93,13 @@ public class ReplicationAwareTestBase extends UnitTestCase
    {
       super.setUp();
       
+      doSetup(true);
+   }
+   
+   protected void doSetup(boolean startServers) throws Exception
+   {
+      super.setUp();
+      
       backupMBeanServer = MBeanServerFactory.createMBeanServer();
       liveMBeanServer = MBeanServerFactory.createMBeanServer();
 
@@ -107,7 +113,10 @@ public class ReplicationAwareTestBase extends UnitTestCase
       backupConf.setBackup(true);
       backupConf.setJMXManagementEnabled(true);
       backupServer = Messaging.newMessagingServer(backupConf, backupMBeanServer, false);
-      backupServer.start();
+      if (startServers)
+      {
+         backupServer.start();
+      }
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -121,8 +130,13 @@ public class ReplicationAwareTestBase extends UnitTestCase
       liveConf.setBackupConnectorName(backupTC.getName());
       liveConf.setJMXManagementEnabled(true);
       liveServer = Messaging.newMessagingServer(liveConf, liveMBeanServer, false);
-      liveServer.start();
+      if (startServers)
+      {
+         liveServer.start();
+      }
    }
+   
+   
 
    @Override
    protected void tearDown() throws Exception

@@ -83,8 +83,9 @@ public class JMSServerControl2Test extends ManagementTestBase
 
       context = new InVMContext();
       JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
-      serverManager.start();
       serverManager.setContext(context);
+      serverManager.start();
+      serverManager.activated();
 
       return server;
    }

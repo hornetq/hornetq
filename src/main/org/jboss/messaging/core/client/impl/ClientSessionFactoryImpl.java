@@ -855,7 +855,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          if (!ok)
          {
             throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                                         "Timed out waiting to receive intial broadcast from discovery group");
+                                         "Timed out waiting to receive initial broadcast from discovery group");
          }
       }
 

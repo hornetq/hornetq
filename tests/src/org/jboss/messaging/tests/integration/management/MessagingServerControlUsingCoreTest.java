@@ -104,6 +104,16 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
          {
             proxy.invokeOperation("createQueue", address, name, filter, durable);
          }
+         
+         public void deployQueue(String address, String name, String filter, boolean durable) throws Exception
+         {
+            proxy.invokeOperation("deployQueue", address, name, filter, durable);
+         }
+
+         public void deployQueue(String address, String name) throws Exception
+         {
+            proxy.invokeOperation("deployQueue", address, name);
+         }
 
          public void destroyQueue(String name) throws Exception
          {

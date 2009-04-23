@@ -35,6 +35,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -53,14 +54,16 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class HeuristicXATest extends ServiceTestBase
 {
-
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(HeuristicXATest.class);
+
 
    final SimpleString ADDRESS = new SimpleString("ADDRESS");
 
    // Attributes ----------------------------------------------------
 
-   MBeanServer mbeanServer;
+   private MBeanServer mbeanServer;
 
    // Static --------------------------------------------------------
 
@@ -73,10 +76,7 @@ public class HeuristicXATest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
 
-      MessagingServer server = createServer(false,
-                                               configuration,
-                                               mbeanServer,
-                                               new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
 
       try
       {
@@ -96,12 +96,12 @@ public class HeuristicXATest extends ServiceTestBase
 
    }
 
-   public void testHerusticCommit() throws Exception
+   public void testHeuristicCommit() throws Exception
    {
       internalTest(true);
    }
 
-   public void testHerusticRollback() throws Exception
+   public void testHeuristicRollback() throws Exception
    {
       internalTest(false);
    }
@@ -111,10 +111,7 @@ public class HeuristicXATest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
 
-      MessagingServer server = createServer(false,
-                                               configuration,
-                                               mbeanServer,
-                                               new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
       try
       {
          server.start();
@@ -164,8 +161,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          if (isCommit)
          {
-            assertEquals(1,
-                         ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+            assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
             session = sf.createSession(false, false, false);
 
@@ -180,8 +176,7 @@ public class HeuristicXATest extends ServiceTestBase
             session.close();
          }
 
-         assertEquals(0,
-                      ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
       }
       finally
