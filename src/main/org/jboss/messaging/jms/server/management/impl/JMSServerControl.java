@@ -103,11 +103,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        double retryIntervalMultiplier,                                       
                                        int reconnectAttempts,
                                        boolean failoverOnNodeShutdown,
-                                       String jndiBinding) throws Exception
+                                       String[] jndiBindings) throws Exception
    {
-      List<String> bindings = new ArrayList<String>();
-      bindings.add(jndiBinding);
-
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
       
@@ -135,7 +132,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        retryIntervalMultiplier,                                                       
                                                        reconnectAttempts,
                                                        failoverOnNodeShutdown,
-                                                       bindings);
+                                                       Arrays.asList(jndiBindings));
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -206,11 +203,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        double retryIntervalMultiplier,                                       
                                        int reconnectAttempts,
                                        boolean failoverOnNodeShutdown,
-                                       String jndiBinding) throws Exception
+                                       String[] jndiBindings) throws Exception
    {
-      List<String> bindings = new ArrayList<String>();
-      bindings.add(jndiBinding);
-
       boolean created = server.createConnectionFactory(name,
                                                        connectorConfigs,
                                                        connectionLoadBalancingPolicyClassName,
@@ -235,7 +229,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        retryIntervalMultiplier,                                                       
                                                        reconnectAttempts,
                                                        failoverOnNodeShutdown,
-                                                       bindings);
+                                                       Arrays.asList(jndiBindings));
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -270,11 +264,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        final double retryIntervalMultiplier,
                                        final int reconnectAttempts,
                                        final boolean failoverOnNodeShutdown,
-                                       final String jndiBinding) throws Exception
+                                       final String[] jndiBindings) throws Exception
    {      
-      List<String> bindings = new ArrayList<String>();
-      bindings.add(jndiBinding);
-
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryGroupName, discoveryGroupAddress, discoveryGroupPort, discoveryGroupRefreshTimeout);
 
       boolean created = server.createConnectionFactory(name,
@@ -302,7 +293,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                                        retryIntervalMultiplier,                                                       
                                                        reconnectAttempts,
                                                        failoverOnNodeShutdown,
-                                                       bindings);
+                                                       Arrays.asList(jndiBindings));
       if (created)
       {
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);

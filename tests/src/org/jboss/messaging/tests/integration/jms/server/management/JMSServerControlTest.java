@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
 import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
@@ -36,6 +38,7 @@ import javax.jms.Topic;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ObjectNames;
@@ -51,7 +54,7 @@ import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
 
 /**
- * A QueueControlTest
+ * A JMSServerControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
@@ -230,7 +233,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    public void testCreateConnectionFactory_3() throws Exception
    {
-      String cfJNDIBinding = randomString();
+      String[] cfJNDIBindings = new String[] {randomString(), randomString(), randomString()} ;
       String cfName = randomString();
       long pingPeriod = randomPositiveLong();
       long connectionTTL = randomPositiveLong();
@@ -254,7 +257,10 @@ public class JMSServerControlTest extends ManagementTestBase
       boolean blockOnNonPersistentSend = randomBoolean();
       boolean blockOnPersistentSend = randomBoolean();
 
-      checkNoBinding(context, cfJNDIBinding);
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         checkNoBinding(context, cfJNDIBinding);         
+      }
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
@@ -283,13 +289,16 @@ public class JMSServerControlTest extends ManagementTestBase
                                             retryIntervalMultiplier,
                                             reconnectAttempts,
                                             failoverOnServerShutdown,
-                                            cfJNDIBinding);
+                                            cfJNDIBindings);
 
-      Object o = checkBinding(context, cfJNDIBinding);
-      assertTrue(o instanceof ConnectionFactory);
-      ConnectionFactory cf = (ConnectionFactory)o;
-      Connection connection = cf.createConnection();
-      connection.close();
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         Object o = checkBinding(context, cfJNDIBinding);
+         assertTrue(o instanceof ConnectionFactory);
+         ConnectionFactory cf = (ConnectionFactory)o;
+         Connection connection = cf.createConnection();
+         connection.close();
+      }
 
       checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
       ConnectionFactoryControlMBean cfControl = ManagementControlHelper.createConnectionFactoryControl(cfName,
@@ -316,6 +325,70 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(blockOnAcknowledge, cfControl.isBlockOnAcknowledge());
       assertEquals(blockOnNonPersistentSend, cfControl.isBlockOnNonPersistentSend());
       assertEquals(blockOnPersistentSend, cfControl.isBlockOnPersistentSend());
+   }
+   
+   public void _testCreateConnectionFactoryWithDiscoveryGroup() throws Exception
+   {
+      MessagingServer server = null;
+      try
+      {
+         String[] cfJNDIBindings = new String[] {randomString(), randomString(), randomString()};
+         String cfName = randomString();
+
+         server = startMessagingServer(8765);
+
+         for (String cfJNDIBinding : cfJNDIBindings)
+         {
+            checkNoBinding(context, cfJNDIBinding);            
+         }
+
+         JMSServerControlMBean control = createManagementControl();
+         control.createConnectionFactory(cfName,
+                                         randomString(),
+                                         "231.7.7.7",
+                                         8765,
+                                         ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
+                                         ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                         ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                         ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                         null,
+                                         ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                         ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                         ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                         ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                         ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                         DEFAULT_RECONNECT_ATTEMPTS,
+                                         DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                         cfJNDIBindings);
+
+         for (String cfJNDIBinding : cfJNDIBindings)
+         {
+            Object o = checkBinding(context, cfJNDIBinding);
+            assertTrue(o instanceof ConnectionFactory);
+            ConnectionFactory cf = (ConnectionFactory)o;
+            Connection connection = cf.createConnection();
+            connection.close();
+         }
+      }
+      finally
+      {
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
    }
 
    public void testDestroyConnectionFactory() throws Exception
@@ -379,6 +452,29 @@ public class JMSServerControlTest extends ManagementTestBase
 
    // Private -------------------------------------------------------
 
+
+   private MessagingServer startMessagingServer(int discoveryPort) throws Exception
+   {
+      Configuration conf = new ConfigurationImpl();
+      conf.setSecurityEnabled(false);
+      conf.setJMXManagementEnabled(true);
+      conf.getDiscoveryGroupConfigurations()
+          .put("discovery",
+               new DiscoveryGroupConfiguration("discovery",
+                                               "231.7.7.7",
+                                               discoveryPort,
+                                               ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
+      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      server.start();
+
+      context = new InVMContext();
+      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
+      serverManager.start();
+      serverManager.setContext(context);
+
+      return server;
+   }
+   
    // Inner classes -------------------------------------------------
 
 }

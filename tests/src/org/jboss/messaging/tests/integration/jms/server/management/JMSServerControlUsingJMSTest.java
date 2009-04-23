@@ -150,7 +150,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                                    final double retryIntervalMultiplier,
                                                    final int reconnectAttempts,
                                                    final boolean failoverOnServerShutdown,
-                                                   final String jndiBinding) throws Exception
+                                                   final String[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createSimpleConnectionFactory",
                                  name,
@@ -177,7 +177,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                  retryIntervalMultiplier,
                                  reconnectAttempts,
                                  failoverOnServerShutdown,
-                                 jndiBinding);
+                                 jndiBindings);
          }
 
          public void createConnectionFactory(final String name,
@@ -204,7 +204,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              final double retryIntervalMultiplier,
                                              final int reconnectAttempts,
                                              final boolean failoverOnServerShutdown,
-                                             final String jndiBinding) throws Exception
+                                             final String[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                  name,
@@ -231,7 +231,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                  retryIntervalMultiplier,
                                  reconnectAttempts,
                                  failoverOnServerShutdown,
-                                 jndiBinding);
+                                 jndiBindings);
          }
 
          public void createConnectionFactory(final String name,
@@ -262,7 +262,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              final double retryIntervalMultiplier,
                                              final int reconnectAttempts,
                                              final boolean failoverOnServerShutdown,
-                                             final String jndiBinding) throws Exception
+                                             final String[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                  name,
@@ -293,7 +293,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                  retryIntervalMultiplier,
                                  reconnectAttempts,
                                  failoverOnServerShutdown,
-                                 jndiBinding);
+                                 jndiBindings);
          }
 
          public boolean createQueue(final String name, final String jndiBinding) throws Exception

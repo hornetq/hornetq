@@ -100,7 +100,7 @@ public interface JMSServerControlMBean
                                       double retryIntervalMultiplier,
                                       int reconnectAttempts,
                                       boolean failoverOnNodeShutdown,
-                                      String jndiBinding) throws Exception;
+                                      String[] jndiBindings) throws Exception;
 
    @Operation(desc = "Create a JMS ConnectionFactory with a static list of servers", impact = ACTION)
    void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
@@ -151,8 +151,8 @@ public interface JMSServerControlMBean
                                 int reconnectAttempts,
                                 @Parameter(name = "failoverOnNodeShutdown", desc = "If the server is cleanly shutdown, should the client attempt failover to backup (if specified)?")
                                 boolean failoverOnNodeShutdown,
-                                @Parameter(name = "jndiBinding", desc = "JNDI Binding")
-                                String jndiBinding) throws Exception;
+                                @Parameter(name = "jndiBindings", desc = "JNDI Bindings")
+                                String[] jndiBindings) throws Exception;
 
    @Operation(desc = "Create a JMS ConnectionFactory specifying a discovery group to obtain list of servers from", impact = ACTION)
    void createConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
@@ -211,8 +211,8 @@ public interface JMSServerControlMBean
                                 int reconnectAttempts,
                                 @Parameter(name = "failoverOnNodeShutdown", desc = "If the server is cleanly shutdown, should the client attempt failover to backup (if specified)?")
                                 boolean failoverOnNodeShutdown,
-                                @Parameter(name = "jndiBinding", desc = "JNDI Binding")
-                                String jndiBinding) throws Exception;
+                                @Parameter(name = "jndiBindings", desc = "JNDI Bindings")
+                                String[] jndiBindings) throws Exception;
 
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
    void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")

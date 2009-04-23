@@ -89,89 +89,9 @@ public class JMSServerControl2Test extends ManagementTestBase
       return server;
    }
 
-   private MessagingServer startMessagingServer(int discoveryPort) throws Exception
-   {
-      Configuration conf = new ConfigurationImpl();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getDiscoveryGroupConfigurations()
-          .put("discovery",
-               new DiscoveryGroupConfiguration("discovery",
-                                               "localhost",
-                                               discoveryPort,
-                                               ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
-      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
-      server.start();
-
-      context = new InVMContext();
-      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
-      serverManager.start();
-      serverManager.setContext(context);
-
-      return server;
-   }
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   public void _testCreateConnectionFactoryWithDiscoveryGroup() throws Exception
-   {
-      MessagingServer server = null;
-      try
-      {
-         String cfJNDIBinding = randomString();
-         String cfName = randomString();
-
-         server = startMessagingServer(8765);
-
-         checkNoBinding(context, cfJNDIBinding);
-
-         JMSServerControlMBean control = createManagementControl();
-         control.createConnectionFactory(cfName,
-                                         randomString(),
-                                         "localhost",
-                                         8765,
-                                         ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
-                                         ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
-                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                         ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                         ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                         null,
-                                         ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                         ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                         ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                                         ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                         ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                         ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                         ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                         ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                         DEFAULT_RECONNECT_ATTEMPTS,
-                                         DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                         cfJNDIBinding);
-
-         Object o = checkBinding(context, cfJNDIBinding);
-         assertTrue(o instanceof ConnectionFactory);
-         ConnectionFactory cf = (ConnectionFactory)o;
-         Connection connection = cf.createConnection();
-         connection.close();
-      }
-      finally
-      {
-         if (server != null)
-         {
-            server.stop();
-         }
-      }
-   }
 
    public void testListClientConnectionsForInVM() throws Exception
    {

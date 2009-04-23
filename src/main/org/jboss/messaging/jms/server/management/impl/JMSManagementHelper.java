@@ -22,11 +22,11 @@
 package org.jboss.messaging.jms.server.management.impl;
 
 import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_ATTRIBUTE;
-import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_RESOURCE_NAME;
 import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_OPERATION_EXCEPTION;
 import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_OPERATION_NAME;
 import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_OPERATION_PREFIX;
 import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_OPERATION_SUCCEEDED;
+import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_RESOURCE_NAME;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -149,6 +149,16 @@ public class JMSManagementHelper
       else if (typedProperty instanceof String)
       {
          message.setStringProperty(key, (String)typedProperty);
+      }
+      else if (typedProperty instanceof String[])
+      {
+         String str = "L[";
+         String[] strings = (String[])typedProperty;
+         for (String string : strings)
+         {
+            str += string + "||";
+         }
+         message.setStringProperty(key, str);         
       }
       // serialize as a SimpleString
       else

@@ -138,7 +138,7 @@ public class ManagementHelper
                {
                   value = null;
                }
-               if (value.toString().startsWith("L["))
+               else if (value.toString().startsWith("L["))
                {
                   String str = value.toString().substring(2);
                   String[] strings = str.split("\\|\\|");
