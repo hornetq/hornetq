@@ -25,11 +25,9 @@ package org.jboss.messaging.tests.integration.jms.server.management;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
@@ -38,9 +36,10 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.jms.Connection;
@@ -108,83 +107,24 @@ public class JMSUtil
       return cf.createConnection();
    }
 
-   static MessageConsumer createConsumer(Destination destination, boolean startConnection, String connectorFactory) throws JMSException
+   static MessageConsumer createConsumer(Connection connection, Destination destination, String connectorFactory) throws JMSException
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory),
-                                                             null,
-                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                             DEFAULT_PING_PERIOD,
-                                                             DEFAULT_CONNECTION_TTL,
-                                                             DEFAULT_CALL_TIMEOUT,
-                                                             null,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             DEFAULT_CONSUMER_MAX_RATE,
-                                                             DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                             DEFAULT_PRODUCER_MAX_RATE,
-                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                             true,
-                                                             true,
-                                                             true,
-                                                             DEFAULT_AUTO_GROUP,
-                                                             DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                
-                                                             DEFAULT_RETRY_INTERVAL,
-                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_RECONNECT_ATTEMPTS,
-                                                             DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-
-      Connection conn = cf.createConnection();
-
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      if (startConnection)
-      {
-         conn.start();
-      }
+      Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       return s.createConsumer(destination);
    }
 
-   public static MessageConsumer createConsumer(Destination destination, boolean startConnection) throws JMSException
+   public static MessageConsumer createConsumer(Connection connection, Destination destination) throws JMSException
    {
-      return createConsumer(destination,
-                            startConnection,
+      return createConsumer(connection, 
+                            destination,
                             InVMConnectorFactory.class.getName());
    }
 
-   static TopicSubscriber createDurableSubscriber(Topic topic, String clientID, String subscriptionName) throws JMSException
+   static TopicSubscriber createDurableSubscriber(Connection connection, Topic topic, String clientID, String subscriptionName) throws JMSException
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
-                                                             null,
-                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                             DEFAULT_PING_PERIOD,
-                                                             DEFAULT_CONNECTION_TTL,
-                                                             DEFAULT_CALL_TIMEOUT,
-                                                             null,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             DEFAULT_CONSUMER_MAX_RATE,
-                                                             DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                             DEFAULT_PRODUCER_MAX_RATE,
-                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                             true,
-                                                             DEFAULT_AUTO_GROUP,
-                                                             DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                       
-                                                             DEFAULT_RETRY_INTERVAL,
-                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_RECONNECT_ATTEMPTS,
-                                                             DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-
-      Connection conn = cf.createConnection();
-
-      conn.setClientID(clientID);
-      Session s = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      connection.setClientID(clientID);
+      Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       return s.createDurableSubscriber(topic, subscriptionName);
    }

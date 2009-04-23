@@ -118,7 +118,8 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(0, queueControl.getConsumerCount());
 
-      MessageConsumer consumer = JMSUtil.createConsumer(queue, true);
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      MessageConsumer consumer = JMSUtil.createConsumer(connection, queue);
 
       assertEquals(1, queueControl.getConsumerCount());
 
@@ -126,6 +127,8 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(2, queueControl.getMessageCount());
       assertEquals(2, queueControl.getMessagesAdded());
+
+      connection.start();
 
       assertNotNull(consumer.receive(500));
       assertNotNull(consumer.receive(500));
@@ -136,6 +139,8 @@ public class JMSQueueControlTest extends ManagementTestBase
       consumer.close();
 
       assertEquals(0, queueControl.getConsumerCount());
+      
+      connection.close();
    }
 
    public void testRemoveMessage() throws Exception
@@ -192,8 +197,13 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(0, queueControl.getMessageCount());
 
-      MessageConsumer consumer = JMSUtil.createConsumer(queue, true);
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      connection.start();
+      
+      MessageConsumer consumer = JMSUtil.createConsumer(connection, queue);
       assertNull(consumer.receive(500));
+      
+      connection.close();
    }
 
    public void testRemoveMatchingMessages() throws Exception
@@ -222,10 +232,13 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(1, queueControl.getMessageCount());
 
-      MessageConsumer consumer = JMSUtil.createConsumer(queue, true);
+      conn.start();
+      MessageConsumer consumer = JMSUtil.createConsumer(conn, queue);
       Message msg = consumer.receive(500);
       assertNotNull(msg);
       assertEquals("baz", msg.getStringProperty("foo"));
+      
+      conn.close();
    }
 
    public void testChangeMessagePriority() throws Exception
@@ -247,10 +260,14 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       queueControl.changeMessagePriority(messageID, newPriority);
 
-      MessageConsumer consumer = JMSUtil.createConsumer(queue, true);
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      connection.start();
+      MessageConsumer consumer = JMSUtil.createConsumer(connection, queue);
       Message message = consumer.receive(500);
       assertNotNull(message);
       assertEquals(newPriority, message.getJMSPriority());
+      
+      connection.close();
    }
 
    public void testChangeMessagePriorityWithInvalidPriority() throws Exception
@@ -272,10 +289,14 @@ public class JMSQueueControlTest extends ManagementTestBase
       {
       }
 
-      MessageConsumer consumer = JMSUtil.createConsumer(queue, true);
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      connection.start();
+      MessageConsumer consumer = JMSUtil.createConsumer(connection, queue);
       Message message = consumer.receive(500);
       assertNotNull(message);
       assertTrue(message.getJMSPriority() != invalidPriority);
+      
+      connection.close();
    }
 
    public void testChangeMessagePriorityWithUnknownMessageID() throws Exception
@@ -346,10 +367,15 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(1, expiryQueueControl.getMessageCount());
 
-      MessageConsumer consumer = JMSUtil.createConsumer(expiryQueue, true);
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      connection.start();
+
+      MessageConsumer consumer = JMSUtil.createConsumer(connection, expiryQueue);
       Message message = consumer.receive(500);
       assertNotNull(message);
       assertEquals(messageIDs[0], message.getJMSMessageID());
+      
+      connection.close();
    }
 
    public void testExpireMessageWithUnknownMessageID() throws Exception
