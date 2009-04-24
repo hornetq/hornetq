@@ -14,7 +14,6 @@
 	<classpathentry kind="src" path="src/schemas"/>
 	<classpathentry kind="src" path="tests/joram-tests/src"/>
 	<classpathentry kind="src" path="tests/joram-tests/config"/>
-	<classpathentry kind="src" path="examples/jms/symmetric-cluster/src"/>
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/automatic-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/bridge/src"/>
@@ -25,6 +24,7 @@
 	<classpathentry kind="src" path="examples/jms/clustered-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-topic/src"/>
 	<classpathentry kind="src" path="examples/jms/common/src"/>
+	<classpathentry kind="src" path="examples/jms/consumer-rate-limit/src"/>
 	<classpathentry kind="src" path="examples/jms/dead-letter/src"/>
 	<classpathentry kind="src" path="examples/jms/delayed-redelivery/src"/>
 	<classpathentry kind="src" path="examples/jms/divert/src"/>
@@ -41,6 +41,7 @@
 	<classpathentry kind="src" path="examples/jms/message-counters/src"/>
 	<classpathentry kind="src" path="examples/jms/message-group/src"/>
 	<classpathentry kind="src" path="examples/jms/message-priority/src"/>
+	<classpathentry kind="src" path="examples/jms/no-consumer-buffering/src"/>
 	<classpathentry kind="src" path="examples/jms/paging/src"/>
 	<classpathentry kind="src" path="examples/jms/pre-acknowledge/src"/>
 	<classpathentry kind="src" path="examples/jms/producer-rate-limit/src"/>
@@ -54,6 +55,7 @@
 	<classpathentry kind="src" path="examples/jms/security/src"/>
 	<classpathentry kind="src" path="examples/jms/ssl-enabled/src"/>
 	<classpathentry kind="src" path="examples/jms/static-selector/src"/>
+	<classpathentry kind="src" path="examples/jms/symmetric-cluster/src"/>
 	<classpathentry kind="src" path="examples/jms/temp-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/topic/src"/>
 	<classpathentry kind="src" path="examples/jms/topic-hierarchies/src"/>

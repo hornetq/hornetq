@@ -49,7 +49,7 @@ import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
  */
 public class JMXExample extends JMSExample
 {
-   private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
+   private static final String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
 
    public static void main(String[] args)
    {

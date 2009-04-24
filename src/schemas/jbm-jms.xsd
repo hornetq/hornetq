@@ -48,13 +48,13 @@
    			 <xsd:element name="call-timeout" type="xsd:unsignedLong"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="consumer-window-size" type="xsd:positiveInteger"
+            <xsd:element name="consumer-window-size" type="minusOneOrMoreInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="consumer-max-rate" type="xsd:positiveInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="producer-window-size" type="xsd:positiveInteger"
+            <xsd:element name="producer-window-size" type="minusOneOrMoreInteger"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="producer-max-rate" type="xsd:positiveInteger"
