@@ -77,7 +77,7 @@ public class SpawnedJMSServer
          conf.setSecurityEnabled(false);
          conf.setEnableFileDeployment(true);
          final MessagingServer server = Messaging.newMessagingServer(conf);
-         server.start();
+         //server.start();
 
          JMSServerManager serverManager = new JMSServerManagerImpl(server);
          serverManager.start();
