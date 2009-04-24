@@ -133,6 +133,12 @@
       </fail>
    </target>
 
+   <target name="clean-all">
+      <subant target="clean" failonerror="true">
+         <fileset dir=".." includes="*/build.xml" excludes="common/build.xml"/>
+      </subant>
+   </target>
+
    <target name="clean">
       <delete dir="./build" quiet="true" />
       <delete dir="./logs" quiet="true" />
