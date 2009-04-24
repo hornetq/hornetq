@@ -22,16 +22,19 @@
 package org.jboss.messaging.ra;
 
 import java.io.Serializable;
+import java.util.Map;
+
 import javax.jms.Queue;
 import javax.jms.Topic;
 
 import org.jboss.messaging.core.logging.Logger;
 
 /**
- * The MCF default properties - these are set in the ra.xml file
+ * The MCF default properties - these are set in the <tx-connection-factory> at the jms-ds.xml
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version $Revision: $
  */
 public class JBMMCFProperties implements Serializable
@@ -50,6 +53,15 @@ public class JBMMCFProperties implements Serializable
 
    /** The topic type */
    private static final String TOPIC_TYPE = Topic.class.getName();
+
+   
+   /** The transport config, changing the default configured from the RA */
+   private Map<String, Object> connectionParameters;
+   
+   public String strConnectionParameters;
+
+   /** The transport type, changing the default configured from the RA */
+   private String connectorClassName;
 
    /** The connection type */
    private int type = JBMConnectionFactory.CONNECTION;
@@ -78,6 +90,38 @@ public class JBMMCFProperties implements Serializable
          log.trace("getType()");
 
       return type;
+   }
+   
+   /**
+    * @return the connectionParameters
+    */
+   public String getConnectionParameters()
+   {
+      return strConnectionParameters;
+   }
+   
+   public Map<String, Object> getParsedConnectionParameters()
+   {
+      return connectionParameters;
+   }
+
+   public void setConnectionParameters(String configuration)
+   {
+      this.strConnectionParameters = configuration;
+      this.connectionParameters = Util.parseConfig(configuration);
+   }
+   
+   /**
+    * @return the transportType
+    */
+   public String getConnectorClassName()
+   {
+      return connectorClassName;
+   }
+   
+   public void setConnectorClassName(String value)
+   {
+      this.connectorClassName = value;
    }
 
    /**

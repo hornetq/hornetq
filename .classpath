@@ -71,6 +71,7 @@
 	<classpathentry kind="src" path="examples/javaee/hajndi/src"/>
 	<classpathentry kind="src" path="examples/javaee/jms-bridge/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb/src"/>
+	<classpathentry kind="src" path="examples/javaee/mdb-remote/src"/>
 	<classpathentry kind="src" path="examples/javaee/xarecovery/src"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>

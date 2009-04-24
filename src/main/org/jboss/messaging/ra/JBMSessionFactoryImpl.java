@@ -40,13 +40,11 @@ import javax.jms.TemporaryTopic;
 import javax.jms.Topic;
 import javax.jms.TopicSession;
 import javax.jms.XAQueueSession;
-import javax.jms.XATopicSession;
 import javax.jms.XASession;
+import javax.jms.XATopicSession;
 import javax.naming.Reference;
 import javax.resource.Referenceable;
-import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.ManagedConnectionFactory;
 
 import org.jboss.messaging.core.logging.Logger;
 

@@ -1172,7 +1172,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
          {
-            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, "Binding " + name + " does not exist");
          }
 
          securityStore.check(binding.getAddress(), CheckType.CONSUME, this);

@@ -21,8 +21,9 @@
  */
 package org.jboss.messaging.ra;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.jms.ConnectionMetaData;
 import javax.resource.ResourceException;
@@ -33,9 +34,9 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
-import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.Set;
+
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
  * JBM ManagedConectionFactory
@@ -63,6 +64,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /** The managed connection factory properties */
    private JBMMCFProperties mcfProperties;
+   
+   /** Connection Factory used if properties are set */
+   private JBossConnectionFactory connectionFactory;
 
    /**
     * Constructor
@@ -310,6 +314,33 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
       mcfProperties.setSessionDefaultType(type);
    }
 
+   
+   /**
+    * @return the connectionParameters
+    */
+   public String getConnectionParameters()
+   {
+      return mcfProperties.getConnectionParameters();
+   }
+   
+   public void setConnectionParameters(String configuration)
+   {
+      mcfProperties.setConnectionParameters(configuration);
+   }
+   
+   /**
+    * @return the transportType
+    */
+   public String getConnectorClassName()
+   {
+      return mcfProperties.getConnectionParameters();
+   }
+   
+   public void setConnectorClassName(String value)
+   {
+      mcfProperties.setConnectorClassName(value);
+   }
+   
    /**
     * Get the useTryLock.
     * @return the useTryLock.
@@ -350,9 +381,21 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * Get the JBoss connection factory
     * @return The factory
     */
-   protected JBossConnectionFactory getJBossConnectionFactory() throws ResourceException
+   protected synchronized JBossConnectionFactory getJBossConnectionFactory() throws ResourceException
    {
-      return ra.getJBossConnectionFactory();
+      if (this.mcfProperties.getConnectorClassName() != null)
+      {
+         if (connectionFactory == null)
+         {
+            connectionFactory = ra.createRemoteFactory(mcfProperties.getConnectorClassName(), mcfProperties.getParsedConnectionParameters());
+         }
+         
+         return connectionFactory;
+      }
+      else
+      {
+         return ra.getJBossConnectionFactory();
+      }
    }
 
    /**

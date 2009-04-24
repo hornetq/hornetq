@@ -134,13 +134,13 @@ public class JBMRAProperties implements Serializable
    private Boolean useXA;
 
    /* the transport type*/
-   private String transportType;
+   private String connectorClassName;
 
-   private Map<String, Object> transportConfiguration = new HashMap<String, Object>();
+   private Map<String, Object> connectionParameters = new HashMap<String, Object>();
 
-   private Map<String, Object> backupTransportConfiguration = new HashMap<String, Object>();
+   private Map<String, Object> backupConnectionParameters = new HashMap<String, Object>();
 
-   private String backUpTransportType;
+   private String backupConnectorClassName;
 
    /**
     * Constructor
@@ -982,37 +982,47 @@ public class JBMRAProperties implements Serializable
       hash += 31 * hash + (password != null ? password.hashCode() : 0);
       hash += 31 * hash + (clientID != null ? clientID.hashCode() : 0);
       hash += 31 * hash + (useXA != null ? useXA.hashCode() : 0);
-      hash += 31 * hash + (transportType != null ? transportType.hashCode() : 0);
+      hash += 31 * hash + (connectorClassName != null ? connectorClassName.hashCode() : 0);
       return hash;
    }
 
-   public void setTransportType(String transportType)
+   public void setConnectorClassName(String connectorClassName)
    {
-      this.transportType = transportType;
+      this.connectorClassName = connectorClassName;
    }
 
-   public String getTransportType()
+   public String getConnectorClassName()
    {
-      return transportType;
+      return connectorClassName;
+   }
+   
+   public void setConnectionParameters(Map<String, Object> config)
+   {
+      this.connectionParameters = config;
    }
 
-   public Map<String, Object> getTransportConfiguration()
+   public Map<String, Object> getConnectionParameters()
    {
-      return transportConfiguration;
+      return connectionParameters;
    }
 
-   public Map<String, Object> getBackupTransportConfiguration()
+   public Map<String, Object> getBackupConnectionParameters()
    {
-      return backupTransportConfiguration;
+      return backupConnectionParameters;
+   }
+   
+   public void setBackupConnectionParameters(Map<String, Object> config)
+   {
+      this.backupConnectionParameters = config;
    }
 
-   public String getBackUpTransportType()
+   public String getBackupConnectorClassName()
    {
-      return backUpTransportType;
+      return backupConnectorClassName;
    }
 
-   public void setBackupTransportType(String backUpTransportType)
+   public void setBackupConnectorClassName(String connectorClassName)
    {
-      this.backUpTransportType = backUpTransportType;
+      this.backupConnectorClassName = connectorClassName;
    }
 }

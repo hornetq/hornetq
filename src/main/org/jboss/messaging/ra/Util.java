@@ -21,6 +21,9 @@
  */
 package org.jboss.messaging.ra;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.naming.Context;
 
 /**
@@ -150,5 +153,26 @@ public class Util {
    public static Object lookup(Context context, String name, Class clazz) throws Exception
    {
       return context.lookup(name);
+   }
+   
+   public static Map<String, Object> parseConfig(String config)
+   {
+      HashMap<String, Object> result = new HashMap<String, Object>();
+      
+      String elements[] = config.split(";");
+      
+      for (String element: elements)
+      {
+         String expression[] = element.split("=");
+         
+         if (expression.length != 2)
+         {
+            throw new IllegalArgumentException("Invalid expression " + element + " at " + config); 
+         }
+         
+         result.put(expression[0].trim(), expression[1].trim());
+      }
+      
+      return result;
    }
 }

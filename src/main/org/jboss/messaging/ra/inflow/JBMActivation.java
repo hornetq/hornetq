@@ -23,7 +23,9 @@ package org.jboss.messaging.ra.inflow;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Destination;
@@ -41,6 +43,9 @@ import javax.transaction.TransactionManager;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.ra.JBMResourceAdapter;
 import org.jboss.messaging.ra.Util;
 import org.jboss.messaging.utils.SimpleString;
@@ -110,11 +115,13 @@ public class JBMActivation
 
    private List<JBMMessageHandler> handlers = new ArrayList<JBMMessageHandler>();
 
+   private JBossConnectionFactory factory;
+
    static
    {
       try
       {
-         ONMESSAGE = MessageListener.class.getMethod("onMessage", new Class[]{Message.class});
+         ONMESSAGE = MessageListener.class.getMethod("onMessage", new Class[] { Message.class });
       }
       catch (Exception e)
       {
@@ -282,7 +289,6 @@ public class JBMActivation
       teardown();
    }
 
-
    /**
     * Setup the activation
     *
@@ -292,10 +298,13 @@ public class JBMActivation
    {
       log.debug("Setting up " + spec);
 
+      setupCF();
+      
       setupDestination();
       for (int i = 0; i < spec.getMaxSessionInt(); i++)
       {
-         ClientSession session = setupSession(spec.getUser(), spec.getPassword(), spec.getClientId());
+         ClientSession session = setupSession();
+         
          JBMMessageHandler handler = new JBMMessageHandler(this, session);
          handler.setup();
          session.start();
@@ -320,8 +329,18 @@ public class JBMActivation
       log.debug("Tearing down complete " + this);
    }
 
-
-
+   protected void setupCF() throws Exception
+   {
+      if (spec.getConnectorClassName() == null)
+      {
+         this.factory = ra.getJBossConnectionFactory();
+      }
+      else
+      {
+         this.factory = ra.createRemoteFactory(spec.getConnectorClassName(), spec.getParsedConnectionParameters());
+      }
+   }
+   
    /**
     * Setup a session
     *
@@ -331,13 +350,20 @@ public class JBMActivation
     * @return The connection
     * @throws Exception Thrown if an error occurs
     */
-   protected ClientSession setupSession(String user, String pass, String clientID) throws Exception
+   protected ClientSession setupSession() throws Exception
    {
       ClientSession result = null;
 
       try
       {
-         result = ra.createSession(spec.getAcknowledgeModeInt(), user, pass, ra.getPreAcknowledge(), ra.getDupsOKBatchSize(), ra.getTransactionBatchSize(), isDeliveryTransacted);
+         result = ra.createSession(this.factory.getCoreFactory(),
+                                   spec.getAcknowledgeModeInt(),
+                                   spec.getUser(),
+                                   spec.getPassword(),
+                                   ra.getPreAcknowledge(),
+                                   ra.getDupsOKBatchSize(),
+                                   ra.getTransactionBatchSize(),
+                                   isDeliveryTransacted);
 
          log.debug("Using queue connection " + result);
 
@@ -358,7 +384,7 @@ public class JBMActivation
          }
          if (t instanceof Exception)
          {
-            throw (Exception) t;
+            throw (Exception)t;
          }
          throw new RuntimeException("Error configuring connection", t);
       }
@@ -395,14 +421,34 @@ public class JBMActivation
          }
 
          log.debug("Retrieving destination " + destinationName + " of type " + destinationType.getName());
-         destination = (JBossDestination) Util.lookup(ctx, destinationName, destinationType);
+         try
+         {
+            destination = (JBossDestination)Util.lookup(ctx, destinationName, destinationType);
+         }
+         catch (Exception e)
+         {
+            if (destinationName == null)
+            {
+               System.out.println("destination is null, rethrowing exception");
+               throw e;
+            }
+            // If there is no binding on naming, we will just create a new instance
+            if (isTopic)
+            {
+               destination = new JBossTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+            }
+            else
+            {
+               destination = new JBossQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+            }
+         }
       }
       else
       {
          log.debug("Destination type not defined");
          log.debug("Retrieving destination " + destinationName + " of type " + Destination.class.getName());
 
-         destination = (JBossDestination) Util.lookup(ctx, destinationName, Destination.class);
+         destination = (JBossDestination)Util.lookup(ctx, destinationName, Destination.class);
          if (destination instanceof Topic)
          {
             isTopic = true;
@@ -432,13 +478,10 @@ public class JBMActivation
       {
          buffer.append(" connection=").append(session);
       }*/
-      //if (pool != null)
-      //buffer.append(" pool=").append(pool.getClass().getName());
+      // if (pool != null)
+      // buffer.append(" pool=").append(pool.getClass().getName());
       buffer.append(" transacted=").append(isDeliveryTransacted);
       buffer.append(')');
       return buffer.toString();
    }
 }
-
-
-

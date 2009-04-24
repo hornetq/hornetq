@@ -21,8 +21,12 @@
  */
 package org.jboss.messaging.ra.inflow;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.ra.JBMResourceAdapter;
+import org.jboss.messaging.ra.Util;
 
 import javax.jms.Session;
 import javax.resource.ResourceException;
@@ -32,10 +36,12 @@ import javax.resource.spi.ResourceAdapter;
 
 /**
  * The activation spec
+ * These properties are set on the MDB ActivactionProperties
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version $Revision: $
  */
 public class JBMActivationSpec implements ActivationSpec
@@ -45,6 +51,14 @@ public class JBMActivationSpec implements ActivationSpec
    
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
+   
+   /** The transport config, changing the default configured from the RA */
+   private Map<String, Object> connectionParameters = new HashMap<String, Object>();
+   
+   public String strConnectionParameters;
+
+   /** The transport type, changing the default configured from the RA */
+   private String connectorClassName;
 
    /** The resource adapter */
    private JBMResourceAdapter ra;
@@ -238,7 +252,7 @@ public class JBMActivationSpec implements ActivationSpec
       if (trace)
          log.trace("setMessageSelector(" + value + ")");
 
-      this.messageSelector = messageSelector;
+      this.messageSelector = value;
    }
 
    /**
@@ -793,6 +807,38 @@ public class JBMActivationSpec implements ActivationSpec
    }
 
    /**
+    * @return the connectionParameters
+    */
+   public String getConnectionParameters()
+   {
+      return strConnectionParameters;
+   }
+   
+   public Map<String, Object> getParsedConnectionParameters()
+   {
+      return connectionParameters;
+   }
+
+   public void setConnectionParameters(String configuration)
+   {
+      this.strConnectionParameters = configuration;
+      this.connectionParameters = Util.parseConfig(configuration);
+   }
+   
+   /**
+    * @return the connectorClassName
+    */
+   public String getConnectorClassName()
+   {
+      return connectorClassName;
+   }
+   
+   public void setConnectorClassName(String value)
+   {
+      this.connectorClassName = value;
+   }
+
+   /**
     * Get a string representation
     * @return The value
     */
@@ -823,7 +869,7 @@ public class JBMActivationSpec implements ActivationSpec
       buffer.append(')');
       return buffer.toString();
    }
-
+   
    //here for backwards compatibilty
    public void setUseDLQ(boolean b)
    {

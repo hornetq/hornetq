@@ -53,9 +53,7 @@ public class ConfigurationHelper
       {
          if (prop instanceof String == false)
          {
-            log.warn("Property " + propName + " must be a String");
-            
-            return def;
+            return prop.toString();
          }
          else
          {
@@ -79,6 +77,12 @@ public class ConfigurationHelper
       }
       else
       {
+         // The resource adapter will aways send Strings, hence the conversion here
+         if (prop instanceof String)
+         {
+            return Integer.valueOf((String)prop);
+         }
+         else
          if (prop instanceof Integer == false)
          {
             log.warn("Property " + propName + " must be an Integer");
@@ -108,6 +112,12 @@ public class ConfigurationHelper
       }
       else
       {
+         // The resource adapter will aways send Strings, hence the conversion here
+         if (prop instanceof String)
+         {
+            return Long.valueOf((String)prop);
+         }
+         else
          if (prop instanceof Long == false)
          {
             log.warn("Property " + propName + " must be an Long");
@@ -137,6 +147,12 @@ public class ConfigurationHelper
       }
       else
       {
+         // The resource adapter will aways send Strings, hence the conversion here
+         if (prop instanceof String)
+         {
+            return Boolean.valueOf((String)prop);
+         }
+         else
          if (prop instanceof Boolean == false)
          {
             log.warn("Property " + propName + " must be a Boolean");

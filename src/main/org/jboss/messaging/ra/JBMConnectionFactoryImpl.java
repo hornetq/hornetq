@@ -31,7 +31,6 @@ import javax.jms.XATopicConnection;
 import javax.naming.Reference;
 import javax.resource.Referenceable;
 import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.ManagedConnectionFactory;
 
 import org.jboss.messaging.core.logging.Logger;
 
