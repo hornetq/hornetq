@@ -145,7 +145,7 @@ public class QueueMessageRedistributionExample extends JMSExample
          
          for (int i = 0; i < numMessages; i += 2)
          {
-            message0 = (TextMessage)consumer0.receive();
+            message0 = (TextMessage)consumer0.receive(5000);
 
             System.out.println("Got message: " + message0.getText() + " from node 0");           
          }
