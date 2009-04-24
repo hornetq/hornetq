@@ -17,9 +17,10 @@
          <ol>         
          <li>Create a servlet</li>
             There is a servlet for this example under config. Please take a look at config/jms-servlet/WEB-INF/web.xml for 
-            details of the servlet configuration. The servlet is used to accept requests and send response.
+            details of the servlet configuration. The servlet is used to accept requests and send response. Before using servlet 
+            transport, the servlet need to be deployed to the AS 5.
             
-         <li>Add servlet connector/acceptor entries in jbm-configuration.xml</li>
+         <li>Add servlet connector/acceptor entries in deploy/messaging.sar/jbm-configuration.xml</li>
             The corresponding connector/acceptor need to be configured to tell JBoss Messaging to use netty servlet transport.
             The configure looks like:
             <p>
