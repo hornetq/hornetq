@@ -4,17 +4,28 @@
     <link rel="stylesheet" type="text/css" href="../common/common.css">
   </head>
   <body>
-     <h1>JBoss Messaging JMS Symmetric Cluster Example</h1>
+     <h1>JBoss Messaging Symmetric Cluster Example</h1>
      <br>
-     <p>This example demonstrates a JMS queue deployed on two different nodes. The two nodes are configured to form a cluster.</p>
-     <p>We then create a consumer on the queue on each node, and we create a producer on only one of the nodes.</p>
-     <p>We then send some messages via the producer, and we verify that <b>both</b> consumers receive the sent messages
-     in a round-robin fashion.</p>
-     <p>In other words, JBoss Messaging <b>load balances</b> the sent messages across all consumers on the cluster</p>
-     <p>This example uses JNDI to lookup the JMS Queue and ConnectionFactory objects. If you prefer not to use
-     JNDI, these could be instantiated directly.</p>     
-     <p>Here's the relevant snippet from the server configuration, which tells the server to form a cluster between the two nodes
-     and to load balance the messages between the nodes.</p>     
+     <p>This examples demonstrates a <b>symmetric cluster</b> set-up with JBoss Messaging.</p>
+     <p>JBoss Messaging has extremely flexible clustering which allows you to set-up servers in
+     many different topologies.</p>
+     <p>The most common topology that you'll perhaps be familiar with if you are used to application
+     server clustering is a <b>symmetric cluster</b>.</p>
+     <p>With a symmetric cluster, the cluster is homogenous, i.e. each node is configured the same
+     as every other node, and every node is connected to every other node in the cluster.</p>
+     <p>By connecting node in such a way, we can, from a JMS point of view, give the impression of distributed
+     JMS queues and topics.</p>
+     <p>The configuration used in this example is very similar to the configuration used by JBoss Messaging
+     when installed as a clustered profile in JBoss Application Server.</p>
+     <p>To set up JBoss Messaging to form a symmetric cluster we simply need to mark each server as <code>clustered</code>
+     and we need to define a <code>cluster-connection</code> in <code>jbm-configuration.xml</code>.</p>
+     <p>The <code>cluster-connection</code> tells the nodes what other nodes to make connections to.
+     With a <code>cluster-connection</code> each node that we connect to can either be specified
+     indivually, or we can use UDP discovery to find out what other nodes are in the cluster.</p>
+     <p>Using UDP discovery makes configuration simpler since we don't have to know what nodes are
+     available at any one time.</p>
+     <p>Here's the relevant snippet from the server configuration, which tells the server to form a cluster
+     with the other nodes:</p>     
      <pre>
      <code>
    &lt;cluster-connection name="my-cluster"&gt;
@@ -27,146 +38,254 @@
    &lt;/cluster-connection&gt;
    </code>
      </pre>    
-     <p>For more information on JBoss Messaging load balancing, and clustering in general, please see the clustering
+     <p>In this example we create a symmetric cluster of three live nodes, and we also pair each live node
+     with it's own backup node. (A backup node is not strictly necessary for a symmetric cluster).</p>
+     <p>By providing each node with a backup, we ensure that, in case of failure, the cluster will continue
+     without failure, with all connections on live failing over transparently onto the backup.</p>
+     <p>In this example will we will demonstrate this by deploying a JMS topic and Queue on all nodes of the cluster
+     , sending messages to the queue and topic from different nodes, and verifying messages are received correctly
+     by consumers on different nodes.</p>
+     <p>During the example will will also kill each live server in turn, at different times, and verify that the sending
+     consuming of messages carries on uninterrupted, as connections transparently fail over from live to backup.</p>
+     <p>For more information on configuring JBoss Messaging clustering in general, please see the clustering
      section of the user manual.</p>      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <br>
      <ol>
-        <li> Get an initial context for looking up JNDI from server 0.</li>
+        <li>We instantiate a connection factory directly, specifying the UDP address and port for discovering
+         the list of servers in the cluster.
+         We could use JNDI to look-up a connection factory, but we'd need to know the JNDI server host and port for the
+         specific server to do that, and that server might not be available at the time. By creating the
+         connection factory directly we avoid having to worry about a JNDI look-up.
+         In an app server environment you could use HA-JNDI to lookup from the clustered JNDI servers without
+         having to know about a specific one.        
+        </li>
+        
         <pre>
            <code>
-   ic0 = getContext(0);
+   ConnectionFactory cf = new JBossConnectionFactory("231.7.7.7", 9876); 
    </code>
         </pre>
 
-        <li>Look-up the JMS Queue object from JNDI</li>
+        <li>Directly instantiate JMS Queue and Topic objects</li>
         <pre>
-           <code>Queue queue = (Queue)ic0.lookup("/queue/exampleQueue");</code>
-        </pre>
-
-        <li>Look-up a JMS Connection Factory object from JNDI on server 0</li>
-        <pre>
-           <code>ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");</code>
-        </pre>
-
-        <li>Get an initial context for looking up JNDI from server 1.</li>
-        <pre>
-           <code>ic1 = getContext(1);</code>
-        </pre>
-
-        <li>Look-up a JMS Connection Factory object from JNDI on server 1</li>
-        <pre>
-           <code>ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
+           <code>
+   Queue queue = new JBossQueue("exampleQueue");
+         
+   Topic topic = new JBossTopic("exampleTopic");           
            </code>
         </pre>
 
-        <li>We create a JMS Connection connection0 which is a connection to server 0</li>
+        <li>We create three connections, they should be to different nodes of the cluster in a round-robin fashion
+         and start them.</li>
         <pre>
-          <code>
-   connection0 = cf0.createConnection();
-          </code>
-        </pre>
-        
-        <li>We create a JMS Connection connection1 which is a connection to server 1</li>
-        <pre>
-          <code>
-   connection1 = cf1.createConnection();
-          </code>
+           <code>
+   connection0 = cf.createConnection();
+         
+   connection1 = cf.createConnection();
+         
+   connection2 = cf.createConnection();
+         
+   connection0.start();
+         
+   connection1.start();
+         
+   connection2.start();           
+           </code>
         </pre>
 
-        <li>We create a JMS Session on server 0</li>
+        <li>We create a session on each connection.</li>
         <pre>
            <code>
    Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+   Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+   Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);           
+           </code>
+        </pre>
+
+        <li>We create a topic subscriber on each server.</li>
+        <pre>
+           <code>
+   MessageConsumer subscriber0 = session0.createConsumer(topic);
+         
+   MessageConsumer subscriber1 = session1.createConsumer(topic);
+         
+   MessageConsumer subscriber2 = session2.createConsumer(topic);                     
+           </code>
+        </pre>
+
+        <li>We create a queue consumer on server 0.</li>
+        <pre>
+          <code>
+   MessageConsumer consumer0 = session0.createConsumer(queue);
+          </code>
+        </pre>
+        
+        <li>We create an anonymous message producer on server 2.</li>
+        <pre>
+          <code>
+   MessageProducer producer2 = session2.createProducer(null);
+          </code>
+        </pre>
+
+        <li>We send 500 messages each to the queue and topic.</li>
+        <pre>
+           <code>
+   final int numMessages = 500;
+                  
+   for (int i = 0; i < numMessages; i++)
+   {
+      TextMessage message1 = session2.createTextMessage("Topic message 1");
+   
+      producer2.send(topic, message1);
+      
+      TextMessage message2 = session2.createTextMessage("Queue message 1");
+      
+      producer2.send(queue, message2);
+   }
            </code>
         </pre>
         
-        <li>We create a JMS Session on server 1</li>
+        <li>We kill live server 1, this will cause connection1 to transparently fail over onto server 4.</li>
         <pre>
            <code>
-   Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   killServer(1);
             </code>
         </pre>
 
-        <li>We start the connections to ensure delivery occurs on them</li>
+        <li>Verify all subscribers receive the messages.</li>
         <pre>
            <code>
-   connection0.start();
-
-   connection1.start();
+   for (int i = 0; i < numMessages; i++)
+   {         
+      TextMessage received0 = (TextMessage)subscriber0.receive(5000);
+      
+      if (received0 == null)
+      {
+         return false;
+      }
+      
+      TextMessage received1 = (TextMessage)subscriber1.receive(5000);
+      
+      if (received1 == null)
+      {
+         return false;
+      }
+      
+      TextMessage received2 = (TextMessage)subscriber2.receive(5000);
+      
+      if (received2 == null)
+      {
+         return false;
+      }
+                  
+      TextMessage received3 = (TextMessage)consumer0.receive(5000);
+      
+      if (received3 == null)
+      {
+         return false;
+      }         
+   }
            </code>
         </pre>
 
-        <li>We create JMS MessageConsumer objects on server 0 and server 1</li>
+        <li>Send 500 more messages to the queue and topic.</li>
         <pre>
            <code>
-   MessageConsumer consumer0 = session0.createConsumer(queue);
-
-   MessageConsumer consumer1 = session1.createConsumer(queue);
+   for (int i = 0; i < numMessages; i++)
+   {
            </code>
         </pre>
 
-        <li>We create a JMS MessageProducer object on server 0.</li>
+        <li>Half way through sending we kill server 2</li>
         <pre>
            <code>
-   MessageProducer producer = session0.createProducer(queue);</code>
+      if (i == numMessages / 2)
+      {
+         killServer(2);
+      }
+                  
+      TextMessage message3 = session2.createTextMessage("Topic message 2");
+      
+      producer2.send(topic, message3);
+                              
+      TextMessage message4 = session2.createTextMessage("Queue message 2");
+      
+      producer2.send(queue, message4);
+   }
         </pre>
 
-        <li>We send some messages to server 0.</li>
+        <li>Verify all the messages are received by the subscribers.</li>
         <pre>
            <code>
-	final int numMessages = 10;
-
-	for (int i = 0; i < numMessages; i++)
-	{
-	   TextMessage message = session0.createTextMessage("This is text message " + i);
-	      
-	   producer.send(message);
-	
-	   System.out.println("Sent message: " + message.getText());
-	}
+   for (int i = 0; i < numMessages; i++)
+   {
            </code>
         </pre>
         
-        <li>We now consume those messages on *both* server 0 and server 1.
-         We note the messages have been distributed between servers in a round robin fashion.
-         JBoss Messaging has <b>load balanced</b> the messages between the available consumers on the different nodes.
-         JBoss Messaging can be configured to always load balance messages to all nodes, or to only balance messages
-         to nodes which have consumers with no or matching selectors. See the user manual for more details.</li>
-         JMS Queues implement point-to-point message where each message is only ever consumed by a
-         maximum of one consumer.
+        <li>Half way through receiving, we kill server 0.</li>
         <pre>
            <code>
-	for (int i = 0; i < numMessages; i += 2)
-	{
-	   TextMessage message0 = (TextMessage)consumer0.receive(5000);
-	
-	   System.out.println("Got message: " + message0.getText() + " from node 0");
-	
-	   TextMessage message1 = (TextMessage)consumer1.receive(5000);
-	
-	   System.out.println("Got message: " + message1.getText() + " from node 1");
-	}
+      if (i == numMessages / 2)
+      {
+         killServer(0);
+      }
+   
+      TextMessage received0 = (TextMessage)subscriber0.receive(5000);
+      
+      if (received0 == null)
+      {
+         return false;
+      }
+      
+      TextMessage received1 = (TextMessage)subscriber1.receive(5000);
+      
+      if (received1 == null)
+      {
+         return false;
+      }
+      
+      TextMessage received2 = (TextMessage)subscriber2.receive(5000);
+      
+      if (received2 == null)
+      {
+         return false;
+      }
+      
+      TextMessage received3 = (TextMessage)consumer0.receive(5000);
+      
+      if (received3 == null)
+      {
+         return false;
+      }         
+   }
            </code>
         </pre> 
 
-        <li>And finally (no pun intended), <b>always</b> remember to close your JMS resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+        <li>Be sure to close our resources!</li>
 
         <pre>
            <code>
-	finally
-	{
-	   if (connection0 != null)
-	   {
-	      connection0.close();
-	   }
-	      
-	   if (connection1 != null)
-	   {
-	      connection1.close();
-	   }
-	}
+   finally
+   {
+      if (connection0 != null)
+      {
+         connection0.close();
+      }
+
+      if (connection1 != null)
+      {
+         connection1.close();
+      }
+      
+      if (connection2 != null)
+      {
+         connection2.close();
+      }
+   }
            </code>
         </pre>
 

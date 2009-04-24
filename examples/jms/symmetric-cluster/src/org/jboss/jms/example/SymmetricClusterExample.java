@@ -131,11 +131,11 @@ public class SymmetricClusterExample extends JMSExample
          // Step 7. We create an anonymous message producer on just one server 2
          
          MessageProducer producer2 = session2.createProducer(null);
-         
-         final int numMessages = 500;
-         
+            
          // Step 8. We send 500 messages each to the queue and topic
        
+         final int numMessages = 500;
+                  
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage message1 = session2.createTextMessage("Topic message 1");
@@ -150,6 +150,8 @@ public class SymmetricClusterExample extends JMSExample
          // Step 9. We kill live server 1, this will cause connection1 to transparently fail over onto server 4 
          
          killServer(1);
+         
+         Thread.sleep(500);
          
          // Step 9. Verify all subscribers receive the messages
          
