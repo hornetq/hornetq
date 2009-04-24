@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.integration.jms.server;
 
 import java.net.URL;
-import java.util.List;
 
 import javax.jms.Queue;
 import javax.jms.Topic;
@@ -31,16 +30,17 @@ import javax.naming.Context;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerDeployer;
+import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.unit.util.InVMContext;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.utils.Pair;
 import org.w3c.dom.Element;
 
 /**
@@ -145,201 +145,28 @@ public class JMSServerDeployerTest extends ServiceTestBase
       super.setUp();
 
       config = new ConfigurationImpl();
-      
+      config.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      MessagingServer server = createServer(false, config);
+
       deploymentManager = new FileDeploymentManager(config.getFileDeployerScanPeriod());
-      
-      jmsServer = new DummyJMSServerManager();
+
+      jmsServer = new JMSServerManagerImpl(server);
+      jmsServer.start();
 
       context = new InVMContext();
-      
       jmsServer.setContext(context);
    }
 
+   @Override
+   protected void tearDown() throws Exception
+   {
+      jmsServer.stop();
+
+      super.tearDown();
+   }
 
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   
-   class DummyJMSServerManager implements JMSServerManager
-   {
-
-      public boolean closeConnectionsForAddress(String ipAddress) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean createConnectionFactory(String name,
-                                             DiscoveryGroupConfiguration discoveryGroupConfig,
-                                             long discoveryInitialWait,
-                                             String connectionLoadBalancingPolicyClassName,
-                                             long pingPeriod,
-                                             long connectionTTL,
-                                             long callTimeout,
-                                             String clientID,
-                                             int dupsOKBatchSize,
-                                             int transactionBatchSize,
-                                             int consumerWindowSize,
-                                             int consumerMaxRate,
-                                             int sendWindowSize,
-                                             int producerMaxRate,
-                                             int minLargeMessageSize,
-                                             boolean blockOnAcknowledge,
-                                             boolean blockOnNonPersistentSend,
-                                             boolean blockOnPersistentSend,
-                                             boolean autoGroup,
-                                             int maxConnections,
-                                             boolean preAcknowledge,
-                                             long retryInterval,
-                                             double retryIntervalMultiplier,
-                                             int reconnectAttempts,
-                                             boolean failoverOnNodeShutdown,
-                                             List<String> jndiBindings) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean createConnectionFactory(String name,
-                                             List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                             boolean blockOnAcknowledge,
-                                             boolean blockOnNonPersistentSend,
-                                             boolean blockOnPersistentSend,
-                                             boolean preAcknowledge,
-                                             List<String> bindings) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean createConnectionFactory(String name,
-                                             List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                             List<String> jndiBindings) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean createConnectionFactory(String name,
-                                             List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                             String connectionLoadBalancingPolicyClassName,
-                                             long pingPeriod,
-                                             long connectionTTL,
-                                             long callTimeout,
-                                             String clientID,
-                                             int dupsOKBatchSize,
-                                             int transactionBatchSize,
-                                             int consumerWindowSize,
-                                             int consumerMaxRate,
-                                             int sendWindowSize,
-                                             int producerMaxRate,
-                                             int minLargeMessageSize,
-                                             boolean blockOnAcknowledge,
-                                             boolean blockOnNonPersistentSend,
-                                             boolean blockOnPersistentSend,
-                                             boolean autoGroup,
-                                             int maxConnections,
-                                             boolean preAcknowledge,
-                                             long retryInterval,
-                                             double retryIntervalMultiplier,
-                                             int reconnectAttempts,
-                                             boolean failoverOnNodeShutdown,
-                                             List<String> jndiBindings) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean createQueue(String queueName, String jndiBinding) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean createTopic(String topicName, String jndiBinding) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean destroyConnectionFactory(String name) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean destroyQueue(String name) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public boolean destroyTopic(String name) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public String getVersion()
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
-      public boolean isStarted()
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public String[] listConnectionIDs() throws Exception
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
-      public String[] listRemoteAddresses() throws Exception
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
-      public String[] listRemoteAddresses(String ipAddress) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
-      public String[] listSessions(String connectionID) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
-      public void setContext(Context context)
-      {
-         // TODO Auto-generated method stub
-         
-      }
-
-      public boolean undeployDestination(String name) throws Exception
-      {
-         // TODO Auto-generated method stub
-         return false;
-      }
-
-      public void start() throws Exception
-      {
-         // TODO Auto-generated method stub
-         
-      }
-
-      public void stop() throws Exception
-      {
-         // TODO Auto-generated method stub
-         
-      }
-      
-   }
 
 }
