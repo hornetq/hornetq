@@ -25,7 +25,6 @@ package org.jboss.messaging.tests.integration.management;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
-import javax.naming.Context;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -109,26 +108,7 @@ public abstract class ManagementTestBase extends UnitTestCase
    {
       assertTrue("no resource for " + on, mbeanServer.isRegistered(on));
    }
-   
 
-   protected static void checkNoBinding(Context context, String binding)
-   {
-      try
-      {
-         context.lookup(binding);
-         fail("there must be no resource to look up for " + binding);
-      }
-      catch (Exception e)
-      {
-      }
-   }
-
-   protected static  Object checkBinding(Context context, String binding) throws Exception
-   {
-      Object o = context.lookup(binding);
-      assertNotNull(o);
-      return o;
-   }
 
    // Private -------------------------------------------------------
 

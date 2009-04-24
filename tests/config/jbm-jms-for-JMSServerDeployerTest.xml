@@ -2,12 +2,12 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-jms.xsd ">
 
-   <connection-factory name="testConnectionFactory">
+   <connection-factory name="fullConfigurationConnectionFactory">
       <entries>
-         <entry name="/testConnectionFactory"/>
-         <entry name="/acme/testConnectionFactory"/>
-         <entry name="java:/xyz/testConnectionFactory"/>
-         <entry name="java:/connectionfactories/acme/testConnectionFactory"/>
+         <entry name="/fullConfigurationConnectionFactory"/>
+         <entry name="/acme/fullConfigurationConnectionFactory"/>
+         <entry name="java:/xyz/tfullConfigurationConnectionFactory"/>
+         <entry name="java:/connectionfactories/acme/fullConfigurationConnectionFactory"/>
       </entries>
       <connector-ref connector-name="netty"/>
       <ping-period>1234</ping-period>
@@ -35,14 +35,14 @@
       <retry-interval-multiplier>6.0</retry-interval-multiplier>
    </connection-factory>
 
-   <queue name="testQueue">
-      <entry name="/testQueue"/>
-      <entry name="/queue/testQueue"/>
+   <queue name="fullConfigurationQueue">
+      <entry name="/fullConfigurationQueue"/>
+      <entry name="/queue/fullConfigurationQueue"/>
    </queue>
 
-   <topic name="testTopic">
-      <entry name="/testTopic"/>
-      <entry name="/topic/testTopic"/>
+   <topic name="fullConfigurationTopic">
+      <entry name="/fullConfigurationTopic"/>
+      <entry name="/topic/fullConfigurationTopic"/>
    </topic>
 
 </deployment>

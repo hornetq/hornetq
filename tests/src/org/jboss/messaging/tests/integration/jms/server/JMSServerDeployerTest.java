@@ -64,18 +64,16 @@ public class JMSServerDeployerTest extends ServiceTestBase
    private JMSServerManager jmsServer;
 
    private Context context;
-   
+
    private DeploymentManager deploymentManager;
-   
+
    private Configuration config;
 
    // Public --------------------------------------------------------
 
    public void testValidateEmptyConfiguration() throws Exception
    {
-      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer,
-                                                         deploymentManager,
-                                                         config);
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
 
       String xml = "<deployment xmlns='urn:jboss:messaging'> " + "</deployment>";
 
@@ -85,54 +83,86 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
    public void testDeployFullConfiguration() throws Exception
    {
-      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer,
-                                                         deploymentManager,
-                                                         config);
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
 
       String conf = "jbm-jms-for-JMSServerDeployerTest.xml";
       URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);
 
+      String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",
+                                                         "/acme/fullConfigurationConnectionFactory",
+                                                         "java:/xyz/tfullConfigurationConnectionFactory",
+                                                         "java:/connectionfactories/acme/fullConfigurationConnectionFactory" };
+      String[] queueBindings = new String[] { "/fullConfigurationQueue", "/queue/fullConfigurationQueue" };
+      String[] topicBindings = new String[] { "/fullConfigurationTopic", "/topic/fullConfigurationTopic" };
+      
+      for (String binding : connectionFactoryBindings)
+      {
+         checkNoBinding(context, binding);
+      }
+      for (String binding : queueBindings)
+      {
+         checkNoBinding(context, binding);
+      }
+      for (String binding : topicBindings)
+      {
+         checkNoBinding(context, binding);
+      }
+
       deployer.deploy(confURL);
 
-      JBossConnectionFactory cf = (JBossConnectionFactory)context.lookup("/testConnectionFactory");
-      assertNotNull(cf);
-      assertEquals(1234, cf.getPingPeriod());
-      assertEquals(5678, cf.getCallTimeout());
-      assertEquals(12345, cf.getConsumerWindowSize());
-      assertEquals(6789, cf.getConsumerMaxRate());
-      assertEquals(123456, cf.getProducerWindowSize());
-      assertEquals(789, cf.getProducerMaxRate());
-      assertEquals(12, cf.getMinLargeMessageSize());
-      assertEquals("TestClientID", cf.getClientID());
-      assertEquals(3456, cf.getDupsOKBatchSize());
-      assertEquals(4567, cf.getTransactionBatchSize());
-      assertEquals(true, cf.isBlockOnAcknowledge());
-      assertEquals(false, cf.isBlockOnNonPersistentSend());
-      assertEquals(true, cf.isBlockOnPersistentSend());
-      assertEquals(false, cf.isAutoGroup());
-      assertEquals(true, cf.isPreAcknowledge());
-      assertEquals(2345, cf.getConnectionTTL());
-      assertEquals(false, cf.isFailoverOnServerShutdown());
-      assertEquals(12, cf.getMaxConnections());
-      assertEquals(34, cf.getReconnectAttempts());
-      assertEquals(5, cf.getRetryInterval());
-      assertEquals(6.0, cf.getRetryIntervalMultiplier());
-      
-      Queue queue = (Queue)context.lookup("/testQueue");
-      assertNotNull(queue);
-      assertEquals("testQueue", queue.getQueueName());
+      for (String binding : connectionFactoryBindings)
+      {
+         checkBinding(context, binding);
+      }
+      for (String binding : queueBindings)
+      {
+         checkBinding(context, binding);
+      }
+      for (String binding : topicBindings)
+      {
+         checkBinding(context, binding);
+      }
 
-      Queue queue2 = (Queue)context.lookup("/queue/testQueue");
-      assertNotNull(queue2);
-      assertEquals("testQueue", queue2.getQueueName());
+      for (String binding : connectionFactoryBindings)
+      {
+         JBossConnectionFactory cf = (JBossConnectionFactory)context.lookup(binding);
+         assertNotNull(cf);
+         assertEquals(1234, cf.getPingPeriod());
+         assertEquals(5678, cf.getCallTimeout());
+         assertEquals(12345, cf.getConsumerWindowSize());
+         assertEquals(6789, cf.getConsumerMaxRate());
+         assertEquals(123456, cf.getProducerWindowSize());
+         assertEquals(789, cf.getProducerMaxRate());
+         assertEquals(12, cf.getMinLargeMessageSize());
+         assertEquals("TestClientID", cf.getClientID());
+         assertEquals(3456, cf.getDupsOKBatchSize());
+         assertEquals(4567, cf.getTransactionBatchSize());
+         assertEquals(true, cf.isBlockOnAcknowledge());
+         assertEquals(false, cf.isBlockOnNonPersistentSend());
+         assertEquals(true, cf.isBlockOnPersistentSend());
+         assertEquals(false, cf.isAutoGroup());
+         assertEquals(true, cf.isPreAcknowledge());
+         assertEquals(2345, cf.getConnectionTTL());
+         assertEquals(false, cf.isFailoverOnServerShutdown());
+         assertEquals(12, cf.getMaxConnections());
+         assertEquals(34, cf.getReconnectAttempts());
+         assertEquals(5, cf.getRetryInterval());
+         assertEquals(6.0, cf.getRetryIntervalMultiplier());
+      }
 
-      Topic topic = (Topic)context.lookup("/testTopic");
-      assertNotNull(topic);
-      assertEquals("testTopic", topic.getTopicName());
+      for (String binding : queueBindings)
+      {
+         Queue queue = (Queue)context.lookup(binding);
+         assertNotNull(queue);
+         assertEquals("fullConfigurationQueue", queue.getQueueName());         
+      }
 
-      Topic topic2 = (Topic)context.lookup("/topic/testTopic");
-      assertNotNull(topic2);
-      assertEquals("testTopic", topic2.getTopicName());
+      for (String binding : topicBindings)
+      {
+         Topic topic = (Topic)context.lookup(binding);
+         assertNotNull(topic);
+         assertEquals("fullConfigurationTopic", topic.getTopicName());
+      }
    }
 
    // Package protected ---------------------------------------------
@@ -145,16 +175,17 @@ public class JMSServerDeployerTest extends ServiceTestBase
       super.setUp();
 
       config = new ConfigurationImpl();
-      config.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      config.getConnectorConfigurations().put("netty",
+                                              new TransportConfiguration(NettyConnectorFactory.class.getName()));
       MessagingServer server = createServer(false, config);
 
       deploymentManager = new FileDeploymentManager(config.getFileDeployerScanPeriod());
 
       jmsServer = new JMSServerManagerImpl(server);
-      jmsServer.start();
-
       context = new InVMContext();
       jmsServer.setContext(context);
+      jmsServer.start();
+
    }
 
    @Override
