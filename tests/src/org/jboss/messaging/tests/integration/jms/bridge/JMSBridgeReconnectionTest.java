@@ -24,8 +24,6 @@ package org.jboss.messaging.tests.integration.jms.bridge;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.bridge.QualityOfServiceMode;
 import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
-import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.tests.unit.util.InVMContext;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
