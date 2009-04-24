@@ -34,6 +34,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerDeployer;
@@ -144,6 +145,8 @@ public class JMSServerDeployerTest extends ServiceTestBase
       super.setUp();
 
       config = new ConfigurationImpl();
+      
+      deploymentManager = new FileDeploymentManager(config.getFileDeployerScanPeriod());
       
       jmsServer = new DummyJMSServerManager();
 

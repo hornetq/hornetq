@@ -135,7 +135,7 @@ public class JMSServerDeployer extends XmlDeployer
     */
    @Override
    public void deploy(final Node node) throws Exception
-   {
+   {      
       createAndBindObject(node);
    }
 
@@ -149,6 +149,7 @@ public class JMSServerDeployer extends XmlDeployer
    {
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {
+         log.info("Got connecti0on factory node");
          NodeList children = node.getChildNodes();
 
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;

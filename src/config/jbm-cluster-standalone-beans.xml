@@ -125,6 +125,8 @@
    </bean>
 
    <bean name="ManagementService" class="org.jboss.messaging.core.management.impl.ManagementServiceImpl">
+      <start ignored="true"/>
+      <stop ignored="true"/> 
       <constructor>
          <parameter>
             <inject bean="MBeanServer"/>

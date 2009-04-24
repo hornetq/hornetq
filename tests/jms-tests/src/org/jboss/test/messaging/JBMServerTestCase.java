@@ -172,14 +172,12 @@ public class JBMServerTestCase extends ProxyAssertSupport
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
          servers.get(0).start(getContainerConfig(), getConfiguration(), false);
-      //deployAdministeredObjects();
    }
    
    public void startNoDelete() throws Exception
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
       servers.get(0).start(getContainerConfig(), getConfiguration(), false);
-      //deployAdministeredObjects();
    }
 
    public void stopServerPeer() throws Exception
@@ -191,7 +189,6 @@ public class JBMServerTestCase extends ProxyAssertSupport
    {
       System.setProperty("java.naming.factory.initial", getContextFactory());
       servers.get(0).startServerPeer();
-      //deployAdministeredObjects();
    }
 
    protected HashMap<String, Object> getConfiguration()

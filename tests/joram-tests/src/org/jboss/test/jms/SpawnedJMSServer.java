@@ -76,16 +76,15 @@ public class SpawnedJMSServer
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
          conf.setEnableFileDeployment(true);
+         
          final MessagingServer server = Messaging.newMessagingServer(conf);
-         //server.start();
-
-         JMSServerManager serverManager = new JMSServerManagerImpl(server);
-         serverManager.start();
 
          Hashtable<String, String> env = new Hashtable<String, String>();
          env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          env.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-         serverManager.setContext(new InitialContext(env));
+         JMSServerManager serverManager = new JMSServerManagerImpl(server);
+         serverManager.setContext(new InitialContext(env));         
+         serverManager.start();
 
          // create the reader before printing OK so that if the test is quick
          // we will still capture the STOP message sent by the client
