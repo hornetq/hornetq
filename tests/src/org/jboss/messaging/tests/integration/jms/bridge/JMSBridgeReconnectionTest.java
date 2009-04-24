@@ -116,11 +116,6 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
          //Restart the server         
          jmsServer1.start();
-         
-         context1 = new InVMContext();
-         jmsServer1 = new JMSServerManagerImpl(server1);
-         jmsServer1.start();
-         jmsServer1.setContext(context1);
 
          createQueue("targetQueue", 1);
          setUpAdministeredObjects();
@@ -185,16 +180,9 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          Thread.sleep(10000);
          log.info("Done wait");
          
-         //Restart the server
-         
+         //Restart the server         
          log.info("Restarting server");
-         
          jmsServer1.start();
-         
-//         context1 = new InVMContext();
-//         jmsServer1 = new JMSServerManagerImpl(server1);
-//         jmsServer1.start();
-//         jmsServer1.setContext(context1);
 
          jmsServer1.createQueue("targetQueue", "queue/targetQueue");
          
@@ -274,11 +262,6 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          
          //Restart the server         
          jmsServer1.start();
-         
-         context1 = new InVMContext();
-         jmsServer1 = new JMSServerManagerImpl(server1);
-         jmsServer1.start();
-         jmsServer1.setContext(context1);
 
          createQueue("targetQueue", 1);
          
