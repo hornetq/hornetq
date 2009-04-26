@@ -1297,7 +1297,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       setupCluster();
 
       startServers();
-
+       
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
@@ -1409,14 +1409,14 @@ public class SymmetricClusterTest extends ClusterTestBase
       removeConsumer(18);
       removeConsumer(21);
       removeConsumer(26);
-
+   
       closeSessionFactory(0);
       closeSessionFactory(3);
-
+      
       stopServers(0, 3);
-
+      
       startServers(3, 0);
-
+      
       setupSessionFactory(0, isNetty());
       setupSessionFactory(3, isNetty());
 

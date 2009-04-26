@@ -256,7 +256,13 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       for (MessageFlowRecord record : records.values())
       {
-         record.close();
+         try
+         {
+            record.close();
+         }
+         catch (Exception ignore)
+         {            
+         }
       }
 
       started = false;
@@ -347,7 +353,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             // have messages - this is up to the administrator to do this
 
             entry.getValue().close();
-
+            
             iter.remove();
          }
       }
@@ -511,12 +517,12 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          this.bridge = bridge;
       }
 
-      public synchronized void reset() throws Exception
-      {
-         clearBindings();
-
-         firstReset = false;
-      }
+//      public synchronized void reset() throws Exception
+//      {
+//         clearBindings();
+//
+//         firstReset = false;
+//      }
 
       public synchronized void onMessage(final ClientMessage message)
       {
@@ -666,8 +672,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                     routingName,
                                                                     queueID,
                                                                     filterString,
-                                                                    queue,
-                                                                    // useDuplicateDetection,
+                                                                    queue,                                                                  
                                                                     bridge.getName(),
                                                                     distance + 1);
 
@@ -679,14 +684,20 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                // hops is too high
                // or there are multiple cluster connections for the same address
 
-               log.warn("Remoting queue binding " + clusterName +
+               log.warn("Remote queue binding " + clusterName +
                         " has already been bound in the post office. Most likely cause for this is you have a loop " +
                         "in your cluster due to cluster max-hops being too large or you have multiple cluster connections to the same nodes using overlapping addresses");
 
                return;
             }
 
-            postOffice.addBinding(binding);
+            try
+            {
+               postOffice.addBinding(binding);
+            }
+            catch (Exception ignore)
+            {               
+            }
 
             Bindings theBindings = postOffice.getBindingsForAddress(queueAddress);
 

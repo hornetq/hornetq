@@ -41,20 +41,5 @@ public class NettyFileStorageSymmetricClusterWithBackupTest extends SymmetricClu
    {
       return true;
    }
-   
-//   public void testStart() throws Exception
-//   {
-//      try
-//      {
-//         setupCluster();
-//
-//         startServers();
-//
-//        // Thread.sleep(100000);
-//      }
-//      catch (Exception e)
-//      {
-//         e.printStackTrace();
-//      }
-//   }
+  
 }

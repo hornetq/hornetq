@@ -139,7 +139,7 @@ public class JournalStorageManager implements StorageManager
    private volatile boolean started;
 
    private final ExecutorService executor;
-
+   
    public JournalStorageManager(final Configuration config)
    {
       this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-journal-storage-manager"));
@@ -244,7 +244,9 @@ public class JournalStorageManager implements StorageManager
 
    public long generateUniqueID()
    {
-      return idGenerator.generateID();
+      long id = idGenerator.generateID();
+      
+      return id;
    }
    
    public long getCurrentUniqueID()
@@ -252,6 +254,11 @@ public class JournalStorageManager implements StorageManager
       return idGenerator.getCurrentID();
    }
 
+   public void setUniqueIDSequence(final long id)
+   {
+      idGenerator.setID(id);
+   }
+   
    public LargeServerMessage createLargeMessage()
    {
       return new JournalLargeServerMessage(this);

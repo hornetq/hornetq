@@ -43,7 +43,7 @@ public interface MessageFlowRecord extends MessageHandler
    
    void activate(Queue queue) throws Exception;
    
-   void reset() throws Exception;
+   //void reset() throws Exception;
    
    void close() throws Exception;
 }

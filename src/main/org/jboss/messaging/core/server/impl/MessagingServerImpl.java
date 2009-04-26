@@ -134,7 +134,7 @@ public class MessagingServerImpl implements MessagingServer
    private final Configuration configuration;
 
    private final MBeanServer mbeanServer;
-   
+
    private final Set<ActivateCallback> activateCallbacks = new HashSet<ActivateCallback>();
 
    private volatile boolean started;
@@ -216,7 +216,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          throw new NullPointerException("Must inject SecurityManager into MessagingServer constructor");
       }
-      
+
       // We need to hard code the version information into a source file
 
       version = VersionLoader.getVersion();
@@ -235,7 +235,6 @@ public class MessagingServerImpl implements MessagingServer
    // lifecycle methods
    // ----------------------------------------------------------------
 
-   
    public synchronized void start() throws Exception
    {
       if (started)
@@ -410,7 +409,7 @@ public class MessagingServerImpl implements MessagingServer
    public ClusterManager getClusterManager()
    {
       return clusterManager;
-   }  
+   }
 
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
                                                          final String name,
@@ -536,7 +535,7 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   public void initialiseBackup(final UUID theUUID, final long currentMessageID) throws Exception
+   public void initialiseBackup(final UUID theUUID, final long liveUniqueID) throws Exception
    {
       if (theUUID == null)
       {
@@ -556,19 +555,34 @@ public class MessagingServerImpl implements MessagingServer
 
          initialisePart2();
 
-         if (currentMessageID != this.storageManager.getCurrentUniqueID())
-         {
-            initialised = false;
+         // It is possible, in a replicated environment that ids are slightly different
+         // (live is higher)- this
+         // is due to on stopping of the live server, the cluster connections are stopped and cause
+         // a remove binding for all the flow records, which causes notifications which causes id to be
+         // generated for the notifications.
+         // When shutting down the backup the cluster connections are not active so no bindings are removed
+         // on close
 
-            throw new IllegalStateException("Backup node current id sequence != live node current id sequence " + this.storageManager.getCurrentUniqueID() +
-                                            ", " +
-                                            currentMessageID);
+         long backupID = storageManager.getCurrentUniqueID();
+
+         if (liveUniqueID != backupID)
+         {
+            if (liveUniqueID > backupID)
+            {
+               storageManager.setUniqueIDSequence(liveUniqueID);
+            }
+            else
+            {
+               initialised = false;
+               
+               throw new IllegalStateException("Live and backup unique ids different. Probably trying to restart a live backup pair after a crash");
+            }
          }
 
          log.info("Backup server is now operational");
       }
    }
-   
+
    public Channel getReplicatingChannel()
    {
       synchronized (replicatingChannelLock)
@@ -708,7 +722,7 @@ public class MessagingServerImpl implements MessagingServer
    public void destroyQueue(final SimpleString queueName, final ServerSession session) throws Exception
    {
       Binding binding = postOffice.getBinding(queueName);
-      
+
       if (binding == null)
       {
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, "No such queue " + queueName);
@@ -743,7 +757,7 @@ public class MessagingServerImpl implements MessagingServer
 
       postOffice.removeBinding(queueName);
    }
-   
+
    public synchronized void registerActivateCallback(final ActivateCallback callback)
    {
       activateCallbacks.add(callback);
@@ -753,7 +767,6 @@ public class MessagingServerImpl implements MessagingServer
    {
       activateCallbacks.remove(callback);
    }
-
 
    // Public
    // ---------------------------------------------------------------------------------------
@@ -781,12 +794,12 @@ public class MessagingServerImpl implements MessagingServer
 
    private synchronized void callActivateCallbacks()
    {
-      for (ActivateCallback callback: activateCallbacks)
+      for (ActivateCallback callback : activateCallbacks)
       {
          callback.activated();
       }
    }
-   
+
    private void checkActivate(final RemotingConnection connection)
    {
       if (configuration.isBackup())
@@ -850,7 +863,7 @@ public class MessagingServerImpl implements MessagingServer
          replConnection.freeze();
       }
    }
-   
+
    private void initialisePart1() throws Exception
    {
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
@@ -965,7 +978,7 @@ public class MessagingServerImpl implements MessagingServer
       // Deploy any queues in the Configuration class - if there's no file deployment we still need
       // to load those
       deployQueuesFromConfiguration();
-      
+
       // Deploy any predefined queues - on backup we don't start queue deployer - instead deployments
       // are replicated from live
 
@@ -975,20 +988,20 @@ public class MessagingServerImpl implements MessagingServer
 
          queueDeployer.start();
       }
-      
+
       // We need to call this here, this gives any dependent server a chance to deploy its own destinations
       // this needs to be done before clustering is initialised, and in the same order on live and backup
       callActivateCallbacks();
 
       // Deply any pre-defined diverts
       deployDiverts();
-     
-      // Set-up the replicating connection 
+
+      // Set-up the replicating connection
       if (!setupReplicatingConnection())
       {
          return;
       }
-      
+
       if (configuration.isClustered())
       {
          // This can't be created until node id is set
@@ -1004,12 +1017,12 @@ public class MessagingServerImpl implements MessagingServer
 
          clusterManager.start();
       }
-      
+
       if (deploymentManager != null)
       {
          deploymentManager.start();
       }
-      
+
       pagingManager.startGlobalDepage();
 
       initialised = true;
@@ -1161,14 +1174,13 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   
    private Queue createQueue(final SimpleString address,
                              final SimpleString queueName,
                              final SimpleString filterString,
                              final boolean durable,
                              final boolean temporary,
                              final boolean ignoreIfExists) throws Exception
-   {      
+   {
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding != null)
@@ -1189,7 +1201,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          filter = new FilterImpl(filterString);
       }
-            
+
       final Queue queue = queueFactory.createQueue(-1, address, queueName, filter, durable, temporary);
 
       binding = new LocalQueueBinding(address, queue, nodeID);
@@ -1200,7 +1212,7 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       postOffice.addBinding(binding);
-      
+
       return queue;
    }
 

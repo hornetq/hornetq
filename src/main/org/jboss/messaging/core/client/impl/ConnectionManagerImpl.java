@@ -506,7 +506,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.SERVER_DISCONNECTED);
 
          boolean done = false;
-
+         
          if (attemptFailover || reconnectAttempts != 0)
          {
             lockAllChannel1s();
@@ -709,7 +709,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       while (true)
       {
          if (closed)
-         {
+         {           
             return null;
          }
 

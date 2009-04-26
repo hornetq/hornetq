@@ -115,19 +115,6 @@ public class ClusterTestBase extends ServiceTestBase
 
    protected void failNode(TransportConfiguration conf)
    {
-      // MessagingServer server = this.services[node];
-      //
-      // if (server == null)
-      // {
-      // throw new IllegalArgumentException("No server at " + node);
-      // }
-      //
-      // RemotingConnection conn = ((ClientSessionInternal)this.consumers[node].session).getConnection();
-      //      
-      // conn.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
-      //      
-      // //Also fail any cluster connections
-
       ConnectionManagerImpl.failAllConnectionsForConnector(conf);
    }
 
@@ -926,7 +913,7 @@ public class ClusterTestBase extends ServiceTestBase
                                            boolean netty,
                                            boolean backup)
    {
-      this.setupServerWithDiscovery(node, groupAddress, port, fileStorage, netty, backup, -1);
+      setupServerWithDiscovery(node, groupAddress, port, fileStorage, netty, backup, -1);
    }
 
    protected void setupServerWithDiscovery(int node,
@@ -936,7 +923,7 @@ public class ClusterTestBase extends ServiceTestBase
                                            boolean netty,
                                            int backupNode)
    {
-      this.setupServerWithDiscovery(node, groupAddress, port, fileStorage, netty, false, backupNode);
+      setupServerWithDiscovery(node, groupAddress, port, fileStorage, netty, false, backupNode);
    }
 
    protected void setupServerWithDiscovery(int node,
@@ -1029,7 +1016,7 @@ public class ClusterTestBase extends ServiceTestBase
 
       configuration.getBroadcastGroupConfigurations().add(bcConfig);
 
-      DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1", groupAddress, port, 500);
+      DiscoveryGroupConfiguration dcConfig = new DiscoveryGroupConfiguration("dg1", groupAddress, port, 5000);
 
       configuration.getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 
@@ -1128,72 +1115,9 @@ public class ClusterTestBase extends ServiceTestBase
                                                                                       maxHops,
                                                                                       pairs);
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
-
-      // clusterConfs.add(clusterConf);
-
-      // serviceFrom.getConfiguration().setClusterConfigurations(clusterConfs);
    }
 
-   // protected void setupClusterConnection(String name,
-   // int nodeFrom,
-   // int nodeTo,
-   // String address,
-   // boolean forwardWhenNoConsumers,
-   // int maxHops,
-   // boolean netty)
-   // {
-   // MessagingServer serviceFrom = servers[nodeFrom];
-   //
-   // if (serviceFrom == null)
-   // {
-   // throw new IllegalStateException("No server at node " + nodeFrom);
-   // }
-   //
-   // Map<String, TransportConfiguration> connectors = serviceFrom
-   // .getConfiguration()
-   // .getConnectorConfigurations();
-   //
-   // Map<String, Object> params = generateParams(nodeTo, netty);
-   //
-   // TransportConfiguration serverTotc;
-   //
-   // if (netty)
-   // {
-   // serverTotc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
-   // }
-   // else
-   // {
-   // serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
-   // }
-   //
-   // connectors.put(serverTotc.getName(), serverTotc);
-   //
-   // serviceFrom.getConfiguration().setConnectorConfigurations(connectors);
-   //
-   // Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), null);
-   //
-   // List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
-   // pairs.add(connectorPair);
-   //
-   // ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-   // address,
-   // 100,
-   // 1d,
-   // -1,
-   // -1,
-   // true,
-   // forwardWhenNoConsumers,
-   // maxHops,
-   // pairs);
-   // List<ClusterConnectionConfiguration> clusterConfs = serviceFrom
-   // .getConfiguration()
-   // .getClusterConfigurations();
-   //
-   // clusterConfs.add(clusterConf);
-   //
-   // serviceFrom.getConfiguration().setClusterConfigurations(clusterConfs);
-   // }
-
+   
    protected void setupClusterConnection(String name,
                                          String address,
                                          boolean forwardWhenNoConsumers,

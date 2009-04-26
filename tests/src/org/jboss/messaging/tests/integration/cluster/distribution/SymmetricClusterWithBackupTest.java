@@ -367,7 +367,11 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       closeSessionFactory(0);
       closeSessionFactory(3);
 
+      log.info("*** stopping servers");
+      
       stopServers(0, 3, 5, 8);
+      
+      log.info("**** rstarting servers");
       
       startServers(5, 8, 0, 3);
       

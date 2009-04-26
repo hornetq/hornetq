@@ -368,7 +368,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                   Map.Entry<String, DiscoveryEntry> entry = iter.next();
 
                   if (entry.getValue().getLastUpdate() + timeout <= now)
-                  {
+                  {                
                      iter.remove();
 
                      changed = true;

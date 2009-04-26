@@ -60,6 +60,8 @@ public interface StorageManager extends MessagingComponent
    long generateUniqueID();
    
    long getCurrentUniqueID();
+   
+   void setUniqueIDSequence(long id);
 
    void storeMessage(ServerMessage message) throws Exception;
    

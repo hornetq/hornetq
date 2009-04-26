@@ -709,7 +709,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       }
       catch (Exception e)
       {
-         log.warn("Unable to connect. JMSBridge is now disabled.", e);
+         log.warn("Unable to connect. Bridge is now disabled.", e);
 
          return false;
       }
@@ -767,7 +767,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             {
                try
                {
-                  flowRecord.reset();
+                 // flowRecord.reset();
                }
                catch (Exception e)
                {

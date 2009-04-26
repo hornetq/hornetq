@@ -55,7 +55,7 @@ public class NullStorageManager implements StorageManager
 {
    private static final Logger log = Logger.getLogger(NullStorageManager.class);
    
-   private final AtomicLong idGenerator = new AtomicLong(0);
+   private final AtomicLong idSequence = new AtomicLong(0);
    
    private UUID id;
 
@@ -184,14 +184,19 @@ public class NullStorageManager implements StorageManager
    
    public long generateUniqueID()
    {
-      long id = idGenerator.getAndIncrement();
+      long id = idSequence.getAndIncrement();
       
       return id;
    }
    
    public long getCurrentUniqueID()
    {
-      return idGenerator.get();
+      return idSequence.get();
+   }
+   
+   public void setUniqueIDSequence(final long id)
+   {
+      idSequence.set(id);
    }
 
    public synchronized void start() throws Exception
@@ -213,7 +218,7 @@ public class NullStorageManager implements StorageManager
       
       id = null;
       
-      idGenerator.set(0);
+      idSequence.set(0);
 
       started = false;
    }

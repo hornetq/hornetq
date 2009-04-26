@@ -911,6 +911,12 @@ public class PagingStoreImplTest extends UnitTestCase
    class FakeStorageManager implements StorageManager
    {
 
+      public void setUniqueIDSequence(long id)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.persistence.StorageManager#addQueueBinding(org.jboss.messaging.core.postoffice.Binding)
        */
