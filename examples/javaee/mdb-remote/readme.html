@@ -5,11 +5,17 @@
   </head>
   <body>
      <h1>Java EE JCA Configuration Example</h1>
-     <p>This example shows you how to configure JBossMessagin's Resource Adapter</p>
-     <p>A Resource Adapter is a way to connect any system provider to an application server.</p>
+     <p>This example is composed by two MDBs (MDBQueueA and MDBQueueB) and a StatlessSessionBean (StatelessSender).</p>
+     <p>The main class (MDBRemoteClientExample) will call a method on StatelessSender and send a Message to Queue B.<p>
+     <p>StatelessSender will send a message to Queue A.</p>
+     <p>StatelessSender is getting the connection out of the JavaConnectionArchitecture (JCA) ConnectionFactory, and sending a message to QueueA which will be received on MDBQueueA.</p>
+     <p>MDBQueueB is connected to a different JBoss Messaging resource-adapter, and it will receive the message sent by the main Class.</p> 
+     
+     
+     <p>A Resource Adapter is a way to connect any system provider to an application server, and is integral part of the Java Connectors Architecture specification.</p>
      <p>JBossMessaging provides its own adapter and this example will provide you a quick tutorial on how to configure some of the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
      <h2>MDB Properties</h2>
-     <p>On MDBs, you could configure the adapter thorugh ActivactionConfigProperties on the MDB. Example:</p>
+     <p>You can configure the adapter through ActivactionConfigProperties on the MDB. Example:</p>
         <pre>
            <code>
            @MessageDriven(name = "MessageMDBExample",
@@ -155,6 +161,18 @@ public class MDBRemoteExample implements MessageListener
          <pre><code>
          sender.sendHello("Hello there MDB!");
          </code></pre>
+         
+         
+         <li>Sending a message to Queue B, that will be received by MDBQueueB</li> 
+         <pre><code>
+         ConnectionFactory cf = new JBossConnectionFactory(transportConfiguration);
+         Queue queue = new JBossQueue("B");
+         Connection conn = cf.createConnection("guest", "guest");
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer prod = sess.createProducer(queue);
+         prod.send(sess.createTextMessage("Hello there MDB talking to another RAR!"));
+         conn.close();
+         </code></pre>
 
 
          <li>On StatelessSender.java: Define the destination that will receive the message (instead of using JNDI to the remote server)</li>
@@ -167,54 +185,54 @@ public class MDBRemoteExample implements MessageListener
          Connection conn = connectionFactory.createConnection("guest", "guest");
          </code></pre>
       
-         <li>Send a message to a remote queue</li>
+         <li>Send a message to a QueueA on the remote server, which will be received by MDBQueueA</li>
          <pre><code>
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer prod = sess.createProducer(destQueue);
          prod.send(sess.createTextMessage(message));
          </code></pre>
 
-         <li>Close the queue. (Since this is a JCA connection, this close will save the connection to a connection pool)</li>
+         <li>Close the connection. (Since this is a JCA connection, this close will save the connection to a connection pool)</li>
          <pre><code>
-         sess.close();
+         conn.close();
          </code></pre>
          
-         <li>The message is received on the MDB, using the Remote Queue</li>
-
-
+         <li>The message is received on the MDBQueueA, using the Remote Queue</li>
 
          <pre><code>
-@MessageDriven(name = "MessageMDBExample",
+@MessageDriven(name = "MDB_QueueA",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/A"),
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
                         @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545")
+                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545") // Port on the second server
                      })
-public class MDBRemoteExample implements MessageListener
+public class MDBQueueA implements MessageListener
 {
    public void onMessage(Message message)
-   {
-      try
-      {
-         TextMessage tm = (TextMessage)message;
+         </code></pre>         
+          
 
-         String text = tm.getText();
+         <li>Another message is received on MDBQueueB, using the Remote Queue. This MDB is using a different ResourceAdapter. Notice you didn't need to specify any Connection properties here, as you have different default values when using this resource-adapter (example-jbm-ra.rar).</li>
 
-         System.out.println("message " + text + " received");
-         
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-}
+         <pre><code>
+@MessageDriven(name = "MDB_QueueB",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/B"),
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
+                    })
+              @ResourceAdapter("example-jbm-ra.rar")
+
+public class MDBQueueB implements MessageListener
+{
 
          </code></pre>         
           
+
 
      </ol>
   </body>

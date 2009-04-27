@@ -26,10 +26,12 @@ package org.jboss.javaee.example.server;
 import javax.annotation.Resource;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
 
 import org.jboss.messaging.jms.JBossQueue;
-import javax.jms.*;
 
 /**
  * A Stateless Bean that will connect to a remote JBM.
@@ -55,21 +57,22 @@ public class StatelessSender implements StatelessSenderService
     */
    public void sendHello(String message) throws Exception
    {
-      // Step 4. Define the destination that will receive the message (instead of using JNDI to the remote server)
+      // Step 5. Define the destination that will receive the message (instead of using JNDI to the remote server)
       JBossQueue destQueue = new JBossQueue("A");
       
-      // Step 5. Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml)
+      // Step 6. Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml)
       Connection conn = connectionFactory.createConnection("guest", "guest");
       
-      // Step 6. Send a message to a remote queue
+      // Step 7. Send a message to a QueueA on the remote server, which will be received by MDBQueueA
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prod = sess.createProducer(destQueue);
       prod.send(sess.createTextMessage(message));
-
-      // Step 7. Close the queue. (Since this is a JCA connection, this will just place the connection back to a connection pool)
-      sess.close();
       
-      System.out.println("Sent message \"" + message + "\" on the Stateless");
+      System.out.println("Step 7 (StatelessSender.java): Sent message \"" + message + "\" to QueueA");
+
+      // Step 8. Close the connection. (Since this is a JCA connection, this will just place the connection back to a connection pool)
+      conn.close();
+      System.out.println("Step 8 (StatelessSender.java): Closed Connection (sending it back to pool)");
       
    }
 
