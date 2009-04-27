@@ -28,16 +28,19 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * MDB that is connected to the remote queue.
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
+
+//Step 8. The message is received on the MDB, using a remote queue.
 @MessageDriven(name = "MessageMDBExample",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/A"),
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
                         @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545")
+                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545") // Port on the second server
                      })
 public class MDBRemoteExample implements MessageListener
 {
@@ -45,10 +48,8 @@ public class MDBRemoteExample implements MessageListener
    {
       try
       {
-         //Step 9. We know the client is sending a text message so we cast
          TextMessage tm = (TextMessage)message;
 
-         //Step 10. get the text from the message.
          String text = tm.getText();
 
          System.out.println("message " + text + " received");

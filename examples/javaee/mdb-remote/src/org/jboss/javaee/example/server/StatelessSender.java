@@ -32,7 +32,7 @@ import org.jboss.messaging.jms.JBossQueue;
 import javax.jms.*;
 
 /**
- * A StatelessSender
+ * A Stateless Bean that will connect to a remote JBM.
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
@@ -43,6 +43,9 @@ import javax.jms.*;
 public class StatelessSender implements StatelessSenderService
 {
 
+   /**
+    *  Resource to be deployed by jms-remote-ds.xml
+    *  */
    @Resource(mappedName="java:RemoteJmsXA")
    private ConnectionFactory connectionFactory;
    
@@ -52,16 +55,18 @@ public class StatelessSender implements StatelessSenderService
     */
    public void sendHello(String message) throws Exception
    {
-      JBossQueue destQueue = new JBossQueue("testQueue");
+      // Step 4. Define the destination that will receive the message (instead of using JNDI to the remote server)
+      JBossQueue destQueue = new JBossQueue("A");
       
+      // Step 5. Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml)
       Connection conn = connectionFactory.createConnection("guest", "guest");
       
+      // Step 6. Send a message to a remote queue
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
       MessageProducer prod = sess.createProducer(destQueue);
-      
       prod.send(sess.createTextMessage(message));
 
+      // Step 7. Close the queue. (Since this is a JCA connection, this will just place the connection back to a connection pool)
       sess.close();
       
       System.out.println("Sent message \"" + message + "\" on the Stateless");

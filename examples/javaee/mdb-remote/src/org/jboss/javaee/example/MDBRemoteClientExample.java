@@ -22,17 +22,15 @@
 package org.jboss.javaee.example;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.jboss.javaee.example.server.StatelessSenderService;
 
 /**
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * 
+ * MDB Remote & JCA Configuration Example.
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class MDBRemoteClientExample
 {
@@ -45,10 +43,11 @@ public class MDBRemoteClientExample
          //Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = new InitialContext();
 
-         
+         //Step 2. Getting a reference to the Stateless Bean
          StatelessSenderService sender = (StatelessSenderService)initialContext.lookup("mdb-example/StatelessSender/remote");
          
-         sender.sendHello("Hi, It's friday and I'm still writing tests. What about a bear?");
+         //Step 3. Calling the Stateless Bean
+         sender.sendHello("Hello there MDB!");
 
          initialContext.close();
       }

@@ -112,7 +112,12 @@
       </jar>
    </target>
 
-   <target name="deploy" depends="validate-jboss, ear">
+   <target name="deploy">
+   	  <antcall target="do-deploy"></antcall>
+   </target>
+
+   <target name="do-deploy" depends="validate-jboss, ear">
+      <!-- some examples may choose to do a little extra on deploy and call this target directly -->
       <copy file="${build.dir}/mdb-example.ear" todir="${jboss.home}/server/jbm2_default/deploy"/>
    </target>
 

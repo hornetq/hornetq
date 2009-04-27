@@ -29,9 +29,12 @@
 
    <import file="../common/build.xml"/>
 
-   <target name="install">
+   <target name="deploy">
     <copy file="./server-config/jms-remote-ds.xml" todir="${jboss.home}/server/jbm2_default/deploy"/>
+   	<antcall target="do-deploy"></antcall>
    </target>
+	
+   
 
    <target name="run">
       <antcall target="runExample">
