@@ -222,6 +222,11 @@ public class ClusterManagerImpl implements ClusterManager
       return new HashSet<ClusterConnection>(clusters.values());
    }
    
+   public Set<BroadcastGroup> getBroadcastGroups()
+   {
+      return new HashSet<BroadcastGroup>(broadcastGroups.values());
+   }
+   
    public ClusterConnection getClusterConnection(final SimpleString name)
    {
       return clusters.get(name.toString()); 

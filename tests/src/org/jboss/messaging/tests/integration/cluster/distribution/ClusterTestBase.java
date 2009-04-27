@@ -603,11 +603,11 @@ public class ClusterTestBase extends ServiceTestBase
                   message.acknowledge();
                }
 
-               // log.info("consumer " + consumerIDs[i] +" returns " + count);
+               //log.info("consumer " + consumerIDs[i] +" returns " + count);
             }
             else
             {
-               // log.info("consumer " + consumerIDs[i] +" returns null");
+              // log.info("consumer " + consumerIDs[i] +" returns null");
             }
          }
          while (message != null);

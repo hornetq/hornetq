@@ -28,6 +28,7 @@ import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.tests.integration.cluster.distribution.ClusterTestBase;
 
 /**
@@ -108,6 +109,8 @@ public class ClusterWithBackupFailoverTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
       
       failNode(0);
+      
+      log.info("** now sending");
 
       send(0, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
@@ -123,22 +126,10 @@ public class ClusterWithBackupFailoverTest extends ClusterTestBase
       send(0, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-//      send(1, "queues.testaddress", 10, false, null);
-//      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
-//            
-//      send(2, "queues.testaddress", 10, false, null);
-//      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
-
       failNode(2);
 
       send(0, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
-
-//      send(1, "queues.testaddress", 10, false, null);
-//      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
-//            
-//      send(2, "queues.testaddress", 10, false, null);
-//      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
       stopServers();
    }
@@ -249,7 +240,11 @@ public class ClusterWithBackupFailoverTest extends ClusterTestBase
       //Prevent remoting service taking any more connections
       server.getRemotingService().freeze();
       
-      server.getClusterManager().stop();
+      //Stop it broadcasting
+      for (BroadcastGroup group: server.getClusterManager().getBroadcastGroups())
+      {
+         group.stop();
+      }
 
       //Fail all client connections that go to this node
       super.failNode(serverTC);
