@@ -111,7 +111,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn1 = null;
       try
       {
-         conn1 = cf.createConnection("john", "needle");
+         conn1 = cf.createConnection("guest", "guest");
       }
       finally
       {
@@ -129,7 +129,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn1 = null;
       try
       {
-         conn1 = cf.createConnection("john", "blobby");
+         conn1 = cf.createConnection("guest", "not.the.valid.password");
          fail();
       }
       catch (JMSSecurityException e)
@@ -152,7 +152,7 @@ public class SecurityTest extends JMSTestCase
       Connection conn1 = null;
       try
       {
-         conn1 = cf.createConnection("osama", "blah");
+         conn1 = cf.createConnection("not.the.valid.user", "not.the.valid.password");
          fail();
       }
       catch (JMSSecurityException e)
@@ -180,7 +180,7 @@ public class SecurityTest extends JMSTestCase
          bindings.add("preConfcf");
          deployConnectionFactory("dilbert-id", "preConfcf", bindings);
          ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
-         conn = cf.createConnection("dilbert", "dogbert");
+         conn = cf.createConnection("guest", "guest");
          String clientID = conn.getClientID();
          assertEquals("Invalid ClientID", "dilbert-id", clientID);
       }
@@ -224,7 +224,7 @@ public class SecurityTest extends JMSTestCase
          bindings.add("preConfcf");
          deployConnectionFactory("dilbert-id", "preConfcf", bindings);
          ConnectionFactory cf = (ConnectionFactory)getInitialContext().lookup("preConfcf");
-         conn = cf.createConnection("dilbert", "dogbert");
+         conn = cf.createConnection("guest", "guest");
          conn.setClientID("myID");
          fail();
       }

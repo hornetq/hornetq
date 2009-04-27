@@ -25,39 +25,36 @@
 <!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
 <!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
 <!--                                                                                             -->
+<!-- $Id: build.xml 4036 2008-04-11 12:43:24Z ataylor $                                          -->
 <!-- =========================================================================================== -->
-
-
-<!-- =========================================================================================== -->
-<!--                                                                                             -->
-<!-- $Id: build.xml 4036 2008-04-11 12:43:24Z ataylor $ -->
-<!--                                                                                             -->
-<!-- =========================================================================================== -->
-
 
 <project default="jar" name="JBoss Messaging">
 
-   <!--
-        Module name(s) & version.
-   -->
+   <!-- ======================================================================================== -->
+   <!-- javac + junit properties                                                                 -->
+   <!-- ======================================================================================== -->
+
+   <property file="build-messaging.properties" />
+
+   <!-- ======================================================================================== -->
+   <!-- Module name(s) & version                                                                 -->
+   <!-- ======================================================================================== -->
 
    <property name="module.name" value="messaging"/>
-
-   <property name="messaging.version.major" value="2"/>
-   <property name="messaging.version.minor" value="0"/>
-   <property name="messaging.version.micro" value="0"/>
-   <property name="messaging.version.suffix" value="BETA1-SNAPSHOT"/>
-   <property name="messaging.version.tag" value="beta1"/>
-   <property name="messaging.version.revision" value="0"/>
-   <property name="messaging.version.incrementing" value="101"/>
-   <property name="messaging.version.name" value="Stilton"/>
+    <!-- Version properties are read rom version.properties instead of duplicating them here -->
+   <property file="src/config/common/version.properties"/>
+   <property name="messaging.version.revision" value="0" />
    <property name="messaging.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
    <property name="messaging.version.string"
-             value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix} (${messaging.version.name}, ${messaging.version.incrementing})"/>
+             value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix} (${messaging.version.versionName}, ${messaging.version.incrementingVersion})"/>
    <property name="module.version"
-             value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.revision}.${messaging.version.tag}"/>
+             value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.revision}.${messaging.versionTag}"/>
+   <property name="build.artifact"
+             value="${module.name}-${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix}"/>
 
-   <!--jar names-->
+   <!-- ======================================================================================== -->
+   <!-- Jar names                                                                                -->
+   <!-- ======================================================================================== -->
 
    <property name="core.jar.name" value="jbm-core.jar"/>
    <property name="jms.jar.name" value="jbm-jms.jar"/>
@@ -72,10 +69,6 @@
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
-   <property name="sar.name" value="messaging.sar"/>
-   <property name="war.name" value="messaging.war"/>
-   <property name="build.sar.dir" value="${build.dir}/${sar.name}"/>
-   <property name="build.war.dir" value="${build.sar.dir}/${war.name}"/>
    <property name="build.classes.dir" value="${build.dir}/classes"/>
    <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
@@ -86,10 +79,13 @@
    <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
    <property name="build.jars.dir" value="${build.dir}/jars"/>
    <property name="build.src.dir" value="${build.dir}/src"/>
-   <property name="as.dir" value="AS"/>
    <property name="src.dir" value="src"/>
    <property name="src.main.dir" value="${src.dir}/main"/>
    <property name="src.config.dir" value="${src.dir}/config"/>
+   <property name="src.config.standalone.non-clustered.dir" value="${src.dir}/config/stand-alone/non-clustered"/>
+   <property name="src.config.standalone.clustered.dir" value="${src.dir}/config/stand-alone/clustered"/>
+   <property name="src.config.jbossas.non-clustered.dir" value="${src.dir}/config/jboss-as/non-clustered"/>    
+   <property name="src.config.jbossas.clustered.dir" value="${src.dir}/config/jboss-as/clustered"/>
    <property name="src.schemas.dir" value="${src.dir}/schemas"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
@@ -100,8 +96,6 @@
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
 
-   <property name="build.artifact"
-             value="${module.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
    <property name="build.distro.dir"
              value="${build.dir}/${build.artifact}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
@@ -111,7 +105,6 @@
    <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
    <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
    <property name="build.distro.licenses.dir" value="${build.distro.dir}/licenses"/>
-   <property name="build.distro.as.dir" value="${build.distro.dir}/AS"/>
    <property name="artifacts.dir" value="${build.dir}/artifacts"/>
 
    <!--default clustering server settings-->   
@@ -119,8 +112,9 @@
    <property name="jnp.port" value="1099"/>
    <property name="jnp.rmiPort" value="1098"/>
    <property name="jbm.data.dir" value="data1"/>
+    
    <!-- ======================================================================================== -->
-   <!-- Thirdparty Dependency Definitions                                                        -->
+   <!-- Thirdparty Dependency                                                                    -->
    <!-- ======================================================================================== -->
 
    <property name="project.thirdparty" value="thirdparty"/>
@@ -128,24 +122,18 @@
    &libraries;
 
    <!--
-       This module is based on Java 1.5
+        Setting "external.project" to true makes jbossbuild use the current directory, and not its
+        parent, as project root. DO NOT change this.
    -->
-
-   <property name="javac.target" value="1.5"/>
-   <property name="javac.source" value="1.5"/>
-
-   <property name="javac.debug" value="true"/>
-   <property name="javac.optimize" value="false"/>
-   <property name="javac.depend" value="false"/>
-   <property name="javac.verbose" value="false"/>
-   <property name="javac.deprecation" value="true"/>
-   <property name="javac.include.ant.runtime" value="false"/>
-   <property name="javac.include.java.runtime" value="true"/>
-   <property name="javac.fail.onerror" value="true"/>
-
+   <property name="external.project" value="true"/>
    <!--
-      test properties
+        Setting "nodownload" to true inhibits downloading of up-to-date dependencies.
    -->
+   <property name="nodownload" value="false"/>
+   
+   <!-- ======================================================================================== -->
+   <!-- Test properties                                                                          -->
+   <!-- ======================================================================================== -->
 
    <property name="test.dir" value="tests"/>
    <property name="test.build.dir" value="${test.dir}/build"/>
@@ -165,36 +153,10 @@
    <property name="test.joram.config.dir" value="${test.joram.dir}/config"/>
    <property name="test.joram.build.dir" value="${test.joram.dir}/build"/>
    <property name="test.joram.classes.dir" value="${test.joram.build.dir}/classes"/>
-   <property name="disable.invm" value="false"/>
 
-   <!--
-        JUnit configuration (values specified in ./build.properties have priority)
-   -->
-
-   <property name="junit.printsummary" value="true"/>
-   <property name="junit.haltonerror" value="false"/>
-   <property name="junit.haltonfailure" value="false"/>
-   <property name="junit.fork" value="true"/>
-   <property name="junit.includeantruntime" value="true"/>
-   <property name="junit.timeout" value="5400000"/>
-   <!-- 90 mins -->
-   <property name="clustering.junit.timeout" value="9000000"/>
-   <!-- 150 mins -->
-   <property name="clustering.stress.junit.timeout" value="5400000"/>
-   <!-- 90 mins -->
-   <property name="stress.junit.timeout" value="5400000"/>
-   <!-- 90 mins -->
-
-   <property name="junit.showoutput" value="true"/>
-   <property name="junit.jvm" value=""/>
-   <property name="junit.jvm.options" value=""/>
-   <property name="junit.formatter.usefile" value="true"/>
-   <property name="junit.batchtest.todir" value="${test.reports.dir}"/>
-   <property name="junit.batchtest.haltonerror" value="false"/>
-   <property name="junit.batchtest.haltonfailure" value="false"/>
-   <property name="junit.batchtest.fork" value="true"/>
-   <property name="junit.test.haltonfailure" value="false"/>
-   <property name="junit.test.haltonerror" value="false"/>
+   <!-- ======================================================================================== -->
+   <!-- Classpath definition                                                                     -->
+   <!-- ======================================================================================== -->
 
    <path id="jms.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
@@ -286,53 +248,54 @@
       <path refid="jboss.jbossxb.classpath"/>
    </path>
 
-	   <path id="unit.test.execution.classpath">
-	      <!-- ensure that the core client jar is included for
-	           tests security tests which needs to read version.properties
-	           from inside this jar
-	      -->
-	      <fileset dir="${build.jars.dir}">
-	         <include name="${core.client.jar.name}"/>
-	      </fileset>
-	      <pathelement location="${test.dir}/config"/>
-	      <pathelement location="${test.dir}/tmpfiles"/>
-	      <pathelement location="${test.classes.dir}"/>
-	      <pathelement location="${src.config.dir}"/>
-	      <pathelement location="${src.schemas.dir}"/>
-	      <path refid="test.compilation.classpath"/>
-         <path refid="sun.jaxb.classpath"/>
-	      <path refid="apache.log4j.classpath"/>
-	      <path refid="cglib.classpath"/>
-	      <path refid="jboss.common.core.classpath"/>
-	      <path refid="jboss.aop.classpath"/>
-	      <path refid="trove.trove.classpath"/>
-	      <path refid="javassist.classpath"/>
-	      <path refid="jboss.jbossxb.classpath"/>
-	      <path refid="apache.xerces.classpath"/>
-	      <path refid="apache.logging.classpath"/>
-	   </path>
+   <path id="unit.test.execution.classpath">
+      <!-- ensure that the core client jar is included for
+           tests security tests which needs to read version.properties
+	       from inside this jar
+	  -->
+      <fileset dir="${build.jars.dir}">
+         <include name="${core.client.jar.name}"/>
+      </fileset>
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${test.dir}/tmpfiles"/>
+      <pathelement location="${test.classes.dir}"/>
+      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="${src.schemas.dir}"/>
+      <path refid="test.compilation.classpath"/>
+      <path refid="sun.jaxb.classpath"/>
+      <path refid="apache.log4j.classpath"/>
+      <path refid="cglib.classpath"/>
+      <path refid="jboss.common.core.classpath"/>
+      <path refid="jboss.aop.classpath"/>
+      <path refid="trove.trove.classpath"/>
+      <path refid="javassist.classpath"/>
+      <path refid="jboss.jbossxb.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+      <path refid="apache.logging.classpath"/>
+   </path>
 
-	   <path id="emma.unit.test.execution.classpath">
-	      <pathelement location="${test.dir}/config"/>
-	      <pathelement location="${test.dir}/tmpfiles"/>
-	      <pathelement location="${test.classes.dir}"/>
-	      <pathelement location="${src.config.dir}"/>
-	      <pathelement location="${src.schemas.dir}"/>
-	      <path refid="test.compilation.classpath"/>
-	      <path refid="apache.log4j.classpath"/>
-	      <path refid="cglib.classpath"/>
-	      <path refid="jboss.common.core.classpath"/>
-	      <path refid="jboss.aop.classpath"/>
-	      <path refid="trove.trove.classpath"/>
-	      <path refid="javassist.classpath"/>
-	      <path refid="jboss.jbossxb.classpath"/>
-	      <path refid="apache.xerces.classpath"/>
-	      <path refid="apache.logging.classpath"/>
-	   </path>
-
+   <path id="emma.unit.test.execution.classpath">
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${test.dir}/tmpfiles"/>
+      <pathelement location="${test.classes.dir}"/>
+      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="${src.schemas.dir}"/>
+      <path refid="test.compilation.classpath"/>
+      <path refid="apache.log4j.classpath"/>
+      <path refid="cglib.classpath"/>
+      <path refid="jboss.common.core.classpath"/>
+      <path refid="jboss.aop.classpath"/>
+      <path refid="trove.trove.classpath"/>
+      <path refid="javassist.classpath"/>
+      <path refid="jboss.jbossxb.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+      <path refid="apache.logging.classpath"/>
+   </path>
+   
    <path id="jms.test.execution.classpath">
       <pathelement location="${test.dir}/config"/>
-      <pathelement location="${src.config.dir}"/>
+      <pathelement location="${src.config.standalone.non-clustered.dir}"/>
+      <pathelement location="${src.config.dir}/common"/>
       <pathelement location="${src.schemas.dir}"/>
       <pathelement location="${test.jms.dir}/config"/>
       <pathelement location="${test.jms.classes.dir}"/>
@@ -360,11 +323,7 @@
    </path>
 
    <path id="jms.standalone.server.classpath">
-      <pathelement location="${test.dir}/config"/>
-      <pathelement location="${src.config.dir}"/>
       <pathelement location="${src.schemas.dir}"/>
-      <pathelement location="${test.jms.dir}/config"/>
-      <pathelement location="${test.jms.classes.dir}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.execution.classpath"/>
 
@@ -373,33 +332,7 @@
       <path refid="jboss.jboss.mdr.classpath"/>
       <path refid="jboss.jboss.common.logging.spi.classpath"/>
       <path refid="jboss.jboss.common.logging.log4j.classpath"/>
-      <!---->
    </path>
-
-   <!--
-        Setting "external.project" to true makes jbossbuild use the current directory, and not its
-        parent, as project root. DO NOT change this.
-   -->
-   <property name="external.project" value="true"/>
-   <!--
-        Setting "nodownload" to true inhibits downloading of up-to-date dependencies.
-   -->
-   <property name="nodownload" value="false"/>
-
-   <target name="createthirdparty" unless="inhibit.downloads" depends="check.inhibit.downloads">
-      <ant antfile="build-thirdparty.xml" target="generate-libraries-ent"/>
-   </target>
-
-   <target name="check.inhibit.downloads">
-      <condition property="inhibit.downloads">
-         <or>
-            <uptodate property="dependencies.current"
-                      srcfile="build-thirdparty.xml"
-                      targetfile="./thirdparty/libraries.ent"/>
-            <istrue value="${nodownload}"/>
-         </or>
-      </condition>
-   </target>
 
    <target name="clean">
       <delete dir="${build.dir}"/>
@@ -407,6 +340,7 @@
       <delete dir="${test.output.dir}"/>
       <delete dir="${test.jms.build.dir}"/>
       <delete dir="${test.joram.build.dir}"/>
+      <ant dir="${examples.dir}" target="clean" />
    </target>
 
    <target name="init" depends="createthirdparty">
@@ -422,7 +356,27 @@
       <mkdir dir="${build.jars.dir}"/>
       <mkdir dir="${build.src.dir}"/>
    </target>
+   
+   
+   <target name="createthirdparty" unless="inhibit.downloads" depends="check.inhibit.downloads">
+      <ant antfile="build-thirdparty.xml" target="generate-libraries-ent"/>
+   </target>
 
+   <target name="check.inhibit.downloads">
+      <condition property="inhibit.downloads">
+         <or>
+            <uptodate property="dependencies.current"
+                      srcfile="build-thirdparty.xml"
+                      targetfile="./thirdparty/libraries.ent"/>
+            <istrue value="${nodownload}"/>
+         </or>
+      </condition>
+   </target>
+
+   <!-- ================================= -->
+   <!-- Compilation targets               -->
+   <!-- ================================= -->
+ 
    <target name="compile" depends="compile-jms"/>
 
    <target name="compile-core" depends="init">
@@ -452,7 +406,7 @@
       <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
              classpath="${build.core.classes.dir}" destdir="./native/src"/>
 
-      <copy file="${src.config.dir}/version.properties"
+      <copy file="${src.config.dir}/common/version.properties"
             tofile="${build.core.classes.dir}/version.properties"/>
 
       <!--
@@ -591,33 +545,58 @@
       </exec>
    </target>
     
-   <target name="validate-configuration" description="validate configuration files">
-      <echo>validating server configuration</echo>
-      <schemavalidate file="src/config/jbm-configuration.xml">
+   <target name="validate-configuration">
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.standalone.non-clustered.dir}"/>
+      </antcall>
+      <!-- user configuration is only for standalone -->
+      <schemavalidate file="${src.config.standalone.non-clustered.dir}/jbm-users.xml">
          <schema namespace="urn:jboss:messaging" 
-                 file="src/schemas/jbm-configuration.xsd"/>
+                 file="${src.schemas.dir}/jbm-users.xsd"/>
       </schemavalidate>
-      <echo>validating security credentials</echo>
-      <schemavalidate file="src/config/jbm-users.xml">
+
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.standalone.clustered.dir}"/>
+      </antcall>
+      <!-- user configuration is only for standalone -->
+      <schemavalidate file="${src.config.standalone.clustered.dir}/jbm-users.xml">
          <schema namespace="urn:jboss:messaging" 
-                 file="src/schemas/jbm-users.xsd"/>
+                 file="${src.schemas.dir}/jbm-users.xsd"/>
       </schemavalidate>
-      <echo>validating queue settings</echo>
-      <schemavalidate file="src/config/jbm-queues.xml">
-         <schema namespace="urn:jboss:messaging" 
-                 file="src/schemas/jbm-queues.xsd"/>
-      </schemavalidate>
-      <echo>validating jms resources</echo>
-      <schemavalidate file="src/config/jbm-jms.xml">
-         <schema namespace="urn:jboss:messaging" 
-                 file="src/schemas/jbm-jms.xsd"/>
-      </schemavalidate>
+      
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas.non-clustered.dir}"/>
+      </antcall>
+      
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas.clustered.dir}"/>
+      </antcall>
    </target>
     
+   <target name="-validate-configuration">
+      <echo>validating configuration from ${conf.dir}</echo>
+      <schemavalidate file="${conf.dir}/jbm-configuration.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="${src.schemas.dir}/jbm-configuration.xsd"/>
+      </schemavalidate>
+      <schemavalidate file="${conf.dir}/jbm-queues.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="${src.schemas.dir}/jbm-queues.xsd"/>
+      </schemavalidate>
+      <schemavalidate file="${conf.dir}/jbm-jms.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="${src.schemas.dir}/jbm-jms.xsd"/>
+      </schemavalidate>   
+   </target>
+   
    <!-- ======================================================================================== -->
-   <!-- Archival Tasks                                                                           -->
+   <!-- Jar Targets                                                                              -->
    <!-- ======================================================================================== -->
 
+   <target name="jar"
+           depends="jar-core, jar-client, jar-jms, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra">
+   </target>
+   
    <target name="jar-core" depends="compile-core">
 
       <jar jarfile="${build.jars.dir}/${core.jar.name}">
@@ -718,97 +697,18 @@
       </jar>
    </target>
 
-   <target name="jar"
-           depends="jar-core, jar-client, jar-jms, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra">
-   </target>
-
-
    <!-- ======================================================================================== -->
-   <!-- Distro Tasks                                                                           -->
+   <!-- Distribution targets                                                                     -->
    <!-- ======================================================================================== -->
-
-   <target name="deploy-jboss" depends="isJbossHomeSet, build.sar">
-      <mkdir dir="${JBOSS_HOME}/server/messaging" />
-      <copy todir="${JBOSS_HOME}/server/messaging">
-         <fileset dir="${JBOSS_HOME}/server/default">
-            <exclude name="**/messaging/**"/>
-            <exclude name="**/jboss-messaging.jar"/>
-            <exclude name="**/jboss-messaging-client.jar"/>
-         </fileset>
-      </copy>
-      <delete file="${JBOSS_HOME}/common/lib/jboss-messaging.jar"/>
-      <delete file="${JBOSS_HOME}/client/lib/jboss-messaging-client.jar"/>
-      <copy todir="${JBOSS_HOME}/server/messaging/deploy">
-         <fileset dir="${build.dir}">
-            <include name="${sar.name}/**/*"/>
-         </fileset>
-      </copy>
-      <copy todir="${JBOSS_HOME}/server/messaging/conf" overwrite="yes">
-         <fileset dir="${src.config.dir}">
-            <include name="**/*login-config.xml"/>
-         </fileset>
-      </copy>
-   </target>
-
-   <target name="deploy" depends="isJbossHomeSet, build.sar">
-      <copy todir="${JBOSS_HOME}/server/messaging/deploy">
-         <fileset dir="${build.dir}">
-            <include name="${sar.name}/**/*"/>
-         </fileset>
-      </copy>
-   </target>
-
-   <target name="isJbossHomeSet" unless="JBOSS_HOME">
-      <fail message="please set JBOSS_HOME"/>
-   </target>
-
-   <target name="build.sar" depends="jar">
-      <mkdir dir="${build.sar.dir}"/>
-      <mkdir dir="${build.war.dir}"/>
-
-       <copy todir="${build.sar.dir}">
-         <fileset dir="${src.config.dir}">
-            <include name="jbm-*"/>
-            <include name="queues.xml"/>
-            <exclude name="jbm-standalone*"/>
-            <exclude name="jbm-cluster*"/>
-         </fileset>
-      </copy>
-      <copy todir="${build.sar.dir}">
-         <fileset dir="${src.schemas.dir}">
-            <include name="*.xsd"/>
-         </fileset>
-      </copy>
-      <copy todir="${build.sar.dir}">
-         <fileset dir="${build.jars.dir}">
-            <include name="*.jar"/>
-         </fileset>
-         <fileset dir="${netty.netty.lib}">
-            <include name="*.jar"/>
-            <exclude name="*sources.jar"/>
-         </fileset>
-      </copy>
-      <copy todir="${build.war.dir}">
-         <fileset dir="${src.dir}">
-            <include name="WEB-INF/*"/>
-         </fileset>
-      </copy>
-       <copy todir="${build.sar.dir}">
-         <fileset dir="${src.schemas.dir}">
-            <include name="*"/>
-         </fileset>
-      </copy>
-   </target>
 
    <target name="distro" depends="jar, jar-client, validate-configuration">
-
+      
       <mkdir dir="${build.distro.dir}"/>
       <mkdir dir="${build.distro.lib.dir}"/>
       <mkdir dir="${build.distro.config.dir}"/>
       <mkdir dir="${build.distro.bin.dir}"/>
       <mkdir dir="${build.distro.api.dir}"/>
       <mkdir dir="${build.distro.licenses.dir}"/>
-      <mkdir dir="${build.distro.as.dir}"/>
 
       <copy todir="${build.distro.lib.dir}">
          <fileset dir="${build.jars.dir}">
@@ -819,6 +719,7 @@
             <include name="${bootstrap.jar.name}"/>
             <include name="${logging.jar.name}"/>
             <include name="${core.client.jar.name}"/>
+            <include name="jbm-ra.rar"/>
          </fileset>
          <fileset dir="${jboss.microcontainer.lib}">
             <include name="jboss-container.jar"/>
@@ -898,6 +799,7 @@
             <include name="*.xml"/>
             <include name="jndi.properties"/>
             <include name="logging.properties"/>
+            <exclude name="common/version.properties" />
          </fileset>
          <fileset dir="${test.dir}/config">
             <include name="messaging.keystore"/>
@@ -937,21 +839,14 @@
          </fileset>
       </copy>
 
-      <copy todir="${build.distro.as.dir}">
-         <fileset dir="${as.dir}"/>
+      <copy todir="${build.distro.config.dir}">
+         <fileset dir="${src.config.dir}"/>
       </copy>
-       <copy todir="${build.distro.as.dir}">
-         <fileset dir="${build.jars.dir}">
-            <include name="jbm-ra.rar"/>
-         </fileset>
-      </copy>
-      <copy tofile="${build.distro.examples.dir}/jms/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true">
-
-      </copy>
-      <echo message="lib.dir=../../lib${line.separator}client.jar=../../lib/jboss-messaging-client.jar${line.separator}config.dir=../../config${line.separator}server.jar=../../lib/jboss-messaging.jar"
-            file="${build.distro.examples.dir}/build.properties"/>
-      <echo message="java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory${line.separator}java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"
-            file="${build.distro.config.dir}/jndi.properties"/>
+      
+      <!-- examples-ant.properties allow the examples to be run from the source or from the distribution -->
+      <!-- by configuring the correct lib/config location                                                -->
+      <copy tofile="${build.distro.examples.dir}/jms/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
+      <copy tofile="${build.distro.examples.dir}/javaee/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
 
       <zip basedir="${build.dir}"
            destfile="${build.dir}/${build.artifact}.zip">
@@ -974,6 +869,10 @@
       <gzip src="${build.dir}/${build.artifact}.tar"
             destfile="${build.dir}/${build.artifact}.tar.gz"/>
    </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Documentation Targets                                                                    -->
+   <!-- ======================================================================================== -->
 
    <target name="dist-doc" unless="no-doc">
     <antcall target="userdoc"/>
@@ -1062,17 +961,17 @@
 
    <target name="artifact">
       <echo message="${artifact.name}"/>
-      <property name="artifacts.version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
+      <property name="artifacts.version" value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix}"/>
       <property name="artifact.dir" value="${artifacts.dir}/${artifact.name}/${artifacts.version}"/>
       <mkdir dir="${artifact.dir}"/>
-      <copy tofile="${artifact.dir}/${artifact.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.jar"
+      <copy tofile="${artifact.dir}/${artifact.name}-${artifacts.version}.jar"
             file="${build.jars.dir}/${artifact.name}.jar">
         <!-- <globmapper from="jbm-core" to="jbm-core-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}*"/>-->
       </copy>
-      <copy file="pom.xml" tofile="${artifact.dir}/${artifact.name}-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}.pom">
+      <copy file="pom.xml" tofile="${artifact.dir}/${artifact.name}-${artifacts.version}.pom">
          <filterset>
             <filter token="artifactid" value="${artifact.name}"/>
-            <filter token="version" value="${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}"/>
+            <filter token="version" value="${artifacts.version}"/>
          </filterset>
       </copy>
       <checksum algorithm="MD5">
@@ -1085,7 +984,9 @@
       </checksum>
    </target>
 
-   <!-- test targets -->
+   <!-- ======================================================================================== -->
+   <!-- Tests Targets (compilation + execution)                                                  -->
+   <!-- ======================================================================================== -->
 
    <target name="compile-unit-tests">
       <mkdir dir="${test.classes.dir}"/>
@@ -1202,7 +1103,7 @@
          <!--<jvmarg value="-ea"/>-->
          <classpath refid="unit.test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <batchtest todir="${junit.batchtest.todir}"
+         <batchtest todir="${test.reports.dir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}"
                     failureproperty="tests.failed">
@@ -1250,11 +1151,10 @@
                value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->
-         <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}"/>
         <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
          <classpath refid="jms.test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <batchtest todir="${junit.batchtest.todir}"
+         <batchtest todir="${test.reports.dir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
@@ -1292,11 +1192,10 @@
          <jvmarg value="-Dmodule.output=./"/>
          <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
          <!--<jvmarg value="-ea"/>-->
-         <sysproperty key="jbm.remoting.disable.invm" value="${disable.invm}"/>
         <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
          <classpath refid="joram.test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <batchtest todir="${junit.batchtest.todir}"
+         <batchtest todir="${test.reports.dir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
@@ -1334,7 +1233,7 @@
          <!--<jvmarg value="-ea"/>-->
          <classpath refid="unit.test.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <batchtest todir="${junit.batchtest.todir}"
+         <batchtest todir="${test.reports.dir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
@@ -1366,6 +1265,10 @@
                  styledir="${test.stylesheets.dir}"/>
       </junitreport>
    </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Code coverage + find bugs targets                                                        -->
+   <!-- ======================================================================================== -->
 
    <target name="emma" depends="jar, compile-unit-tests">
       <property name="emma.dir" location="${build.dir}/emma"/>
@@ -1413,7 +1316,7 @@
          <!--<jvmarg value="-ea"/>-->
          <classpath refid="emma.execution.classpath"/>
          <formatter type="xml" usefile="${junit.formatter.usefile}"/>
-         <batchtest todir="${junit.batchtest.todir}"
+         <batchtest todir="${test.reports.dir}"
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
@@ -1442,7 +1345,22 @@
       </emma>
 
    </target>
-   <!--server-->
+   
+
+   <target name="findbugs" depends="jar">
+      <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
+      <findbugs home="${findbugs.home}"
+                output="html"
+                outputFile="bugs.html">
+         <auxClasspath refid="findbugs.classpath"/>
+         <sourcePath path="${src.main.dir}"/>
+         <class location="${build.jars.dir}/jboss-${module.name}.jar"/>
+      </findbugs>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Server execution targets                                                                 -->
+   <!-- ======================================================================================== -->
 
    <target name="runServer" depends="jar">
       <java classname="org.jboss.messaging.integration.bootstrap.JBMBootstrapServer" fork="true">
@@ -1452,15 +1370,14 @@
          <jvmarg value="-XX:+AggressiveOpts"/>
          <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Dcom.sun.management.jmxremote"/>
-         <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.standalone.non-clustered.dir}/logging.properties"/>
          <jvmarg
                value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
-         <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
-         <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
          <arg line="jbm-standalone-beans.xml"/>
          <classpath refid="jms.standalone.server.classpath"/>
+         <classpath path="${src.config.standalone.non-clustered.dir}" />
       </java>
    </target>
 
@@ -1472,18 +1389,17 @@
          <jvmarg value="-XX:+AggressiveOpts"/>
          <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Dcom.sun.management.jmxremote"/>
-         <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.standalone.clustered.dir}/logging.properties"/>
          <jvmarg
                value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
-         <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
-         <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
          <jvmarg value="-Djbm.remoting.netty.port=${jbm.remoting.netty.port}"/>
          <jvmarg value="-Djnp.port=${jnp.port}"/>
          <jvmarg value="-Djnp.rmiPort=${jnp.rmiPort}"/>
          <jvmarg value="-Djbm.data.dir=${jbm.data.dir}"/>
-         <arg line="jbm-cluster-standalone-beans.xml"/>
+         <arg line="jbm-standalone-beans.xml"/>
          <classpath refid="jms.standalone.server.classpath"/>
+         <classpath path="${src.config.standalone.clustered.dir}" />
       </java>
    </target>
 
@@ -1510,16 +1426,4 @@
       </java>
    </target>
 
-   <target name="findbugs" depends="jar">
-      <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
-      <findbugs home="${findbugs.home}"
-                output="html"
-                outputFile="bugs.html">
-         <auxClasspath refid="findbugs.classpath"/>
-         <sourcePath path="${src.main.dir}"/>
-         <class location="${build.jars.dir}/jboss-${module.name}.jar"/>
-      </findbugs>
-
-   </target>
-     
 </project>

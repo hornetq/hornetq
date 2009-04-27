@@ -64,7 +64,7 @@
       <fileset dir="${jboss.home}/client">
          <include name="**/*.jar"/>
       </fileset>
-      <fileset dir="${jboss.home}/server/jbm2_default/lib">
+      <fileset dir="${jboss.home}/server/default-with-jbm2/lib">
          <include name="netty-3.1.0.BETA1.jar"/>
       </fileset>
    </path>
@@ -118,17 +118,17 @@
 
    <target name="do-deploy" depends="validate-jboss, ear">
       <!-- some examples may choose to do a little extra on deploy and call this target directly -->
-      <copy file="${build.dir}/mdb-example.ear" todir="${jboss.home}/server/jbm2_default/deploy"/>
+      <copy file="${build.dir}/mdb-example.ear" todir="${jboss.home}/server/default-with-jbm2/deploy"/>
    </target>
 
    <target name="undeploy" depends="validate-jboss">
-      <delete file="${jboss.home}/server/jbm2_default/deploy/mdb-example.ear"/>
+      <delete file="${jboss.home}/server/default-with-jbm2/deploy/mdb-example.ear"/>
    </target>
 
    <target name="validate-jboss">
       <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
-      <available property="default-config" type="dir" file="${jboss.home}/server/jbm2_default"/>
-      <fail unless="default-config" message="${jboss.home}/server/jbm2_default not found!"/>
+      <available property="default-config" type="dir" file="${jboss.home}/server/default-with-jbm2"/>
+      <fail unless="default-config" message="${jboss.home}/server/default-with-jbm2 not found!"/>
    </target>
 
    <target name="runExample" depends="compile">

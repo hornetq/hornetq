@@ -30,7 +30,7 @@
    <import file="../common/build.xml"/>
 
    <target name="deploy">
-    <copy file="./server-config/jms-remote-ds.xml" todir="${jboss.home}/server/jbm2_default/deploy"/>
+    <copy file="./server-config/jms-remote-ds.xml" todir="${jboss.home}/server/default-with-jbm2/deploy"/>
    	<antcall target="do-deploy"></antcall>
    </target>
 	

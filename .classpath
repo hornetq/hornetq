@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
-	<classpathentry kind="src" path="examples/jms/xa-with-jta/src"/>
-	<classpathentry kind="src" path="examples/javaee/servlet-transport/src"/>
 	<classpathentry kind="src" path="build/src"/>
+	<classpathentry kind="src" path="src/config/common"/>
 	<classpathentry kind="src" path="tests/jms-tests/config"/>
 	<classpathentry kind="src" path="tests/config"/>
-	<classpathentry kind="src" path="src/config"/>
+	<classpathentry kind="src" path="src/config/stand-alone/non-clustered"/>
+	<classpathentry kind="src" path="src/schemas"/>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="tests/src">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="trunk/native/bin"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="tests/jms-tests/src"/>
-	<classpathentry kind="src" path="src/schemas"/>
 	<classpathentry kind="src" path="tests/joram-tests/src"/>
 	<classpathentry kind="src" path="tests/joram-tests/config"/>
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
@@ -67,11 +66,13 @@
 	<classpathentry kind="src" path="examples/jms/xa-heuristic/src"/>
 	<classpathentry kind="src" path="examples/jms/xa-receive/src"/>
 	<classpathentry kind="src" path="examples/jms/xa-send/src"/>
+	<classpathentry kind="src" path="examples/jms/xa-with-jta/src"/>
 	<classpathentry kind="src" path="examples/javaee/ejb-jms-transaction/src"/>
 	<classpathentry kind="src" path="examples/javaee/hajndi/src"/>
 	<classpathentry kind="src" path="examples/javaee/jms-bridge/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb-remote/src"/>
+	<classpathentry kind="src" path="examples/javaee/servlet-transport/src"/>
 	<classpathentry kind="src" path="examples/javaee/xarecovery/src"/>
 	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>

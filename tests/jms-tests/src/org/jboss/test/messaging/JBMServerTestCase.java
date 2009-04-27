@@ -256,7 +256,7 @@ public class JBMServerTestCase extends ProxyAssertSupport
    // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1606
    public String[] getContainerConfig()
    {
-      return new String[]{ "invm-beans.xml", "AS/config/independent/jbm-jboss-beans.xml"};
+      return new String[]{ "invm-beans.xml", "src/config/stand-alone/non-clustered/jbm-standalone-beans.xml"};
    }
 
    protected MessagingServer getJmsServer() throws Exception

@@ -26,31 +26,37 @@
 <!-- =========================================================================================== -->
 
 
-<project default="default" name="JBoss Messaging">
+<project default="default" name="JBoss Messaging integration with JBoss AS 5">
    <property environment="ENV"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
 
-   <property name="config.dir" value="config"/>
-   <property name="main.config.dir" value="../config"/>
-   <property name="lib.dir" value="../lib"/>
+   <property name="lib.dir" value="../../lib"/>
 
-   <target name="default">
-    <antcall target="build">
-       <param name="messaging.config.source" value="default"/>
-       <param name="messaging.profile.name" value="default"/>
+   <target name="default" description="Create JBoss AS 5 profiles to use JBoss Messaging">
+    <antcall target="create-profile">
+       <!-- created from JBoss AS 5 default profile -->
+       <param name="jbossas.profile.source" value="default"/>
+       <!-- based on JBoss Messaging jbossas/non-clustered config -->
+       <param name="messaging.config.dir" value="./non-clustered"/>
+       <!-- new profile is named default-with-jbm2 -->
+       <param name="messaging.profile.target" value="default-with-jbm2"/>
     </antcall>
-    <antcall target="build">
-       <param name="messaging.config.source" value="all"/>
-       <param name="messaging.profile.name" value="symmetric"/>
+    <antcall target="create-profile">
+       <!-- created from JBoss AS 5 all profile -->
+       <param name="jbossas.profile.source" value="all"/>
+       <!-- based on JBoss Messaging jbossas/clustered config -->
+       <param name="messaging.config.dir" value="clustered"/>
+       <!-- new profile is named all-with-jbm2 -->
+       <param name="messaging.profile.target" value="all-with-jbm2"/>
     </antcall>
    </target>
 
-   <target name="build">
-      <property name="messaging.config.name" value="jbm2_${messaging.profile.name}"/>
+   <target name="create-profile">
       <antcall target="validate-jboss"/>
-      <property name="src.dir" value="${jboss.home}/server/${messaging.config.source}"/>
-      <property name="dest.dir" value="${jboss.home}/server/${messaging.config.name}"/>
-      <mkdir dir="${jboss.home}/server/${messaging.config.name}"/>
+      <property name="src.dir" value="${jboss.home}/server/${jbossas.profile.source}"/>
+      <property name="dest.dir" value="${jboss.home}/server/${messaging.profile.target}"/>
+      
+      <mkdir dir="${dest.dir}"/>
       <copy todir="${dest.dir}">
          <fileset dir="${src.dir}">
             <exclude name="**/messaging/**"/>
@@ -59,12 +65,12 @@
          </fileset>
       </copy>
       <copy todir="${dest.dir}/conf">
-         <fileset dir="${config.dir}">
+         <fileset dir="${messaging.config.dir}">
             <include name="login-config.xml"/>
          </fileset>
       </copy>
       <copy todir="${dest.dir}/conf/props">
-         <fileset dir="${config.dir}">
+         <fileset dir="${messaging.config.dir}">
             <include name="messaging-users.properties"/>
             <include name="messaging-roles.properties"/>
          </fileset>
@@ -78,21 +84,20 @@
       <property name="messaging.sar.dir" value="${dest.dir}/deploy/messaging.sar"/>
       <mkdir dir="${messaging.sar.dir}"/>
       <copy todir="${messaging.sar.dir}">
-        <fileset dir="${config.dir}/independent" includes="*"/>
-        <fileset dir="${config.dir}/${messaging.profile.name}" includes="*"/>
+        <fileset dir="${messaging.config.dir}" includes="*"/>
       </copy>
-      <copy file="jbm-ra.rar" tofile="${dest.dir}/deploy/jms-ra.rar"/>
+      <copy file="${lib.dir}/jbm-ra.rar" tofile="${dest.dir}/deploy/jms-ra.rar"/>
    </target>
 
    <!-- The JBOSS_HOME environment variable and the directory must exist, we also check we are running
         in JBoss 5.1 or later -->
    <target name="validate-jboss">
       <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
-      <available property="default-config" type="dir" file="${jboss.home}/server/${messaging.config.source}"/>
-      <fail unless="default-config" message="${jboss.home}/server/${messaging.config.source} not found!"/>
-      <available property="messaging-config" type="dir" file="${jboss.home}/server/${messaging.config.name}"/>
-      <fail if="messaging-config"
-            message="'${messaging.config.name}' configuration already exists! Delete it manually and try again."/>
+      <available property="source-profile" type="dir" file="${jboss.home}/server/${jbossas.profile.source}"/>
+      <fail unless="source-profile" message="${jboss.home}/server/${jbossas.profile.source} profile not found!"/>
+      <available property="target-profile" type="dir" file="${jboss.home}/server/${messaging.profile.target}"/>
+      <fail if="target-profile"
+            message="'${messaging.profile.target}' profile already exists! Delete it manually and try again."/>
    </target>
 
 </project>

@@ -128,10 +128,10 @@ public class MDBRemoteExample implements MessageListener
      <ol>
      <li>Define the property JBOSS_HOME pointing to the root of a JBoss 5.1 distribution</li>
      <li>Create a JBoss messaging clustered profile by typing <code>ant</code> int the <code>AS</code> directory off the root of
-     the JBoss Messaging distribution. This will create a server profile called <code>$JBOSS_HOME/server/jbm2_default</code>.</li>
-     <li>Copy the directory <code>$JBOSS_HOME/server/jbm2_default</code> to <code>$JBOSS_HOME/server/jbm2_default_2</code>.</li>
-     <li>Start the first server with <code>./run.sh -c jbm2_default</code></li>
-     <li>Start the second server with <code>./run.sh -c jbm2_default_2 -Djboss.service.binding.set=ports-01</li>
+     the JBoss Messaging distribution. This will create a server profile called <code>$JBOSS_HOME/server/default-with-jbm2</code>.</li>
+     <li>Copy the directory <code>$JBOSS_HOME/server/default-with-jbm2</code> to <code>$JBOSS_HOME/server/default-with-jbm2_2</code>.</li>
+     <li>Start the first server with <code>./run.sh -c default-with-jbm2</code></li>
+     <li>Start the second server with <code>./run.sh -c default-with-jbm2_2 -Djboss.service.binding.set=ports-01</li>
      </ol>
      
      <h2>Example part step-by-step</h2>

@@ -30,14 +30,14 @@
    <import file="../common/build.xml"/>
    
    <target name="deploy-servlet">
-      <copy todir="${jboss.home}/server/jbm2_default/deploy/jms-servlet.war">
+      <copy todir="${jboss.home}/server/default-with-jbm2/deploy/jms-servlet.war">
          <fileset dir="config/jms-servlet.war"/>
       </copy>
       <sleep seconds="5"/>
    </target>
    
    <target name="undeploy-servlet">
-      <delete dir="${jboss.home}/server/jbm2_default/deploy/jms-servlet.war" quiet="true"/>
+      <delete dir="${jboss.home}/server/default-with-jbm2/deploy/jms-servlet.war" quiet="true"/>
    </target>
 
    <target name="run" depends="deploy-servlet">

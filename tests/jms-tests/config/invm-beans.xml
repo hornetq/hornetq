@@ -5,12 +5,4 @@
    <bean name="ConfigurationHelper" class="org.jboss.test.messaging.tools.ConfigurationHelper">
       <property name="configuration"><inject bean="Configuration"/> </property>
    </bean>
-
-   <bean name="jbm:AuthenticationManager" class="org.jboss.test.messaging.tools.container.MockJBossSecurityManager"/>
-
-   <!--this is just here to satisfy a demand in the main beans file-->
-   <bean name="jboss.jca:name=DefaultDS,service=DataSourceBinding" class="java.beans.Beans"/>
-
-   <bean name="JBossSecurityJNDIContextEstablishment" class="java.beans.Beans"/>
-
 </deployment>

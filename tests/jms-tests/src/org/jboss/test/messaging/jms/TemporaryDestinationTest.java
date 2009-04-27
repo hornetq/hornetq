@@ -296,7 +296,7 @@ public class TemporaryDestinationTest extends JMSTestCase
 	
 	      tempQueue.delete();
 	      conn.close();
-         conn = cf.createConnection("nobody", "nobody");
+         conn = cf.createConnection("guest", "guest");
          try
 	      {
 	         producer.send(m);

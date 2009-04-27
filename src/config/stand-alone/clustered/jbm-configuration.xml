@@ -133,6 +133,7 @@
          </discovery-group>
       </discovery-groups>
       
+      <!--
       <bridges>
          <bridge name="foo">
             <queue-name>toto</queue-name>
@@ -141,7 +142,8 @@
             <connector-ref connector-name="netty"/>
          </bridge>
       </bridges>
-
+      -->
+      
       <!--  Paging configuration -->
       
       <paging-max-threads>10</paging-max-threads>
