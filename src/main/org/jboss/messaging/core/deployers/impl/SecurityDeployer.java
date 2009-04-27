@@ -83,7 +83,14 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      XMLUtil.validate(rootNode, "jbm-queues.xsd");
+      if ("deployment".equals(rootNode.getNodeName()))
+      {
+         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
+      }
+      else
+      {
+         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-queues.xsd");
+      }
    }
    
    /**
@@ -195,6 +202,6 @@ public class SecurityDeployer extends XmlDeployer
     */
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] {QUEUES_XML};
+      return new String[] {"jbm-configuration.xml", QUEUES_XML};
    }
 }

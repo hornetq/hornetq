@@ -162,7 +162,7 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "jbm-configuration", "jbm-queues.xml" };
+      return new String[] { "jbm-configuration.xml", "jbm-queues.xml" };
    }
 
    /**

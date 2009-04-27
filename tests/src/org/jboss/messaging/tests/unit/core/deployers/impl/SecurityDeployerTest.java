@@ -26,9 +26,12 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
+import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.utils.SimpleString;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -207,5 +210,35 @@ public class SecurityDeployerTest extends UnitTestCase
       deployer.deploy(org.jboss.messaging.utils.XMLUtil.stringToElement(noRoles));
       HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testQueue");
       assertNull(roles);
+   }
+   
+   public void testDeployFromConfigurationFile() throws Exception
+   {
+      String xml = "<deployment xmlns='urn:jboss:messaging'> " 
+                 + "<configuration>"
+                 + "<acceptors>"
+                 + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
+                 + "</acceptors>"
+                 + "</configuration>"
+                 + "<settings>"
+                 + "   <security match=\"jms.topic.testTopic\">"
+                 + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>"
+                 + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>"
+                 + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>"
+                 + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>"
+                 + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>"
+                 + "   </security>"
+                 + "</settings>"
+                 + "</deployment>";
+      
+      Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
+      deployer.validate(rootNode);
+      NodeList securityNodes = rootNode.getElementsByTagName("security");
+      assertEquals(1, securityNodes.getLength());
+
+      deployer.deploy(securityNodes.item(0));
+      HashSet<Role> roles = (HashSet<Role>) repository.getMatch("jms.topic.testTopic");
+      assertNotNull(roles);
+      assertEquals(3, roles.size());
    }
 }

@@ -30,6 +30,8 @@ import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -37,7 +39,6 @@ import org.jboss.messaging.utils.XMLUtil;
 public class AddressSettingsDeployerTest extends UnitTestCase
 {
    private String conf = "<address-settings match=\"queues.*\">\n" +
-           "      <manageConfirmations>false</manageConfirmations>\n" +
            "      <dead-letter-address>DLQtest</dead-letter-address>\n" +
            "      <expiry-address>ExpiryQueueTest</expiry-address>\n" +
            "      <redelivery-delay>100</redelivery-delay>\n" +
@@ -62,6 +63,42 @@ public class AddressSettingsDeployerTest extends UnitTestCase
    public void testDeploy() throws Exception
    {
       addressSettingsDeployer.deploy(XMLUtil.stringToElement(conf));
+      AddressSettings as = repository.getMatch("queues.aq");
+      assertNotNull(as);
+      assertEquals(100, as.getRedeliveryDelay());
+      assertEquals(-100, as.getMaxSizeBytes());
+      assertEquals("org.jboss.messaging.core.impl.RoundRobinDistributionPolicy", as.getDistributionPolicyClass());
+      assertEquals(1000, as.getMessageCounterHistoryDayLimit());
+      assertEquals(new SimpleString("DLQtest"), as.getDeadLetterAddress());
+      assertEquals(new SimpleString("ExpiryQueueTest"), as.getExpiryAddress());
+   }
+   
+   public void testDeployFromConfigurationFile() throws Exception
+   {
+      String xml = "<deployment xmlns='urn:jboss:messaging'> " 
+                 + "<configuration>"
+                 + "<acceptors>"
+                 + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
+                 + "</acceptors>"
+                 + "</configuration>"
+                 + "<settings>"
+                 + "   <address-settings match=\"queues.*\">"
+                 + "      <dead-letter-address>DLQtest</dead-letter-address>\n"
+                 + "      <expiry-address>ExpiryQueueTest</expiry-address>\n"
+                 + "      <redelivery-delay>100</redelivery-delay>\n"
+                 + "      <max-size-bytes>-100</max-size-bytes>\n"
+                 + "      <distribution-policy-class>org.jboss.messaging.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>"
+                 + "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>"
+                 + "   </address-settings>"
+                 + "</settings>"
+                 + "</deployment>";
+      
+      Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
+      addressSettingsDeployer.validate(rootNode);
+      NodeList addressSettingsNode = rootNode.getElementsByTagName("address-settings");
+      assertEquals(1, addressSettingsNode.getLength());
+
+      addressSettingsDeployer.deploy(addressSettingsNode.item(0));
       AddressSettings as = repository.getMatch("queues.aq");
       assertNotNull(as);
       assertEquals(100, as.getRedeliveryDelay());
