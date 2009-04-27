@@ -251,8 +251,6 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       setupCluster();
 
       startServers();
-      
-      log.info("*** started servers");
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -369,14 +367,12 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       closeSessionFactory(0);
       closeSessionFactory(3);
 
-      log.info("*** stopping servers");
-      
       stopServers(0, 3, 5, 8);
-      
-      log.info("**** rstarting servers");
-      
+
       startServers(5, 8, 0, 3);
-      
+
+      Thread.sleep(2000);
+
       setupSessionFactory(0, isNetty());
       setupSessionFactory(3, isNetty());
 
@@ -439,8 +435,6 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       verifyReceiveRoundRobinInSomeOrder(10, 23, 24, 25);
 
       verifyReceiveRoundRobinInSomeOrder(10, 26, 27);
-
-      tearDown();
    }
 
    @Override

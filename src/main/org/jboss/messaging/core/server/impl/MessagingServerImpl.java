@@ -554,29 +554,14 @@ public class MessagingServerImpl implements MessagingServer
          this.nodeID = new SimpleString(uuid.toString());
 
          initialisePart2();
-
-         // It is possible, in a replicated environment that ids are slightly different
-         // (live is higher)- this
-         // is due to on stopping of the live server, the cluster connections are stopped and cause
-         // a remove binding for all the flow records, which causes notifications which causes id to be
-         // generated for the notifications.
-         // When shutting down the backup the cluster connections are not active so no bindings are removed
-         // on close
-
+        
          long backupID = storageManager.getCurrentUniqueID();
 
          if (liveUniqueID != backupID)
          {
-            if (liveUniqueID > backupID)
-            {
-               storageManager.setUniqueIDSequence(liveUniqueID);
-            }
-            else
-            {
-               initialised = false;
-               
-               throw new IllegalStateException("Live and backup unique ids different. Probably trying to restart a live backup pair after a crash");
-            }
+            initialised = false;
+            
+            throw new IllegalStateException("Live and backup unique ids different. You're probably trying to restart a live backup pair after a crash");            
          }
 
          log.info("Backup server is now operational");
@@ -804,6 +789,8 @@ public class MessagingServerImpl implements MessagingServer
    {
       if (configuration.isBackup())
       {
+         log.info("*** activating");
+         
          synchronized (this)
          {
             freezeBackupConnection();

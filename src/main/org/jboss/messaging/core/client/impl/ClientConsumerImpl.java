@@ -297,7 +297,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // if unsetting a previous handler may be in onMessage so wait for completion
       else if (handler == null && !noPreviousHandler)
       {
-
          waitForOnMessageToComplete();
       }
    }

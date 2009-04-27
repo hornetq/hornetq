@@ -27,6 +27,7 @@ import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREA
 import static org.jboss.messaging.core.postoffice.impl.PostOfficeImpl.HDR_RESET_QUEUE_DATA;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -233,7 +234,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       {
          return;
       }
-      
+
       if (discoveryGroup != null)
       {
          discoveryGroup.registerListener(this);
@@ -261,7 +262,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             record.close();
          }
          catch (Exception ignore)
-         {            
+         {
          }
       }
 
@@ -335,7 +336,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       {
          map.put(String.valueOf(i++), new DiscoveryEntry(connectorPair, 0));
       }
-      
+
       updateConnectors(map);
    }
 
@@ -353,7 +354,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             // have messages - this is up to the administrator to do this
 
             entry.getValue().close();
-            
+
             iter.remove();
          }
       }
@@ -468,7 +469,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
    }
 
-
    // Inner classes -----------------------------------------------------------------------------------
 
    private class MessageFlowRecordImpl implements MessageFlowRecord
@@ -501,6 +501,52 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          bridge.stop();
 
          clearBindings();
+         
+         waitForReplicationsToComplete(3000);
+      }
+      
+      private int replicationCount;
+      
+      private synchronized void waitForReplicationsToComplete(long timeout)
+      {
+         long toWait = timeout;
+
+         long start = System.currentTimeMillis();
+
+         while (replicationCount > 0 && toWait > 0)
+         {
+            try
+            {
+               wait(toWait);
+            }
+            catch (InterruptedException e)
+            {
+            }
+
+            long now = System.currentTimeMillis();
+
+            toWait -= now - start;
+
+            start = now;
+         }
+
+         if (toWait <= 0)
+         {
+            log.warn("Timed out waiting for replication responses to return");
+         }
+      
+      }
+      
+      private synchronized void replicationComplete()
+      {
+         replicationCount--;
+         
+         notify();
+      }
+      
+      private synchronized void beforeReplicate()
+      {
+         replicationCount++;
       }
 
       public void activate(final Queue queue) throws Exception
@@ -517,12 +563,12 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          this.bridge = bridge;
       }
 
-//      public synchronized void reset() throws Exception
-//      {
-//         clearBindings();
-//
-//         firstReset = false;
-//      }
+      // public synchronized void reset() throws Exception
+      // {
+      // clearBindings();
+      //
+      // firstReset = false;
+      // }
 
       public synchronized void onMessage(final ClientMessage message)
       {
@@ -559,7 +605,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                }
                case BINDING_REMOVED:
                {
-                  doBindingRemoved(message, replicatingChannel);
+                  doBindingRemoved(message);
 
                   break;
                }
@@ -590,17 +636,15 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          }
       }
 
-      private void clearBindings() throws Exception
+      private synchronized void clearBindings() throws Exception
       {
-         for (RemoteQueueBinding binding : bindings.values())
+         for (RemoteQueueBinding binding : new HashSet<RemoteQueueBinding>(bindings.values()))
          {
-            postOffice.removeBinding(binding.getUniqueName());
-         }
-
-         bindings.clear();
+            removeBinding(binding.getClusterName(), replicatingChannel);
+         }         
       }
 
-      private void doBindingAdded(final ClientMessage message, final Channel replChannel) throws Exception
+      private synchronized void doBindingAdded(final ClientMessage message, final Channel replChannel) throws Exception
       {
          Integer distance = (Integer)message.getProperty(ManagementHelper.HDR_DISTANCE);
 
@@ -650,10 +694,11 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                    queue.getName(),
                                                                    distance + 1);
 
+            beforeReplicate();
             replChannel.replicatePacket(packet, 1, new Runnable()
             {
                public void run()
-               {
+               {                  
                   try
                   {
                      doBindingAdded(message, null);
@@ -662,6 +707,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                   {
                      log.error("Failed to add remote queue binding", e);
                   }
+                  
+                  replicationComplete();
                }
             });
          }
@@ -672,7 +719,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                     routingName,
                                                                     queueID,
                                                                     filterString,
-                                                                    queue,                                                                  
+                                                                    queue,
                                                                     bridge.getName(),
                                                                     distance + 1);
 
@@ -696,7 +743,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                postOffice.addBinding(binding);
             }
             catch (Exception ignore)
-            {               
+            {
             }
 
             Bindings theBindings = postOffice.getBindingsForAddress(queueAddress);
@@ -705,7 +752,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          }
       }
 
-      private void doBindingRemoved(final ClientMessage message, final Channel replChannel) throws Exception
+      private void doBindingRemoved(final ClientMessage message) throws Exception
       {
          SimpleString clusterName = (SimpleString)message.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
@@ -714,22 +761,30 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             throw new IllegalStateException("clusterName is null");
          }
 
+         removeBinding(clusterName, replicatingChannel);
+      }
+      
+      private synchronized void removeBinding(final SimpleString clusterName, final Channel replChannel) throws Exception
+      {
          if (replChannel != null)
          {
             Packet packet = new ReplicateRemoteBindingRemovedMessage(clusterName);
 
+            beforeReplicate();
             replChannel.replicatePacket(packet, 1, new Runnable()
             {
                public void run()
                {
                   try
                   {
-                     doBindingRemoved(message, null);
+                     removeBinding(clusterName, null);
                   }
                   catch (Exception e)
                   {
                      log.error("Failed to remove remote queue binding", e);
                   }
+                  
+                  replicationComplete();
                }
             });
          }
@@ -746,7 +801,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          }
       }
 
-      private void doConsumerCreated(final ClientMessage message, final Channel replChannel) throws Exception
+      private synchronized void doConsumerCreated(final ClientMessage message, final Channel replChannel) throws Exception
       {
          Integer distance = (Integer)message.getProperty(ManagementHelper.HDR_DISTANCE);
 
@@ -770,6 +825,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             Packet packet = new ReplicateRemoteConsumerAddedMessage(clusterName, filterString, message.getProperties());
 
+            beforeReplicate();
             replChannel.replicatePacket(packet, 1, new Runnable()
             {
                public void run()
@@ -782,6 +838,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                   {
                      log.error("Failed to add remote consumer", e);
                   }
+                  
+                  replicationComplete();
                }
             });
          }
@@ -803,7 +861,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          }
       }
 
-      private void doConsumerClosed(final ClientMessage message, final Channel replChannel) throws Exception
+      private synchronized void doConsumerClosed(final ClientMessage message, final Channel replChannel) throws Exception
       {
          Integer distance = (Integer)message.getProperty(ManagementHelper.HDR_DISTANCE);
 
@@ -829,6 +887,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                       filterString,
                                                                       message.getProperties());
 
+            beforeReplicate();
             replChannel.replicatePacket(packet, 1, new Runnable()
             {
                public void run()
@@ -841,6 +900,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                   {
                      log.error("Failed to remove remote consumer", e);
                   }
+                  
+                  replicationComplete();
                }
             });
          }
