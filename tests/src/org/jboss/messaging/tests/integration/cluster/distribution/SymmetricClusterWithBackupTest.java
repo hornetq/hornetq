@@ -251,6 +251,8 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       setupCluster();
 
       startServers();
+      
+      log.info("*** started servers");
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());

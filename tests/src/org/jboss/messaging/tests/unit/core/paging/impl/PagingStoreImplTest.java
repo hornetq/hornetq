@@ -1175,6 +1175,12 @@ public class PagingStoreImplTest extends UnitTestCase
    class FakePostOffice implements PostOffice
    {
 
+      public Object getNotificationLock()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
       public Bindings getMatchingBindings(SimpleString address)
       {
          // TODO Auto-generated method stub

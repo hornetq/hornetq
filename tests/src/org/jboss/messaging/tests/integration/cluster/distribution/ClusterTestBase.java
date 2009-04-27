@@ -149,7 +149,7 @@ public class ClusterTestBase extends ServiceTestBase
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
 
-      System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
+      //System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
       throw new IllegalStateException("Timed out waiting for messages (messageCount = " + messageCount +
                                       ", expecting = " +
@@ -162,7 +162,7 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-//       log.info("waiting for bindings on node " + node +
+//      log.info("waiting for bindings on node " + node +
 //               " address " +
 //               address +
 //               " count " +
@@ -206,7 +206,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-        // log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
+         //log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -218,11 +218,15 @@ public class ClusterTestBase extends ServiceTestBase
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
 
-      System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
+      // System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
-      throw new IllegalStateException("Timed out waiting for bindings (bindingCount = " + bindingCount +
-                                      ", totConsumers = " +
-                                      totConsumers);
+      String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount +
+                   ", totConsumers = " +
+                   totConsumers;
+
+      log.error(msg);
+
+      throw new IllegalStateException(msg);
    }
 
    protected void createQueue(int node, String address, String queueName, String filterVal, boolean durable) throws Exception
@@ -399,18 +403,22 @@ public class ClusterTestBase extends ServiceTestBase
    {
       sendInRange(node, address, 0, numMessages, durable, filterVal);
    }
-   
+
    protected void verifyReceiveAllInRange(boolean ack, int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
       verifyReceiveAllInRangeNotBefore(ack, -1, msgStart, msgEnd, consumerIDs);
    }
-   
+
    protected void verifyReceiveAllInRange(int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
       verifyReceiveAllInRangeNotBefore(false, -1, msgStart, msgEnd, consumerIDs);
    }
 
-   protected void verifyReceiveAllInRangeNotBefore(boolean ack, long firstReceiveTime, int msgStart, int msgEnd, int... consumerIDs) throws Exception
+   protected void verifyReceiveAllInRangeNotBefore(boolean ack,
+                                                   long firstReceiveTime,
+                                                   int msgStart,
+                                                   int msgEnd,
+                                                   int... consumerIDs) throws Exception
    {
       boolean outOfOrder = false;
       for (int i = 0; i < consumerIDs.length; i++)
@@ -426,13 +434,20 @@ public class ClusterTestBase extends ServiceTestBase
          {
             ClientMessage message = holder.consumer.receive(2000);
 
-            assertNotNull("consumer " + consumerIDs[i] + " did not receive message " + j, message);
+            if (message == null)
+            {
+               log.info("*** dumping consumers:");
 
+               dumpConsumers();
+
+               assertNotNull("consumer " + consumerIDs[i] + " did not receive message " + j, message);
+            }
+           
             if (ack)
             {
                message.acknowledge();
             }
-            
+
             if (firstReceiveTime != -1)
             {
                assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
@@ -448,7 +463,20 @@ public class ClusterTestBase extends ServiceTestBase
 
       assertFalse("Messages were consumed out of order, look at System.out for more information", outOfOrder);
    }
-   
+
+   private void dumpConsumers() throws Exception
+   {
+      for (int i = 0; i < consumers.length; i++)
+      {
+         if (consumers[i] != null)
+         {
+            log.info("Dumping consumer " + i);
+
+            checkReceive(i);
+         }
+      }
+   }
+
    protected void verifyReceiveAll(boolean ack, int numMessages, int... consumerIDs) throws Exception
    {
       verifyReceiveAllInRange(ack, 0, numMessages, consumerIDs);
@@ -574,12 +602,12 @@ public class ClusterTestBase extends ServiceTestBase
                {
                   message.acknowledge();
                }
-               
-               //log.info("consumer " + consumerIDs[i] +" returns " + count);
+
+               // log.info("consumer " + consumerIDs[i] +" returns " + count);
             }
             else
             {
-              // log.info("consumer " + consumerIDs[i] +" returns null");
+               // log.info("consumer " + consumerIDs[i] +" returns null");
             }
          }
          while (message != null);
@@ -954,7 +982,7 @@ public class ClusterTestBase extends ServiceTestBase
 
       TransportConfiguration nettyBackuptc = null;
       TransportConfiguration invmBackuptc = null;
-      
+
       if (backupNode != -1)
       {
          Map<String, Object> backupParams = generateParams(backupNode, netty);
@@ -1000,11 +1028,13 @@ public class ClusterTestBase extends ServiceTestBase
          TransportConfiguration nettytc_c = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params);
          configuration.getConnectorConfigurations().put(nettytc_c.getName(), nettytc_c);
 
-         connectorPairs.add(new Pair<String, String>(nettytc_c.getName(), nettyBackuptc == null ? null : nettyBackuptc.getName()));
+         connectorPairs.add(new Pair<String, String>(nettytc_c.getName(),
+                                                     nettyBackuptc == null ? null : nettyBackuptc.getName()));
       }
       else
       {
-         connectorPairs.add(new Pair<String, String>(invmtc_c.getName(), invmBackuptc == null ? null : invmBackuptc.getName()));
+         connectorPairs.add(new Pair<String, String>(invmtc_c.getName(), invmBackuptc == null ? null
+                                                                                             : invmBackuptc.getName()));
       }
 
       BroadcastGroupConfiguration bcConfig = new BroadcastGroupConfiguration("bg1",
@@ -1059,7 +1089,7 @@ public class ClusterTestBase extends ServiceTestBase
          servers[nodes[i]] = null;
       }
    }
-   
+
    protected void clearAllServers()
    {
       for (int i = 0; i < servers.length; i++)
@@ -1117,7 +1147,6 @@ public class ClusterTestBase extends ServiceTestBase
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
 
-   
    protected void setupClusterConnection(String name,
                                          String address,
                                          boolean forwardWhenNoConsumers,

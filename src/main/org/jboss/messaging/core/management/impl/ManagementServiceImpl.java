@@ -586,53 +586,60 @@ public class ManagementServiceImpl implements ManagementService
          // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
          synchronized (this)
          {
-            // First send to any local listeners
-            for (NotificationListener listener : listeners)
+            //We also need to synchronize on the post office notification lock
+            //otherwise we can get notifications arriving in wrong order / missing
+            //if a notification occurs at same time as sendQueueInfoToQueue is processed
+            synchronized (postOffice.getNotificationLock())
             {
-               try
+               
+               // First send to any local listeners
+               for (NotificationListener listener : listeners)
                {
-                  listener.onNotification(notification);
+                  try
+                  {
+                     listener.onNotification(notification);
+                  }
+                  catch (Exception e)
+                  {
+                     // Exception thrown from one listener should not stop execution of others
+                     log.error("Failed to call listener", e);
+                  }
                }
-               catch (Exception e)
+   
+               // Now send message
+   
+               ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
+   
+               notificationMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
+               // Notification messages are always durable so the user can choose whether to add a durable queue to consume
+               // them in
+               notificationMessage.setDurable(true);
+               notificationMessage.setDestination(managementNotificationAddress);
+   
+               TypedProperties notifProps;
+               if (notification.getProperties() != null)
                {
-                  // Exception thrown from one listener should not stop execution of others
-                  log.error("Failed to call listener", e);
+                  notifProps = new TypedProperties(notification.getProperties());
                }
+               else
+               {
+                  notifProps = new TypedProperties();
+               }
+   
+               notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
+                                            new SimpleString(notification.getType().toString()));
+   
+               notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
+   
+               if (notification.getUID() != null)
+               {
+                  notifProps.putStringProperty(new SimpleString("foobar"), new SimpleString(notification.getUID()));
+               }
+   
+               notificationMessage.putTypedProperties(notifProps);
+   
+               postOffice.route(notificationMessage, null);
             }
-
-            // Now send message
-
-            ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
-
-            notificationMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
-            // Notification messages are always durable so the user can choose whether to add a durable queue to consume
-            // them in
-            notificationMessage.setDurable(true);
-            notificationMessage.setDestination(managementNotificationAddress);
-
-            TypedProperties notifProps;
-            if (notification.getProperties() != null)
-            {
-               notifProps = new TypedProperties(notification.getProperties());
-            }
-            else
-            {
-               notifProps = new TypedProperties();
-            }
-
-            notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
-                                         new SimpleString(notification.getType().toString()));
-
-            notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
-
-            if (notification.getUID() != null)
-            {
-               notifProps.putStringProperty(new SimpleString("foobar"), new SimpleString(notification.getUID()));
-            }
-
-            notificationMessage.putTypedProperties(notifProps);
-
-            postOffice.route(notificationMessage, null);
          }
       }
    }

@@ -1245,6 +1245,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(3, "queues.testaddress", 1, 1, true);
       waitForBindings(4, "queues.testaddress", 1, 1, true);
 
+      waitForBindings(0, "queues.testaddress", 4, 4, false);
       waitForBindings(1, "queues.testaddress", 3, 3, false);
       waitForBindings(2, "queues.testaddress", 3, 3, false);
       waitForBindings(3, "queues.testaddress", 3, 3, false);
@@ -1252,7 +1253,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       send(0, "queues.testaddress", 10, false, null);
 
-      verifyReceiveAll(10, 1, 2, 3, 4);
+      verifyReceiveAll(10, 1, 2, 3, 4);     
    }
 
    public void testNoLocalQueueLoadBalancedQueues() throws Exception
@@ -1282,6 +1283,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(3, "queues.testaddress", 1, 1, true);
       waitForBindings(4, "queues.testaddress", 1, 1, true);
 
+      waitForBindings(0, "queues.testaddress", 4, 4, false);
       waitForBindings(1, "queues.testaddress", 3, 3, false);
       waitForBindings(2, "queues.testaddress", 3, 3, false);
       waitForBindings(3, "queues.testaddress", 3, 3, false);

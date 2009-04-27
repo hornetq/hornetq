@@ -736,6 +736,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       return cache;
    }
+   
+   public Object getNotificationLock()
+   {
+      return notificationLock;
+   }
 
    public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
    {
