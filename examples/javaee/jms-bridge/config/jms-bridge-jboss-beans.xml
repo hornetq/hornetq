@@ -22,13 +22,13 @@
                <parameter>
                    <inject bean="TargetDestinationFactory"/>
                </parameter>
-               <!-- Source username -->
+               <!-- Source username (no username here) -->
                <parameter><null /></parameter>
-               <!-- Source password -->
+               <!-- Source password (no password here)-->
                <parameter><null /></parameter>
-               <!-- Target username -->
+               <!-- Target username (no username here)-->
                <parameter><null /></parameter>
-               <!-- Target password -->
+               <!-- Target password (no password here)-->
                <parameter><null /></parameter>
                <!-- Selector -->
                <parameter><null /></parameter>
@@ -42,9 +42,9 @@
                <parameter>1</parameter>
                <!-- Maximum batch time (-1 means infinite) -->
                <parameter>-1</parameter>
-               <!-- Suscription name -->
+               <!-- Subscription name (no subscription name here)-->
                <parameter><null /></parameter>
-               <!-- client ID  -->
+               <!-- client ID  (no client ID here)-->
                <parameter><null /></parameter>
                <!-- concatenate JMS messageID to the target's message header -->
                <parameter>true</parameter>
@@ -54,6 +54,7 @@
            </property>
        </bean>
 
+       <!-- SourceCFF describes the ConnectionFactory used to connect to the source destination -->
        <bean name="SourceCFF" class="org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory">
            <constructor>
                <parameter>
@@ -63,6 +64,7 @@
            </constructor>  
        </bean>
 
+       <!-- TargetCFF describes the ConnectionFactory used to connect to the target destination -->
        <bean name="TargetCFF" class="org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory">
            <constructor>
                <parameter>
@@ -72,6 +74,7 @@
            </constructor>  
        </bean>
 
+       <!-- SourceDestinationFactory describes the Destination used as the source -->
        <bean name="SourceDestinationFactory" class="org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory">
            <constructor>
                <parameter>
@@ -81,6 +84,7 @@
            </constructor>  
        </bean>
 
+       <!-- TargetDestinationFactory describes the Destination used as the target -->
        <bean name="TargetDestinationFactory" class="org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory">
            <constructor>
                <parameter>
@@ -90,6 +94,8 @@
            </constructor>  
        </bean>
        
+       <!-- JNDI is a Hashtable containing the JNDI properties required -->
+       <!-- to connect to the sources and targets JMS resrouces         -->       
       <bean name="JNDI" class="java.util.Hashtable">
          <constructor class="java.util.Map">
             <map class="java.util.Hashtable" keyClass="java.lang.String"
