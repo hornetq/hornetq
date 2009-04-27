@@ -1,15 +1,141 @@
 <html>
   <head>
-    <title>JBoss Messaging Java EE MDB Example</title>
+    <title>JBoss Messaging Java EE JCA Configuration Example</title>
     <link rel="stylesheet" type="text/css" href="../../jms/common/common.css">
   </head>
   <body>
-     <h1>Java EE MDB Remote Example (Not finished!)</h1>
-     <br>
-     <p>This example shows you how to send a message to an MDB</p>
-     <p>
-         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
-     </p>
+     <h1>Java EE JCA Configuration Example</h1>
+     <p>This example shows you how to configure JBossMessagin's Resource Adapter</p>
+     <p>A Resource Adapter is a way to connect any system provider to an application server.</p>
+     <p>JBossMessaging provides its own adapter and this example will provide you a quick tutorial on how to configure some of the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
+     <h2>MDB Properties</h2>
+     <p>On MDBs, you could configure the adapter thorugh ActivactionConfigProperties on the MDB. Example:</p>
+        <pre>
+           <code>
+           @MessageDriven(name = "MessageMDBExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
+                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545")
+                     })
+            public class MDBRemoteExample implements MessageListener
+         </code>
+        </pre>
+     <p>MDB Properties can also be defined on XML Files. The <a href="http://www.jboss.org/file-access/default/members/jbossejb3/freezone/docs/tutorial/1.0.6/html/Message_Driven_Beans_with_deployment_descriptor.html"> JBoss EJB3 Documentation</a> will have more information.</p>
+     
+     <p>Optionally you could also define the resource adapter you are using. On JBoss EJB3 there is a JBoss specific tag where you can define the Resource-adapter file name:</p>
+     
+<pre><code>
+
+...
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
+@MessageDriven(name = "MessageMDBExample",
+               activationConfig =
+                     {
+                                ...
+                     })
+                     @ResourceAdapter("example-jbm-ra.rar")
+public class MDBRemoteExample implements MessageListener
+...
+</code></pre>
+
+     <p>Other application servers will provide different ways of binding the resource-adapter.</p>
+     
+     <h2>Connection Factory Properties</h2>
+     <p>You can configure ConnectionFactories that you use outside of the MDB context, such as in your SessionBeans. On JBoss Application Server, that could be defined on a datasource deployment file (-ds.xml), using Configuration-properties on the connection factory.</p>
+
+     <p>For example, jms-remote-ds.xml</p>        
+<pre>
+<code>
+&lt;connection-factories&gt;
+
+
+   &lt;tx-connection-factory&gt;
+      &lt;jndi-name&gt;RemoteJmsXA&lt;/jndi-name&gt;
+      &lt;xa-transaction/&gt;
+      &lt;rar-name&gt;jms-ra.rar&lt;/rar-name&gt;
+      &lt;connection-definition&gt;org.jboss.messaging.ra.JBMConnectionFactory&lt;/connection-definition&gt;
+      &lt;config-property name="SessionDefaultType" type="java.lang.String"&gt;javax.jms.Topic&lt;/config-property&gt;
+      &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/config-property&gt;
+      &lt;config-property name="ConnectionParameters" type="java.lang.String"&gt;jbm.remoting.netty.port=5545&lt;/config-property&gt;
+      &lt;max-pool-size>20&lt;/max-pool-size&gt;
+   &lt;/tx-connection-factory&gt;
+
+
+&lt;/connection-factories&gt;
+</code>
+</pre>     
+
+     <h2>Resource Adapter Global Properties</h2>
+     <p>It is possible to also change global configuration at the JBossMessaging resource adapter. The default installation script will install jboss-messaging resource adapter at $JBOSS_HOME/server/<i>YOUR-SERVER</i>/deploy/jms-ra.rar.</p>
+     <p>To change these properties, open the ra.xml under jms-ra.rar/META-INF</p>
+     <p>Example for ra.xml:</p>
+<pre>
+<code>
+
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;!-- $Id: ra.xml 76819 2008-08-08 11:04:20Z jesper.pedersen $ --&gt;
+
+&lt;connector xmlns="http://java.sun.com/xml/ns/j2ee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+           http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+           version="1.5"&gt;
+
+...
+
+
+   &lt;resourceadapter&gt;
+      &lt;resourceadapter-class&gt;org.jboss.messaging.ra.JBMResourceAdapter&lt;/resourceadapter-class&gt;
+      &lt;config-property&gt;
+         &lt;description&gt;The transport type&lt;/description&gt;
+         &lt;config-property-name&gt;ConnectorClassName&lt;/config-property-name&gt;
+         &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+         &lt;config-property-value&gt;org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+      &lt;config-property&gt;
+         &lt;description&gt;The transport configuration. These values must be in the form of key=val;key=val;&lt;/description&gt;
+         &lt;config-property-name&gt;ConnectionParameters&lt;/config-property-name&gt;
+         &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+         &lt;config-property-value&gt;jbm.remoting.invm.serverid=0&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+       &lt;config-property&gt;
+        &lt;description&gt;Use XA methods to obtain connections?&lt;/description&gt;
+        &lt;config-property-name&gt;UseXA&lt;/config-property-name&gt;
+        &lt;config-property-type&gt;java.lang.Boolean&lt;/config-property-type&gt;
+        &lt;config-property-value&gt;true&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+      &lt;config-property&gt;
+        &lt;description&gt;The user name used to login to the JMS server&lt;/description&gt;
+        &lt;config-property-name&gt;UserName&lt;/config-property-name&gt;
+        &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+        &lt;config-property-value&gt;&lt;/config-property-value&gt;
+      &lt;/config-property&gt;
+
+
+...
+</code>
+</pre>
+     
+     <p>Refer to the <i>Resource Adapter</i> Chapter on the <i>JBoss Messaging Documentation</i> for more information about configuring the ra.xml properties.
+            
+     <p>You may choose to deploy multiple JBossMessaging Resource adapters on the same application server, for example if you are connecting to different JBM servers and if you wish to have a higher control of properties on each server you are connecting to. You will be able to determine which rar you are using individually at each <i>MDB</i> and <i>ConnectionFactory</i> as specified before here. Just copy the directory jms-ra.rar in your application as any other name with the extension .rar and use that file name at your deployments.</p>
+     
+     <h2>Please follow these steps to configure the example:</h2>
+     <ol>
+     <li>Define the property JBOSS_HOME pointing to the root of a JBoss 5.1 distribution</li>
+     <li>Create a JBoss messaging clustered profile by typing <code>ant</code> int the <code>AS</code> directory off the root of
+     the JBoss Messaging distribution. This will create a server profile called <code>$JBOSS_HOME/server/jbm2_default</code>.</li>
+     <li>Copy the directory <code>$JBOSS_HOME/server/jbm2_default</code> to <code>$JBOSS_HOME/server/jbm2_default_2</code>.</li>
+     <li>Start the first server with <code>./run.sh -c jbm2_default</code></li>
+     <li>Start the second server with <code>./run.sh -c jbm2_default_2 -Djboss.service.binding.set=ports-01</li>
+     </ol>
+     
      <h2>Example step-by-step</h2>
      <p><i>To deploy the example, simply type <code>ant deploy</code> from this directory **</i></p>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
