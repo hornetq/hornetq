@@ -184,7 +184,7 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
             }
             catch (Exception e1)
             {
-               log.error(new StringBuilder("Unable to deploy node ").append(node), e1);
+               log.error(new StringBuilder("Unable to deploy node " + node + " " + name), e1);
                continue;
             }
             addToConfiguration(url, name, node);
