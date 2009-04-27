@@ -64,13 +64,13 @@
         <description>The user name used to login to the JMS server</description>
         <config-property-name>UserName</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
-        <config-property-value>Adamastor</config-property-value>
+        <config-property-value></config-property-value>
       </config-property>
       <config-property>
         <description>The password used to login to the JMS server</description>
         <config-property-name>Password</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
-        <config-property-value>Rodrigues</config-property-value>
+        <config-property-value></config-property-value>
       </config-property>
       <!--<config-property>
          <description>The Backup transport type</description>
