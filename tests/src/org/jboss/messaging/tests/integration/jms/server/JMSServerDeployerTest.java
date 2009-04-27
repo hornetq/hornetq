@@ -33,6 +33,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -52,8 +53,9 @@ import org.w3c.dom.Element;
  */
 public class JMSServerDeployerTest extends ServiceTestBase
 {
-
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(JMSServerDeployerTest.class);
 
    // Attributes ----------------------------------------------------
 
@@ -81,6 +83,76 @@ public class JMSServerDeployerTest extends ServiceTestBase
       deployer.validate(rootNode);
    }
 
+   public void testDeployUnusualQueueNames() throws Exception
+   {
+      doTestDeployQueuesWithUnusualNames("queue.with.dots.in.name", "/myqueue");
+      
+      doTestDeployQueuesWithUnusualNames("queue with spaces in name", "/myqueue2");
+      
+      doTestDeployQueuesWithUnusualNames("queue/with/slashes/in/name", "/myqueue3");
+      
+      doTestDeployQueuesWithUnusualNames("queue\\with\\backslashes\\in\\name", "/myqueue4");
+      
+      doTestDeployQueuesWithUnusualNames("queue with # chars and * chars in name", "queue with &#35; chars and &#42; chars in name", "/myqueue5");      
+   }
+   
+   public void testDeployUnusualTopicNames() throws Exception
+   {
+      doTestDeployTopicsWithUnusualNames("topic.with.dots.in.name", "/mytopic");
+      
+      doTestDeployTopicsWithUnusualNames("topic with spaces in name", "/mytopic2");
+      
+      doTestDeployTopicsWithUnusualNames("topic/with/slashes/in/name", "/mytopic3");
+      
+      doTestDeployTopicsWithUnusualNames("topic\\with\\backslashes\\in\\name", "/mytopic4");
+      
+      doTestDeployTopicsWithUnusualNames("topic with # chars and * chars in name", "topic with &#35; chars and &#42; chars in name", "/mytopic5");      
+   }
+   
+   private void doTestDeployQueuesWithUnusualNames(final String queueName, String htmlEncodedName, final String jndiName) throws Exception
+   {
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
+
+      String xml =
+
+      "<queue name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</queue>";
+
+      Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
+
+      deployer.deploy(rootNode);
+
+      Queue queue = (Queue)context.lookup(jndiName);
+      assertNotNull(queue);
+      assertEquals(queueName, queue.getQueueName());
+   }
+   
+   private void doTestDeployTopicsWithUnusualNames(final String topicName, String htmlEncodedName, final String jndiName) throws Exception
+   {
+      JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
+
+      String xml =
+
+      "<topic name=\"" + htmlEncodedName + "\">" + "<entry name=\"" + jndiName + "\"/>" + "</topic>";
+
+      Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
+
+      deployer.deploy(rootNode);
+
+      Topic topic = (Topic)context.lookup(jndiName);
+      assertNotNull(topic);
+      assertEquals(topicName, topic.getTopicName());
+   }
+   
+   private void doTestDeployQueuesWithUnusualNames(final String queueName, final String jndiName) throws Exception
+   {
+      doTestDeployQueuesWithUnusualNames(queueName, queueName, jndiName);
+   }
+   
+   private void doTestDeployTopicsWithUnusualNames(final String topicName, final String jndiName) throws Exception
+   {
+      doTestDeployTopicsWithUnusualNames(topicName, topicName, jndiName);
+   }
+
    public void testDeployFullConfiguration() throws Exception
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
@@ -94,7 +166,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
                                                          "java:/connectionfactories/acme/fullConfigurationConnectionFactory" };
       String[] queueBindings = new String[] { "/fullConfigurationQueue", "/queue/fullConfigurationQueue" };
       String[] topicBindings = new String[] { "/fullConfigurationTopic", "/topic/fullConfigurationTopic" };
-      
+
       for (String binding : connectionFactoryBindings)
       {
          checkNoBinding(context, binding);
@@ -154,7 +226,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       {
          Queue queue = (Queue)context.lookup(binding);
          assertNotNull(queue);
-         assertEquals("fullConfigurationQueue", queue.getQueueName());         
+         assertEquals("fullConfigurationQueue", queue.getQueueName());
       }
 
       for (String binding : topicBindings)

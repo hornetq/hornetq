@@ -23,7 +23,6 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.utils.Pair;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -147,6 +146,8 @@ public class JMSServerDeployer extends XmlDeployer
     */
    private void createAndBindObject(final Node node) throws Exception
    {
+      log.info("** deploying node " + node.getNodeName());
+      
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
       {
          log.info("Got connecti0on factory node");
@@ -399,8 +400,9 @@ public class JMSServerDeployer extends XmlDeployer
          }
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
-      {
+      {                 
          String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+         log.info("got queue " + queueName);
          NodeList children = node.getChildNodes();
          for (int i = 0; i < children.getLength(); i++)
          {
