@@ -86,7 +86,7 @@
       <copy todir="${messaging.sar.dir}">
         <fileset dir="${messaging.config.dir}" includes="*"/>
       </copy>
-      <copy file="${lib.dir}/jbm-ra.rar" tofile="${dest.dir}/deploy/jms-ra.rar"/>
+   	  <unzip src="${lib.dir}/jbm-ra.rar" dest="${dest.dir}/deploy/jms-ra.rar"/>
    </target>
 
    <!-- The JBOSS_HOME environment variable and the directory must exist, we also check we are running
