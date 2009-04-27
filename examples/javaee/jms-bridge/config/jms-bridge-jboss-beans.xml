@@ -57,20 +57,7 @@
        <bean name="SourceCFF" class="org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory">
            <constructor>
                <parameter>
-                   <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="java.lang.String">
-                         <entry>
-                             <key>java.naming.factory.initial</key>
-                             <value>org.jnp.interfaces.NamingContextFactory</value>
-                         </entry>
-                         <entry>
-                             <key>java.naming.provider.url</key>
-                             <value>jnp://localhost:1099</value>
-                         </entry>
-                         <entry>
-                             <key>java.naming.factory.url.pkgs</key>
-                             <value>org.jboss.naming:org.jnp.interfaces"</value>
-                         </entry>
-                     </map>
+                   <inject bean="JNDI" />
                </parameter>
                <parameter>/ConnectionFactory</parameter>
            </constructor>  
@@ -79,20 +66,7 @@
        <bean name="TargetCFF" class="org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory">
            <constructor>
                <parameter>
-                   <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="java.lang.String">
-                         <entry>
-                             <key>java.naming.factory.initial</key>
-                             <value>org.jnp.interfaces.NamingContextFactory</value>
-                         </entry>
-                         <entry>
-                             <key>java.naming.provider.url</key>
-                             <value>jnp://localhost:1099</value>
-                         </entry>
-                         <entry>
-                             <key>java.naming.factory.url.pkgs</key>
-                             <value>org.jboss.naming:org.jnp.interfaces"</value>
-                         </entry>
-                     </map>
+                   <inject bean="JNDI" />
                </parameter>
                <parameter>/ConnectionFactory</parameter>
            </constructor>  
@@ -101,20 +75,7 @@
        <bean name="SourceDestinationFactory" class="org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory">
            <constructor>
                <parameter>
-                    <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="java.lang.String">
-                          <entry>
-                              <key>java.naming.factory.initial</key>
-                              <value>org.jnp.interfaces.NamingContextFactory</value>
-                          </entry>
-                          <entry>
-                              <key>java.naming.provider.url</key>
-                              <value>jnp://localhost:1099</value>
-                          </entry>
-                          <entry>
-                              <key>java.naming.factory.url.pkgs</key>
-                              <value>org.jboss.naming:org.jnp.interfaces"</value>
-                          </entry>
-                      </map>
+                   <inject bean="JNDI" />
                </parameter>
                <parameter>/queue/source</parameter>
            </constructor>  
@@ -123,45 +84,30 @@
        <bean name="TargetDestinationFactory" class="org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory">
            <constructor>
                <parameter>
-                   <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="java.lang.String">
-                         <entry>
-                             <key>java.naming.factory.initial</key>
-                             <value>org.jnp.interfaces.NamingContextFactory</value>
-                         </entry>
-                         <entry>
-                             <key>java.naming.provider.url</key>
-                             <value>jnp://localhost:1099</value>
-                         </entry>
-                         <entry>
-                             <key>java.naming.factory.url.pkgs</key>
-                             <value>org.jboss.naming:org.jnp.interfaces"</value>
-                         </entry>
-                     </map>
+                   <inject bean="JNDI" />
                </parameter>
                <parameter>/queue/target</parameter>
            </constructor>  
        </bean>
-
-    <!--
-       <bean name="JNDIProperties" class="java.util.Hashtable">
-           <property key="map">
-            <map class="java.util.Properties" keyClass="java.lang.String" valueClass="java.lang.String">
-               <entry>
-                   <key>java.naming.factory.initial</key>
-                   <value>org.jnp.interfaces.NamingContextFactory</value>
-               </entry>
-               <entry>
-                   <key>java.naming.provider.url</key>
-                   <value>jnp://localhost:1099</value>
-               </entry>
-               <entry>
-                   <key>java.naming.factory.url.pkgs</key>
-                   <value>org.jboss.naming:org.jnp.interfaces"</value>
-               </entry>
-           </map>
-       </property>
-       </bean>
-    --> 
        
+      <bean name="JNDI" class="java.util.Hashtable">
+         <constructor class="java.util.Map">
+            <map class="java.util.Hashtable" keyClass="java.lang.String"
+                                             valueClass="java.lang.String">
+               <entry>
+                  <key>java.naming.factory.initial</key>
+                  <value>org.jnp.interfaces.NamingContextFactory</value>
+               </entry>
+               <entry>
+                  <key>java.naming.provider.url</key>
+                  <value>jnp://localhost:1099</value>
+               </entry>
+               <entry>
+                  <key>java.naming.factory.url.pkgs</key>
+                  <value>org.jboss.naming:org.jnp.interfaces"</value>
+               </entry>
+            </map>
+         </constructor>
+      </bean>
 
 </deployment>
