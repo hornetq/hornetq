@@ -77,8 +77,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Static ---------------------------------------------------------------------------------------
 
-   // private static final boolean trace = log.isTraceEnabled();
-   private static final boolean trace = false;
+   private static final boolean trace = log.isTraceEnabled();
 
    private static void trace(final String message)
    {
@@ -668,12 +667,16 @@ public class ServerConsumerImpl implements ServerConsumer
     */
    private void deliverStandardMessage(final MessageReference ref, final ServerMessage message)
    {
+      final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount());
+
       if (availableCredits != null)
       {
-         availableCredits.addAndGet(-message.getEncodeSize());
+         availableCredits.addAndGet(-packet.getRequiredBufferSize());
+         if (trace)
+         {
+            log.trace("Taking " + packet.getRequiredBufferSize() + " out of flow control");
+         }
       }
-
-      final SessionReceiveMessage packet = new SessionReceiveMessage(id, message, ref.getDeliveryCount());
 
       if (replicatingChannel == null)
       {

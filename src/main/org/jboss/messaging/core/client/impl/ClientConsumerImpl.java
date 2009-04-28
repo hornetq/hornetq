@@ -377,6 +377,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       ClientMessageInternal messageToHandle = message;
 
       messageToHandle.onReceipt(this);
+      
+      if (trace)
+      {
+         log.trace("Adding message " + message + " into buffer");
+      }
 
       // Add it to the buffer
       buffer.addLast(messageToHandle, messageToHandle.getPriority());
@@ -501,12 +506,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                if (clientWindowSize == 0)
                {
+                  if (trace)
+                  {
+                     log.trace("Sending full credits - 1 for slow consumer");
+                  }
                   // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be
                   // always buffering one after received the first message
                   sendCredits(creditsToSend - 1);
                }
                else
                {
+                  if (trace)
+                  {
+                     log.trace("Sending full credits");
+                  }
                   sendCredits(creditsToSend);
                }
                creditsToSend = 0;
@@ -537,6 +550,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void queueExecutor()
    {
+      if (trace)
+      {
+         log.trace("Adding Runner on Executor for delivery");
+      }
       sessionExecutor.execute(runner);
    }
 
@@ -545,6 +562,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     */
    private void sendCredits(final int credits)
    {
+      if (trace)
+      {
+         log.trace("Sending " + credits + " back");
+      }
       channel.send(new SessionConsumerFlowCreditMessage(id, credits));
    }
 
@@ -619,7 +640,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                onMessageThread = Thread.currentThread();
 
+               if (trace)
+               {
+                  log.trace("Calling handler.onMessage");
+               }
                theHandler.onMessage(message);
+               
+               if (trace)
+               {
+                  log.trace("Handler.onMessage done");
+               }
                
                if (message.isLargeMessage())
                {
@@ -634,6 +664,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             // If slow consumer, we need to send 1 credit to make sure we get another message
             if (clientWindowSize == 0)
             {
+               if (trace)
+               {
+                  log.trace("Sending 1 credit back after consuming message on slow consumer (no-buffering)");
+               }
                sendCredits(1);
             }
          }
