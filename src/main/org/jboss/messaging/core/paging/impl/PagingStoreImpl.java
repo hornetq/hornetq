@@ -272,13 +272,13 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
 
                log.trace(" globalDepage = " + pagingManager.isGlobalPageMode() +
-                         "\n currentGlobalSize = " +
+                         " currentGlobalSize = " +
                          currentGlobalSize +
-                         "\n GlobalWatermark = " +
+                         " GlobalWatermark = " +
                          pagingManager.getGlobalDepageWatermarkBytes() +
-                         "\n maxGlobalSize = " +
+                         " maxGlobalSize = " +
                          maxGlobalSize +
-                         "\n maxGlobalSize - defaultPageSize = " +
+                         " maxGlobalSize - defaultPageSize = " +
                          (maxGlobalSize - pagingManager.getGlobalDepageWatermarkBytes()));
             }
 
