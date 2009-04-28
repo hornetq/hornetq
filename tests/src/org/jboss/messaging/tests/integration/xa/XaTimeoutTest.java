@@ -21,13 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.xa;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -40,10 +33,20 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
+import org.jboss.messaging.core.transaction.Transaction;
+import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -133,7 +136,9 @@ public class XaTimeoutTest extends UnitTestCase
       clientProducer.send(m3);
       clientProducer.send(m4);
       clientSession.end(xid, XAResource.TMSUCCESS);
-      Thread.sleep(1500);
+      CountDownLatch latch = new CountDownLatch(1);
+      messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
       try
       {
          clientSession.commit(xid, true);
@@ -182,7 +187,9 @@ public class XaTimeoutTest extends UnitTestCase
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
-      Thread.sleep(2600);
+      CountDownLatch latch = new CountDownLatch(1);
+      messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
       try
       {
          clientSession.commit(xid, true);
@@ -258,7 +265,9 @@ public class XaTimeoutTest extends UnitTestCase
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
-      Thread.sleep(2600);
+      CountDownLatch latch = new CountDownLatch(1);
+      messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
       try
       {
          clientSession.commit(xid, true);
@@ -337,7 +346,9 @@ public class XaTimeoutTest extends UnitTestCase
       assertEquals(m.getBody().readString(), "m4");
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
-      Thread.sleep(2600);
+      CountDownLatch latch = new CountDownLatch(1);
+      messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
+      assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
       clientSession.commit(xid, true);
 
       clientSession.setTransactionTimeout(0);
@@ -381,7 +392,9 @@ public class XaTimeoutTest extends UnitTestCase
       clientProducer.send(m4);
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.setTransactionTimeout(1);
-      Thread.sleep(1500);
+      CountDownLatch latch = new CountDownLatch(1);
+      messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       try
       {
@@ -412,7 +425,9 @@ public class XaTimeoutTest extends UnitTestCase
       clientProducer.send(m4);
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.setTransactionTimeout(10000);
-      Thread.sleep(2600);
+      CountDownLatch latch = new CountDownLatch(1);
+      messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
+      assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
       clientSession.prepare(xid);
       clientSession.commit(xid, true);
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
@@ -474,7 +489,9 @@ public class XaTimeoutTest extends UnitTestCase
       {
          clientSessions[i].end(xids[i], XAResource.TMSUCCESS);
       }
-      Thread.sleep(2500);
+      CountDownLatch latch = new CountDownLatch(1);
+      messagingService.getResourceManager().getTransaction(xids[clientSessions.length - 1]).addOperation(new RollbackCompleteOperation(latch));
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
       for (int i = 0; i < clientSessions.length; i++)
       {
          try
@@ -495,4 +512,38 @@ public class XaTimeoutTest extends UnitTestCase
       assertNull(m);
    }
 
+   class RollbackCompleteOperation implements TransactionOperation
+   {
+      final CountDownLatch latch;
+
+      public RollbackCompleteOperation(CountDownLatch latch)
+      {
+         this.latch = latch;
+      }
+
+      public void beforePrepare(Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeCommit(Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeRollback(Transaction tx) throws Exception
+      {
+      }
+
+      public void afterPrepare(Transaction tx) throws Exception
+      {
+      }
+
+      public void afterCommit(Transaction tx) throws Exception
+      {
+      }
+
+      public void afterRollback(Transaction tx) throws Exception
+      {
+         latch.countDown();
+      }
+   }
 }
