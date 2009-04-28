@@ -1,13 +1,25 @@
 <deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-users.xsd ">
    
-   <user name="jbm-sender" password="jbossmessaging1">
+   <user name="bill" password="jbossmessaging">
       <role name="user"/>
-      <role name="sender"/>
+   </user>
+  
+   <user name="andrew" password="jbossmessaging1">
+      <role name="europe-user"/>
+      <role name="user"/>
    </user>
    
-   <user name="jbm-consumer" password="jbossmessaging2">
+   <user name="frank" password="jbossmessaging2">
+      <role name="us-user"/>
+      <role name="news-user"/>
       <role name="user"/>
-      <role name="consumer"/>
    </user>
+   
+   <user name="sam" password="jbossmessaging3">
+      <role name="news-user"/>
+      <role name="user"/>
+   </user>
+
 </deployment>
+

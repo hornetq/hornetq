@@ -23,6 +23,7 @@ package org.jboss.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -47,16 +48,21 @@ public class SecurityExample extends JMSExample
 
    public boolean runExample() throws Exception
    {
-      Connection connection1 = null;
-      Connection connection2 = null;
+      Connection billConnection = null;
+      Connection andrewConnection = null;
+      Connection frankConnection = null;
+      Connection samConnection = null;
+      
       InitialContext initialContext = null;
       try
       {
          ///Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         //Step 2. perform a lookup on the topic
-         Topic topic = (Topic) initialContext.lookup("/topic/exampleTopic");
+         //Step 2. perform lookup on the topics
+         Topic genericTopic = (Topic) initialContext.lookup("/topic/genericTopic");
+         Topic europeTopic = (Topic) initialContext.lookup("/topic/europeTopic");
+         Topic usTopic = (Topic) initialContext.lookup("/topic/usTopic");
 
          //Step 3. perform a lookup on the Connection Factory
          ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
@@ -64,89 +70,86 @@ public class SecurityExample extends JMSExample
          //Step 4. Try to create a JMS Connection without user/password. It will fail.
          try
          {
-            connection1 = cf.createConnection();
+            Connection connection = cf.createConnection();
             result = false;
          }
          catch (JMSSecurityException e)
          {
-            System.out.println("Error creating connection, detail: " + e.getMessage());
+            System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
          }
 
-         //Step 5. Create a Connection using wrong password, it will fail.
+         //Step 5. bill tries to make a connection using wrong password
+         billConnection = null;
          try
          {
-            connection1 = cf.createConnection("jbm-sender", "wrong-password");
+            billConnection = createConnection("bill", "jbossmessaging1", cf);
             result = false;
          }
-         catch (JMSSecurityException e)
+         catch (JMSException e)
          {
-            System.out.println("Error creating connection, detail: " + e.getMessage());
+            System.out.println("Bill failed to connect. Details: " + e.getMessage());
          }
          
-         //Step 6. Now create two connections with correct credentials. connection1 is used for sending, connection2 receiving
-         connection1 = cf.createConnection("jbm-sender", "jbossmessaging1");
-         connection2 = cf.createConnection("jbm-consumer", "jbossmessaging2");
-
-         //Step 7. Create 2 JMS Sessions
-         Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         //Step 8. Create 2 Message Producers, where producer2 has no right to send
-         MessageProducer producer1 = session1.createProducer(topic);
-         MessageProducer producer2 = session2.createProducer(topic);
-
-         //Step 9. Create 2 JMS Message Consumers
-         MessageConsumer messageConsumer1 = session2.createConsumer(topic);
-         MessageConsumer messageConsumer2 = session2.createConsumer(topic);
-                  
-         //Step 10. Start the Connections
-         connection1.start();
-         connection2.start();
+         //Step 6. bill makes a good connection.
+         billConnection = createConnection("bill", "jbossmessaging", cf);
+         billConnection.start();
          
-         //Step 11. Create a Text Message
-         TextMessage message = session1.createTextMessage("This is a text message");
-
-         //Step 12. Send the Message by producer2
-         producer2.send(message);
-         System.out.println("Producer2 sent message: " + message.getText());
+         //Step 7. andrew makes a good connection.
+         andrewConnection = createConnection("andrew", "jbossmessaging1", cf);
+         andrewConnection.start();
          
-         //Step 13. Check no messages are received by either consumer.
-         TextMessage messageReceived1 = (TextMessage) messageConsumer1.receive(2000);
-         TextMessage messageReceived2 = (TextMessage) messageConsumer2.receive(2000);
-         if (messageReceived1 != null) 
-         {
-            System.out.println("Message received! " + messageReceived1.getText());
-            result = false;
-         }
-         if (messageReceived2 != null) 
-         {
-            System.out.println("Message received! " + messageReceived2.getText());
-            result = false;
-         }
+         //Step 8. frank makes a good connection.
+         frankConnection = createConnection("frank", "jbossmessaging2", cf);
+         frankConnection.start();
          
-         //Step 14. Send the message by producer1
-         producer1.send(message);
-
-         System.out.println("Producer1 sent message: " + message.getText());
-
-         //Step 15. Receive the message
-         messageReceived1 = (TextMessage) messageConsumer1.receive(1000);
-         messageReceived2 = (TextMessage) messageConsumer2.receive(1000);
-         System.out.println("Consumer 1 Received message: " + messageReceived1.getText());
-         System.out.println("Consumer 2 Received message: " + messageReceived2.getText());
+         //Step 9. sam makes a good connection.
+         samConnection = createConnection("sam", "jbossmessaging3", cf);
+         samConnection.start();
          
+         //Step 10. Check every user can publish/subscribe genericTopics.
+         System.out.println("------------------------Checking permissions on " + genericTopic + "----------------");
+         checkUserSendAndReceive(genericTopic, billConnection, "bill");
+         checkUserSendAndReceive(genericTopic, andrewConnection, "andrew");
+         checkUserSendAndReceive(genericTopic, frankConnection, "frank");
+         checkUserSendAndReceive(genericTopic, samConnection, "sam");
+         System.out.println("-------------------------------------------------------------------------------------");
+         
+         //Step 11. Check permissions on europeTopic
+         System.out.println("------------------------Checking permissions on " + europeTopic + "----------------");
+         checkUserNoSendNoReceive(europeTopic, billConnection, "bill", andrewConnection, frankConnection);
+         checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
+         checkUserReceiveNoSend(europeTopic, frankConnection, "frank", andrewConnection);
+         checkUserReceiveNoSend(europeTopic, samConnection, "sam", andrewConnection);
+         System.out.println("-------------------------------------------------------------------------------------");
+         
+         //Step 12. Check permissions on usTopic
+         System.out.println("------------------------Checking permissions on " + usTopic + "----------------");
+         checkUserNoSendNoReceive(usTopic, billConnection, "bill", frankConnection, frankConnection);
+         checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew", frankConnection, frankConnection);
+         checkUserSendAndReceive(usTopic, frankConnection, "frank");
+         checkUserReceiveNoSend(usTopic, samConnection, "sam", frankConnection);
+         System.out.println("-------------------------------------------------------------------------------------");
+
          return result;
       }
       finally
       {
          //Step 16. Be sure to close our JMS resources!
-         if (connection1 != null)
+         if (billConnection != null)
          {
-            connection1.close();
+            billConnection.close();
          }
-         if (connection2 != null)
+         if (andrewConnection != null)
          {
-            connection2.close();
+            andrewConnection.close();
+         }
+         if (frankConnection != null)
+         {
+            frankConnection.close();
+         }
+         if (samConnection != null)
+         {
+            samConnection.close();
          }
          
          // Also the initialContext
@@ -155,5 +158,178 @@ public class SecurityExample extends JMSExample
             initialContext.close();
          }
       }
+   }
+
+
+   //Check the user can receive message but cannot send message.
+   private void checkUserReceiveNoSend(Topic topic, Connection connection, String user, Connection sendingConn) throws JMSException
+   {
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = session.createProducer(topic);
+      MessageConsumer consumer = session.createConsumer(topic);
+      TextMessage msg = session.createTextMessage("hello-world-1");
+      producer.send(msg);
+      TextMessage receivedMsg = (TextMessage)consumer.receive(2000);
+      if (receivedMsg == null)
+      {
+         System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic " + topic);
+      }
+      else
+      {
+         System.out.println("Security setting is broken! User " + user + " can send message [" + receivedMsg.getText() + "] to topic " + topic);
+         result = false;
+      }
+
+      //Now send a good message
+      Session session1 = sendingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      producer = session1.createProducer(topic);
+      producer.send(msg);
+      
+      receivedMsg = (TextMessage)consumer.receive(2000);
+      
+      if (receivedMsg != null)
+      {
+         System.out.println("User " + user + " can receive message [" + receivedMsg.getText() + "] from topic " + topic);
+      }
+      else
+      {
+         System.out.println("Security setting is broken! User " + user + " cannot receive message from topic " + topic);
+         result = false;         
+      }
+      session.close();
+   }
+
+   //Check the user can send message but cannot receive message
+   private void checkUserSendNoReceive(Topic topic, Connection connection, String user, Connection receivingConn) throws JMSException
+   {
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = session.createProducer(topic);
+      MessageConsumer consumer = null;
+      try
+      {
+         consumer = session.createConsumer(topic);
+      }
+      catch (JMSException e)
+      {
+         System.out.println("User " + user + " cannot receive any message from topic " + topic);
+      }
+
+      Session session1 = receivingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer goodConsumer = session1.createConsumer(topic);
+      
+      TextMessage msg = session.createTextMessage("hello-world-2");
+      producer.send(msg);
+      
+      TextMessage receivedMsg = (TextMessage)goodConsumer.receive(2000);
+      if (receivedMsg != null)
+      {
+         System.out.println("User " + user + " can send message [" + receivedMsg.getText() + "] to topic " + topic);
+      }
+      else
+      {
+         System.out.println("Security setting is broken! User " + user + " cannot send message [" + msg.getText() + "] to topic " + topic);
+         result = false;
+      }
+      
+      if (consumer != null)
+      {
+         receivedMsg = (TextMessage)consumer.receive(2000);
+         if (receivedMsg == null)
+         {
+            System.out.println("User " + user + " cannot receive any message from topic " + topic);
+         }
+         else
+         {
+            System.out.println("Security setting is broken! User " + user + " can receive message [" + receivedMsg.getText() + "]");
+            result = false;
+         }
+      }
+      
+      session.close();
+      session1.close();
+   }
+
+   //Check the user has neither send nor receive permission on topic
+   private void checkUserNoSendNoReceive(Topic topic, Connection connection, String user, Connection sendingConn, Connection receivingConn) throws JMSException
+   {
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer producer = session.createProducer(topic);
+      MessageConsumer consumer = null;
+      
+      try
+      {
+         consumer = session.createConsumer(topic);
+      }
+      catch (JMSException e)
+      {
+         System.out.println("User " + user + " cannot create consumer on topic " + topic);
+      }
+      
+      Session session1 = receivingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageConsumer goodConsumer = session1.createConsumer(topic);
+      
+      TextMessage msg = session.createTextMessage("hello-world-3");
+      producer.send(msg);
+
+      TextMessage receivedMsg = (TextMessage)goodConsumer.receive(2000);
+      
+      if (receivedMsg == null)
+      {
+         System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic: " + topic);
+      }
+      else
+      {
+         System.out.println("Security setting is broken! User " + user + " can send message [" + msg.getText() + "] to topic " + topic);
+         result = false;
+      }
+      
+      if (consumer != null)
+      {
+         Session session2 = sendingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         MessageProducer goodProducer = session2.createProducer(topic);
+         goodProducer.send(msg);
+      
+         receivedMsg = (TextMessage)consumer.receive(2000);
+      
+         if (receivedMsg == null)
+         {
+            System.out.println("User " + user + " cannot receive message [" + msg.getText() + "] from topic " + topic);
+         }
+         else
+         {
+            System.out.println("Security setting is broken! User " + user + " can receive message [" + receivedMsg.getText() + "] from topic " + topic);
+         }
+         session2.close();
+      }
+      
+      session.close();
+      session1.close();
+   }
+
+   //Check the user connection has both send and receive permissions on the topic
+   private void checkUserSendAndReceive(Topic topic, Connection connection, String user) throws JMSException
+   {
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      TextMessage msg = session.createTextMessage("hello-world-4");
+      MessageProducer producer = session.createProducer(topic);
+      MessageConsumer consumer = session.createConsumer(topic);
+      producer.send(msg);
+      TextMessage receivedMsg = (TextMessage)consumer.receive(5000);
+      if (receivedMsg != null)
+      {
+         System.out.println("User " + user + " can send message: [" + msg.getText() + "] to topic: " + topic);
+         System.out.println("User " + user + " can receive message: [" + msg.getText() + "] from topic: " + topic);
+      }
+      else
+      {
+         System.out.println("Error! User " + user + " cannot receive the message! ");
+         result = false;
+      }
+      session.close();
+   }
+
+   private Connection createConnection(String username, String password, ConnectionFactory cf) throws JMSException
+   {
+      return cf.createConnection(username, password);
    }
 }
