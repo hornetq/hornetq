@@ -25,7 +25,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging Java EE EJB using JBM Example">
+<project default="run" name="JBoss Messaging Java EE EJB using JMS Example">
 
    <import file="../common/build.xml"/>
 

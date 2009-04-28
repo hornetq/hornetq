@@ -29,22 +29,23 @@
 
    <import file="../common/build.xml"/>
    
-   <target name="deploy-servlet">
-      <copy todir="${jboss.home}/server/default-with-jbm2/deploy/jms-servlet.war">
-         <fileset dir="config/jms-servlet.war"/>
+   <target name="deploy-misc">
+      <echo>Deploy Servlet</echo>
+      <copy todir="${deploy.dir}/jms-servlet.war">
+         <fileset dir="${example.config.dir}/jms-servlet.war"/>
       </copy>
       <sleep seconds="5"/>
    </target>
-   
-   <target name="undeploy-servlet">
-      <delete dir="${jboss.home}/server/default-with-jbm2/deploy/jms-servlet.war" quiet="true"/>
-   </target>
 
-   <target name="run" depends="deploy-servlet">
+   <target name="undeploy-misc">
+      <echo>Undeploy Servelt</echo>
+      <delete dir="${deploy.dir}/jms-servlet.war" />
+   </target>
+   
+   <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.javaee.example.ServletTransportExample"/>
       </antcall>
-      <antcall target="undeploy-servlet"/>
    </target>
 
 </project>

@@ -112,17 +112,44 @@
       </jar>
    </target>
 
-   <target name="deploy">
-   	  <antcall target="do-deploy"></antcall>
+   <target name="deploy" depends="validate-jboss">
+      <property name="deploy.dir" value="${jboss.home}/server/default-with-jbm2/deploy/" />
+   	  <antcall target="deploy-resources">
+         <param name="deploy.dir" value="${deploy.dir}"/>
+      </antcall>
+      <antcall target="deploy-ear">
+         <param name="deploy.dir" value="${deploy.dir}"/>
+      </antcall>
+      <antcall target="deploy-misc">
+         <param name="deploy.dir" value="${deploy.dir}"/>
+      </antcall>
    </target>
 
-   <target name="do-deploy" depends="validate-jboss, ear">
+   <target name="deploy-ear" depends="ear">
       <!-- some examples may choose to do a little extra on deploy and call this target directly -->
-      <copy file="${build.dir}/mdb-example.ear" todir="${jboss.home}/server/default-with-jbm2/deploy"/>
+      <copy file="${build.dir}/mdb-example.ear" todir="${deploy.dir}"/>
+   </target>
+
+   <target name="deploy-resources">
+      <copy file="${example.config.dir}/jbm-queues.xml" todir="${deploy.dir}/messaging.sar/" failonerror="false" />
+      <copy file="${example.config.dir}/jbm-jms.xml" todir="${deploy.dir}/messaging.sar/" failonerror="false" />
+      <sleep seconds="5"/>
+   </target>
+
+   <target name="deploy-misc">
+   </target>
+
+   <target name="undeploy-misc">
    </target>
 
    <target name="undeploy" depends="validate-jboss">
-      <delete file="${jboss.home}/server/default-with-jbm2/deploy/mdb-example.ear"/>
+      <property name="deploy.dir" value="${jboss.home}/server/default-with-jbm2/deploy/" />
+      <antcall target="undeploy-misc">
+         <param name="deploy.dir" value="${deploy.dir}"/>
+      </antcall>
+      <delete file="${deploy.dir}/mdb-example.ear"/>
+      <delete file="${deploy.dir}/messaging.sar/jbm-queues.xml" failonerror="false" />
+      <delete file="${deploy.dir}/messaging.sar/jbm-jms.xml" failonerror="false" />
    </target>
 
    <target name="validate-jboss">

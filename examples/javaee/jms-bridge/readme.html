@@ -41,11 +41,13 @@
          &lt;/queue&gt;</code>
      </pre>
      
+     <p>These 2 queues are deployed in the application server when you run <code>ant deploy</code>.</p>
+     
      <h3>JMS Bridge configuration</h3>
 
      <p>The JMS Bridge is configured using JBoss microcontainer (<a href="config/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> contains comments about the various parameters 
          used to configure the bridge).<br />
-         To setup the bridge in JBoss AS 5, copy <a href="config/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> to <code>${JBOSS_HOME}/server/default-with-jbm2/deploy/</code></p>
+     <p>The Bridge is deployed in the application server when you run <code>ant deploy</code> (it is copied to <code>${JBOSS_HOME}/server/default-with-jbm2/deploy/</code>).</p>
          
      <h2>Example step-by-step</h2>
 

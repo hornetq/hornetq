@@ -29,6 +29,32 @@
 
    <import file="../common/build.xml"/>
 
+   <target name="deploy">
+       <property name="deploy.dir" value="${jboss.home}/server/all-with-jbm2/deploy/" />
+       <property name="deploy.dir2" value="${jboss.home}/server/all-with-jbm2_2/deploy/" />
+
+       <!-- copy 1st server resources  configuration -->
+       <copy file="${example.config.dir}/jbm-queues.xml" todir="${deploy.dir}/messaging.sar/" overwrite="yes"/>
+       <copy file="${example.config.dir}/jbm-jms.xml" todir="${deploy.dir}/messaging.sar/" overwrite="yes"/>
+
+       <!-- copy 2nd server resources configuration -->
+      <copy file="${example.config.dir}/jbm-queues.xml" todir="${deploy.dir2}/messaging.sar/" overwrite="yes"/>
+      <copy file="${example.config.dir}/jbm-jms.xml" todir="${deploy.dir2}/messaging.sar/" overwrite="yes"/>
+    </target>
+
+    <target name="undeploy">
+       <property name="deploy.dir" value="${jboss.home}/server/all-with-jbm2/deploy/" />
+       <property name="deploy.dir2" value="${jboss.home}/server/all-with-jbm2_2/deploy/" />
+
+       <!-- delete 1st server resources  configuration -->
+       <delete file="${deploy.dir}/messaging.sar/jbm-queues.xml" failonerror="false"/>
+       <delete file="${deploy.dir}/messaging.sar/jbm-jms.xml" failonerror="false"/>
+
+       <!-- delete 2nd server resources configuration -->
+       <delete file="${deploy.dir2}/messaging.sar/jbm-queues.xml" failonerror="false"/>
+       <delete file="${deploy.dir2}/messaging.sar/jbm-jms.xml" failonerror="false"/>
+    </target>
+
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.javaee.example.HAJNDIExample"/>

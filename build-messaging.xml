@@ -579,6 +579,7 @@
          <schema namespace="urn:jboss:messaging" 
                  file="${src.schemas.dir}/jbm-configuration.xsd"/>
       </schemavalidate>
+      <!--
       <schemavalidate file="${conf.dir}/jbm-queues.xml">
          <schema namespace="urn:jboss:messaging" 
                  file="${src.schemas.dir}/jbm-queues.xsd"/>
@@ -586,7 +587,8 @@
       <schemavalidate file="${conf.dir}/jbm-jms.xml">
          <schema namespace="urn:jboss:messaging" 
                  file="${src.schemas.dir}/jbm-jms.xsd"/>
-      </schemavalidate>   
+      </schemavalidate>
+      -->   
    </target>
    
    <!-- ======================================================================================== -->

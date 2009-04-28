@@ -88,7 +88,7 @@
             <param key="jbm.remoting.netty.port" value="${jbm.remoting.netty.port}" type="Integer"/>
          </acceptor>
       
-         <!-- Netty In VM Acceptor, needed for the servlet transport-->
+         <!-- Netty In VM Acceptor -->
          <!--
          <acceptor name="netty-invm">
             <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>

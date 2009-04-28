@@ -33,12 +33,12 @@
      </pre>
 
      <p>This informs the Recovery Manager that it can recovers JBoss Messaging XA Resources using the <code>XAConnectionFactory</code> bound to <code>java:/XAConnectionFactory</code> in JNDI
-         (as it is configured in <code>$JBOSS_HOME/server/default-with-jbm2/deploy/messaging.sar/jbm-jms.xml</code>).</p>
+         (as it is configured in <a href="config/jbm-jms.xml">jbm-jms.xml</a> which will be deployed to <code>$JBOSS_HOME/server/default-with-jbm2/deploy/messaging.sar/</code>).</p>
           
      <h2>Example step-by-step</h2>
 
-     <p><em>You need to start JBoss AS 5 with the <code>default-with-jbm2</code> configuration.<br />
-    To deploy the example, type <code>ant deploy</code> from this directory<br />
+     <p><em>You need to deploy the example <em>before starting the server</em>, type <code>ant deploy</code> from this directory<br />
+    You need to start JBoss AS 5 with the <code>default-with-jbm2</code> configuration.<br />
     Once the example is deployed in JBoss AS 5, type <code>ant sender</code> to start the example. 
     This will also crash the server, you will need to restart it.<br />
     Once it is restarted, type <code>ant receiver</code> to receive the JMS messages which was recovered.<br />

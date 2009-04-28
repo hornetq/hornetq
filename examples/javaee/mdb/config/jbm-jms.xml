@@ -1,6 +1,7 @@
 <deployment xmlns="urn:jboss:messaging" 
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
+
    <connection-factory name="ConnectionFactory">
       <connector-ref connector-name="netty-connector"/>
       <entries>
@@ -12,10 +13,7 @@
       </entries>
    </connection-factory>
 
-   <queue name="A">
-      <entry name="/queue/A"/>
-   </queue>
-   <queue name="B">
-      <entry name="/queue/B"/>
+   <queue name="testQueue">
+      <entry name="/queue/testQueue"/>
    </queue>
 </deployment>

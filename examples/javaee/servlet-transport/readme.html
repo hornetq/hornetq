@@ -63,11 +63,12 @@
      </ol>
      </p>
      <h2>Example step-by-step</h2>
-     <p><i>To run the example, first you need to install a JBoss AS 5 server and set JBOSS_HOME environment accordingly.
-     Then you need to create a AS server profile with JBoss Messaging service, and start AS with that profile. 
-     From this directory, type <code>ant</code>. This will cause the servlet to be deployed to AS and then it runs
-     the example undeploy the servlet in the end.</i></p>
-
+     <p><em>To run the example, first you need to install a JBoss AS 5 server and set JBOSS_HOME environment accordingly.
+     Then you need to create a AS server profile with JBoss Messaging service, and start AS with that profile.</p>
+     From this directory, type <code>ant deploy</code> to deploy resources in the application server (including the WAR).</br >
+     Type <code>ant</code> to run the example.<br />
+     Finally type <code>ant undeploy</code> to undeploy the example resources from the application server.</em></p>
+     
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>

@@ -1,0 +1,15 @@
+<deployment xmlns="urn:jboss:messaging" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
+
+   <connection-factory name="TestServletConnectionFactory">
+      <connector-ref connector-name="netty-servlet"/>
+      <entries>
+         <entry name="/TestServletConnectionFactory"/>
+      </entries>
+   </connection-factory>
+
+   <queue name="testQueue">
+      <entry name="/queue/testQueue"/>
+   </queue>
+</deployment>
