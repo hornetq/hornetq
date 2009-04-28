@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.integration.cluster.failover;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -37,7 +36,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.Messaging;
@@ -82,135 +80,142 @@ public class FailBackupServerTest extends UnitTestCase
 
    public void testFailBackup() throws Exception
    {
-      ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                 backupParams));
-
-      sf1.setProducerWindowSize(32 * 1024);
-
-      ClientSession session1 = sf1.createSession(false, true, true);
-
-      session1.createQueue(ADDRESS, ADDRESS, null, false);
-
-      ClientProducer producer = session1.createProducer(ADDRESS);
-
-      final int numMessages = 1000;
-
-      for (int i = 0; i < numMessages; i++)
+      for (int j = 0; j < 5; j++)
       {
-         ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
-         producer.send(message);
-      }
+         ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
+                                                                         new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                    backupParams));
 
-      ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
+         sf1.setProducerWindowSize(32 * 1024);
 
-      session1.start();
+         ClientSession session1 = sf1.createSession(false, true, true);
 
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = consumer1.receive(1000);
+         session1.createQueue(ADDRESS, ADDRESS, null, false);
 
-         assertNotNull(message);
+         ClientProducer producer = session1.createProducer(ADDRESS);
 
-         assertEquals("aardvarks", message.getBody().readString());
+         final int numMessages = 1000;
 
-         assertEquals(i, message.getProperty(new SimpleString("count")));
-
-         if (i == 0)
+         for (int i = 0; i < numMessages; i++)
          {
-            // Fail the replicating connection - this simulates the backup server crashing
-            
-            liveServer.getReplicatingChannel().getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+            ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
+                                                                 false,
+                                                                 0,
+                                                                 System.currentTimeMillis(),
+                                                                 (byte)1);
+            message.putIntProperty(new SimpleString("count"), i);
+            message.getBody().writeString("aardvarks");
+            producer.send(message);
          }
 
-         message.acknowledge();
-      }
+         ClientConsumer consumer1 = session1.createConsumer(ADDRESS);
 
-      ClientMessage message = consumer1.receive(1000);
+         session1.start();
 
-      assertNull(message);
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(1000);
 
-      // Send some more
+            assertNotNull(message);
 
-      for (int i = 0; i < numMessages; i++)
-      {
-         message = session1.createClientMessage(JBossTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
-         producer.send(message);
-      }
+            assertEquals("aardvarks", message.getBody().readString());
+            
+            int count = (Integer)message.getProperty(new SimpleString("count"));
+            
+            assertEquals(i, count);
+                        
+            if (i == 0)
+            {
+               // Fail the replicating connection - this simulates the backup server crashing
 
-      for (int i = 0; i < numMessages; i++)
-      {
+               liveServer.getReplicatingChannel()
+                         .getConnection()
+                         .fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+            }
+
+            message.acknowledge();
+         }
+
+         ClientMessage message = consumer1.receive(1000);
+
+         assertNull(message);
+
+         // Send some more
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            message = session1.createClientMessage(JBossTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
+            message.putIntProperty(new SimpleString("count"), i);
+            message.getBody().writeString("aardvarks");
+            producer.send(message);
+         }
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            message = consumer1.receive(1000);
+
+            assertNotNull(message);
+
+            assertEquals("aardvarks", message.getBody().readString());
+
+            assertEquals(i, message.getProperty(new SimpleString("count")));
+
+            message.acknowledge();
+         }
+
          message = consumer1.receive(1000);
 
-         assertNotNull(message);
+         assertNull(message);
 
-         assertEquals("aardvarks", message.getBody().readString());
+         session1.close();
 
-         assertEquals(i, message.getProperty(new SimpleString("count")));
+         // Send some more on different session factory
 
-         message.acknowledge();
-      }
+         sf1.close();
 
-      message = consumer1.receive(1000);
+         sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      assertNull(message);
+         sf1.setProducerWindowSize(32 * 1024);
 
-      session1.close();
-      
-      //Send some more on different session factory
-      
-      sf1.close();
-      
-      sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+         session1 = sf1.createSession(false, true, true);
 
-      sf1.setProducerWindowSize(32 * 1024);
+         producer = session1.createProducer(ADDRESS);
 
-      session1 = sf1.createSession(false, true, true);
+         consumer1 = session1.createConsumer(ADDRESS);
 
-      producer = session1.createProducer(ADDRESS);
-      
-      consumer1 = session1.createConsumer(ADDRESS);
+         session1.start();
 
-      session1.start();
+         for (int i = 0; i < numMessages; i++)
+         {
+            message = session1.createClientMessage(JBossTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
+            message.putIntProperty(new SimpleString("count"), i);
+            message.getBody().writeString("aardvarks");
+            producer.send(message);
+         }
 
-      for (int i = 0; i < numMessages; i++)
-      {
-         message = session1.createClientMessage(JBossTextMessage.TYPE,
-                                                              false,
-                                                              0,
-                                                              System.currentTimeMillis(),
-                                                              (byte)1);
-         message.putIntProperty(new SimpleString("count"), i);
-         message.getBody().writeString("aardvarks");
-         producer.send(message);
-      }
-      
-      for (int i = 0; i < numMessages; i++)
-      {
+         for (int i = 0; i < numMessages; i++)
+         {
+            message = consumer1.receive(1000);
+
+            assertNotNull(message);
+
+            assertEquals("aardvarks", message.getBody().readString());
+
+            assertEquals(i, message.getProperty(new SimpleString("count")));
+
+            message.acknowledge();
+         }
+
          message = consumer1.receive(1000);
 
-         assertNotNull(message);
+         assertNull(message);
 
-         assertEquals("aardvarks", message.getBody().readString());
-
-         assertEquals(i, message.getProperty(new SimpleString("count")));
-
-         message.acknowledge();
+         session1.close();
+         
+         tearDown();
+         
+         setUp();
       }
-
-      message = consumer1.receive(1000);
-
-      assertNull(message);
-
-      session1.close();
    }
 
    // Package protected ---------------------------------------------
@@ -221,7 +226,7 @@ public class FailBackupServerTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -238,7 +243,8 @@ public class FailBackupServerTest extends UnitTestCase
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       TransportConfiguration backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                   backupParams, "backup-connector");
+                                                                   backupParams,
+                                                                   "backup-connector");
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
@@ -254,7 +260,7 @@ public class FailBackupServerTest extends UnitTestCase
       liveServer.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
-      
+
       super.tearDown();
    }
 

@@ -1261,6 +1261,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private void doExecuteOutstandingDelayedResults()
       {
+         log.info("execute outstanding results");
+         
          List<Runnable> toRun = new ArrayList<Runnable>();
          
          synchronized (replicationLock)
@@ -1283,14 +1285,15 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
             responseActionCount = 0;
 
-            this.playedResponsesOnFailure = true;
+            playedResponsesOnFailure = true;
+            
+            for (Runnable action: toRun)
+            {
+               action.run();
+            }
          }
          
-         //Run outside lock
-         for (Runnable action: toRun)
-         {
-            action.run();
-         }
+         
       }
 
       public void setHandler(final ChannelHandler handler)
