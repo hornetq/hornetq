@@ -31,6 +31,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientConsumerInternal;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
@@ -46,6 +47,12 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    private final SimpleString queueA = new SimpleString("queueA");
 
    private final int TIMEOUT = 5;
+   
+   private static final Logger log = Logger.getLogger(ConsumerWindowSizeTest.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
+
+
 
    /*
    * tests send window size. we do this by having 2 receivers on the q. since we roundrobin the consumer for delivery we
@@ -299,6 +306,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       internalTestSlowConsumerNoBuffer2(false);
    }
 
+   
    public void testSlowConsumerNoBuffer2LargeMessages() throws Exception
    {
       internalTestSlowConsumerNoBuffer2(true);
@@ -698,8 +706,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                try
                {
                   String str = getTextMessage(message);
-
-                  System.out.println("Received " + str + " on consumer");
+                  if (isTrace)
+                  {
+                     log.trace("Received message " + str);
+                  }
 
                   failed = failed || !str.equals("Msg" + count);
 
@@ -709,14 +719,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
                   if (count++ == 1)
                   {
-                     System.out.println("Waiting on Consumer");
                      // it will hold here for a while
                      if (!latchDone.await(TIMEOUT, TimeUnit.SECONDS))
                      {
-                        new Exception("ClientConsuemrWindowSizeTest Handler couldn't receive signal in less than 5 seconds").printStackTrace(); // hudson
-                        // or
-                        // junit
-                        // report
+                        new Exception("ClientConsuemrWindowSizeTest Handler couldn't receive signal in less than 5 seconds").printStackTrace();
                         failed = true;
                      }
                   }
@@ -746,6 +752,15 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          consReceiveOneAndHold.setMessageHandler(handler);
 
          assertTrue(latchReceived.await(TIMEOUT, TimeUnit.SECONDS));
+         
+         
+         long timeout = System.currentTimeMillis() + 1000 * TIMEOUT;
+         while (consReceiveOneAndHold.getBufferSize() == 0 && System.currentTimeMillis() < timeout)
+         {
+            Thread.sleep(10);
+         }
+         
+         assertEquals(1, consReceiveOneAndHold.getBufferSize());
 
          ClientConsumer cons1 = session.createConsumer(ADDRESS);
 
@@ -754,7 +769,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
             ClientMessage msg = cons1.receive(1000);
             assertNotNull("expected message at i = " + i, msg);
             String text = getTextMessage(msg);
-            System.out.println("Received message " + text);
             assertEquals("Msg" + i, text);
             msg.acknowledge();
          }
@@ -789,6 +803,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
          catch (Exception ignored)
          {
+            ignored.printStackTrace();
          }
 
          if (server.isStarted())
