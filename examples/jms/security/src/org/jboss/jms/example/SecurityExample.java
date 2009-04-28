@@ -240,7 +240,7 @@ public class SecurityExample extends JMSExample
          }
          else
          {
-            System.out.println("Security setting is broken! User " + user + " can receive message [" + receivedMsg.getText() + "]");
+            System.out.println("Security setting is broken! User " + user + " can receive message [" + receivedMsg.getText() + "] from topic " + topic);
             result = false;
          }
       }
