@@ -226,8 +226,6 @@ public class ConnectionFactoryTest extends JMSTestCase
             {
                processed++;
 
-               TextMessage tm = (TextMessage)msg;
-
                if (processed == numMessages - 2)
                {
                   synchronized (waitLock)
@@ -246,8 +244,6 @@ public class ConnectionFactoryTest extends JMSTestCase
 
             public void onMessage(Message msg)
             {
-               TextMessage tm = (TextMessage)msg;
-               
                processed++;
               
                synchronized (waitLock)

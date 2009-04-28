@@ -155,10 +155,11 @@ public class SessionReceiveMessage extends PacketImpl
       }
       else
       {
-         return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG +
+         return BASIC_PACKET_SIZE + 
+                DataConstants.SIZE_LONG +
                 DataConstants.SIZE_INT +
                 DataConstants.SIZE_BOOLEAN +
-                serverMessage.getEncodeSize();
+                (serverMessage != null ? serverMessage.getEncodeSize() : clientMessage.getEncodeSize());
       }
    }
    public void encodeBody(final MessagingBuffer buffer)
