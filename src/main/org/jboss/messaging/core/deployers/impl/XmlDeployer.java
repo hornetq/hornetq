@@ -162,6 +162,13 @@ public abstract class XmlDeployer implements Deployer, MessagingComponent
       Element e = getRootElement(url);
       
       validate(e);
+
+      Map<String, Node> map = configuration.get(url);
+      if (map == null)
+      {
+         map = new HashMap<String, Node>();
+         configuration.put(url, map);
+      }
       
       //find all thenodes to deploy
       String elements[] = getElementTagName();

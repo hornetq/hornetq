@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.core.deployers.impl;
 
+import org.jboss.messaging.core.deployers.Deployer;
+import org.jboss.messaging.core.deployers.DeploymentManager;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.Pair;
+
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -33,11 +38,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import org.jboss.messaging.core.deployers.Deployer;
-import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.utils.Pair;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -229,7 +229,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                }
             }
          }
-
+         List<Pair> toRemove = new ArrayList<Pair>();
          for (Map.Entry<Pair<URL, Deployer>, DeployInfo> entry : deployed.entrySet())
          {
             Pair<URL, Deployer> pair = entry.getKey();
@@ -241,14 +241,17 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                   Deployer deployer = entry.getValue().deployer;
                   log.debug("Undeploying " + deployer + " with url" + entry.getKey());
                   deployer.undeploy(entry.getKey().a);
-
-                  deployed.remove(entry.getKey());
+                  toRemove.add(entry.getKey());
                }
                catch (Exception e)
                {
                   log.error("Error undeploying " + entry.getKey().a, e);
                }
             }
+         }
+         for (Pair pair : toRemove)
+         {
+            deployed.remove(pair);  
          }
       }
       catch (Exception e)
