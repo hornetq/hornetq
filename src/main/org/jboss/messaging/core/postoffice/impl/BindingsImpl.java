@@ -38,6 +38,7 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.utils.SimpleString;
@@ -169,12 +170,14 @@ public class BindingsImpl implements Bindings
       }
    }
 
-   public boolean redistribute(final ServerMessage message, final SimpleString routingName, final Transaction tx) throws Exception
+   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
    {
       if (routeWhenNoConsumers)
       {
          return false;
       }
+      
+      SimpleString routingName = originatingQueue.getName();
 
       List<Binding> bindings = routingNameBindingMap.get(routingName);
 
@@ -226,7 +229,7 @@ public class BindingsImpl implements Bindings
 
          boolean highPrior = binding.isHighAcceptPriority(message);
 
-         if (highPrior && (filter == null || filter.match(message)))
+         if (highPrior && binding.getBindable() != originatingQueue && (filter == null || filter.match(message)))
          {
             theBinding = binding;
 

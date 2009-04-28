@@ -24,10 +24,9 @@ package org.jboss.messaging.core.postoffice;
 
 import java.util.Collection;
 
-import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.transaction.Transaction;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A Bindings
@@ -50,5 +49,5 @@ public interface Bindings
 
    void setRouteWhenNoConsumers(boolean takePriorityIntoAccount);
 
-   boolean redistribute(ServerMessage message, SimpleString routingName, Transaction tx) throws Exception;
+   boolean redistribute(ServerMessage message, Queue originatingQueue, Transaction tx) throws Exception;
 }

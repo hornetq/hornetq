@@ -669,13 +669,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       route(message, null);
    }
 
-   public boolean redistribute(final ServerMessage message, final SimpleString routingName, final Transaction tx) throws Exception
+   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
    {
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getDestination());
 
       if (bindings != null)
       {
-         return bindings.redistribute(message, routingName, tx);
+         return bindings.redistribute(message, originatingQueue, tx);
       }
       else
       {

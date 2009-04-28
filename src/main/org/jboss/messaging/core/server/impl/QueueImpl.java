@@ -424,11 +424,14 @@ public class QueueImpl implements Queue
 
       if (delay > 0)
       {
-         DelayedAddRedistributor dar = new DelayedAddRedistributor(executor, replicatingChannel);
-
-         future = scheduledExecutor.schedule(dar, delay, TimeUnit.MILLISECONDS);
-
-         futures.add(future);
+         if (consumers.size() == 0 && messageReferences.size() > 0)
+         {         
+            DelayedAddRedistributor dar = new DelayedAddRedistributor(executor, replicatingChannel);
+   
+            future = scheduledExecutor.schedule(dar, delay, TimeUnit.MILLISECONDS);
+   
+            futures.add(future);
+         }
       }
       else
       {
