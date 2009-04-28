@@ -278,7 +278,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   {
                      // This can happen if the connection manager gets closed - e.g. the server gets shut down
 
-                     throw new MessagingException(MessagingException.NOT_CONNECTED, "Unable to connect to server using configuration " + connectorConfig);
+                     throw new MessagingException(MessagingException.NOT_CONNECTED,
+                                                  "Unable to connect to server using configuration " + connectorConfig);
                   }
 
                   channel1 = connection.getChannel(1, -1, false);
@@ -454,7 +455,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // --------------------------------------------------------------------------------------
 
    private boolean handleConnectionFailure(final MessagingException me, final Object connectionID)
-   {     
+   {
       return !failoverOrReconnect(me, connectionID);
    }
 
@@ -506,7 +507,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.SERVER_DISCONNECTED);
 
          boolean done = false;
-         
+
          if (attemptFailover || reconnectAttempts != 0)
          {
             lockAllChannel1s();
@@ -561,6 +562,16 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             refCount = 0;
 
             mapIterator = null;
+            
+            try
+            {
+               connector.close();
+            }
+            catch (Exception ignore)
+            {               
+            }
+            
+            connector = null;
 
             if (attemptFailover)
             {
@@ -574,10 +585,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                backupTransportParams = null;
 
-               done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);                             
+               done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
             }
             else if (reconnectAttempts != 0)
-            {              
+            {
                done = reattachSessions(reconnectAttempts);
             }
 
@@ -709,7 +720,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       while (true)
       {
          if (closed)
-         {           
+         {
             return null;
          }
 
@@ -772,18 +783,30 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             catch (Throwable ignore)
             {
             }
-            try
-            {
-               entry.connector.close();
-            }
-            catch (Throwable ignore)
-            {
-            }
+            // try
+            // {
+            // entry.connector.close();
+            // }
+            // catch (Throwable ignore)
+            // {
+            // }
          }
 
          mapIterator = null;
+
+         try
+         {
+            connector.close();
+         }
+         catch (Throwable ignore)
+         {
+         }
+         
+         connector = null;
       }
    }
+
+   private Connector connector;
 
    private RemotingConnection getConnection(final int initialRefCount)
    {
@@ -801,12 +824,18 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          try
          {
-            connector = connectorFactory.createConnector(transportParams, handler, this);
+            if (connector == null)
+            {
+               connector = connectorFactory.createConnector(transportParams, handler, this);
+
+               if (connector != null)
+               {
+                  connector.start();
+               }
+            }
 
             if (connector != null)
             {
-               connector.start();
-
                tc = connector.createConnection();
 
                if (tc == null)
@@ -819,8 +848,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   {
                   }
 
+                  connector = null;
                }
-
             }
          }
          catch (Exception e)
