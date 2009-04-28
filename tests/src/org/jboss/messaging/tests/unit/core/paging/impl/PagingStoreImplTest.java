@@ -1237,7 +1237,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.postoffice.PostOffice#redistribute(org.jboss.messaging.core.server.ServerMessage, org.jboss.messaging.utils.SimpleString, org.jboss.messaging.core.transaction.Transaction)
        */
-      public boolean redistribute(final ServerMessage message, final SimpleString routingName, final Transaction tx) throws Exception
+      public boolean redistribute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
       {
          return false;
       }

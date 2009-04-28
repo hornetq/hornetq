@@ -679,7 +679,7 @@ public class MessagingServerImpl implements MessagingServer
 
       Transaction tx = new TransactionImpl(storageManager);
 
-      boolean routed = postOffice.redistribute(reference.getMessage(), queue.getName(), tx);
+      boolean routed = postOffice.redistribute(reference.getMessage(), queue, tx);
 
       if (routed)
       {

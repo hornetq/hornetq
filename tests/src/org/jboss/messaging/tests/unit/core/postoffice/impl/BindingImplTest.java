@@ -112,14 +112,7 @@ public class BindingImplTest extends UnitTestCase
 
       for (int i = 0; i < 100; i++)
       {
-         if (route)
-         {
-            bind.route(new FakeMessage(), new FakeTransaction());
-         }
-         else
-         {
-            bind.redistribute(new FakeMessage(), new SimpleString("a"), new FakeTransaction());
-         }
+         bind.route(new FakeMessage(), new FakeTransaction());
       }
    }
 
