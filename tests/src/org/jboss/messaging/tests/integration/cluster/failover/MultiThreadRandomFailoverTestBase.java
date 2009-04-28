@@ -56,7 +56,6 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailoverSupport
 {
-
    private final Logger log = Logger.getLogger(getClass());
 
    // Constants -----------------------------------------------------

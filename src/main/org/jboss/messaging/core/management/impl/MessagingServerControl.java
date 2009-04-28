@@ -72,7 +72,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MessagingServerControl.class);
-   
+
    private static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
    // Attributes ----------------------------------------------------
@@ -92,12 +92,12 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    private final NotificationBroadcasterSupport broadcaster;
 
    private boolean messageCounterEnabled;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MessagingServerControl(final PostOffice postOffice,                                
+   public MessagingServerControl(final PostOffice postOffice,
                                  final Configuration configuration,
                                  final ResourceManager resourceManager,
                                  final RemotingService remotingService,
@@ -105,7 +105,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
                                  final MessageCounterManager messageCounterManager,
                                  final NotificationBroadcasterSupport broadcaster) throws Exception
    {
-      this.postOffice = postOffice;      
+      this.postOffice = postOffice;
       this.configuration = configuration;
       this.resourceManager = resourceManager;
       this.remotingService = remotingService;
@@ -117,7 +117,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    // Public --------------------------------------------------------
 
-    public Configuration getConfiguration()
+   public Configuration getConfiguration()
    {
       return configuration;
    }
@@ -238,7 +238,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    {
       return configuration.isSecurityEnabled();
    }
-   
+
    public void deployQueue(final String address, final String name) throws Exception
    {
       server.deployQueue(new SimpleString(address), new SimpleString(name), null, true, false);
@@ -247,7 +247,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    public void deployQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
       SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
-      
+
       server.deployQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
    }
 
@@ -259,7 +259,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
       SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
-      
+
       server.createQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
    }
 
@@ -309,7 +309,8 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    {
       if (newPeriod < MessageCounterManagerImpl.MIN_SAMPLE_PERIOD)
       {
-         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < " + MessageCounterManagerImpl.MIN_SAMPLE_PERIOD + " ms");
+         throw new IllegalArgumentException("Cannot set MessageCounterSamplePeriod < " + MessageCounterManagerImpl.MIN_SAMPLE_PERIOD +
+                                            " ms");
       }
 
       if (messageCounterManager != null && newPeriod != messageCounterManager.getSamplePeriod())
@@ -390,7 +391,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    public String[] listRemoteAddresses()
    {
       Set<RemotingConnection> connections = remotingService.getConnections();
-      
+
       String[] remoteAddresses = new String[connections.size()];
       int i = 0;
       for (RemotingConnection connection : connections)

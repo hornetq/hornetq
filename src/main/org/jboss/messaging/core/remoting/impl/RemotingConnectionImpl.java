@@ -1261,8 +1261,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       private void doExecuteOutstandingDelayedResults()
       {
-         log.info("execute outstanding results");
-         
          List<Runnable> toRun = new ArrayList<Runnable>();
          
          synchronized (replicationLock)

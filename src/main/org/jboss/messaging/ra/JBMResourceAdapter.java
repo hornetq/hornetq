@@ -193,7 +193,7 @@ public class JBMResourceAdapter implements ResourceAdapter
 
       this.ctx = ctx;
 
-      log.info("JBoss Messaging 2.0 resource adapter started");
+      log.info("JBoss Messaging resource adaptor started");
    }
 
    /**

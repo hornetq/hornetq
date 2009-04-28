@@ -72,8 +72,8 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
    // Constructors --------------------------------------------------
 
    public ReplicationOperationInvokerImpl(final String clusterPassword,
-                                         final SimpleString managementAddress,
-                                         final long managementRequestTimeout)
+                                          final SimpleString managementAddress,
+                                          final long managementRequestTimeout)
    {
       this.timeout = managementRequestTimeout;
       this.clusterPassword = clusterPassword;
@@ -82,9 +82,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
 
    // Public --------------------------------------------------------
 
-   public synchronized Object invoke(final String resourceName,
-                                           final String operationName,
-                                           final Object... parameters) throws Exception
+   public synchronized Object invoke(final String resourceName, final String operationName, final Object... parameters) throws Exception
    {
       if (clientSession == null)
       {
@@ -108,22 +106,22 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
       else
       {
          throw new Exception(ManagementHelper.getOperationExceptionMessage(reply));
-      }      
+      }
    }
-   
-   public void stop() 
+
+   public void stop()
    {
       if (requestor != null && !clientSession.isClosed())
       {
          try
          {
-            requestor.close();            
+            requestor.close();
          }
          catch (Exception e)
          {
             // this will happen if the remoting server is stopped before this method is called
             log.warn("Got Exception while closing requestor", e);
-         }                 
+         }
       }
    }
    // Package protected ---------------------------------------------

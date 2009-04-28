@@ -270,6 +270,13 @@ public class MessagingServerImpl implements MessagingServer
       {
          clusterManager.stop();
       }
+      
+      //Need to flush all sessions to make sure all confirmations get sent back to client
+      
+      for (ServerSession session: sessions.values())
+      {
+         session.getChannel().flushConfirmations();
+      }
 
       remotingService.stop();
 
@@ -789,8 +796,6 @@ public class MessagingServerImpl implements MessagingServer
    {
       if (configuration.isBackup())
       {
-         log.info("*** activating");
-         
          synchronized (this)
          {
             freezeBackupConnection();
@@ -942,7 +947,6 @@ public class MessagingServerImpl implements MessagingServer
 
       pagingManager.start();
 
-      log.info("starting management service");
       managementService.start();
 
       resourceManager.start();

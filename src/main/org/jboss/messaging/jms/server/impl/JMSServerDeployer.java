@@ -145,12 +145,9 @@ public class JMSServerDeployer extends XmlDeployer
     * @throws Exception .
     */
    private void createAndBindObject(final Node node) throws Exception
-   {
-      log.info("** deploying node " + node.getNodeName());
-      
+   {           
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
-      {
-         log.info("Got connecti0on factory node");
+      {        
          NodeList children = node.getChildNodes();
 
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
@@ -401,8 +398,7 @@ public class JMSServerDeployer extends XmlDeployer
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {                 
-         String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-         log.info("got queue " + queueName);
+         String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();      
          NodeList children = node.getChildNodes();
          for (int i = 0; i < children.getLength(); i++)
          {

@@ -637,8 +637,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
 
       private synchronized void clearBindings() throws Exception
-      {
-         log.info("clearing bindings for " + name);
+      {       
          for (RemoteQueueBinding binding : new HashSet<RemoteQueueBinding>(bindings.values()))
          {
             removeBinding(binding.getClusterName(), replicatingChannel);
