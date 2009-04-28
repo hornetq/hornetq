@@ -397,7 +397,7 @@
 				<xsd:element name="connector-ref"
 					type="connector-refType" minOccurs="1" maxOccurs="1">
 				</xsd:element>
-				<xsd:element name="disccovery-group-ref" minOccurs="1"
+				<xsd:element name="discovery-group-ref" minOccurs="1"
 					maxOccurs="1">
 					<xsd:complexType>
 						<xsd:attribute name="discovery-group-name"

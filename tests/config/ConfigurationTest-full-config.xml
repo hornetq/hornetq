@@ -8,8 +8,12 @@
       <wild-card-routing-enabled>true</wild-card-routing-enabled>
       <management-address>Giraffe</management-address>
       <management-notification-address>Whatever</management-notification-address>
+      <management-request-timeout>91</management-request-timeout>
+      <management-cluster-password>Wombat</management-cluster-password>
       <jmx-management-enabled>false</jmx-management-enabled>
       <message-counter-enabled>true</message-counter-enabled>
+      <message-counter-max-day-history>5</message-counter-max-day-history>
+      <message-counter-sample-period>123456</message-counter-sample-period>
       <connection-scan-period>6543</connection-scan-period>
       <connection-ttl-override>12345</connection-ttl-override>
       <transaction-timeout>98765</transaction-timeout>
@@ -18,158 +22,9 @@
       <message-expiry-thread-priority>8</message-expiry-thread-priority>
       <id-cache-size>127</id-cache-size>
       <persist-id-cache>true</persist-id-cache>
-      <remoting-interceptors>
-         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
-         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
-      </remoting-interceptors>
       <queue-activation-timeout>12456</queue-activation-timeout>
       <backup>true</backup>
       <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>      
-      <backup-connector-ref connector-name="backup-connector" />
-      <connectors>
-         <connector name="connector">
-            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
-            <param key="d_mykey1" value="d_foovalue1" type="String"/>
-            <param key="d_mykey2" value="6000" type="Long"/>
-            <param key="d_mykey3" value="60" type="Integer"/>
-            <param key="d_mykey4" value="d_foovalue4" type="String"/>      
-         </connector>
-         <connector name="connector1">
-            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory2</factory-class>
-            <param key="d_mykey1" value="d_foovalue1" type="String"/>
-            <param key="d_mykey2" value="6000" type="Long"/>
-            <param key="d_mykey3" value="60" type="Integer"/>
-            <param key="d_mykey4" value="d_foovalue4" type="String"/>      
-         </connector>
-         <connector name="connector2">
-            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory3</factory-class>
-            <param key="d_mykey1" value="d_foovalue1" type="String"/>
-            <param key="d_mykey2" value="6000" type="Long"/>
-            <param key="d_mykey3" value="60" type="Integer"/>
-            <param key="d_mykey4" value="d_foovalue4" type="String"/>      
-         </connector>
-         <connector name="backup-connector">
-            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
-            <param key="c_mykey1" value="c_foovalue1" type="String"/>
-            <param key="c_mykey2" value="6000" type="Long"/>
-            <param key="c_mykey3" value="60" type="Integer"/>
-            <param key="c_mykey4" value="c_foovalue4" type="String"/>      
-         </connector>
-      </connectors>
-      <acceptors>
-         <acceptor name="acceptor1">
-            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
-            <param key="a_mykey1" value="a_foovalue1" type="String"/>
-            <param key="a_mykey2" value="1234567" type="Long"/>
-            <param key="a_mykey3" value="123" type="Integer"/>
-            <param key="a_mykey4" value="a_foovalue4" type="String"/>                     
-         </acceptor>
-   	     <acceptor name="acceptor2">
-   	        <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>           
-   	        <param key="b_mykey1" value="b_foovalue1" type="String"/>
-   	        <param key="b_mykey2" value="7654321" type="Long"/>
-   	        <param key="b_mykey3" value="321" type="Integer"/>
-   	        <param key="b_mykey4" value="b_foovalue4" type="String"/>            
-   	     </acceptor>
-      </acceptors>
-      <broadcast-groups>
-	     <broadcast-group name="bg1">
-	        <local-bind-port>10999</local-bind-port>
-	        <group-address>192.168.0.120</group-address>
-	        <group-port>11999</group-port>
-            <broadcast-period>12345</broadcast-period>
-            <connector-ref connector-name="connector"/>
-	     </broadcast-group>
-         <broadcast-group name="bg2">
-            <local-bind-port>10999</local-bind-port>
-            <group-address>192.168.0.120</group-address>
-            <group-port>11999</group-port>
-            <broadcast-period>12345</broadcast-period>
-            <connector-ref connector-name="connector"/>
-         </broadcast-group>
-      </broadcast-groups>
-      <discovery-groups>
-         <discovery-group name="dg1">
-            <group-address>192.168.0.121</group-address>
-            <group-port>11999</group-port>
-            <refresh-timeout>12345</refresh-timeout>
-         </discovery-group>
-         <discovery-group name="dg2">
-            <group-address>192.168.0.121</group-address>
-            <group-port>11999</group-port>
-            <refresh-timeout>12345</refresh-timeout>
-         </discovery-group>
-      </discovery-groups>
-      <diverts>
-         <divert name="divert1">         
-            <routing-name>routing-name1</routing-name>
-            <address>address1</address>
-            <forwarding-address>forwarding-addres1</forwarding-address>
-            <filter string="speed > 88"/>
-            <transformer-class-name>org.foo.Transformer</transformer-class-name>
-            <exclusive>true</exclusive>
-         </divert>
-         <divert name="divert2">        
-            <routing-name>routing-name2</routing-name>
-            <address>address2</address>
-            <forwarding-address>forwarding-addres2</forwarding-address>
-            <filter string="speed > 88"/>
-            <transformer-class-name>org.foo.Transformer</transformer-class-name>
-            <exclusive>false</exclusive>
-         </divert>
-      </diverts>
-      <queues>
-         <queue name="foo">
-            <address>bar</address>
-            <filter string="color='red'" />
-            <durable>false</durable>
-         </queue>
-         <queue name="foo2">
-            <address>bar2</address>
-            <filter string="color='red'" />
-            <durable>false</durable>
-         </queue>
-      </queues>
-      <bridges>
-         <bridge name="bridge">
-             <queue-name>foo</queue-name>
-             <forwarding-address>bridge-forwarding-address</forwarding-address>
-             <filter string="sku > 1"/>
-             <transformer-class-name>org.foo.BridgeTransformer</transformer-class-name>
-             <retry-interval>3</retry-interval>
-             <retry-interval-multiplier>0.2</retry-interval-multiplier>
-             <reconnect-attempts>2</reconnect-attempts>
-             <failover-on-server-shutdown>false</failover-on-server-shutdown>
-             <use-duplicate-detection>true</use-duplicate-detection>
-             <connector-ref connector-name="connector"/>
-         </bridge>
-         <bridge name="bridge2">
-             <queue-name>foo2</queue-name>
-             <forwarding-address>bridge-forwarding-address</forwarding-address>
-             <filter string="sku > 1"/>
-             <disccovery-group-ref discovery-group-name="dg1"/>
-         </bridge>
-      </bridges>
-      <cluster-connections>
-         <cluster-connection name="cluster-connection1">
-             <address>queues</address>
-             <retry-interval>3</retry-interval>
-             <use-duplicate-detection>true</use-duplicate-detection>
-             <forward-when-no-consumers>true</forward-when-no-consumers>
-             <max-hops>1</max-hops>
-             <connector-ref connector-name="connector"/>
-             <connector-ref connector-name="connector1"/>
-             <connector-ref connector-name="connector2"/>
-         </cluster-connection>
-         <cluster-connection name="cluster-connection2">
-             <address>queues2</address>
-             <retry-interval>3</retry-interval>
-             <use-duplicate-detection>true</use-duplicate-detection>
-             <forward-when-no-consumers>true</forward-when-no-consumers>
-             <max-hops>1</max-hops>
-             <discovery-group-ref discovery-group-name="dg1"/>
-         </cluster-connection>
-      </cluster-connections>
       <paging-max-threads>2</paging-max-threads>
       <paging-directory>pagingdir</paging-directory>
       <paging-global-watermark-size>123</paging-global-watermark-size>
@@ -186,6 +41,148 @@
       <journal-min-files>100</journal-min-files>
       <journal-max-aio>56546</journal-max-aio>
       <large-messages-directory>largemessagesdir</large-messages-directory>
+      
+      <remoting-interceptors>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor1</class-name>
+         <class-name>org.jboss.messaging.tests.unit.core.config.impl.TestInterceptor2</class-name>
+      </remoting-interceptors>
+      
+      <backup-connector-ref connector-name="backup-connector" />
+      <connectors>
+         <connector name="connector1">
+            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
+            <param key="a1" value="v1" type="String"/>
+            <param key="a2" value="123" type="Long"/>
+            <param key="a3" value="345" type="Integer"/>
+            <param key="a4" value="v4" type="String"/>      
+         </connector>
+         <connector name="connector2">
+            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory2</factory-class>
+            <param key="b1" value="w1" type="String"/>
+            <param key="b2" value="234" type="Long"/>
+            <param key="b3" value="456" type="Integer"/>
+            <param key="b4" value="w4" type="String"/>      
+         </connector>
+         <connector name="backup-connector">
+            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestConnectorFactory3</factory-class>
+            <param key="c1" value="x1" type="String"/>
+            <param key="c2" value="345" type="Long"/>
+            <param key="c3" value="567" type="Integer"/>
+            <param key="c4" value="x4" type="String"/>      
+         </connector>
+      </connectors>
+      <acceptors>
+         <acceptor name="acceptor1">
+            <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
+            <param key="d1" value="y1" type="String"/>
+            <param key="d2" value="456" type="Long"/>
+            <param key="d3" value="678" type="Integer"/>
+            <param key="d4" value="y4" type="String"/>                     
+         </acceptor>
+   	     <acceptor name="acceptor2">
+   	        <factory-class>org.jboss.messaging.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>           
+   	        <param key="e1" value="z1" type="String"/>
+   	        <param key="e2" value="567" type="Long"/>
+   	        <param key="e3" value="789" type="Integer"/>
+   	        <param key="e4" value="z4" type="String"/>            
+   	     </acceptor>
+      </acceptors>
+      <broadcast-groups>
+	     <broadcast-group name="bg1">
+	        <local-bind-port>10999</local-bind-port>
+	        <group-address>192.168.0.120</group-address>
+	        <group-port>11999</group-port>
+            <broadcast-period>12345</broadcast-period>
+            <connector-ref connector-name="connector1"/>
+	     </broadcast-group>
+         <broadcast-group name="bg2">
+            <local-bind-port>12999</local-bind-port>
+            <group-address>192.168.0.121</group-address>
+            <group-port>13999</group-port>
+            <broadcast-period>23456</broadcast-period>
+            <connector-ref connector-name="connector2" backup-connector-name="backup-connector"/>
+         </broadcast-group>
+      </broadcast-groups>
+      <discovery-groups>
+         <discovery-group name="dg1">
+            <group-address>192.168.0.120</group-address>
+            <group-port>11999</group-port>
+            <refresh-timeout>12345</refresh-timeout>
+         </discovery-group>
+         <discovery-group name="dg2">
+            <group-address>192.168.0.121</group-address>
+            <group-port>12999</group-port>
+            <refresh-timeout>23456</refresh-timeout>
+         </discovery-group>
+      </discovery-groups>
+      <diverts>
+         <divert name="divert1">         
+            <routing-name>routing-name1</routing-name>
+            <address>address1</address>
+            <forwarding-address>forwarding-address1</forwarding-address>
+            <filter string="speed > 88"/>
+            <transformer-class-name>org.foo.Transformer</transformer-class-name>
+            <exclusive>true</exclusive>
+         </divert>
+         <divert name="divert2">        
+            <routing-name>routing-name2</routing-name>
+            <address>address2</address>
+            <forwarding-address>forwarding-address2</forwarding-address>
+            <filter string="speed &lt; 88"/>
+            <transformer-class-name>org.foo.Transformer2</transformer-class-name>
+            <exclusive>false</exclusive>
+         </divert>
+      </diverts>
+      <queues>
+         <queue name="queue1">
+            <address>address1</address>
+            <filter string="color='red'" />
+            <durable>false</durable>
+         </queue>
+         <queue name="queue2">
+            <address>address2</address>
+            <filter string="color='blue'" />
+            <durable>false</durable>
+         </queue>
+      </queues>
+      <bridges>
+         <bridge name="bridge1">
+             <queue-name>queue1</queue-name>
+             <forwarding-address>bridge-forwarding-address1</forwarding-address>
+             <filter string="sku > 1"/>
+             <transformer-class-name>org.foo.BridgeTransformer</transformer-class-name>
+             <retry-interval>3</retry-interval>
+             <retry-interval-multiplier>0.2</retry-interval-multiplier>
+             <reconnect-attempts>2</reconnect-attempts>
+             <failover-on-server-shutdown>false</failover-on-server-shutdown>
+             <use-duplicate-detection>true</use-duplicate-detection>
+             <connector-ref connector-name="connector1"/>
+         </bridge>
+         <bridge name="bridge2">
+             <queue-name>queue2</queue-name>
+             <forwarding-address>bridge-forwarding-address2</forwarding-address>
+             <discovery-group-ref discovery-group-name="dg1"/>
+         </bridge>
+      </bridges>
+      <cluster-connections>
+         <cluster-connection name="cluster-connection1">
+             <address>queues1</address>
+             <retry-interval>3</retry-interval>
+             <use-duplicate-detection>true</use-duplicate-detection>
+             <forward-when-no-consumers>false</forward-when-no-consumers>
+             <max-hops>1</max-hops>
+             <connector-ref connector-name="connector1" backup-connector-name="backup-connector"/>
+             <connector-ref connector-name="connector2"/>
+         </cluster-connection>
+         <cluster-connection name="cluster-connection2">
+             <address>queues2</address>
+             <retry-interval>4</retry-interval>
+             <use-duplicate-detection>false</use-duplicate-detection>
+             <forward-when-no-consumers>true</forward-when-no-consumers>
+             <max-hops>2</max-hops>
+             <discovery-group-ref discovery-group-name="dg1"/>
+         </cluster-connection>
+      </cluster-connections>
    </configuration>
    
    <settings>

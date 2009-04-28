@@ -585,9 +585,17 @@ public class FileConfiguration extends ConfigurationImpl
          {
             retryInterval = XMLUtil.parseLong(child);
          }        
+         else if (child.getNodeName().equals("max-hops"))
+         {
+            maxHops = XMLUtil.parseInt(child);
+         }        
          else if (child.getNodeName().equals("use-duplicate-detection"))
          {
             duplicateDetection = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
+         }
+         else if (child.getNodeName().equals("forward-when-no-consumers"))
+         {
+            forwardWhenNoConsumers = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
          }
          else if (child.getNodeName().equals("discovery-group-ref"))
          {
