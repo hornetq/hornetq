@@ -246,7 +246,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                }
                catch (Exception e)
                {
-                  log.error("Error undeploying " + entry.getKey(), e);
+                  log.error("Error undeploying " + entry.getKey().a, e);
                }
             }
          }
