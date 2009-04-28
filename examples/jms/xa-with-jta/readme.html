@@ -18,7 +18,8 @@
       XASession through its XAResource. We then send two words, 'hello' and 'world', receive them, and let the 
       transaction roll back. The received messages are cancelled back to the queue. Next we start
       a new transaction with the same XAResource enlisted, but this time we commit the transaction after receiving the 
-      messages. Then we check that no more messages are to be received.</p>
+      messages. Then we check that no more messages are to be received. In each transaction a dummy XAResource is also 
+      enlisted to show the transaction processing information.</p>
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory. It will download the JBoss JTA jars before
@@ -100,10 +101,11 @@
           <code>XAResource xaRes = xaSession.getXAResource();</code>
        </pre>
 
-        <li>We enlist the resource in the Transaction work</li>
+        <li>We enlist the resources in the Transaction work</li>
         <pre>
           <code>
           Transaction transaction = txMgr.getTransaction();
+          transaction.enlistResource(new DummyXAResource());
           transaction.enlistResource(xaRes);
           </code>
        </pre>
@@ -126,11 +128,6 @@
           </code>
        </pre>
 
-        <li>We stop the work</li>
-        <pre>
-          <code>transaction.delistResource(xaRes, XAResource.TMSUCCESS);</code>
-       </pre>
-
         <li>We roll back the transaction</li>
         <pre>
           <code>txMgr.rollback();</code>
@@ -144,9 +141,12 @@
           </code>
        </pre>
 
-        <li>We enlist the resource to start the transaction work</li>
+        <li>We enlist the resources to start the transaction work</li>
         <pre>
-          <code>transaction.enlistResource(xaRes);</code>
+          <code>         
+          transaction.enlistResource(new DummyXAResource());
+          transaction.enlistResource(xaRes);
+          </code>
        </pre>
 
         <li>We receive those messages again</li>
@@ -157,11 +157,6 @@
            rm2 = (TextMessage)xaConsumer.receive();
            System.out.println("Message received again: " + rm2.getText());
             </code>
-       </pre>
-
-        <li>We stop the work</li>
-        <pre>
-          <code>transaction.delistResource(xaRes, XAResource.TMSUCCESS);</code>
        </pre>
 
         <li>We commit</li>

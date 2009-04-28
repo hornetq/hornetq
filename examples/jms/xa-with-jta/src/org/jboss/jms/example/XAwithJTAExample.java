@@ -31,7 +31,9 @@ import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
 import javax.naming.InitialContext;
 import javax.transaction.Transaction;
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.jta.TransactionManager;
 
@@ -100,6 +102,7 @@ public class XAwithJTAExample extends JMSExample
          
          //Step 15. enlist the resource in the Transaction work
          Transaction transaction = txMgr.getTransaction();
+         transaction.enlistResource(new DummyXAResource());
          transaction.enlistResource(xaRes);
          
          //Step 16. Send two messages.
@@ -112,32 +115,27 @@ public class XAwithJTAExample extends JMSExample
          TextMessage rm2 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received: " + rm2.getText());
          
-         //Step 18. Stop the work
-         transaction.delistResource(xaRes, XAResource.TMSUCCESS);
-         
-         //Step 19. Roll back the transaction
+         //Step 18. Roll back the transaction
          txMgr.rollback();
          
-         //Step 20. Create another transaction
+         //Step 19. Create another transaction
          txMgr.begin();
          transaction = txMgr.getTransaction();
          
-         //Step 21. Enlist the resource to start the transaction work
+         //Step 20. Enlist the resources to start the transaction work
+         transaction.enlistResource(new DummyXAResource());
          transaction.enlistResource(xaRes);
          
-         //Step 22. receive those messages again
+         //Step 21. receive those messages again
          rm1 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received again: " + rm1.getText());
          rm2 = (TextMessage)xaConsumer.receive();
          System.out.println("Message received again: " + rm2.getText());
-         
-         //Step 23. Stop the work
-         transaction.delistResource(xaRes, XAResource.TMSUCCESS);
 
-         //Step 24. Commit!
+         //Step 22. Commit!
          txMgr.commit();
          
-         //Step 25. Check no more messages are received.
+         //Step 23. Check no more messages are received.
          TextMessage rm3 = (TextMessage)xaConsumer.receive(2000);
          if (rm3 == null)
          {
@@ -152,7 +150,7 @@ public class XAwithJTAExample extends JMSExample
       }
       finally
       {
-         //Step 26. Be sure to close our JMS resources!
+         //Step 24. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
@@ -162,6 +160,65 @@ public class XAwithJTAExample extends JMSExample
             connection.close();
          }
       }
+   }
+   
+   public class DummyXAResource implements XAResource
+   {
+
+      public DummyXAResource()
+      {
+      }
+
+      public void commit(Xid xid, boolean arg1) throws XAException
+      {
+         System.out.println("DummyXAResource commit() called, xid: " + xid);
+      }
+
+      public void end(Xid xid, int arg1) throws XAException
+      {
+         System.out.println("DummyXAResource end() called, xid: " + xid);
+      }
+
+      public void forget(Xid xid) throws XAException
+      {
+         System.out.println("DummyXAResource forget() called, xid: " + xid);
+      }
+
+      public int getTransactionTimeout() throws XAException
+      {
+         return 0;
+      }
+
+      public boolean isSameRM(XAResource arg0) throws XAException
+      {
+         return this == arg0;
+      }
+
+      public int prepare(Xid xid) throws XAException
+      {
+         return XAResource.XA_OK;
+      }
+
+      public Xid[] recover(int arg0) throws XAException
+      {
+         return null;
+      }
+
+      public void rollback(Xid xid) throws XAException
+      {
+         System.out.println("DummyXAResource rollback() called, xid: " + xid);
+      }
+
+      public boolean setTransactionTimeout(int arg0) throws XAException
+      {
+         return false;
+      }
+
+      public void start(Xid xid, int arg1) throws XAException
+      {
+         System.out.println("DummyXAResource start() called, Xid: " + xid);
+      }
+      
    }
 
 }
