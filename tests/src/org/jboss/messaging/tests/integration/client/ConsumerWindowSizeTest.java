@@ -240,13 +240,41 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          ClientConsumerInternal consNeverUsed = (ClientConsumerInternal)sessionB.createConsumer(ADDRESS);
 
+         ClientProducer prod = session.createProducer(ADDRESS);
+         
+         // This will force a credit to be sent, but if the message wasn't received we need to take out that credit from the server
+         // or the client will be buffering messages
+         assertNull(consNeverUsed.receive(1));
+         
+         ClientMessage msg = createTextMessage(session, "This one will expire");
+         if (largeMessages)
+         {
+            msg.getBody().writeBytes(new byte[600]);
+         }
+         
+         msg.setExpiration(System.currentTimeMillis() + 100);
+         prod.send(msg);
+         
+         msg = createTextMessage(session, "First-on-non-buffered");
+
+         prod.send(msg);
+         
+         Thread.sleep(110);
+         
+         // It will be able to receive another message, but it shouldn't send a credit again, as the credit was already sent
+         msg = consNeverUsed.receive(TIMEOUT * 1000);
+         assertNotNull(msg);
+         assertEquals("First-on-non-buffered", getTextMessage(msg));
+         msg.acknowledge();
+         
+
          ClientConsumer cons1 = session.createConsumer(ADDRESS);
 
-         ClientProducer prod = session.createProducer(ADDRESS);
 
+         
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = createTextMessage(session, "Msg" + i);
+            msg = createTextMessage(session, "Msg" + i);
 
             if (largeMessages)
             {
@@ -258,7 +286,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = cons1.receive(1000);
+            msg = cons1.receive(1000);
             assertNotNull("expected message at i = " + i, msg);
             assertEquals("Msg" + i, getTextMessage(msg));
             msg.acknowledge();

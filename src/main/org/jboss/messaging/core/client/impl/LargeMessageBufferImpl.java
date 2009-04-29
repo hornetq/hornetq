@@ -123,37 +123,55 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
     * Add a buff to the List, or save it to the OutputStream if set
     * @param packet
     */
-   public synchronized void addPacket(final SessionReceiveContinuationMessage packet)
+   public void addPacket(final SessionReceiveContinuationMessage packet)
    {
-      if (outStream != null)
+      int flowControlCredit = 0;
+      boolean continues = false;
+      
+      synchronized (this)
+      {
+         if (outStream != null)
+         {
+            try
+            {
+               if (!packet.isContinues())
+               {
+                  streamEnded = true;
+               }
+
+               outStream.write(packet.getBody());
+
+               flowControlCredit = packet.getPacketSize();
+               continues = packet.isContinues();
+
+               notifyAll();
+
+               if (streamEnded)
+               {
+                  outStream.close();
+               }
+            }
+            catch (Exception e)
+            {
+               handledException = e;
+            }
+         }
+         else
+         {
+            packets.offer(packet);
+         }
+      }
+
+      if (flowControlCredit != 0)
       {
          try
          {
-            if (!packet.isContinues())
-            {
-               streamEnded = true;
-            }
-
-            outStream.write(packet.getBody());
-
-            consumerInternal.flowControl(packet.getPacketSize(), true);
-
-            notifyAll();
-
-            if (streamEnded)
-            {
-               outStream.close();
-            }
+            consumerInternal.flowControl(flowControlCredit, !continues);
          }
          catch (Exception e)
          {
             handledException = e;
-
          }
-      }
-      else
-      {
-         packets.offer(packet);
       }
    }
 
@@ -164,25 +182,35 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       notifyAll();
    }
 
-   public synchronized void setOutputStream(final OutputStream output) throws MessagingException
+   public void setOutputStream(final OutputStream output) throws MessagingException
    {
-      if (currentPacket != null)
+
+      int totalFlowControl = 0;
+      boolean continues = false;
+
+      synchronized (this)
       {
-         sendPacketToOutput(output, currentPacket);
-         currentPacket = null;
-      }
-      while (true)
-      {
-         SessionReceiveContinuationMessage packet = packets.poll();
-         if (packet == null)
+         if (currentPacket != null)
          {
-            break;
+            sendPacketToOutput(output, currentPacket);
+            currentPacket = null;
          }
-         consumerInternal.flowControl(packet.getPacketSize(), true);
-         sendPacketToOutput(output, packet);
+         while (true)
+         {
+            SessionReceiveContinuationMessage packet = packets.poll();
+            if (packet == null)
+            {
+               break;
+            }
+            totalFlowControl += packet.getPacketSize();
+            continues = packet.isContinues();
+            sendPacketToOutput(output, packet);
+         }
+
+         outStream = output;
       }
 
-      outStream = output;
+      consumerInternal.flowControl(totalFlowControl, !continues);
    }
 
    public synchronized void saveBuffer(final OutputStream output) throws MessagingException
@@ -1134,7 +1162,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
             throw new IndexOutOfBoundsException();
          }
 
-         consumerInternal.flowControl(currentPacket.getPacketSize(), true);
+         consumerInternal.flowControl(currentPacket.getPacketSize(), !currentPacket.isContinues());
 
          packetPosition += sizeToAdd;
 

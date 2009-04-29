@@ -327,6 +327,11 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          int previous = availableCredits.getAndAdd(credits);
 
+         if (trace)
+         {
+            log.trace("Received " + credits + " credits, previous value = " + previous + " currentValue = " + availableCredits.get());
+         }
+         
          if (previous <= 0 && previous + credits > 0)
          {
             promptDelivery();
@@ -485,6 +490,10 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private void promptDelivery()
    {
+      if (trace)
+      {
+         log.trace("Starting prompt delivery");
+      }
       lock.lock();
       try
       {
@@ -932,6 +941,10 @@ public class ServerConsumerImpl implements ServerConsumer
             // Since we are not sending anything to the client during this calculation, this is unlikely to happen
             if (availableCredits.compareAndSet(currentCredit, currentCredit - precalculatedCredits))
             {
+               if (trace)
+               {
+                  log.trace("Taking " + precalculatedCredits + " credits out on preCalculateFlowControl (largeMessage)");
+               }
                return precalculatedCredits;
             }
          }

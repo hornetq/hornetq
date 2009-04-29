@@ -92,6 +92,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private volatile boolean closed;
 
    private volatile int creditsToSend;
+   
+   private volatile boolean slowConsumerInitialCreditSent = false;
 
    private volatile Exception lastException;
 
@@ -154,10 +156,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
                                       "Cannot call receive(...) - a MessageHandler is set");
       }
-
-      if (clientWindowSize == 0 && buffer.isEmpty())
+      
+      if (clientWindowSize == 0)
       {
-         sendCredits(1);
+         startSlowConsumer();
       }
 
       receiverThread = Thread.currentThread();
@@ -221,6 +223,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   
                   session.expire(id, m.getMessageID());
 
+                  if (clientWindowSize == 0)
+                  {
+                     startSlowConsumer();
+                  }                 
+
                   if (toWait > 0)
                   {
                      continue;
@@ -283,7 +290,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (handler != theHandler && clientWindowSize == 0)
       {
-         sendCredits(1);
+         startSlowConsumer();
       }
 
       handler = theHandler;
@@ -409,7 +416,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
       
       // Flow control for the first packet, we will have others
-      flowControl(packet.getPacketSize(), true);
+      flowControl(packet.getPacketSize(), false);
 
       currentChunkMessage = new ClientMessageImpl();
       
@@ -482,8 +489,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * flow control is synchornized because of LargeMessage and streaming.
     * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
     * So, this operation needs to be atomic.
+    * 
+    * @parameter discountSlowConsumer When dealing with slowConsumers, we need to discount one credit that was pre-sent when the first receive was called. For largeMessage that is only done at the latest packet
     * */
-   public void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException
+   public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws MessagingException
    {
       if (clientWindowSize >= 0)
       {
@@ -492,37 +501,35 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          if (creditsToSend >= clientWindowSize)
          {
             
-            if (isLargeMessage)
+            if (clientWindowSize == 0 && discountSlowConsumer)
             {
-               // Flowcontrol on largeMessages continuations needs to be done in a separate thread or failover would
-               // block
+               if (trace)
+               {
+                  log.trace("Sending " + creditsToSend + " -1, for slow consumer");
+               }
+               
+               slowConsumerInitialCreditSent = false;
+
+               // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be
+               // always buffering one after received the first message
+               final int credits = creditsToSend - 1;
+
+               creditsToSend = 0;
+               
+               sendCredits(credits);
+            }
+            else
+            {
+               if (trace)
+               {
+                  log.trace("Sending " + messageBytes + " from flow-control");
+               }
+             
                final int credits = creditsToSend;
 
                creditsToSend = 0;
 
                sendCredits(credits);
-            }
-            else
-            {
-               if (clientWindowSize == 0)
-               {
-                  if (trace)
-                  {
-                     log.trace("Sending full credits - 1 for slow consumer");
-                  }
-                  // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be
-                  // always buffering one after received the first message
-                  sendCredits(creditsToSend - 1);
-               }
-               else
-               {
-                  if (trace)
-                  {
-                     log.trace("Sending full credits");
-                  }
-                  sendCredits(creditsToSend);
-               }
-               creditsToSend = 0;
             }
          }
       }
@@ -539,6 +546,22 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    // Private
    // ---------------------------------------------------------------------------------------
+
+   /** 
+    * Sending a initial credit for slow consumers
+    * */
+   private void startSlowConsumer()
+   {
+      if (!slowConsumerInitialCreditSent)
+      {
+         if (trace)
+         {
+            log.trace("Sending 1 credit to start delivering of one message to slow consumer");
+         }
+         slowConsumerInitialCreditSent = true;
+         sendCredits(1);
+      }
+   }
 
    private void requeueExecutors()
    {
@@ -564,7 +587,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       if (trace)
       {
-         log.trace("Sending " + credits + " back");
+         log.trace("Sending " + credits + " credits back", new Exception ("trace"));
       }
       channel.send(new SessionConsumerFlowCreditMessage(id, credits));
    }
@@ -664,11 +687,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             // If slow consumer, we need to send 1 credit to make sure we get another message
             if (clientWindowSize == 0)
             {
-               if (trace)
-               {
-                  log.trace("Sending 1 credit back after consuming message on slow consumer (no-buffering)");
-               }
-               sendCredits(1);
+               startSlowConsumer();
             }
          }
       }
@@ -683,7 +702,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // Chunk messages will execute the flow control while receiving the chunks
       if (message.getFlowControlSize() != 0)
       {
-         flowControl(message.getFlowControlSize(), false);
+         flowControl(message.getFlowControlSize(), true);
       }
    }
 

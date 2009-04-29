@@ -45,7 +45,7 @@ public interface ClientConsumerInternal extends ClientConsumer
    
    void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception;
    
-   void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException;
+   void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws MessagingException;
 
    void clear();
 
