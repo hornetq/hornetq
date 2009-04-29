@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -93,10 +92,10 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    private AtomicBoolean isDestroyed = new AtomicBoolean(false);
 
    /** Event listeners */
-   private List eventListeners;
+   private List<ConnectionEventListener> eventListeners;
    
    /** Handles */
-   private Set handles;
+   private Set<JBMSession> handles;
 
    /** Lock */
    private ReentrantLock lock = new ReentrantLock();
@@ -132,8 +131,8 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
       this.cri = cri;
       this.userName = userName;
       this.password = password;
-      this.eventListeners = Collections.synchronizedList(new ArrayList());
-      this.handles = Collections.synchronizedSet(new HashSet());
+      this.eventListeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>());
+      this.handles = Collections.synchronizedSet(new HashSet<JBMSession>());
 
       this.connection = null;
       this.xaConnection = null;
@@ -188,7 +187,7 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
       if (isDestroyed.get())
          throw new IllegalStateException("The managed connection is already destroyed");
 
-      Object session = new JBMSession(this, (JBMConnectionRequestInfo)cxRequestInfo);
+      JBMSession session = new JBMSession(this, (JBMConnectionRequestInfo)cxRequestInfo);
       handles.add(session);
       return session;
    }
@@ -215,9 +214,10 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
          log.trace("Ignored error stopping connection", t);
       }
       
-      Iterator it = handles.iterator();
-      while (it.hasNext())
-         ((JBMSession)it.next()).destroy();
+      for (JBMSession session: handles)
+      {
+         session.destroy();
+      }
 
       handles.clear();
    }

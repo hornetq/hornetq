@@ -333,7 +333,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     */
    public String getConnectorClassName()
    {
-      return mcfProperties.getConnectionParameters();
+      return mcfProperties.getConnectorClassName();
    }
    
    public void setConnectorClassName(String value)

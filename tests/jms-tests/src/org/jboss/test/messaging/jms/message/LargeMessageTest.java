@@ -93,7 +93,6 @@ public class LargeMessageTest extends JMSTestCase
 
          for (int i = 0; i < 1024 * 1024; i += 1024)
          {
-            System.out.println("Read message chunk " + i);
             int numberOfBytes = rm.readBytes(data);
             assertEquals(1024, numberOfBytes);
             for (int j = 0; j < 1024; j++)

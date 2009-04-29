@@ -22,18 +22,15 @@
 package org.jboss.messaging.ra;
 
 import java.io.Serializable;
-import java.util.Set;
-import java.util.Iterator;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Set;
 
-import javax.security.auth.Subject;
-
+import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.SecurityException;
-import javax.resource.spi.ConnectionRequestInfo;
-
 import javax.resource.spi.security.PasswordCredential;
+import javax.security.auth.Subject;
 
 import org.jboss.messaging.core.logging.Logger;
 
@@ -171,7 +168,7 @@ public class JBMCredential implements Serializable
    /**
     * Privileged class to get credentials
     */
-   private static class GetCredentialAction implements PrivilegedAction
+   private static class GetCredentialAction implements PrivilegedAction<PasswordCredential>
    {
       /** The subject */
       private Subject subject;
@@ -197,17 +194,16 @@ public class JBMCredential implements Serializable
        * Run
        * @return The credential
        */
-      public Object run()
+      public PasswordCredential run()
       {
          if (trace)
             log.trace("run()");
          
-         Set creds = subject.getPrivateCredentials(PasswordCredential.class);
+         Set<PasswordCredential> creds = subject.getPrivateCredentials(PasswordCredential.class);
          PasswordCredential pwdc = null;
-         Iterator credentials = creds.iterator();
-         while (credentials.hasNext())
+         
+         for (PasswordCredential curCred: creds)
          {
-            PasswordCredential curCred = (PasswordCredential) credentials.next();
             if (curCred.getManagedConnectionFactory().equals(mcf))
             {
                pwdc = curCred;

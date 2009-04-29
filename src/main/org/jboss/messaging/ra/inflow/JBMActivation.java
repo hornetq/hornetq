@@ -23,9 +23,7 @@ package org.jboss.messaging.ra.inflow;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Destination;
@@ -397,61 +395,76 @@ public class JBMActivation
 
    protected void setupDestination() throws Exception
    {
-      Context ctx = new InitialContext();
-      log.debug("Using context " + ctx.getEnvironment() + " for " + spec);
-      if (trace)
-         log.trace("setupDestination(" + ctx + ")");
-
+      
       String destinationName = spec.getDestination();
 
-      String destinationTypeString = spec.getDestinationType();
-      if (destinationTypeString != null && !destinationTypeString.trim().equals(""))
+      if (spec.isUseJNDI())
       {
-         log.debug("Destination type defined as " + destinationTypeString);
-
-         Class<?> destinationType;
-         if (Topic.class.getName().equals(destinationTypeString))
+         Context ctx = new InitialContext();
+         log.debug("Using context " + ctx.getEnvironment() + " for " + spec);
+         if (trace)
+            log.trace("setupDestination(" + ctx + ")");
+   
+         String destinationTypeString = spec.getDestinationType();
+         if (destinationTypeString != null && !destinationTypeString.trim().equals(""))
          {
-            destinationType = Topic.class;
-            isTopic = true;
-         }
-         else
-         {
-            destinationType = Queue.class;
-         }
-
-         log.debug("Retrieving destination " + destinationName + " of type " + destinationType.getName());
-         try
-         {
-            destination = (JBossDestination)Util.lookup(ctx, destinationName, destinationType);
-         }
-         catch (Exception e)
-         {
-            if (destinationName == null)
+            log.debug("Destination type defined as " + destinationTypeString);
+   
+            Class<?> destinationType;
+            if (Topic.class.getName().equals(destinationTypeString))
             {
-               System.out.println("destination is null, rethrowing exception");
-               throw e;
-            }
-            // If there is no binding on naming, we will just create a new instance
-            if (isTopic)
-            {
-               destination = new JBossTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+               destinationType = Topic.class;
+               isTopic = true;
             }
             else
             {
-               destination = new JBossQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+               destinationType = Queue.class;
+            }
+   
+            log.debug("Retrieving destination " + destinationName + " of type " + destinationType.getName());
+            try
+            {
+               destination = (JBossDestination)Util.lookup(ctx, destinationName, destinationType);
+            }
+            catch (Exception e)
+            {
+               if (destinationName == null)
+               {
+                  System.out.println("destination is null, rethrowing exception");
+                  throw e;
+               }
+               // If there is no binding on naming, we will just create a new instance
+               if (isTopic)
+               {
+                  destination = new JBossTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+               }
+               else
+               {
+                  destination = new JBossQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+               }
+            }
+         }
+         else
+         {
+            log.debug("Destination type not defined");
+            log.debug("Retrieving destination " + destinationName + " of type " + Destination.class.getName());
+   
+            destination = (JBossDestination)Util.lookup(ctx, destinationName, Destination.class);
+            if (destination instanceof Topic)
+            {
+               isTopic = true;
             }
          }
       }
       else
       {
-         log.debug("Destination type not defined");
-         log.debug("Retrieving destination " + destinationName + " of type " + Destination.class.getName());
-
-         destination = (JBossDestination)Util.lookup(ctx, destinationName, Destination.class);
-         if (destination instanceof Topic)
+         if (Topic.class.getName().equals(spec.getDestinationType()))
          {
-            isTopic = true;
+            destination = new JBossTopic(spec.getDestination());
+         }
+         else
+         {
+            destination = new JBossQueue(spec.getDestination());
          }
       }
 

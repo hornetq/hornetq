@@ -22,6 +22,9 @@
 
 package org.jboss.messaging.tests.util;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -33,6 +36,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -428,7 +432,66 @@ public class UnitTestCase extends TestCase
    }
 
    
-   
+   /** It validates a Bean (POJO) using simple setters and getters with random values.
+    *  You can pass a list of properties to be ignored, as some properties will have a pre-defined domain (not being possible to use random-values on them) */
+   protected void validateGettersAndSetters(Object pojo, String...IgnoredProperties) throws Exception
+   {
+      HashSet<String> ignoreSet = new HashSet<String>();
+      
+      for (String ignore: IgnoredProperties)
+      {
+         ignoreSet.add(ignore);
+      }
+      
+      BeanInfo info = Introspector.getBeanInfo(pojo.getClass());
+      
+      PropertyDescriptor properties[] = info.getPropertyDescriptors();
+      
+      for (PropertyDescriptor prop : properties)
+      {
+         Object value;
+         
+         if (prop.getPropertyType() == String.class)
+         {
+            value = RandomUtil.randomString();
+         }
+         else if (prop.getPropertyType() == Integer.class || prop.getPropertyType() == Integer.TYPE)
+         {
+            value = RandomUtil.randomInt();
+         }
+         else if (prop.getPropertyType() == Long.class || prop.getPropertyType() == Long.TYPE)
+         {
+            value = RandomUtil.randomLong();
+         }
+         else if (prop.getPropertyType() == Boolean.class || prop.getPropertyType() == Boolean.TYPE)
+         {
+            value = RandomUtil.randomBoolean();
+         }
+         else if (prop.getPropertyType() == Double.class || prop.getPropertyType() == Double.TYPE)
+         {
+            value = RandomUtil.randomDouble();
+         }
+         else
+         {
+            System.out.println("Can't validate property of type " + prop.getPropertyType() + " on " + prop.getName());
+            value = null;
+         }
+
+         if (value != null && prop.getWriteMethod() != null && prop.getReadMethod() == null)
+         {
+            System.out.println("WriteOnly property " + prop.getName() + " on " + pojo.getClass());
+         }
+         else
+         if (value != null & prop.getWriteMethod() != null && prop.getReadMethod() != null && !ignoreSet.contains(prop.getName()))
+         {
+            System.out.println("Validating " + prop.getName() + " type = " + prop.getPropertyType());
+            prop.getWriteMethod().invoke(pojo, value);
+         
+            assertEquals("Property " + prop.getName(), value, prop.getReadMethod().invoke(pojo));
+         }
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

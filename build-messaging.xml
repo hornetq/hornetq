@@ -206,6 +206,7 @@
       <path refid="jboss.jboss.mdr.classpath"/>
       <path refid="easymock.easymock.classpath"/>
       <path refid="easymock.classextension.classpath"/>
+      <path location="${build.jars.dir}/${ra.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path location="${build.jars.dir}/${security.jar.name}"/>

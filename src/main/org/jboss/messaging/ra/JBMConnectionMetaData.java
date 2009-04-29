@@ -140,9 +140,9 @@ public class JBMConnectionMetaData implements ConnectionMetaData
     * Get the JMS XPropertyNames
     * @return The names
     */
-   public Enumeration getJMSXPropertyNames()
+   public Enumeration<Object> getJMSXPropertyNames()
    {
-      Vector v = new Vector();
+      Vector<Object> v = new Vector<Object>();
       return v.elements();
    }
 }

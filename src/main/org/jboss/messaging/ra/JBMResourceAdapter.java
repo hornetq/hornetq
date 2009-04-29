@@ -21,6 +21,20 @@
  */
 package org.jboss.messaging.ra;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.jms.Session;
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.BootstrapContext;
+import javax.resource.spi.ResourceAdapter;
+import javax.resource.spi.ResourceAdapterInternalException;
+import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.WorkManager;
+import javax.transaction.xa.XAResource;
+
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -32,20 +46,6 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.ra.inflow.JBMActivation;
 import org.jboss.messaging.ra.inflow.JBMActivationSpec;
-
-import javax.jms.Session;
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.WorkManager;
-import javax.transaction.xa.XAResource;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The resource adapter for JBoss Messaging
@@ -90,7 +90,7 @@ public class JBMResourceAdapter implements ResourceAdapter
    /**
     * The activations by activation spec
     */
-   private Map activations;
+   private Map<ActivationSpec, JBMActivation> activations;
 
    private JBossConnectionFactory jBossConnectionFactory;
 
@@ -107,7 +107,7 @@ public class JBMResourceAdapter implements ResourceAdapter
       raProperties = new JBMRAProperties();
       sessionFactory = null;
       configured = new AtomicBoolean(false);
-      activations = new ConcurrentHashMap();
+      activations = new ConcurrentHashMap<ActivationSpec, JBMActivation>();
    }
 
    /**
@@ -153,7 +153,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("endpointDeactivation(" + endpointFactory + ", " + spec + ")");
       }
 
-      JBMActivation activation = (JBMActivation)activations.remove(spec);
+      JBMActivation activation = activations.remove(spec);
       if (activation != null)
       {
          activation.stop();
@@ -206,23 +206,19 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("stop()");
       }
 
-      for (Iterator i = activations.entrySet().iterator(); i.hasNext();)
+      for (Map.Entry<ActivationSpec, JBMActivation> entry: activations.entrySet())
       {
-         Map.Entry entry = (Map.Entry)i.next();
          try
          {
-            JBMActivation activation = (JBMActivation)entry.getValue();
-            if (activation != null)
-            {
-               activation.stop();
-            }
+            entry.getValue().stop();
          }
          catch (Exception ignored)
          {
             log.debug("Ignored", ignored);
          }
-         i.remove();
       }
+      
+      activations.clear();
 
       log.info("JBoss Messaging resource adapter stopped");
    }
@@ -1015,6 +1011,16 @@ public class JBMResourceAdapter implements ResourceAdapter
       }
 
       return raProperties.isFailoverOnServerShutdown();
+   }
+
+   /**
+    * Get failover on server shutdown
+    *
+    * @return The value
+    */
+   public Boolean getFailoverOnServerShutdown()
+   {
+      return isFailoverOnServerShutdown();
    }
 
    /**

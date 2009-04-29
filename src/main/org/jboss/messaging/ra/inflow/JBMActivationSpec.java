@@ -114,6 +114,8 @@ public class JBMActivationSpec implements ActivationSpec
    /** Is same RM override */
    private Boolean isSameRMOverrideValue;
    
+   private boolean useJNDI = true;
+   
    /** Force clear on shutdown */
    private Boolean forceClearOnShutdown;
    
@@ -164,6 +166,24 @@ public class JBMActivationSpec implements ActivationSpec
          log.trace("getResourceAdapter()");
 
       return ra;
+   }
+
+   
+   
+   /**
+    * @return the useJNDI
+    */
+   public boolean isUseJNDI()
+   {
+      return useJNDI;
+   }
+
+   /**
+    * @param useJNDI the useJNDI to set
+    */
+   public void setUseJNDI(boolean value)
+   {
+      this.useJNDI = value;
    }
 
    /**
@@ -329,7 +349,7 @@ public class JBMActivationSpec implements ActivationSpec
       if (trace)
          log.trace("setSubscriptionDurability(" + value + ")");
 
-      this.subscriptionDurability = "Durable".equals(subscriptionDurability);
+      this.subscriptionDurability = "Durable".equals(value);
    }
 
    /**
@@ -377,6 +397,10 @@ public class JBMActivationSpec implements ActivationSpec
       if (trace)
          log.trace("getClientId()");
 
+      if (clientId == null)
+      {
+         return ra.getClientID();
+      }
       return clientId;
    }
 
@@ -400,8 +424,15 @@ public class JBMActivationSpec implements ActivationSpec
    {
       if (trace)
          log.trace("getUser()");
-
-      return user;
+      
+      if (user == null)
+      {
+         return ra.getUserName();
+      }
+      else
+      {
+         return user;
+      }
    }
 
    /**
@@ -424,8 +455,15 @@ public class JBMActivationSpec implements ActivationSpec
    {
       if (trace)
          log.trace("getPassword()");
-
-      return password;
+      
+      if (password == null)
+      {
+         return ra.getPassword();
+      }
+      else
+      {
+         return password;
+      }
    }
 
    /**
