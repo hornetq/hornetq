@@ -24,6 +24,7 @@ package org.jboss.messaging.core.management;
 
 import static javax.management.openmbean.SimpleType.BOOLEAN;
 import static javax.management.openmbean.SimpleType.INTEGER;
+import static javax.management.openmbean.SimpleType.LONG;
 import static javax.management.openmbean.SimpleType.STRING;
 
 import java.text.DateFormat;
@@ -82,7 +83,7 @@ public class MessageCounterInfo
    {
       try
       {
-         TYPES = new OpenType[] { STRING, STRING, BOOLEAN, INTEGER, INTEGER, INTEGER, INTEGER, STRING, STRING };
+         TYPES = new OpenType[] { STRING, STRING, BOOLEAN, LONG, LONG, INTEGER, INTEGER, STRING, STRING };
          TYPE = new CompositeType(MESSAGE_TYPE_NAME,
                                   "Information for a MessageCounter",
                                   ITEM_NAMES,
@@ -104,9 +105,9 @@ public class MessageCounterInfo
 
    private final boolean durable;
 
-   private final int count;
+   private final long count;
 
-   private final int countDelta;
+   private final long countDelta;
 
    private final int depth;
 
@@ -139,8 +140,8 @@ public class MessageCounterInfo
       String name = (String)data.get("name");
       String subscription = (String)data.get("subscription");
       boolean durable = (Boolean)data.get("durable");
-      int count = (Integer)data.get("count");
-      int countDelta = (Integer)data.get("countDelta");
+      long count = (Long)data.get("count");
+      long countDelta = (Long)data.get("countDelta");
       int depth = (Integer)data.get("depth");
       int depthDelta = (Integer)data.get("depthDelta");
       String lastAddTimestamp = (String)data.get("lastAddTimestamp");
@@ -162,8 +163,8 @@ public class MessageCounterInfo
    public MessageCounterInfo(final String name,
                              final String subscription,
                              final boolean durable,
-                             final int count,
-                             final int countDelta,
+                             final long count,
+                             final long countDelta,
                              final int depth,
                              final int depthDelta,
                              final String lastAddTimestamp,
@@ -219,12 +220,12 @@ public class MessageCounterInfo
       return durable;
    }
 
-   public int getCount()
+   public long getCount()
    {
       return count;
    }
 
-   public int getCountDelta()
+   public long getCountDelta()
    {
       return countDelta;
    }

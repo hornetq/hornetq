@@ -62,9 +62,9 @@ public class MessageCounter
    private QueueControlMBean destQueue;
 
    // counter
-   private int countTotal;
+   private long countTotal;
 
-   private int countTotalLast;
+   private long countTotalLast;
 
    private int depthLast;
 
@@ -162,7 +162,7 @@ public class MessageCounter
     * Gets the total message count since startup or
     * last counter reset
     */
-   public int getCount()
+   public long getCount()
    {
       return countTotal;
    }
@@ -170,9 +170,9 @@ public class MessageCounter
    /**
     * Gets the message count delta since last method call
     */
-   public int getCountDelta()
+   public long getCountDelta()
    {
-      int delta = countTotal - countTotalLast;
+      long delta = countTotal - countTotalLast;
 
       countTotalLast = countTotal;
 

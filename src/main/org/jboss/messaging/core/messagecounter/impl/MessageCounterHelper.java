@@ -201,13 +201,13 @@ public class MessageCounterHelper
       return ret;
    }
    
-   private static String prettify(int value)
+   private static String prettify(long value)
    {
       if (value == 0)
       {
          return "-";
       }
-      return Integer.toString(value);
+      return Long.toString(value);
    }
    
    private static String asDate(long time)
