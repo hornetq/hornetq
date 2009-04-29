@@ -117,8 +117,8 @@ public class SecurityExample extends JMSExample
          //Step 11. Check permissions on europeTopic
          System.out.println("------------------------Checking permissions on " + europeTopic + "----------------");
          checkUserNoSendNoReceive(europeTopic, billConnection, "bill", andrewConnection, frankConnection);
-//         checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
-//         checkUserReceiveNoSend(europeTopic, frankConnection, "frank", andrewConnection);
+         checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
+         checkUserReceiveNoSend(europeTopic, frankConnection, "frank", andrewConnection);
 //         checkUserReceiveNoSend(europeTopic, samConnection, "sam", andrewConnection);
          System.out.println("-------------------------------------------------------------------------------------");
          
@@ -229,20 +229,6 @@ public class SecurityExample extends JMSExample
       {
          System.out.println("Security setting is broken! User " + user + " cannot send message [" + msg.getText() + "] to topic " + topic);
          result = false;
-      }
-      
-      if (consumer != null)
-      {
-         receivedMsg = (TextMessage)consumer.receive(2000);
-         if (receivedMsg == null)
-         {
-            System.out.println("User " + user + " cannot receive any message from topic " + topic);
-         }
-         else
-         {
-            System.out.println("Security setting is broken! User " + user + " can receive message [" + receivedMsg.getText() + "] from topic " + topic);
-            result = false;
-         }
       }
       
       session.close();
