@@ -258,20 +258,12 @@ public class SecurityExample extends JMSExample
       
       try
       {
-System.out.println("--------------------------1------------------------");
          consumer = session.createConsumer(topic);
-         System.out.println("--------------------------2------------------------");
       }
       catch (JMSException e)
       {
-         System.out.println("--------------------------3------------------------");
          System.out.println("User " + user + " cannot create consumer on topic " + topic);
       }
-      System.out.println("--------------------------4------------------------");
-      
-      Session session1 = receivingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      MessageConsumer goodConsumer = session1.createConsumer(topic);
-      System.out.println("--------------------------5------------------------");
       
       TextMessage msg = session.createTextMessage("hello-world-3");
       try
@@ -286,7 +278,6 @@ System.out.println("--------------------------1------------------------");
       }
       
       session.close();
-      session1.close();
    }
 
    //Check the user connection has both send and receive permissions on the topic
