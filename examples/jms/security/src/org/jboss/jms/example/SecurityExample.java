@@ -70,7 +70,7 @@ public class SecurityExample extends JMSExample
          //Step 4. Try to create a JMS Connection without user/password. It will fail.
          try
          {
-            Connection connection = cf.createConnection();
+            cf.createConnection();
             result = false;
          }
          catch (JMSSecurityException e)
@@ -87,7 +87,7 @@ public class SecurityExample extends JMSExample
          }
          catch (JMSException e)
          {
-            System.out.println("Bill failed to connect. Details: " + e.getMessage());
+            System.out.println("User bill failed to connect. Details: " + e.getMessage());
          }
          
          //Step 6. bill makes a good connection.
@@ -117,17 +117,17 @@ public class SecurityExample extends JMSExample
          //Step 11. Check permissions on europeTopic
          System.out.println("------------------------Checking permissions on " + europeTopic + "----------------");
          checkUserNoSendNoReceive(europeTopic, billConnection, "bill", andrewConnection, frankConnection);
-         checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
-         checkUserReceiveNoSend(europeTopic, frankConnection, "frank", andrewConnection);
-         checkUserReceiveNoSend(europeTopic, samConnection, "sam", andrewConnection);
+//         checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
+//         checkUserReceiveNoSend(europeTopic, frankConnection, "frank", andrewConnection);
+//         checkUserReceiveNoSend(europeTopic, samConnection, "sam", andrewConnection);
          System.out.println("-------------------------------------------------------------------------------------");
          
          //Step 12. Check permissions on usTopic
          System.out.println("------------------------Checking permissions on " + usTopic + "----------------");
-         checkUserNoSendNoReceive(usTopic, billConnection, "bill", frankConnection, frankConnection);
-         checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew", frankConnection, frankConnection);
-         checkUserSendAndReceive(usTopic, frankConnection, "frank");
-         checkUserReceiveNoSend(usTopic, samConnection, "sam", frankConnection);
+//         checkUserNoSendNoReceive(usTopic, billConnection, "bill", frankConnection, frankConnection);
+//         checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew", frankConnection, frankConnection);
+//         checkUserSendAndReceive(usTopic, frankConnection, "frank");
+//         checkUserReceiveNoSend(usTopic, samConnection, "sam", frankConnection);
          System.out.println("-------------------------------------------------------------------------------------");
 
          return result;
@@ -258,48 +258,31 @@ public class SecurityExample extends JMSExample
       
       try
       {
+System.out.println("--------------------------1------------------------");
          consumer = session.createConsumer(topic);
+         System.out.println("--------------------------2------------------------");
       }
       catch (JMSException e)
       {
+         System.out.println("--------------------------3------------------------");
          System.out.println("User " + user + " cannot create consumer on topic " + topic);
       }
+      System.out.println("--------------------------4------------------------");
       
       Session session1 = receivingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageConsumer goodConsumer = session1.createConsumer(topic);
+      System.out.println("--------------------------5------------------------");
       
       TextMessage msg = session.createTextMessage("hello-world-3");
-      producer.send(msg);
-
-      TextMessage receivedMsg = (TextMessage)goodConsumer.receive(2000);
-      
-      if (receivedMsg == null)
+      try
       {
-         System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic: " + topic);
-      }
-      else
-      {
+         producer.send(msg);
          System.out.println("Security setting is broken! User " + user + " can send message [" + msg.getText() + "] to topic " + topic);
          result = false;
       }
-      
-      if (consumer != null)
+      catch (JMSException e)
       {
-         Session session2 = sendingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer goodProducer = session2.createProducer(topic);
-         goodProducer.send(msg);
-      
-         receivedMsg = (TextMessage)consumer.receive(2000);
-      
-         if (receivedMsg == null)
-         {
-            System.out.println("User " + user + " cannot receive message [" + msg.getText() + "] from topic " + topic);
-         }
-         else
-         {
-            System.out.println("Security setting is broken! User " + user + " can receive message [" + receivedMsg.getText() + "] from topic " + topic);
-         }
-         session2.close();
+         System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic: " + topic);
       }
       
       session.close();
