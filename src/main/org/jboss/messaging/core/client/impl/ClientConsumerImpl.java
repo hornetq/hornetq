@@ -483,7 +483,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException
+   /** 
+    * flow control is synchornized because of LargeMessage and streaming.
+    * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
+    * So, this operation needs to be atomic.
+    * */
+   public synchronized void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException
    {
       if (clientWindowSize >= 0)
       {

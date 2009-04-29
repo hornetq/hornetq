@@ -47,12 +47,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    private final SimpleString queueA = new SimpleString("queueA");
 
    private final int TIMEOUT = 5;
-   
+
    private static final Logger log = Logger.getLogger(ConsumerWindowSizeTest.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
-
-
 
    /*
    * tests send window size. we do this by having 2 receivers on the q. since we roundrobin the consumer for delivery we
@@ -306,7 +304,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       internalTestSlowConsumerNoBuffer2(false);
    }
 
-   
    public void testSlowConsumerNoBuffer2LargeMessages() throws Exception
    {
       internalTestSlowConsumerNoBuffer2(true);
@@ -391,16 +388,15 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
 
          session1.close(); // just to make sure everything is flushed and no pending packets on the sending buffer, or
-                           // the getMessageCount would fail
+         // the getMessageCount would fail
          session2.close();
 
          session1 = sf.createSession(false, true, true);
          session1.start();
          session2 = sf.createSession(false, true, true);
          session2.start();
-         
-         prod = session1.createProducer(ADDRESS);
 
+         prod = session1.createProducer(ADDRESS);
 
          assertEquals(0, getMessageCount(server, ADDRESS.toString()));
 
@@ -489,7 +485,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    {
       internalTestSlowConsumerOnMessageHandlerNoBuffers(false);
    }
-   
+
    public void testSlowConsumerOnMessageHandlerNoBuffersLargeMessage() throws Exception
    {
       internalTestSlowConsumerOnMessageHandlerNoBuffers(true);
@@ -497,7 +493,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    public void internalTestSlowConsumerOnMessageHandlerNoBuffers(boolean largeMessages) throws Exception
    {
-      
+
       MessagingServer server = createServer(false);
 
       ClientSession sessionB = null;
@@ -516,7 +512,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
             sf.setMinLargeMessageSize(100);
          }
-
 
          session = sf.createSession(false, true, true);
 
@@ -752,14 +747,13 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          consReceiveOneAndHold.setMessageHandler(handler);
 
          assertTrue(latchReceived.await(TIMEOUT, TimeUnit.SECONDS));
-         
-         
+
          long timeout = System.currentTimeMillis() + 1000 * TIMEOUT;
          while (consReceiveOneAndHold.getBufferSize() == 0 && System.currentTimeMillis() < timeout)
          {
             Thread.sleep(10);
          }
-         
+
          assertEquals(1, consReceiveOneAndHold.getBufferSize());
 
          ClientConsumer cons1 = session.createConsumer(ADDRESS);
