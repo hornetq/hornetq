@@ -26,6 +26,7 @@ package org.jboss.messaging.tests.integration.cluster.failover;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.beans.info.plugins.SetterAndFieldPropertyInfo;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -54,6 +55,8 @@ public class PagingFailoverTest extends FailoverTestBase
 {
 
    // Constants -----------------------------------------------------
+
+   final int RECEIVE_TIMEOUT = 25000;
 
    // Attributes ----------------------------------------------------
 
@@ -177,7 +180,7 @@ public class PagingFailoverTest extends FailoverTestBase
                conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
             }
 
-            ClientMessage message = consumer.receive(10000);
+            ClientMessage message = consumer.receive(RECEIVE_TIMEOUT);
 
 
             assertNotNull(message);
@@ -266,8 +269,6 @@ public class PagingFailoverTest extends FailoverTestBase
       try
       {
          final AtomicInteger numberOfMessages = new AtomicInteger(0);
-
-         final int RECEIVE_TIMEOUT = 10000;
 
          final ClientSessionFactory factory;
          final PagingStore store;
