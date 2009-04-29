@@ -573,15 +573,6 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.jboss.messaging.core.client.impl.ClientConsumerInternal#getCreditsToSend()
-       */
-      public int getCreditsToSend()
-      {
-
-         return 0;
-      }
-
-      /* (non-Javadoc)
        * @see org.jboss.messaging.core.client.impl.ClientConsumerInternal#getID()
        */
       public long getID()

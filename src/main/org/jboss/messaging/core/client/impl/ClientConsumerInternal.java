@@ -53,8 +53,6 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    int getBufferSize();
 
-   int getCreditsToSend();
-
    void cleanUp() throws MessagingException;
    
    void acknowledge(ClientMessage message) throws MessagingException;

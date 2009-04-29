@@ -456,11 +456,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return buffer.size();
    }
 
-   public int getCreditsToSend()
-   {
-      return creditsToSend;
-   }
-
    public void acknowledge(final ClientMessage message) throws MessagingException
    {
       ackBytes += message.getEncodeSize();
@@ -488,7 +483,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
     * So, this operation needs to be atomic.
     * */
-   public synchronized void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException
+   public void flowControl(final int messageBytes, final boolean isLargeMessage) throws MessagingException
    {
       if (clientWindowSize >= 0)
       {
