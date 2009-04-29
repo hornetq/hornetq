@@ -60,7 +60,7 @@
         <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value>true</config-property-value>
       </config-property>
-      <config-property>
+      <!--<config-property>
         <description>The user name used to login to the JMS server</description>
         <config-property-name>UserName</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
@@ -72,7 +72,7 @@
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
-      <!--<config-property>
+      <config-property>
          <description>The Backup transport type</description>
          <config-property-name>BackUpTransportType</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
