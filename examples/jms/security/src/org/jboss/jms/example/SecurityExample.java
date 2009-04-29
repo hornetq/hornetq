@@ -168,15 +168,22 @@ public class SecurityExample extends JMSExample
       MessageProducer producer = session.createProducer(topic);
       MessageConsumer consumer = session.createConsumer(topic);
       TextMessage msg = session.createTextMessage("hello-world-1");
-      producer.send(msg);
-      TextMessage receivedMsg = (TextMessage)consumer.receive(2000);
-      if (receivedMsg == null)
+      
+      try
       {
-         System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic " + topic);
+         producer.send(msg);
+         System.out.println("Security setting is broken! User " + user + " can send message [" + msg.getText() + "] to topic " + topic);
+         result = false;
       }
-      else
+      catch (JMSException e)
       {
-         System.out.println("Security setting is broken! User " + user + " can send message [" + receivedMsg.getText() + "] to topic " + topic);
+         System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic: " + topic);
+      }
+
+      TextMessage receivedMsg = (TextMessage)consumer.receive(2000);
+      if (receivedMsg != null)
+      {
+         System.out.println("Security setting is broken for User " + user + ". message [" + receivedMsg.getText() + "] to topic " + topic + " shouldn't be received!");
          result = false;
       }
 
@@ -196,6 +203,8 @@ public class SecurityExample extends JMSExample
          System.out.println("Security setting is broken! User " + user + " cannot receive message from topic " + topic);
          result = false;         
       }
+      
+      session1.close();
       session.close();
    }
 
