@@ -32,9 +32,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
@@ -76,7 +75,6 @@ import org.jboss.messaging.core.transaction.Transaction.State;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.IDGenerator;
-import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
@@ -93,16 +91,15 @@ import org.jboss.messaging.utils.UUID;
 public class JournalStorageManager implements StorageManager
 {
    private static final Logger log = Logger.getLogger(JournalStorageManager.class);
-   
-   private static final long CHECKPOINT_BATCH_SIZE = 2 ^ 32;
 
+   private static final long CHECKPOINT_BATCH_SIZE = 2 ^ 32;
 
    // Bindings journal record type
 
    public static final byte QUEUE_BINDING_RECORD = 21;
 
    public static final byte PERSISTENT_ID_RECORD = 23;
-   
+
    public static final byte ID_COUNTER_RECORD = 24;
 
    // type + expiration + timestamp + priority
@@ -125,7 +122,7 @@ public class JournalStorageManager implements StorageManager
    public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
    public static final byte DUPLICATE_ID = 37;
-   
+
    private UUID persistentID;
 
    private final BatchingIDGenerator idGenerator = new BatchingIDGenerator(0, CHECKPOINT_BATCH_SIZE);
@@ -138,17 +135,17 @@ public class JournalStorageManager implements StorageManager
 
    private volatile boolean started;
 
-   private final ExecutorService executor;
-   
-   public JournalStorageManager(final Configuration config)
+   private final Executor executor;
+
+   public JournalStorageManager(final Configuration config, final Executor executor)
    {
-      this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-journal-storage-manager"));
+      this.executor = executor;
 
       if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
       {
          throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
       }
-      
+
       String bindingsDir = config.getBindingsDirectory();
 
       if (bindingsDir == null)
@@ -214,41 +211,30 @@ public class JournalStorageManager implements StorageManager
       largeMessagesFactory = new NIOSequentialFileFactory(config.getLargeMessagesDirectory());
    }
 
-   /* This constructor is only used for testing */
-   public JournalStorageManager(final Journal messageJournal,
-                                final Journal bindingsJournal,
-                                final SequentialFileFactory largeMessagesFactory)
-   {
-      this.executor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-journal-storage-manager"));
-      this.messageJournal = messageJournal;
-      this.bindingsJournal = bindingsJournal;
-      this.largeMessagesFactory = largeMessagesFactory;
-   }
-   
    public UUID getPersistentID()
-   {   
+   {
       return persistentID;
    }
-   
+
    public void setPersistentID(UUID id) throws Exception
    {
       long recordID = generateUniqueID();
-      
+
       if (id != null)
       {
-         bindingsJournal.appendAddRecord(recordID, PERSISTENT_ID_RECORD, new PersistentIDEncoding(id), true);                       
+         bindingsJournal.appendAddRecord(recordID, PERSISTENT_ID_RECORD, new PersistentIDEncoding(id), true);
       }
-      
+
       this.persistentID = id;
    }
 
    public long generateUniqueID()
    {
       long id = idGenerator.generateID();
-      
+
       return id;
    }
-   
+
    public long getCurrentUniqueID()
    {
       return idGenerator.getCurrentID();
@@ -258,7 +244,7 @@ public class JournalStorageManager implements StorageManager
    {
       idGenerator.setID(id);
    }
-   
+
    public LargeServerMessage createLargeMessage()
    {
       return new JournalLargeServerMessage(this);
@@ -466,7 +452,7 @@ public class JournalStorageManager implements StorageManager
                                   final ResourceManager resourceManager,
                                   final Map<Long, Queue> queues,
                                   final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
-   {      
+   {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
@@ -679,11 +665,7 @@ public class JournalStorageManager implements StorageManager
          }
       }
 
-      loadPreparedTransactions(pagingManager,
-                               resourceManager,
-                               queues,
-                               preparedTransactions,
-                               duplicateIDMap);
+      loadPreparedTransactions(pagingManager, resourceManager, queues, preparedTransactions, duplicateIDMap);
    }
 
    private void loadPreparedTransactions(final PagingManager pagingManager,
@@ -713,7 +695,7 @@ public class JournalStorageManager implements StorageManager
          {
             byte[] data = record.data;
 
-            MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data); 
+            MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data);
 
             byte recordType = record.getUserRecordType();
 
@@ -838,7 +820,7 @@ public class JournalStorageManager implements StorageManager
          {
             byte[] data = record.data;
 
-            MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data); 
+            MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data);
 
             long messageID = record.id;
 
@@ -899,13 +881,13 @@ public class JournalStorageManager implements StorageManager
    }
 
    public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos) throws Exception
-   {      
+   {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
       bindingsJournal.load(records, preparedTransactions);
-      
+
       long lastID = -1;
 
       for (RecordInfo record : records)
@@ -925,21 +907,21 @@ public class JournalStorageManager implements StorageManager
             bindingEncoding.setPersistenceID(id);
 
             queueBindingInfos.add(bindingEncoding);
-         }        
+         }
          else if (rec == PERSISTENT_ID_RECORD)
          {
             PersistentIDEncoding encoding = new PersistentIDEncoding();
-            
+
             encoding.decode(buffer);
-            
+
             persistentID = encoding.uuid;
          }
          else if (rec == ID_COUNTER_RECORD)
          {
             IDCounterEncoding encoding = new IDCounterEncoding();
-            
+
             encoding.decode(buffer);
-            
+
             lastID = encoding.id;
          }
          else
@@ -950,8 +932,6 @@ public class JournalStorageManager implements StorageManager
 
       idGenerator.setID(lastID + 1);
    }
-      
-   
 
    // MessagingComponent implementation
    // ------------------------------------------------------
@@ -962,9 +942,9 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
-           
+
       cleanupIncompleteFiles();
-      
+
       bindingsJournal.start();
 
       messageJournal.start();
@@ -978,18 +958,14 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
-      
-      //Must call close to make sure last id is persisted
-      idGenerator.close();
 
-      executor.shutdown();
+      // Must call close to make sure last id is persisted
+      idGenerator.close();
 
       bindingsJournal.stop();
 
       messageJournal.stop();
 
-      executor.awaitTermination(60, TimeUnit.SECONDS);
-      
       persistentID = null;
 
       started = false;
@@ -1019,7 +995,6 @@ public class JournalStorageManager implements StorageManager
    {
       this.executor.execute(new Runnable()
       {
-
          public void run()
          {
             try
@@ -1108,11 +1083,11 @@ public class JournalStorageManager implements StorageManager
 
          nextID = start + checkpointSize;
       }
-      
+
       public void setID(final long id)
       {
          this.counter.set(id);
-         
+
          nextID = id + checkpointSize;
       }
 
@@ -1146,12 +1121,12 @@ public class JournalStorageManager implements StorageManager
       {
          return counter.get();
       }
-      
+
       public void close()
       {
          storeID(counter.get());
       }
-      
+
       private void storeID(final long id)
       {
          try
@@ -1164,7 +1139,7 @@ public class JournalStorageManager implements StorageManager
          }
       }
    }
-   
+
    private static class XidEncoding implements EncodingSupport
    {
       final Xid xid;
@@ -1293,7 +1268,7 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-   
+
    private static class PersistentIDEncoding implements EncodingSupport
    {
       UUID uuid;
@@ -1310,9 +1285,9 @@ public class JournalStorageManager implements StorageManager
       public void decode(final MessagingBuffer buffer)
       {
          byte[] bytes = new byte[16];
-         
+
          buffer.readBytes(bytes);
-         
+
          uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
       }
 
@@ -1327,7 +1302,7 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-   
+
    private static class IDCounterEncoding implements EncodingSupport
    {
       long id;

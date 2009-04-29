@@ -113,7 +113,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    private boolean backup;
 
    private volatile boolean started;
-
+   
+   private int replicationCount;
+   
    /*
     * Constructor using static list of connectors
     */
@@ -504,8 +506,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          
          waitForReplicationsToComplete(3000);
       }
-      
-      private int replicationCount;
       
       private synchronized void waitForReplicationsToComplete(long timeout)
       {

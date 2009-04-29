@@ -30,7 +30,6 @@ import java.util.List;
 import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * This interface describes the core management interface exposed by the server
@@ -52,6 +51,8 @@ public interface MessagingServerControlMBean
    boolean isClustered();
 
    int getScheduledThreadPoolMaxSize();
+   
+   int getThreadPoolMaxSize();
 
    long getSecurityInvalidationInterval();
 
@@ -185,8 +186,6 @@ public interface MessagingServerControlMBean
    int getIDCacheSize();
 
    boolean isPersistIDCache();
-
-   int getPagingMaxThreads();
 
    int getPagingGlobalWatermarkSize();
 

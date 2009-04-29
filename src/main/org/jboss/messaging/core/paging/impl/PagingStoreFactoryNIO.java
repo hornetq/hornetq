@@ -33,9 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
@@ -47,7 +44,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.utils.OrderedExecutorFactory;
+import org.jboss.messaging.utils.ExecutorFactory;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
 
@@ -69,9 +66,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    private final String directory;
 
-   private final ExecutorService parentExecutor;
-
-   private final OrderedExecutorFactory executorFactory;
+   private final ExecutorFactory executorFactory;
 
    private final Executor globalDepagerExecutor;
 
@@ -85,13 +80,11 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    // Constructors --------------------------------------------------
 
-   public PagingStoreFactoryNIO(final String directory, final int maxThreads)
+   public PagingStoreFactoryNIO(final String directory, final ExecutorFactory executorFactory)
    {
       this.directory = directory;
 
-      parentExecutor = Executors.newFixedThreadPool(maxThreads, new org.jboss.messaging.utils.JBMThreadFactory("JBM-depaging-threads"));
-
-      executorFactory = new org.jboss.messaging.utils.OrderedExecutorFactory(parentExecutor);
+      this.executorFactory = executorFactory;
 
       globalDepagerExecutor = executorFactory.getExecutor();
    }
@@ -103,11 +96,8 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       return globalDepagerExecutor;
    }
 
-   public void stop() throws InterruptedException
+   public void stop()
    {
-      parentExecutor.shutdown();
-
-      parentExecutor.awaitTermination(30, TimeUnit.SECONDS);
    }
 
    public synchronized PagingStore newStore(final SimpleString destinationName, final AddressSettings settings) throws Exception

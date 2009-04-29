@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.performance.persistence;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
@@ -125,7 +126,7 @@ public class StorageManagerTimingTest extends UnitTestCase
 
       configuration.setJournalType(journalType);
 
-      final JournalStorageManager journal = new JournalStorageManager(configuration);
+      final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
       journal.start();
 
       HashMap<Long, Queue> queues = new HashMap<Long, Queue>();

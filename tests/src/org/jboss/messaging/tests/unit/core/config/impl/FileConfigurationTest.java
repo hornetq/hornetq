@@ -45,7 +45,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       //Check they match the values from the test file
       assertEquals(true, conf.isClustered());
       assertEquals(true, conf.isEnableFileDeployment());
-      assertEquals(12345, conf.getScheduledThreadPoolMaxSize());      
+      assertEquals(12345, conf.getScheduledThreadPoolMaxSize());
+      assertEquals(54321, conf.getThreadPoolMaxSize());      
       assertEquals(false, conf.isSecurityEnabled());
       assertEquals(5423, conf.getSecurityInvalidationInterval());
       assertEquals(true, conf.isWildcardRoutingEnabled());
@@ -67,8 +68,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(true, conf.isPersistIDCache());
       assertEquals(12456, conf.getQueueActivationTimeout());
       assertEquals(true, conf.isBackup());
-      assertEquals(true, conf.isPersistDeliveryCountBeforeDelivery());
-      assertEquals(2, conf.getPagingMaxThreads());
+      assertEquals(true, conf.isPersistDeliveryCountBeforeDelivery());      
       assertEquals("pagingdir", conf.getPagingDirectory());
       assertEquals(123, conf.getPagingGlobalWatermarkSize());
       assertEquals(4567, conf.getPagingMaxGlobalSizeBytes());

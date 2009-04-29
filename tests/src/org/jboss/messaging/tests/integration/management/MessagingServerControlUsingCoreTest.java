@@ -260,11 +260,6 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             return (Long)proxy.retrieveAttributeValue("PagingMaxGlobalSizeBytes");
          }
 
-         public int getPagingMaxThreads()
-         {
-            return (Integer)proxy.retrieveAttributeValue("PagingMaxThreads");
-         }
-
          public long getQueueActivationTimeout()
          {
             return (Long)proxy.retrieveAttributeValue("QueueActivationTimeout");
@@ -273,6 +268,11 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
          public int getScheduledThreadPoolMaxSize()
          {
             return (Integer)proxy.retrieveAttributeValue("ScheduledThreadPoolMaxSize");
+         }
+         
+         public int getThreadPoolMaxSize()
+         {
+            return (Integer)proxy.retrieveAttributeValue("ThreadPoolMaxSize");
          }
 
          public long getSecurityInvalidationInterval()

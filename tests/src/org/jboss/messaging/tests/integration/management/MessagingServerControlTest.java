@@ -81,6 +81,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       assertEquals(conf.isBackup(), serverControl.isBackup());
       assertEquals(conf.getQueueActivationTimeout(), serverControl.getQueueActivationTimeout());
       assertEquals(conf.getScheduledThreadPoolMaxSize(), serverControl.getScheduledThreadPoolMaxSize());
+      assertEquals(conf.getThreadPoolMaxSize(), serverControl.getThreadPoolMaxSize());
       assertEquals(conf.getSecurityInvalidationInterval(), serverControl.getSecurityInvalidationInterval());
       assertEquals(conf.isSecurityEnabled(), serverControl.isSecurityEnabled());
       assertEquals(conf.getInterceptorClassNames(), serverControl.getInterceptorClassNames());
@@ -102,8 +103,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       assertEquals(conf.getJournalMaxAIO(), serverControl.getJournalMaxAIO());
       assertEquals(conf.getJournalBufferReuseSize(), serverControl.getJournalBufferReuseSize());
       assertEquals(conf.isCreateBindingsDir(), serverControl.isCreateBindingsDir());
-      assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());
-      assertEquals(conf.getPagingMaxThreads(), serverControl.getPagingMaxThreads());
+      assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());      
       assertEquals(conf.getPagingDirectory(), serverControl.getPagingDirectory());
       assertEquals(conf.getPagingMaxGlobalSizeBytes(), serverControl.getPagingMaxGlobalSizeBytes());
       assertEquals(conf.getPagingGlobalWatermarkSize(), serverControl.getPagingGlobalWatermarkSize());

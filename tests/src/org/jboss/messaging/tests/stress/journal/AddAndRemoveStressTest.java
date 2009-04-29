@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.stress.journal;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.journal.LoadManager;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;

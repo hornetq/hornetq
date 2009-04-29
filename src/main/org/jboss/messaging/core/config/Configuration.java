@@ -75,6 +75,10 @@ public interface Configuration extends Serializable, MessagingComponent
    long getQueueActivationTimeout();
 
    void setQueueActivationTimeout(long timeout);
+   
+   int getThreadPoolMaxSize();
+
+   void setThreadPoolMaxSize(int maxSize);
 
    int getScheduledThreadPoolMaxSize();
 
@@ -205,10 +209,6 @@ public interface Configuration extends Serializable, MessagingComponent
    void setCreateJournalDir(boolean create);
 
    // Paging Properties --------------------------------------------------------------------
-
-   int getPagingMaxThreads();
-
-   void setPagingMaxThread(int pagingMaxThreads);
 
    String getPagingDirectory();
 

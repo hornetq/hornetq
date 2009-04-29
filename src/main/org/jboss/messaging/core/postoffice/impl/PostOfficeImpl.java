@@ -30,8 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
@@ -100,11 +98,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private final ManagementService managementService;
 
-   private ScheduledThreadPoolExecutor messageExpiryExecutor;
+   private Thread expiryReaper;
 
-   private final long messageExpiryScanPeriod;
+   private final long reaperPeriod;
 
-   private final int messageExpiryThreadPriority;
+   private final int reaperPriority;
+   
+   private Reaper reaper;
 
    private final ConcurrentMap<SimpleString, DuplicateIDCache> duplicateIDCaches = new ConcurrentHashMap<SimpleString, DuplicateIDCache>();
 
@@ -135,8 +135,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                          final PagingManager pagingManager,
                          final QueueFactory bindableFactory,
                          final ManagementService managementService,
-                         final long messageExpiryScanPeriod,
-                         final int messageExpiryThreadPriority,
+                         final long reaperPeriod,
+                         final int reaperPriority,
                          final boolean enableWildCardRouting,
                          final boolean backup,
                          final int idCacheSize,
@@ -155,9 +155,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       this.pagingManager = pagingManager;
 
-      this.messageExpiryScanPeriod = messageExpiryScanPeriod;
+      this.reaperPeriod = reaperPeriod;
 
-      this.messageExpiryThreadPriority = messageExpiryThreadPriority;
+      this.reaperPriority = reaperPriority;
 
       if (enableWildCardRouting)
       {
@@ -181,7 +181,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    // MessagingComponent implementation ---------------------------------------
 
-   public void start() throws Exception
+   public synchronized void start() throws Exception
    {
       managementService.addNotificationListener(this);
 
@@ -200,31 +200,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       started = true;
    }
-
-   private void startExpiryScanner()
-   {
-      if (messageExpiryScanPeriod > 0)
-      {
-         MessageExpiryRunner messageExpiryRunner = new MessageExpiryRunner();
-         messageExpiryExecutor = new ScheduledThreadPoolExecutor(1,
-                                                                 new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads",
-                                                                                                                messageExpiryThreadPriority));
-         messageExpiryExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
-         messageExpiryExecutor.scheduleWithFixedDelay(messageExpiryRunner,
-                                                      messageExpiryScanPeriod,
-                                                      messageExpiryScanPeriod,
-                                                      TimeUnit.MILLISECONDS);
-      }
-   }
-
-   public void stop() throws Exception
+     
+   public synchronized void stop() throws Exception
    {
       managementService.removeNotificationListener(this);
 
-      if (messageExpiryExecutor != null)
+      if (reaper != null)
       {
-         messageExpiryExecutor.shutdown();
-         messageExpiryExecutor.awaitTermination(60, TimeUnit.SECONDS);
+         reaper.stop();
+         
+         expiryReaper.join();
       }
 
       addressManager.clear();
@@ -820,6 +805,20 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    // Private -----------------------------------------------------------------
 
+   private synchronized void startExpiryScanner()
+   {
+      if (reaperPeriod > 0)
+      {
+         reaper = new Reaper();
+         
+         expiryReaper = new Thread(reaper, "JBM-expiry-reaper");
+         
+         expiryReaper.setPriority(reaperPriority);
+         
+         expiryReaper.start();
+      }
+   }
+   
    private void routeDirect(final Queue queue, final ServerMessage message) throws Exception
    {
       if (queue.getFilter() == null || queue.getFilter().match(message))
@@ -890,38 +889,75 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          return oper;
       }
    }
-
-   private class MessageExpiryRunner implements Runnable
+   
+   private class Reaper implements Runnable
    {
+      private boolean closed;
+      
+      public synchronized void stop()
+      {
+         closed = true;
+         
+         notify();
+      }
+      
       public synchronized void run()
       {
-         Map<SimpleString, Binding> nameMap = addressManager.getBindings();
-
-         List<Queue> queues = new ArrayList<Queue>();
-
-         for (Binding binding : nameMap.values())
+         while (true)
          {
-            if (binding.getType() == BindingType.LOCAL_QUEUE)
+            long toWait = reaperPeriod;
+   
+            long start = System.currentTimeMillis();
+   
+            while (!closed && toWait > 0)
             {
-               Queue queue = (Queue)binding.getBindable();
-
-               queues.add(queue);
+               try
+               {
+                  wait(toWait);
+               }
+               catch (InterruptedException e)
+               {
+               }
+   
+               long now = System.currentTimeMillis();
+   
+               toWait -= now - start;
+   
+               start = now;
             }
-         }
-
-         for (Queue queue : queues)
-         {
-            try
+            
+            if (closed)
             {
-               queue.expireReferences();
+               return;
             }
-            catch (Exception e)
+   
+            Map<SimpleString, Binding> nameMap = addressManager.getBindings();
+   
+            List<Queue> queues = new ArrayList<Queue>();
+   
+            for (Binding binding : nameMap.values())
             {
-               log.error("failed to expire messages for queue " + queue.getName(), e);
+               if (binding.getType() == BindingType.LOCAL_QUEUE)
+               {
+                  Queue queue = (Queue)binding.getBindable();
+   
+                  queues.add(queue);
+               }
+            }
+   
+            for (Queue queue : queues)
+            {
+               try
+               {
+                  queue.expireReferences();
+               }
+               catch (Exception e)
+               {
+                  log.error("failed to expire messages for queue " + queue.getName(), e);
+               }
             }
          }
       }
-
    }
 
    private class PageMessageOperation implements TransactionOperation

@@ -6,7 +6,7 @@
       <clustered>true</clustered>
       
       <!-- Maximum number of threads to use for scheduled deliveries -->
-      <scheduled-max-pool-size>30</scheduled-max-pool-size>
+      <scheduled-thread-pool-max-size>30</scheduled-thread-pool-max-size>
 
       <security-enabled>true</security-enabled>
       

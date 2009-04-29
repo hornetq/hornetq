@@ -147,6 +147,12 @@ public class QueueDeployerTest extends UnitTestCase
    private class FakeServerControl implements MessagingServerControlMBean
    {
 
+      public int getThreadPoolMaxSize()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
       public boolean closeConnectionsForAddress(String ipAddress) throws Exception
       {
          // TODO Auto-generated method stub
@@ -355,12 +361,6 @@ public class QueueDeployerTest extends UnitTestCase
       }
 
       public long getPagingMaxGlobalSizeBytes()
-      {
-         // TODO Auto-generated method stub
-         return 0;
-      }
-
-      public int getPagingMaxThreads()
       {
          // TODO Auto-generated method stub
          return 0;

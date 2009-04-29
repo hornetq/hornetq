@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
@@ -96,7 +97,9 @@ import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.ResourceManagerImpl;
 import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.ExecutorFactory;
 import org.jboss.messaging.utils.Future;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
@@ -143,17 +146,17 @@ public class MessagingServerImpl implements MessagingServer
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   private ScheduledExecutorService scheduledExecutor;
-
    private QueueFactory queueFactory;
 
    private PagingManager pagingManager;
 
    private PostOffice postOffice;
 
-   private ExecutorService asyncDeliveryPool;
+   private ExecutorService threadPool;
 
-   private org.jboss.messaging.utils.ExecutorFactory executorFactory;
+   private ScheduledExecutorService scheduledPool;
+
+   private ExecutorFactory executorFactory;
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -270,10 +273,10 @@ public class MessagingServerImpl implements MessagingServer
       {
          clusterManager.stop();
       }
-      
-      //Need to flush all sessions to make sure all confirmations get sent back to client
-      
-      for (ServerSession session: sessions.values())
+
+      // Need to flush all sessions to make sure all confirmations get sent back to client
+
+      for (ServerSession session : sessions.values())
       {
          session.getChannel().flushConfirmations();
       }
@@ -300,20 +303,6 @@ public class MessagingServerImpl implements MessagingServer
 
       securityManager.stop();
 
-      asyncDeliveryPool.shutdown();
-
-      try
-      {
-         if (!asyncDeliveryPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
-         {
-            log.warn("Timed out waiting for pool to terminate");
-         }
-      }
-      catch (InterruptedException e)
-      {
-         // Ignore
-      }
-
       if (replicatingConnection != null)
       {
          try
@@ -329,18 +318,32 @@ public class MessagingServerImpl implements MessagingServer
       }
 
       pagingManager.stop();
+      resourceManager.stop();
+      postOffice.stop();
+
       pagingManager = null;
       securityStore = null;
-      resourceManager.stop();
       resourceManager = null;
-      postOffice.stop();
       postOffice = null;
       securityRepository = null;
       securityStore = null;
-      scheduledExecutor.shutdown();
       queueFactory = null;
       resourceManager = null;
       messagingServerControl = null;
+
+      scheduledPool.shutdown();
+      threadPool.shutdown();
+      try
+      {
+         if (!threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+         {
+            log.warn("Timed out waiting for pool to terminate");
+         }
+      }
+      catch (InterruptedException e)
+      {
+         // Ignore
+      }
 
       sessions.clear();
 
@@ -561,14 +564,14 @@ public class MessagingServerImpl implements MessagingServer
          this.nodeID = new SimpleString(uuid.toString());
 
          initialisePart2();
-        
+
          long backupID = storageManager.getCurrentUniqueID();
 
          if (liveUniqueID != backupID)
          {
             initialised = false;
-            
-            throw new IllegalStateException("Live and backup unique ids different. You're probably trying to restart a live backup pair after a crash");            
+
+            throw new IllegalStateException("Live and backup unique ids different. You're probably trying to restart a live backup pair after a crash");
          }
 
          log.info("Backup server is now operational");
@@ -588,7 +591,7 @@ public class MessagingServerImpl implements MessagingServer
                                                                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                                                                     ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                                                                                    scheduledExecutor,
+                                                                                                    scheduledPool,
                                                                                                     listener);
 
             if (replicatingConnection == null)
@@ -771,8 +774,7 @@ public class MessagingServerImpl implements MessagingServer
 
    protected PagingManager createPagingManager()
    {
-      return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
-                                                             configuration.getPagingMaxThreads()),
+      return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(), executorFactory),
                                    storageManager,
                                    addressSettingsRepository,
                                    configuration.getPagingMaxGlobalSizeBytes(),
@@ -804,9 +806,9 @@ public class MessagingServerImpl implements MessagingServer
 
             for (Queue queue : toActivate)
             {
-               scheduledExecutor.schedule(new ActivateRunner(queue),
-                                          configuration.getQueueActivationTimeout(),
-                                          TimeUnit.MILLISECONDS);
+               scheduledPool.schedule(new ActivateRunner(queue),
+                                      configuration.getQueueActivationTimeout(),
+                                      TimeUnit.MILLISECONDS);
             }
 
             configuration.setBackup(false);
@@ -865,13 +867,23 @@ public class MessagingServerImpl implements MessagingServer
 
    private void initialisePart2() throws Exception
    {
-      // Create the pools and executor related objects
-      asyncDeliveryPool = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("JBM-async-session-delivery-threads"));
+      // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
-      executorFactory = new org.jboss.messaging.utils.OrderedExecutorFactory(asyncDeliveryPool);
+      ThreadFactory tFactory = new org.jboss.messaging.utils.JBMThreadFactory("JBM-threads");
 
-      scheduledExecutor = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                          new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads"));
+      if (configuration.getThreadPoolMaxSize() == -1)
+      {
+         threadPool = Executors.newCachedThreadPool(tFactory);
+      }
+      else
+      {
+         threadPool = Executors.newFixedThreadPool(configuration.getThreadPoolMaxSize(), tFactory);
+      }
+
+      executorFactory = new OrderedExecutorFactory(threadPool);
+
+      scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
+                                                      new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads"));
 
       // Create the hard-wired components
 
@@ -882,7 +894,7 @@ public class MessagingServerImpl implements MessagingServer
 
       if (configuration.isEnablePersistence())
       {
-         storageManager = new JournalStorageManager(configuration);
+         storageManager = new JournalStorageManager(configuration, threadPool);
       }
       else
       {
@@ -899,7 +911,7 @@ public class MessagingServerImpl implements MessagingServer
                                             configuration.getManagementClusterPassword(),
                                             managementService);
 
-      queueFactory = new QueueFactoryImpl(scheduledExecutor, addressSettingsRepository, storageManager);
+      queueFactory = new QueueFactoryImpl(scheduledPool, addressSettingsRepository, storageManager);
 
       pagingManager = createPagingManager();
 
@@ -999,7 +1011,7 @@ public class MessagingServerImpl implements MessagingServer
          clusterManager = new ClusterManagerImpl(executorFactory,
                                                  this,
                                                  postOffice,
-                                                 scheduledExecutor,
+                                                 scheduledPool,
                                                  managementService,
                                                  configuration,
                                                  uuid,
@@ -1389,7 +1401,7 @@ public class MessagingServerImpl implements MessagingServer
 
       public void run()
       {
-         queue.activateNow(asyncDeliveryPool);
+         queue.activateNow(threadPool);
       }
    }
 
@@ -1416,13 +1428,13 @@ public class MessagingServerImpl implements MessagingServer
          if (conn != null)
          {
             // Execute on different thread to avoid deadlocks
-            new Thread()
+            threadPool.execute(new Runnable()
             {
                public void run()
                {
                   conn.fail(me);
                }
-            }.start();
+            });
          }
       }
    }

@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.stress.journal.remote;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.journal.LoadManager;

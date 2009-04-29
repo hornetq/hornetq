@@ -28,12 +28,19 @@
 				   minOccurs="0" />	
 				<xsd:element ref="enable-persistence"  maxOccurs="1"
 				   minOccurs="0" />	
-				<xsd:element name="scheduled-max-pool-size"
+				<xsd:element name="scheduled-thread-pool-max-size"
 					type="xsd:int" maxOccurs="1" minOccurs="0">
 					<xsd:annotation>
 						<xsd:documentation>
-							Maximum number of threads to use for
-							scheduled deliveries
+							Maximum number of threads to use for the scheduled thread pool
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="thread-pool-max-size"
+					type="xsd:int" maxOccurs="1" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Maximum number of threads to use for the thread pool
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>

@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -251,8 +252,7 @@ public class PageCrashTest extends ServiceTestBase
       @Override
       protected PagingManager createPagingManager()
       {
-         return new PagingManagerImpl(new FailurePagingStoreFactoryNIO(super.getConfiguration().getPagingDirectory(),
-                                                                       super.getConfiguration().getPagingMaxThreads()),
+         return new PagingManagerImpl(new FailurePagingStoreFactoryNIO(super.getConfiguration().getPagingDirectory()),
                                       super.getStorageManager(),
                                       super.getAddressSettingsRepository(),
                                       super.getConfiguration().getPagingMaxGlobalSizeBytes(),
@@ -268,9 +268,9 @@ public class PageCrashTest extends ServiceTestBase
           * @param directory
           * @param maxThreads
           */
-         public FailurePagingStoreFactoryNIO(final String directory, final int maxThreads)
+         public FailurePagingStoreFactoryNIO(final String directory)
          {
-            super(directory, maxThreads);
+            super(directory, new OrderedExecutorFactory(Executors.newCachedThreadPool()));
          }
 
          // Constants -----------------------------------------------------

@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.unit.core.journal.impl;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Executors;
 
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;

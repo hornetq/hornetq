@@ -55,7 +55,9 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_QUEUE_ACTIVATION_TIMEOUT = 30000;
 
-   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 30;
+   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 10;
+   
+   public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
 
    public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
 
@@ -158,6 +160,8 @@ public class ConfigurationImpl implements Configuration
    protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
 
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+   
+   protected int threadPoolMaxSize = DEFAULT_THREAD_POOL_MAX_SIZE;
 
    protected long securityInvalidationInterval = DEFAULT_SECURITY_INVALIDATION_INTERVAL;
 
@@ -204,8 +208,6 @@ public class ConfigurationImpl implements Configuration
    protected int pageWatermarkSize = DEFAULT_PAGE_WATERMARK_SIZE;
 
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
-
-   protected int pagingMaxThreads = DEFAULT_PAGE_MAX_THREADS;
 
    // File related attributes -----------------------------------------------------------
 
@@ -354,6 +356,16 @@ public class ConfigurationImpl implements Configuration
    public void setScheduledThreadPoolMaxSize(final int maxSize)
    {
       scheduledThreadPoolMaxSize = maxSize;
+   }
+   
+   public int getThreadPoolMaxSize()
+   {
+      return threadPoolMaxSize;
+   }
+
+   public void setThreadPoolMaxSize(final int maxSize)
+   {
+      threadPoolMaxSize = maxSize;
    }
 
    public long getSecurityInvalidationInterval()
@@ -529,16 +541,6 @@ public class ConfigurationImpl implements Configuration
    public JournalType getJournalType()
    {
       return journalType;
-   }
-
-   public int getPagingMaxThreads()
-   {
-      return pagingMaxThreads;
-   }
-
-   public void setPagingMaxThread(final int pagingMaxThreads)
-   {
-      this.pagingMaxThreads = pagingMaxThreads;
    }
 
    public void setPagingDirectory(final String dir)

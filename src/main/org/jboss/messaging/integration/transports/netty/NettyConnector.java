@@ -102,7 +102,7 @@ public class NettyConnector implements Connector
 
    private ClientBootstrap bootstrap;
 
-   ChannelGroup channelGroup;
+   private ChannelGroup channelGroup;
 
    private final BufferHandler handler;
 

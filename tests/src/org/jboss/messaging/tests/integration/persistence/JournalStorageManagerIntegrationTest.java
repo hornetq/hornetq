@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.tests.integration.persistence;
 
+import java.util.concurrent.Executors;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.server.JournalType;
@@ -60,7 +62,7 @@ public class JournalStorageManagerIntegrationTest extends ServiceTestBase
 
       configuration.setJournalType(JournalType.NIO);
 
-      final JournalStorageManager journal = new JournalStorageManager(configuration);
+      final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
       journal.start();
 
       LargeServerMessage msg = journal.createLargeMessage();

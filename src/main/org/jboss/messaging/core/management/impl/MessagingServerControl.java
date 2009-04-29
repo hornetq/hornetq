@@ -203,6 +203,11 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    {
       return configuration.getScheduledThreadPoolMaxSize();
    }
+   
+   public int getThreadPoolMaxSize()
+   {
+      return configuration.getThreadPoolMaxSize();
+   }
 
    public long getSecurityInvalidationInterval()
    {
@@ -582,11 +587,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
    public int getPagingGlobalWatermarkSize()
    {
       return configuration.getPagingGlobalWatermarkSize();
-   }
-
-   public int getPagingMaxThreads()
-   {
-      return configuration.getPagingMaxThreads();
    }
 
    public long getQueueActivationTimeout()

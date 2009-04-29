@@ -148,6 +148,11 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       return localControl.getScheduledThreadPoolMaxSize();
    }
+   
+   public int getThreadPoolMaxSize()
+   {
+      return localControl.getThreadPoolMaxSize();
+   }
 
    public long getSecurityInvalidationInterval()
    {
@@ -362,11 +367,6 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    public int getPagingGlobalWatermarkSize()
    {
       return localControl.getPagingGlobalWatermarkSize();
-   }
-
-   public int getPagingMaxThreads()
-   {
-      return localControl.getPagingMaxThreads();
    }
 
    public long getQueueActivationTimeout()

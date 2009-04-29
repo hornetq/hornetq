@@ -49,6 +49,8 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
       assertEquals(ConfigurationImpl.DEFAULT_QUEUE_ACTIVATION_TIMEOUT, conf.getQueueActivationTimeout());
       
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
+      
+      assertEquals(ConfigurationImpl.DEFAULT_THREAD_POOL_MAX_SIZE, conf.getThreadPoolMaxSize());
 
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
 
@@ -115,8 +117,6 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 
       assertEquals(ConfigurationImpl.DEFAULT_CREATE_JOURNAL_DIR, conf.isCreateJournalDir());
 
-      assertEquals(ConfigurationImpl.DEFAULT_PAGE_MAX_THREADS, conf.getPagingMaxThreads());
-      
       assertEquals(ConfigurationImpl.DEFAULT_PAGING_DIR, conf.getPagingDirectory());
 
       assertEquals(ConfigurationImpl.DEFAULT_PAGE_MAX_GLOBAL_SIZE, conf.getPagingMaxGlobalSizeBytes());

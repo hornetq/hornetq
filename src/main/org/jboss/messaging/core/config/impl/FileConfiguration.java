@@ -107,7 +107,9 @@ public class FileConfiguration extends ConfigurationImpl
 
       // NOTE! All the defaults come from the super class
 
-      scheduledThreadPoolMaxSize = getInteger(e, "scheduled-max-pool-size", scheduledThreadPoolMaxSize);
+      scheduledThreadPoolMaxSize = getInteger(e, "scheduled-thread-pool-max-size", scheduledThreadPoolMaxSize);
+      
+      threadPoolMaxSize = getInteger(e, "thread-pool-max-size", threadPoolMaxSize);
 
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
 
@@ -264,8 +266,6 @@ public class FileConfiguration extends ConfigurationImpl
       createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
 
       journalDirectory = getString(e, "journal-directory", journalDirectory);
-
-      pagingMaxThreads = getInteger(e, "paging-max-threads", pagingMaxThreads);
 
       pagingDirectory = getString(e, "paging-directory", pagingDirectory);
 

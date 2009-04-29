@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.unit.core.paging.impl;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.paging.Page;
@@ -41,6 +42,7 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -67,7 +69,7 @@ public class PagingManagerITest extends UnitTestCase
       HierarchicalRepository<AddressSettings> addressSettings = new HierarchicalObjectRepository<AddressSettings>();
       addressSettings.setDefault(new AddressSettings());
       
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), 10),
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), new OrderedExecutorFactory(Executors.newCachedThreadPool())),
                                                             new NullStorageManager(),
                                                             addressSettings,
                                                             -1,

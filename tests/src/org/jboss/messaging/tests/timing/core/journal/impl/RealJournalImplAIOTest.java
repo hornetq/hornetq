@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.timing.core.journal.impl;
 
 import java.io.File;
+import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
