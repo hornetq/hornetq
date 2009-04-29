@@ -22,19 +22,14 @@
 
 package org.jboss.messaging.core.security.impl;
 
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
-import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.management.NotificationType;
+import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -45,6 +40,10 @@ import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * The JBM SecurityStore implementation
@@ -80,7 +79,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private final JBMSecurityManager securityManager;
 
-   private final ConcurrentMap<CheckType, ConcurrentHashSet<SimpleString>> cache = new ConcurrentHashMap<CheckType, ConcurrentHashSet<SimpleString>>();
+   private final ConcurrentMap<String, ConcurrentHashSet<SimpleString>> cache = new ConcurrentHashMap<String, ConcurrentHashSet<SimpleString>>();
 
    private final long invalidationInterval;
 
@@ -158,8 +157,9 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       if (securityEnabled)
       {
          if (trace) { log.trace("checking access permissions to " + address); }
-   
-         if (checkCached(address, checkType))
+
+         String user = session.getUsername();
+         if (checkCached(address, user, checkType))
          {
             // OK
             return;
@@ -168,8 +168,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          String saddress = address.toString();
          
          Set<Role> roles = securityRepository.getMatch(saddress);
-         
-         String user = session.getUsername();
+
          
          if (CLUSTER_ADMIN_USER.equals(user))
          {
@@ -196,7 +195,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          }
          // if we get here we're granted, add to the cache
          ConcurrentHashSet<SimpleString> set = new ConcurrentHashSet<SimpleString>();
-         ConcurrentHashSet<SimpleString> act = cache.putIfAbsent(checkType, set);
+         ConcurrentHashSet<SimpleString> act = cache.putIfAbsent(user + "." + checkType.name(), set);
          if(act != null)
          {
             set = act;
@@ -223,7 +222,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       cache.clear();
    }
 
-   private boolean checkCached(final SimpleString dest, final CheckType checkType)
+   private boolean checkCached(final SimpleString dest, String user, final CheckType checkType)
    {
       long now = System.currentTimeMillis();
 
@@ -235,7 +234,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       }
       else
       {
-         ConcurrentHashSet<SimpleString> act = cache.get(checkType);
+         ConcurrentHashSet<SimpleString> act = cache.get(user + "." + checkType.name());
          if(act != null)
          {
             granted = act.contains(dest);
