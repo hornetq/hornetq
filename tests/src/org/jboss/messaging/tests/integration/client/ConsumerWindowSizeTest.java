@@ -491,7 +491,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       internalTestSlowConsumerOnMessageHandlerNoBuffers(true);
    }
 
-   public void internalTestSlowConsumerOnMessageHandlerNoBuffers(boolean largeMessages) throws Exception
+   public void internalTestSlowConsumerOnMessageHandlerNoBuffers(final boolean largeMessages) throws Exception
    {
 
       MessagingServer server = createServer(false);
@@ -530,6 +530,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          final CountDownLatch latchDone = new CountDownLatch(1);
 
+         // It can't close the session while the large message is being read
+         final CountDownLatch latchRead = new CountDownLatch(1);
+
          // It should receive two messages and then give up
          class LocalHandler implements MessageHandler
          {
@@ -557,12 +560,16 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                      if (!latchDone.await(TIMEOUT, TimeUnit.SECONDS)) // a timed wait, so if the test fails, one less
                      // thread around
                      {
-                        new Exception("ClientConsuemrWindowSizeTest Handler couldn't receive signal in less than 5 seconds").printStackTrace(); // hudson
-                        // or
-                        // junit
-                        // report
+                        new Exception("ClientConsuemrWindowSizeTest Handler couldn't receive signal in less than 5 seconds").printStackTrace(); 
                         failed = true;
                      }
+
+                     if (largeMessages)
+                     {
+                        message.getBody().readBytes(new byte[600]);
+                     }
+
+                     latchRead.countDown();
                   }
                }
                catch (Exception e)
@@ -606,6 +613,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          assertEquals(0, consReceiveOneAndHold.getBufferSize());
 
          latchDone.countDown();
+
+         // The test can' t close the session while the message is still being read, or it could interrupt the data
+         assertTrue(latchRead.await(10, TimeUnit.SECONDS));
 
          session.close();
          session = null;
