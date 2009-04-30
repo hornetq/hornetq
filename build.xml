@@ -242,7 +242,9 @@
    </target>
 
    <target name="dev-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="hudson-tests"/>
+      <ant antfile="build-messaging.xml" target="hudson-tests">
+      	<property name="java.io.tmpdir" value="./tmp"/>
+   	  </ant>
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
 
