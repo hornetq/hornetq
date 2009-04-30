@@ -11,20 +11,6 @@
 
 package org.jboss.messaging.core.server.impl;
 
-import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
@@ -34,6 +20,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
@@ -42,6 +29,7 @@ import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.CloseListener;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -97,6 +85,17 @@ import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
 
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+
 /*
  * Session implementation 
  * 
@@ -105,7 +104,7 @@ import org.jboss.messaging.utils.TypedProperties;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
-public class ServerSessionImpl implements ServerSession, FailureListener
+public class ServerSessionImpl implements ServerSession, FailureListener, CloseListener
 {
    // Constants -----------------------------------------------------------------------------
 
@@ -1116,6 +1115,28 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       return true;
    }
 
+   public void connectionClosed()
+   {
+      try
+      {
+         for (Runnable runner : failureRunners)
+         {
+            try
+            {
+               runner.run();
+            }
+            catch (Throwable t)
+            {
+               log.error("Failed to execute failure runner", t);
+            }
+         }
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed fire listeners " + this);
+      }
+
+   }
    // Public
    // ----------------------------------------------------------------------------
 
@@ -1314,7 +1335,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
                {
                   try
                   {
-                     postOffice.removeBinding(name);
+                     Binding b = postOffice.removeBinding(name);
                   }
                   catch (Exception e)
                   {

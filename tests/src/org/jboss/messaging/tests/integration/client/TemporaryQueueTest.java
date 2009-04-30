@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.tests.integration.client;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -32,12 +30,17 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.CloseListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.ServerSessionImpl;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A TemporaryQueueTest
@@ -113,15 +116,25 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
    }
 
-   public void _testDeleteTemporaryQueueAfterConnectionIsClosed() throws Exception
+   public void testDeleteTemporaryQueueAfterConnectionIsClosed() throws Exception
    {
       SimpleString queue = randomSimpleString();
       SimpleString address = randomSimpleString();
 
       session.createTemporaryQueue(address, queue);
+      RemotingConnectionImpl conn = (RemotingConnectionImpl) server.getRemotingService().getConnections().iterator().next();
 
+      final CountDownLatch latch = new CountDownLatch(1);
+      conn.addClosingListener(new CloseListener()
+      {
+         public void connectionClosed()
+         {
+            latch.countDown();
+         }
+      });
       session.close();
-
+      //wait for the closing listeners to be fired
+      assertTrue("connection close listeners not fired", latch.await(1, TimeUnit.SECONDS));
       session = sf.createSession(false, true, true);
       session.start();
       
@@ -139,9 +152,9 @@ public class TemporaryQueueTest extends ServiceTestBase
    }
    
    /**
-    * @see ServerSessionImpl#doHandleCreateQueue()
+    * @see org.jboss.messaging.core.server.impl.ServerSessionImpl#doHandleCreateQueue(org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage) 
     */
-   public void _testDeleteTemporaryQueueAfterConnectionIsClosed_2() throws Exception
+   public void testDeleteTemporaryQueueAfterConnectionIsClosed_2() throws Exception
    {
       SimpleString queue = randomSimpleString();
       SimpleString address = randomSimpleString();
@@ -156,13 +169,11 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
 
       // let some time for the server to clean the connections
-      Thread.sleep(1000);
+      //Thread.sleep(1000);
 
       session2.start();
       
       ClientConsumer consumer = session2.createConsumer(queue);
-      ClientMessage message = consumer.receive(500);
-      assertNotNull(message);
 
       session2.close();
    }
@@ -181,10 +192,19 @@ public class TemporaryQueueTest extends ServiceTestBase
                                                      .getConnections()
                                                      .iterator()
                                                      .next();
+      final CountDownLatch latch = new CountDownLatch(1);
+      remotingConnection.addClosingListener(new CloseListener()
+      {
+         public void connectionClosed()
+         {
+            latch.countDown();
+         }
+      });
       remotingConnection.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "simulate a client failure"));
 
+
       // let some time for the server to clean the connections
-      Thread.sleep(1000);
+      latch.await(1, TimeUnit.SECONDS);
 
       assertEquals(0, server.getConnectionCount());
 
