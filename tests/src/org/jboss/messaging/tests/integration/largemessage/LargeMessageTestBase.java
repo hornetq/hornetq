@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.chunkmessage;
+package org.jboss.messaging.tests.integration.largemessage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -652,7 +652,7 @@ public class LargeMessageTestBase extends ServiceTestBase
          {
             if (count++ % 1024 * 1024 == 0)
             {
-               System.out.println("OutputStream received " + count + " bytes");
+               //System.out.println("OutputStream received " + count + " bytes");
             }
             if (closed)
             {

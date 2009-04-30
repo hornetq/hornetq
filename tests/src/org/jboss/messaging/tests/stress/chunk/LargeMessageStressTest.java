@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.tests.stress.chunk;
 
-import org.jboss.messaging.tests.integration.chunkmessage.LargeMessageTestBase;
+import org.jboss.messaging.tests.integration.largemessage.LargeMessageTestBase;
 
 /**
  * A MessageChunkSoakTest

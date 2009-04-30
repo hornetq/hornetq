@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.chunkmessage;
+package org.jboss.messaging.tests.integration.largemessage;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,8 +41,8 @@ import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnector;
-import org.jboss.messaging.tests.integration.chunkmessage.mock.MockConnectorFactory;
+import org.jboss.messaging.tests.integration.largemessage.mock.MockConnector;
+import org.jboss.messaging.tests.integration.largemessage.mock.MockConnectorFactory;
 
 /**
  * A LargeMessageCleanupTest

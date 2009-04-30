@@ -20,43 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.chunkmessage.mock;
+package org.jboss.messaging.tests.integration.largemessage.mock;
 
 import java.util.Map;
 
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnection;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
-import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.core.remoting.spi.Connector;
+import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 
 /**
- * A MockConnector
+ * A MockConnectorFactory
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
- * Created Oct 22, 2008 11:23:18 AM
+ * Created Oct 22, 2008 12:04:11 PM
  *
  *
  */
-public class MockConnector extends InVMConnector
+public class MockConnectorFactory implements ConnectorFactory
 {
-   private final MockCallback callback;
-
-   /**
-    * @param configuration
-    * @param handler
-    * @param listener
-    */
-   public MockConnector(final Map<String, Object> configuration,
-                        final BufferHandler handler,
-                        final ConnectionLifeCycleListener listener)
-   {
-      super(configuration, handler, listener);
-      callback = (MockCallback)configuration.get("callback");
-   }
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -67,46 +50,22 @@ public class MockConnector extends InVMConnector
 
    // Public --------------------------------------------------------
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.remoting.spi.ConnectorFactory#createConnector(java.util.Map, org.jboss.messaging.core.remoting.spi.BufferHandler, org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener)
+    */
+   public Connector createConnector(final Map<String, Object> configuration,
+                                    final BufferHandler handler,
+                                    final ConnectionLifeCycleListener listener)
+   {
+      return new MockConnector(configuration, handler, listener);
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   @Override
-   protected Connection internalCreateConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
-   {
-      return new MockConnection(id, handler, listener);
-   }
 
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
 
-   public static interface MockCallback
-   {
-      void onWrite(final MessagingBuffer buffer);
-   }
-
-   class MockConnection extends InVMConnection
-   {
-      /**
-       * @param handler
-       * @param listener
-       */
-      public MockConnection(final int serverID, final BufferHandler handler, final ConnectionLifeCycleListener listener)
-      {
-         super(serverID, handler, listener);
-      }
-
-      @Override
-      public void write(final MessagingBuffer buffer, final boolean flush)
-      {
-         log.info("calling mock connection write");
-         if (callback != null)
-         {
-            callback.onWrite(buffer);
-         }
-
-         super.write(buffer, flush);
-      }
-   }
 }

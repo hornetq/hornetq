@@ -407,7 +407,6 @@ public class UnitTestCase extends TestCase
          public void close() throws IOException
          {
             super.close();
-            System.out.println("Sent " + count + " bytes over fakeOutputStream, while size = " + size);
             closed = true;
          }
 

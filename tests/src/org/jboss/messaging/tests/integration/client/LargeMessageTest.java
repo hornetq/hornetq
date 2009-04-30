@@ -43,7 +43,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
-import org.jboss.messaging.tests.integration.chunkmessage.LargeMessageTestBase;
+import org.jboss.messaging.tests.integration.largemessage.LargeMessageTestBase;
 import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -80,12 +80,12 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       internalTestResendMessage(50000);
    }
-   
+
    public void testResendLargeStreamMessage() throws Exception
    {
       internalTestResendMessage(150 * 1024);
    }
-   
+
    public void internalTestResendMessage(long messageSize) throws Exception
    {
       ClientSession session = null;
@@ -101,7 +101,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          session = sf.createSession(false, false, false);
 
          session.createQueue(ADDRESS, ADDRESS, true);
-         
+
          SimpleString ADDRESS2 = ADDRESS.concat("-2");
 
          session.createQueue(ADDRESS2, ADDRESS2, true);
@@ -115,18 +115,17 @@ public class LargeMessageTest extends LargeMessageTestBase
          producer.send(clientFile);
 
          session.commit();
-         
+
          session.start();
-         
+
          ClientConsumer consumer = session.createConsumer(ADDRESS);
          ClientConsumer consumer2 = session.createConsumer(ADDRESS2);
-         
+
          ClientMessage msg1 = consumer.receive(10000);
          msg1.acknowledge();
 
          producer2.send(msg1);
-         
-         
+
          try
          {
             producer2.send(msg1);
@@ -137,23 +136,22 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
 
          session.commit();
-         
+
          ClientMessage msg2 = consumer2.receive(10000);
-         
+
          assertNotNull(msg2);
-         
+
          msg2.acknowledge();
-         
+
          session.commit();
-         
+
          assertEquals(messageSize, msg2.getBodySize());
-         
-         
-         for (int i = 0 ; i < messageSize; i++)
+
+         for (int i = 0; i < messageSize; i++)
          {
             assertEquals(getSamplebyte(i), msg2.getBody().readByte());
          }
-         
+
          session.close();
 
          validateNoFilesOnLargeDir();
@@ -177,9 +175,23 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
       }
    }
+
    public void testFilePersistenceOneHugeMessage() throws Exception
    {
-      testChunks(false, false, true, true, false, false, false, false, 1, 100 * 1024l * 1024l, RECEIVE_WAIT_TIME, 0, 10 * 1024 * 1024, 1024 * 1024);
+      testChunks(false,
+                 false,
+                 true,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 1,
+                 100 * 1024l * 1024l,
+                 RECEIVE_WAIT_TIME,
+                 0,
+                 10 * 1024 * 1024,
+                 1024 * 1024);
    }
 
    public void testFilePersistenceOneMessageStreaming() throws Exception
@@ -194,7 +206,20 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testFilePersistenceOneHugeMessageConsumer() throws Exception
    {
-      testChunks(false, false, true, true, false, false, false, true, 1, 100 * 1024 * 1024, 120000, 0, 10 * 1024 * 1024, 1024 * 1024);
+      testChunks(false,
+                 false,
+                 true,
+                 true,
+                 false,
+                 false,
+                 false,
+                 true,
+                 1,
+                 100 * 1024 * 1024,
+                 120000,
+                 0,
+                 10 * 1024 * 1024,
+                 1024 * 1024);
    }
 
    public void testFilePersistence() throws Exception
@@ -863,6 +888,109 @@ public class LargeMessageTest extends LargeMessageTestBase
             {
                session.commit();
             }
+         }
+
+         assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
+         assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+
+      }
+      finally
+      {
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testReceiveMultipleMessages() throws Exception
+   {
+      ClientSession session = null;
+      MessagingServer server = null;
+
+      final int SIZE = 10 * 1024;
+      final int NUMBER_OF_MESSAGES = 1000;
+      try
+      {
+
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         sf.setMinLargeMessageSize(1024);
+         sf.setConsumerWindowSize(1024 * 1024);
+
+         session = sf.createSession(null, null, false, false, false, false, 0);
+
+         session.createQueue(ADDRESS, ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+         {
+            Message clientFile = session.createClientMessage(true);
+            clientFile.setBodyInputStream(createFakeLargeStream(SIZE));
+            producer.send(clientFile);
+
+         }
+         session.commit();
+         producer.close();
+
+         session.start();
+
+         // Reads the messages, rollback.. read them again
+         for (int trans = 0; trans < 2; trans++)
+         {
+
+            ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(ADDRESS);
+
+            // Wait the consumer to be complete with 10 messages before getting others
+            long timeout = System.currentTimeMillis() + 10000;
+            while (consumer.getBufferSize() < 10 && timeout > System.currentTimeMillis())
+            {
+               Thread.sleep(10);
+            }
+
+            for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
+            {
+               ClientMessage msg = consumer.receive(10000);
+               assertNotNull(msg);
+
+               // it will ignore the buffer (not read it) on the first try
+               if (trans == 0)
+               {
+                  for (int byteRead = 0; byteRead < SIZE; byteRead++)
+                  {
+                     assertEquals(getSamplebyte(byteRead), msg.getBody().readByte());
+                  }
+               }
+
+               msg.acknowledge();
+            }
+            if (trans == 0)
+            {
+               session.rollback();
+            }
+            else
+            {
+               session.commit();
+            }
+
+            consumer.close();
          }
 
          assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
