@@ -27,6 +27,7 @@ import org.jboss.logging.LoggerPlugin;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
+@SuppressWarnings("deprecation")
 public class JBMLoggerPlugin implements LoggerPlugin
 {
    org.apache.log4j.Logger logger;
