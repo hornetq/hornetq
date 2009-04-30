@@ -114,27 +114,41 @@ public class SecurityExample extends JMSExample
          checkUserSendAndReceive(genericTopic, samConnection, "sam");
          System.out.println("-------------------------------------------------------------------------------------");
          
-         //Step 11. Check permissions on europeTopic
          System.out.println("------------------------Checking permissions on " + europeTopic + "----------------");
+         
+         //Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
          checkUserNoSendNoReceive(europeTopic, billConnection, "bill", andrewConnection, frankConnection);
+         
+         //Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
          checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
+         
+         //Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
          checkUserReceiveNoSend(europeTopic, frankConnection, "frank", andrewConnection);
-//         checkUserReceiveNoSend(europeTopic, samConnection, "sam", andrewConnection);
+         
+         //Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
+         checkUserReceiveNoSend(europeTopic, samConnection, "sam", andrewConnection);
          System.out.println("-------------------------------------------------------------------------------------");
          
-         //Step 12. Check permissions on usTopic
          System.out.println("------------------------Checking permissions on " + usTopic + "----------------");
-//         checkUserNoSendNoReceive(usTopic, billConnection, "bill", frankConnection, frankConnection);
-//         checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew", frankConnection, frankConnection);
-//         checkUserSendAndReceive(usTopic, frankConnection, "frank");
-//         checkUserReceiveNoSend(usTopic, samConnection, "sam", frankConnection);
+
+         //Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
+         checkUserNoSendNoReceive(usTopic, billConnection, "bill", frankConnection, frankConnection);
+
+         //Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
+         checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew", frankConnection, frankConnection);
+
+         //Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
+         checkUserSendAndReceive(usTopic, frankConnection, "frank");
+
+         //Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
+         checkUserReceiveNoSend(usTopic, samConnection, "sam", frankConnection);
          System.out.println("-------------------------------------------------------------------------------------");
 
          return result;
       }
       finally
       {
-         //Step 16. Be sure to close our JMS resources!
+         //Step 19. Be sure to close our JMS resources!
          if (billConnection != null)
          {
             billConnection.close();
@@ -179,20 +193,13 @@ public class SecurityExample extends JMSExample
       {
          System.out.println("User " + user + " cannot send message [" + msg.getText() + "] to topic: " + topic);
       }
-
-      TextMessage receivedMsg = (TextMessage)consumer.receive(2000);
-      if (receivedMsg != null)
-      {
-         System.out.println("Security setting is broken for User " + user + ". message [" + receivedMsg.getText() + "] to topic " + topic + " shouldn't be received!");
-         result = false;
-      }
-
+      
       //Now send a good message
       Session session1 = sendingConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       producer = session1.createProducer(topic);
       producer.send(msg);
       
-      receivedMsg = (TextMessage)consumer.receive(2000);
+      TextMessage receivedMsg = (TextMessage)consumer.receive(2000);
       
       if (receivedMsg != null)
       {
