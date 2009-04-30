@@ -75,7 +75,8 @@ public class SpawnedJMSServer
          Configuration conf = new ConfigurationImpl();
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
-         conf.setEnableFileDeployment(true);
+         conf.setEnableFileDeployment(false);
+         conf.setJournalMinFiles(2);
          
          final MessagingServer server = Messaging.newMessagingServer(conf);
 
