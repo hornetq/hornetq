@@ -21,24 +21,8 @@
  */
 package org.jboss.messaging.tests.integration.security;
 
-import java.io.IOException;
-import java.security.acl.Group;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
@@ -53,6 +37,22 @@ import org.jboss.messaging.integration.security.JAASSecurityManager;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.security.SimpleGroup;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.io.IOException;
+import java.security.acl.Group;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -570,7 +570,7 @@ public class SecurityTest extends ServiceTestBase
          cp.send(session.createClientMessage(false));
          session.close();
 
-         Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
+         Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
          assertEquals(0, binding.getMessageCount());
       }
       finally
@@ -1006,7 +1006,7 @@ public class SecurityTest extends ServiceTestBase
          cp.send(session.createClientMessage(false));
          session.close();
 
-         Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
+         Queue binding = (Queue) server.getPostOffice().getBinding(new SimpleString(queueA)).getBindable();
          assertEquals(0, binding.getMessageCount());
       }
       finally
@@ -1028,8 +1028,8 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       JAASSecurityManager securityManager = new JAASSecurityManager();
-      MessagingServer server = createServer(false, configuration, securityManager);      
- 
+      MessagingServer server = createServer(false, configuration, securityManager);
+
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
       {
@@ -1071,7 +1071,7 @@ public class SecurityTest extends ServiceTestBase
       configuration.setSecurityEnabled(true);
       JAASSecurityManager securityManager = new JAASSecurityManager();
       MessagingServer server = createServer(false, configuration, securityManager);
-      
+
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
       {
@@ -1107,6 +1107,367 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
+   public void testComplexRoles() throws Exception
+   {
+      Configuration configuration = createDefaultConfig(false);
+      configuration.setSecurityEnabled(true);
+      MessagingServer server = createServer(false, configuration);
+      try
+      {
+         server.start();
+         JBMSecurityManager securityManager = server.getSecurityManager();
+         securityManager.addUser("all", "all");
+         securityManager.addUser("bill", "jbossmessaging");
+         securityManager.addUser("andrew", "jbossmessaging1");
+         securityManager.addUser("frank", "jbossmessaging2");
+         securityManager.addUser("sam", "jbossmessaging3");
+         securityManager.addRole("all", "all");
+         securityManager.addRole("bill", "user");
+         securityManager.addRole("andrew", "europe-user");
+         securityManager.addRole("andrew", "user");
+         securityManager.addRole("frank", "us-user");
+         securityManager.addRole("frank", "news-user");
+         securityManager.addRole("frank", "user");
+         securityManager.addRole("sam", "news-user");
+         securityManager.addRole("sam", "user");
+         Role all = new Role("all", true, true, true, true, true, true, true);
+         HierarchicalRepository<Set<Role>> repository = server.getSecurityRepository();
+         Set<Role> add = new HashSet<Role>();
+         add.add(new Role("user", true, true, true, true, true, true, false));
+         add.add(all);
+         repository.addMatch("#", add);
+         Set<Role> add1 = new HashSet<Role>();
+         add1.add(all);
+         add1.add(new Role("user", false, false, true, true, true, true, false));
+         add1.add(new Role("europe-user", true, false, false, false, false, false, false));
+         add1.add(new Role("news-user", false, true, false, false, false, false, false));
+         repository.addMatch("news.europe.#", add1);
+         Set<Role> add2 = new HashSet<Role>();
+         add2.add(all);
+         add2.add(new Role("user", false, false, true, true, true, true, false));
+         add2.add(new Role("us-user", true, false, false, false, false, false, false));
+         add2.add(new Role("news-user", false, true, false, false, false, false, false));
+         repository.addMatch("news.us.#", add2);
+         ClientSession billConnection = null;
+         ClientSession andrewConnection = null;
+         ClientSession frankConnection = null;
+         ClientSession samConnection = null;
+         ClientSessionFactory factory = createInVMFactory();
+         factory.setBlockOnNonPersistentSend(true);
+         factory.setBlockOnPersistentSend(true);
+
+         ClientSession adminSession = factory.createSession("all", "all", false, true, true, false, -1);
+         String genericQueueName = "genericQueue";
+         adminSession.createQueue(genericQueueName, genericQueueName, false);
+         String eurQueueName = "news.europe.europeQueue";
+         adminSession.createQueue(eurQueueName, eurQueueName, false);
+         String usQueueName = "news.us.usQueue";
+         adminSession.createQueue(usQueueName, usQueueName, false);
+         //Step 4. Try to create a JMS Connection without user/password. It will fail.
+         try
+         {
+            factory.createSession(false, true, true);
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
+         }
+
+         //Step 5. bill tries to make a connection using wrong password
+         try
+         {
+            billConnection = factory.createSession("bill", "jbossmessaging1", false, true, true, false, -1);
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            System.out.println("User bill failed to connect. Details: " + e.getMessage());
+         }
+
+         //Step 6. bill makes a good connection.
+         billConnection = factory.createSession("bill", "jbossmessaging", false, true, true, false, -1);
+
+         //Step 7. andrew makes a good connection.
+         andrewConnection = factory.createSession("andrew", "jbossmessaging1", false, true, true, false, -1);
+
+         //Step 8. frank makes a good connection.
+         frankConnection = factory.createSession("frank", "jbossmessaging2", false, true, true, false, -1);
+
+         //Step 9. sam makes a good connection.
+         samConnection = factory.createSession("sam", "jbossmessaging3", false, true, true, false, -1);
+
+         checkUserSendAndReceive(genericQueueName, billConnection);
+         checkUserSendAndReceive(genericQueueName, andrewConnection);
+         checkUserSendAndReceive(genericQueueName, frankConnection);
+         checkUserSendAndReceive(genericQueueName, samConnection);
+
+         //Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
+         checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
+
+         //Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
+         checkUserSendNoReceive(eurQueueName, andrewConnection);
+
+         //Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
+         checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
+
+         //Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
+         checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
+
+         //Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
+         checkUserNoSendNoReceive(usQueueName, billConnection, adminSession);
+
+         //Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
+         checkUserNoSendNoReceive(usQueueName, andrewConnection, adminSession);
+
+         //Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
+         checkUserSendAndReceive(usQueueName, frankConnection);
+
+         //Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
+         checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
+   public void _testComplexRoles2() throws Exception
+   {
+      Configuration configuration = createDefaultConfig(false);
+      configuration.setSecurityEnabled(true);
+      MessagingServer server = createServer(false, configuration);
+      try
+      {
+         server.start();
+         JBMSecurityManager securityManager = server.getSecurityManager();
+         securityManager.addUser("all", "all");
+         securityManager.addUser("bill", "jbossmessaging");
+         securityManager.addUser("andrew", "jbossmessaging1");
+         securityManager.addUser("frank", "jbossmessaging2");
+         securityManager.addUser("sam", "jbossmessaging3");
+         securityManager.addRole("all", "all");
+         securityManager.addRole("bill", "user");
+         securityManager.addRole("andrew", "europe-user");
+         securityManager.addRole("andrew", "user");
+         securityManager.addRole("frank", "us-user");
+         securityManager.addRole("frank", "news-user");
+         securityManager.addRole("frank", "user");
+         securityManager.addRole("sam", "news-user");
+         securityManager.addRole("sam", "user");
+         Role all = new Role("all", true, true, true, true, true, true, true);
+         HierarchicalRepository<Set<Role>> repository = server.getSecurityRepository();
+         Set<Role> add = new HashSet<Role>();
+         add.add(new Role("user", true, true, true, true, true, true, false));
+         add.add(all);
+         repository.addMatch("#", add);
+         Set<Role> add1 = new HashSet<Role>();
+         add1.add(all);
+         add1.add(new Role("user", false, false, true, true, true, true, false));
+         add1.add(new Role("europe-user", true, false, false, false, false, false, false));
+         add1.add(new Role("news-user", false, true, false, false, false, false, false));
+         repository.addMatch("news.europe.#", add1);
+         Set<Role> add2 = new HashSet<Role>();
+         add2.add(all);
+         add2.add(new Role("user", false, false, true, true, true, true, false));
+         add2.add(new Role("us-user", true, false, false, false, false, false, false));
+         add2.add(new Role("news-user", false, true, false, false, false, false, false));
+         repository.addMatch("news.us.#", add2);
+         ClientSession billConnection = null;
+         ClientSession andrewConnection = null;
+         ClientSession frankConnection = null;
+         ClientSession samConnection = null;
+         ClientSessionFactory factory = createInVMFactory();
+         factory.setBlockOnNonPersistentSend(true);
+         factory.setBlockOnPersistentSend(true);
+
+         ClientSession adminSession = factory.createSession("all", "all", false, true, true, false, -1);
+         String genericQueueName = "genericQueue";
+         adminSession.createQueue(genericQueueName, genericQueueName, false);
+         String eurQueueName = "news.europe.europeQueue";
+         adminSession.createQueue(eurQueueName, eurQueueName, false);
+         String usQueueName = "news.us.usQueue";
+         adminSession.createQueue(usQueueName, usQueueName, false);
+         //Step 4. Try to create a JMS Connection without user/password. It will fail.
+         try
+         {
+            factory.createSession(false, true, true);
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
+         }
+
+         //Step 5. bill tries to make a connection using wrong password
+         try
+         {
+            billConnection = factory.createSession("bill", "jbossmessaging1", false, true, true, false, -1);
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            System.out.println("User bill failed to connect. Details: " + e.getMessage());
+         }
+
+         //Step 6. bill makes a good connection.
+         billConnection = factory.createSession("bill", "jbossmessaging", false, true, true, false, -1);
+
+         //Step 7. andrew makes a good connection.
+         andrewConnection = factory.createSession("andrew", "jbossmessaging1", false, true, true, false, -1);
+
+         //Step 8. frank makes a good connection.
+         frankConnection = factory.createSession("frank", "jbossmessaging2", false, true, true, false, -1);
+
+         //Step 9. sam makes a good connection.
+         samConnection = factory.createSession("sam", "jbossmessaging3", false, true, true, false, -1);
+
+         checkUserSendAndReceive(genericQueueName, billConnection);
+         checkUserSendAndReceive(genericQueueName, andrewConnection);
+         checkUserSendAndReceive(genericQueueName, frankConnection);
+         checkUserSendAndReceive(genericQueueName, samConnection);
+
+         //Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
+         checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
+
+         //Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
+         checkUserSendNoReceive(eurQueueName, andrewConnection);
+
+         //Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
+         checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
+
+         //Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
+         checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
+
+         //Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
+         checkUserNoSendNoReceive(usQueueName, billConnection, adminSession);
+
+         //Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
+         checkUserNoSendNoReceive(usQueueName, andrewConnection, adminSession);
+
+         //Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
+         checkUserSendAndReceive(usQueueName, frankConnection);
+
+         //Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
+         checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
+   //Check the user connection has both send and receive permissions on the queue
+   private void checkUserSendAndReceive(String genericQueueName, ClientSession connection) throws Exception
+   {
+      connection.start();
+      try
+      {
+         ClientProducer prod = connection.createProducer(genericQueueName);
+         ClientConsumer con = connection.createConsumer(genericQueueName);
+         ClientMessage m = connection.createClientMessage(false);
+         prod.send(m);
+         ClientMessage rec = con.receive(1000);
+         assertNotNull(rec);
+         rec.acknowledge();
+      }
+      finally
+      {
+         connection.stop();
+      }
+   }
+
+   //Check the user can receive message but cannot send message.
+   private void checkUserReceiveNoSend(String queue, ClientSession connection, ClientSession sendingConn) throws Exception
+   {
+      connection.start();
+      try
+      {
+         ClientProducer prod = connection.createProducer(queue);
+         ClientMessage m = connection.createClientMessage(false);
+         try
+         {
+            prod.send(m);
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            //pass
+         }
+
+         prod = sendingConn.createProducer(queue);
+         prod.send(m);
+         ClientConsumer con = connection.createConsumer(queue);
+         ClientMessage rec = con.receive(1000);
+         assertNotNull(rec);
+         rec.acknowledge();
+      }
+      finally
+      {
+         connection.stop();
+      }
+   }
+
+   private void checkUserNoSendNoReceive(String queue, ClientSession connection, ClientSession sendingConn) throws Exception
+   {
+      connection.start();
+      try
+      {
+         ClientProducer prod = connection.createProducer(queue);
+         ClientMessage m = connection.createClientMessage(false);
+         try
+         {
+            prod.send(m);
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            //pass
+         }
+
+         prod = sendingConn.createProducer(queue);
+         prod.send(m);
+
+         try
+         {
+            ClientConsumer con = connection.createConsumer(queue);
+            fail("should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            //pass
+         }
+      }
+      finally
+      {
+         connection.stop();
+      }
+   }
+
+   //Check the user can send message but cannot receive message
+   private void checkUserSendNoReceive(String queue, ClientSession connection) throws Exception
+   {
+      ClientProducer prod = connection.createProducer(queue);
+      ClientMessage m = connection.createClientMessage(false);
+      prod.send(m);
+
+      try
+      {
+         ClientConsumer con = connection.createConsumer(queue);
+         fail("should throw exception");
+      }
+      catch (MessagingException e)
+      {
+         //pass
+      }
+   }
+
    public static class SimpleLogingModule implements LoginModule
    {
       private Map<String, ?> options;
@@ -1138,11 +1499,11 @@ public class SecurityTest extends ServiceTestBase
 
       public boolean login() throws LoginException
       {
-         boolean authenticated = (Boolean)options.get("authenticated");
+         boolean authenticated = (Boolean) options.get("authenticated");
          if (authenticated)
          {
             Group roles = new SimpleGroup("Roles");
-            roles.addMember(new JAASSecurityManager.SimplePrincipal((String)options.get("role")));
+            roles.addMember(new JAASSecurityManager.SimplePrincipal((String) options.get("role")));
             subject.getPrincipals().add(roles);
          }
          return authenticated;
@@ -1178,7 +1539,7 @@ public class SecurityTest extends ServiceTestBase
          AppConfigurationEntry entry = new AppConfigurationEntry(loginModuleName,
                                                                  AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
                                                                  options);
-         return new AppConfigurationEntry[] { entry };
+         return new AppConfigurationEntry[]{entry};
       }
 
       @Override
