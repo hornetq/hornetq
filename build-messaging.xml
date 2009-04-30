@@ -273,6 +273,7 @@
       <path refid="jboss.jbossxb.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="apache.logging.classpath"/>
+      <path refid="jboss.jboss.common.logging.log4j.classpath"/> 
    </path>
 
    <path id="emma.unit.test.execution.classpath">
@@ -1096,7 +1097,7 @@
          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
-         <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/stand-alone/non-clustered/logging.properties"/>
          <jvmarg
                value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
          <jvmarg value="-Xmx1024M"/>
