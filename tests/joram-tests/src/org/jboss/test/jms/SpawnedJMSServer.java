@@ -76,9 +76,9 @@ public class SpawnedJMSServer
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
          conf.setEnableFileDeployment(false);
-         conf.setJournalMinFiles(2);
-         
-         final MessagingServer server = Messaging.newMessagingServer(conf);
+
+         // disable server persistence since JORAM tests do not restart server
+         final MessagingServer server = Messaging.newMessagingServer(conf, false);
 
          Hashtable<String, String> env = new Hashtable<String, String>();
          env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
