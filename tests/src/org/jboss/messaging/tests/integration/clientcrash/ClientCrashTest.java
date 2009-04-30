@@ -126,20 +126,20 @@ public class ClientCrashTest extends ClientTestBase
 
       System.out.println("VM Exited");
 
-      Thread.sleep(1000);
+      Thread.sleep(2 * CONNECTION_TTL);
 
       assertActiveConnections(1);
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-      // assertActiveSession(1);
+      assertActiveSession(1);
 
       session.close();
 
-      Thread.sleep(1000);
+      Thread.sleep(2 * CONNECTION_TTL);
 
       // the crash must have been detected and the resources cleaned up
       assertActiveConnections(0);
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
-      // assertActiveSession(0);
+      assertActiveSession(0);
    }
 
    // Package protected ---------------------------------------------

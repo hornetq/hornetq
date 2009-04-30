@@ -344,6 +344,8 @@ public class PingTest extends ServiceTestBase
 
          Thread.sleep(PING_INTERVAL);
       }
+      
+      Thread.sleep(3 * PING_INTERVAL);
 
       assertTrue(server.getRemotingService().getConnections().isEmpty());
 
@@ -364,13 +366,24 @@ public class PingTest extends ServiceTestBase
    {
       Interceptor noPongInterceptor = new Interceptor()
       {
+         boolean allowPing = true;
+         
          public boolean intercept(Packet packet, RemotingConnection conn) throws MessagingException
          {
             log.info("In interceptor, packet is " + packet.getType());
             if (packet.getType() == PacketImpl.PING)
             {
-               log.info("Ignoring Ping packet.. it will be dropped");
-               return false;
+               if (allowPing)
+               {
+                  log.info("allow 1 ping");
+                  allowPing = false;
+                  return true;
+               }
+               else
+               {
+                  log.info("Ignoring Ping packet.. it will be dropped");
+                  return false;
+               }
             }
             else
             {
@@ -434,23 +447,14 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      for (int i = 0; i < 40; i++)
-      {
-         // a few tries to avoid a possible race caused by GCs or similar issues
-         if (server.getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
-         {
-            break;
-         }
-
-         Thread.sleep(PING_INTERVAL);
-      }
-
+      Thread.sleep(3 * PING_INTERVAL);
+      
       assertNotNull(clientListener.getException());
 
-      // We don't receive an exception on the server in this case
-      assertNull(serverListener.getException());
+      // We receive an exception on the server in this case too
+      assertNotNull(serverListener.getException());
 
-      assertTrue(server.getRemotingService().getConnections().isEmpty());
+      assertEquals(0, server.getRemotingService().getConnections().size());
 
       server.getRemotingService().removeInterceptor(noPongInterceptor);
 

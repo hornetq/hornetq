@@ -449,6 +449,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       // Then call the listeners
       callFailureListeners(me);
 
+      callClosingListeners();
+
       internalClose();
 
       for (ChannelImpl channel : channels.values())

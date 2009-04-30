@@ -79,11 +79,16 @@ public class JMSUtil
 
    public static Connection createConnection(String connectorFactory) throws JMSException
    {
+      return createConnection(connectorFactory, DEFAULT_CONNECTION_TTL, DEFAULT_PING_PERIOD);
+   }
+
+   public static Connection createConnection(String connectorFactory, long connectionTTL, long pingPeriod) throws JMSException
+   {
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory),
                                                              null,
                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                             DEFAULT_PING_PERIOD,
-                                                             DEFAULT_CONNECTION_TTL,
+                                                             pingPeriod,
+                                                             connectionTTL,
                                                              DEFAULT_CALL_TIMEOUT,
                                                              null,
                                                              DEFAULT_ACK_BATCH_SIZE,
@@ -106,7 +111,7 @@ public class JMSUtil
 
       return cf.createConnection();
    }
-
+   
    static MessageConsumer createConsumer(Connection connection, Destination destination, String connectorFactory) throws JMSException
    {
       Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

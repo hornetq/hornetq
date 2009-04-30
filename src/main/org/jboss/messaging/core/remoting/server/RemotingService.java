@@ -38,13 +38,22 @@ public interface RemotingService extends MessagingComponent
 {
    RemotingConnection getConnection(Object remotingConnectionID);
 
+   /**
+    * Remove a connection from the connections held by the remoting service.
+    * <strong>This method must be used only from the management API.
+    * RemotingConnections are removed from the remoting service when their connectionTTL is hit.</strong>
+    * @param remotingConnectionID the ID of the RemotingConnection to removed
+    * @return the removed RemotingConnection
+    */
+   RemotingConnection removeConnection(Object remotingConnectionID);
+
    Set<RemotingConnection> getConnections();
-   
+
    void addInterceptor(Interceptor interceptor);
-   
+
    boolean removeInterceptor(Interceptor interceptor);
-   
+
    void freeze();
-   
+
    RemotingConnection getServerSideReplicatingConnection();
 }

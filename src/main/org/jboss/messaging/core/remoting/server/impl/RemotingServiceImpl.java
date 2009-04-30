@@ -242,6 +242,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       return connections.get(remotingConnectionID);
    }
 
+   public RemotingConnection removeConnection(final Object remotingConnectionID)
+   {
+      return connections.remove(remotingConnectionID);
+   }
+   
    public synchronized Set<RemotingConnection> getConnections()
    {
       return new HashSet<RemotingConnection>(connections.values());
@@ -281,11 +286,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void connectionDestroyed(final Object connectionID)
    {  
-      RemotingConnection conn = connections.remove(connectionID);
-      if (conn != null)
-      {
-         conn.destroy();
-      }      
+      // We DO NOT destroy the connection when this event is received.
+      // Instead, the connection will be cleaned up when the connection TTL
+      // is hit in FailedConnectionsTask.
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
@@ -346,6 +349,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          for (RemotingConnection conn : failedConnections)
          {
+
+            connections.remove(conn.getID());
             MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
                                                            "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
 

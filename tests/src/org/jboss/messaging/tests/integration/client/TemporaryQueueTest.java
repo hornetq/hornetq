@@ -28,6 +28,8 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
+import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.CloseListener;
@@ -47,17 +49,12 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-/**
- * A TemporaryQueueTest
- *
- * @author jmesnil
- *
- *
- */
 public class TemporaryQueueTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
+
+   private static final long CONNECTION_TTL = 2000;
 
    // Attributes ----------------------------------------------------
 
@@ -134,7 +131,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       });
       session.close();
       //wait for the closing listeners to be fired
-      assertTrue("connection close listeners not fired", latch.await(1, TimeUnit.SECONDS));
+      assertTrue("connection close listeners not fired", latch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS));
       session = sf.createSession(false, true, true);
       session.start();
       
@@ -200,11 +197,12 @@ public class TemporaryQueueTest extends ServiceTestBase
             latch.countDown();
          }
       });
-      remotingConnection.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "simulate a client failure"));
+      
+      ((ClientSessionInternal)session).getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "simulate a client failure"));
 
 
       // let some time for the server to clean the connections
-      latch.await(1, TimeUnit.SECONDS);
+      latch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
 
       assertEquals(0, server.getConnectionCount());
 
@@ -233,10 +231,34 @@ public class TemporaryQueueTest extends ServiceTestBase
    {
       super.setUp();
 
-      server = createServer(false);
+      
+      Configuration configuration = createDefaultConfig();
+      configuration.setSecurityEnabled(false);
+      server = createServer(false, configuration );
       server.start();
 
-      sf = createInVMFactory();
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY),
+                                        null,
+                                        ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                        ClientSessionFactoryImpl.DEFAULT_PING_PERIOD, 
+                                        CONNECTION_TTL,
+                                        ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, 
+                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                        ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                        ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                        ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                        ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                        ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                        ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                        ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
       session = sf.createSession(false, true, true);
    }
 

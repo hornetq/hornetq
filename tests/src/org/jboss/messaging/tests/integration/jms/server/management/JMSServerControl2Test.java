@@ -22,10 +22,17 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.Connection;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -39,17 +46,6 @@ import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
-
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A QueueControlTest
@@ -65,6 +61,10 @@ public class JMSServerControl2Test extends ManagementTestBase
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(JMSServerControl2Test.class);
+
+   private static final long CONNECTION_TTL = 1000;
+
+   private static final long PING_PERIOD = CONNECTION_TTL / 2;
 
    // Attributes ----------------------------------------------------
 
@@ -166,21 +166,21 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertEquals(0, control.listConnectionIDs().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory);
+         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
 
          String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
 
-         Connection connection2 = JMSUtil.createConnection(connectorFactory);
+         Connection connection2 = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
          assertEquals(2, control.listConnectionIDs().length);
 
          connection.close();
-         Thread.sleep(500);
+         Thread.sleep(2 * CONNECTION_TTL);
 
          assertEquals(1, control.listConnectionIDs().length);
 
          connection2.close();
-         Thread.sleep(500);
+         Thread.sleep(2 * CONNECTION_TTL);
 
          assertEquals(0, control.listConnectionIDs().length);
       }
@@ -204,7 +204,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertEquals(0, control.listConnectionIDs().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory);
+         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
 
          String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
@@ -218,7 +218,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          connection.close();
 
-         Thread.sleep(500);
+         Thread.sleep(2 * CONNECTION_TTL);
 
          assertEquals(0, control.listConnectionIDs().length);
       }
@@ -242,7 +242,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertEquals(0, control.listRemoteAddresses().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory);
+         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
 
          String[] remoteAddresses = control.listRemoteAddresses();
          assertEquals(1, remoteAddresses.length);
@@ -256,8 +256,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          
          connection.close();
 
-         // FIXME: with Netty, the server is not notified immediately that the connection is closed
-         Thread.sleep(1000);
+         Thread.sleep(2 * CONNECTION_TTL);
 
          assertEquals(0, control.listRemoteAddresses().length);
       }
@@ -283,7 +282,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, server.getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory);
+         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
 
          assertEquals(1, server.getConnectionCount());
 
@@ -302,8 +301,12 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertTrue(control.closeConnectionsForAddress(remoteAddress));
 
-         boolean gotException = exceptionLatch.await(5, TimeUnit.SECONDS);
+         boolean gotException = exceptionLatch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
          assertTrue("did not received the expected JMSException", gotException);
+         for (String string : control.listRemoteAddresses())
+         {
+            System.out.println(string);
+         }
          assertEquals(0, control.listRemoteAddresses().length);
          assertEquals(0, server.getConnectionCount());
       }
@@ -331,7 +334,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, server.getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory);
+         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
 
          assertEquals(1, server.getConnectionCount());
          String[] remoteAddresses = control.listRemoteAddresses();
@@ -348,7 +351,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertFalse(control.closeConnectionsForAddress(unknownAddress));
 
-         boolean gotException = exceptionLatch.await(500, TimeUnit.MILLISECONDS);
+         boolean gotException = exceptionLatch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
          assertFalse(gotException);
 
          assertEquals(1, control.listRemoteAddresses().length);
