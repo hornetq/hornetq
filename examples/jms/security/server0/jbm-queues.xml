@@ -12,7 +12,6 @@
       <permission type="consume" roles="user"/>
    </security>
 
-   <!-- only europe-user can create/delete any news.europe topics and pulish news to it. -->
    <security match="jms.topic.news.europe.#">
       <permission type="createDurableQueue" roles="user"/>
       <permission type="deleteDurableQueue" roles="user"/>
@@ -22,7 +21,6 @@
       <permission type="consume" roles="news-user"/>
    </security>
 
-   <!-- only us-user can create/delete any news.europe topics and pulish news to it. -->
    <security match="jms.topic.news.us.#">
       <permission type="createDurableQueue" roles="user"/>
       <permission type="deleteDurableQueue" roles="user"/>

@@ -117,7 +117,7 @@ public class SecurityExample extends JMSExample
          System.out.println("------------------------Checking permissions on " + europeTopic + "----------------");
          
          //Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
-         checkUserNoSendNoReceive(europeTopic, billConnection, "bill", andrewConnection, frankConnection);
+         checkUserNoSendNoReceive(europeTopic, billConnection, "bill");
          
          //Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
          checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
@@ -132,15 +132,15 @@ public class SecurityExample extends JMSExample
          System.out.println("------------------------Checking permissions on " + usTopic + "----------------");
 
          //Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
-         checkUserNoSendNoReceive(usTopic, billConnection, "bill", frankConnection, frankConnection);
+         checkUserNoSendNoReceive(usTopic, billConnection, "bill");
 
          //Step 16. Check permissions on news.us.usTopic for andrew: can't send and can't receive
-         checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew", frankConnection, frankConnection);
+         checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew");
 
          //Step 17. Check permissions on news.us.usTopic for frank: can both send and receive
          checkUserSendAndReceive(usTopic, frankConnection, "frank");
 
-         //Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
+         //Step 18. Check permissions on news.us.usTopic for sam: can't send but can receive
          checkUserReceiveNoSend(usTopic, samConnection, "sam", frankConnection);
          System.out.println("-------------------------------------------------------------------------------------");
 
@@ -220,10 +220,9 @@ public class SecurityExample extends JMSExample
    {
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer producer = session.createProducer(topic);
-      MessageConsumer consumer = null;
       try
       {
-         consumer = session.createConsumer(topic);
+         session.createConsumer(topic);
       }
       catch (JMSException e)
       {
@@ -252,15 +251,14 @@ public class SecurityExample extends JMSExample
    }
 
    //Check the user has neither send nor receive permission on topic
-   private void checkUserNoSendNoReceive(Topic topic, Connection connection, String user, Connection sendingConn, Connection receivingConn) throws JMSException
+   private void checkUserNoSendNoReceive(Topic topic, Connection connection, String user) throws JMSException
    {
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer producer = session.createProducer(topic);
-      MessageConsumer consumer = null;
       
       try
       {
-         consumer = session.createConsumer(topic);
+         session.createConsumer(topic);
       }
       catch (JMSException e)
       {
