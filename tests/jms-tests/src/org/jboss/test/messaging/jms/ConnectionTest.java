@@ -33,6 +33,8 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
+import junit.framework.TestCase;
+
 import org.jboss.messaging.core.logging.Logger;
 
 
@@ -46,7 +48,7 @@ import org.jboss.messaging.core.logging.Logger;
  *
  * $Id$
  */
-public class ConnectionTest extends JMSTestCase
+public class ConnectionTest extends TestCase // JMSTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -62,283 +64,288 @@ public class ConnectionTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   // Disabled  - http://www.jboss.org/index.html?module=bb&op=viewtopic&t=154603
+   public void testFoo()
+   {
+      
+   }
   
    
-   public void testManyConnections() throws Exception
-   {
-      for (int i = 0; i < 100; i++)
-      {
-         Connection conn = cf.createConnection();
-         conn.close();        
-      }
-   }     
-   
-
-   //
-   // Note: All tests related to closing a Connection should go to ConnectionClosedTest
-   //
-
-   public void testGetClientID() throws Exception
-   {
-      Connection connection = cf.createConnection();
-      String clientID = connection.getClientID();
-
-      //We don't currently set client ids on the server, so this should be null.
-      //In the future we may provide conection factories that set a specific client id
-      //so this may change
-      assertNull(clientID);
-
-      connection.close();
-   }
-
-   public void testSetClientID() throws Exception
-   {
-      Connection connection = cf.createConnection();
-
-      final String clientID = "my-test-client-id";
-
-      connection.setClientID(clientID);
-
-      assertEquals(clientID, connection.getClientID());
-
-      connection.close();
-   }
-
-   public void testSetClientAfterStart() throws Exception
-   {
-   	Connection connection = null;
-      try
-      {
-         connection = cf.createConnection();
-
-         //we startthe connection
-         connection.start();
-
-         // an attempt to set the client ID now should throw a IllegalStateException
-         connection.setClientID("testSetClientID_2");
-         fail("Should throw a javax.jms.IllegalStateException");
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-      catch (JMSException e)
-      {
-         fail("Should raise a javax.jms.IllegalStateException, not a " + e);
-      }
-      catch (java.lang.IllegalStateException e)
-      {
-         fail("Should raise a javax.jms.IllegalStateException, not a java.lang.IllegalStateException");
-      }
-      finally
-      {
-      	if (connection != null)
-      	{
-      		connection.close();
-      	}
-      }
-      
-   }
-
-   public void testSetClientIDFail() throws Exception
-   {
-      final String clientID = "my-test-client-id";
-
-      //Setting a client id must be the first thing done to the connection
-      //otherwise a javax.jms.IllegalStateException must be thrown
-
-      Connection connection = cf.createConnection();
-      connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      try
-      {
-         connection.setClientID(clientID);
-         fail();
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-         log.trace("Caught exception ok");
-      }
-
-      connection.close();
-
-
-      connection = cf.createConnection();
-      connection.getClientID();
-      try
-      {
-         connection.setClientID(clientID);
-         fail();
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-      connection.close();
-
-      connection = cf.createConnection();
-      ExceptionListener listener = connection.getExceptionListener();
-      try
-      {
-         connection.setClientID(clientID);
-         fail();
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-      connection.close();
-
-      connection = cf.createConnection();
-      connection.setExceptionListener(listener);
-      try
-      {
-         connection.setClientID(clientID);
-         fail();
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-      connection.close();
-   }
-
-   public void testGetMetadata() throws Exception
-   {
-      Connection connection = cf.createConnection();
-
-      ConnectionMetaData metaData = (ConnectionMetaData)connection.getMetaData();
-
-      //TODO - need to check whether these are same as current version
-      metaData.getJMSMajorVersion();
-      metaData.getJMSMinorVersion();
-      metaData.getJMSProviderName();
-      metaData.getJMSVersion();
-      metaData.getJMSXPropertyNames();
-      metaData.getProviderMajorVersion();
-      metaData.getProviderMinorVersion();
-      metaData.getProviderVersion();
-      
-      connection.close();
-   }
-
-
-   /**
-    * Test creation of QueueSession
-    */
-   public void testQueueConnection1() throws Exception
-   {
-      QueueConnectionFactory qcf = (QueueConnectionFactory)cf;
-
-      QueueConnection qc = qcf.createQueueConnection();
-
-      qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      qc.close();
-   }
-
-   /**
-    * Test creation of TopicSession
-    */
-   public void testQueueConnection2() throws Exception
-   {
-      TopicConnectionFactory tcf = (TopicConnectionFactory)cf;
-
-      TopicConnection tc = tcf.createTopicConnection();
-
-      tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      tc.close();
-
-   }
-
-   /**
-    * Test ExceptionListener stuff
-    */
-   public void testExceptionListener() throws Exception
-   {
-      Connection conn = cf.createConnection();
-
-      ExceptionListener listener1 = new MyExceptionListener();
-
-      conn.setExceptionListener(listener1);
-
-      ExceptionListener listener2 = conn.getExceptionListener();
-
-      assertNotNull(listener2);
-
-      assertEquals(listener1, listener2);
-
-      conn.close();
-
-   }
-   
-   /*
-    * See http://jira.jboss.com/jira/browse/JBMESSAGING-635
-    * 
-    * This needs to be run remotely to see the exception
-    */
-   public void testConnectionListenerBug() throws Exception
-   {
-      for (int i = 0; i < 100; i++)
-      {
-         Connection conn = cf.createConnection();
-         
-         MyExceptionListener listener = new MyExceptionListener();
-         
-         conn.setExceptionListener(listener);
-         
-         conn.close();        
-         
-         //The problem with this test is I would need to capture the output and search
-         //for NullPointerException!!!                  
-      } 
-   }
-
-   /**
-    * This test is similar to a JORAM Test...
-    * (UnifiedTest::testCreateDurableConnectionConsumerOnQueueConnection)
-    *
-    * @throws Exception
-    */
-   public void testDurableSubscriberOnQueueConnection() throws Exception
-   {
-      QueueConnection queueConnection = ((QueueConnectionFactory)cf).createQueueConnection();
-
-      try
-      {
-         queueConnection.createDurableConnectionConsumer((Topic)topic1, "subscriptionName", "",
-            (ServerSessionPool) null, 1);
-         fail("Should throw a javax.jms.IllegalStateException");
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-      catch (java.lang.IllegalStateException e)
-      {
-         fail ("Should throw a javax.jms.IllegalStateException");
-      }
-      catch (JMSException e)
-      {
-         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
-      }
-      finally
-      {
-         queueConnection.close();
-      }
-   }     
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   static class MyExceptionListener implements ExceptionListener
-   {
-      JMSException exceptionReceived;
-
-      public void onException(JMSException exception)
-      {
-         this.exceptionReceived = exception;
-         log.trace("Received exception");
-      }
-   }
+//   public void testManyConnections() throws Exception
+//   {
+//      for (int i = 0; i < 100; i++)
+//      {
+//         Connection conn = cf.createConnection();
+//         conn.close();        
+//      }
+//   }     
+//   
+//
+//   //
+//   // Note: All tests related to closing a Connection should go to ConnectionClosedTest
+//   //
+//
+//   public void testGetClientID() throws Exception
+//   {
+//      Connection connection = cf.createConnection();
+//      String clientID = connection.getClientID();
+//
+//      //We don't currently set client ids on the server, so this should be null.
+//      //In the future we may provide conection factories that set a specific client id
+//      //so this may change
+//      assertNull(clientID);
+//
+//      connection.close();
+//   }
+//
+//   public void testSetClientID() throws Exception
+//   {
+//      Connection connection = cf.createConnection();
+//
+//      final String clientID = "my-test-client-id";
+//
+//      connection.setClientID(clientID);
+//
+//      assertEquals(clientID, connection.getClientID());
+//
+//      connection.close();
+//   }
+//
+//   public void testSetClientAfterStart() throws Exception
+//   {
+//   	Connection connection = null;
+//      try
+//      {
+//         connection = cf.createConnection();
+//
+//         //we startthe connection
+//         connection.start();
+//
+//         // an attempt to set the client ID now should throw a IllegalStateException
+//         connection.setClientID("testSetClientID_2");
+//         fail("Should throw a javax.jms.IllegalStateException");
+//      }
+//      catch (javax.jms.IllegalStateException e)
+//      {
+//      }
+//      catch (JMSException e)
+//      {
+//         fail("Should raise a javax.jms.IllegalStateException, not a " + e);
+//      }
+//      catch (java.lang.IllegalStateException e)
+//      {
+//         fail("Should raise a javax.jms.IllegalStateException, not a java.lang.IllegalStateException");
+//      }
+//      finally
+//      {
+//      	if (connection != null)
+//      	{
+//      		connection.close();
+//      	}
+//      }
+//      
+//   }
+//
+//   public void testSetClientIDFail() throws Exception
+//   {
+//      final String clientID = "my-test-client-id";
+//
+//      //Setting a client id must be the first thing done to the connection
+//      //otherwise a javax.jms.IllegalStateException must be thrown
+//
+//      Connection connection = cf.createConnection();
+//      connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+//      try
+//      {
+//         connection.setClientID(clientID);
+//         fail();
+//      }
+//      catch (javax.jms.IllegalStateException e)
+//      {
+//         log.trace("Caught exception ok");
+//      }
+//
+//      connection.close();
+//
+//
+//      connection = cf.createConnection();
+//      connection.getClientID();
+//      try
+//      {
+//         connection.setClientID(clientID);
+//         fail();
+//      }
+//      catch (javax.jms.IllegalStateException e)
+//      {
+//      }
+//      connection.close();
+//
+//      connection = cf.createConnection();
+//      ExceptionListener listener = connection.getExceptionListener();
+//      try
+//      {
+//         connection.setClientID(clientID);
+//         fail();
+//      }
+//      catch (javax.jms.IllegalStateException e)
+//      {
+//      }
+//      connection.close();
+//
+//      connection = cf.createConnection();
+//      connection.setExceptionListener(listener);
+//      try
+//      {
+//         connection.setClientID(clientID);
+//         fail();
+//      }
+//      catch (javax.jms.IllegalStateException e)
+//      {
+//      }
+//      connection.close();
+//   }
+//
+//   public void testGetMetadata() throws Exception
+//   {
+//      Connection connection = cf.createConnection();
+//
+//      ConnectionMetaData metaData = (ConnectionMetaData)connection.getMetaData();
+//
+//      //TODO - need to check whether these are same as current version
+//      metaData.getJMSMajorVersion();
+//      metaData.getJMSMinorVersion();
+//      metaData.getJMSProviderName();
+//      metaData.getJMSVersion();
+//      metaData.getJMSXPropertyNames();
+//      metaData.getProviderMajorVersion();
+//      metaData.getProviderMinorVersion();
+//      metaData.getProviderVersion();
+//      
+//      connection.close();
+//   }
+//
+//
+//   /**
+//    * Test creation of QueueSession
+//    */
+//   public void testQueueConnection1() throws Exception
+//   {
+//      QueueConnectionFactory qcf = (QueueConnectionFactory)cf;
+//
+//      QueueConnection qc = qcf.createQueueConnection();
+//
+//      qc.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//      qc.close();
+//   }
+//
+//   /**
+//    * Test creation of TopicSession
+//    */
+//   public void testQueueConnection2() throws Exception
+//   {
+//      TopicConnectionFactory tcf = (TopicConnectionFactory)cf;
+//
+//      TopicConnection tc = tcf.createTopicConnection();
+//
+//      tc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+//
+//      tc.close();
+//
+//   }
+//
+//   /**
+//    * Test ExceptionListener stuff
+//    */
+//   public void testExceptionListener() throws Exception
+//   {
+//      Connection conn = cf.createConnection();
+//
+//      ExceptionListener listener1 = new MyExceptionListener();
+//
+//      conn.setExceptionListener(listener1);
+//
+//      ExceptionListener listener2 = conn.getExceptionListener();
+//
+//      assertNotNull(listener2);
+//
+//      assertEquals(listener1, listener2);
+//
+//      conn.close();
+//
+//   }
+//   
+//   /*
+//    * See http://jira.jboss.com/jira/browse/JBMESSAGING-635
+//    * 
+//    * This needs to be run remotely to see the exception
+//    */
+//   public void testConnectionListenerBug() throws Exception
+//   {
+//      for (int i = 0; i < 100; i++)
+//      {
+//         Connection conn = cf.createConnection();
+//         
+//         MyExceptionListener listener = new MyExceptionListener();
+//         
+//         conn.setExceptionListener(listener);
+//         
+//         conn.close();        
+//         
+//         //The problem with this test is I would need to capture the output and search
+//         //for NullPointerException!!!                  
+//      } 
+//   }
+//
+//   /**
+//    * This test is similar to a JORAM Test...
+//    * (UnifiedTest::testCreateDurableConnectionConsumerOnQueueConnection)
+//    *
+//    * @throws Exception
+//    */
+//   public void testDurableSubscriberOnQueueConnection() throws Exception
+//   {
+//      QueueConnection queueConnection = ((QueueConnectionFactory)cf).createQueueConnection();
+//
+//      try
+//      {
+//         queueConnection.createDurableConnectionConsumer((Topic)topic1, "subscriptionName", "",
+//            (ServerSessionPool) null, 1);
+//         fail("Should throw a javax.jms.IllegalStateException");
+//      }
+//      catch (javax.jms.IllegalStateException e)
+//      {
+//      }
+//      catch (java.lang.IllegalStateException e)
+//      {
+//         fail ("Should throw a javax.jms.IllegalStateException");
+//      }
+//      catch (JMSException e)
+//      {
+//         fail("Should throw a javax.jms.IllegalStateException, not a " + e);
+//      }
+//      finally
+//      {
+//         queueConnection.close();
+//      }
+//   }     
+//
+//   // Package protected ---------------------------------------------
+//
+//   // Protected -----------------------------------------------------
+//
+//   // Private -------------------------------------------------------
+//
+//   // Inner classes -------------------------------------------------
+//
+//   static class MyExceptionListener implements ExceptionListener
+//   {
+//      JMSException exceptionReceived;
+//
+//      public void onException(JMSException exception)
+//      {
+//         this.exceptionReceived = exception;
+//         log.trace("Received exception");
+//      }
+//   }
 }
