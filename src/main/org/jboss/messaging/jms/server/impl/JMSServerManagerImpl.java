@@ -649,8 +649,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       c.rebind(jndiNameInContext, objectToBind);
       
-      c.close();
-      
       return true;
    }
 
