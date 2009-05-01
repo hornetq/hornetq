@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<deployment xmlns="urn:jboss:bean-deployer:2.0">
-   
-   <bean name="ConfigurationHelper" class="org.jboss.test.messaging.tools.ConfigurationHelper">
-      <property name="configuration"><inject bean="Configuration"/> </property>
-   </bean>
-</deployment>

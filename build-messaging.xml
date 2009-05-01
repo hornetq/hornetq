@@ -296,7 +296,6 @@
    
    <path id="jms.test.execution.classpath">
       <pathelement location="${test.dir}/config"/>
-      <pathelement location="${src.config.standalone.non-clustered.dir}"/>
       <pathelement location="${src.config.dir}/common"/>
       <pathelement location="${src.schemas.dir}"/>
       <pathelement location="${test.jms.dir}/config"/>
