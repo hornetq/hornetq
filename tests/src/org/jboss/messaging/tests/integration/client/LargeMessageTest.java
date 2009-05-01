@@ -890,7 +890,7 @@ public class LargeMessageTest extends LargeMessageTestBase
             }
          }
 
-         assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertGlobalSize(server);
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
@@ -993,7 +993,7 @@ public class LargeMessageTest extends LargeMessageTestBase
             consumer.close();
          }
 
-         assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertGlobalSize(server);
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
@@ -1070,14 +1070,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.commit();
          
-         // addGlobalSize on LargeMessage is only done after the delivery, and the addSize could be asynchronous
-         long timeout = System.currentTimeMillis() + 5000;
-         while (timeout > System.currentTimeMillis() && server.getPostOffice().getPagingManager().getGlobalSize() != 0)
-         {
-            Thread.sleep(100);
-         }
-
-         assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertGlobalSize(server);
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
@@ -1161,7 +1154,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.commit();
 
-         assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertGlobalSize(server);
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
@@ -1338,6 +1331,19 @@ public class LargeMessageTest extends LargeMessageTestBase
    }
 
    // Private -------------------------------------------------------
+
+   private void assertGlobalSize(MessagingServer server) throws InterruptedException
+   {
+      // addGlobalSize on LargeMessage is only done after the delivery, and the addSize could be asynchronous
+      long timeout = System.currentTimeMillis() + 5000;
+      while (timeout > System.currentTimeMillis() && server.getPostOffice().getPagingManager().getGlobalSize() != 0)
+      {
+         Thread.sleep(100);
+      }
+
+      assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+   }
+
 
    // Inner classes -------------------------------------------------
 
