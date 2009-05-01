@@ -23,6 +23,8 @@
 package org.jboss.messaging.tests.integration.largemessage.mock;
 
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnection;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
@@ -53,7 +55,7 @@ public class MockConnector extends InVMConnector
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener)
    {
-      super(configuration, handler, listener);
+      super(configuration, handler, listener, Executors.newCachedThreadPool());
       callback = (MockCallback)configuration.get("callback");
    }
 
@@ -72,7 +74,8 @@ public class MockConnector extends InVMConnector
    // Protected -----------------------------------------------------
 
    @Override
-   protected Connection internalCreateConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
+   protected Connection internalCreateConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener,
+                                                 final Executor serverExecutor)
    {
       return new MockConnection(id, handler, listener);
    }
@@ -94,7 +97,7 @@ public class MockConnector extends InVMConnector
        */
       public MockConnection(final int serverID, final BufferHandler handler, final ConnectionLifeCycleListener listener)
       {
-         super(serverID, handler, listener);
+         super(serverID, handler, listener, Executors.newSingleThreadExecutor());
       }
 
       @Override

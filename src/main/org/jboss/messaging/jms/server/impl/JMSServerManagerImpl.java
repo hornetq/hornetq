@@ -35,7 +35,6 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
@@ -124,9 +123,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          return;
       }
+      
+      log.info("context is " + context);
 
       if (context == null)
       {
+         log.info("creating initial context");
          context = new InitialContext();
       }
 
@@ -183,6 +185,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized void setContext(final Context context)
    {
+      log.info("setting context with " + context);
       this.context = context;
    }
 
@@ -198,11 +201,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       checkInitialised();
       JBossQueue jBossQueue = new JBossQueue(queueName);
       server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
+      
       boolean added = bindToJndi(jndiBinding, jBossQueue);
+      
       if (added)
       {
          addToDestinationBindings(queueName, jndiBinding);
       }
+       
       jmsManagementService.registerQueue(jBossQueue, jndiBinding);
       return added;
    }
@@ -269,169 +275,262 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       return true;
    }
-
-   public synchronized boolean createConnectionFactory(final String name,
-                                                       final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                                       final String connectionLoadBalancingPolicyClassName,
-                                                       final long pingPeriod,
-                                                       final long connectionTTL,
-                                                       final long callTimeout,
-                                                       final String clientID,
-                                                       final int dupsOKBatchSize,
-                                                       final int transactionBatchSize,
-                                                       final int consumerWindowSize,
-                                                       final int consumerMaxRate,
-                                                       final int sendWindowSize,
-                                                       final int producerMaxRate,
-                                                       final int minLargeMessageSize,
-                                                       final boolean blockOnAcknowledge,
-                                                       final boolean blockOnNonPersistentSend,
-                                                       final boolean blockOnPersistentSend,
-                                                       final boolean autoGroup,
-                                                       final int maxConnections,
-                                                       final boolean preAcknowledge,
-                                                       final long retryInterval,
-                                                       final double retryIntervalMultiplier,
-                                                       final int reconnectAttempts,
-                                                       final boolean failoverOnNodeShutdown,
-                                                       final List<String> jndiBindings) throws Exception
+   
+   public synchronized void createConnectionFactory(String name,
+                                                    List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,                                   
+                                                    List<String> jndiBindings) throws Exception
    {
       checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorConfigs,
-                                         connectionLoadBalancingPolicyClassName,
-                                         pingPeriod,
-                                         connectionTTL,
-                                         callTimeout,
-                                         clientID,
-                                         dupsOKBatchSize,
-                                         transactionBatchSize,
-                                         consumerWindowSize,
-                                         consumerMaxRate,
-                                         sendWindowSize,
-                                         producerMaxRate,
-                                         minLargeMessageSize,
-                                         blockOnAcknowledge,
-                                         blockOnNonPersistentSend,
-                                         blockOnPersistentSend,
-                                         autoGroup,
-                                         maxConnections,
-                                         preAcknowledge,
-                                         retryInterval,
-                                         retryIntervalMultiplier,
-                                         reconnectAttempts,
-                                         failoverOnNodeShutdown);
+         cf = new JBossConnectionFactory(connectorConfigs);   
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
-
-      return true;
    }
 
-   public synchronized boolean createConnectionFactory(final String name,
-                                                       final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                                       final List<String> jndiBindings) throws Exception
+   public synchronized void createConnectionFactory(String name,
+                                                    List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                                    String clientID,
+                                                    List<String> jndiBindings) throws Exception
    {
       checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
          cf = new JBossConnectionFactory(connectorConfigs);
+         cf.setClientID(clientID);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
-
-      return true;
    }
 
-   public synchronized boolean createConnectionFactory(String name,
-                                                       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                                       boolean blockOnAcknowledge,
-                                                       boolean blockOnNonPersistentSend,
-                                                       boolean blockOnPersistentSend,
-                                                       boolean preAcknowledge,
-                                                       List<String> jndiBindings) throws Exception
+   public synchronized void createConnectionFactory(String name,
+                                                    List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                                    String clientID,
+                                                    long pingPeriod,
+                                                    long connectionTTL,
+                                                    long callTimeout,
+                                                    int maxConnections,
+                                                    int minLargeMessageSize,
+                                                    int consumerWindowSize,
+                                                    int consumerMaxRate,
+                                                    int producerWindowSize,
+                                                    int producerMaxRate,
+                                                    boolean blockOnAcknowledge,
+                                                    boolean blockOnPersistentSend,
+                                                    boolean blockOnNonPersistentSend,
+                                                    boolean autoGroup,
+                                                    boolean preAcknowledge,
+                                                    String loadBalancingPolicyClassName,
+                                                    int transactionBatchSize,
+                                                    int dupsOKBatchSize,
+                                                    boolean useGlobalPools,
+                                                    int scheduledThreadPoolMaxSize,
+                                                    int threadPoolMaxSize,
+                                                    long retryInterval,
+                                                    double retryIntervalMultiplier,
+                                                    int reconnectAttempts,
+                                                    boolean failoverOnServerShutdown,
+                                                    List<String> jndiBindings) throws Exception
    {
       checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorConfigs,
-                                         blockOnAcknowledge,
-                                         blockOnNonPersistentSend,
-                                         blockOnPersistentSend,
-                                         preAcknowledge);
+         cf = new JBossConnectionFactory(connectorConfigs);
+         cf.setClientID(clientID);
+         cf.setPingPeriod(pingPeriod);
+         cf.setConnectionTTL(connectionTTL);
+         cf.setCallTimeout(callTimeout);
+         cf.setMaxConnections(maxConnections);
+         cf.setMinLargeMessageSize(minLargeMessageSize);
+         cf.setConsumerWindowSize(consumerWindowSize);
+         cf.setConsumerMaxRate(consumerMaxRate);
+         cf.setProducerWindowSize(producerWindowSize);
+         cf.setProducerMaxRate(producerMaxRate);
+         cf.setBlockOnAcknowledge(blockOnAcknowledge);
+         cf.setBlockOnPersistentSend(blockOnPersistentSend);
+         cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+         cf.setAutoGroup(autoGroup);
+         cf.setPreAcknowledge(preAcknowledge);
+         cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+         cf.setTransactionBatchSize(transactionBatchSize);
+         cf.setDupsOKBatchSize(dupsOKBatchSize);
+         cf.setUseGlobalPools(useGlobalPools);
+         cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+         cf.setThreadPoolMaxSize(threadPoolMaxSize);
+         cf.setRetryInterval(retryInterval);
+         cf.setRetryInterval(retryInterval);
+         cf.setReconnectAttempts(reconnectAttempts);
+         cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
-
-      return true;
    }
 
-   public synchronized boolean createConnectionFactory(final String name,
-                                                       final DiscoveryGroupConfiguration discoveryGroupConfig,
-                                                       final long discoveryInitialWait,
-                                                       final String connectionLoadBalancingPolicyClassName,
-                                                       final long pingPeriod,
-                                                       final long connectionTTL,
-                                                       final long callTimeout,
-                                                       final String clientID,
-                                                       final int dupsOKBatchSize,
-                                                       final int transactionBatchSize,
-                                                       final int consumerWindowSize,
-                                                       final int consumerMaxRate,
-                                                       final int sendWindowSize,
-                                                       final int producerMaxRate,
-                                                       final int minLargeMessageSize,
-                                                       final boolean blockOnAcknowledge,
-                                                       final boolean blockOnNonPersistentSend,
-                                                       final boolean blockOnPersistentSend,
-                                                       final boolean autoGroup,
-                                                       final int maxConnections,
-                                                       final boolean preAcknowledge,
-                                                       final long retryInterval,
-                                                       final double retryIntervalMultiplier,
-                                                       final int reconnectAttempts,
-                                                       final boolean failoverOnNodeShutdown,
-                                                       final List<String> jndiBindings) throws Exception
+   public synchronized void createConnectionFactory(String name,
+                                                    String discoveryAddress,
+                                                    int discoveryPort,
+                                                    String clientID,
+                                                    long discoveryRefreshTimeout,
+                                                    long pingPeriod,
+                                                    long connectionTTL,
+                                                    long callTimeout,
+                                                    int maxConnections,
+                                                    int minLargeMessageSize,
+                                                    int consumerWindowSize,
+                                                    int consumerMaxRate,
+                                                    int producerWindowSize,
+                                                    int producerMaxRate,
+                                                    boolean blockOnAcknowledge,
+                                                    boolean blockOnPersistentSend,
+                                                    boolean blockOnNonPersistentSend,
+                                                    boolean autoGroup,
+                                                    boolean preAcknowledge,
+                                                    String loadBalancingPolicyClassName,
+                                                    int transactionBatchSize,
+                                                    int dupsOKBatchSize,
+                                                    long initialWaitTimeout,
+                                                    boolean useGlobalPools,
+                                                    int scheduledThreadPoolMaxSize,
+                                                    int threadPoolMaxSize,
+                                                    long retryInterval,
+                                                    double retryIntervalMultiplier,
+                                                    int reconnectAttempts,
+                                                    boolean failoverOnServerShutdown,
+                                                    List<String> jndiBindings) throws Exception
    {
       checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(discoveryGroupConfig.getGroupAddress(),
-                                         discoveryGroupConfig.getGroupPort(),
-                                         discoveryGroupConfig.getRefreshTimeout(),
-                                         discoveryInitialWait,
-                                         connectionLoadBalancingPolicyClassName,
-                                         pingPeriod,
-                                         connectionTTL,
-                                         callTimeout,
-                                         clientID,
-                                         dupsOKBatchSize,
-                                         transactionBatchSize,
-                                         consumerWindowSize,
-                                         consumerMaxRate,
-                                         sendWindowSize,
-                                         producerMaxRate,
-                                         minLargeMessageSize,
-                                         blockOnAcknowledge,
-                                         blockOnNonPersistentSend,
-                                         blockOnPersistentSend,
-                                         autoGroup,
-                                         maxConnections,
-                                         preAcknowledge,
-                                         retryInterval,
-                                         retryIntervalMultiplier,
-                                         reconnectAttempts,
-                                         failoverOnNodeShutdown);
+         cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
+         cf.setClientID(clientID);
+         cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+         cf.setPingPeriod(pingPeriod);
+         cf.setConnectionTTL(connectionTTL);
+         cf.setCallTimeout(callTimeout);
+         cf.setMaxConnections(maxConnections);
+         cf.setMinLargeMessageSize(minLargeMessageSize);
+         cf.setConsumerWindowSize(consumerWindowSize);
+         cf.setConsumerMaxRate(consumerMaxRate);
+         cf.setProducerWindowSize(producerWindowSize);
+         cf.setProducerMaxRate(producerMaxRate);
+         cf.setBlockOnAcknowledge(blockOnAcknowledge);
+         cf.setBlockOnPersistentSend(blockOnPersistentSend);
+         cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+         cf.setAutoGroup(autoGroup);
+         cf.setPreAcknowledge(preAcknowledge);
+         cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+         cf.setTransactionBatchSize(transactionBatchSize);
+         cf.setDupsOKBatchSize(dupsOKBatchSize);
+         cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
+         cf.setUseGlobalPools(useGlobalPools);
+         cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+         cf.setThreadPoolMaxSize(threadPoolMaxSize);
+         cf.setRetryInterval(retryInterval);
+         cf.setRetryInterval(retryInterval);
+         cf.setReconnectAttempts(reconnectAttempts);
+         cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
+   }
 
-      return true;
+   public synchronized void createConnectionFactory(String name,
+                                                    String discoveryAddress,
+                                                    int discoveryPort,
+                                                    List<String> jndiBindings) throws Exception
+   {
+      checkInitialised();
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
+      {
+         cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
+      }
+
+      bindConnectionFactory(cf, name, jndiBindings);
+   }
+
+   public synchronized void createConnectionFactory(String name,
+                                                    String discoveryAddress,
+                                                    int discoveryPort,
+                                                    String clientID,
+                                                    List<String> jndiBindings) throws Exception
+   {
+      checkInitialised();
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
+      {
+         cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
+         cf.setClientID(clientID);
+      }
+
+      bindConnectionFactory(cf, name, jndiBindings);
+   }
+
+   public synchronized void createConnectionFactory(String name,
+                                                    TransportConfiguration liveTC,
+                                                    List<String> jndiBindings) throws Exception
+   {
+      checkInitialised();
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
+      {
+         cf = new JBossConnectionFactory(liveTC);
+      }
+
+      bindConnectionFactory(cf, name, jndiBindings);
+   }
+
+   public synchronized void createConnectionFactory(String name,
+                                                    TransportConfiguration liveTC,
+                                                    String clientID,
+                                                    List<String> jndiBindings) throws Exception
+   {
+      checkInitialised();
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
+      {
+         cf = new JBossConnectionFactory(liveTC);
+         cf.setClientID(clientID);
+      }
+
+      bindConnectionFactory(cf, name, jndiBindings);
+   }
+
+   public synchronized void createConnectionFactory(String name,
+                                                    TransportConfiguration liveTC,
+                                                    TransportConfiguration backupTC,
+                                                    List<String> jndiBindings) throws Exception
+   {
+      checkInitialised();
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
+      {
+         cf = new JBossConnectionFactory(liveTC, backupTC);
+      }
+
+      bindConnectionFactory(cf, name, jndiBindings);
+   }
+
+   public synchronized void createConnectionFactory(String name,
+                                                    TransportConfiguration liveTC,
+                                                    TransportConfiguration backupTC,
+                                                    String clientID,
+                                                    List<String> jndiBindings) throws Exception
+   {
+      checkInitialised();
+      JBossConnectionFactory cf = connectionFactories.get(name);
+      if (cf == null)
+      {
+         cf = new JBossConnectionFactory(liveTC, backupTC);
+         cf.setClientID(clientID);
+      }
+
+      bindConnectionFactory(cf, name, jndiBindings);
    }
 
    public synchronized boolean destroyConnectionFactory(final String name) throws Exception
@@ -549,6 +648,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       Context c = org.jboss.messaging.utils.JNDIUtil.createContext(context, parentContext);
 
       c.rebind(jndiNameInContext, objectToBind);
+      
+      c.close();
+      
       return true;
    }
 

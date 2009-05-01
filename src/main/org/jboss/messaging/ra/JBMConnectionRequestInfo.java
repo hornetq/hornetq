@@ -22,7 +22,6 @@
 package org.jboss.messaging.ra;
 
 import javax.jms.Session;
-
 import javax.resource.spi.ConnectionRequestInfo;
 
 import org.jboss.messaging.core.logging.Logger;
@@ -39,7 +38,7 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMConnectionRequestInfo.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -56,45 +55,49 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
    private boolean useXA;
 
    /** The type */
-   private int type;
+   private final int type;
 
    /** Use transactions */
-   private boolean transacted;
+   private final boolean transacted;
 
    /** The acknowledge mode */
-   private int acknowledgeMode;
+   private final int acknowledgeMode;
 
    /**
     * Constructor
     * @param prop The resource adapter properties
     * @param type The connection type
     */
-   public JBMConnectionRequestInfo(JBMRAProperties prop, int type)
+   public JBMConnectionRequestInfo(final JBMRAProperties prop, final int type)
    {
       if (trace)
+      {
          log.trace("constructor(" + prop + ")");
+      }
 
-      this.userName = prop.getUserName();
-      this.password = prop.getPassword();
-      this.clientID = prop.getClientID();
-      this.useXA = prop.isUseXA();
+      userName = prop.getUserName();
+      password = prop.getPassword();
+      clientID = prop.getClientID();
+      useXA = prop.isUseXA();
       this.type = type;
-      this.transacted = true;
-      this.acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
+      transacted = true;
+      acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
    }
 
    /**
     * Constructor
     * @param type The connection type
     */
-   public JBMConnectionRequestInfo(int type)
+   public JBMConnectionRequestInfo(final int type)
    {
       if (trace)
+      {
          log.trace("constructor(" + type + ")");
+      }
 
       this.type = type;
-      this.transacted = true;
-      this.acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
+      transacted = true;
+      acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
    }
 
    /**
@@ -103,10 +106,12 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
     * @param acknowledgeMode The acknowledge mode
     * @param type The connection type
     */
-   public JBMConnectionRequestInfo(boolean transacted, int acknowledgeMode, int type)
+   public JBMConnectionRequestInfo(final boolean transacted, final int acknowledgeMode, final int type)
    {
       if (trace)
+      {
          log.trace("constructor(" + transacted + ", " + acknowledgeMode + ", " + type + ")");
+      }
 
       this.transacted = transacted;
       this.acknowledgeMode = acknowledgeMode;
@@ -117,17 +122,25 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
     * Fill in default values if they are missing
     * @param prop The resource adapter properties
     */
-   public void setDefaults(JBMRAProperties prop)
+   public void setDefaults(final JBMRAProperties prop)
    {
       if (trace)
+      {
          log.trace("setDefaults(" + prop + ")");
+      }
 
       if (userName == null)
+      {
          userName = prop.getUserName();
-      if (password == null) 
+      }
+      if (password == null)
+      {
          password = prop.getPassword();
-      if (clientID == null) 
+      }
+      if (clientID == null)
+      {
          clientID = prop.getClientID();
+      }
       useXA = prop.isUseXA();
    }
 
@@ -135,34 +148,40 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
     * Get the user name
     * @return The value
     */
-   public String getUserName() 
+   public String getUserName()
    {
       if (trace)
+      {
          log.trace("getUserName()");
+      }
 
       return userName;
    }
-    
+
    /**
     * Set the user name
     * @param userName The value
     */
-   public void setUserName(String userName)
+   public void setUserName(final String userName)
    {
       if (trace)
+      {
          log.trace("setUserName(" + userName + ")");
+      }
 
       this.userName = userName;
    }
-  
+
    /**
     * Get the password
     * @return The value
     */
-   public String getPassword() 
+   public String getPassword()
    {
       if (trace)
+      {
          log.trace("getPassword()");
+      }
 
       return password;
    }
@@ -171,22 +190,26 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
     * Set the password
     * @param password The value
     */
-   public void setPassword(String password)
+   public void setPassword(final String password)
    {
       if (trace)
+      {
          log.trace("setPassword(****)");
+      }
 
       this.password = password;
    }
-  
+
    /**
     * Get the client id
     * @return The value
     */
-   public String getClientID() 
+   public String getClientID()
    {
       if (trace)
+      {
          log.trace("getClientID()");
+      }
 
       return clientID;
    }
@@ -195,13 +218,16 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
     * Set the client id
     * @param clientID The value
     */
-   public void setClientID(String clientID)
+   public void setClientID(final String clientID)
    {
       if (trace)
+      {
          log.trace("setClientID(" + clientID + ")");
+      }
 
       this.clientID = clientID;
    }
+
    /**
     * Get the connection type
     * @return The type
@@ -209,7 +235,9 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
    public int getType()
    {
       if (trace)
+      {
          log.trace("getType()");
+      }
 
       return type;
    }
@@ -221,7 +249,9 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
    public boolean isUseXA()
    {
       if (trace)
+      {
          log.trace("isUseXA()");
+      }
 
       return useXA;
    }
@@ -233,7 +263,9 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
    public boolean isTransacted()
    {
       if (trace)
+      {
          log.trace("isTransacted()");
+      }
 
       return transacted;
    }
@@ -245,7 +277,9 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
    public int getAcknowledgeMode()
    {
       if (trace)
+      {
          log.trace("getAcknowledgeMode()");
+      }
 
       return acknowledgeMode;
    }
@@ -255,47 +289,56 @@ public class JBMConnectionRequestInfo implements ConnectionRequestInfo
     * @param obj Object with which to compare
     * @return True if this object is the same as the obj argument; false otherwise.
     */
-   public boolean equals(Object obj)
+   @Override
+   public boolean equals(final Object obj)
    {
       if (trace)
+      {
          log.trace("equals(" + obj + ")");
+      }
 
-      if (obj == null) 
+      if (obj == null)
+      {
          return false;
+      }
 
       if (obj instanceof JBMConnectionRequestInfo)
       {
-         JBMConnectionRequestInfo you = (JBMConnectionRequestInfo) obj;
-         return (Util.compare(userName, you.getUserName()) &&
-                 Util.compare(password, you.getPassword()) &&
-                 Util.compare(clientID, you.getClientID()) &&
-                 (type == you.getType()) &&
-                 (useXA == you.isUseXA()) &&
-                 (transacted == you.isTransacted()) &&
-                 (acknowledgeMode == you.getAcknowledgeMode()));
+         JBMConnectionRequestInfo you = (JBMConnectionRequestInfo)obj;
+         return Util.compare(userName, you.getUserName()) && Util.compare(password, you.getPassword()) &&
+                Util.compare(clientID, you.getClientID()) &&
+                type == you.getType() &&
+                useXA == you.isUseXA() &&
+                transacted == you.isTransacted() &&
+                acknowledgeMode == you.getAcknowledgeMode();
       }
       else
+      {
          return false;
+      }
    }
- 
+
    /**
     * Return the hash code for the object
     * @return The hash code
     */
+   @Override
    public int hashCode()
    {
       if (trace)
+      {
          log.trace("hashCode()");
+      }
 
       int hash = 7;
-    
+
       hash += 31 * hash + (userName != null ? userName.hashCode() : 0);
       hash += 31 * hash + (password != null ? password.hashCode() : 0);
       hash += 31 * hash + Integer.valueOf(type).hashCode();
       hash += 31 * hash + (useXA ? 1 : 0);
       hash += 31 * hash + (transacted ? 1 : 0);
       hash += 31 * hash + Integer.valueOf(acknowledgeMode).hashCode();
-  
+
       return hash;
    }
 }

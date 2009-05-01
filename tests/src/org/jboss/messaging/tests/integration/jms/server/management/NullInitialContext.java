@@ -24,6 +24,7 @@
 package org.jboss.messaging.tests.integration.jms.server.management;
 
 import javax.naming.InitialContext;
+import javax.naming.Name;
 import javax.naming.NamingException;
 
 /**
@@ -38,35 +39,32 @@ import javax.naming.NamingException;
 public class NullInitialContext extends InitialContext
 {
 
+   @Override
+   public Object lookup(Name name) throws NamingException
+   {      
+      return null;
+   }
+
+   @Override
+   public Object lookup(String name) throws NamingException
+   {
+      return null;
+   }
+
+   @Override
+   public void rebind(Name name, Object obj) throws NamingException
+   {      
+   }
+
+   @Override
+   public void rebind(String name, Object obj) throws NamingException
+   {
+   }
+
    public NullInitialContext() throws NamingException
    {
       super();
    }
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // InitialContext overrides --------------------------------------
    
-   @Override
-   public void rebind(String name, Object obj) throws NamingException
-   {
-      // do nothing
-   }
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }

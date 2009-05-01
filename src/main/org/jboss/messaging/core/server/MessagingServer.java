@@ -82,7 +82,7 @@ public interface MessagingServer extends MessagingComponent
                                               boolean autoCommitAcks,
                                               boolean preAcknowledge,
                                               boolean xa,
-                                              int sendWindowSize) throws Exception;
+                                              int producerWindowSize) throws Exception;
 
    void replicateCreateSession(String name,
                                long channelID,

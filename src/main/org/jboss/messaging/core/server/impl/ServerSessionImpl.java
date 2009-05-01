@@ -348,6 +348,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             log.error("Failed to delete large message file", error);
          }
       }
+      
+      remotingConnection.removeFailureListener(this);
    }
 
    public void promptDelivery(final Queue queue)

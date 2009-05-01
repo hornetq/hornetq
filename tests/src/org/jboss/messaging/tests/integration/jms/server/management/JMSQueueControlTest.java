@@ -723,31 +723,10 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    private Connection createConnection() throws JMSException
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
-                                                             null,
-                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                             DEFAULT_PING_PERIOD,
-                                                             DEFAULT_CONNECTION_TTL,
-                                                             DEFAULT_CALL_TIMEOUT,
-                                                             null,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             DEFAULT_CONSUMER_MAX_RATE,
-                                                             DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                             DEFAULT_PRODUCER_MAX_RATE,
-                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                             true,
-                                                             DEFAULT_AUTO_GROUP,
-                                                             DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,
-                                                             DEFAULT_RETRY_INTERVAL,
-                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_RECONNECT_ATTEMPTS,
-                                                             DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      
+      cf.setBlockOnPersistentSend(true);
+                
       return cf.createConnection();
    }
 

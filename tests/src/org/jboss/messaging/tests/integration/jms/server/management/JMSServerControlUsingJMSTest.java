@@ -88,212 +88,195 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    protected JMSServerControlMBean createManagementControl() throws Exception
    {
       JBossQueue managementQueue = new JBossQueue(DEFAULT_MANAGEMENT_ADDRESS.toString(),
-                     DEFAULT_MANAGEMENT_ADDRESS.toString());
-      final JMSMessagingProxy proxy = new JMSMessagingProxy(session,
-                                                            managementQueue,
-                                                            ResourceNames.JMS_SERVER);
-      
+                                                  DEFAULT_MANAGEMENT_ADDRESS.toString());
+      final JMSMessagingProxy proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_SERVER);
+
       return new JMSServerControlMBean()
       {
+
+         public void createConnectionFactory(String name,
+                                             List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                             List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, connectorConfigs, jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                             String clientID,
+                                             List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, connectorConfigs, clientID, jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                             String clientID,
+                                             long pingPeriod,
+                                             long connectionTTL,
+                                             long callTimeout,
+                                             int maxConnections,
+                                             int minLargeMessageSize,
+                                             int consumerWindowSize,
+                                             int consumerMaxRate,
+                                             int producerWindowSize,
+                                             int producerMaxRate,
+                                             boolean blockOnAcknowledge,
+                                             boolean blockOnPersistentSend,
+                                             boolean blockOnNonPersistentSend,
+                                             boolean autoGroup,
+                                             boolean preAcknowledge,
+                                             String loadBalancingPolicyClassName,
+                                             int transactionBatchSize,
+                                             int dupsOKBatchSize,
+                                             boolean useGlobalPools,
+                                             int scheduledThreadPoolMaxSize,
+                                             int threadPoolMaxSize,
+                                             long retryInterval,
+                                             double retryIntervalMultiplier,
+                                             int reconnectAttempts,
+                                             boolean failoverOnServerShutdown,
+                                             List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  connectorConfigs,
+                                  clientID,
+                                  pingPeriod,
+                                  connectionTTL,
+                                  callTimeout,
+                                  maxConnections,
+                                  minLargeMessageSize,
+                                  consumerWindowSize,
+                                  consumerMaxRate,
+                                  producerWindowSize,
+                                  producerMaxRate,
+                                  blockOnAcknowledge,
+                                  blockOnPersistentSend,
+                                  blockOnNonPersistentSend,
+                                  autoGroup,
+                                  preAcknowledge,
+                                  loadBalancingPolicyClassName,
+                                  transactionBatchSize,
+                                  dupsOKBatchSize,
+                                  useGlobalPools,
+                                  scheduledThreadPoolMaxSize,
+                                  threadPoolMaxSize,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  reconnectAttempts,
+                                  failoverOnServerShutdown,
+                                  jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             String discoveryAddress,
+                                             int discoveryPort,
+                                             String clientID,
+                                             List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, discoveryAddress, clientID, jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             String discoveryAddress,
+                                             int discoveryPort,
+                                             String clientID,
+                                             long discoveryRefreshTimeout,
+                                             long pingPeriod,
+                                             long connectionTTL,
+                                             long callTimeout,
+                                             int maxConnections,
+                                             int minLargeMessageSize,
+                                             int consumerWindowSize,
+                                             int consumerMaxRate,
+                                             int producerWindowSize,
+                                             int producerMaxRate,
+                                             boolean blockOnAcknowledge,
+                                             boolean blockOnPersistentSend,
+                                             boolean blockOnNonPersistentSend,
+                                             boolean autoGroup,
+                                             boolean preAcknowledge,
+                                             String loadBalancingPolicyClassName,
+                                             int transactionBatchSize,
+                                             int dupsOKBatchSize,
+                                             long initialWaitTimeout,
+                                             boolean useGlobalPools,
+                                             int scheduledThreadPoolMaxSize,
+                                             int threadPoolMaxSize,
+                                             long retryInterval,
+                                             double retryIntervalMultiplier,
+                                             int reconnectAttempts,
+                                             boolean failoverOnServerShutdown,
+                                             List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  discoveryAddress,
+                                  discoveryPort,
+                                  clientID,
+                                  pingPeriod,
+                                  connectionTTL,
+                                  callTimeout,
+                                  maxConnections,
+                                  minLargeMessageSize,
+                                  consumerWindowSize,
+                                  consumerMaxRate,
+                                  producerWindowSize,
+                                  producerMaxRate,
+                                  blockOnAcknowledge,
+                                  blockOnPersistentSend,
+                                  blockOnNonPersistentSend,
+                                  autoGroup,
+                                  preAcknowledge,
+                                  loadBalancingPolicyClassName,
+                                  transactionBatchSize,
+                                  dupsOKBatchSize,
+                                  initialWaitTimeout,
+                                  useGlobalPools,
+                                  scheduledThreadPoolMaxSize,
+                                  threadPoolMaxSize,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  reconnectAttempts,
+                                  failoverOnServerShutdown,
+                                  jndiBindings);
+
+         }
+
+         public void createConnectionFactory(String name, TransportConfiguration liveTC, List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, liveTC, jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             TransportConfiguration liveTC,
+                                             String clientID,
+                                             List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, liveTC, clientID, jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             TransportConfiguration liveTC,
+                                             TransportConfiguration backupTC,
+                                             List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, liveTC, backupTC, jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             TransportConfiguration liveTC,
+                                             TransportConfiguration backupTC,
+                                             String clientID,
+                                             List<String> jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, liveTC, clientID, backupTC, jndiBindings);
+         }
 
          public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
          {
             return (Boolean)proxy.invokeOperation("closeConnectionsForAddress", ipAddress);
-         }
-
-         public void createConnectionFactory(final String name,
-                                             final String connectorFactoryClassName,
-                                             final String[] jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory", name, connectorFactoryClassName, jndiBindings);
-         }
-
-         public void createConnectionFactory(final String name,
-                                             final String connectorFactoryClassName,
-                                             final boolean blockOnAcknowledge,
-                                             final boolean blockOnNonPersistentSend,
-                                             final boolean blockOnPersistentSend,
-                                             final boolean preAcknowledge,
-                                             final String[] jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory",
-                                 name,
-                                 connectorFactoryClassName,
-                                 blockOnAcknowledge,
-                                 blockOnNonPersistentSend,
-                                 blockOnPersistentSend,
-                                 preAcknowledge,
-                                 jndiBindings);
-         }
-
-         public void createSimpleConnectionFactory(final String name,
-                                                   final String connectorFactoryClassName,
-                                                   final String connectionLoadBalancingPolicyClassName,
-                                                   final long pingPeriod,
-                                                   final long connectionTTL,
-                                                   final long callTimeout,
-                                                   final String clientID,
-                                                   final int dupsOKBatchSize,
-                                                   final int transactionBatchSize,
-                                                   final int consumerWindowSize,
-                                                   final int consumerMaxRate,
-                                                   final int producerWindowSize,
-                                                   final int producerMaxRate,
-                                                   final int minLargeMessageSize,
-                                                   final boolean blockOnAcknowledge,
-                                                   final boolean blockOnNonPersistentSend,
-                                                   final boolean blockOnPersistentSend,
-                                                   final boolean autoGroup,
-                                                   final int maxConnections,
-                                                   final boolean preAcknowledge,
-                                                   final long retryInterval,
-                                                   final double retryIntervalMultiplier,
-                                                   final int reconnectAttempts,
-                                                   final boolean failoverOnServerShutdown,
-                                                   final String[] jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createSimpleConnectionFactory",
-                                 name,
-                                 connectorFactoryClassName,
-                                 connectionLoadBalancingPolicyClassName,
-                                 pingPeriod,
-                                 connectionTTL,
-                                 callTimeout,
-                                 clientID,
-                                 dupsOKBatchSize,
-                                 transactionBatchSize,
-                                 consumerWindowSize,
-                                 consumerMaxRate,
-                                 producerWindowSize,
-                                 producerMaxRate,
-                                 minLargeMessageSize,
-                                 blockOnAcknowledge,
-                                 blockOnNonPersistentSend,
-                                 blockOnPersistentSend,
-                                 autoGroup,
-                                 maxConnections,
-                                 preAcknowledge,
-                                 retryInterval,
-                                 retryIntervalMultiplier,
-                                 reconnectAttempts,
-                                 failoverOnServerShutdown,
-                                 jndiBindings);
-         }
-
-         public void createConnectionFactory(final String name,
-                                             final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                             final String connectionLoadBalancingPolicyClassName,
-                                             final long pingPeriod,
-                                             final long connectionTTL,
-                                             final long callTimeout,
-                                             final String clientID,
-                                             final int dupsOKBatchSize,
-                                             final int transactionBatchSize,
-                                             final int consumerWindowSize,
-                                             final int consumerMaxRate,
-                                             final int producerWindowSize,
-                                             final int producerMaxRate,
-                                             final int minLargeMessageSize,
-                                             final boolean blockOnAcknowledge,
-                                             final boolean blockOnNonPersistentSend,
-                                             final boolean blockOnPersistentSend,
-                                             final boolean autoGroup,
-                                             final int maxConnections,
-                                             final boolean preAcknowledge,
-                                             final long retryInterval,
-                                             final double retryIntervalMultiplier,
-                                             final int reconnectAttempts,
-                                             final boolean failoverOnServerShutdown,
-                                             final String[] jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory",
-                                 name,
-                                 connectorConfigs,
-                                 connectionLoadBalancingPolicyClassName,
-                                 pingPeriod,
-                                 connectionTTL,
-                                 callTimeout,
-                                 clientID,
-                                 dupsOKBatchSize,
-                                 transactionBatchSize,
-                                 consumerWindowSize,
-                                 consumerMaxRate,
-                                 producerWindowSize,
-                                 producerMaxRate,
-                                 minLargeMessageSize,
-                                 blockOnAcknowledge,
-                                 blockOnNonPersistentSend,
-                                 blockOnPersistentSend,
-                                 autoGroup,
-                                 maxConnections,
-                                 preAcknowledge,
-                                 retryInterval,
-                                 retryIntervalMultiplier,
-                                 reconnectAttempts,
-                                 failoverOnServerShutdown,
-                                 jndiBindings);
-         }
-
-         public void createConnectionFactory(final String name,
-                                             final String discoveryGroupName,
-                                             final String discoveryGroupAddress,
-                                             final int discoveryGroupPort,
-                                             final long discoveryGroupRefreshTimeout,
-                                             final long discoveryInitialWait,
-                                             final String connectionLoadBalancingPolicyClassName,
-                                             final long pingPeriod,
-                                             final long connectionTTL,
-                                             final long callTimeout,
-                                             final String clientID,
-                                             final int dupsOKBatchSize,
-                                             final int transactionBatchSize,
-                                             final int consumerWindowSize,
-                                             final int consumerMaxRate,
-                                             final int producerWindowSize,
-                                             final int producerMaxRate,
-                                             final int minLargeMessageSize,
-                                             final boolean blockOnAcknowledge,
-                                             final boolean blockOnNonPersistentSend,
-                                             final boolean blockOnPersistentSend,
-                                             final boolean autoGroup,
-                                             final int maxConnections,
-                                             final boolean preAcknowledge,
-                                             final long retryInterval,
-                                             final double retryIntervalMultiplier,
-                                             final int reconnectAttempts,
-                                             final boolean failoverOnServerShutdown,
-                                             final String[] jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory",
-                                 name,
-                                 discoveryGroupName,
-                                 discoveryGroupAddress,
-                                 discoveryGroupPort,
-                                 discoveryGroupRefreshTimeout,
-                                 discoveryInitialWait,
-                                 connectionLoadBalancingPolicyClassName,
-                                 pingPeriod,
-                                 connectionTTL,
-                                 callTimeout,
-                                 clientID,
-                                 dupsOKBatchSize,
-                                 transactionBatchSize,
-                                 consumerWindowSize,
-                                 consumerMaxRate,
-                                 producerWindowSize,
-                                 producerMaxRate,
-                                 minLargeMessageSize,
-                                 blockOnAcknowledge,
-                                 blockOnNonPersistentSend,
-                                 blockOnPersistentSend,
-                                 autoGroup,
-                                 maxConnections,
-                                 preAcknowledge,
-                                 retryInterval,
-                                 retryIntervalMultiplier,
-                                 reconnectAttempts,
-                                 failoverOnServerShutdown,
-                                 jndiBindings);
          }
 
          public boolean createQueue(final String name, final String jndiBinding) throws Exception

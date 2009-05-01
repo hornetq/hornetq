@@ -22,8 +22,8 @@
 package org.jboss.messaging.ra;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.messaging.core.logging.Logger;
 
@@ -42,7 +42,7 @@ public class JBMRAProperties implements Serializable
 
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMRAProperties.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -54,7 +54,7 @@ public class JBMRAProperties implements Serializable
 
    /** */
    private Long discoveryRefreshTimeout;
-   
+
    /** */
    private Long discoveryInitialWaitTimeout;
 
@@ -83,7 +83,7 @@ public class JBMRAProperties implements Serializable
    private Integer consumerMaxRate;
 
    /** */
-   private Integer sendWindowSize;
+   private Integer producerWindowSize;
 
    /** */
    private Integer producerMaxRate;
@@ -148,39 +148,11 @@ public class JBMRAProperties implements Serializable
    public JBMRAProperties()
    {
       if (trace)
+      {
          log.trace("constructor()");
-
-      discoveryGroupAddress = null;
-      discoveryGroupPort = null;
-      discoveryRefreshTimeout = null;
-      discoveryInitialWaitTimeout = null;
-      loadBalancingPolicyClassName = null;
-      pingPeriod = null;
-      connectionTTL = null;
-      callTimeout = null;
-      dupsOKBatchSize = null;
-      transactionBatchSize = null;
-      consumerWindowSize = null;
-      consumerMaxRate = null;
-      sendWindowSize = null;
-      producerMaxRate = null;
-      minLargeMessageSize = null;
-      blockOnAcknowledge = null;
-      blockOnNonPersistentSend = null;
-      blockOnPersistentSend = null;
-      autoGroup = null;
-      maxConnections = null;
-      preAcknowledge = null;
-      retryInterval = null;
-      retryIntervalMultiplier = null;
-      reconnectAttempts = null;
-      failoverOnServerShutdown = null;
-      userName = null;
-      password = null;
-      clientID = null;
-      useXA = null;
+      }
    }
-   
+
    /**
     * Get the discovery group name
     * @return The value
@@ -188,7 +160,9 @@ public class JBMRAProperties implements Serializable
    public String getDiscoveryGroupAddress()
    {
       if (trace)
+      {
          log.trace("getDiscoveryGroupAddress()");
+      }
 
       return discoveryGroupAddress;
    }
@@ -197,10 +171,12 @@ public class JBMRAProperties implements Serializable
     * Set the discovery group name
     * @param dgn The value
     */
-   public void setDiscoveryGroupAddress(String dgn)
+   public void setDiscoveryGroupAddress(final String dgn)
    {
       if (trace)
+      {
          log.trace("setDiscoveryGroupAddress(" + dgn + ")");
+      }
 
       discoveryGroupAddress = dgn;
    }
@@ -212,7 +188,9 @@ public class JBMRAProperties implements Serializable
    public Integer getDiscoveryGroupPort()
    {
       if (trace)
+      {
          log.trace("getDiscoveryGroupPort()");
+      }
 
       return discoveryGroupPort;
    }
@@ -221,10 +199,12 @@ public class JBMRAProperties implements Serializable
     * Set the discovery group port
     * @param dgp The value
     */
-   public void setDiscoveryGroupPort(Integer dgp)
+   public void setDiscoveryGroupPort(final Integer dgp)
    {
       if (trace)
+      {
          log.trace("setDiscoveryGroupPort(" + dgp + ")");
+      }
 
       discoveryGroupPort = dgp;
    }
@@ -236,7 +216,9 @@ public class JBMRAProperties implements Serializable
    public Long getDiscoveryRefreshTimeout()
    {
       if (trace)
+      {
          log.trace("getDiscoveryRefreshTimeout()");
+      }
 
       return discoveryRefreshTimeout;
    }
@@ -245,10 +227,12 @@ public class JBMRAProperties implements Serializable
     * Set discovery refresh timeout
     * @param discoveryRefreshTimeout The value
     */
-   public void setDiscoveryRefreshTimeout(Long discoveryRefreshTimeout)
+   public void setDiscoveryRefreshTimeout(final Long discoveryRefreshTimeout)
    {
       if (trace)
+      {
          log.trace("setDiscoveryRefreshTimeout(" + discoveryRefreshTimeout + ")");
+      }
 
       this.discoveryRefreshTimeout = discoveryRefreshTimeout;
    }
@@ -260,7 +244,9 @@ public class JBMRAProperties implements Serializable
    public Long getDiscoveryInitialWaitTimeout()
    {
       if (trace)
+      {
          log.trace("getDiscoveryInitialWaitTimeout()");
+      }
 
       return discoveryInitialWaitTimeout;
    }
@@ -269,10 +255,12 @@ public class JBMRAProperties implements Serializable
     * Set discovery initial wait timeout
     * @param discoveryInitialWaitTimeout The value
     */
-   public void setDiscoveryInitialWaitTimeout(Long discoveryInitialWaitTimeout)
+   public void setDiscoveryInitialWaitTimeout(final Long discoveryInitialWaitTimeout)
    {
       if (trace)
+      {
          log.trace("setDiscoveryInitialWaitTimeout(" + discoveryInitialWaitTimeout + ")");
+      }
 
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
    }
@@ -284,7 +272,9 @@ public class JBMRAProperties implements Serializable
    public String getLoadBalancingPolicyClassName()
    {
       if (trace)
+      {
          log.trace("getLoadBalancingPolicyClassName()");
+      }
 
       return loadBalancingPolicyClassName;
    }
@@ -293,10 +283,12 @@ public class JBMRAProperties implements Serializable
     * Set load balancing policy class name
     * @param loadBalancingPolicyClassName The value
     */
-   public void setLoadBalancingPolicyClassName(String loadBalancingPolicyClassName)
+   public void setLoadBalancingPolicyClassName(final String loadBalancingPolicyClassName)
    {
       if (trace)
+      {
          log.trace("setLoadBalancingPolicyClassName(" + loadBalancingPolicyClassName + ")");
+      }
 
       this.loadBalancingPolicyClassName = loadBalancingPolicyClassName;
    }
@@ -308,7 +300,9 @@ public class JBMRAProperties implements Serializable
    public Long getPingPeriod()
    {
       if (trace)
+      {
          log.trace("getPingPeriod()");
+      }
 
       return pingPeriod;
    }
@@ -317,10 +311,12 @@ public class JBMRAProperties implements Serializable
     * Set ping period
     * @param pingPeriod The value
     */
-   public void setPingPeriod(Long pingPeriod)
+   public void setPingPeriod(final Long pingPeriod)
    {
       if (trace)
+      {
          log.trace("setPingPeriod(" + pingPeriod + ")");
+      }
 
       this.pingPeriod = pingPeriod;
    }
@@ -332,7 +328,9 @@ public class JBMRAProperties implements Serializable
    public Long getConnectionTTL()
    {
       if (trace)
+      {
          log.trace("getConnectionTTL()");
+      }
 
       return connectionTTL;
    }
@@ -341,10 +339,12 @@ public class JBMRAProperties implements Serializable
     * Set connection TTL
     * @param connectionTTL The value
     */
-   public void setConnectionTTL(Long connectionTTL)
+   public void setConnectionTTL(final Long connectionTTL)
    {
       if (trace)
+      {
          log.trace("setConnectionTTL(" + connectionTTL + ")");
+      }
 
       this.connectionTTL = connectionTTL;
    }
@@ -356,7 +356,9 @@ public class JBMRAProperties implements Serializable
    public Long getCallTimeout()
    {
       if (trace)
+      {
          log.trace("getCallTimeout()");
+      }
 
       return callTimeout;
    }
@@ -365,10 +367,12 @@ public class JBMRAProperties implements Serializable
     * Set call timeout
     * @param callTimeout The value
     */
-   public void setCallTimeout(Long callTimeout)
+   public void setCallTimeout(final Long callTimeout)
    {
       if (trace)
+      {
          log.trace("setCallTimeout(" + callTimeout + ")");
+      }
 
       this.callTimeout = callTimeout;
    }
@@ -380,7 +384,9 @@ public class JBMRAProperties implements Serializable
    public Integer getDupsOKBatchSize()
    {
       if (trace)
+      {
          log.trace("getDupsOKBatchSize()");
+      }
 
       return dupsOKBatchSize;
    }
@@ -389,10 +395,12 @@ public class JBMRAProperties implements Serializable
     * Set dups ok batch size
     * @param dupsOKBatchSize The value
     */
-   public void setDupsOKBatchSize(Integer dupsOKBatchSize)
+   public void setDupsOKBatchSize(final Integer dupsOKBatchSize)
    {
       if (trace)
+      {
          log.trace("setDupsOKBatchSize(" + dupsOKBatchSize + ")");
+      }
 
       this.dupsOKBatchSize = dupsOKBatchSize;
    }
@@ -404,7 +412,9 @@ public class JBMRAProperties implements Serializable
    public Integer getTransactionBatchSize()
    {
       if (trace)
+      {
          log.trace("getTransactionBatchSize()");
+      }
 
       return transactionBatchSize;
    }
@@ -413,10 +423,12 @@ public class JBMRAProperties implements Serializable
     * Set transaction batch size
     * @param transactionBatchSize The value
     */
-   public void setTransactionBatchSize(Integer transactionBatchSize)
+   public void setTransactionBatchSize(final Integer transactionBatchSize)
    {
       if (trace)
+      {
          log.trace("setTransactionBatchSize(" + transactionBatchSize + ")");
+      }
 
       this.transactionBatchSize = transactionBatchSize;
    }
@@ -428,7 +440,9 @@ public class JBMRAProperties implements Serializable
    public Integer getConsumerWindowSize()
    {
       if (trace)
+      {
          log.trace("getConsumerWindowSize()");
+      }
 
       return consumerWindowSize;
    }
@@ -437,10 +451,12 @@ public class JBMRAProperties implements Serializable
     * Set consumer window size
     * @param consumerWindowSize The value
     */
-   public void setConsumerWindowSize(Integer consumerWindowSize)
+   public void setConsumerWindowSize(final Integer consumerWindowSize)
    {
       if (trace)
+      {
          log.trace("setConsumerWindowSize(" + consumerWindowSize + ")");
+      }
 
       this.consumerWindowSize = consumerWindowSize;
    }
@@ -452,7 +468,9 @@ public class JBMRAProperties implements Serializable
    public Integer getConsumerMaxRate()
    {
       if (trace)
+      {
          log.trace("getConsumerMaxRate()");
+      }
 
       return consumerMaxRate;
    }
@@ -461,36 +479,42 @@ public class JBMRAProperties implements Serializable
     * Set consumer max rate
     * @param consumerMaxRate The value
     */
-   public void setConsumerMaxRate(Integer consumerMaxRate)
+   public void setConsumerMaxRate(final Integer consumerMaxRate)
    {
       if (trace)
+      {
          log.trace("setConsumerMaxRate(" + consumerMaxRate + ")");
+      }
 
       this.consumerMaxRate = consumerMaxRate;
    }
 
    /**
-    * Get send window size
+    * Get producer window size
     * @return The value
     */
-   public Integer getSendWindowSize()
+   public Integer getProducerWindowSize()
    {
       if (trace)
-         log.trace("getSendWindowSize()");
+      {
+         log.trace("getProducerWindowSize()");
+      }
 
-      return sendWindowSize;
+      return producerWindowSize;
    }
 
    /**
-    * Set send window size
-    * @param sendWindowSize The value
+    * Set producer window size
+    * @param producerWindowSize The value
     */
-   public void setSendWindowSize(Integer sendWindowSize)
+   public void setProducerWindowSize(final Integer producerWindowSize)
    {
       if (trace)
-         log.trace("setSendWindowSize(" + sendWindowSize + ")");
+      {
+         log.trace("setProducerWindowSize(" + producerWindowSize + ")");
+      }
 
-      this.sendWindowSize = sendWindowSize;
+      this.producerWindowSize = producerWindowSize;
    }
 
    /**
@@ -500,7 +524,9 @@ public class JBMRAProperties implements Serializable
    public Integer getProducerMaxRate()
    {
       if (trace)
+      {
          log.trace("getProducerMaxRate()");
+      }
 
       return producerMaxRate;
    }
@@ -509,10 +535,12 @@ public class JBMRAProperties implements Serializable
     * Set producer max rate
     * @param producerMaxRate The value
     */
-   public void setProducerMaxRate(Integer producerMaxRate)
+   public void setProducerMaxRate(final Integer producerMaxRate)
    {
       if (trace)
+      {
          log.trace("setProducerMaxRate(" + producerMaxRate + ")");
+      }
 
       this.producerMaxRate = producerMaxRate;
    }
@@ -524,7 +552,9 @@ public class JBMRAProperties implements Serializable
    public Integer getMinLargeMessageSize()
    {
       if (trace)
+      {
          log.trace("getMinLargeMessageSize()");
+      }
 
       return minLargeMessageSize;
    }
@@ -533,10 +563,12 @@ public class JBMRAProperties implements Serializable
     * Set min large message size
     * @param minLargeMessageSize The value
     */
-   public void setMinLargeMessageSize(Integer minLargeMessageSize)
+   public void setMinLargeMessageSize(final Integer minLargeMessageSize)
    {
       if (trace)
+      {
          log.trace("setMinLargeMessageSize(" + minLargeMessageSize + ")");
+      }
 
       this.minLargeMessageSize = minLargeMessageSize;
    }
@@ -548,7 +580,9 @@ public class JBMRAProperties implements Serializable
    public Boolean getBlockOnAcknowledge()
    {
       if (trace)
+      {
          log.trace("getBlockOnAcknowledge()");
+      }
 
       return blockOnAcknowledge;
    }
@@ -557,10 +591,12 @@ public class JBMRAProperties implements Serializable
     * Set block on acknowledge
     * @param blockOnAcknowledge The value
     */
-   public void setBlockOnAcknowledge(Boolean blockOnAcknowledge)
+   public void setBlockOnAcknowledge(final Boolean blockOnAcknowledge)
    {
       if (trace)
+      {
          log.trace("setBlockOnAcknowledge(" + blockOnAcknowledge + ")");
+      }
 
       this.blockOnAcknowledge = blockOnAcknowledge;
    }
@@ -572,7 +608,9 @@ public class JBMRAProperties implements Serializable
    public Boolean getBlockOnNonPersistentSend()
    {
       if (trace)
+      {
          log.trace("getBlockOnNonPersistentSend()");
+      }
 
       return blockOnNonPersistentSend;
    }
@@ -581,10 +619,12 @@ public class JBMRAProperties implements Serializable
     * Set block on non persistent send
     * @param blockOnNonPersistentSend The value
     */
-   public void setBlockOnNonPersistentSend(Boolean blockOnNonPersistentSend)
+   public void setBlockOnNonPersistentSend(final Boolean blockOnNonPersistentSend)
    {
       if (trace)
+      {
          log.trace("setBlockOnNonPersistentSend(" + blockOnNonPersistentSend + ")");
+      }
 
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
    }
@@ -596,7 +636,9 @@ public class JBMRAProperties implements Serializable
    public Boolean getBlockOnPersistentSend()
    {
       if (trace)
+      {
          log.trace("getBlockOnPersistentSend()");
+      }
 
       return blockOnPersistentSend;
    }
@@ -605,10 +647,12 @@ public class JBMRAProperties implements Serializable
     * Set block on persistent send
     * @param blockOnPersistentSend The value
     */
-   public void setBlockOnPersistentSend(Boolean blockOnPersistentSend)
+   public void setBlockOnPersistentSend(final Boolean blockOnPersistentSend)
    {
       if (trace)
+      {
          log.trace("setBlockOnPersistentSend(" + blockOnPersistentSend + ")");
+      }
 
       this.blockOnPersistentSend = blockOnPersistentSend;
    }
@@ -620,7 +664,9 @@ public class JBMRAProperties implements Serializable
    public Boolean getAutoGroup()
    {
       if (trace)
+      {
          log.trace("getAutoGroup()");
+      }
 
       return autoGroup;
    }
@@ -629,10 +675,12 @@ public class JBMRAProperties implements Serializable
     * Set auto group
     * @param autoGroup The value
     */
-   public void setAutoGroup(Boolean autoGroup)
+   public void setAutoGroup(final Boolean autoGroup)
    {
       if (trace)
+      {
          log.trace("setAutoGroup(" + autoGroup + ")");
+      }
 
       this.autoGroup = autoGroup;
    }
@@ -644,7 +692,9 @@ public class JBMRAProperties implements Serializable
    public Integer getMaxConnections()
    {
       if (trace)
+      {
          log.trace("getMaxConnections()");
+      }
 
       return maxConnections;
    }
@@ -653,10 +703,12 @@ public class JBMRAProperties implements Serializable
     * Set max connections
     * @param maxConnections The value
     */
-   public void setMaxConnections(Integer maxConnections)
+   public void setMaxConnections(final Integer maxConnections)
    {
       if (trace)
+      {
          log.trace("setMaxConnections(" + maxConnections + ")");
+      }
 
       this.maxConnections = maxConnections;
    }
@@ -668,7 +720,9 @@ public class JBMRAProperties implements Serializable
    public Boolean getPreAcknowledge()
    {
       if (trace)
+      {
          log.trace("getPreAcknowledge()");
+      }
 
       return preAcknowledge;
    }
@@ -677,10 +731,12 @@ public class JBMRAProperties implements Serializable
     * Set pre acknowledge
     * @param preAcknowledge The value
     */
-   public void setPreAcknowledge(Boolean preAcknowledge)
+   public void setPreAcknowledge(final Boolean preAcknowledge)
    {
       if (trace)
+      {
          log.trace("setPreAcknowledge(" + preAcknowledge + ")");
+      }
 
       this.preAcknowledge = preAcknowledge;
    }
@@ -692,7 +748,9 @@ public class JBMRAProperties implements Serializable
    public Long getRetryInterval()
    {
       if (trace)
+      {
          log.trace("getRetryInterval()");
+      }
 
       return retryInterval;
    }
@@ -701,10 +759,12 @@ public class JBMRAProperties implements Serializable
     * Set retry interval
     * @param retryInterval The value
     */
-   public void setRetryInterval(Long retryInterval)
+   public void setRetryInterval(final Long retryInterval)
    {
       if (trace)
+      {
          log.trace("setRetryInterval(" + retryInterval + ")");
+      }
 
       this.retryInterval = retryInterval;
    }
@@ -716,7 +776,9 @@ public class JBMRAProperties implements Serializable
    public Double getRetryIntervalMultiplier()
    {
       if (trace)
+      {
          log.trace("getRetryIntervalMultiplier()");
+      }
 
       return retryIntervalMultiplier;
    }
@@ -725,10 +787,12 @@ public class JBMRAProperties implements Serializable
     * Set retry interval multiplier
     * @param retryIntervalMultiplier The value
     */
-   public void setRetryIntervalMultiplier(Double retryIntervalMultiplier)
+   public void setRetryIntervalMultiplier(final Double retryIntervalMultiplier)
    {
       if (trace)
+      {
          log.trace("setRetryIntervalMultiplier(" + retryIntervalMultiplier + ")");
+      }
 
       this.retryIntervalMultiplier = retryIntervalMultiplier;
    }
@@ -740,7 +804,9 @@ public class JBMRAProperties implements Serializable
    public Integer getReconnectAttempts()
    {
       if (trace)
+      {
          log.trace("getReconnectAttempts()");
+      }
 
       return reconnectAttempts;
    }
@@ -749,10 +815,12 @@ public class JBMRAProperties implements Serializable
     * Set reconnect attempts
     * @param reconnectAttempts The value
     */
-   public void setReconnectAttempts(Integer reconnectAttempts)
+   public void setReconnectAttempts(final Integer reconnectAttempts)
    {
       if (trace)
+      {
          log.trace("setReconnectAttempts(" + reconnectAttempts + ")");
+      }
 
       this.reconnectAttempts = reconnectAttempts;
    }
@@ -764,7 +832,9 @@ public class JBMRAProperties implements Serializable
    public Boolean isFailoverOnServerShutdown()
    {
       if (trace)
+      {
          log.trace("isFailoverOnServerShutdown()");
+      }
 
       return failoverOnServerShutdown;
    }
@@ -773,10 +843,12 @@ public class JBMRAProperties implements Serializable
     * Set failover on server shutdown
     * @param failoverOnServerShutdown The value
     */
-   public void setFailoverOnServerShutdown(Boolean failoverOnServerShutdown)
+   public void setFailoverOnServerShutdown(final Boolean failoverOnServerShutdown)
    {
       if (trace)
+      {
          log.trace("setFailoverOnServerShutdown(" + failoverOnServerShutdown + ")");
+      }
 
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
@@ -788,7 +860,9 @@ public class JBMRAProperties implements Serializable
    public String getUserName()
    {
       if (trace)
+      {
          log.trace("getUserName()");
+      }
 
       return userName;
    }
@@ -797,14 +871,16 @@ public class JBMRAProperties implements Serializable
     * Set the user name
     * @param userName The value
     */
-   public void setUserName(String userName)
+   public void setUserName(final String userName)
    {
       if (trace)
+      {
          log.trace("setUserName(" + userName + ")");
+      }
 
       this.userName = userName;
    }
-  
+
    /**
     * Get the password
     * @return The value
@@ -812,7 +888,9 @@ public class JBMRAProperties implements Serializable
    public String getPassword()
    {
       if (trace)
+      {
          log.trace("getPassword()");
+      }
 
       return password;
    }
@@ -821,14 +899,16 @@ public class JBMRAProperties implements Serializable
     * Set the password
     * @param password The value
     */
-   public void setPassword(String password)
+   public void setPassword(final String password)
    {
       if (trace)
+      {
          log.trace("setPassword(****)");
+      }
 
       this.password = password;
    }
-  
+
    /**
     * Get the client id
     * @return The value
@@ -836,7 +916,9 @@ public class JBMRAProperties implements Serializable
    public String getClientID()
    {
       if (trace)
+      {
          log.trace("getClientID()");
+      }
 
       return clientID;
    }
@@ -845,14 +927,16 @@ public class JBMRAProperties implements Serializable
     * Set the client id
     * @param clientID The value
     */
-   public void setClientID(String clientID)
+   public void setClientID(final String clientID)
    {
       if (trace)
+      {
          log.trace("setClientID(" + clientID + ")");
+      }
 
       this.clientID = clientID;
    }
-  
+
    /**
     * Get the use XA flag
     * @return The value
@@ -860,7 +944,9 @@ public class JBMRAProperties implements Serializable
    public Boolean getUseXA()
    {
       if (trace)
+      {
          log.trace("getUseXA()");
+      }
 
       return useXA;
    }
@@ -869,12 +955,14 @@ public class JBMRAProperties implements Serializable
     * Set the use XA flag
     * @param xa The value
     */
-   public void setUseXA(Boolean xa)
+   public void setUseXA(final Boolean xa)
    {
       if (trace)
+      {
          log.trace("setUseXA(" + xa + ")");
+      }
 
-      this.useXA = xa;
+      useXA = xa;
    }
 
    /**
@@ -884,10 +972,14 @@ public class JBMRAProperties implements Serializable
    public boolean isUseXA()
    {
       if (trace)
+      {
          log.trace("isUseXA()");
+      }
 
       if (useXA == null)
+      {
          return false;
+      }
 
       return useXA.booleanValue();
    }
@@ -897,59 +989,67 @@ public class JBMRAProperties implements Serializable
     * @param obj Object with which to compare
     * @return True if this object is the same as the obj argument; false otherwise.
     */
-   public boolean equals(Object obj)
+   @Override
+   public boolean equals(final Object obj)
    {
       if (trace)
+      {
          log.trace("equals(" + obj + ")");
+      }
 
-      if (obj == null) 
+      if (obj == null)
+      {
          return false;
-    
+      }
+
       if (obj instanceof JBMRAProperties)
       {
-         JBMRAProperties you = (JBMRAProperties) obj;
-         return (Util.compare(discoveryGroupAddress, you.getDiscoveryGroupAddress()) &&
-                 Util.compare(discoveryGroupPort, you.getDiscoveryGroupPort()) &&
-                 Util.compare(discoveryRefreshTimeout, you.getDiscoveryRefreshTimeout()) &&
-                 Util.compare(discoveryInitialWaitTimeout, you.getDiscoveryInitialWaitTimeout()) &&
-                 Util.compare(loadBalancingPolicyClassName, you.getLoadBalancingPolicyClassName()) &&
-                 Util.compare(pingPeriod, you.getPingPeriod()) &&
-                 Util.compare(connectionTTL, you.getConnectionTTL()) &&
-                 Util.compare(callTimeout, you.getCallTimeout()) &&
-                 Util.compare(dupsOKBatchSize, you.getDupsOKBatchSize()) &&
-                 Util.compare(transactionBatchSize, you.getTransactionBatchSize()) &&
-                 Util.compare(consumerWindowSize, you.getConsumerWindowSize()) &&
-                 Util.compare(consumerMaxRate, you.getConsumerMaxRate()) &&
-                 Util.compare(sendWindowSize, you.getSendWindowSize()) &&
-                 Util.compare(producerMaxRate, you.getProducerMaxRate()) &&
-                 Util.compare(minLargeMessageSize, you.getMinLargeMessageSize()) &&
-                 Util.compare(blockOnAcknowledge, you.getBlockOnAcknowledge()) &&
-                 Util.compare(blockOnNonPersistentSend, you.getBlockOnNonPersistentSend()) &&
-                 Util.compare(blockOnPersistentSend, you.getBlockOnPersistentSend()) &&
-                 Util.compare(autoGroup, you.getAutoGroup()) &&
-                 Util.compare(maxConnections, you.getMaxConnections()) &&
-                 Util.compare(preAcknowledge, you.getPreAcknowledge()) &&
-                 Util.compare(retryInterval, you.getRetryInterval()) &&
-                 Util.compare(retryIntervalMultiplier, you.getRetryIntervalMultiplier()) &&
-                 Util.compare(reconnectAttempts, you.getReconnectAttempts()) &&
-                 Util.compare(failoverOnServerShutdown, you.isFailoverOnServerShutdown()) &&
-                 Util.compare(userName, you.getUserName()) &&
-                 Util.compare(password, you.getPassword()) &&
-                 Util.compare(clientID, you.getClientID()) &&
-                 Util.compare(useXA, you.getUseXA()));
+         JBMRAProperties you = (JBMRAProperties)obj;
+         return Util.compare(discoveryGroupAddress, you.getDiscoveryGroupAddress()) && Util.compare(discoveryGroupPort,
+                                                                                                    you.getDiscoveryGroupPort()) &&
+                Util.compare(discoveryRefreshTimeout, you.getDiscoveryRefreshTimeout()) &&
+                Util.compare(discoveryInitialWaitTimeout, you.getDiscoveryInitialWaitTimeout()) &&
+                Util.compare(loadBalancingPolicyClassName, you.getLoadBalancingPolicyClassName()) &&
+                Util.compare(pingPeriod, you.getPingPeriod()) &&
+                Util.compare(connectionTTL, you.getConnectionTTL()) &&
+                Util.compare(callTimeout, you.getCallTimeout()) &&
+                Util.compare(dupsOKBatchSize, you.getDupsOKBatchSize()) &&
+                Util.compare(transactionBatchSize, you.getTransactionBatchSize()) &&
+                Util.compare(consumerWindowSize, you.getConsumerWindowSize()) &&
+                Util.compare(consumerMaxRate, you.getConsumerMaxRate()) &&
+                Util.compare(producerWindowSize, you.getProducerWindowSize()) &&
+                Util.compare(producerMaxRate, you.getProducerMaxRate()) &&
+                Util.compare(minLargeMessageSize, you.getMinLargeMessageSize()) &&
+                Util.compare(blockOnAcknowledge, you.getBlockOnAcknowledge()) &&
+                Util.compare(blockOnNonPersistentSend, you.getBlockOnNonPersistentSend()) &&
+                Util.compare(blockOnPersistentSend, you.getBlockOnPersistentSend()) &&
+                Util.compare(autoGroup, you.getAutoGroup()) &&
+                Util.compare(maxConnections, you.getMaxConnections()) &&
+                Util.compare(preAcknowledge, you.getPreAcknowledge()) &&
+                Util.compare(retryInterval, you.getRetryInterval()) &&
+                Util.compare(retryIntervalMultiplier, you.getRetryIntervalMultiplier()) &&
+                Util.compare(reconnectAttempts, you.getReconnectAttempts()) &&
+                Util.compare(failoverOnServerShutdown, you.isFailoverOnServerShutdown()) &&
+                Util.compare(userName, you.getUserName()) &&
+                Util.compare(password, you.getPassword()) &&
+                Util.compare(clientID, you.getClientID()) &&
+                Util.compare(useXA, you.getUseXA());
       }
-    
+
       return false;
    }
-  
+
    /**
     * Return the hash code for the object
     * @return The hash code
     */
+   @Override
    public int hashCode()
    {
       if (trace)
+      {
          log.trace("hashCode()");
+      }
 
       int hash = 7;
 
@@ -965,7 +1065,7 @@ public class JBMRAProperties implements Serializable
       hash += 31 * hash + (transactionBatchSize != null ? transactionBatchSize.hashCode() : 0);
       hash += 31 * hash + (consumerWindowSize != null ? consumerWindowSize.hashCode() : 0);
       hash += 31 * hash + (consumerMaxRate != null ? consumerMaxRate.hashCode() : 0);
-      hash += 31 * hash + (sendWindowSize != null ? sendWindowSize.hashCode() : 0);
+      hash += 31 * hash + (producerWindowSize != null ? producerWindowSize.hashCode() : 0);
       hash += 31 * hash + (producerMaxRate != null ? producerMaxRate.hashCode() : 0);
       hash += 31 * hash + (minLargeMessageSize != null ? minLargeMessageSize.hashCode() : 0);
       hash += 31 * hash + (blockOnAcknowledge != null ? blockOnAcknowledge.hashCode() : 0);
@@ -986,7 +1086,7 @@ public class JBMRAProperties implements Serializable
       return hash;
    }
 
-   public void setConnectorClassName(String connectorClassName)
+   public void setConnectorClassName(final String connectorClassName)
    {
       this.connectorClassName = connectorClassName;
    }
@@ -995,10 +1095,10 @@ public class JBMRAProperties implements Serializable
    {
       return connectorClassName;
    }
-   
-   public void setConnectionParameters(Map<String, Object> config)
+
+   public void setConnectionParameters(final Map<String, Object> config)
    {
-      this.connectionParameters = config;
+      connectionParameters = config;
    }
 
    public Map<String, Object> getConnectionParameters()
@@ -1010,10 +1110,10 @@ public class JBMRAProperties implements Serializable
    {
       return backupConnectionParameters;
    }
-   
-   public void setBackupConnectionParameters(Map<String, Object> config)
+
+   public void setBackupConnectionParameters(final Map<String, Object> config)
    {
-      this.backupConnectionParameters = config;
+      backupConnectionParameters = config;
    }
 
    public String getBackupConnectorClassName()
@@ -1021,8 +1121,8 @@ public class JBMRAProperties implements Serializable
       return backupConnectorClassName;
    }
 
-   public void setBackupConnectorClassName(String connectorClassName)
+   public void setBackupConnectorClassName(final String connectorClassName)
    {
-      this.backupConnectorClassName = connectorClassName;
+      backupConnectorClassName = connectorClassName;
    }
 }

@@ -59,7 +59,7 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMSessionFactoryImpl.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -79,59 +79,67 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    private String clientID;
 
    /** The connection type */
-   private int type;
+   private final int type;
 
    /** Whether we are started */
    private boolean started = false;
-   
+
    /** The managed connection factory */
-   private JBMManagedConnectionFactory mcf;
+   private final JBMManagedConnectionFactory mcf;
 
    /** The connection manager */
    private ConnectionManager cm;
 
    /** The sessions */
-   private Set sessions = new HashSet();
+   private final Set sessions = new HashSet();
 
    /** The temporary queues */
-   private Set tempQueues = new HashSet();
+   private final Set tempQueues = new HashSet();
 
    /** The temporary topics */
-   private Set tempTopics = new HashSet();
-   
+   private final Set tempTopics = new HashSet();
+
    /**
     * Constructor
     * @param mcf The managed connection factory
     * @param cm The connection manager
     * @param type The connection type
     */
-   public JBMSessionFactoryImpl(JBMManagedConnectionFactory mcf, ConnectionManager cm, int type)
+   public JBMSessionFactoryImpl(final JBMManagedConnectionFactory mcf, final ConnectionManager cm, final int type)
    {
       this.mcf = mcf;
 
       if (cm == null)
+      {
          this.cm = new JBMConnectionManager();
-      else 
+      }
+      else
+      {
          this.cm = cm;
+      }
 
       this.type = type;
 
       if (trace)
+      {
          log.trace("constructor(" + mcf + ", " + cm + ", " + type);
+      }
    }
 
    /**
     * Set the naming reference
     * @param reference The reference
     */
-   public void setReference(Reference reference)
+   public void setReference(final Reference reference)
    {
       if (trace)
+      {
          log.trace("setReference(" + reference + ")");
+      }
 
       this.reference = reference;
    }
-    
+
    /**
     * Get the naming reference
     * @return The reference
@@ -139,31 +147,37 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    public Reference getReference()
    {
       if (trace)
+      {
          log.trace("getReference()");
+      }
 
       return reference;
    }
-    
+
    /**
     * Set the user name
     * @param name The user name
     */
-   public void setUserName(String name) 
+   public void setUserName(final String name)
    {
       if (trace)
+      {
          log.trace("setUserName(" + name + ")");
+      }
 
-      this.userName = name;
+      userName = name;
    }
-    
+
    /**
     * Set the password
     * @param password The password
     */
-   public void setPassword(String password) 
+   public void setPassword(final String password)
    {
       if (trace)
+      {
          log.trace("setPassword(****)");
+      }
 
       this.password = password;
    }
@@ -176,29 +190,35 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    public String getClientID() throws JMSException
    {
       if (trace)
+      {
          log.trace("getClientID()");
+      }
 
       checkClosed();
 
       if (clientID == null)
+      {
          return ((JBMResourceAdapter)mcf.getResourceAdapter()).getProperties().getClientID();
+      }
 
       return clientID;
    }
-    
+
    /**
     * Set the client ID -- throws IllegalStateException
     * @param cID The client ID
     * @exception JMSException Thrown if an error occurs
     */
-   public void setClientID(String cID) throws JMSException
+   public void setClientID(final String cID) throws JMSException
    {
       if (trace)
+      {
          log.trace("setClientID(" + cID + ")");
+      }
 
       throw new IllegalStateException(ISE);
    }
-    
+
    /**
     * Create a queue session
     * @param transacted Use transactions
@@ -206,33 +226,42 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The queue session
     * @exception JMSException Thrown if an error occurs
     */
-   public QueueSession createQueueSession(boolean transacted, int acknowledgeMode) throws JMSException
+   public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       if (trace)
+      {
          log.trace("createQueueSession(" + transacted + ", " + acknowledgeMode + ")");
+      }
 
       checkClosed();
 
       if (type == JBMConnectionFactory.TOPIC_CONNECTION || type == JBMConnectionFactory.XA_TOPIC_CONNECTION)
+      {
          throw new IllegalStateException("Can not get a queue session from a topic connection");
+      }
 
       return allocateConnection(transacted, acknowledgeMode, type);
    }
-    
+
    /**
     * Create a XA queue session
     * @return The XA queue session
     * @exception JMSException Thrown if an error occurs
     */
    public XAQueueSession createXAQueueSession() throws JMSException
-   { 
+   {
       if (trace)
+      {
          log.trace("createXAQueueSession()");
+      }
 
       checkClosed();
 
-      if (type == JBMConnectionFactory.CONNECTION || type == JBMConnectionFactory.TOPIC_CONNECTION || type == JBMConnectionFactory.XA_TOPIC_CONNECTION)
+      if (type == JBMConnectionFactory.CONNECTION || type == JBMConnectionFactory.TOPIC_CONNECTION ||
+          type == JBMConnectionFactory.XA_TOPIC_CONNECTION)
+      {
          throw new IllegalStateException("Can not get a topic session from a queue connection");
+      }
 
       return allocateConnection(type);
    }
@@ -246,14 +275,26 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The connection consumer
     * @exception JMSException Thrown if an error occurs
     */
-   public ConnectionConsumer createConnectionConsumer(Queue queue, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException 
+   public ConnectionConsumer createConnectionConsumer(final Queue queue,
+                                                      final String messageSelector,
+                                                      final ServerSessionPool sessionPool,
+                                                      final int maxMessages) throws JMSException
    {
       if (trace)
-         log.trace("createConnectionConsumer(" + queue + ", " + messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+      {
+         log.trace("createConnectionConsumer(" + queue +
+                   ", " +
+                   messageSelector +
+                   ", " +
+                   sessionPool +
+                   ", " +
+                   maxMessages +
+                   ")");
+      }
 
       throw new IllegalStateException(ISE);
    }
-    
+
    /**
     * Create a topic session
     * @param transacted Use transactions
@@ -261,15 +302,19 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The topic session
     * @exception JMSException Thrown if an error occurs
     */
-   public TopicSession createTopicSession(boolean transacted, int acknowledgeMode) throws JMSException
-   { 
+   public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
+   {
       if (trace)
+      {
          log.trace("createTopicSession(" + transacted + ", " + acknowledgeMode + ")");
+      }
 
       checkClosed();
 
       if (type == JBMConnectionFactory.QUEUE_CONNECTION || type == JBMConnectionFactory.XA_QUEUE_CONNECTION)
+      {
          throw new IllegalStateException("Can not get a topic session from a queue connection");
+      }
 
       return allocateConnection(transacted, acknowledgeMode, type);
    }
@@ -280,14 +325,19 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @exception JMSException Thrown if an error occurs
     */
    public XATopicSession createXATopicSession() throws JMSException
-   { 
+   {
       if (trace)
+      {
          log.trace("createXATopicSession()");
+      }
 
       checkClosed();
 
-      if (type == JBMConnectionFactory.CONNECTION || type == JBMConnectionFactory.QUEUE_CONNECTION || type == JBMConnectionFactory.XA_QUEUE_CONNECTION)
+      if (type == JBMConnectionFactory.CONNECTION || type == JBMConnectionFactory.QUEUE_CONNECTION ||
+          type == JBMConnectionFactory.XA_QUEUE_CONNECTION)
+      {
          throw new IllegalStateException("Can not get a topic session from a queue connection");
+      }
 
       return allocateConnection(type);
    }
@@ -301,13 +351,25 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The connection consumer
     * @exception JMSException Thrown if an error occurs
     */
-   public ConnectionConsumer createConnectionConsumer(Topic topic, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException 
+   public ConnectionConsumer createConnectionConsumer(final Topic topic,
+                                                      final String messageSelector,
+                                                      final ServerSessionPool sessionPool,
+                                                      final int maxMessages) throws JMSException
    {
       if (trace)
-         log.trace("createConnectionConsumer(" + topic + ", " + messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+      {
+         log.trace("createConnectionConsumer(" + topic +
+                   ", " +
+                   messageSelector +
+                   ", " +
+                   sessionPool +
+                   ", " +
+                   maxMessages +
+                   ")");
+      }
 
       throw new IllegalStateException(ISE);
-   }		       
+   }
 
    /**
     * Create a durable connection consumer -- throws IllegalStateException
@@ -319,10 +381,25 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The connection consumer
     * @exception JMSException Thrown if an error occurs
     */
-   public ConnectionConsumer createDurableConnectionConsumer(Topic topic, String subscriptionName, String messageSelector, ServerSessionPool sessionPool, int maxMessages) throws JMSException
+   public ConnectionConsumer createDurableConnectionConsumer(final Topic topic,
+                                                             final String subscriptionName,
+                                                             final String messageSelector,
+                                                             final ServerSessionPool sessionPool,
+                                                             final int maxMessages) throws JMSException
    {
       if (trace)
-         log.trace("createConnectionConsumer(" + topic + ", " + subscriptionName + ", " + messageSelector + ", " + sessionPool + ", " + maxMessages + ")");
+      {
+         log.trace("createConnectionConsumer(" + topic +
+                   ", " +
+                   subscriptionName +
+                   ", " +
+                   messageSelector +
+                   ", " +
+                   sessionPool +
+                   ", " +
+                   maxMessages +
+                   ")");
+      }
 
       throw new IllegalStateException(ISE);
    }
@@ -335,10 +412,14 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The connection consumer
     * @exception JMSException Thrown if an error occurs
     */
-   public ConnectionConsumer createConnectionConsumer(Destination destination, ServerSessionPool pool, int maxMessages) throws JMSException
+   public ConnectionConsumer createConnectionConsumer(final Destination destination,
+                                                      final ServerSessionPool pool,
+                                                      final int maxMessages) throws JMSException
    {
       if (trace)
+      {
          log.trace("createConnectionConsumer(" + destination + ", " + pool + ", " + maxMessages + ")");
+      }
 
       throw new IllegalStateException(ISE);
    }
@@ -352,10 +433,15 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The connection consumer
     * @exception JMSException Thrown if an error occurs
     */
-   public ConnectionConsumer createConnectionConsumer(Destination destination, String name, ServerSessionPool pool, int maxMessages) throws JMSException
+   public ConnectionConsumer createConnectionConsumer(final Destination destination,
+                                                      final String name,
+                                                      final ServerSessionPool pool,
+                                                      final int maxMessages) throws JMSException
    {
       if (trace)
+      {
          log.trace("createConnectionConsumer(" + destination + ", " + name + ", " + pool + ", " + maxMessages + ")");
+      }
 
       throw new IllegalStateException(ISE);
    }
@@ -367,10 +453,12 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The session
     * @exception JMSException Thrown if an error occurs
     */
-   public Session createSession(boolean transacted, int acknowledgeMode) throws JMSException
+   public Session createSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       if (trace)
+      {
          log.trace("createSession(" + transacted + ", " + acknowledgeMode + ")");
+      }
 
       checkClosed();
       return allocateConnection(transacted, acknowledgeMode, type);
@@ -384,7 +472,9 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    public XASession createXASession() throws JMSException
    {
       if (trace)
+      {
          log.trace("createXASession()");
+      }
 
       checkClosed();
       return allocateConnection(type);
@@ -398,12 +488,14 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    public ConnectionMetaData getMetaData() throws JMSException
    {
       if (trace)
+      {
          log.trace("getMetaData()");
+      }
 
       checkClosed();
       return mcf.getMetaData();
    }
-    
+
    /**
     * Get the exception listener -- throws IllegalStateException
     * @return The exception listener
@@ -412,20 +504,24 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    public ExceptionListener getExceptionListener() throws JMSException
    {
       if (trace)
+      {
          log.trace("getExceptionListener()");
+      }
 
       throw new IllegalStateException(ISE);
    }
-    
+
    /**
     * Set the exception listener -- throws IllegalStateException
     * @param listener The exception listener
     * @exception JMSException Thrown if an error occurs
     */
-   public void setExceptionListener(ExceptionListener listener) throws JMSException
+   public void setExceptionListener(final ExceptionListener listener) throws JMSException
    {
       if (trace)
+      {
          log.trace("setExceptionListener(" + listener + ")");
+      }
 
       throw new IllegalStateException(ISE);
    }
@@ -439,21 +535,25 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
       checkClosed();
 
       if (trace)
+      {
          log.trace("start() " + this);
+      }
 
       synchronized (sessions)
       {
          if (started)
+         {
             return;
+         }
          started = true;
          for (Iterator i = sessions.iterator(); i.hasNext();)
          {
-            JBMSession session = (JBMSession) i.next();
+            JBMSession session = (JBMSession)i.next();
             session.start();
          }
       }
    }
-    
+
    /**
     * Stop -- throws IllegalStateException
     * @exception JMSException Thrown if an error occurs
@@ -461,7 +561,9 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    public void stop() throws JMSException
    {
       if (trace)
+      {
          log.trace("stop() " + this);
+      }
 
       throw new IllegalStateException(ISE);
    }
@@ -473,10 +575,14 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    public void close() throws JMSException
    {
       if (trace)
+      {
          log.trace("close() " + this);
-      
+      }
+
       if (closed)
+      {
          return;
+      }
 
       closed = true;
 
@@ -484,7 +590,7 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
       {
          for (Iterator i = sessions.iterator(); i.hasNext();)
          {
-            JBMSession session = (JBMSession) i.next();
+            JBMSession session = (JBMSession)i.next();
             try
             {
                session.closeSession();
@@ -496,16 +602,18 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
             i.remove();
          }
       }
-      
+
       synchronized (tempQueues)
       {
          for (Iterator i = tempQueues.iterator(); i.hasNext();)
          {
-            TemporaryQueue temp = (TemporaryQueue) i.next();
+            TemporaryQueue temp = (TemporaryQueue)i.next();
             try
             {
                if (trace)
+               {
                   log.trace("Closing temporary queue " + temp + " for " + this);
+               }
                temp.delete();
             }
             catch (Throwable t)
@@ -515,16 +623,18 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
             i.remove();
          }
       }
-      
+
       synchronized (tempTopics)
       {
          for (Iterator i = tempTopics.iterator(); i.hasNext();)
          {
-            TemporaryTopic temp = (TemporaryTopic) i.next();
+            TemporaryTopic temp = (TemporaryTopic)i.next();
             try
             {
                if (trace)
+               {
                   log.trace("Closing temporary topic " + temp + " for " + this);
+               }
                temp.delete();
             }
             catch (Throwable t)
@@ -541,42 +651,48 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @param session The session
     * @exception JMSException Thrown if an error occurs
     */
-   public void closeSession(JBMSession session) throws JMSException
+   public void closeSession(final JBMSession session) throws JMSException
    {
       if (trace)
+      {
          log.trace("closeSession(" + session + ")");
-      
+      }
+
       synchronized (sessions)
       {
          sessions.remove(session);
       }
    }
-   
+
    /**
     * Add temporary queue
     * @param temp The temporary queue
     */
-   public void addTemporaryQueue(TemporaryQueue temp)
+   public void addTemporaryQueue(final TemporaryQueue temp)
    {
       if (trace)
+      {
          log.trace("addTemporaryQueue(" + temp + ")");
-      
-      synchronized(tempQueues)
+      }
+
+      synchronized (tempQueues)
       {
          tempQueues.add(temp);
       }
    }
-   
+
    /**
     * Add temporary topic
     * @param temp The temporary topic
     */
-   public void addTemporaryTopic(TemporaryTopic temp)
+   public void addTemporaryTopic(final TemporaryTopic temp)
    {
       if (trace)
+      {
          log.trace("addTemporaryTopic(" + temp + ")");
-      
-      synchronized(tempTopics)
+      }
+
+      synchronized (tempTopics)
       {
          tempTopics.add(temp);
       }
@@ -588,17 +704,21 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The session 
     * @exception JMSException Thrown if an error occurs
     */
-   protected JBMSession allocateConnection(int sessionType) throws JMSException
+   protected JBMSession allocateConnection(final int sessionType) throws JMSException
    {
       if (trace)
+      {
          log.trace("allocateConnection(" + sessionType + ")");
+      }
 
       try
       {
          synchronized (sessions)
          {
             if (sessions.isEmpty() == false)
+            {
                throw new IllegalStateException("Only allowed one session per connection. See the J2EE spec, e.g. J2EE1.4 Section 6.6");
+            }
 
             JBMConnectionRequestInfo info = new JBMConnectionRequestInfo(sessionType);
             info.setUserName(userName);
@@ -607,19 +727,25 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
             info.setDefaults(((JBMResourceAdapter)mcf.getResourceAdapter()).getProperties());
 
             if (trace)
+            {
                log.trace("Allocating session for " + this + " with request info=" + info);
+            }
 
-            JBMSession session = (JBMSession) cm.allocateConnection(mcf, info);
+            JBMSession session = (JBMSession)cm.allocateConnection(mcf, info);
 
             try
             {
                if (trace)
+               {
                   log.trace("Allocated  " + this + " session=" + session);
+               }
 
                session.setJBMSessionFactory(this);
 
                if (started)
+               {
                   session.start();
+               }
 
                sessions.add(session);
 
@@ -635,16 +761,20 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
                {
                }
                if (t instanceof Exception)
-                  throw (Exception) t;
+               {
+                  throw (Exception)t;
+               }
                else
+               {
                   throw new RuntimeException("Unexpected error: ", t);
+               }
             }
          }
       }
       catch (Exception e)
       {
          log.error("Could not create session", e);
-         
+
          JMSException je = new JMSException("Could not create a session: " + e.getMessage());
          je.setLinkedException(e);
          throw je;
@@ -659,20 +789,26 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
     * @return The session 
     * @exception JMSException Thrown if an error occurs
     */
-   protected JBMSession allocateConnection(boolean transacted, int acknowledgeMode, int sessionType) throws JMSException
+   protected JBMSession allocateConnection(final boolean transacted, int acknowledgeMode, final int sessionType) throws JMSException
    {
       if (trace)
+      {
          log.trace("allocateConnection(" + transacted + ", " + acknowledgeMode + ", " + sessionType + ")");
+      }
 
       try
       {
          synchronized (sessions)
          {
             if (sessions.isEmpty() == false)
+            {
                throw new IllegalStateException("Only allowed one session per connection. See the J2EE spec, e.g. J2EE1.4 Section 6.6");
+            }
 
             if (transacted)
+            {
                acknowledgeMode = Session.SESSION_TRANSACTED;
+            }
 
             JBMConnectionRequestInfo info = new JBMConnectionRequestInfo(transacted, acknowledgeMode, sessionType);
             info.setUserName(userName);
@@ -680,19 +816,25 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
             info.setClientID(clientID);
 
             if (trace)
+            {
                log.trace("Allocating session for " + this + " with request info=" + info);
+            }
 
-            JBMSession session = (JBMSession) cm.allocateConnection(mcf, info);
+            JBMSession session = (JBMSession)cm.allocateConnection(mcf, info);
 
             try
             {
                if (trace)
+               {
                   log.trace("Allocated  " + this + " session=" + session);
+               }
 
                session.setJBMSessionFactory(this);
 
                if (started)
+               {
                   session.start();
+               }
 
                sessions.add(session);
 
@@ -708,16 +850,20 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
                {
                }
                if (t instanceof Exception)
-                  throw (Exception) t;
+               {
+                  throw (Exception)t;
+               }
                else
+               {
                   throw new RuntimeException("Unexpected error: ", t);
+               }
             }
          }
       }
       catch (Exception e)
       {
          log.error("Could not create session", e);
-         
+
          JMSException je = new JMSException("Could not create a session: " + e.getMessage());
          je.setLinkedException(e);
          throw je;
@@ -731,9 +877,13 @@ public class JBMSessionFactoryImpl implements JBMSessionFactory, Referenceable
    protected void checkClosed() throws IllegalStateException
    {
       if (trace)
+      {
          log.trace("checkClosed()" + this);
+      }
 
       if (closed)
+      {
          throw new IllegalStateException("The connection is closed");
+      }
    }
 }

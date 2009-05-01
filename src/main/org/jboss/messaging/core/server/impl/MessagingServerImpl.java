@@ -82,6 +82,7 @@ import org.jboss.messaging.core.transaction.impl.TransactionImpl;
 import org.jboss.messaging.core.version.Version;
 import org.jboss.messaging.utils.ExecutorFactory;
 import org.jboss.messaging.utils.Future;
+import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -316,9 +317,26 @@ public class MessagingServerImpl implements MessagingServer
          replicatingChannel = null;
       }
 
-      pagingManager.stop();
       resourceManager.stop();
       postOffice.stop();
+
+      // Need to shutdown pools before shutting down paging manager to make sure everything is written ok
+
+      scheduledPool.shutdown();
+      threadPool.shutdown();
+      try
+      {
+         if (!threadPool.awaitTermination(30000, TimeUnit.MILLISECONDS))
+         {
+            log.warn("Timed out waiting for pool to terminate");
+         }
+      }
+      catch (InterruptedException e)
+      {
+         // Ignore
+      }
+
+      pagingManager.stop();
 
       pagingManager = null;
       securityStore = null;
@@ -329,20 +347,6 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       messagingServerControl = null;
-
-      scheduledPool.shutdown();
-      threadPool.shutdown();
-      try
-      {
-         if (!threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
-         {
-            log.warn("Timed out waiting for pool to terminate");
-         }
-      }
-      catch (InterruptedException e)
-      {
-         // Ignore
-      }
 
       sessions.clear();
 
@@ -456,7 +460,7 @@ public class MessagingServerImpl implements MessagingServer
                                       final boolean autoCommitAcks,
                                       final boolean preAcknowledge,
                                       final boolean xa,
-                                      final int sendWindowSize) throws Exception
+                                      final int producerWindowSize) throws Exception
    {
       doCreateSession(name,
                       replicatedChannelID,
@@ -470,7 +474,7 @@ public class MessagingServerImpl implements MessagingServer
                       autoCommitAcks,
                       preAcknowledge,
                       xa,
-                      sendWindowSize,
+                      producerWindowSize,
                       true);
    }
 
@@ -591,6 +595,7 @@ public class MessagingServerImpl implements MessagingServer
                                                                                                     ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
                                                                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                                                                                                     scheduledPool,
+                                                                                                    threadPool,
                                                                                                     listener);
 
             if (replicatingConnection == null)
@@ -859,16 +864,9 @@ public class MessagingServerImpl implements MessagingServer
 
    private void initialisePart1() throws Exception
    {
-      managementService = new ManagementServiceImpl(mbeanServer, configuration);
-
-      remotingService = new RemotingServiceImpl(configuration, this, managementService);
-   }
-
-   private void initialisePart2() throws Exception
-   {
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
-      ThreadFactory tFactory = new org.jboss.messaging.utils.JBMThreadFactory("JBM-threads");
+      ThreadFactory tFactory = new JBMThreadFactory("JBM-server-threads" + System.identityHashCode(this), false);
 
       if (configuration.getThreadPoolMaxSize() == -1)
       {
@@ -882,8 +880,16 @@ public class MessagingServerImpl implements MessagingServer
       executorFactory = new OrderedExecutorFactory(threadPool);
 
       scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                      new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads"));
+                                                      new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads",
+                                                                                                     false));
 
+      managementService = new ManagementServiceImpl(mbeanServer, configuration);
+
+      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool);
+   }
+
+   private void initialisePart2() throws Exception
+   {
       // Create the hard-wired components
 
       if (configuration.isEnableFileDeployment())

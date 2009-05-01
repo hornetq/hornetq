@@ -83,10 +83,11 @@ public class ReconnectTest extends UnitTestCase
 
       final int reconnectAttempts = 1;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -159,10 +160,11 @@ public class ReconnectTest extends UnitTestCase
 
       final int reconnectAttempts = -1;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -247,10 +249,11 @@ public class ReconnectTest extends UnitTestCase
 
       final long asyncFailDelay = 2000;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
            
@@ -368,10 +371,11 @@ public class ReconnectTest extends UnitTestCase
 
       final int reconnectAttempts = 3;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -443,10 +447,11 @@ public class ReconnectTest extends UnitTestCase
 
       final int reconnectAttempts = 10;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -509,10 +514,11 @@ public class ReconnectTest extends UnitTestCase
 
       final int reconnectAttempts = -1;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -599,10 +605,11 @@ public class ReconnectTest extends UnitTestCase
 
       final int reconnectAttempts = -1;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 

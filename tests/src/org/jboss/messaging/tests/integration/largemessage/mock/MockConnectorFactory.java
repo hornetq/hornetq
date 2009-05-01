@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.integration.largemessage.mock;
 
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
@@ -55,7 +56,8 @@ public class MockConnectorFactory implements ConnectorFactory
     */
    public Connector createConnector(final Map<String, Object> configuration,
                                     final BufferHandler handler,
-                                    final ConnectionLifeCycleListener listener)
+                                    final ConnectionLifeCycleListener listener,
+                                    final Executor executor)
    {
       return new MockConnector(configuration, handler, listener);
    }

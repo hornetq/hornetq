@@ -38,7 +38,8 @@ import javax.jms.XATopicConnection;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: 71554 $
  */
-public interface JBMSessionFactory extends Connection, TopicConnection, QueueConnection, XAConnection, XATopicConnection, XAQueueConnection
+public interface JBMSessionFactory extends Connection, TopicConnection, QueueConnection, XAConnection,
+         XATopicConnection, XAQueueConnection
 {
    /** Error message for strict behaviour */
    String ISE = "This method is not applicable inside the application server. See the J2EE spec, e.g. J2EE1.4 Section 6.6";
@@ -54,7 +55,7 @@ public interface JBMSessionFactory extends Connection, TopicConnection, QueueCon
     * @param temp The temporary topic
     */
    void addTemporaryTopic(TemporaryTopic temp);
-   
+
    /** 
     * Notification that a session is closed
     * @param session The session

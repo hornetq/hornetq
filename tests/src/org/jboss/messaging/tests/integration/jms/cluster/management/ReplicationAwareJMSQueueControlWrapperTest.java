@@ -32,6 +32,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
@@ -49,6 +50,9 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ReplicationAwareJMSQueueControlWrapperTest.class);
+
+   
    // Attributes ----------------------------------------------------
 
    private JMSServerManagerImpl liveServerManager;
@@ -322,7 +326,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       liveServerManager.createQueue(queueName, queueName);
       backupServerManager.createQueue(queueName, queueName);
       queue = new JBossQueue(queueName);
-
+      
       String otherQueueName = randomString();     
       liveServerManager.createQueue(otherQueueName, otherQueueName);
       backupServerManager.createQueue(otherQueueName, otherQueueName);

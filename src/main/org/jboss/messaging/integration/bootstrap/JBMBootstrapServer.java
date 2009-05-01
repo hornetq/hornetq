@@ -69,8 +69,6 @@ public class JBMBootstrapServer extends BasicBootstrap
     */
    public static void main(final String[] args) throws Exception
    {
-      log.info("Starting server");
-
       JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
       
       bootstrap.run();
@@ -81,7 +79,6 @@ public class JBMBootstrapServer extends BasicBootstrap
       try
       {
          super.run();
-         log.info("JBM Server Started");
       }
       catch (RuntimeException e)
       {
@@ -211,7 +208,6 @@ public class JBMBootstrapServer extends BasicBootstrap
 
    public void shutDown()
    {
-      log.info("Shutting down");
       ListIterator<KernelDeployment> iterator = deployments.listIterator(deployments.size());
       while (iterator.hasPrevious())
       {

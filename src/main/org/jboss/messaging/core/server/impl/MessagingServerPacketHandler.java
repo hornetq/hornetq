@@ -226,7 +226,7 @@ public class MessagingServerPacketHandler implements ChannelHandler
             response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
          }
       }
-
+      
       channel1.send(response);
    }
 

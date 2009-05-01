@@ -24,15 +24,15 @@ package org.jboss.messaging.ra.inflow;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.ra.JBMResourceAdapter;
-import org.jboss.messaging.ra.Util;
-
 import javax.jms.Session;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
+
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.ra.JBMResourceAdapter;
+import org.jboss.messaging.ra.Util;
 
 /**
  * The activation spec
@@ -48,13 +48,13 @@ public class JBMActivationSpec implements ActivationSpec
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMActivationSpec.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
-   
+
    /** The transport config, changing the default configured from the RA */
    private Map<String, Object> connectionParameters = new HashMap<String, Object>();
-   
+
    public String strConnectionParameters;
 
    /** The transport type, changing the default configured from the RA */
@@ -107,31 +107,33 @@ public class JBMActivationSpec implements ActivationSpec
 
    /** Unspecified redelivery */
    private Boolean redeliverUnspecified;
-   
+
    /** Transaction timeout */
    private Integer transactionTimeout;
-   
+
    /** Is same RM override */
    private Boolean isSameRMOverrideValue;
-   
+
    private boolean useJNDI = true;
-   
+
    /** Force clear on shutdown */
    private Boolean forceClearOnShutdown;
-   
+
    /** Force clear internal */
    private Long forceClearOnShutdownInterval;
-   
+
    /** Force clear attempts */
    private Integer forceClearAttempts;
-   
+
    /**
     * Constructor
     */
    public JBMActivationSpec()
    {
       if (trace)
+      {
          log.trace("constructor()");
+      }
 
       ra = null;
       destination = null;
@@ -163,13 +165,13 @@ public class JBMActivationSpec implements ActivationSpec
    public ResourceAdapter getResourceAdapter()
    {
       if (trace)
+      {
          log.trace("getResourceAdapter()");
+      }
 
       return ra;
    }
 
-   
-   
    /**
     * @return the useJNDI
     */
@@ -181,9 +183,9 @@ public class JBMActivationSpec implements ActivationSpec
    /**
     * @param useJNDI the useJNDI to set
     */
-   public void setUseJNDI(boolean value)
+   public void setUseJNDI(final boolean value)
    {
-      this.useJNDI = value;
+      useJNDI = value;
    }
 
    /**
@@ -191,12 +193,15 @@ public class JBMActivationSpec implements ActivationSpec
     * @param ra The resource adapter
     * @exception ResourceException Thrown if incorrect resource adapter
     */
-   public void setResourceAdapter(ResourceAdapter ra) throws ResourceException
+   public void setResourceAdapter(final ResourceAdapter ra) throws ResourceException
    {
       if (trace)
+      {
          log.trace("setResourceAdapter(" + ra + ")");
+      }
 
-      if (ra == null || !(ra instanceof JBMResourceAdapter)) {
+      if (ra == null || !(ra instanceof JBMResourceAdapter))
+      {
          throw new ResourceException("Resource adapter is " + ra);
       }
 
@@ -210,7 +215,9 @@ public class JBMActivationSpec implements ActivationSpec
    public String getDestination()
    {
       if (trace)
+      {
          log.trace("getDestination()");
+      }
 
       return destination;
    }
@@ -219,12 +226,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the destination
     * @param value The value
     */
-   public void setDestination(String value)
+   public void setDestination(final String value)
    {
       if (trace)
+      {
          log.trace("setDestination(" + value + ")");
+      }
 
-      this.destination = value;
+      destination = value;
    }
 
    /**
@@ -234,7 +243,9 @@ public class JBMActivationSpec implements ActivationSpec
    public String getDestinationType()
    {
       if (trace)
+      {
          log.trace("getDestinationType()");
+      }
 
       return destinationType;
    }
@@ -243,12 +254,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the destination type
     * @param value The value
     */
-   public void setDestinationType(String value)
+   public void setDestinationType(final String value)
    {
       if (trace)
+      {
          log.trace("setDestinationType(" + value + ")");
+      }
 
-      this.destinationType = value;
+      destinationType = value;
    }
 
    /**
@@ -258,7 +271,9 @@ public class JBMActivationSpec implements ActivationSpec
    public String getMessageSelector()
    {
       if (trace)
+      {
          log.trace("getMessageSelector()");
+      }
 
       return messageSelector;
    }
@@ -267,12 +282,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the message selector
     * @param value The value
     */
-   public void setMessageSelector(String value)
+   public void setMessageSelector(final String value)
    {
       if (trace)
+      {
          log.trace("setMessageSelector(" + value + ")");
+      }
 
-      this.messageSelector = value;
+      messageSelector = value;
    }
 
    /**
@@ -282,33 +299,51 @@ public class JBMActivationSpec implements ActivationSpec
    public String getAcknowledgeMode()
    {
       if (trace)
+      {
          log.trace("getAcknowledgeMode()");
+      }
 
       if (sessionTransacted.booleanValue())
+      {
          return "Transacted";
+      }
       else if (Session.DUPS_OK_ACKNOWLEDGE == acknowledgeMode)
+      {
          return "Dups-ok-acknowledge";
+      }
       else
+      {
          return "Auto-acknowledge";
+      }
    }
 
    /**
     * Set the acknowledge mode
     * @param value The value
     */
-   public void setAcknowledgeMode(String value)
+   public void setAcknowledgeMode(final String value)
    {
       if (trace)
+      {
          log.trace("setAcknowledgeMode(" + value + ")");
+      }
 
       if ("DUPS_OK_ACKNOWLEDGE".equals(value) || "Dups-ok-acknowledge".equals(value))
-         this.acknowledgeMode = Session.DUPS_OK_ACKNOWLEDGE;
+      {
+         acknowledgeMode = Session.DUPS_OK_ACKNOWLEDGE;
+      }
       else if ("AUTO_ACKNOWLEDGE".equals(value) || "Auto-acknowledge".equals(value))
-         this.acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
+      {
+         acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
+      }
       else if ("SESSION_TRANSACTED".equals(value))
-         this.acknowledgeMode = Session.SESSION_TRANSACTED;
+      {
+         acknowledgeMode = Session.SESSION_TRANSACTED;
+      }
       else
+      {
          throw new IllegalArgumentException("Unsupported acknowledgement mode " + value);
+      }
    }
 
    /**
@@ -317,10 +352,14 @@ public class JBMActivationSpec implements ActivationSpec
    public int getAcknowledgeModeInt()
    {
       if (trace)
+      {
          log.trace("getAcknowledgeMode()");
+      }
 
       if (sessionTransacted.booleanValue())
+      {
          return Session.SESSION_TRANSACTED;
+      }
 
       return acknowledgeMode;
    }
@@ -332,24 +371,32 @@ public class JBMActivationSpec implements ActivationSpec
    public String getSubscriptionDurability()
    {
       if (trace)
+      {
          log.trace("getSubscriptionDurability()");
+      }
 
       if (subscriptionDurability)
+      {
          return "Durable";
+      }
       else
+      {
          return "NonDurable";
+      }
    }
 
    /**
     * Set the subscription durability
     * @param value The value
     */
-   public void setSubscriptionDurability(String value)
+   public void setSubscriptionDurability(final String value)
    {
       if (trace)
+      {
          log.trace("setSubscriptionDurability(" + value + ")");
+      }
 
-      this.subscriptionDurability = "Durable".equals(value);
+      subscriptionDurability = "Durable".equals(value);
    }
 
    /**
@@ -359,7 +406,9 @@ public class JBMActivationSpec implements ActivationSpec
    public boolean isSubscriptionDurable()
    {
       if (trace)
+      {
          log.trace("isSubscriptionDurable()");
+      }
 
       return subscriptionDurability;
    }
@@ -371,7 +420,9 @@ public class JBMActivationSpec implements ActivationSpec
    public String getSubscriptionName()
    {
       if (trace)
+      {
          log.trace("getSubscriptionName()");
+      }
 
       return subscriptionName;
    }
@@ -380,12 +431,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the subscription name
     * @param value The value
     */
-   public void setSubscriptionName(String value)
+   public void setSubscriptionName(final String value)
    {
       if (trace)
+      {
          log.trace("setSubscriptionName(" + value + ")");
+      }
 
-      this.subscriptionName = value;
+      subscriptionName = value;
    }
 
    /**
@@ -395,7 +448,9 @@ public class JBMActivationSpec implements ActivationSpec
    public String getClientId()
    {
       if (trace)
+      {
          log.trace("getClientId()");
+      }
 
       if (clientId == null)
       {
@@ -408,12 +463,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the client id
     * @param value The value
     */
-   public void setClientId(String value)
+   public void setClientId(final String value)
    {
       if (trace)
+      {
          log.trace("setClientId(" + value + ")");
+      }
 
-      this.clientId = value;
+      clientId = value;
    }
 
    /**
@@ -423,8 +480,10 @@ public class JBMActivationSpec implements ActivationSpec
    public String getUser()
    {
       if (trace)
+      {
          log.trace("getUser()");
-      
+      }
+
       if (user == null)
       {
          return ra.getUserName();
@@ -439,12 +498,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the user
     * @param value The value
     */
-   public void setUser(String value)
+   public void setUser(final String value)
    {
       if (trace)
+      {
          log.trace("setUser(" + value + ")");
+      }
 
-      this.user = value;
+      user = value;
    }
 
    /**
@@ -454,8 +515,10 @@ public class JBMActivationSpec implements ActivationSpec
    public String getPassword()
    {
       if (trace)
+      {
          log.trace("getPassword()");
-      
+      }
+
       if (password == null)
       {
          return ra.getPassword();
@@ -470,12 +533,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the password
     * @param value The value
     */
-   public void setPassword(String value)
+   public void setPassword(final String value)
    {
       if (trace)
+      {
          log.trace("setPassword(" + value + ")");
+      }
 
-      this.password = value;
+      password = value;
    }
 
    /**
@@ -485,7 +550,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Integer getMaxMessages()
    {
       if (trace)
+      {
          log.trace("getMaxMessages()");
+      }
 
       return maxMessages;
    }
@@ -494,12 +561,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the numer of max messages
     * @param value The value
     */
-   public void setMaxMessages(Integer value)
+   public void setMaxMessages(final Integer value)
    {
       if (trace)
+      {
          log.trace("setMaxMessages(" + value + ")");
+      }
 
-      this.maxMessages = value;
+      maxMessages = value;
    }
 
    /**
@@ -509,10 +578,14 @@ public class JBMActivationSpec implements ActivationSpec
    public int getMaxMessagesInt()
    {
       if (trace)
+      {
          log.trace("getMaxMessagesInt()");
+      }
 
       if (maxMessages == null)
+      {
          return 0;
+      }
 
       return maxMessages.intValue();
    }
@@ -524,7 +597,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Integer getMinSession()
    {
       if (trace)
+      {
          log.trace("getMinSession()");
+      }
 
       return minSession;
    }
@@ -533,12 +608,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the number of min session
     * @param value The value
     */
-   public void setMinSession(Integer value)
+   public void setMinSession(final Integer value)
    {
       if (trace)
+      {
          log.trace("setMinSession(" + value + ")");
+      }
 
-      this.minSession = value;
+      minSession = value;
    }
 
    /**
@@ -548,10 +625,14 @@ public class JBMActivationSpec implements ActivationSpec
    public int getMinSessionInt()
    {
       if (trace)
+      {
          log.trace("getMinSessionInt()");
+      }
 
       if (minSession == null)
+      {
          return 0;
+      }
 
       return minSession.intValue();
    }
@@ -563,7 +644,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Integer getMaxSession()
    {
       if (trace)
+      {
          log.trace("getMaxSession()");
+      }
 
       return maxSession;
    }
@@ -572,10 +655,12 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the number of max session
     * @param value The value
     */
-   public void setMaxSession(Integer value)
+   public void setMaxSession(final Integer value)
    {
       if (trace)
+      {
          log.trace("setMaxSession(" + value + ")");
+      }
 
       maxSession = value;
    }
@@ -587,10 +672,14 @@ public class JBMActivationSpec implements ActivationSpec
    public int getMaxSessionInt()
    {
       if (trace)
+      {
          log.trace("getMaxSessionInt()");
+      }
 
       if (maxSession == null)
+      {
          return 0;
+      }
 
       return maxSession.intValue();
    }
@@ -602,7 +691,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Long getKeepAlive()
    {
       if (trace)
+      {
          log.trace("getKeepAlive()");
+      }
 
       return keepAlive;
    }
@@ -611,12 +702,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the keep alive
     * @param value The value
     */
-   public void setKeepAlive(Long value)
+   public void setKeepAlive(final Long value)
    {
       if (trace)
+      {
          log.trace("setKeepAlive(" + value + ")");
+      }
 
-      this.keepAlive = value;
+      keepAlive = value;
    }
 
    /**
@@ -626,10 +719,14 @@ public class JBMActivationSpec implements ActivationSpec
    public long getKeepAliveLong()
    {
       if (trace)
+      {
          log.trace("getKeepAliveLong()");
+      }
 
       if (keepAlive == null)
+      {
          return 0;
+      }
 
       return keepAlive.longValue();
    }
@@ -641,7 +738,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Boolean getSessionTransacted()
    {
       if (trace)
+      {
          log.trace("getSessionTransacted()");
+      }
 
       return sessionTransacted;
    }
@@ -650,12 +749,14 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the session transacted
     * @param value The value
     */
-   public void setSessionTransacted(Boolean value)
+   public void setSessionTransacted(final Boolean value)
    {
       if (trace)
+      {
          log.trace("setTransactionTimeout(" + value + ")");
+      }
 
-      this.sessionTransacted = value;
+      sessionTransacted = value;
    }
 
    /**
@@ -665,13 +766,18 @@ public class JBMActivationSpec implements ActivationSpec
    public boolean isSessionTransacted()
    {
       if (trace)
+      {
          log.trace("isSessionTransacted()");
+      }
 
       if (sessionTransacted == null)
+      {
          return false;
+      }
 
       return sessionTransacted.booleanValue();
    }
+
    /**
     * Get the redeliver upspecified
     * @return The value
@@ -679,7 +785,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Boolean getRedeliverUnspecified()
    {
       if (trace)
+      {
          log.trace("getRedeliverUnspecified()");
+      }
 
       return redeliverUnspecified;
    }
@@ -688,14 +796,16 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the redeliver unspecified
     * @param value The value
     */
-   public void setRedeliverUnspecified(Boolean value)
+   public void setRedeliverUnspecified(final Boolean value)
    {
       if (trace)
+      {
          log.trace("setRedeliverUnspecified(" + value + ")");
+      }
 
-      this.redeliverUnspecified = value;
+      redeliverUnspecified = value;
    }
-   
+
    /**
     * Get the transaction timeout
     * @return The value
@@ -703,7 +813,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Integer getTransactionTimeout()
    {
       if (trace)
+      {
          log.trace("getTransactionTimeout()");
+      }
 
       return transactionTimeout;
    }
@@ -712,14 +824,16 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the transaction timeout
     * @param value The value
     */
-   public void setTransactionTimeout(Integer value)
+   public void setTransactionTimeout(final Integer value)
    {
       if (trace)
+      {
          log.trace("setTransactionTimeout(" + value + ")");
+      }
 
       transactionTimeout = value;
    }
-   
+
    /**
     * Get the is same rm override
     * @return The value
@@ -727,7 +841,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Boolean getIsSameRMOverrideValue()
    {
       if (trace)
+      {
          log.trace("getIsSameRMOverrideValue()");
+      }
 
       return isSameRMOverrideValue;
    }
@@ -736,10 +852,12 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the is same RM override
     * @param value The value
     */
-   public void setIsSameRMOverrideValue(Boolean value)
+   public void setIsSameRMOverrideValue(final Boolean value)
    {
       if (trace)
+      {
          log.trace("setIsSameRMOverrideValue(" + value + ")");
+      }
 
       isSameRMOverrideValue = value;
    }
@@ -751,7 +869,9 @@ public class JBMActivationSpec implements ActivationSpec
    public Boolean getForceClearOnShutdown()
    {
       if (trace)
+      {
          log.trace("getForceClearOnShutdown()");
+      }
 
       return forceClearOnShutdown;
    }
@@ -760,14 +880,16 @@ public class JBMActivationSpec implements ActivationSpec
     * Set the force clear on shutdown
     * @param value The value
     */
-   public void setForceClearOnShutdown(Boolean value)
+   public void setForceClearOnShutdown(final Boolean value)
    {
       if (trace)
+      {
          log.trace("setForceClearOnShutdown(" + value + ")");
+      }
 
-      this.forceClearOnShutdown = value;
-   }   
-   
+      forceClearOnShutdown = value;
+   }
+
    /**
     * Get force clear on shutdown
     * @return The value
@@ -775,10 +897,14 @@ public class JBMActivationSpec implements ActivationSpec
    public boolean isForceClearOnShutdown()
    {
       if (trace)
+      {
          log.trace("isForceClearOnShutdown()");
+      }
 
       if (forceClearOnShutdown == null)
+      {
          return false;
+      }
 
       return forceClearOnShutdown.booleanValue();
    }
@@ -790,23 +916,27 @@ public class JBMActivationSpec implements ActivationSpec
    public Long getForceClearOnShutdownInterval()
    {
       if (trace)
+      {
          log.trace("getForceClearOnShutdownInterval()");
+      }
 
       return forceClearOnShutdownInterval;
    }
-   
+
    /**
     * Set the force clear on shutdown interval
     * @param value The value
     */
-   public void setForceClearOnShutdownInterval(Long value)
+   public void setForceClearOnShutdownInterval(final Long value)
    {
       if (trace)
+      {
          log.trace("setForceClearOnShutdownInterval(" + value + ")");
+      }
 
       forceClearOnShutdownInterval = value;
    }
-   
+
    /**
     * Get force clear attempts
     * @return The value
@@ -814,19 +944,23 @@ public class JBMActivationSpec implements ActivationSpec
    public Integer getForceClearAttempts()
    {
       if (trace)
+      {
          log.trace("getForceClearAttempts()");
+      }
 
       return forceClearAttempts;
    }
-   
+
    /**
     * Set the force clear attempts
     * @param value The value
     */
-   public void setForceClearAttempts(Integer value)
+   public void setForceClearAttempts(final Integer value)
    {
       if (trace)
+      {
          log.trace("setForceClearAttempts(" + value + ")");
+      }
 
       forceClearAttempts = value;
    }
@@ -838,10 +972,14 @@ public class JBMActivationSpec implements ActivationSpec
    public void validate() throws InvalidPropertyException
    {
       if (trace)
+      {
          log.trace("validate()");
+      }
 
       if (destination == null || destination.trim().equals(""))
+      {
          throw new InvalidPropertyException("Destination is mandatory");
+      }
    }
 
    /**
@@ -851,18 +989,18 @@ public class JBMActivationSpec implements ActivationSpec
    {
       return strConnectionParameters;
    }
-   
+
    public Map<String, Object> getParsedConnectionParameters()
    {
       return connectionParameters;
    }
 
-   public void setConnectionParameters(String configuration)
+   public void setConnectionParameters(final String configuration)
    {
-      this.strConnectionParameters = configuration;
-      this.connectionParameters = Util.parseConfig(configuration);
+      strConnectionParameters = configuration;
+      connectionParameters = Util.parseConfig(configuration);
    }
-   
+
    /**
     * @return the connectorClassName
     */
@@ -870,10 +1008,10 @@ public class JBMActivationSpec implements ActivationSpec
    {
       return connectorClassName;
    }
-   
-   public void setConnectorClassName(String value)
+
+   public void setConnectorClassName(final String value)
    {
-      this.connectorClassName = value;
+      connectorClassName = value;
    }
 
    /**
@@ -888,18 +1026,28 @@ public class JBMActivationSpec implements ActivationSpec
       buffer.append(" destination=").append(destination);
       buffer.append(" destinationType=").append(destinationType);
       if (messageSelector != null)
+      {
          buffer.append(" selector=").append(messageSelector);
+      }
       buffer.append(" tx=").append(sessionTransacted);
       if (sessionTransacted == false)
+      {
          buffer.append(" ack=").append(getAcknowledgeMode());
+      }
       buffer.append(" durable=").append(subscriptionDurability);
       if (clientId != null)
+      {
          buffer.append(" clientID=").append(clientId);
+      }
       if (subscriptionName != null)
+      {
          buffer.append(" subscription=").append(subscriptionName);
+      }
       buffer.append(" user=").append(user);
       if (password != null)
+      {
          buffer.append(" password=").append("****");
+      }
       buffer.append(" maxMessages=").append(maxMessages);
       buffer.append(" minSession=").append(minSession);
       buffer.append(" maxSession=").append(maxSession);
@@ -907,24 +1055,24 @@ public class JBMActivationSpec implements ActivationSpec
       buffer.append(')');
       return buffer.toString();
    }
-   
-   //here for backwards compatibilty
-   public void setUseDLQ(boolean b)
-   {
-      
-   }
 
-   public void setDLQJNDIName(String name)
+   // here for backwards compatibilty
+   public void setUseDLQ(final boolean b)
    {
 
    }
 
-   public void setDLQMaxResent(int maxResent)
+   public void setDLQJNDIName(final String name)
    {
 
    }
 
-   public void setProviderAdapterJNDI(String jndi)
+   public void setDLQMaxResent(final int maxResent)
+   {
+
+   }
+
+   public void setProviderAdapterJNDI(final String jndi)
    {
 
    }

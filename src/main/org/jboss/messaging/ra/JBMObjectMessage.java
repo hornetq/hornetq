@@ -39,7 +39,7 @@ public class JBMObjectMessage extends JBMMessage implements ObjectMessage
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMObjectMessage.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -48,12 +48,14 @@ public class JBMObjectMessage extends JBMMessage implements ObjectMessage
     * @param message the message
     * @param session the session
     */
-   public JBMObjectMessage(ObjectMessage message, JBMSession session)
+   public JBMObjectMessage(final ObjectMessage message, final JBMSession session)
    {
       super(message, session);
 
       if (trace)
+      {
          log.trace("constructor(" + message + ", " + session + ")");
+      }
    }
 
    /**
@@ -64,21 +66,25 @@ public class JBMObjectMessage extends JBMMessage implements ObjectMessage
    public Serializable getObject() throws JMSException
    {
       if (trace)
+      {
          log.trace("getObject()");
+      }
 
-      return ((ObjectMessage) message).getObject();
+      return ((ObjectMessage)message).getObject();
    }
-   
+
    /**
     * Set the object
     * @param object The object
     * @exception JMSException Thrown if an error occurs
     */
-   public void setObject(Serializable object) throws JMSException
+   public void setObject(final Serializable object) throws JMSException
    {
       if (trace)
+      {
          log.trace("setObject(" + object + ")");
+      }
 
-      ((ObjectMessage) message).setObject(object);
+      ((ObjectMessage)message).setObject(object);
    }
 }

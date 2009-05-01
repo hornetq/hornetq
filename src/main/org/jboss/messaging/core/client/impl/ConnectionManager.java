@@ -46,10 +46,10 @@ public interface ConnectionManager
                                final int minLargeMessageSize,
                                final boolean blockOnAcknowledge,
                                final boolean autoGroup,
-                               final int sendWindowSize,
+                               final int producerWindowSize,
                                final int consumerWindowSize,
-                               final int consumerMaxRate,
                                final int producerMaxRate,
+                               final int consumerMaxRate,
                                final boolean blockOnNonPersistentSend,
                                final boolean blockOnPersistentSend) throws MessagingException;
 

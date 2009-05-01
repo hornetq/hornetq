@@ -37,33 +37,39 @@ public class JBMMetaData implements ManagedConnectionMetaData
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMMetaData.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The managed connection */
-   private JBMManagedConnection mc;
-   
+   private final JBMManagedConnection mc;
+
    /**
     * Constructor
     * @param mc The managed connection
     */
-   public JBMMetaData(JBMManagedConnection mc) {
+   public JBMMetaData(final JBMManagedConnection mc)
+   {
       if (trace)
+      {
          log.trace("constructor(" + mc + ")");
+      }
 
       this.mc = mc;
    }
-   
+
    /**
     * Get the EIS product name
     * @return The name
     * @exception ResourceException Thrown if operation fails
     */
-   public String getEISProductName() throws ResourceException {
+   public String getEISProductName() throws ResourceException
+   {
       if (trace)
+      {
          log.trace("getEISProductName()");
-      
+      }
+
       return "JBoss Messaging";
    }
 
@@ -72,9 +78,12 @@ public class JBMMetaData implements ManagedConnectionMetaData
     * @return The version
     * @exception ResourceException Thrown if operation fails
     */
-   public String getEISProductVersion() throws ResourceException {
+   public String getEISProductVersion() throws ResourceException
+   {
       if (trace)
+      {
          log.trace("getEISProductVersion()");
+      }
 
       return "2.0";
    }
@@ -84,21 +93,27 @@ public class JBMMetaData implements ManagedConnectionMetaData
     * @return The number
     * @exception ResourceException Thrown if operation fails
     */
-   public int getMaxConnections() throws ResourceException {
+   public int getMaxConnections() throws ResourceException
+   {
       if (trace)
+      {
          log.trace("getMaxConnections()");
+      }
 
       return 0;
    }
-    
+
    /**
     * Get the user name
     * @return The user name
     * @exception ResourceException Thrown if operation fails
     */
-   public String getUserName() throws ResourceException {
+   public String getUserName() throws ResourceException
+   {
       if (trace)
+      {
          log.trace("getUserName()");
+      }
 
       return mc.getUserName();
    }

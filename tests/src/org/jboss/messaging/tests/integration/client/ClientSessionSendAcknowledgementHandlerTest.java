@@ -78,11 +78,11 @@ public class ClientSessionSendAcknowledgementHandlerTest extends ServiceTestBase
    public void testSendAcknowledgements() throws Exception
    {
       ClientSessionFactory csf = createInVMFactory();
-
-      ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
-
+      
       csf.setProducerWindowSize(1024);
 
+      ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
+      
       session.createQueue(address, queueName, false);
 
       ClientProducer prod = session.createProducer(address);

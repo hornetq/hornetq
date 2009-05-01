@@ -53,7 +53,7 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
    private static boolean trace = log.isTraceEnabled();
 
    /** The managed connection factory */
-   private JBMManagedConnectionFactory mcf;
+   private final JBMManagedConnectionFactory mcf;
 
    /** The connection manager */
    private ConnectionManager cm;
@@ -66,10 +66,12 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @param mcf The managed connection factory
     * @param cm The connection manager
     */
-   public JBMConnectionFactoryImpl(JBMManagedConnectionFactory mcf, ConnectionManager cm) 
+   public JBMConnectionFactoryImpl(final JBMManagedConnectionFactory mcf, final ConnectionManager cm)
    {
       if (trace)
+      {
          log.trace("constructor(" + mcf + ", " + cm + ")");
+      }
 
       this.mcf = mcf;
 
@@ -78,57 +80,71 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
          // This is standalone usage, no appserver
          this.cm = new JBMConnectionManager();
          if (trace)
+         {
             log.trace("Created new ConnectionManager=" + this.cm);
+         }
       }
       else
+      {
          this.cm = cm;
+      }
 
       if (trace)
+      {
          log.trace("Using ManagedConnectionFactory=" + mcf + ", ConnectionManager=" + cm);
+      }
    }
 
    /**
     * Set the reference
     * @param reference The reference
     */
-   public void setReference(Reference reference) 
+   public void setReference(final Reference reference)
    {
       if (trace)
+      {
          log.trace("setReference(" + reference + ")");
+      }
 
       this.reference = reference;
    }
-    
+
    /**
     * Get the reference
     * @return The reference
     */
-   public Reference getReference() 
+   public Reference getReference()
    {
       if (trace)
+      {
          log.trace("getReference()");
+      }
 
       return reference;
    }
-   
+
    /**
     * Create a queue connection
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public QueueConnection createQueueConnection() throws JMSException 
+   public QueueConnection createQueueConnection() throws JMSException
    {
       if (trace)
+      {
          log.trace("createQueueConnection()");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, QUEUE_CONNECTION);
 
       if (trace)
+      {
          log.trace("Created queue connection: " + s);
-      
+      }
+
       return s;
    }
-   
+
    /**
     * Create a queue connection
     * @param userName The user name
@@ -136,39 +152,47 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public QueueConnection createQueueConnection(String userName, String password) throws JMSException 
+   public QueueConnection createQueueConnection(final String userName, final String password) throws JMSException
    {
       if (trace)
+      {
          log.trace("createQueueConnection(" + userName + ", ****)");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, QUEUE_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
 
       if (trace)
+      {
          log.trace("Created queue connection: " + s);
-      
+      }
+
       return s;
-   } 
+   }
 
    /**
     * Create a topic connection
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public TopicConnection createTopicConnection() throws JMSException 
+   public TopicConnection createTopicConnection() throws JMSException
    {
       if (trace)
+      {
          log.trace("createTopicConnection()");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, TOPIC_CONNECTION);
 
       if (trace)
+      {
          log.trace("Created topic connection: " + s);
+      }
 
       return s;
    }
-   
+
    /**
     * Create a topic connection
     * @param userName The user name
@@ -176,17 +200,21 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public TopicConnection createTopicConnection(String userName, String password) throws JMSException 
+   public TopicConnection createTopicConnection(final String userName, final String password) throws JMSException
    {
       if (trace)
+      {
          log.trace("createTopicConnection(" + userName + ", ****)");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, TOPIC_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
-      
+
       if (trace)
+      {
          log.trace("Created topic connection: " + s);
+      }
 
       return s;
    }
@@ -196,15 +224,19 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public Connection createConnection() throws JMSException 
+   public Connection createConnection() throws JMSException
    {
       if (trace)
+      {
          log.trace("createConnection()");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, CONNECTION);
 
       if (trace)
+      {
          log.trace("Created connection: " + s);
+      }
 
       return s;
    }
@@ -216,39 +248,47 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public Connection createConnection(String userName, String password) throws JMSException
+   public Connection createConnection(final String userName, final String password) throws JMSException
    {
       if (trace)
+      {
          log.trace("createConnection(" + userName + ", ****)");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
-      
+
       if (trace)
+      {
          log.trace("Created connection: " + s);
+      }
 
       return s;
-   }  
+   }
 
    /**
     * Create a XA queue connection
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public XAQueueConnection createXAQueueConnection() throws JMSException 
+   public XAQueueConnection createXAQueueConnection() throws JMSException
    {
       if (trace)
+      {
          log.trace("createXAQueueConnection()");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, XA_QUEUE_CONNECTION);
 
       if (trace)
+      {
          log.trace("Created queue connection: " + s);
-      
+      }
+
       return s;
    }
-   
+
    /**
     * Create a XA  queue connection
     * @param userName The user name
@@ -256,39 +296,47 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public XAQueueConnection createXAQueueConnection(String userName, String password) throws JMSException 
+   public XAQueueConnection createXAQueueConnection(final String userName, final String password) throws JMSException
    {
       if (trace)
+      {
          log.trace("createXAQueueConnection(" + userName + ", ****)");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, XA_QUEUE_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
 
       if (trace)
+      {
          log.trace("Created queue connection: " + s);
-      
+      }
+
       return s;
-   } 
+   }
 
    /**
     * Create a XA topic connection
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public XATopicConnection createXATopicConnection() throws JMSException 
+   public XATopicConnection createXATopicConnection() throws JMSException
    {
       if (trace)
+      {
          log.trace("createXATopicConnection()");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, XA_TOPIC_CONNECTION);
 
       if (trace)
+      {
          log.trace("Created topic connection: " + s);
+      }
 
       return s;
    }
-   
+
    /**
     * Create a XA topic connection
     * @param userName The user name
@@ -296,17 +344,21 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public XATopicConnection createXATopicConnection(String userName, String password) throws JMSException 
+   public XATopicConnection createXATopicConnection(final String userName, final String password) throws JMSException
    {
       if (trace)
+      {
          log.trace("createXATopicConnection(" + userName + ", ****)");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, XA_TOPIC_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
-      
+
       if (trace)
+      {
          log.trace("Created topic connection: " + s);
+      }
 
       return s;
    }
@@ -316,15 +368,19 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public XAConnection createXAConnection() throws JMSException 
+   public XAConnection createXAConnection() throws JMSException
    {
       if (trace)
+      {
          log.trace("createXAConnection()");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, XA_CONNECTION);
 
       if (trace)
+      {
          log.trace("Created connection: " + s);
+      }
 
       return s;
    }
@@ -336,18 +392,22 @@ public class JBMConnectionFactoryImpl implements JBMConnectionFactory, Reference
     * @return The connection
     * @exception JMSException Thrown if the operation fails
     */
-   public XAConnection createXAConnection(String userName, String password) throws JMSException
+   public XAConnection createXAConnection(final String userName, final String password) throws JMSException
    {
       if (trace)
+      {
          log.trace("createXAConnection(" + userName + ", ****)");
+      }
 
       JBMSessionFactoryImpl s = new JBMSessionFactoryImpl(mcf, cm, XA_CONNECTION);
       s.setUserName(userName);
       s.setPassword(password);
-      
+
       if (trace)
+      {
          log.trace("Created connection: " + s);
+      }
 
       return s;
-   }  
+   }
 }

@@ -52,19 +52,19 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMManagedConnectionFactory.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The resource adapter */
    private JBMResourceAdapter ra;
-   
+
    /** Connection manager */
    private ConnectionManager cm;
 
    /** The managed connection factory properties */
-   private JBMMCFProperties mcfProperties;
-   
+   private final JBMMCFProperties mcfProperties;
+
    /** Connection Factory used if properties are set */
    private JBossConnectionFactory connectionFactory;
 
@@ -74,13 +74,15 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    public JBMManagedConnectionFactory()
    {
       if (trace)
+      {
          log.trace("constructor()");
-      
+      }
+
       ra = null;
       cm = null;
       mcfProperties = new JBMMCFProperties();
    }
-  
+
    /**
     * Creates a Connection Factory instance
     * @return javax.resource.cci.ConnectionFactory instance
@@ -89,8 +91,10 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    public Object createConnectionFactory() throws ResourceException
    {
       if (trace)
+      {
          log.debug("createConnectionFactory()");
-      
+      }
+
       return createConnectionFactory(new JBMConnectionManager());
    }
 
@@ -100,21 +104,25 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * @return javax.resource.cci.ConnectionFactory instance
     * @exception ResourceException Thrown if a connection factory cant be created
     */
-   public Object createConnectionFactory(ConnectionManager cxManager) throws ResourceException
+   public Object createConnectionFactory(final ConnectionManager cxManager) throws ResourceException
    {
       if (trace)
+      {
          log.trace("createConnectionFactory(" + cxManager + ")");
+      }
 
       cm = cxManager;
 
       JBMConnectionFactory cf = new JBMConnectionFactoryImpl(this, cm);
 
       if (trace)
+      {
          log.trace("Created connection factory: " + cf + ", using connection manager: " + cm);
-      
+      }
+
       return cf;
    }
-   
+
    /**
     * Creates a new physical connection to the underlying EIS resource manager.
     * @param subject Caller's security information
@@ -122,25 +130,29 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * @return The managed connection
     * @exception ResourceException Thrown if a managed connection cant be created
     */
-   public ManagedConnection createManagedConnection(Subject subject,
-                                                    ConnectionRequestInfo cxRequestInfo)
-      throws ResourceException 
+   public ManagedConnection createManagedConnection(final Subject subject, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
       if (trace)
+      {
          log.trace("createManagedConnection(" + subject + ", " + cxRequestInfo + ")");
+      }
 
       JBMConnectionRequestInfo cri = getCRI((JBMConnectionRequestInfo)cxRequestInfo);
 
       JBMCredential credential = JBMCredential.getCredential(this, subject, cri);
 
       if (trace)
+      {
          log.trace("jms credential: " + credential);
+      }
 
       JBMManagedConnection mc = new JBMManagedConnection(this, cri, credential.getUserName(), credential.getPassword());
-    
+
       if (trace)
+      {
          log.trace("created new managed connection: " + mc);
-      
+      }
+
       return mc;
    }
 
@@ -152,46 +164,54 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * @return The managed connection
     * @exception ResourceException Thrown if no managed connection cant be found
     */
-   public ManagedConnection matchManagedConnections(Set connectionSet,
-                                                    Subject subject,
-                                                    ConnectionRequestInfo cxRequestInfo)
-      throws ResourceException
+   public ManagedConnection matchManagedConnections(final Set connectionSet,
+                                                    final Subject subject,
+                                                    final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
       if (trace)
+      {
          log.trace("matchManagedConnections(" + connectionSet + ", " + subject + ", " + cxRequestInfo + ")");
+      }
 
       JBMConnectionRequestInfo cri = getCRI((JBMConnectionRequestInfo)cxRequestInfo);
       JBMCredential credential = JBMCredential.getCredential(this, subject, cri);
-      
+
       if (trace)
+      {
          log.trace("Looking for connection matching credentials: " + credential);
-      
+      }
+
       Iterator connections = connectionSet.iterator();
-      
+
       while (connections.hasNext())
       {
          Object obj = connections.next();
-      
+
          if (obj instanceof JBMManagedConnection)
          {
-            JBMManagedConnection mc = (JBMManagedConnection) obj;
+            JBMManagedConnection mc = (JBMManagedConnection)obj;
             ManagedConnectionFactory mcf = mc.getManagedConnectionFactory();
-        
-            if ((mc.getUserName() == null || (mc.getUserName() != null && mc.getUserName().equals(credential.getUserName()))) && mcf.equals(this))
+
+            if ((mc.getUserName() == null || mc.getUserName() != null && mc.getUserName()
+                                                                           .equals(credential.getUserName())) && mcf.equals(this))
             {
                if (cri.equals(mc.getCRI()))
                {
                   if (trace)
+                  {
                      log.trace("Found matching connection: " + mc);
-                  
+                  }
+
                   return mc;
                }
             }
          }
       }
-      
+
       if (trace)
+      {
          log.trace("No matching connection was found");
+      }
 
       return null;
    }
@@ -201,10 +221,12 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * @param out The writer
     * @exception ResourceException Thrown if the writer cant be set
     */
-   public void setLogWriter(PrintWriter out) throws ResourceException
+   public void setLogWriter(final PrintWriter out) throws ResourceException
    {
       if (trace)
+      {
          log.trace("setLogWriter(" + out + ")");
+      }
    }
 
    /**
@@ -215,7 +237,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    public PrintWriter getLogWriter() throws ResourceException
    {
       if (trace)
+      {
          log.trace("getLogWriter()");
+      }
 
       return null;
    }
@@ -227,7 +251,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    public ResourceAdapter getResourceAdapter()
    {
       if (trace)
+      {
          log.trace("getResourceAdapter()");
+      }
 
       return ra;
    }
@@ -237,12 +263,15 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * @param ra The resource adapter
     * @exception ResourceException Thrown if incorrect resource adapter
     */
-   public void setResourceAdapter(ResourceAdapter ra) throws ResourceException
+   public void setResourceAdapter(final ResourceAdapter ra) throws ResourceException
    {
       if (trace)
+      {
          log.trace("setResourceAdapter(" + ra + ")");
+      }
 
-      if (ra == null || !(ra instanceof JBMResourceAdapter)) {
+      if (ra == null || !(ra instanceof JBMResourceAdapter))
+      {
          throw new ResourceException("Resource adapter is " + ra);
       }
 
@@ -254,20 +283,24 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * @param obj Object with which to compare
     * @return True if this object is the same as the obj argument; false otherwise.
     */
-   public boolean equals(Object obj)
+   @Override
+   public boolean equals(final Object obj)
    {
       if (trace)
+      {
          log.trace("equals(" + obj + ")");
+      }
 
       if (obj == null)
+      {
          return false;
+      }
 
       if (obj instanceof JBMManagedConnectionFactory)
       {
          JBMManagedConnectionFactory other = (JBMManagedConnectionFactory)obj;
 
-         return mcfProperties.equals(other.getProperties()) &&
-            ra.equals(other.getResourceAdapter());
+         return mcfProperties.equals(other.getProperties()) && ra.equals(other.getResourceAdapter());
       }
       else
       {
@@ -279,10 +312,13 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * Return the hash code for the object
     * @return The hash code
     */
+   @Override
    public int hashCode()
    {
       if (trace)
+      {
          log.trace("hashCode()");
+      }
 
       int hash = mcfProperties.hashCode();
       hash += 31 * ra.hashCode();
@@ -297,7 +333,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    public String getSessionDefaultType()
    {
       if (trace)
+      {
          log.trace("getSessionDefaultType()");
+      }
 
       return mcfProperties.getSessionDefaultType();
    }
@@ -306,15 +344,16 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * Set the default session type
     * @param type either javax.jms.Topic or javax.jms.Queue
     */
-   public void setSessionDefaultType(String type)
+   public void setSessionDefaultType(final String type)
    {
       if (trace)
+      {
          log.trace("setSessionDefaultType(" + type + ")");
+      }
 
       mcfProperties.setSessionDefaultType(type);
    }
 
-   
    /**
     * @return the connectionParameters
     */
@@ -322,12 +361,12 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    {
       return mcfProperties.getConnectionParameters();
    }
-   
-   public void setConnectionParameters(String configuration)
+
+   public void setConnectionParameters(final String configuration)
    {
       mcfProperties.setConnectionParameters(configuration);
    }
-   
+
    /**
     * @return the transportType
     */
@@ -335,12 +374,12 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    {
       return mcfProperties.getConnectorClassName();
    }
-   
-   public void setConnectorClassName(String value)
+
+   public void setConnectorClassName(final String value)
    {
       mcfProperties.setConnectorClassName(value);
    }
-   
+
    /**
     * Get the useTryLock.
     * @return the useTryLock.
@@ -348,23 +387,27 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    public Integer getUseTryLock()
    {
       if (trace)
+      {
          log.trace("getUseTryLock()");
+      }
 
       return mcfProperties.getUseTryLock();
    }
-   
+
    /**
     * Set the useTryLock.
     * @param useTryLock the useTryLock.
     */
-   public void setUseTryLock(Integer useTryLock)
+   public void setUseTryLock(final Integer useTryLock)
    {
       if (trace)
+      {
          log.trace("setUseTryLock(" + useTryLock + ")");
+      }
 
       mcfProperties.setUseTryLock(useTryLock);
    }
-   
+
    /**
     * Get the connection metadata
     * @return The metadata
@@ -372,7 +415,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    public ConnectionMetaData getMetaData()
    {
       if (trace)
+      {
          log.trace("getMetadata()");
+      }
 
       return new JBMConnectionMetaData();
    }
@@ -383,13 +428,14 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     */
    protected synchronized JBossConnectionFactory getJBossConnectionFactory() throws ResourceException
    {
-      if (this.mcfProperties.getConnectorClassName() != null)
+      if (mcfProperties.getConnectorClassName() != null)
       {
          if (connectionFactory == null)
          {
-            connectionFactory = ra.createRemoteFactory(mcfProperties.getConnectorClassName(), mcfProperties.getParsedConnectionParameters());
+            connectionFactory = ra.createRemoteFactory(mcfProperties.getConnectorClassName(),
+                                                       mcfProperties.getParsedConnectionParameters());
          }
-         
+
          return connectionFactory;
       }
       else
@@ -405,7 +451,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
    protected JBMMCFProperties getProperties()
    {
       if (trace)
+      {
          log.trace("getProperties()");
+      }
 
       return mcfProperties;
    }
@@ -415,10 +463,12 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     * @param info The instance that should be updated; may be <code>null</code>
     * @return The instance
     */
-   private JBMConnectionRequestInfo getCRI(JBMConnectionRequestInfo info)
+   private JBMConnectionRequestInfo getCRI(final JBMConnectionRequestInfo info)
    {
       if (trace)
+      {
          log.trace("getCRI(" + info + ")");
+      }
 
       if (info == null)
       {

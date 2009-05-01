@@ -37,7 +37,7 @@ public class JBMTextMessage extends JBMMessage implements TextMessage
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMTextMessage.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -46,12 +46,14 @@ public class JBMTextMessage extends JBMMessage implements TextMessage
     * @param message the message
     * @param session the session
     */
-   public JBMTextMessage(TextMessage message, JBMSession session)
+   public JBMTextMessage(final TextMessage message, final JBMSession session)
    {
       super(message, session);
 
       if (trace)
+      {
          log.trace("constructor(" + message + ", " + session + ")");
+      }
    }
 
    /**
@@ -62,21 +64,25 @@ public class JBMTextMessage extends JBMMessage implements TextMessage
    public String getText() throws JMSException
    {
       if (trace)
+      {
          log.trace("getText()");
+      }
 
-      return ((TextMessage) message).getText();
+      return ((TextMessage)message).getText();
    }
-   
+
    /**
     * Set text
     * @param string The text
     * @exception JMSException Thrown if an error occurs
     */
-   public void setText(String string) throws JMSException
+   public void setText(final String string) throws JMSException
    {
       if (trace)
+      {
          log.trace("setText(" + string + ")");
+      }
 
-      ((TextMessage) message).setText(string);
+      ((TextMessage)message).setText(string);
    }
 }

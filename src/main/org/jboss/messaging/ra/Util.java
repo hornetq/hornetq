@@ -33,7 +33,8 @@ import javax.naming.Context;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class Util {
+public class Util
+{
 
    /**
     * Private constructor
@@ -52,12 +53,16 @@ public class Util {
    {
       // If both null or intern equals
       if (me == you)
+      {
          return true;
-      
+      }
+
       // if me null and you are not
       if (me == null && you != null)
+      {
          return false;
-      
+      }
+
       // me will not be null, test for equality
       return me.equals(you);
    }
@@ -72,12 +77,16 @@ public class Util {
    {
       // If both null or intern equals
       if (me == you)
+      {
          return true;
-      
+      }
+
       // if me null and you are not
       if (me == null && you != null)
+      {
          return false;
-      
+      }
+
       // me will not be null, test for equality
       return me.equals(you);
    }
@@ -92,12 +101,16 @@ public class Util {
    {
       // If both null or intern equals
       if (me == you)
+      {
          return true;
-      
+      }
+
       // if me null and you are not
       if (me == null && you != null)
+      {
          return false;
-      
+      }
+
       // me will not be null, test for equality
       return me.equals(you);
    }
@@ -112,12 +125,16 @@ public class Util {
    {
       // If both null or intern equals
       if (me == you)
+      {
          return true;
-      
+      }
+
       // if me null and you are not
       if (me == null && you != null)
+      {
          return false;
-      
+      }
+
       // me will not be null, test for equality
       return me.equals(you);
    }
@@ -132,12 +149,16 @@ public class Util {
    {
       // If both null or intern equals
       if (me == you)
+      {
          return true;
-      
+      }
+
       // if me null and you are not
       if (me == null && you != null)
+      {
          return false;
-      
+      }
+
       // me will not be null, test for equality
       return me.equals(you);
    }
@@ -150,29 +171,29 @@ public class Util {
     * @return the object
     * @throws Exception for any error
     */
-   public static Object lookup(Context context, String name, Class clazz) throws Exception
+   public static Object lookup(final Context context, final String name, final Class clazz) throws Exception
    {
       return context.lookup(name);
    }
-   
-   public static Map<String, Object> parseConfig(String config)
+
+   public static Map<String, Object> parseConfig(final String config)
    {
       HashMap<String, Object> result = new HashMap<String, Object>();
-      
+
       String elements[] = config.split(";");
-      
-      for (String element: elements)
+
+      for (String element : elements)
       {
          String expression[] = element.split("=");
-         
+
          if (expression.length != 2)
          {
-            throw new IllegalArgumentException("Invalid expression " + element + " at " + config); 
+            throw new IllegalArgumentException("Invalid expression " + element + " at " + config);
          }
-         
+
          result.put(expression[0].trim(), expression[1].trim());
       }
-      
+
       return result;
    }
 }

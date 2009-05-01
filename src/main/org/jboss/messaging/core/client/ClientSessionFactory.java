@@ -22,7 +22,11 @@
 
 package org.jboss.messaging.core.client;
 
+import java.util.List;
+
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A ClientSessionFactory
@@ -42,56 +46,118 @@ public interface ClientSessionFactory
                                int ackBatchSize) throws MessagingException;
 
    ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge) throws MessagingException;
+ 
+   List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors();
+   
+   void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors);
+   
+   long getPingPeriod();
 
-   void setConsumerWindowSize(int size);
+   void setPingPeriod(long pingPeriod);
+
+   long getConnectionTTL();
+
+   void setConnectionTTL(long connectionTTL);
+
+   long getCallTimeout();
+
+   void setCallTimeout(long callTimeout);
+
+   int getMaxConnections();
+
+   void setMaxConnections(int maxConnections);
+
+   int getMinLargeMessageSize();
+   
+   void setMinLargeMessageSize(int minLargeMessageSize);
 
    int getConsumerWindowSize();
 
-   void setProducerWindowSize(int size);
-
-   int getProducerWindowSize();
-
-   void setConsumerMaxRate(int rate);
+   void setConsumerWindowSize(int consumerWindowSize);
 
    int getConsumerMaxRate();
 
-   void setProducerMaxRate(int rate);
+   void setConsumerMaxRate(int consumerMaxRate);
+
+   int getProducerWindowSize();
+
+   void setProducerWindowSize(int producerWindowSize);
 
    int getProducerMaxRate();
 
-   int getMinLargeMessageSize();
-
-   void setMinLargeMessageSize(int minLargeMessageSize);
-
-   boolean isBlockOnPersistentSend();
-
-   void setBlockOnPersistentSend(boolean blocking);
-
-   boolean isBlockOnNonPersistentSend();
-
-   void setBlockOnNonPersistentSend(boolean blocking);
+   void setProducerMaxRate(int producerMaxRate);
 
    boolean isBlockOnAcknowledge();
 
-   void setBlockOnAcknowledge(boolean blocking);
+   void setBlockOnAcknowledge(boolean blockOnAcknowledge);
+
+   boolean isBlockOnPersistentSend();
+
+   void setBlockOnPersistentSend(boolean blockOnPersistentSend);
+   
+   boolean isBlockOnNonPersistentSend();
+   
+   void setBlockOnNonPersistentSend(boolean blockOnNonPersistentSend);
 
    boolean isAutoGroup();
 
    void setAutoGroup(boolean autoGroup);
 
-   int getAckBatchSize();
-
-   void setAckBatchSize(int ackBatchSize);
-
    boolean isPreAcknowledge();
 
    void setPreAcknowledge(boolean preAcknowledge);
 
-   long getPingPeriod();
+   int getAckBatchSize();
 
-   long getCallTimeout();
+   void setAckBatchSize(int ackBatchSize);
 
-   int getMaxConnections();
+   long getInitialWaitTimeout();
+
+   void setInitialWaitTimeout(long initialWaitTimeout);
+
+   boolean isUseGlobalPools();
+
+   void setUseGlobalPools(boolean useGlobalPools);
+
+   int getScheduledThreadPoolMaxSize();
+
+   void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize);
+
+   int getThreadPoolMaxSize();
+
+   void setThreadPoolMaxSize(int threadPoolMaxSize);
+
+   long getRetryInterval();
+
+   void setRetryInterval(long retryInterval);
+
+   double getRetryIntervalMultiplier();
+
+   void setRetryIntervalMultiplier(double retryIntervalMultiplier);
+
+   int getReconnectAttempts();
+
+   void setReconnectAttempts(int reconnectAttempts);
+
+   boolean isFailoverOnServerShutdown();
+
+   void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
+   
+   String getLoadBalancingPolicyClassName();
+
+   void setLoadBalancingPolicyClassName(String loadBalancingPolicyClassName);
+   
+   String getDiscoveryAddress();   
+
+   void setDiscoveryAddress(String discoveryAddress);
+
+   int getDiscoveryPort();
+
+   void setDiscoveryPort(int discoveryPort);
+   
+   long getDiscoveryRefreshTimeout();
+
+   void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
 
    void close();
 }

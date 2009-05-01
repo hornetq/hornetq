@@ -109,30 +109,11 @@ public class JMSFailoverTest extends UnitTestCase
    {
       JBossConnectionFactory jbcf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                          backupParams),                                                               
-                                                               DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                               DEFAULT_PING_PERIOD,
-                                                               DEFAULT_CONNECTION_TTL,
-                                                               DEFAULT_CALL_TIMEOUT,
-                                                               null,
-                                                               DEFAULT_ACK_BATCH_SIZE,
-                                                               DEFAULT_ACK_BATCH_SIZE,
-                                                               DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                               DEFAULT_CONSUMER_MAX_RATE,
-                                                               DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                               DEFAULT_PRODUCER_MAX_RATE,
-                                                               DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                               DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                               DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                               true,
-                                                               DEFAULT_AUTO_GROUP,
-                                                               DEFAULT_MAX_CONNECTIONS,
-                                                               DEFAULT_PRE_ACKNOWLEDGE,
-                                                               DEFAULT_RETRY_INTERVAL,
-                                                               DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                               DEFAULT_RECONNECT_ATTEMPTS,
-                                                               DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-
+                                                                                          backupParams));
+      
+      jbcf.setBlockOnPersistentSend(true);
+      jbcf.setBlockOnNonPersistentSend(true);
+      
       Connection conn = jbcf.createConnection();
 
       MyExceptionListener listener = new MyExceptionListener();
@@ -190,56 +171,16 @@ public class JMSFailoverTest extends UnitTestCase
 
    public void testManualFailover() throws Exception
    {
-      JBossConnectionFactory jbcfLive = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                   null,
-                                                                   DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                                   DEFAULT_PING_PERIOD,
-                                                                   DEFAULT_CONNECTION_TTL,
-                                                                   DEFAULT_CALL_TIMEOUT,
-                                                                   null,
-                                                                   DEFAULT_ACK_BATCH_SIZE,
-                                                                   DEFAULT_ACK_BATCH_SIZE,
-                                                                   DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                                   DEFAULT_CONSUMER_MAX_RATE,
-                                                                   DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                                   DEFAULT_PRODUCER_MAX_RATE,
-                                                                   DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                   DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                   true,
-                                                                   true,
-                                                                   DEFAULT_AUTO_GROUP,
-                                                                   DEFAULT_MAX_CONNECTIONS,
-                                                                   DEFAULT_PRE_ACKNOWLEDGE,
-                                                                   DEFAULT_RETRY_INTERVAL,
-                                                                   DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                   DEFAULT_RECONNECT_ATTEMPTS,
-                                                                   DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      JBossConnectionFactory jbcfLive = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      jbcfLive.setBlockOnNonPersistentSend(true);
+      jbcfLive.setBlockOnPersistentSend(true);
+
 
       JBossConnectionFactory jbcfBackup = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams),
-                                                                     null,
-                                                                     DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                                     DEFAULT_PING_PERIOD,
-                                                                     DEFAULT_CONNECTION_TTL,
-                                                                     DEFAULT_CALL_TIMEOUT,
-                                                                     null,
-                                                                     DEFAULT_ACK_BATCH_SIZE,
-                                                                     DEFAULT_ACK_BATCH_SIZE,
-                                                                     DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                                     DEFAULT_CONSUMER_MAX_RATE,
-                                                                     DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                                     DEFAULT_PRODUCER_MAX_RATE,
-                                                                     DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                     DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                     true,
-                                                                     true,
-                                                                     DEFAULT_AUTO_GROUP,
-                                                                     DEFAULT_MAX_CONNECTIONS,
-                                                                     DEFAULT_PRE_ACKNOWLEDGE,
-                                                                     DEFAULT_RETRY_INTERVAL,
-                                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                     DEFAULT_RECONNECT_ATTEMPTS,
-                                                                     DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                                                                                                backupParams));
+      jbcfBackup.setBlockOnNonPersistentSend(true);
+      jbcfBackup.setBlockOnPersistentSend(true);
 
       Connection connLive = jbcfLive.createConnection();
 

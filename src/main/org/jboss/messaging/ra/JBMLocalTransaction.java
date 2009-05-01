@@ -38,21 +38,23 @@ public class JBMLocalTransaction implements LocalTransaction
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMLocalTransaction.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The managed connection */
-   private JBMManagedConnection mc;
-  
+   private final JBMManagedConnection mc;
+
    /**
     * Constructor
     * @param mc The managed connection
     */
-   public JBMLocalTransaction(JBMManagedConnection mc)
+   public JBMLocalTransaction(final JBMManagedConnection mc)
    {
       if (trace)
+      {
          log.trace("constructor(" + mc + ")");
+      }
 
       this.mc = mc;
    }
@@ -75,7 +77,9 @@ public class JBMLocalTransaction implements LocalTransaction
       try
       {
          if (mc.getSession().getTransacted())
+         {
             mc.getSession().commit();
+         }
       }
       catch (JMSException e)
       {
@@ -97,7 +101,9 @@ public class JBMLocalTransaction implements LocalTransaction
       try
       {
          if (mc.getSession().getTransacted())
+         {
             mc.getSession().rollback();
+         }
       }
       catch (JMSException ex)
       {

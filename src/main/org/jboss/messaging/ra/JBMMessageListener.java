@@ -36,25 +36,27 @@ public class JBMMessageListener implements MessageListener
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMMessageListener.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The message listener */
-   private MessageListener listener;
-   
+   private final MessageListener listener;
+
    /** The consumer */
-   private JBMMessageConsumer consumer;
+   private final JBMMessageConsumer consumer;
 
    /**
     * Create a new wrapper
     * @param listener the listener
     * @param consumer the consumer
     */
-   public JBMMessageListener(MessageListener listener, JBMMessageConsumer consumer)
+   public JBMMessageListener(final MessageListener listener, final JBMMessageConsumer consumer)
    {
       if (trace)
+      {
          log.trace("constructor(" + listener + ", " + consumer + ")");
+      }
 
       this.listener = listener;
       this.consumer = consumer;
@@ -67,7 +69,9 @@ public class JBMMessageListener implements MessageListener
    public void onMessage(Message message)
    {
       if (trace)
+      {
          log.trace("onMessage(" + message + ")");
+      }
 
       message = consumer.wrapMessage(message);
       listener.onMessage(message);

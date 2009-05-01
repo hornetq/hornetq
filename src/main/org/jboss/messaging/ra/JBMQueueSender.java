@@ -39,7 +39,7 @@ public class JBMQueueSender extends JBMMessageProducer implements QueueSender
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMQueueSender.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -48,12 +48,14 @@ public class JBMQueueSender extends JBMMessageProducer implements QueueSender
     * @param producer the producer
     * @param session the session
     */
-   public JBMQueueSender(QueueSender producer, JBMSession session)
+   public JBMQueueSender(final QueueSender producer, final JBMSession session)
    {
       super(producer, session);
 
       if (trace)
+      {
          log.trace("constructor(" + producer + ", " + session + ")");
+      }
    }
 
    /**
@@ -64,9 +66,11 @@ public class JBMQueueSender extends JBMMessageProducer implements QueueSender
    public Queue getQueue() throws JMSException
    {
       if (trace)
+      {
          log.trace("getQueue()");
+      }
 
-      return ((QueueSender) producer).getQueue();
+      return ((QueueSender)producer).getQueue();
    }
 
    /**
@@ -78,19 +82,37 @@ public class JBMQueueSender extends JBMMessageProducer implements QueueSender
     * @param timeToLive The time to live
     * @exception JMSException Thrown if an error occurs
     */
-   public void send(Queue destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void send(final Queue destination,
+                    final Message message,
+                    final int deliveryMode,
+                    final int priority,
+                    final long timeToLive) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
-            log.trace("send " + this + " destination=" + destination + " message=" + message + " deliveryMode=" + deliveryMode + " priority=" + priority + " ttl=" + timeToLive);
+         {
+            log.trace("send " + this +
+                      " destination=" +
+                      destination +
+                      " message=" +
+                      message +
+                      " deliveryMode=" +
+                      deliveryMode +
+                      " priority=" +
+                      priority +
+                      " ttl=" +
+                      timeToLive);
+         }
 
          checkState();
          producer.send(destination, message, deliveryMode, priority, timeToLive);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {
@@ -104,19 +126,23 @@ public class JBMQueueSender extends JBMMessageProducer implements QueueSender
     * @param message The message
     * @exception JMSException Thrown if an error occurs
     */
-   public void send(Queue destination, Message message) throws JMSException
+   public void send(final Queue destination, final Message message) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
+         {
             log.trace("send " + this + " destination=" + destination + " message=" + message);
+         }
 
          checkState();
          producer.send(destination, message);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {

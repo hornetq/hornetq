@@ -26,7 +26,6 @@ package org.jboss.messaging.tests.integration.cluster.failover;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.beans.info.plugins.SetterAndFieldPropertyInfo;
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -34,6 +33,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -53,9 +53,10 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class PagingFailoverTest extends FailoverTestBase
 {
-
    // Constants -----------------------------------------------------
 
+   private final Logger log = Logger.getLogger(PagingFailoverTest.class);
+  
    final int RECEIVE_TIMEOUT = 25000;
 
    // Attributes ----------------------------------------------------
@@ -86,7 +87,7 @@ public class PagingFailoverTest extends FailoverTestBase
    public void testMultithreadFailoverOnProducing() throws Throwable
    {
       setUpFileBased(getMaxGlobal(), getPageSize());
-
+      
       int numberOfProducedMessages = multiThreadProducer(getNumberOfThreads(), true);
 
       System.out.println(numberOfProducedMessages + " messages produced");
@@ -94,7 +95,6 @@ public class PagingFailoverTest extends FailoverTestBase
       int numberOfConsumedMessages = multiThreadConsumer(getNumberOfThreads(), true, false);
 
       assertEquals(numberOfProducedMessages, numberOfConsumedMessages);
-
    }
 
    public void testMultithreadFailoverOnConsume() throws Throwable
@@ -440,7 +440,13 @@ public class PagingFailoverTest extends FailoverTestBase
       ClientSession session = factory.createSession(false, true, true, false);
       try
       {
-         session.createQueue(ADDRESS, ADDRESS, null, true);
+         try
+         {
+            session.createQueue(ADDRESS, ADDRESS, null, true);
+         }
+         catch (Exception e)
+         {          
+         }
 
          final CountDownLatch startFlag = new CountDownLatch(1);
          final CountDownLatch alignSemaphore = new CountDownLatch(numberOfThreads);

@@ -201,33 +201,15 @@ public abstract class BridgeTestBase extends UnitTestCase
       cff0 = new ConnectionFactoryFactory()
       {
          public ConnectionFactory createConnectionFactory() throws Exception
-         {
-             
+         {            
+            JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+            
             //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
-            return new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()),
-                                              null,                                             
-                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                              DEFAULT_PING_PERIOD,
-                                              DEFAULT_CONNECTION_TTL,
-                                              DEFAULT_CALL_TIMEOUT,
-                                              null,
-                                              DEFAULT_ACK_BATCH_SIZE,
-                                              DEFAULT_ACK_BATCH_SIZE,
-                                              DEFAULT_CONSUMER_WINDOW_SIZE,
-                                              DEFAULT_CONSUMER_MAX_RATE,
-                                              DEFAULT_PRODUCER_WINDOW_SIZE,
-                                              DEFAULT_PRODUCER_MAX_RATE,
-                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                              true,
-                                              true,
-                                              true,
-                                              DEFAULT_AUTO_GROUP,
-                                              DEFAULT_MAX_CONNECTIONS,
-                                              DEFAULT_PRE_ACKNOWLEDGE,
-                                              DEFAULT_RETRY_INTERVAL,
-                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                              0,
-                                              false);
+            cf.setReconnectAttempts(0);
+            cf.setBlockOnNonPersistentSend(true);
+            cf.setBlockOnPersistentSend(true);
+            
+            return cf;
          }
 
       };
@@ -239,31 +221,14 @@ public abstract class BridgeTestBase extends UnitTestCase
 
          public ConnectionFactory createConnectionFactory() throws Exception
          {
+            JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(), params1));
+            
             //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
-            return new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(), params1),
-                                              null,
-                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                              DEFAULT_PING_PERIOD,
-                                              DEFAULT_CONNECTION_TTL,
-                                              DEFAULT_CALL_TIMEOUT,
-                                              null,
-                                              DEFAULT_ACK_BATCH_SIZE,
-                                              DEFAULT_ACK_BATCH_SIZE,
-                                              DEFAULT_CONSUMER_WINDOW_SIZE,
-                                              DEFAULT_CONSUMER_MAX_RATE,
-                                              DEFAULT_PRODUCER_WINDOW_SIZE,
-                                              DEFAULT_PRODUCER_MAX_RATE,
-                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                              true,
-                                              true,
-                                              true,
-                                              DEFAULT_AUTO_GROUP,
-                                              DEFAULT_MAX_CONNECTIONS,
-                                              DEFAULT_PRE_ACKNOWLEDGE,
-                                              DEFAULT_RETRY_INTERVAL,
-                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                              0,
-                                              false);
+            cf.setReconnectAttempts(0);
+            cf.setBlockOnNonPersistentSend(true);
+            cf.setBlockOnPersistentSend(true);
+            
+            return cf;
          }
       };
 

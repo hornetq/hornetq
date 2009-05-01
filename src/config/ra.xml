@@ -157,8 +157,8 @@
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The send window size</description>
-        <config-property-name>SendWindowSize</config-property-name>
+        <description>The producer window size</description>
+        <config-property-name>ProducerWindowSize</config-property-name>
         <config-property-type>java.lang.Integer</config-property-type>
         <config-property-value></config-property-value>
       </config-property>

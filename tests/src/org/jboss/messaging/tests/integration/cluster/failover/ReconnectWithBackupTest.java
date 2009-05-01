@@ -91,11 +91,12 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams),
-                                                                     true,
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+                                                                                                backupParams));
+      
+      sf.setFailoverOnServerShutdown(true);
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -166,11 +167,12 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams),
-                                                                     true,
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+                                                                                                backupParams));
+      
+      sf.setFailoverOnServerShutdown(true);
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       ClientSession session = sf.createSession(false, true, true);
 

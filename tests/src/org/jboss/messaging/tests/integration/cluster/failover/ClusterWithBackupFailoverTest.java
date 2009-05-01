@@ -132,6 +132,8 @@ public class ClusterWithBackupFailoverTest extends ClusterTestBase
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
       stopServers();
+      
+      log.info("*** test done");
    }
 
    protected void setupCluster() throws Exception

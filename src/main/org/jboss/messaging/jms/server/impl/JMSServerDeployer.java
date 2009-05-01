@@ -42,7 +42,7 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String CLIENTID_ELEMENT = "client-id";
 
    private static final String PING_PERIOD_ELEMENT = "ping-period";
-   
+
    private static final String CONNECTION_TTL_ELEMENT = "connection-ttl";
 
    private static final String CALL_TIMEOUT_ELEMENT = "call-timeout";
@@ -78,8 +78,14 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String RETRY_INTERVAL_MULTIPLIER = "retry-interval-multiplier";
 
    private static final String RECONNECT_ATTEMPTS = "reconnect-attempts";
+
+   private static final String FAILOVER_ON_SERVER_SHUTDOWN = "failover-on-server-shutdown";
    
-   private static final String FAILOVER_ON_NODE_SHUTDOWN = "failover-on-server-shutdown";
+   private static final String USE_GLOBAL_POOLS = "use-global-pools";
+   
+   private static final String SCHEDULED_THREAD_POOL_MAX_SIZE = "scheduled-thread-pool-max-size";
+   
+   private static final String THREAD_POOL_MAX_SIZE = "thread-pool-max-size";     
 
    private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
@@ -99,15 +105,16 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String DISCOVERY_INITIAL_WAIT_ELEMENT = "discovery-initial-wait";
 
-   public JMSServerDeployer(final JMSServerManager jmsServerManager, final DeploymentManager deploymentManager, final Configuration config)
+   public JMSServerDeployer(final JMSServerManager jmsServerManager,
+                            final DeploymentManager deploymentManager,
+                            final Configuration config)
    {
       super(deploymentManager);
-      
+
       this.jmsServerControl = jmsServerManager;
 
       this.configuration = config;
    }
-
 
    /**
     * the names of the elements to deploy
@@ -125,7 +132,7 @@ public class JMSServerDeployer extends XmlDeployer
    {
       org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-jms.xsd");
    }
-   
+
    /**
     * deploy an element
     * 
@@ -134,7 +141,7 @@ public class JMSServerDeployer extends XmlDeployer
     */
    @Override
    public void deploy(final Node node) throws Exception
-   {      
+   {
       createAndBindObject(node);
    }
 
@@ -145,9 +152,9 @@ public class JMSServerDeployer extends XmlDeployer
     * @throws Exception .
     */
    private void createAndBindObject(final Node node) throws Exception
-   {           
+   {
       if (node.getNodeName().equals(CONNECTION_FACTORY_NODE_NAME))
-      {        
+      {
          NodeList children = node.getChildNodes();
 
          long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
@@ -168,9 +175,12 @@ public class JMSServerDeployer extends XmlDeployer
          int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
          boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
          long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-         double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;         
+         double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
          int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-         boolean failoverOnNodeShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+         boolean failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+         boolean useGlobalPools = ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
+         int scheduledThreadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+         int threadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 
          List<String> jndiBindings = new ArrayList<String>();
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
@@ -247,8 +257,8 @@ public class JMSServerDeployer extends XmlDeployer
                maxConnections = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (PRE_ACKNOWLEDGE_ELEMENT.equals(child.getNodeName()))
-            {               
-               preAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);  
+            {
+               preAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
             else if (RETRY_INTERVAL.equals(child.getNodeName()))
             {
@@ -262,10 +272,22 @@ public class JMSServerDeployer extends XmlDeployer
             {
                reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
-            else if (FAILOVER_ON_NODE_SHUTDOWN.equals(child.getNodeName()))
+            else if (FAILOVER_ON_SERVER_SHUTDOWN.equals(child.getNodeName()))
             {
-               failoverOnNodeShutdown = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
-            }            
+               failoverOnServerShutdown = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
+            }
+            else if (USE_GLOBAL_POOLS.equals(child.getNodeName()))
+            {
+               useGlobalPools = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
+            }
+            else if (SCHEDULED_THREAD_POOL_MAX_SIZE.equals(child.getNodeName()))
+            {
+               scheduledThreadPoolMaxSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
+            }
+            else if (THREAD_POOL_MAX_SIZE.equals(child.getNodeName()))
+            {
+               threadPoolMaxSize = org.jboss.messaging.utils.XMLUtil.parseInt(child);
+            }
             else if (ENTRIES_NODE_NAME.equals(child.getNodeName()))
             {
                NodeList entries = child.getChildNodes();
@@ -276,7 +298,7 @@ public class JMSServerDeployer extends XmlDeployer
                   {
                      String jndiName = entry.getAttributes().getNamedItem("name").getNodeValue();
 
-                     jndiBindings.add(jndiName);                  
+                     jndiBindings.add(jndiName);
                   }
                }
             }
@@ -333,7 +355,7 @@ public class JMSServerDeployer extends XmlDeployer
 
                   return;
                }
-            }            
+            }
          }
 
          String name = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
@@ -341,64 +363,72 @@ public class JMSServerDeployer extends XmlDeployer
          if (discoveryGroupConfiguration != null)
          {
             jmsServerControl.createConnectionFactory(name,
-                                                     discoveryGroupConfiguration,
-                                                     discoveryInitialWait,
-                                                     connectionLoadBalancingPolicyClassName,
+                                                     discoveryGroupConfiguration.getGroupAddress(),
+                                                     discoveryGroupConfiguration.getGroupPort(),
+                                                     clientID,
+                                                     discoveryGroupConfiguration.getRefreshTimeout(),
                                                      pingPeriod,
                                                      connectionTTL,
                                                      callTimeout,
-                                                     clientID,
-                                                     dupsOKBatchSize,
-                                                     transactionBatchSize,
+                                                     maxConnections,
+                                                     minLargeMessageSize,
                                                      consumerWindowSize,
                                                      consumerMaxRate,
                                                      producerWindowSize,
                                                      producerMaxRate,
-                                                     minLargeMessageSize,
                                                      blockOnAcknowledge,
-                                                     blockOnNonPersistentSend,
                                                      blockOnPersistentSend,
+                                                     blockOnNonPersistentSend,
                                                      autoGroup,
-                                                     maxConnections,
-                                                     preAcknowledge,                                                   
+                                                     preAcknowledge,
+                                                     connectionLoadBalancingPolicyClassName,
+                                                     transactionBatchSize,
+                                                     dupsOKBatchSize,
+                                                     discoveryInitialWait,
+                                                     useGlobalPools,
+                                                     scheduledThreadPoolMaxSize,
+                                                     threadPoolMaxSize,
                                                      retryInterval,
-                                                     retryIntervalMultiplier,                                                     
+                                                     retryIntervalMultiplier,
                                                      reconnectAttempts,
-                                                     failoverOnNodeShutdown,
+                                                     failoverOnServerShutdown,
                                                      jndiBindings);
          }
          else
          {
             jmsServerControl.createConnectionFactory(name,
                                                      connectorConfigs,
-                                                     connectionLoadBalancingPolicyClassName,
+                                                     clientID,
                                                      pingPeriod,
                                                      connectionTTL,
                                                      callTimeout,
-                                                     clientID,
-                                                     dupsOKBatchSize,
-                                                     transactionBatchSize,
+                                                     maxConnections,
+                                                     minLargeMessageSize,
                                                      consumerWindowSize,
                                                      consumerMaxRate,
                                                      producerWindowSize,
                                                      producerMaxRate,
-                                                     minLargeMessageSize,
                                                      blockOnAcknowledge,
-                                                     blockOnNonPersistentSend,
                                                      blockOnPersistentSend,
+                                                     blockOnNonPersistentSend,
                                                      autoGroup,
-                                                     maxConnections,
-                                                     preAcknowledge,                                                
+                                                     preAcknowledge,
+                                                     connectionLoadBalancingPolicyClassName,
+                                                     transactionBatchSize,
+                                                     dupsOKBatchSize,
+                                                     useGlobalPools,
+                                                     scheduledThreadPoolMaxSize,
+                                                     threadPoolMaxSize,
                                                      retryInterval,
-                                                     retryIntervalMultiplier,                                                     
+                                                     retryIntervalMultiplier,
                                                      reconnectAttempts,
-                                                     failoverOnNodeShutdown,
+                                                     failoverOnServerShutdown,
                                                      jndiBindings);
          }
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
-      {                 
-         String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();      
+      {
+         String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          NodeList children = node.getChildNodes();
          for (int i = 0; i < children.getLength(); i++)
          {
@@ -456,7 +486,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] {"jbm-jms.xml"};
+      return new String[] { "jbm-jms.xml" };
    }
 
 }

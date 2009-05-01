@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -56,7 +57,7 @@ public class NettyConnectorTest extends UnitTestCase
       Map<String, Object> params = new HashMap<String, Object>();
       ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
 
-      NettyConnector connector = new NettyConnector(params, handler, listener);
+      NettyConnector connector = new NettyConnector(params, handler, listener, Executors.newCachedThreadPool());
       
       connector.start();
       connector.close();
@@ -70,7 +71,7 @@ public class NettyConnectorTest extends UnitTestCase
 
       try
       {
-         new NettyConnector(params, null, listener);
+         new NettyConnector(params, null, listener, Executors.newCachedThreadPool());
          
          fail("Should throw Exception");
       }
@@ -81,7 +82,7 @@ public class NettyConnectorTest extends UnitTestCase
       
       try
       {
-         new NettyConnector(params, handler, null);
+         new NettyConnector(params, handler, null, Executors.newCachedThreadPool());
          
          fail("Should throw Exception");
       }

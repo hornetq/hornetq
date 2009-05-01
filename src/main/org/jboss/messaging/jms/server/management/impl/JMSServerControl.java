@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -39,7 +37,6 @@ import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
@@ -79,227 +76,145 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
 
    // JMSServerControlMBean implementation --------------------------
 
-   public void createSimpleConnectionFactory(String name,
-                                       String connectorFactoryClassName,
-                                       String connectionLoadBalancingPolicyClassName,
-                                       long pingPeriod,   
-                                       long connectionTTL,
-                                       long callTimeout,
-                                       String clientID,
-                                       int dupsOKBatchSize,
-                                       int transactionBatchSize,
-                                       int consumerWindowSize,
-                                       int consumerMaxRate,
-                                       int producerWindowSize,
-                                       int producerMaxRate,
-                                       int minLargeMessageSize, 
-                                       boolean blockOnAcknowledge,
-                                       boolean blockOnNonPersistentSend,
-                                       boolean blockOnPersistentSend,
-                                       boolean autoGroup,
-                                       int maxConnections,
-                                       boolean preAcknowledge,                                   
-                                       long retryInterval,
-                                       double retryIntervalMultiplier,                                       
-                                       int reconnectAttempts,
-                                       boolean failoverOnNodeShutdown,
-                                       String[] jndiBindings) throws Exception
+   public void createConnectionFactory(String name,
+                                       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                       List<String> jndiBindings) throws Exception
    {
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
+      server.createConnectionFactory(name, connectorConfigs, jndiBindings);
       
-      boolean created = server.createConnectionFactory(name,
-                                                       connectorConfigs,
-                                                       connectionLoadBalancingPolicyClassName,
-                                                       pingPeriod,                
-                                                       connectionTTL,
-                                                       callTimeout,
-                                                       clientID,
-                                                       dupsOKBatchSize,
-                                                       transactionBatchSize,
-                                                       consumerWindowSize,
-                                                       consumerMaxRate,
-                                                       producerWindowSize,
-                                                       producerMaxRate,
-                                                       minLargeMessageSize,
-                                                       blockOnAcknowledge,
-                                                       blockOnNonPersistentSend,
-                                                       blockOnPersistentSend,
-                                                       autoGroup,
-                                                       maxConnections,
-                                                       preAcknowledge,                                                 
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,                                                       
-                                                       reconnectAttempts,
-                                                       failoverOnNodeShutdown,
-                                                       Arrays.asList(jndiBindings));
-      if (created)
-      {
-         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-      }
-   }
-   
-   public void createConnectionFactory(String name,
-                                             String connectorFactoryClassName,
-                                             String[] jndiBindings) throws Exception
-   {
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
-
-      boolean created = server.createConnectionFactory(name,
-                                                       connectorConfigs,
-                                                       Arrays.asList(jndiBindings));
-      if (created)
-      {
-         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-      }
-   }
-   
-   public void createConnectionFactory(String name,
-                                             String connectorFactoryClassName,
-                                             boolean blockOnAcknowledge,
-                                             boolean blockOnNonPersistentSend,
-                                             boolean blockOnPersistentSend,
-                                             boolean preAcknowledge,
-                                             String[] jndiBindings) throws Exception
-   {
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(connectorFactoryClassName), null));
-
-      boolean created = server.createConnectionFactory(name,
-                                                       connectorConfigs,
-                                                       blockOnAcknowledge,
-                                                       blockOnNonPersistentSend,
-                                                       blockOnPersistentSend,
-                                                       preAcknowledge,
-                                                       Arrays.asList(jndiBindings));
-      if (created)
-      {
-         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-      }
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);      
    }
 
    public void createConnectionFactory(String name,
                                        List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                       String connectionLoadBalancingPolicyClassName,
-                                       long pingPeriod,   
+                                       String clientID,
+                                       List<String> jndiBindings) throws Exception
+   {
+      server.createConnectionFactory(name, connectorConfigs, clientID, jndiBindings);
+      
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                       String clientID,
+                                       long pingPeriod,
                                        long connectionTTL,
                                        long callTimeout,
-                                       String clientID,
-                                       int dupsOKBatchSize,
-                                       int transactionBatchSize,
+                                       int maxConnections,
+                                       int minLargeMessageSize,
                                        int consumerWindowSize,
                                        int consumerMaxRate,
                                        int producerWindowSize,
                                        int producerMaxRate,
-                                       int minLargeMessageSize, 
                                        boolean blockOnAcknowledge,
-                                       boolean blockOnNonPersistentSend,
                                        boolean blockOnPersistentSend,
+                                       boolean blockOnNonPersistentSend,
                                        boolean autoGroup,
-                                       int maxConnections,
-                                       boolean preAcknowledge,                                   
+                                       boolean preAcknowledge,
+                                       String loadBalancingPolicyClassName,
+                                       int transactionBatchSize,
+                                       int dupsOKBatchSize,
+                                       boolean useGlobalPools,
+                                       int scheduledThreadPoolMaxSize,
+                                       int threadPoolMaxSize,
                                        long retryInterval,
-                                       double retryIntervalMultiplier,                                       
+                                       double retryIntervalMultiplier,
                                        int reconnectAttempts,
-                                       boolean failoverOnNodeShutdown,
-                                       String[] jndiBindings) throws Exception
+                                       boolean failoverOnServerShutdown,
+                                       List<String> jndiBindings) throws Exception
    {
-      boolean created = server.createConnectionFactory(name,
-                                                       connectorConfigs,
-                                                       connectionLoadBalancingPolicyClassName,
-                                                       pingPeriod,                
-                                                       connectionTTL,
-                                                       callTimeout,
-                                                       clientID,
-                                                       dupsOKBatchSize,
-                                                       transactionBatchSize,
-                                                       consumerWindowSize,
-                                                       consumerMaxRate,
-                                                       producerWindowSize,
-                                                       producerMaxRate,
-                                                       minLargeMessageSize,
-                                                       blockOnAcknowledge,
-                                                       blockOnNonPersistentSend,
-                                                       blockOnPersistentSend,
-                                                       autoGroup,
-                                                       maxConnections,
-                                                       preAcknowledge,                                                 
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,                                                       
-                                                       reconnectAttempts,
-                                                       failoverOnNodeShutdown,
-                                                       Arrays.asList(jndiBindings));
-      if (created)
-      {
-         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-      }
+      server.createConnectionFactory(name, connectorConfigs, clientID, pingPeriod, connectionTTL, callTimeout, maxConnections, minLargeMessageSize, consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, blockOnAcknowledge, blockOnPersistentSend, blockOnNonPersistentSend, autoGroup, preAcknowledge, loadBalancingPolicyClassName, transactionBatchSize, dupsOKBatchSize, useGlobalPools, scheduledThreadPoolMaxSize, threadPoolMaxSize, retryInterval, retryIntervalMultiplier, reconnectAttempts, failoverOnServerShutdown, jndiBindings);
+      
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       String discoveryAddress,
+                                       int discoveryPort,
+                                       String clientID,
+                                       List<String> jndiBindings) throws Exception
+   {
+      server.createConnectionFactory(name, discoveryAddress, discoveryPort, clientID, jndiBindings);
+      
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       String discoveryAddress,
+                                       int discoveryPort,
+                                       String clientID,
+                                       long discoveryRefreshTimeout,
+                                       long pingPeriod,
+                                       long connectionTTL,
+                                       long callTimeout,
+                                       int maxConnections,
+                                       int minLargeMessageSize,
+                                       int consumerWindowSize,
+                                       int consumerMaxRate,
+                                       int producerWindowSize,
+                                       int producerMaxRate,
+                                       boolean blockOnAcknowledge,
+                                       boolean blockOnPersistentSend,
+                                       boolean blockOnNonPersistentSend,
+                                       boolean autoGroup,
+                                       boolean preAcknowledge,
+                                       String loadBalancingPolicyClassName,
+                                       int transactionBatchSize,
+                                       int dupsOKBatchSize,
+                                       long initialWaitTimeout,
+                                       boolean useGlobalPools,
+                                       int scheduledThreadPoolMaxSize,
+                                       int threadPoolMaxSize,
+                                       long retryInterval,
+                                       double retryIntervalMultiplier,
+                                       int reconnectAttempts,
+                                       boolean failoverOnServerShutdown,
+                                       List<String> jndiBindings) throws Exception
+   {
+      server.createConnectionFactory(name, discoveryAddress, discoveryPort, clientID, discoveryRefreshTimeout, pingPeriod, connectionTTL, callTimeout, maxConnections, minLargeMessageSize, consumerWindowSize, consumerMaxRate, producerWindowSize, producerMaxRate, blockOnAcknowledge, blockOnPersistentSend, blockOnNonPersistentSend, autoGroup, preAcknowledge, loadBalancingPolicyClassName, transactionBatchSize, dupsOKBatchSize, initialWaitTimeout, useGlobalPools, scheduledThreadPoolMaxSize, threadPoolMaxSize, retryInterval, retryIntervalMultiplier, reconnectAttempts, failoverOnServerShutdown, jndiBindings);
+      
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name, TransportConfiguration liveTC, List<String> jndiBindings) throws Exception
+   {
+      server.createConnectionFactory(name, liveTC, jndiBindings);
+      
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       TransportConfiguration liveTC,
+                                       String clientID,
+                                       List<String> jndiBindings) throws Exception
+   {
+      server.createConnectionFactory(name, liveTC, clientID, jndiBindings);
+      
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       TransportConfiguration liveTC,
+                                       TransportConfiguration backupTC,
+                                       List<String> jndiBindings) throws Exception
+   {
+      server.createConnectionFactory(name, liveTC, backupTC, jndiBindings);
+      
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       TransportConfiguration liveTC,
+                                       TransportConfiguration backupTC,
+                                       String clientID,
+                                       List<String> jndiBindings) throws Exception
+   {
+      server.createConnectionFactory(name, liveTC, backupTC, clientID, jndiBindings);
+      
+      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
    
-   public void createConnectionFactory(final String name,
-                                       final String discoveryGroupName,
-                                       final String discoveryGroupAddress,
-                                       final int discoveryGroupPort,
-                                       final long discoveryGroupRefreshTimeout,
-                                       final long discoveryInitialWait,
-                                       final String connectionLoadBalancingPolicyClassName,
-                                       final long pingPeriod,
-                                       final long connectionTTL,
-                                       final long callTimeout,
-                                       final String clientID,
-                                       final int dupsOKBatchSize,
-                                       final int transactionBatchSize,
-                                       final int consumerWindowSize,
-                                       final int consumerMaxRate,
-                                       final int producerWindowSize,
-                                       final int producerMaxRate,
-                                       final int minLargeMessageSize,
-                                       final boolean blockOnAcknowledge,
-                                       final boolean blockOnNonPersistentSend,
-                                       final boolean blockOnPersistentSend,
-                                       final boolean autoGroup,
-                                       final int maxConnections,
-                                       final boolean preAcknowledge,
-                                       final long retryInterval,
-                                       final double retryIntervalMultiplier,
-                                       final int reconnectAttempts,
-                                       final boolean failoverOnNodeShutdown,
-                                       final String[] jndiBindings) throws Exception
-   {      
-      DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryGroupName, discoveryGroupAddress, discoveryGroupPort, discoveryGroupRefreshTimeout);
-
-      boolean created = server.createConnectionFactory(name,
-                                                       discoveryGroupConfig,
-                                                       discoveryInitialWait,
-                                                       connectionLoadBalancingPolicyClassName,
-                                                       pingPeriod,          
-                                                       connectionTTL,
-                                                       callTimeout,
-                                                       clientID,
-                                                       dupsOKBatchSize,
-                                                       transactionBatchSize,
-                                                       consumerWindowSize,
-                                                       consumerMaxRate,
-                                                       producerWindowSize,
-                                                       producerMaxRate,
-                                                       minLargeMessageSize,
-                                                       blockOnAcknowledge,
-                                                       blockOnNonPersistentSend,
-                                                       blockOnPersistentSend,
-                                                       autoGroup,
-                                                       maxConnections,
-                                                       preAcknowledge,                                               
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,                                                       
-                                                       reconnectAttempts,
-                                                       failoverOnNodeShutdown,
-                                                       Arrays.asList(jndiBindings));
-      if (created)
-      {
-         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-      }
-   }
-
    public boolean createQueue(final String name, final String jndiBinding) throws Exception
    {
       boolean created = server.createQueue(name, jndiBinding);
@@ -463,4 +378,6 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       CONNECTION_FACTORY_CREATED,
       CONNECTION_FACTORY_DESTROYED;
    }
+
+
 }

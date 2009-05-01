@@ -39,7 +39,7 @@ public class JBMTopicPublisher extends JBMMessageProducer implements TopicPublis
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMTopicPublisher.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -48,12 +48,14 @@ public class JBMTopicPublisher extends JBMMessageProducer implements TopicPublis
     * @param producer the producer
     * @param session the session
     */
-   public JBMTopicPublisher(TopicPublisher producer, JBMSession session)
+   public JBMTopicPublisher(final TopicPublisher producer, final JBMSession session)
    {
       super(producer, session);
 
       if (trace)
+      {
          log.trace("constructor(" + producer + ", " + session + ")");
+      }
    }
 
    /**
@@ -64,9 +66,11 @@ public class JBMTopicPublisher extends JBMMessageProducer implements TopicPublis
    public Topic getTopic() throws JMSException
    {
       if (trace)
+      {
          log.trace("getTopic()");
+      }
 
-      return ((TopicPublisher) producer).getTopic();
+      return ((TopicPublisher)producer).getTopic();
    }
 
    /**
@@ -77,20 +81,32 @@ public class JBMTopicPublisher extends JBMMessageProducer implements TopicPublis
     * @param timeToLive The time to live
     * @exception JMSException Thrown if an error occurs
     */
-   public void publish(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void publish(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
-            log.trace("send " + this  + " message=" + message + " deliveryMode=" + deliveryMode + " priority=" + priority + " ttl=" + timeToLive);
+         {
+            log.trace("send " + this +
+                      " message=" +
+                      message +
+                      " deliveryMode=" +
+                      deliveryMode +
+                      " priority=" +
+                      priority +
+                      " ttl=" +
+                      timeToLive);
+         }
 
          checkState();
 
-         ((TopicPublisher) producer).publish(message, deliveryMode, priority, timeToLive);
+         ((TopicPublisher)producer).publish(message, deliveryMode, priority, timeToLive);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {
@@ -103,20 +119,24 @@ public class JBMTopicPublisher extends JBMMessageProducer implements TopicPublis
     * @param message The message
     * @exception JMSException Thrown if an error occurs
     */
-   public void publish(Message message) throws JMSException
+   public void publish(final Message message) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
+         {
             log.trace("send " + this + " message=" + message);
+         }
 
          checkState();
 
-         ((TopicPublisher) producer).publish(message);
+         ((TopicPublisher)producer).publish(message);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {
@@ -133,20 +153,38 @@ public class JBMTopicPublisher extends JBMMessageProducer implements TopicPublis
     * @param timeToLive The time to live
     * @exception JMSException Thrown if an error occurs
     */
-   public void publish(Topic destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void publish(final Topic destination,
+                       final Message message,
+                       final int deliveryMode,
+                       final int priority,
+                       final long timeToLive) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
-            log.trace("send " + this + " destination=" + destination + " message=" + message + " deliveryMode=" + deliveryMode + " priority=" + priority + " ttl=" + timeToLive);
+         {
+            log.trace("send " + this +
+                      " destination=" +
+                      destination +
+                      " message=" +
+                      message +
+                      " deliveryMode=" +
+                      deliveryMode +
+                      " priority=" +
+                      priority +
+                      " ttl=" +
+                      timeToLive);
+         }
 
          checkState();
 
-         ((TopicPublisher) producer).publish(destination, message, deliveryMode, priority, timeToLive);
+         ((TopicPublisher)producer).publish(destination, message, deliveryMode, priority, timeToLive);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {
@@ -160,20 +198,24 @@ public class JBMTopicPublisher extends JBMMessageProducer implements TopicPublis
     * @param message The message
     * @exception JMSException Thrown if an error occurs
     */
-   public void publish(Topic destination, Message message) throws JMSException
+   public void publish(final Topic destination, final Message message) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
+         {
             log.trace("send " + this + " destination=" + destination + " message=" + message);
+         }
 
          checkState();
 
-         ((TopicPublisher) producer).publish(destination, message);
+         ((TopicPublisher)producer).publish(destination, message);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {

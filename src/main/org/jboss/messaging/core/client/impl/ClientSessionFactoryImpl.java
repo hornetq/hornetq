@@ -12,12 +12,18 @@
 package org.jboss.messaging.core.client.impl;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy;
@@ -26,9 +32,9 @@ import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.cluster.impl.DiscoveryGroupImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.UUIDGenerator;
 
@@ -51,7 +57,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = "org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy";
 
-   public static final long DEFAULT_PING_PERIOD = 5000;
+   public static final long DEFAULT_PING_PERIOD = 1000000;
 
    // 5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
    // or backup without fear of session having already been closed when connection times out.
@@ -86,6 +92,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final long DEFAULT_DISCOVERY_INITIAL_WAIT = 10000;
 
+   public static final long DEFAULT_DISCOVERY_REFRESH_TIMEOUT = 10000;
+
    public static final long DEFAULT_RETRY_INTERVAL = 2000;
 
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
@@ -94,63 +102,192 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 
+   public static final boolean DEFAULT_USE_GLOBAL_POOLS = true;
+
+   public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
+
+   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 1;
+
    // Attributes
    // -----------------------------------------------------------------------------------
 
    private final Map<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager> connectionManagerMap = new LinkedHashMap<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager>();
 
+   private volatile boolean receivedBroadcast = false;
+
+   private ExecutorService threadPool;
+
+   private ScheduledExecutorService scheduledThreadPool;
+
+   private DiscoveryGroup discoveryGroup;
+
+   private ConnectionLoadBalancingPolicy loadBalancingPolicy;
+
    private ConnectionManager[] connectionManagerArray;
 
-   private final long pingPeriod;
+   private boolean readOnly;
 
-   private final long connectionTTL;
+   // Settable attributes:
 
-   private final long callTimeout;
+   private List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors;
 
-   private final int maxConnections;
+   private String discoveryAddress;
 
-   // Some of these attributes are mutable and can be updated by different threads so
-   // must be volatile
+   private int discoveryPort;
 
-   private volatile int minLargeMessageSize;
+   private long discoveryRefreshTimeout;
 
-   private volatile int consumerWindowSize;
+   private long pingPeriod;
 
-   private volatile int consumerMaxRate;
+   private long connectionTTL;
 
-   private volatile int producerWindowSize;
+   private long callTimeout;
 
-   private volatile int producerMaxRate;
+   private int maxConnections;
 
-   private volatile boolean blockOnAcknowledge;
+   private int minLargeMessageSize;
 
-   private volatile boolean blockOnPersistentSend;
+   private int consumerWindowSize;
 
-   private volatile boolean blockOnNonPersistentSend;
+   private int consumerMaxRate;
 
-   private volatile boolean autoGroup;
+   private int producerWindowSize;
+
+   private int producerMaxRate;
+
+   private boolean blockOnAcknowledge;
+
+   private boolean blockOnPersistentSend;
+
+   private boolean blockOnNonPersistentSend;
+
+   private boolean autoGroup;
 
    private boolean preAcknowledge;
 
-   private volatile int ackBatchSize;
+   private String loadBalancingPolicyClassName;
 
-   private final ConnectionLoadBalancingPolicy loadBalancingPolicy;
+   private int ackBatchSize;
 
-   private final DiscoveryGroup discoveryGroup;
+   private long initialWaitTimeout;
 
-   private volatile boolean receivedBroadcast = false;
+   private boolean useGlobalPools;
 
-   private final long initialWaitTimeout;
+   private int scheduledThreadPoolMaxSize;
 
-   // Reconnect params
+   private int threadPoolMaxSize;
 
-   private final long retryInterval;
+   private long retryInterval;
 
-   private final double retryIntervalMultiplier; // For exponential backoff
+   private double retryIntervalMultiplier;
 
-   private final int reconnectAttempts;
+   private int reconnectAttempts;
 
-   private final boolean failoverOnServerShutdown;
+   private boolean failoverOnServerShutdown;
+
+   private static ExecutorService globalThreadPool;
+
+   private static ScheduledExecutorService globalScheduledThreadPool;
+
+   private static synchronized ExecutorService getGlobalThreadPool()
+   {
+      if (globalThreadPool == null)
+      {
+         ThreadFactory factory = new JBMThreadFactory("JBM-client-global-threads", true);
+
+         globalThreadPool = Executors.newCachedThreadPool(factory);
+      }
+
+      return globalThreadPool;
+   }
+
+   private static synchronized ScheduledExecutorService getGlobalScheduledThreadPool()
+   {
+      if (globalScheduledThreadPool == null)
+      {
+         ThreadFactory factory = new JBMThreadFactory("JBM-client-global-scheduled-threads", true);
+
+         globalScheduledThreadPool = Executors.newScheduledThreadPool(DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, factory);
+      }
+
+      return globalScheduledThreadPool;
+   }
+
+   private void setThreadPools()
+   {
+      if (useGlobalPools)
+      {
+         threadPool = getGlobalThreadPool();
+
+         scheduledThreadPool = getGlobalScheduledThreadPool();
+      }
+      else
+      {
+         ThreadFactory factory = new JBMThreadFactory("JBM-client-factory-threads-" + System.identityHashCode(this),
+                                                      true);
+
+         if (threadPoolMaxSize == -1)
+         {
+            threadPool = Executors.newCachedThreadPool(factory);
+         }
+         else
+         {
+            threadPool = Executors.newFixedThreadPool(threadPoolMaxSize, factory);
+         }
+
+         factory = new JBMThreadFactory("JBM-client-factory-pinger-threads-" + System.identityHashCode(this), true);
+
+         scheduledThreadPool = Executors.newScheduledThreadPool(scheduledThreadPoolMaxSize, factory);
+      }
+   }
+
+   private void initialise() throws Exception
+   {
+      setThreadPools();
+
+      instantiateLoadBalancingPolicy();
+
+      if (discoveryAddress != null)
+      {
+         InetAddress groupAddress = InetAddress.getByName(discoveryAddress);
+
+         discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
+                                                 discoveryAddress,
+                                                 groupAddress,
+                                                 discoveryPort,
+                                                 discoveryRefreshTimeout);
+
+         discoveryGroup.registerListener(this);
+
+         discoveryGroup.start();
+      }
+      else if (staticConnectors != null)
+      {
+         for (Pair<TransportConfiguration, TransportConfiguration> pair : staticConnectors)
+         {
+            ConnectionManager cm = new ConnectionManagerImpl(pair.a,
+                                                             pair.b,
+                                                             failoverOnServerShutdown,
+                                                             maxConnections,
+                                                             callTimeout,
+                                                             pingPeriod,
+                                                             connectionTTL,
+                                                             retryInterval,
+                                                             retryIntervalMultiplier,
+                                                             reconnectAttempts,
+                                                             threadPool,
+                                                             scheduledThreadPool);
+
+            connectionManagerMap.put(pair, cm);
+         }
+
+         updateConnectionManagerArray();
+      }
+      else
+      {
+         throw new IllegalStateException("Before using a session factory you must either set discovery address and port or " + "provide some static transport configuration");
+      }
+   }
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -158,423 +295,408 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientSessionFactoryImpl(final String discoveryGroupAddress, final int discoveryGroupPort) throws Exception
+   public ClientSessionFactoryImpl()
    {
-      this(discoveryGroupAddress,
-           discoveryGroupPort,
-           ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
-           DEFAULT_DISCOVERY_INITIAL_WAIT);
+      discoveryRefreshTimeout = DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+
+      pingPeriod = DEFAULT_PING_PERIOD;
+
+      connectionTTL = DEFAULT_CONNECTION_TTL;
+
+      callTimeout = DEFAULT_CALL_TIMEOUT;
+
+      maxConnections = DEFAULT_MAX_CONNECTIONS;
+
+      minLargeMessageSize = DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+
+      consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
+
+      consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
+
+      producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
+
+      producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
+
+      blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+
+      blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+
+      blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+
+      autoGroup = DEFAULT_AUTO_GROUP;
+
+      preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
+
+      ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
+
+      loadBalancingPolicyClassName = DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+
+      initialWaitTimeout = DEFAULT_DISCOVERY_INITIAL_WAIT;
+
+      useGlobalPools = DEFAULT_USE_GLOBAL_POOLS;
+
+      scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+
+      threadPoolMaxSize = DEFAULT_THREAD_POOL_MAX_SIZE;
+
+      retryInterval = DEFAULT_RETRY_INTERVAL;
+
+      retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+
+      reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
+
+      failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
-   public ClientSessionFactoryImpl(final String discoveryGroupAddress,
-                                   final int discoveryGroupPort,
-                                   final long discoveryRefreshTimeout,
-                                   final long initialWaitTimeout) throws Exception
+   public ClientSessionFactoryImpl(final String discoveryAddress, final int discoveryPort)
    {
-      InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
+      this();
 
-      discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
-                                              discoveryGroupAddress,
-                                              groupAddress,
-                                              discoveryGroupPort,
-                                              discoveryRefreshTimeout);
+      this.discoveryAddress = discoveryAddress;
 
-      discoveryGroup.registerListener(this);
-
-      discoveryGroup.start();
-
-      this.initialWaitTimeout = initialWaitTimeout;
-      this.loadBalancingPolicy = instantiateLoadBalancingPolicy(DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME);
-      this.pingPeriod = DEFAULT_PING_PERIOD;
-      this.connectionTTL = DEFAULT_CONNECTION_TTL;
-      this.callTimeout = DEFAULT_CALL_TIMEOUT;
-      this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
-      this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      this.producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
-      this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
-      this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      this.blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      this.minLargeMessageSize = DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-      this.autoGroup = DEFAULT_AUTO_GROUP;
-      this.maxConnections = DEFAULT_MAX_CONNECTIONS;
-      this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
-      this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryInterval = DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
-      this.failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+      this.discoveryPort = discoveryPort;
    }
 
-   public ClientSessionFactoryImpl(final String discoveryGroupAddress,
-                                   final int discoveryGroupPort,
-                                   final long discoveryRefreshTimeout,
-                                   final long initialWaitTimeout,
-                                   final String connectionloadBalancingPolicyClassName,
-                                   final long pingPeriod,
-                                   final long connectionTTL,
-                                   final long callTimeout,
-                                   final int consumerWindowSize,
-                                   final int consumerMaxRate,
-                                   final int producerWindowSize,
-                                   final int producerMaxRate,
-                                   final int minLargeMessageSize,
-                                   final boolean blockOnAcknowledge,
-                                   final boolean blockOnNonPersistentSend,
-                                   final boolean blockOnPersistentSend,
-                                   final boolean autoGroup,
-                                   final int maxConnections,
-                                   final boolean preAcknowledge,
-                                   final int ackBatchSize,
-                                   final long retryInterval,
-                                   final double retryIntervalMultiplier,
-                                   final int reconnectAttempts,
-                                   final boolean failoverOnServerShutdown) throws MessagingException
-   {            
-      try
-      {
-         InetAddress groupAddress = InetAddress.getByName(discoveryGroupAddress);
-
-         discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
-                                                 discoveryGroupAddress,
-                                                 groupAddress,
-                                                 discoveryGroupPort,
-                                                 discoveryRefreshTimeout);
-
-         discoveryGroup.registerListener(this);
-
-         discoveryGroup.start();
-      }
-      catch (Exception e)
-      {
-         // TODO - handle exceptions better
-         throw new MessagingException(MessagingException.NOT_CONNECTED, e.toString());
-      }
-
-      this.initialWaitTimeout = initialWaitTimeout;
-      this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
-      this.pingPeriod = pingPeriod;
-      this.connectionTTL = connectionTTL;
-      this.callTimeout = callTimeout;
-      this.consumerWindowSize = consumerWindowSize;
-      this.consumerMaxRate = consumerMaxRate;
-      this.producerWindowSize = producerWindowSize;
-      this.producerMaxRate = producerMaxRate;
-      this.blockOnAcknowledge = blockOnAcknowledge;
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      this.blockOnPersistentSend = blockOnPersistentSend;
-      this.minLargeMessageSize = minLargeMessageSize;
-      this.autoGroup = autoGroup;
-      this.maxConnections = maxConnections;
-      this.ackBatchSize = ackBatchSize;
-      this.preAcknowledge = preAcknowledge;
-      this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.reconnectAttempts = reconnectAttempts;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
-   }
-
-   public ClientSessionFactoryImpl(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors,
-                                   final String connectionloadBalancingPolicyClassName,
-                                   final long pingPeriod,
-                                   final long connectionTTL,
-                                   final long callTimeout,
-                                   final int consumerWindowSize,
-                                   final int consumerMaxRate,
-                                   final int sendWindowSize,
-                                   final int producerMaxRate,
-                                   final int minLargeMessageSize,
-                                   final boolean blockOnAcknowledge,
-                                   final boolean blockOnNonPersistentSend,
-                                   final boolean blockOnPersistentSend,
-                                   final boolean autoGroup,
-                                   final int maxConnections,
-                                   final boolean preAcknowledge,
-                                   final int ackBatchSize,
-                                   final long retryInterval,
-                                   final double retryIntervalMultiplier,
-                                   final int reconnectAttempts,
-                                   final boolean failoverOnServerShutdown)
+   public ClientSessionFactoryImpl(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
    {
-      this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
-      this.pingPeriod = pingPeriod;
-      this.connectionTTL = connectionTTL;
-      this.callTimeout = callTimeout;
-      this.consumerWindowSize = consumerWindowSize;
-      this.consumerMaxRate = consumerMaxRate;
-      this.producerWindowSize = sendWindowSize;
-      this.producerMaxRate = producerMaxRate;
-      this.blockOnAcknowledge = blockOnAcknowledge;
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      this.blockOnPersistentSend = blockOnPersistentSend;
-      this.minLargeMessageSize = minLargeMessageSize;
-      this.autoGroup = autoGroup;
-      this.maxConnections = maxConnections;
-      this.ackBatchSize = ackBatchSize;
-      this.preAcknowledge = preAcknowledge;
-      this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.reconnectAttempts = reconnectAttempts;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
+      this();
 
-      this.initialWaitTimeout = -1;
-
-      for (Pair<TransportConfiguration, TransportConfiguration> pair : connectors)
-      {
-         ConnectionManager cm = new ConnectionManagerImpl(pair.a,
-                                                          pair.b,
-                                                          failoverOnServerShutdown,
-                                                          maxConnections,
-                                                          callTimeout,
-                                                          pingPeriod,
-                                                          connectionTTL,
-                                                          retryInterval,
-                                                          retryIntervalMultiplier,
-                                                          reconnectAttempts);
-
-         connectionManagerMap.put(pair, cm);
-      }
-
-      updateConnectionManagerArray();
-
-      this.discoveryGroup = null;
+      this.staticConnectors = staticConnectors;
    }
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
-                                   final TransportConfiguration backupConnectorConfig,
-                                   final boolean failoverOnServerShutdown,
-                                   final long retryInterval,
-                                   final double retryIntervalMultiplier,
-                                   final int reconnectAttempts)
+                                   final TransportConfiguration backupConnectorConfig)
    {
-      this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
-      this.pingPeriod = DEFAULT_PING_PERIOD;
-      this.connectionTTL = DEFAULT_CONNECTION_TTL;
-      this.callTimeout = DEFAULT_CALL_TIMEOUT;
-      this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
-      this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      this.producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
-      this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
-      this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      this.blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      this.minLargeMessageSize = DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-      this.autoGroup = DEFAULT_AUTO_GROUP;
-      this.maxConnections = DEFAULT_MAX_CONNECTIONS;
-      this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
-      this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.reconnectAttempts = reconnectAttempts;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
+      this();
+      
+      staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
 
-      this.initialWaitTimeout = -1;
-
-      Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
-                                                                                                                           backupConnectorConfig);
-
-      ConnectionManager cm = new ConnectionManagerImpl(pair.a,
-                                                       pair.b,
-                                                       failoverOnServerShutdown,
-                                                       maxConnections,
-                                                       callTimeout,
-                                                       pingPeriod,
-                                                       connectionTTL,
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,
-                                                       reconnectAttempts);
-
-      connectionManagerMap.put(pair, cm);
-
-      updateConnectionManagerArray();
-
-      discoveryGroup = null;
+      staticConnectors.add(new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig, backupConnectorConfig));
    }
 
-   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
-                                   final long retryInterval,
-                                   final double retryIntervalMultiplier,
-                                   final int reconnectAttempts)
-   {
-      this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
-      this.pingPeriod = DEFAULT_PING_PERIOD;
-      this.connectionTTL = DEFAULT_CONNECTION_TTL;
-      this.callTimeout = DEFAULT_CALL_TIMEOUT;
-      this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
-      this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      this.producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
-      this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
-      this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      this.blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      this.minLargeMessageSize = DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-      this.autoGroup = DEFAULT_AUTO_GROUP;
-      this.maxConnections = DEFAULT_MAX_CONNECTIONS;
-      this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
-      this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.reconnectAttempts = reconnectAttempts;
-      this.failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-
-      this.initialWaitTimeout = -1;
-
-      Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
-                                                                                                                           null);
-
-      ConnectionManager cm = new ConnectionManagerImpl(pair.a,
-                                                       pair.b,
-                                                       failoverOnServerShutdown,
-                                                       maxConnections,
-                                                       callTimeout,
-                                                       pingPeriod,
-                                                       connectionTTL,
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,
-                                                       reconnectAttempts);
-
-      connectionManagerMap.put(pair, cm);
-
-      updateConnectionManagerArray();
-
-      discoveryGroup = null;
-   }
-
-   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
-                                   final TransportConfiguration backupConfig)
-   {
-      this.loadBalancingPolicy = new FirstElementConnectionLoadBalancingPolicy();
-      this.pingPeriod = DEFAULT_PING_PERIOD;
-      this.callTimeout = DEFAULT_CALL_TIMEOUT;
-      this.connectionTTL = DEFAULT_CONNECTION_TTL;
-      this.consumerWindowSize = DEFAULT_CONSUMER_WINDOW_SIZE;
-      this.consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
-      this.producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
-      this.producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
-      this.blockOnAcknowledge = DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      this.blockOnNonPersistentSend = DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      this.blockOnPersistentSend = DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      this.minLargeMessageSize = DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-      this.autoGroup = DEFAULT_AUTO_GROUP;
-      this.maxConnections = DEFAULT_MAX_CONNECTIONS;
-      this.ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
-      this.preAcknowledge = DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryInterval = DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
-      this.failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-
-      this.initialWaitTimeout = -1;
-
-      Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
-                                                                                                                           backupConfig);
-
-      ConnectionManager cm = new ConnectionManagerImpl(pair.a,
-                                                       pair.b,
-                                                       failoverOnServerShutdown,
-                                                       maxConnections,
-                                                       callTimeout,
-                                                       pingPeriod,
-                                                       connectionTTL,
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,
-                                                       reconnectAttempts);
-
-      connectionManagerMap.put(pair, cm);
-
-      updateConnectionManagerArray();
-
-      discoveryGroup = null;
-   }
-
-   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
-                                   final TransportConfiguration backupConfig,
-                                   final boolean failoverOnServerShutdown,
-                                   final String connectionloadBalancingPolicyClassName,
-                                   final long pingPeriod,
-                                   final long connectionTTL,
-                                   final long callTimeout,
-                                   final int consumerWindowSize,
-                                   final int consumerMaxRate,
-                                   final int sendWindowSize,
-                                   final int producerMaxRate,
-                                   final int minLargeMessageSize,
-                                   final boolean blockOnAcknowledge,
-                                   final boolean blockOnNonPersistentSend,
-                                   final boolean blockOnPersistentSend,
-                                   final boolean autoGroup,
-                                   final int maxConnections,
-                                   final boolean preAcknowledge,
-                                   final int ackBatchSize,
-                                   final long retryInterval,
-                                   final double retryIntervalMultiplier,
-                                   final int reconnectAttempts)
-   {
-      this.loadBalancingPolicy = instantiateLoadBalancingPolicy(connectionloadBalancingPolicyClassName);
-      this.pingPeriod = pingPeriod;
-      this.connectionTTL = connectionTTL;
-      this.callTimeout = callTimeout;
-      this.consumerWindowSize = consumerWindowSize;
-      this.consumerMaxRate = consumerMaxRate;
-      this.producerWindowSize = sendWindowSize;
-      this.producerMaxRate = producerMaxRate;
-      this.blockOnAcknowledge = blockOnAcknowledge;
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      this.blockOnPersistentSend = blockOnPersistentSend;
-      this.minLargeMessageSize = minLargeMessageSize;
-      this.autoGroup = autoGroup;
-      this.maxConnections = maxConnections;
-      this.ackBatchSize = ackBatchSize;
-      this.preAcknowledge = preAcknowledge;
-      this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.reconnectAttempts = reconnectAttempts;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
-
-      this.initialWaitTimeout = -1;
-
-      Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
-                                                                                                                           backupConfig);
-      ConnectionManager cm = new ConnectionManagerImpl(pair.a,
-                                                       pair.b,
-                                                       failoverOnServerShutdown,
-                                                       maxConnections,
-                                                       callTimeout,
-                                                       pingPeriod,
-                                                       connectionTTL,
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,
-                                                       reconnectAttempts);
-
-      connectionManagerMap.put(pair, cm);
-
-      updateConnectionManagerArray();
-
-      discoveryGroup = null;
-   }
-
-   /**
-   * Create a ClientSessionFactoryImpl specify transport type and using defaults
-   */
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig)
    {
-      this(connectorConfig,
-           null,
-           DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-           DEFAULT_RETRY_INTERVAL,
-           DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-           DEFAULT_RECONNECT_ATTEMPTS);
+      this(connectorConfig, null);
    }
 
    // ClientSessionFactory implementation------------------------------------------------------------
 
+   public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
+   {
+      return staticConnectors;
+   }
+
+   public synchronized void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   {
+      checkWrite();
+
+      this.staticConnectors = staticConnectors;
+   }
+
+   public synchronized long getPingPeriod()
+   {
+      return pingPeriod;
+   }
+
+   public synchronized void setPingPeriod(long pingPeriod)
+   {
+      checkWrite();
+      this.pingPeriod = pingPeriod;
+   }
+
+   public synchronized long getConnectionTTL()
+   {
+      return connectionTTL;
+   }
+
+   public synchronized void setConnectionTTL(long connectionTTL)
+   {
+      checkWrite();
+      this.connectionTTL = connectionTTL;
+   }
+
+   public synchronized long getCallTimeout()
+   {
+      return callTimeout;
+   }
+
+   public synchronized void setCallTimeout(long callTimeout)
+   {
+      checkWrite();
+      this.callTimeout = callTimeout;
+   }
+
+   public synchronized int getMaxConnections()
+   {
+      return maxConnections;
+   }
+
+   public synchronized void setMaxConnections(int maxConnections)
+   {
+      checkWrite();
+      this.maxConnections = maxConnections;
+   }
+
+   public synchronized int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
+
+   public synchronized void setMinLargeMessageSize(int minLargeMessageSize)
+   {
+      checkWrite();
+      this.minLargeMessageSize = minLargeMessageSize;
+   }
+
+   public synchronized int getConsumerWindowSize()
+   {
+      return consumerWindowSize;
+   }
+
+   public synchronized void setConsumerWindowSize(int consumerWindowSize)
+   {
+      checkWrite();
+      this.consumerWindowSize = consumerWindowSize;
+   }
+
+   public synchronized int getConsumerMaxRate()
+   {
+      return consumerMaxRate;
+   }
+
+   public synchronized void setConsumerMaxRate(int consumerMaxRate)
+   {
+      checkWrite();
+      this.consumerMaxRate = consumerMaxRate;
+   }
+
+   public synchronized int getProducerWindowSize()
+   {
+      return producerWindowSize;
+   }
+
+   public synchronized void setProducerWindowSize(int producerWindowSize)
+   {
+      checkWrite();
+      this.producerWindowSize = producerWindowSize;
+   }
+
+   public synchronized int getProducerMaxRate()
+   {
+      return producerMaxRate;
+   }
+
+   public synchronized void setProducerMaxRate(int producerMaxRate)
+   {
+      checkWrite();
+      this.producerMaxRate = producerMaxRate;
+   }
+
+   public synchronized boolean isBlockOnAcknowledge()
+   {
+      return blockOnAcknowledge;
+   }
+
+   public synchronized void setBlockOnAcknowledge(boolean blockOnAcknowledge)
+   {
+      checkWrite();
+      this.blockOnAcknowledge = blockOnAcknowledge;
+   }
+
+   public synchronized boolean isBlockOnPersistentSend()
+   {
+      return blockOnPersistentSend;
+   }
+
+   public synchronized void setBlockOnPersistentSend(boolean blockOnPersistentSend)
+   {
+      checkWrite();
+      this.blockOnPersistentSend = blockOnPersistentSend;
+   }
+
+   public synchronized boolean isBlockOnNonPersistentSend()
+   {
+      return blockOnNonPersistentSend;
+   }
+
+   public synchronized void setBlockOnNonPersistentSend(boolean blockOnNonPersistentSend)
+   {
+      checkWrite();
+      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
+   }
+
+   public synchronized boolean isAutoGroup()
+   {
+      return autoGroup;
+   }
+
+   public synchronized void setAutoGroup(boolean autoGroup)
+   {
+      checkWrite();
+      this.autoGroup = autoGroup;
+   }
+
+   public synchronized boolean isPreAcknowledge()
+   {
+      return preAcknowledge;
+   }
+
+   public synchronized void setPreAcknowledge(boolean preAcknowledge)
+   {
+      checkWrite();
+      this.preAcknowledge = preAcknowledge;
+   }
+
+   public synchronized int getAckBatchSize()
+   {
+      return ackBatchSize;
+   }
+
+   public synchronized void setAckBatchSize(int ackBatchSize)
+   {
+      checkWrite();
+      this.ackBatchSize = ackBatchSize;
+   }
+
+   public synchronized long getInitialWaitTimeout()
+   {
+      return initialWaitTimeout;
+   }
+
+   public synchronized void setInitialWaitTimeout(long initialWaitTimeout)
+   {
+      checkWrite();
+      this.initialWaitTimeout = initialWaitTimeout;
+   }
+
+   public synchronized boolean isUseGlobalPools()
+   {
+      return useGlobalPools;
+   }
+
+   public synchronized void setUseGlobalPools(boolean useGlobalPools)
+   {
+      checkWrite();
+      this.useGlobalPools = useGlobalPools;
+   }
+
+   public synchronized int getScheduledThreadPoolMaxSize()
+   {
+      return scheduledThreadPoolMaxSize;
+   }
+
+   public synchronized void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize)
+   {
+      checkWrite();
+      this.scheduledThreadPoolMaxSize = scheduledThreadPoolMaxSize;
+   }
+
+   public synchronized int getThreadPoolMaxSize()
+   {
+      return threadPoolMaxSize;
+   }
+
+   public synchronized void setThreadPoolMaxSize(int threadPoolMaxSize)
+   {
+      checkWrite();
+      this.threadPoolMaxSize = threadPoolMaxSize;
+   }
+
+   public synchronized long getRetryInterval()
+   {
+      return retryInterval;
+   }
+
+   public synchronized void setRetryInterval(long retryInterval)
+   {
+      checkWrite();
+      this.retryInterval = retryInterval;
+   }
+
+   public synchronized double getRetryIntervalMultiplier()
+   {
+      return retryIntervalMultiplier;
+   }
+
+   public synchronized void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   {
+      checkWrite();
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+   }
+
+   public synchronized int getReconnectAttempts()
+   {
+      return reconnectAttempts;
+   }
+
+   public synchronized void setReconnectAttempts(int reconnectAttempts)
+   {
+      checkWrite();
+      this.reconnectAttempts = reconnectAttempts;
+   }
+
+   public synchronized boolean isFailoverOnServerShutdown()
+   {
+      return failoverOnServerShutdown;
+   }
+
+   public synchronized void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   {
+      checkWrite();
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
+   }
+
+   public synchronized String getLoadBalancingPolicyClassName()
+   {
+      return loadBalancingPolicyClassName;
+   }
+
+   public synchronized void setLoadBalancingPolicyClassName(String loadBalancingPolicyClassName)
+   {
+      checkWrite();
+      this.loadBalancingPolicyClassName = loadBalancingPolicyClassName;
+   }
+
+   public synchronized String getDiscoveryAddress()
+   {
+      return discoveryAddress;
+   }
+
+   public synchronized void setDiscoveryAddress(String discoveryAddress)
+   {
+      checkWrite();
+      this.discoveryAddress = discoveryAddress;
+   }
+
+   public synchronized int getDiscoveryPort()
+   {
+      return discoveryPort;
+   }
+
+   public synchronized void setDiscoveryPort(int discoveryPort)
+   {
+      checkWrite();
+      this.discoveryPort = discoveryPort;
+   }
+
+   public synchronized long getDiscoveryRefreshTimeout()
+   {
+      return discoveryRefreshTimeout;
+   }
+
+   public synchronized void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout)
+   {
+      checkWrite();
+      this.discoveryRefreshTimeout = discoveryRefreshTimeout;
+   }
+
    public ClientSession createSession(final String username,
-                                      final String password,
-                                      final boolean xa,
-                                      final boolean autoCommitSends,
-                                      final boolean autoCommitAcks,
-                                      final boolean preAcknowledge,
-                                      final int ackBatchSize) throws MessagingException
+                                                   final String password,
+                                                   final boolean xa,
+                                                   final boolean autoCommitSends,
+                                                   final boolean autoCommitAcks,
+                                                   final boolean preAcknowledge,
+                                                   final int ackBatchSize) throws MessagingException
    {
       return createSessionInternal(username,
                                    password,
@@ -585,148 +707,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    ackBatchSize);
    }
 
-   public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws MessagingException
+   public ClientSession createSession(final boolean xa,
+                                                   final boolean autoCommitSends,
+                                                   final boolean autoCommitAcks) throws MessagingException
    {
       return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa,
-                                      final boolean autoCommitSends,
-                                      final boolean autoCommitAcks,
-                                      final boolean preAcknowledge) throws MessagingException
+                                                   final boolean autoCommitSends,
+                                                   final boolean autoCommitAcks,
+                                                   final boolean preAcknowledge) throws MessagingException
    {
       return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
-   }
-
-   public int getConsumerWindowSize()
-   {
-      return consumerWindowSize;
-   }
-
-   public void setConsumerWindowSize(final int size)
-   {
-      consumerWindowSize = size;
-   }
-
-   public int getProducerWindowSize()
-   {
-      return producerWindowSize;
-   }
-
-   public void setProducerWindowSize(final int size)
-   {
-      producerWindowSize = size;
-   }
-
-   public int getProducerMaxRate()
-   {
-      return producerMaxRate;
-   }
-
-   public void setProducerMaxRate(final int rate)
-   {
-      producerMaxRate = rate;
-   }
-
-   public int getConsumerMaxRate()
-   {
-      return consumerMaxRate;
-   }
-
-   public void setConsumerMaxRate(final int rate)
-   {
-      consumerMaxRate = rate;
-   }
-
-   public boolean isBlockOnPersistentSend()
-   {
-      return blockOnPersistentSend;
-   }
-
-   public void setBlockOnPersistentSend(final boolean blocking)
-   {
-      blockOnPersistentSend = blocking;
-   }
-
-   public boolean isBlockOnNonPersistentSend()
-   {
-      return blockOnNonPersistentSend;
-   }
-
-   public void setBlockOnNonPersistentSend(final boolean blocking)
-   {
-      blockOnNonPersistentSend = blocking;
-   }
-
-   public boolean isBlockOnAcknowledge()
-   {
-      return blockOnAcknowledge;
-   }
-
-   public void setBlockOnAcknowledge(final boolean blocking)
-   {
-      blockOnAcknowledge = blocking;
-   }
-
-   public boolean isAutoGroup()
-   {
-      return autoGroup;
-   }
-
-   public void setAutoGroup(boolean autoGroup)
-   {
-      this.autoGroup = autoGroup;
-   }
-
-   public int getAckBatchSize()
-   {
-      return ackBatchSize;
-   }
-
-   public void setAckBatchSize(int ackBatchSize)
-   {
-      this.ackBatchSize = ackBatchSize;
-   }
-
-   public boolean isPreAcknowledge()
-   {
-      return preAcknowledge;
-   }
-
-   public void setPreAcknowledge(boolean preAcknowledge)
-   {
-      this.preAcknowledge = preAcknowledge;
-   }
-
-   public long getPingPeriod()
-   {
-      return pingPeriod;
-   }
-
-   public long getCallTimeout()
-   {
-      return callTimeout;
-   }
-
-   public int getMaxConnections()
-   {
-      return maxConnections;
-   }
-
-   /**
-    * @return the minLargeMessageSize
-    */
-   public int getMinLargeMessageSize()
-   {
-      return minLargeMessageSize;
-   }
-
-   /**
-    * @param minLargeMessageSize the minLargeMessageSize to set
-    */
-   public void setMinLargeMessageSize(int minLargeMessageSize)
-   {
-      this.minLargeMessageSize = minLargeMessageSize;
    }
 
    public int numSessions()
@@ -773,6 +766,35 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       }
 
       connectionManagerMap.clear();
+
+      if (!useGlobalPools)
+      {
+         threadPool.shutdown();
+
+         try
+         {
+            if (!threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+            {
+               log.warn("Timed out waiting for pool to terminate");
+            }
+         }
+         catch (InterruptedException ignore)
+         {
+         }
+
+         scheduledThreadPool.shutdown();
+
+         try
+         {
+            if (!scheduledThreadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+            {
+               log.warn("Timed out waiting for scheduled pool to terminate");
+            }
+         }
+         catch (InterruptedException ignore)
+         {
+         }
+      }
    }
 
    // DiscoveryListener implementation --------------------------------------------------------
@@ -780,7 +802,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public synchronized void connectorsChanged()
    {
       receivedBroadcast = true;
-            
+
       Map<String, DiscoveryEntry> newConnectors = discoveryGroup.getDiscoveryEntryMap();
 
       Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
@@ -809,7 +831,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          if (!connectionManagerMap.containsKey(connectorPair))
          {
             // Create a new ConnectionManager
-            
+
             ConnectionManager connectionManager = new ConnectionManagerImpl(connectorPair.a,
                                                                             connectorPair.b,
                                                                             failoverOnServerShutdown,
@@ -819,9 +841,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                             connectionTTL,
                                                                             retryInterval,
                                                                             retryIntervalMultiplier,
-                                                                            reconnectAttempts);
+                                                                            reconnectAttempts,
+                                                                            threadPool,
+                                                                            scheduledThreadPool);
 
-            connectionManagerMap.put(connectorPair, connectionManager);                       
+            connectionManagerMap.put(connectorPair, connectionManager);
          }
       }
 
@@ -840,6 +864,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    // Private --------------------------------------------------------------------------------
 
+   private void checkWrite()
+   {
+      if (readOnly)
+      {
+         throw new IllegalStateException("Cannot set attribute on SessionFactory after it has been used");
+      }
+   }
+
    private ClientSession createSessionInternal(final String username,
                                                final String password,
                                                final boolean xa,
@@ -848,6 +880,20 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                final boolean preAcknowledge,
                                                final int ackBatchSize) throws MessagingException
    {
+      if (!readOnly)
+      {
+         try
+         {
+            initialise();
+         }
+         catch (Exception e)
+         {
+            throw new MessagingException(MessagingException.INTERNAL_ERROR, "Failed to initialise session factory", e);
+         }
+
+         readOnly = true;
+      }
+
       if (discoveryGroup != null && !receivedBroadcast)
       {
          boolean ok = discoveryGroup.waitForBroadcast(initialWaitTimeout);
@@ -861,7 +907,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       synchronized (this)
       {
-
          int pos = loadBalancingPolicy.select(connectionManagerArray.length);
 
          ConnectionManager connectionManager = connectionManagerArray[pos];
@@ -878,28 +923,32 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                 autoGroup,
                                                 producerWindowSize,
                                                 consumerWindowSize,
-                                                consumerMaxRate,
                                                 producerMaxRate,
+                                                consumerMaxRate,
                                                 blockOnNonPersistentSend,
                                                 blockOnPersistentSend);
       }
    }
 
-   private ConnectionLoadBalancingPolicy instantiateLoadBalancingPolicy(final String className)
+   private void instantiateLoadBalancingPolicy()
    {
+      if (loadBalancingPolicyClassName == null)
+      {
+         throw new IllegalStateException("Please specify a load balancing policy class name on the session factory");
+      }
+
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      ConnectionLoadBalancingPolicy lbPolicy;
       try
       {
-         Class<?> clazz = loader.loadClass(className);
-         lbPolicy = (ConnectionLoadBalancingPolicy)clazz.newInstance();
+         Class<?> clazz = loader.loadClass(loadBalancingPolicyClassName);
+         loadBalancingPolicy = (ConnectionLoadBalancingPolicy)clazz.newInstance();
       }
       catch (Exception e)
       {
-         throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + className + "\"", e);
+         throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + loadBalancingPolicyClassName +
+                                                     "\"",
+                                            e);
       }
-
-      return lbPolicy;
    }
 
    private void updateConnectionManagerArray()
@@ -908,5 +957,4 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       connectionManagerMap.values().toArray(connectionManagerArray);
    }
-
 }

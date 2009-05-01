@@ -22,24 +22,6 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.jms.Connection;
@@ -79,39 +61,26 @@ public class JMSUtil
 
    public static Connection createConnection(String connectorFactory) throws JMSException
    {
-      return createConnection(connectorFactory, DEFAULT_CONNECTION_TTL, DEFAULT_PING_PERIOD);
-   }
-
-   public static Connection createConnection(String connectorFactory, long connectionTTL, long pingPeriod) throws JMSException
-   {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory),
-                                                             null,
-                                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                             pingPeriod,
-                                                             connectionTTL,
-                                                             DEFAULT_CALL_TIMEOUT,
-                                                             null,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_ACK_BATCH_SIZE,
-                                                             DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                             DEFAULT_CONSUMER_MAX_RATE,
-                                                             DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                             DEFAULT_PRODUCER_MAX_RATE,
-                                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                             DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                             true,
-                                                             true,
-                                                             DEFAULT_AUTO_GROUP,
-                                                             DEFAULT_MAX_CONNECTIONS,
-                                                             DEFAULT_PRE_ACKNOWLEDGE,                                                  
-                                                             DEFAULT_RETRY_INTERVAL,
-                                                             DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             DEFAULT_RECONNECT_ATTEMPTS,
-                                                             DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory));
+      
+      cf.setBlockOnNonPersistentSend(true);
+      cf.setBlockOnPersistentSend(true);
 
       return cf.createConnection();
    }
    
+   public static Connection createConnection(String connectorFactory, long connectionTTL, long pingPeriod) throws JMSException
+   {
+      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory));
+      
+      cf.setBlockOnNonPersistentSend(true);
+      cf.setBlockOnPersistentSend(true);
+      cf.setConnectionTTL(connectionTTL);
+      cf.setPingPeriod(pingPeriod);
+
+      return cf.createConnection();
+   }
+
    static MessageConsumer createConsumer(Connection connection, Destination destination, String connectorFactory) throws JMSException
    {
       Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -121,12 +90,13 @@ public class JMSUtil
 
    public static MessageConsumer createConsumer(Connection connection, Destination destination) throws JMSException
    {
-      return createConsumer(connection, 
-                            destination,
-                            InVMConnectorFactory.class.getName());
+      return createConsumer(connection, destination, InVMConnectorFactory.class.getName());
    }
 
-   static TopicSubscriber createDurableSubscriber(Connection connection, Topic topic, String clientID, String subscriptionName) throws JMSException
+   static TopicSubscriber createDurableSubscriber(Connection connection,
+                                                  Topic topic,
+                                                  String clientID,
+                                                  String subscriptionName) throws JMSException
    {
       connection.setClientID(clientID);
       Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -139,7 +109,7 @@ public class JMSUtil
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       return sendMessages(cf, destination, messagesToSend);
    }
-   
+
    public static String[] sendMessages(ConnectionFactory cf, Destination destination, int messagesToSend) throws Exception
    {
       String[] messageIDs = new String[messagesToSend];
@@ -155,7 +125,7 @@ public class JMSUtil
          producer.send(m);
          messageIDs[i] = m.getJMSMessageID();
       }
-      
+
       conn.close();
 
       return messageIDs;
@@ -173,7 +143,8 @@ public class JMSUtil
    public static void consumeMessages(int expected, Destination dest) throws JMSException
    {
       Connection connection = createConnection(InVMConnectorFactory.class.getName());
-      try{
+      try
+      {
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageConsumer consumer = session.createConsumer(dest);
 

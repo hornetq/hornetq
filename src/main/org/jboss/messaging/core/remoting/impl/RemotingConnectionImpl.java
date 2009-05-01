@@ -12,22 +12,6 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.CloseListener;
-import org.jboss.messaging.core.remoting.CommandConfirmationHandler;
-import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATESESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
@@ -87,6 +71,39 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SET_TIMEOUT_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.CloseListener;
+import org.jboss.messaging.core.remoting.CommandConfirmationHandler;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateQueueMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
@@ -139,21 +156,6 @@ import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -175,11 +177,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                                      final long pingInterval,
                                                      final long connectionTTL,
                                                      final ScheduledExecutorService pingExecutor,
+                                                     final Executor threadPool, 
                                                      final ConnectionLifeCycleListener listener)
    {
       DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
-      Connector connector = connectorFactory.createConnector(params, handler, listener);
+      Connector connector = connectorFactory.createConnector(params, handler, listener, threadPool);
 
       if (connector == null)
       {
@@ -200,6 +203,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                                                  pingInterval,
                                                                  connectionTTL,
                                                                  pingExecutor,
+                                                                 threadPool,
                                                                  null);
 
       handler.conn = connection;
@@ -258,6 +262,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private final long connectionTTL;
 
    private final ScheduledExecutorService pingExecutor;
+   
+   private final Executor threadPool;
 
    // Channels 0-9 are reserved for the system
    // 0 is for pinging
@@ -290,9 +296,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                  final long pingPeriod,
                                  final long connectionTTL,
                                  final ScheduledExecutorService pingExecutor,
+                                 final Executor threadPool,
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, pingPeriod, connectionTTL, pingExecutor, interceptors, true, true);
+      this(transportConnection, blockingCallTimeout, pingPeriod, connectionTTL, pingExecutor, threadPool, interceptors, true, true);
    }
 
    /*
@@ -301,10 +308,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final List<Interceptor> interceptors,
                                  final boolean active,
-                                 final long connectionTTL)
+                                 final long connectionTTL,
+                                 final Executor threadPool)
 
    {
-      this(transportConnection, -1, -1, connectionTTL, null, interceptors, active, false);
+      this(transportConnection, -1, -1, connectionTTL, null, threadPool, interceptors, active, false);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
@@ -312,6 +320,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                   final long pingPeriod,
                                   final long connectionTTL,
                                   final ScheduledExecutorService pingExecutor,
+                                  final Executor threadPool,
                                   final List<Interceptor> interceptors,
                                   final boolean active,
                                   final boolean client)
@@ -330,6 +339,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       this.connectionTTL = connectionTTL;
 
       this.pingExecutor = pingExecutor;
+      
+      this.threadPool = threadPool;
 
       // Channel zero is reserved for pinging
       pingChannel = getChannel(0, -1, false);
@@ -1110,7 +1121,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
 
                if (connection.active || packet.isWriteAlways())
-               {
+               {                
                   connection.transportConnection.write(buffer, flush);
                }
             }
@@ -1181,6 +1192,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                connection.transportConnection.write(buffer);
                
+ 
                long toWait = connection.blockingCallTimeout;
 
                long start = System.currentTimeMillis();
@@ -1188,7 +1200,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                while (response == null && toWait > 0)
                {
                   try
-                  {
+                  {                     
                      sendCondition.await(toWait, TimeUnit.MILLISECONDS);
                   }
                   catch (InterruptedException e)
@@ -1199,7 +1211,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   {
                      break;
                   }
-
+                  
                   final long now = System.currentTimeMillis();
 
                   toWait -= now - start;
@@ -1594,7 +1606,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                confirm(packet);
 
                lock.lock();
-
+               
                try
                {
                   sendCondition.signal();
@@ -1683,21 +1695,29 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             // Error - didn't get pong back
             final MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED,
                                                                  "Did not receive pong from server");
-
             future.cancel(true);
             
-            fail(me);
+            //Need to call fail on a different thread otherwise can prevent other pings occurring
+            threadPool.execute(new Runnable()
+            {
+               public void run()
+               {
+                  fail(me); 
+               }
+            });                                  
          }
-
-         gotPong = false;
-
-         firstTime = false;
-
-         // Send ping
-
-         final Packet ping = new Ping(connectionTTL);
-
-         pingChannel.send(ping);
+         else
+         {
+            gotPong = false;
+   
+            firstTime = false;
+   
+            // Send ping
+   
+            final Packet ping = new Ping(connectionTTL);
+   
+            pingChannel.send(ping);
+         }
       }
    }
 

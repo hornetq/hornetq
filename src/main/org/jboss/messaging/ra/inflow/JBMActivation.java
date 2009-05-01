@@ -77,41 +77,41 @@ public class JBMActivation
    /**
     * The resource adapter
     */
-   protected JBMResourceAdapter ra;
+   private final JBMResourceAdapter ra;
 
    /**
     * The activation spec
     */
-   protected JBMActivationSpec spec;
+   private final JBMActivationSpec spec;
 
    /**
     * The message endpoint factory
     */
-   protected MessageEndpointFactory endpointFactory;
+   private final MessageEndpointFactory endpointFactory;
 
    /**
     * Whether delivery is active
     */
-   protected AtomicBoolean deliveryActive = new AtomicBoolean(false);
+   private final AtomicBoolean deliveryActive = new AtomicBoolean(false);
 
    /**
     * The destination type
     */
-   protected boolean isTopic = false;
+   private boolean isTopic = false;
 
    /**
     * Is the delivery transacted
     */
-   protected boolean isDeliveryTransacted;
+   private boolean isDeliveryTransacted;
 
-   JBossDestination destination;
+   private JBossDestination destination;
 
    /**
     * The TransactionManager
     */
-   protected TransactionManager tm;
+   private TransactionManager tm;
 
-   private List<JBMMessageHandler> handlers = new ArrayList<JBMMessageHandler>();
+   private final List<JBMMessageHandler> handlers = new ArrayList<JBMMessageHandler>();
 
    private JBossConnectionFactory factory;
 
@@ -135,7 +135,9 @@ public class JBMActivation
     * @param spec            The activation spec
     * @throws ResourceException Thrown if an error occurs
     */
-   public JBMActivation(JBMResourceAdapter ra, MessageEndpointFactory endpointFactory, JBMActivationSpec spec) throws ResourceException
+   public JBMActivation(final JBMResourceAdapter ra,
+                        final MessageEndpointFactory endpointFactory,
+                        final JBMActivationSpec spec) throws ResourceException
    {
       if (trace)
       {
@@ -147,7 +149,7 @@ public class JBMActivation
       this.spec = spec;
       try
       {
-         this.isDeliveryTransacted = endpointFactory.isDeliveryTransacted(ONMESSAGE);
+         isDeliveryTransacted = endpointFactory.isDeliveryTransacted(ONMESSAGE);
       }
       catch (Exception e)
       {
@@ -297,12 +299,12 @@ public class JBMActivation
       log.debug("Setting up " + spec);
 
       setupCF();
-      
+
       setupDestination();
       for (int i = 0; i < spec.getMaxSessionInt(); i++)
       {
          ClientSession session = setupSession();
-         
+
          JBMMessageHandler handler = new JBMMessageHandler(this, session);
          handler.setup();
          session.start();
@@ -331,14 +333,14 @@ public class JBMActivation
    {
       if (spec.getConnectorClassName() == null)
       {
-         this.factory = ra.getJBossConnectionFactory();
+         factory = ra.getJBossConnectionFactory();
       }
       else
       {
-         this.factory = ra.createRemoteFactory(spec.getConnectorClassName(), spec.getParsedConnectionParameters());
+         factory = ra.createRemoteFactory(spec.getConnectorClassName(), spec.getParsedConnectionParameters());
       }
    }
-   
+
    /**
     * Setup a session
     *
@@ -354,7 +356,7 @@ public class JBMActivation
 
       try
       {
-         result = ra.createSession(this.factory.getCoreFactory(),
+         result = ra.createSession(factory.getCoreFactory(),
                                    spec.getAcknowledgeModeInt(),
                                    spec.getUser(),
                                    spec.getPassword(),
@@ -395,7 +397,7 @@ public class JBMActivation
 
    protected void setupDestination() throws Exception
    {
-      
+
       String destinationName = spec.getDestination();
 
       if (spec.isUseJNDI())
@@ -403,13 +405,15 @@ public class JBMActivation
          Context ctx = new InitialContext();
          log.debug("Using context " + ctx.getEnvironment() + " for " + spec);
          if (trace)
+         {
             log.trace("setupDestination(" + ctx + ")");
-   
+         }
+
          String destinationTypeString = spec.getDestinationType();
          if (destinationTypeString != null && !destinationTypeString.trim().equals(""))
          {
             log.debug("Destination type defined as " + destinationTypeString);
-   
+
             Class<?> destinationType;
             if (Topic.class.getName().equals(destinationTypeString))
             {
@@ -420,7 +424,7 @@ public class JBMActivation
             {
                destinationType = Queue.class;
             }
-   
+
             log.debug("Retrieving destination " + destinationName + " of type " + destinationType.getName());
             try
             {
@@ -448,7 +452,7 @@ public class JBMActivation
          {
             log.debug("Destination type not defined");
             log.debug("Retrieving destination " + destinationName + " of type " + Destination.class.getName());
-   
+
             destination = (JBossDestination)Util.lookup(ctx, destinationName, Destination.class);
             if (destination instanceof Topic)
             {
@@ -476,6 +480,7 @@ public class JBMActivation
     *
     * @return The value
     */
+   @Override
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();

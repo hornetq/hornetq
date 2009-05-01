@@ -22,25 +22,6 @@
 
 package org.jboss.messaging.tests.integration.cluster.failover;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,29 +76,10 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
    {
       final long pingPeriod = 500;
 
-      ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                      null,
-                                                                      DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                                      DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                                      pingPeriod,
-                                                                      (long)(pingPeriod * 1.5),
-                                                                      DEFAULT_CALL_TIMEOUT,
-                                                                      DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                                      DEFAULT_CONSUMER_MAX_RATE,
-                                                                      DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                                      DEFAULT_PRODUCER_MAX_RATE,
-                                                                      DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                      DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                      DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                                      DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                                      DEFAULT_AUTO_GROUP,
-                                                                      DEFAULT_MAX_CONNECTIONS,
-                                                                      DEFAULT_PRE_ACKNOWLEDGE,
-                                                                      DEFAULT_ACK_BATCH_SIZE,
-                                                                      DEFAULT_RETRY_INTERVAL,
-                                                                      DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                      DEFAULT_RECONNECT_ATTEMPTS);
-
+      ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+                                                                      
+      sf1.setPingPeriod(pingPeriod);
+      sf1.setConnectionTTL((long)(pingPeriod * 1.5));      
       sf1.setProducerWindowSize(32 * 1024);
 
       assertEquals(0, liveServer.getRemotingService().getConnections().size());

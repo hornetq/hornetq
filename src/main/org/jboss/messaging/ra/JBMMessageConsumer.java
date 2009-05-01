@@ -44,13 +44,13 @@ public class JBMMessageConsumer implements MessageConsumer
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMMessageConsumer.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The wrapped message consumer */
    protected MessageConsumer consumer;
-   
+
    /** The session for this consumer */
    protected JBMSession session;
 
@@ -59,13 +59,15 @@ public class JBMMessageConsumer implements MessageConsumer
     * @param consumer the consumer
     * @param session the session
     */
-   public JBMMessageConsumer(MessageConsumer consumer, JBMSession session)
+   public JBMMessageConsumer(final MessageConsumer consumer, final JBMSession session)
    {
       this.consumer = consumer;
       this.session = session;
-      
+
       if (trace)
+      {
          log.trace("new JBMMessageConsumer " + this + " consumer=" + consumer + " session=" + session);
+      }
    }
 
    /**
@@ -75,7 +77,9 @@ public class JBMMessageConsumer implements MessageConsumer
    public void close() throws JMSException
    {
       if (trace)
+      {
          log.trace("close " + this);
+      }
       try
       {
          closeConsumer();
@@ -93,9 +97,11 @@ public class JBMMessageConsumer implements MessageConsumer
    void checkState() throws JMSException
    {
       if (trace)
+      {
          log.trace("checkState()");
+      }
    }
-   
+
    /**
     * Get message listener
     * @return The listener
@@ -104,19 +110,21 @@ public class JBMMessageConsumer implements MessageConsumer
    public MessageListener getMessageListener() throws JMSException
    {
       if (trace)
+      {
          log.trace("getMessageListener()");
+      }
 
       checkState();
       session.checkStrict();
       return consumer.getMessageListener();
    }
-   
+
    /**
     * Set message listener
     * @param listener The listener
     * @exception JMSException Thrown if an error occurs
     */
-   public void setMessageListener(MessageListener listener) throws JMSException
+   public void setMessageListener(final MessageListener listener) throws JMSException
    {
       session.lock();
       try
@@ -124,9 +132,13 @@ public class JBMMessageConsumer implements MessageConsumer
          checkState();
          session.checkStrict();
          if (listener == null)
+         {
             consumer.setMessageListener(null);
+         }
          else
+         {
             consumer.setMessageListener(wrapMessageListener(listener));
+         }
       }
       finally
       {
@@ -142,12 +154,14 @@ public class JBMMessageConsumer implements MessageConsumer
    public String getMessageSelector() throws JMSException
    {
       if (trace)
+      {
          log.trace("getMessageSelector()");
+      }
 
       checkState();
       return consumer.getMessageSelector();
    }
-   
+
    /**
     * Receive
     * @return The message
@@ -159,18 +173,26 @@ public class JBMMessageConsumer implements MessageConsumer
       try
       {
          if (trace)
+         {
             log.trace("receive " + this);
+         }
 
          checkState();
          Message message = consumer.receive();
 
          if (trace)
+         {
             log.trace("received " + this + " result=" + message);
+         }
 
          if (message == null)
+         {
             return null;
+         }
          else
+         {
             return wrapMessage(message);
+         }
       }
       finally
       {
@@ -184,24 +206,32 @@ public class JBMMessageConsumer implements MessageConsumer
     * @return The message
     * @exception JMSException Thrown if an error occurs
     */
-   public Message receive(long timeout) throws JMSException
+   public Message receive(final long timeout) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
+         {
             log.trace("receive " + this + " timeout=" + timeout);
+         }
 
          checkState();
          Message message = consumer.receive(timeout);
 
          if (trace)
+         {
             log.trace("received " + this + " result=" + message);
+         }
 
          if (message == null)
+         {
             return null;
+         }
          else
+         {
             return wrapMessage(message);
+         }
       }
       finally
       {
@@ -220,25 +250,33 @@ public class JBMMessageConsumer implements MessageConsumer
       try
       {
          if (trace)
+         {
             log.trace("receiveNoWait " + this);
+         }
 
          checkState();
          Message message = consumer.receiveNoWait();
 
          if (trace)
+         {
             log.trace("received " + this + " result=" + message);
+         }
 
          if (message == null)
+         {
             return null;
+         }
          else
+         {
             return wrapMessage(message);
+         }
       }
       finally
       {
          session.unlock();
       }
    }
-   
+
    /**
     * Close consumer
     * @exception JMSException Thrown if an error occurs
@@ -246,43 +284,59 @@ public class JBMMessageConsumer implements MessageConsumer
    void closeConsumer() throws JMSException
    {
       if (trace)
+      {
          log.trace("closeConsumer()");
+      }
 
       consumer.close();
    }
-   
+
    /**
     * Wrap message
     * @param message The message to be wrapped
     * @return The wrapped message
     */
-   Message wrapMessage(Message message)
+   Message wrapMessage(final Message message)
    {
       if (trace)
+      {
          log.trace("wrapMessage(" + message + ")");
+      }
 
       if (message instanceof BytesMessage)
-         return new JBMBytesMessage((BytesMessage) message, session);
+      {
+         return new JBMBytesMessage((BytesMessage)message, session);
+      }
       else if (message instanceof MapMessage)
-         return new JBMMapMessage((MapMessage) message, session);
+      {
+         return new JBMMapMessage((MapMessage)message, session);
+      }
       else if (message instanceof ObjectMessage)
-         return new JBMObjectMessage((ObjectMessage) message, session);
+      {
+         return new JBMObjectMessage((ObjectMessage)message, session);
+      }
       else if (message instanceof StreamMessage)
-         return new JBMStreamMessage((StreamMessage) message, session);
+      {
+         return new JBMStreamMessage((StreamMessage)message, session);
+      }
       else if (message instanceof TextMessage)
-         return new JBMTextMessage((TextMessage) message, session);
+      {
+         return new JBMTextMessage((TextMessage)message, session);
+      }
       return new JBMMessage(message, session);
    }
-   
+
    /**
     * Wrap message listener
     * @param listener The listener to be wrapped
     * @return The wrapped listener
     */
-   MessageListener wrapMessageListener(MessageListener listener)
+   MessageListener wrapMessageListener(final MessageListener listener)
    {
       if (trace)
+      {
          log.trace("getMessageSelector()");
+      }
 
       return new JBMMessageListener(listener, this);
    }

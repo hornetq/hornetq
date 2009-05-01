@@ -169,11 +169,12 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       final int reconnectAttempts = 10;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
-
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
+      
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
 
       List<MyListener> listeners = new ArrayList<MyListener>();
@@ -270,10 +271,11 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       final int reconnectAttempts = 10;
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
 
@@ -323,12 +325,13 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams),
-                                                                     true,
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
-
+                                                                                                backupParams));
+      
+      sf.setFailoverOnServerShutdown(true);
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
+      
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
 
       List<MyListener> listeners = new ArrayList<MyListener>();
@@ -427,11 +430,12 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams),
-                                                                     true,
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+                                                                                                backupParams));
+      
+      sf.setFailoverOnServerShutdown(true);
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       final int numSessions = (int)(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 1.5);
 

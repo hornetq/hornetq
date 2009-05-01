@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -45,7 +46,7 @@ public class NettyAcceptorTest extends UnitTestCase
       BufferHandler handler = EasyMock.createStrictMock(BufferHandler.class);
       Map<String, Object> params = new HashMap<String, Object>();
       ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
-      NettyAcceptor acceptor = new NettyAcceptor(params, handler, listener);
+      NettyAcceptor acceptor = new NettyAcceptor(params, handler, listener, Executors.newCachedThreadPool());
 
       acceptor.start();
       acceptor.pause();

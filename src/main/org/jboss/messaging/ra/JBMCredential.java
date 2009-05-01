@@ -48,7 +48,7 @@ public class JBMCredential implements Serializable
 
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMCredential.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -64,7 +64,9 @@ public class JBMCredential implements Serializable
    private JBMCredential()
    {
       if (trace)
+      {
          log.trace("constructor()");
+      }
    }
 
    /**
@@ -74,7 +76,9 @@ public class JBMCredential implements Serializable
    public String getUserName()
    {
       if (trace)
+      {
          log.trace("getUserName()");
+      }
 
       return userName;
    }
@@ -83,14 +87,16 @@ public class JBMCredential implements Serializable
     * Set the user name
     * @param userName The value
     */
-   private void setUserName(String userName)
+   private void setUserName(final String userName)
    {
       if (trace)
+      {
          log.trace("setUserName(" + userName + ")");
+      }
 
       this.userName = userName;
    }
-  
+
    /**
     * Get the password
     * @return The value
@@ -98,7 +104,9 @@ public class JBMCredential implements Serializable
    public String getPassword()
    {
       if (trace)
+      {
          log.trace("getPassword()");
+      }
 
       return password;
    }
@@ -107,10 +115,12 @@ public class JBMCredential implements Serializable
     * Set the password
     * @param password The value
     */
-   private void setPassword(String password)
+   private void setPassword(final String password)
    {
       if (trace)
+      {
          log.trace("setPassword(****)");
+      }
 
       this.password = password;
    }
@@ -123,11 +133,14 @@ public class JBMCredential implements Serializable
     * @return The credentials
     * @exception SecurityException Thrown if the credentials cant be retrieved
     */
-   public static JBMCredential getCredential(ManagedConnectionFactory mcf, Subject subject, ConnectionRequestInfo info)
-      throws SecurityException
+   public static JBMCredential getCredential(final ManagedConnectionFactory mcf,
+                                             final Subject subject,
+                                             final ConnectionRequestInfo info) throws SecurityException
    {
       if (trace)
+      {
          log.trace("getCredential(" + mcf + ", " + subject + ", " + info + ")");
+      }
 
       JBMCredential jc = new JBMCredential();
       if (subject == null && info != null)
@@ -140,7 +153,9 @@ public class JBMCredential implements Serializable
          PasswordCredential pwdc = GetCredentialAction.getCredential(subject, mcf);
 
          if (pwdc == null)
+         {
             throw new SecurityException("No password credentials found");
+         }
 
          jc.setUserName(pwdc.getUserName());
          jc.setPassword(new String(pwdc.getPassword()));
@@ -157,39 +172,44 @@ public class JBMCredential implements Serializable
     * String representation
     * @return The representation
     */
+   @Override
    public String toString()
    {
       if (trace)
+      {
          log.trace("toString()");
+      }
 
       return super.toString() + "{ username=" + userName + ", password=**** }";
    }
-   
+
    /**
     * Privileged class to get credentials
     */
    private static class GetCredentialAction implements PrivilegedAction<PasswordCredential>
    {
       /** The subject */
-      private Subject subject;
+      private final Subject subject;
 
       /** The managed connection factory */
-      private ManagedConnectionFactory mcf;
+      private final ManagedConnectionFactory mcf;
 
       /**
        * Constructor
        * @param subject The subject
        * @param mcf The managed connection factory
        */
-      GetCredentialAction(Subject subject, ManagedConnectionFactory mcf)
+      GetCredentialAction(final Subject subject, final ManagedConnectionFactory mcf)
       {
          if (trace)
+         {
             log.trace("constructor(" + subject + ", " + mcf + ")");
+         }
 
          this.subject = subject;
          this.mcf = mcf;
       }
-    
+
       /**
        * Run
        * @return The credential
@@ -197,12 +217,14 @@ public class JBMCredential implements Serializable
       public PasswordCredential run()
       {
          if (trace)
+         {
             log.trace("run()");
-         
+         }
+
          Set<PasswordCredential> creds = subject.getPrivateCredentials(PasswordCredential.class);
          PasswordCredential pwdc = null;
-         
-         for (PasswordCredential curCred: creds)
+
+         for (PasswordCredential curCred : creds)
          {
             if (curCred.getManagedConnectionFactory().equals(mcf))
             {
@@ -219,13 +241,15 @@ public class JBMCredential implements Serializable
        * @param mcf The managed connection factory
        * @return The credential
        */
-      static PasswordCredential getCredential(Subject subject, ManagedConnectionFactory mcf)
+      static PasswordCredential getCredential(final Subject subject, final ManagedConnectionFactory mcf)
       {
          if (trace)
+         {
             log.trace("getCredential(" + subject + ", " + mcf + ")");
+         }
 
          GetCredentialAction action = new GetCredentialAction(subject, mcf);
-         return (PasswordCredential) AccessController.doPrivileged(action);
+         return AccessController.doPrivileged(action);
       }
    }
 }

@@ -22,7 +22,7 @@
 package org.jboss.messaging.core.remoting.impl.invm;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -31,9 +31,6 @@ import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.utils.ExecutorFactory;
-import org.jboss.messaging.utils.JBMThreadFactory;
-import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
@@ -53,30 +50,34 @@ public class InVMConnection implements Connection
    private final String id;
 
    private boolean closed;
-   
-   private final int serverID;
 
-   private static final ExecutorFactory factory =
-      new OrderedExecutorFactory(Executors.newCachedThreadPool(new JBMThreadFactory("JBM-InVM-Transport-Threads")));
+   private final int serverID;
 
    private final Executor executor;
 
-   public InVMConnection(final int serverID, final BufferHandler handler, final ConnectionLifeCycleListener listener)
-   {      
-      this(serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener);
+   public InVMConnection(final int serverID,
+                         final BufferHandler handler,
+                         final ConnectionLifeCycleListener listener,
+                         final Executor executor)
+   {
+      this(serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener, executor);
    }
 
-   public InVMConnection(final int serverID, final String id, final BufferHandler handler, final ConnectionLifeCycleListener listener)
+   public InVMConnection(final int serverID,
+                         final String id,
+                         final BufferHandler handler,
+                         final ConnectionLifeCycleListener listener,
+                         final Executor executor)
    {
       this.serverID = serverID;
-      
+
       this.handler = handler;
 
       this.listener = listener;
 
       this.id = id;
 
-      executor = factory.getExecutor();
+      this.executor = executor;
 
       listener.connectionCreated(this);
    }
@@ -87,27 +88,34 @@ public class InVMConnection implements Connection
       {
          return;
       }
-      
-      //Must execute this on the executor, to ensure connection destroyed doesn't get fired before the last DISCONNECT
-      //packet is processed
-      
-      executor.execute(new Runnable()
-      {
-         public void run()
-         {
-            if (!closed)
-            {
-               listener.connectionDestroyed(id);
 
-               closed = true;
+      // Must execute this on the executor, to ensure connection destroyed doesn't get fired before the last DISCONNECT
+      // packet is processed
+
+      try
+      {
+         executor.execute(new Runnable()
+         {
+            public void run()
+            {
+               if (!closed)
+               {
+                  listener.connectionDestroyed(id);
+
+                  closed = true;
+               }
             }
-         }
-      }); 
+         });
+      }
+      catch (RejectedExecutionException e)
+      {
+         // Ignore - this can happen if server/client is shutdown
+      }
    }
 
    public MessagingBuffer createBuffer(final int size)
    {
-      return ChannelBuffers.buffer(size); 
+      return ChannelBuffers.buffer(size);
    }
 
    public Object getID()
@@ -116,44 +124,50 @@ public class InVMConnection implements Connection
    }
 
    public void write(final MessagingBuffer buffer)
-   {  
+   {
       write(buffer, false);
    }
-   
+
    public void write(final MessagingBuffer buffer, final boolean flush)
-   {     
-      executor.execute(new Runnable()
+   {
+      try
       {
-         public void run()
+         executor.execute(new Runnable()
          {
-            try
+            public void run()
             {
-               if (!closed)
+               try
                {
-                  buffer.readInt(); // read and discard
-                  
-                  handler.bufferReceived(id, buffer);
-               }              
+                  if (!closed)
+                  {
+                     buffer.readInt(); // read and discard
+
+                     handler.bufferReceived(id, buffer);
+                  }
+               }
+               catch (Exception e)
+               {
+                  final String msg = "Failed to write to handler";
+                  log.error(msg, e);
+                  throw new IllegalStateException(msg, e);
+               }
             }
-            catch (Exception e)
-            {
-               final String msg = "Failed to write to handler";
-               log.error(msg, e);
-               throw new IllegalStateException(msg, e);
-            }
-         }
-      });
-      
+         });
+      }
+      catch (RejectedExecutionException e)
+      {
+         // Ignore - this can happen if server/client is shutdown and another request comes in
+      }
    }
 
    public String getRemoteAddress()
    {
       return "invm:" + serverID;
    }
-   
+
    public void fail(final MessagingException me)
    {
       listener.connectionException(id, me);
    }
-      
+
 }

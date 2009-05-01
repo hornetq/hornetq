@@ -37,7 +37,7 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMBytesMessage.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -46,14 +46,16 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
     * @param message the message
     * @param session the session
     */
-   public JBMBytesMessage(BytesMessage message, JBMSession session)
+   public JBMBytesMessage(final BytesMessage message, final JBMSession session)
    {
       super(message, session);
 
       if (trace)
+      {
          log.trace("constructor(" + message + ", " + session + ")");
+      }
    }
-   
+
    /**
     * Get body length
     * @return The value
@@ -62,11 +64,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public long getBodyLength() throws JMSException
    {
       if (trace)
+      {
          log.trace("getBodyLength()");
+      }
 
-      return ((BytesMessage) message).getBodyLength();
+      return ((BytesMessage)message).getBodyLength();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -75,11 +79,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public boolean readBoolean() throws JMSException
    {
       if (trace)
+      {
          log.trace("readBoolean()");
+      }
 
-      return ((BytesMessage) message).readBoolean();
+      return ((BytesMessage)message).readBoolean();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -88,11 +94,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public byte readByte() throws JMSException
    {
       if (trace)
+      {
          log.trace("readByte()");
+      }
 
-      return ((BytesMessage) message).readByte();
+      return ((BytesMessage)message).readByte();
    }
-   
+
    /**
     * Read
     * @param value The value
@@ -100,28 +108,32 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
     * @return The result
     * @exception JMSException Thrown if an error occurs
     */
-   public int readBytes(byte[] value, int length) throws JMSException
+   public int readBytes(final byte[] value, final int length) throws JMSException
    {
       if (trace)
+      {
          log.trace("readBytes(" + value + ", " + length + ")");
+      }
 
-      return ((BytesMessage) message).readBytes(value, length);
+      return ((BytesMessage)message).readBytes(value, length);
    }
-   
+
    /**
     * Read
     * @param value The value
     * @return The result
     * @exception JMSException Thrown if an error occurs
     */
-   public int readBytes(byte[] value) throws JMSException
+   public int readBytes(final byte[] value) throws JMSException
    {
       if (trace)
+      {
          log.trace("readBytes(" + value + ")");
+      }
 
-      return ((BytesMessage) message).readBytes(value);
+      return ((BytesMessage)message).readBytes(value);
    }
-   
+
    /**
     * Read
     * @return The value
@@ -130,11 +142,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public char readChar() throws JMSException
    {
       if (trace)
+      {
          log.trace("readChar()");
+      }
 
-      return ((BytesMessage) message).readChar();
+      return ((BytesMessage)message).readChar();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -143,11 +157,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public double readDouble() throws JMSException
    {
       if (trace)
+      {
          log.trace("readDouble()");
+      }
 
-      return ((BytesMessage) message).readDouble();
+      return ((BytesMessage)message).readDouble();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -156,11 +172,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public float readFloat() throws JMSException
    {
       if (trace)
+      {
          log.trace("readFloat()");
+      }
 
-      return ((BytesMessage) message).readFloat();
+      return ((BytesMessage)message).readFloat();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -169,11 +187,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public int readInt() throws JMSException
    {
       if (trace)
+      {
          log.trace("readInt()");
+      }
 
-      return ((BytesMessage) message).readInt();
+      return ((BytesMessage)message).readInt();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -182,11 +202,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public long readLong() throws JMSException
    {
       if (trace)
+      {
          log.trace("readLong()");
+      }
 
-      return ((BytesMessage) message).readLong();
+      return ((BytesMessage)message).readLong();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -195,11 +217,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public short readShort() throws JMSException
    {
       if (trace)
+      {
          log.trace("readShort()");
+      }
 
-      return ((BytesMessage) message).readShort();
+      return ((BytesMessage)message).readShort();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -208,11 +232,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public int readUnsignedByte() throws JMSException
    {
       if (trace)
+      {
          log.trace("readUnsignedByte()");
+      }
 
-      return ((BytesMessage) message).readUnsignedByte();
+      return ((BytesMessage)message).readUnsignedByte();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -221,11 +247,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public int readUnsignedShort() throws JMSException
    {
       if (trace)
+      {
          log.trace("readUnsignedShort()");
+      }
 
-      return ((BytesMessage) message).readUnsignedShort();
+      return ((BytesMessage)message).readUnsignedShort();
    }
-   
+
    /**
     * Read
     * @return The value
@@ -234,11 +262,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public String readUTF() throws JMSException
    {
       if (trace)
+      {
          log.trace("readUTF()");
+      }
 
-      return ((BytesMessage) message).readUTF();
+      return ((BytesMessage)message).readUTF();
    }
-   
+
    /**
     * Reset
     * @exception JMSException Thrown if an error occurs
@@ -246,37 +276,43 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
    public void reset() throws JMSException
    {
       if (trace)
+      {
          log.trace("reset()");
+      }
 
-      ((BytesMessage) message).reset();
+      ((BytesMessage)message).reset();
    }
-   
+
    /**
     * Write
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeBoolean(boolean value) throws JMSException
+   public void writeBoolean(final boolean value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeBoolean(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeBoolean(value);
+      ((BytesMessage)message).writeBoolean(value);
    }
-   
+
    /**
     * Write
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeByte(byte value) throws JMSException
+   public void writeByte(final byte value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeByte(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeByte(value);
+      ((BytesMessage)message).writeByte(value);
    }
-   
+
    /**
     * Write
     * @param value The value 
@@ -284,90 +320,104 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
     * @param length The length
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeBytes(byte[] value, int offset, int length) throws JMSException
+   public void writeBytes(final byte[] value, final int offset, final int length) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
+      }
 
-      ((BytesMessage) message).writeBytes(value, offset, length);
+      ((BytesMessage)message).writeBytes(value, offset, length);
    }
-   
+
    /**
     * Write
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeBytes(byte[] value) throws JMSException
+   public void writeBytes(final byte[] value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeBytes(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeBytes(value);
+      ((BytesMessage)message).writeBytes(value);
    }
-   
+
    /**
     * Write
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeChar(char value) throws JMSException
+   public void writeChar(final char value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeChar(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeChar(value);
+      ((BytesMessage)message).writeChar(value);
    }
-   
+
    /**
     * Write
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeDouble(double value) throws JMSException
+   public void writeDouble(final double value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeDouble(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeDouble(value);
+      ((BytesMessage)message).writeDouble(value);
    }
-   
+
    /**
     * Write
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeFloat(float value) throws JMSException
+   public void writeFloat(final float value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeFloat(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeFloat(value);
+      ((BytesMessage)message).writeFloat(value);
    }
-   
+
    /**
     * Write
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeInt(int value) throws JMSException
+   public void writeInt(final int value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeInt(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeInt(value);
+      ((BytesMessage)message).writeInt(value);
    }
-   
+
    /**
     * Write
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeLong(long value) throws JMSException
+   public void writeLong(final long value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeLong(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeLong(value);
+      ((BytesMessage)message).writeLong(value);
    }
 
    /**
@@ -375,12 +425,14 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeObject(Object value) throws JMSException
+   public void writeObject(final Object value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeObject(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeObject(value);
+      ((BytesMessage)message).writeObject(value);
    }
 
    /**
@@ -388,12 +440,14 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeShort(short value) throws JMSException
+   public void writeShort(final short value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeShort(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeShort(value);
+      ((BytesMessage)message).writeShort(value);
    }
 
    /**
@@ -401,11 +455,13 @@ public class JBMBytesMessage extends JBMMessage implements BytesMessage
     * @param value The value 
     * @exception JMSException Thrown if an error occurs
     */
-   public void writeUTF(String value) throws JMSException
+   public void writeUTF(final String value) throws JMSException
    {
       if (trace)
+      {
          log.trace("writeUTF(" + value + ")");
+      }
 
-      ((BytesMessage) message).writeUTF(value);
+      ((BytesMessage)message).writeUTF(value);
    }
 }

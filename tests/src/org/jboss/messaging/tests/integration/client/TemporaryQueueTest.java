@@ -22,6 +22,11 @@
 
 package org.jboss.messaging.tests.integration.client;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -32,17 +37,14 @@ import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.CloseListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingServer;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A TemporaryQueueTest
@@ -51,8 +53,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class TemporaryQueueTest extends ServiceTestBase
 {
-
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(TemporaryQueueTest.class);
 
    private static final long CONNECTION_TTL = 2000;
 
@@ -237,31 +240,11 @@ public class TemporaryQueueTest extends ServiceTestBase
       server = createServer(false, configuration );
       server.start();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY),
-                                        null,
-                                        ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                        ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        ClientSessionFactoryImpl.DEFAULT_PING_PERIOD, 
-                                        CONNECTION_TTL,
-                                        ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, 
-                                        ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                                        ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                        ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                        ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                                        ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                                        ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-                                        ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                                        ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                                        ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                        ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      sf.setConnectionTTL(CONNECTION_TTL);
       session = sf.createSession(false, true, true);
    }
-
+   
    @Override
    protected void tearDown() throws Exception
    {

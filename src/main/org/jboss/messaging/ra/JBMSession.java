@@ -71,7 +71,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMSession.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -79,42 +79,46 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    private JBMManagedConnection mc;
 
    /** The connection request info */
-   private JBMConnectionRequestInfo cri;
+   private final JBMConnectionRequestInfo cri;
 
    /** The session factory */
    private JBMSessionFactory sf;
-   
+
    /** The message consumers */
-   private Set consumers;
-   
+   private final Set consumers;
+
    /** The message producers */
-   private Set producers;
-   
+   private final Set producers;
+
    /**
     * Constructor
     * @param mc The managed connection
     * @param cri The connection request info
     */
-   public JBMSession(JBMManagedConnection mc, JBMConnectionRequestInfo cri)
+   public JBMSession(final JBMManagedConnection mc, final JBMConnectionRequestInfo cri)
    {
       if (trace)
+      {
          log.trace("constructor(" + mc + ", " + cri + ")");
+      }
 
       this.mc = mc;
       this.cri = cri;
-      this.sf = null;
-      this.consumers = new HashSet();
-      this.producers = new HashSet();
+      sf = null;
+      consumers = new HashSet();
+      producers = new HashSet();
    }
 
    /**
     * Set the session factory
     * @param sf The session factory
     */
-   public void setJBMSessionFactory(JBMSessionFactory sf)
+   public void setJBMSessionFactory(final JBMSessionFactory sf)
    {
       if (trace)
+      {
          log.trace("setJBMSessionFactory(" + sf + ")");
+      }
 
       this.sf = sf;
    }
@@ -127,13 +131,19 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    protected void lock() throws JMSException
    {
       if (trace)
+      {
          log.trace("lock()");
+      }
 
       JBMManagedConnection mc = this.mc;
       if (mc != null)
+      {
          mc.tryLock();
+      }
       else
+      {
          throw new IllegalStateException("Connection is not associated with a managed connection. " + this);
+      }
    }
 
    /**
@@ -142,16 +152,20 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    protected void unlock()
    {
       if (trace)
+      {
          log.trace("unlock()");
+      }
 
       JBMManagedConnection mc = this.mc;
       if (mc != null)
+      {
          mc.unlock();
+      }
 
       // We recreate the lock when returned to the pool
       // so missing the unlock after disassociation is not important
    }
-   
+
    /**
     * Create a bytes message
     * @return The message
@@ -162,7 +176,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createBytesMessage" + session);
+      }
 
       return session.createBytesMessage();
    }
@@ -177,7 +193,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createMapMessage" + session);
+      }
 
       return session.createMapMessage();
    }
@@ -192,7 +210,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createMessage" + session);
+      }
 
       return session.createMessage();
    }
@@ -207,7 +227,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createObjectMessage" + session);
+      }
 
       return session.createObjectMessage();
    }
@@ -218,12 +240,14 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The message
     * @exception JMSException Thrown if an error occurs
     */
-   public ObjectMessage createObjectMessage(Serializable object) throws JMSException
+   public ObjectMessage createObjectMessage(final Serializable object) throws JMSException
    {
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createObjectMessage(" + object + ")" + session);
+      }
 
       return session.createObjectMessage(object);
    }
@@ -238,7 +262,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createStreamMessage" + session);
+      }
 
       return session.createStreamMessage();
    }
@@ -253,7 +279,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createTextMessage" + session);
+      }
 
       return session.createTextMessage();
    }
@@ -264,12 +292,14 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The message
     * @exception JMSException Thrown if an error occurs
     */
-   public TextMessage createTextMessage(String string) throws JMSException
+   public TextMessage createTextMessage(final String string) throws JMSException
    {
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createTextMessage(" + string + ")" + session);
+      }
 
       return session.createTextMessage(string);
    }
@@ -282,7 +312,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public boolean getTransacted() throws JMSException
    {
       if (trace)
+      {
          log.trace("getTransacted()");
+      }
 
       getSessionInternal();
       return cri.isTransacted();
@@ -296,7 +328,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public MessageListener getMessageListener() throws JMSException
    {
       if (trace)
+      {
          log.trace("getMessageListener()");
+      }
 
       throw new IllegalStateException("Method not allowed");
    }
@@ -306,10 +340,12 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @param listener The message listener
     * @exception JMSException Thrown if an error occurs
     */
-   public void setMessageListener(MessageListener listener) throws JMSException
+   public void setMessageListener(final MessageListener listener) throws JMSException
    {
       if (trace)
+      {
          log.trace("setMessageListener(" + listener + ")");
+      }
 
       throw new IllegalStateException("Method not allowed");
    }
@@ -321,7 +357,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public void run()
    {
       if (trace)
+      {
          log.trace("run()");
+      }
 
       throw new Error("Method not allowed");
    }
@@ -334,7 +372,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public void close() throws JMSException
    {
       if (trace)
+      {
          log.trace("close()");
+      }
 
       sf.closeSession(this);
       closeSession();
@@ -346,8 +386,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     */
    public void commit() throws JMSException
    {
-      if (cri.getType() == JBMConnectionFactory.XA_CONNECTION ||
-          cri.getType() == JBMConnectionFactory.XA_QUEUE_CONNECTION ||
+      if (cri.getType() == JBMConnectionFactory.XA_CONNECTION || cri.getType() == JBMConnectionFactory.XA_QUEUE_CONNECTION ||
           cri.getType() == JBMConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new TransactionInProgressException("XA connection");
@@ -359,10 +398,14 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (cri.isTransacted() == false)
+         {
             throw new IllegalStateException("Session is not transacted");
+         }
 
          if (trace)
+         {
             log.trace("Commit session " + this);
+         }
 
          session.commit();
       }
@@ -378,8 +421,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     */
    public void rollback() throws JMSException
    {
-      if (cri.getType() == JBMConnectionFactory.XA_CONNECTION ||
-          cri.getType() == JBMConnectionFactory.XA_QUEUE_CONNECTION ||
+      if (cri.getType() == JBMConnectionFactory.XA_CONNECTION || cri.getType() == JBMConnectionFactory.XA_QUEUE_CONNECTION ||
           cri.getType() == JBMConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new TransactionInProgressException("XA connection");
@@ -391,10 +433,14 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (cri.isTransacted() == false)
+         {
             throw new IllegalStateException("Session is not transacted");
+         }
 
          if (trace)
+         {
             log.trace("Rollback session " + this);
+         }
 
          session.rollback();
       }
@@ -416,10 +462,14 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (cri.isTransacted())
+         {
             throw new IllegalStateException("Session is transacted");
+         }
 
          if (trace)
+         {
             log.trace("Recover session " + this);
+         }
 
          session.recover();
       }
@@ -435,22 +485,26 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The topic
     * @exception JMSException Thrown if an error occurs
     */
-   public Topic createTopic(String topicName) throws JMSException
+   public Topic createTopic(final String topicName) throws JMSException
    {
       if (cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION || cri.getType() == JBMConnectionFactory.XA_QUEUE_CONNECTION)
       {
-         throw new IllegalStateException("Cannot create topic for javax.jms.QueueSession");         
+         throw new IllegalStateException("Cannot create topic for javax.jms.QueueSession");
       }
 
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createTopic " + session + " topicName=" + topicName);
+      }
 
       Topic result = session.createTopic(topicName);
 
       if (trace)
+      {
          log.trace("createdTopic " + session + " topic=" + result);
+      }
 
       return result;
    }
@@ -461,7 +515,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The subscriber
     * @exception JMSException Thrown if an error occurs
     */
-   public TopicSubscriber createSubscriber(Topic topic) throws JMSException
+   public TopicSubscriber createSubscriber(final Topic topic) throws JMSException
    {
       lock();
       try
@@ -469,13 +523,17 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          TopicSession session = getTopicSessionInternal();
 
          if (trace)
+         {
             log.trace("createSubscriber " + session + " topic=" + topic);
+         }
 
          TopicSubscriber result = session.createSubscriber(topic);
          result = new JBMTopicSubscriber(result, this);
 
          if (trace)
+         {
             log.trace("createdSubscriber " + session + " JBMTopicSubscriber=" + result);
+         }
 
          addConsumer(result);
 
@@ -495,7 +553,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The subscriber
     * @exception JMSException Thrown if an error occurs
     */
-   public TopicSubscriber createSubscriber(Topic topic, String messageSelector, boolean noLocal) throws JMSException
+   public TopicSubscriber createSubscriber(final Topic topic, final String messageSelector, final boolean noLocal) throws JMSException
    {
       lock();
       try
@@ -503,13 +561,23 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          TopicSession session = getTopicSessionInternal();
 
          if (trace)
-            log.trace("createSubscriber " + session + " topic=" + topic + " selector=" + messageSelector + " noLocal=" + noLocal);
+         {
+            log.trace("createSubscriber " + session +
+                      " topic=" +
+                      topic +
+                      " selector=" +
+                      messageSelector +
+                      " noLocal=" +
+                      noLocal);
+         }
 
          TopicSubscriber result = session.createSubscriber(topic, messageSelector, noLocal);
          result = new JBMTopicSubscriber(result, this);
 
          if (trace)
+         {
             log.trace("createdSubscriber " + session + " JBMTopicSubscriber=" + result);
+         }
 
          addConsumer(result);
 
@@ -528,26 +596,30 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The subscriber
     * @exception JMSException Thrown if an error occurs
     */
-   public TopicSubscriber createDurableSubscriber(Topic topic, String name) throws JMSException
+   public TopicSubscriber createDurableSubscriber(final Topic topic, final String name) throws JMSException
    {
       if (cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION || cri.getType() == JBMConnectionFactory.XA_QUEUE_CONNECTION)
       {
-         throw new IllegalStateException("Cannot create durable subscriber from javax.jms.QueueSession");         
+         throw new IllegalStateException("Cannot create durable subscriber from javax.jms.QueueSession");
       }
-      
+
       lock();
       try
       {
          Session session = getSessionInternal();
 
          if (trace)
+         {
             log.trace("createDurableSubscriber " + session + " topic=" + topic + " name=" + name);
+         }
 
          TopicSubscriber result = session.createDurableSubscriber(topic, name);
          result = new JBMTopicSubscriber(result, this);
 
          if (trace)
+         {
             log.trace("createdDurableSubscriber " + session + " JBMTopicSubscriber=" + result);
+         }
 
          addConsumer(result);
 
@@ -568,7 +640,10 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The subscriber
     * @exception JMSException Thrown if an error occurs
     */
-   public TopicSubscriber createDurableSubscriber(Topic topic, String name, String messageSelector, boolean noLocal) throws JMSException
+   public TopicSubscriber createDurableSubscriber(final Topic topic,
+                                                  final String name,
+                                                  final String messageSelector,
+                                                  final boolean noLocal) throws JMSException
    {
       lock();
       try
@@ -576,13 +651,25 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (trace)
-            log.trace("createDurableSubscriber " + session + " topic=" + topic + " name=" + name + " selector=" + messageSelector + " noLocal=" + noLocal);
+         {
+            log.trace("createDurableSubscriber " + session +
+                      " topic=" +
+                      topic +
+                      " name=" +
+                      name +
+                      " selector=" +
+                      messageSelector +
+                      " noLocal=" +
+                      noLocal);
+         }
 
          TopicSubscriber result = session.createDurableSubscriber(topic, name, messageSelector, noLocal);
          result = new JBMTopicSubscriber(result, this);
 
          if (trace)
+         {
             log.trace("createdDurableSubscriber " + session + " JBMTopicSubscriber=" + result);
+         }
 
          addConsumer(result);
 
@@ -600,7 +687,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The publisher
     * @exception JMSException Thrown if an error occurs
     */
-   public TopicPublisher createPublisher(Topic topic) throws JMSException
+   public TopicPublisher createPublisher(final Topic topic) throws JMSException
    {
       lock();
       try
@@ -608,13 +695,17 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          TopicSession session = getTopicSessionInternal();
 
          if (trace)
+         {
             log.trace("createPublisher " + session + " topic=" + topic);
+         }
 
          TopicPublisher result = session.createPublisher(topic);
          result = new JBMTopicPublisher(result, this);
 
          if (trace)
+         {
             log.trace("createdPublisher " + session + " publisher=" + result);
+         }
 
          addProducer(result);
 
@@ -635,21 +726,25 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    {
       if (cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION || cri.getType() == JBMConnectionFactory.XA_QUEUE_CONNECTION)
       {
-         throw new IllegalStateException("Cannot create temporary topic for javax.jms.QueueSession");         
+         throw new IllegalStateException("Cannot create temporary topic for javax.jms.QueueSession");
       }
-      
+
       lock();
       try
       {
          Session session = getSessionInternal();
 
          if (trace)
+         {
             log.trace("createTemporaryTopic " + session);
+         }
 
          TemporaryTopic temp = session.createTemporaryTopic();
 
          if (trace)
+         {
             log.trace("createdTemporaryTopic " + session + " temp=" + temp);
+         }
 
          sf.addTemporaryTopic(temp);
 
@@ -666,11 +761,11 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @param name The name
     * @exception JMSException Thrown if an error occurs
     */
-   public void unsubscribe(String name) throws JMSException
+   public void unsubscribe(final String name) throws JMSException
    {
       if (cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION || cri.getType() == JBMConnectionFactory.XA_QUEUE_CONNECTION)
       {
-         throw new IllegalStateException("Cannot unsubscribe for javax.jms.QueueSession");         
+         throw new IllegalStateException("Cannot unsubscribe for javax.jms.QueueSession");
       }
 
       lock();
@@ -679,7 +774,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (trace)
+         {
             log.trace("unsubscribe " + session + " name=" + name);
+         }
 
          session.unsubscribe(name);
       }
@@ -695,7 +792,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The browser
     * @exception JMSException Thrown if an error occurs
     */
-   public QueueBrowser createBrowser(Queue queue) throws JMSException
+   public QueueBrowser createBrowser(final Queue queue) throws JMSException
    {
       if (cri.getType() == JBMConnectionFactory.TOPIC_CONNECTION || cri.getType() == JBMConnectionFactory.XA_TOPIC_CONNECTION)
       {
@@ -705,12 +802,16 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createBrowser " + session + " queue=" + queue);
+      }
 
       QueueBrowser result = session.createBrowser(queue);
 
       if (trace)
+      {
          log.trace("createdBrowser " + session + " browser=" + result);
+      }
 
       return result;
    }
@@ -722,7 +823,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The browser
     * @exception JMSException Thrown if an error occurs
     */
-   public QueueBrowser createBrowser(Queue queue, String messageSelector) throws JMSException
+   public QueueBrowser createBrowser(final Queue queue, final String messageSelector) throws JMSException
    {
       if (cri.getType() == JBMConnectionFactory.TOPIC_CONNECTION || cri.getType() == JBMConnectionFactory.XA_TOPIC_CONNECTION)
       {
@@ -732,12 +833,16 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createBrowser " + session + " queue=" + queue + " selector=" + messageSelector);
+      }
 
       QueueBrowser result = session.createBrowser(queue, messageSelector);
 
       if (trace)
+      {
          log.trace("createdBrowser " + session + " browser=" + result);
+      }
 
       return result;
    }
@@ -748,7 +853,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The queue
     * @exception JMSException Thrown if an error occurs
     */
-   public Queue createQueue(String queueName) throws JMSException
+   public Queue createQueue(final String queueName) throws JMSException
    {
       if (cri.getType() == JBMConnectionFactory.TOPIC_CONNECTION || cri.getType() == JBMConnectionFactory.XA_TOPIC_CONNECTION)
       {
@@ -758,12 +863,16 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
       Session session = getSessionInternal();
 
       if (trace)
+      {
          log.trace("createQueue " + session + " queueName=" + queueName);
+      }
 
       Queue result = session.createQueue(queueName);
 
       if (trace)
+      {
          log.trace("createdQueue " + session + " queue=" + result);
+      }
 
       return result;
    }
@@ -774,7 +883,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The queue receiver
     * @exception JMSException Thrown if an error occurs
     */
-   public QueueReceiver createReceiver(Queue queue) throws JMSException
+   public QueueReceiver createReceiver(final Queue queue) throws JMSException
    {
       lock();
       try
@@ -782,13 +891,17 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          QueueSession session = getQueueSessionInternal();
 
          if (trace)
+         {
             log.trace("createReceiver " + session + " queue=" + queue);
+         }
 
          QueueReceiver result = session.createReceiver(queue);
          result = new JBMQueueReceiver(result, this);
 
          if (trace)
+         {
             log.trace("createdReceiver " + session + " receiver=" + result);
+         }
 
          addConsumer(result);
 
@@ -807,7 +920,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The queue receiver
     * @exception JMSException Thrown if an error occurs
     */
-   public QueueReceiver createReceiver(Queue queue, String messageSelector) throws JMSException
+   public QueueReceiver createReceiver(final Queue queue, final String messageSelector) throws JMSException
    {
       lock();
       try
@@ -815,13 +928,17 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          QueueSession session = getQueueSessionInternal();
 
          if (trace)
+         {
             log.trace("createReceiver " + session + " queue=" + queue + " selector=" + messageSelector);
+         }
 
          QueueReceiver result = session.createReceiver(queue, messageSelector);
          result = new JBMQueueReceiver(result, this);
 
          if (trace)
+         {
             log.trace("createdReceiver " + session + " receiver=" + result);
+         }
 
          addConsumer(result);
 
@@ -839,7 +956,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The queue sender
     * @exception JMSException Thrown if an error occurs
     */
-   public QueueSender createSender(Queue queue) throws JMSException
+   public QueueSender createSender(final Queue queue) throws JMSException
    {
       lock();
       try
@@ -847,13 +964,17 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          QueueSession session = getQueueSessionInternal();
 
          if (trace)
+         {
             log.trace("createSender " + session + " queue=" + queue);
+         }
 
          QueueSender result = session.createSender(queue);
          result = new JBMQueueSender(result, this);
 
          if (trace)
+         {
             log.trace("createdSender " + session + " sender=" + result);
+         }
 
          addProducer(result);
 
@@ -883,12 +1004,16 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (trace)
+         {
             log.trace("createTemporaryQueue " + session);
+         }
 
          TemporaryQueue temp = session.createTemporaryQueue();
 
          if (trace)
+         {
             log.trace("createdTemporaryQueue " + session + " temp=" + temp);
+         }
 
          sf.addTemporaryQueue(temp);
 
@@ -906,7 +1031,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The message consumer
     * @exception JMSException Thrown if an error occurs
     */
-   public MessageConsumer createConsumer(Destination destination) throws JMSException
+   public MessageConsumer createConsumer(final Destination destination) throws JMSException
    {
       lock();
       try
@@ -914,13 +1039,17 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (trace)
+         {
             log.trace("createConsumer " + session + " dest=" + destination);
+         }
 
          MessageConsumer result = session.createConsumer(destination);
          result = new JBMMessageConsumer(result, this);
 
          if (trace)
+         {
             log.trace("createdConsumer " + session + " consumer=" + result);
+         }
 
          addConsumer(result);
 
@@ -939,7 +1068,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The message consumer
     * @exception JMSException Thrown if an error occurs
     */
-   public MessageConsumer createConsumer(Destination destination, String messageSelector) throws JMSException
+   public MessageConsumer createConsumer(final Destination destination, final String messageSelector) throws JMSException
    {
       lock();
       try
@@ -947,13 +1076,17 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (trace)
+         {
             log.trace("createConsumer " + session + " dest=" + destination + " messageSelector=" + messageSelector);
+         }
 
          MessageConsumer result = session.createConsumer(destination, messageSelector);
          result = new JBMMessageConsumer(result, this);
 
          if (trace)
+         {
             log.trace("createdConsumer " + session + " consumer=" + result);
+         }
 
          addConsumer(result);
 
@@ -973,7 +1106,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The message consumer
     * @exception JMSException Thrown if an error occurs
     */
-   public MessageConsumer createConsumer(Destination destination, String messageSelector, boolean noLocal) throws JMSException
+   public MessageConsumer createConsumer(final Destination destination,
+                                         final String messageSelector,
+                                         final boolean noLocal) throws JMSException
    {
       lock();
       try
@@ -981,13 +1116,23 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (trace)
-            log.trace("createConsumer " + session + " dest=" + destination + " messageSelector=" + messageSelector + " noLocal=" + noLocal);
+         {
+            log.trace("createConsumer " + session +
+                      " dest=" +
+                      destination +
+                      " messageSelector=" +
+                      messageSelector +
+                      " noLocal=" +
+                      noLocal);
+         }
 
          MessageConsumer result = session.createConsumer(destination, messageSelector, noLocal);
          result = new JBMMessageConsumer(result, this);
 
          if (trace)
+         {
             log.trace("createdConsumer " + session + " consumer=" + result);
+         }
 
          addConsumer(result);
 
@@ -1005,7 +1150,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * @return The message producer
     * @exception JMSException Thrown if an error occurs
     */
-   public MessageProducer createProducer(Destination destination) throws JMSException
+   public MessageProducer createProducer(final Destination destination) throws JMSException
    {
       lock();
       try
@@ -1013,13 +1158,17 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          Session session = getSessionInternal();
 
          if (trace)
+         {
             log.trace("createProducer " + session + " dest=" + destination);
+         }
 
          MessageProducer result = session.createProducer(destination);
          result = new JBMMessageProducer(result, this);
 
          if (trace)
+         {
             log.trace("createdProducer " + session + " producer=" + result);
+         }
 
          addProducer(result);
 
@@ -1039,7 +1188,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public int getAcknowledgeMode() throws JMSException
    {
       if (trace)
+      {
          log.trace("getAcknowledgeMode()");
+      }
 
       getSessionInternal();
       return cri.getAcknowledgeMode();
@@ -1053,10 +1204,11 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public XAResource getXAResource()
    {
       if (trace)
+      {
          log.trace("getXAResource()");
+      }
 
-      if (cri.getType() == JBMConnectionFactory.CONNECTION ||
-          cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION ||
+      if (cri.getType() == JBMConnectionFactory.CONNECTION || cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION ||
           cri.getType() == JBMConnectionFactory.TOPIC_CONNECTION)
       {
          return null;
@@ -1088,10 +1240,11 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public Session getSession() throws JMSException
    {
       if (trace)
+      {
          log.trace("getSession()");
+      }
 
-      if (cri.getType() == JBMConnectionFactory.CONNECTION ||
-          cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION ||
+      if (cri.getType() == JBMConnectionFactory.CONNECTION || cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION ||
           cri.getType() == JBMConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
@@ -1116,10 +1269,11 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public QueueSession getQueueSession() throws JMSException
    {
       if (trace)
+      {
          log.trace("getQueueSession()");
+      }
 
-      if (cri.getType() == JBMConnectionFactory.CONNECTION ||
-          cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION ||
+      if (cri.getType() == JBMConnectionFactory.CONNECTION || cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION ||
           cri.getType() == JBMConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
@@ -1144,10 +1298,11 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    public TopicSession getTopicSession() throws JMSException
    {
       if (trace)
+      {
          log.trace("getTopicSession()");
+      }
 
-      if (cri.getType() == JBMConnectionFactory.CONNECTION ||
-          cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION ||
+      if (cri.getType() == JBMConnectionFactory.CONNECTION || cri.getType() == JBMConnectionFactory.QUEUE_CONNECTION ||
           cri.getType() == JBMConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
@@ -1168,15 +1323,19 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
     * Set the managed connection
     * @param managedConnection The managed connection
     */
-   void setManagedConnection(JBMManagedConnection managedConnection)
+   void setManagedConnection(final JBMManagedConnection managedConnection)
    {
       if (trace)
+      {
          log.trace("setManagedConnection(" + managedConnection + ")");
+      }
 
       if (mc != null)
+      {
          mc.removeHandle(this);
+      }
 
-      this.mc = managedConnection;
+      mc = managedConnection;
    }
 
    /**
@@ -1185,7 +1344,9 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    void destroy()
    {
       if (trace)
+      {
          log.trace("destroy()");
+      }
 
       mc = null;
    }
@@ -1197,10 +1358,14 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    void start() throws JMSException
    {
       if (trace)
+      {
          log.trace("start()");
+      }
 
       if (mc != null)
+      {
          mc.start();
+      }
    }
 
    /**
@@ -1210,10 +1375,14 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    void stop() throws JMSException
    {
       if (trace)
+      {
          log.trace("stop()");
+      }
 
       if (mc != null)
+      {
          mc.stop();
+      }
    }
 
    /**
@@ -1223,12 +1392,16 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    void checkStrict() throws JMSException
    {
       if (trace)
+      {
          log.trace("checkStrict()");
+      }
 
       if (mc != null)
+      {
          throw new IllegalStateException(JBMSessionFactory.ISE);
+      }
    }
-   
+
    /**
     * Close session
     * @exception JMSException Thrown if an error occurs
@@ -1247,12 +1420,12 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          {
             log.trace("Error stopping managed connection", t);
          }
-         
+
          synchronized (consumers)
          {
             for (Iterator i = consumers.iterator(); i.hasNext();)
             {
-               JBMMessageConsumer consumer = (JBMMessageConsumer) i.next();
+               JBMMessageConsumer consumer = (JBMMessageConsumer)i.next();
                try
                {
                   consumer.closeConsumer();
@@ -1269,7 +1442,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          {
             for (Iterator i = producers.iterator(); i.hasNext();)
             {
-               JBMMessageProducer producer = (JBMMessageProducer) i.next();
+               JBMMessageProducer producer = (JBMMessageProducer)i.next();
                try
                {
                   producer.closeProducer();
@@ -1281,7 +1454,7 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
                i.remove();
             }
          }
-         
+
          mc.removeHandle(this);
          ConnectionEvent ev = new ConnectionEvent(mc, ConnectionEvent.CONNECTION_CLOSED);
          ev.setConnectionHandle(this);
@@ -1289,67 +1462,75 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
          mc = null;
       }
    }
-   
+
    /**
     * Add consumer
     * @param consumer The consumer
     */
-   void addConsumer(MessageConsumer consumer)
+   void addConsumer(final MessageConsumer consumer)
    {
       if (trace)
+      {
          log.trace("addConsumer(" + consumer + ")");
+      }
 
       synchronized (consumers)
       {
          consumers.add(consumer);
       }
    }
-   
+
    /**
     * Remove consumer
     * @param consumer The consumer
     */
-   void removeConsumer(MessageConsumer consumer)
+   void removeConsumer(final MessageConsumer consumer)
    {
       if (trace)
+      {
          log.trace("removeConsumer(" + consumer + ")");
+      }
 
       synchronized (consumers)
       {
          consumers.remove(consumer);
       }
    }
-   
+
    /**
     * Add producer
     * @param producer The producer
     */
-   void addProducer(MessageProducer producer)
+   void addProducer(final MessageProducer producer)
    {
       if (trace)
+      {
          log.trace("addProducer(" + producer + ")");
+      }
 
       synchronized (producers)
       {
          producers.add(producer);
       }
    }
-   
+
    /**
     * Remove producer
     * @param producer The producer
     */
-   void removeProducer(MessageProducer producer)
+   void removeProducer(final MessageProducer producer)
    {
       if (trace)
+      {
          log.trace("removeProducer(" + producer + ")");
+      }
 
       synchronized (producers)
       {
          producers.remove(producer);
       }
    }
-   
+
    /**
     * Get the session and ensure that it is open
     * @return The session
@@ -1359,12 +1540,16 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    Session getSessionInternal() throws JMSException
    {
       if (mc == null)
+      {
          throw new IllegalStateException("The session is closed");
-      
+      }
+
       Session session = mc.getSession();
 
       if (trace)
+      {
          log.trace("getSessionInternal " + session + " for " + this);
+      }
 
       return session;
    }
@@ -1378,12 +1563,16 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    XASession getXASessionInternal() throws JMSException
    {
       if (mc == null)
+      {
          throw new IllegalStateException("The session is closed");
-      
+      }
+
       XASession session = mc.getXASession();
 
       if (trace)
+      {
          log.trace("getXASessionInternal " + session + " for " + this);
+      }
 
       return session;
    }
@@ -1397,11 +1586,13 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    QueueSession getQueueSessionInternal() throws JMSException
    {
       Session s = getSessionInternal();
-      if( !(s instanceof QueueSession) )
+      if (!(s instanceof QueueSession))
+      {
          throw new InvalidDestinationException("Attempting to use QueueSession methods on: " + this);
-      return (QueueSession) s; 
+      }
+      return (QueueSession)s;
    }
-   
+
    /**
     * Get the topic session
     * @return The topic session
@@ -1411,8 +1602,10 @@ public class JBMSession implements Session, QueueSession, TopicSession, XASessio
    TopicSession getTopicSessionInternal() throws JMSException
    {
       Session s = getSessionInternal();
-      if( !(s instanceof TopicSession) )
+      if (!(s instanceof TopicSession))
+      {
          throw new InvalidDestinationException("Attempting to use TopicSession methods on: " + this);
-      return (TopicSession) s;
+      }
+      return (TopicSession)s;
    }
 }

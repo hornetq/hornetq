@@ -18,28 +18,10 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.integration.clientcrash;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.jboss.messaging.tests.integration.clientcrash.ClientCrashTest.QUEUE;
 
 import java.util.Arrays;
@@ -52,7 +34,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.client.JBossTextMessage;
-
 
 /**
  * Code to be run in an external VM, via main().
@@ -77,38 +58,24 @@ public class CrashClient
       try
       {
          log.debug("args = " + Arrays.asList(args));
-         
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                                           null,
-                                           DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                           DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                           ClientCrashTest.PING_PERIOD,
-                                           ClientCrashTest.CONNECTION_TTL,
-                                           DEFAULT_CALL_TIMEOUT,
-                                           DEFAULT_CONSUMER_WINDOW_SIZE,
-                                           DEFAULT_CONSUMER_MAX_RATE,
-                                           DEFAULT_PRODUCER_WINDOW_SIZE,
-                                           DEFAULT_PRODUCER_MAX_RATE,
-                                           DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                           DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                           DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                           DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                           DEFAULT_AUTO_GROUP,
-                                           DEFAULT_MAX_CONNECTIONS,
-                                           DEFAULT_PRE_ACKNOWLEDGE,
-                                           DEFAULT_ACK_BATCH_SIZE,                                 
-                                           DEFAULT_RETRY_INTERVAL,
-                                           DEFAULT_RETRY_INTERVAL_MULTIPLIER,                                                                            
-                                           DEFAULT_RECONNECT_ATTEMPTS);
+
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
+
+         sf.setPingPeriod(ClientCrashTest.PING_PERIOD);
+         sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
+
          ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(QUEUE);
-         
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
-               System.currentTimeMillis(), (byte) 1);
+
+         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
          message.getBody().writeString(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT);
 
          producer.send(message);
-         
+
          // exit without closing the session properly
          System.exit(9);
       }

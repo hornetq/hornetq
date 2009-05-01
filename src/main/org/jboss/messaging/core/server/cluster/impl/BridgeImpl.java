@@ -582,27 +582,12 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          queue.addConsumer(BridgeImpl.this);
   
          csf = new ClientSessionFactoryImpl(connectorPair.a,
-                                            connectorPair.b,
-                                            failoverOnServerShutdown,
-                                            DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                            DEFAULT_PING_PERIOD,
-                                            DEFAULT_CONNECTION_TTL,
-                                            DEFAULT_CALL_TIMEOUT,
-                                            DEFAULT_CONSUMER_WINDOW_SIZE,
-                                            DEFAULT_CONSUMER_MAX_RATE,
-                                            DEFAULT_PRODUCER_WINDOW_SIZE,
-                                            DEFAULT_PRODUCER_MAX_RATE,
-                                            DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                            DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                            DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                            DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                            DEFAULT_AUTO_GROUP,
-                                            DEFAULT_MAX_CONNECTIONS,
-                                            DEFAULT_PRE_ACKNOWLEDGE,
-                                            DEFAULT_ACK_BATCH_SIZE,
-                                            retryInterval,
-                                            retryIntervalMultiplier,
-                                            reconnectAttempts);
+                                            connectorPair.b);
+         
+         csf.setFailoverOnServerShutdown(failoverOnServerShutdown);
+         csf.setRetryInterval(retryInterval);
+         csf.setRetryIntervalMultiplier(retryIntervalMultiplier);
+         csf.setReconnectAttempts(reconnectAttempts);
 
          //Session is pre-acknowledge
          session = (ClientSessionInternal)csf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER,

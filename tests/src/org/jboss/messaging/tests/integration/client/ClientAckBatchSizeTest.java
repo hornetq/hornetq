@@ -49,6 +49,19 @@ public class ClientAckBatchSizeTest extends ServiceTestBase
    /*
    * tests that wed don't acknowledge until the correct ackBatchSize is reached
    * */
+   
+   private int getMessageEncodeSize(final SimpleString address) throws Exception
+   {
+      ClientSessionFactory cf = createInVMFactory();
+      ClientSession session = cf.createSession(false, true, true);
+      ClientMessage message = session.createClientMessage(false);
+      // we need to set the destination so we can calculate the encodesize correctly
+      message.setDestination(address);
+      int encodeSize = message.getEncodeSize();
+      session.close();
+      cf.close();
+      return encodeSize;      
+   }
 
    public void testAckBatchSize() throws Exception
    {
@@ -58,14 +71,11 @@ public class ClientAckBatchSizeTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientMessage message = sendSession.createClientMessage(false);
-         // we need to set the destination so we can calculate the encodesize correctly
-         message.setDestination(addressA);
-         int encodeSize = message.getEncodeSize();
-         int numMessages = 100;
-         cf.setAckBatchSize(numMessages * encodeSize);
+         int numMessages = 100;         
+         cf.setAckBatchSize(numMessages * getMessageEncodeSize(addressA));
          cf.setBlockOnAcknowledge(true);
+         ClientSession sendSession = cf.createSession(false, true, true);
+         
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);
@@ -110,12 +120,11 @@ public class ClientAckBatchSizeTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientMessage message = sendSession.createClientMessage(false);
-         message.setDestination(addressA);
-         int numMessages = 100;
          cf.setAckBatchSize(0);
          cf.setBlockOnAcknowledge(true);
+         ClientSession sendSession = cf.createSession(false, true, true);
+         int numMessages = 100;
+         
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);

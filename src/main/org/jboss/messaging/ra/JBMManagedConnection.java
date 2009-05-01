@@ -72,43 +72,51 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMManagedConnection.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
-   
+
    /** The managed connection factory */
-   private JBMManagedConnectionFactory mcf;
+   private final JBMManagedConnectionFactory mcf;
 
    /** The connection request information */
-   private JBMConnectionRequestInfo cri;
+   private final JBMConnectionRequestInfo cri;
 
    /** The user name */
-   private String userName;
+   private final String userName;
 
    /** The password */
-   private String password;
+   private final String password;
 
    /** Has the connection been destroyed */
-   private AtomicBoolean isDestroyed = new AtomicBoolean(false);
+   private final AtomicBoolean isDestroyed = new AtomicBoolean(false);
 
    /** Event listeners */
-   private List<ConnectionEventListener> eventListeners;
-   
+   private final List<ConnectionEventListener> eventListeners;
+
    /** Handles */
-   private Set<JBMSession> handles;
+   private final Set<JBMSession> handles;
 
    /** Lock */
    private ReentrantLock lock = new ReentrantLock();
-   
+
    // Physical JMS connection stuff
    private Connection connection;
+
    private XAConnection xaConnection;
+
    private Session session;
+
    private TopicSession topicSession;
+
    private QueueSession queueSession;
+
    private XASession xaSession;
+
    private XATopicSession xaTopicSession;
+
    private XAQueueSession xaQueueSession;
+
    private XAResource xaResource;
 
    /**
@@ -118,31 +126,32 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
     * @param userName The user name
     * @param password The password
     */
-   public JBMManagedConnection(JBMManagedConnectionFactory mcf, 
-                               JBMConnectionRequestInfo cri,
-                               String userName, 
-                               String password)
-      throws ResourceException
+   public JBMManagedConnection(final JBMManagedConnectionFactory mcf,
+                               final JBMConnectionRequestInfo cri,
+                               final String userName,
+                               final String password) throws ResourceException
    {
       if (trace)
+      {
          log.trace("constructor(" + mcf + ", " + cri + ", " + userName + ", ****)");
+      }
 
       this.mcf = mcf;
       this.cri = cri;
       this.userName = userName;
       this.password = password;
-      this.eventListeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>());
-      this.handles = Collections.synchronizedSet(new HashSet<JBMSession>());
+      eventListeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>());
+      handles = Collections.synchronizedSet(new HashSet<JBMSession>());
 
-      this.connection = null;
-      this.xaConnection = null;
-      this.session = null;
-      this.topicSession = null;
-      this.queueSession = null;
-      this.xaSession = null;
-      this.xaTopicSession = null;
-      this.xaQueueSession = null;
-      this.xaResource = null;
+      connection = null;
+      xaConnection = null;
+      session = null;
+      topicSession = null;
+      queueSession = null;
+      xaSession = null;
+      xaTopicSession = null;
+      xaQueueSession = null;
+      xaResource = null;
 
       try
       {
@@ -168,24 +177,31 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
     * @return The connection
     * @exception ResourceException Thrown if an error occurs
     */
-   public synchronized Object getConnection(Subject subject, ConnectionRequestInfo cxRequestInfo)
-      throws ResourceException
+   public synchronized Object getConnection(final Subject subject, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
       if (trace)
+      {
          log.trace("getConnection(" + subject + ", " + cxRequestInfo + ")");
+      }
 
       // Check user first
       JBMCredential credential = JBMCredential.getCredential(mcf, subject, cxRequestInfo);
 
       // Null users are allowed!
       if (userName != null && !userName.equals(credential.getUserName()))
+      {
          throw new SecurityException("Password credentials not the same, reauthentication not allowed");
+      }
 
       if (userName == null && credential.getUserName() != null)
+      {
          throw new SecurityException("Password credentials not the same, reauthentication not allowed");
+      }
 
       if (isDestroyed.get())
+      {
          throw new IllegalStateException("The managed connection is already destroyed");
+      }
 
       JBMSession session = new JBMSession(this, (JBMConnectionRequestInfo)cxRequestInfo);
       handles.add(session);
@@ -199,22 +215,28 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    private void destroyHandles() throws ResourceException
    {
       if (trace)
+      {
          log.trace("destroyHandles()");
+      }
 
       try
       {
          if (xaConnection != null)
-            xaConnection.stop();  
+         {
+            xaConnection.stop();
+         }
 
          if (connection != null)
-            connection.stop();  
+         {
+            connection.stop();
+         }
       }
       catch (Throwable t)
       {
          log.trace("Ignored error stopping connection", t);
       }
-      
-      for (JBMSession session: handles)
+
+      for (JBMSession session : handles)
       {
          session.destroy();
       }
@@ -229,10 +251,14 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    public void destroy() throws ResourceException
    {
       if (trace)
+      {
          log.trace("destroy()");
+      }
 
-      if (isDestroyed.get() || (xaConnection == null && connection == null))
+      if (isDestroyed.get() || xaConnection == null && connection == null)
+      {
          return;
+      }
 
       isDestroyed.set(true);
 
@@ -251,30 +277,42 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
       {
          log.debug("Error unsetting the exception listener " + this, e);
       }
-      
+
       destroyHandles();
-      
+
       try
       {
          try
          {
             if (topicSession != null)
+            {
                topicSession.close();
+            }
 
             if (xaTopicSession != null)
+            {
                xaTopicSession.close();
+            }
 
             if (queueSession != null)
+            {
                queueSession.close();
+            }
 
             if (xaQueueSession != null)
+            {
                xaQueueSession.close();
+            }
 
             if (session != null)
+            {
                session.close();
+            }
 
             if (xaSession != null)
+            {
                xaSession.close();
+            }
          }
          catch (JMSException e)
          {
@@ -282,10 +320,14 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
          }
 
          if (connection != null)
+         {
             connection.close();
+         }
 
          if (xaConnection != null)
+         {
             xaConnection.close();
+         }
       }
       catch (Throwable e)
       {
@@ -300,10 +342,14 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    public void cleanup() throws ResourceException
    {
       if (trace)
+      {
          log.trace("cleanup()");
+      }
 
       if (isDestroyed.get())
+      {
          throw new IllegalStateException("ManagedConnection already destroyed");
+      }
 
       destroyHandles();
 
@@ -323,7 +369,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    public void associateConnection(final Object obj) throws ResourceException
    {
       if (trace)
+      {
          log.trace("associateConnection(" + obj + ")");
+      }
 
       if (!isDestroyed.get() && obj instanceof JBMSession)
       {
@@ -332,7 +380,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
          handles.add(h);
       }
       else
+      {
          throw new IllegalStateException("ManagedConnection in an illegal state");
+      }
    }
 
    /**
@@ -341,7 +391,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected void lock()
    {
       if (trace)
+      {
          log.trace("lock()");
+      }
 
       lock.lock();
    }
@@ -353,7 +405,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected void tryLock() throws JMSException
    {
       if (trace)
+      {
          log.trace("tryLock()");
+      }
 
       Integer tryLock = mcf.getUseTryLock();
       if (tryLock == null || tryLock.intValue() <= 0)
@@ -364,7 +418,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
       try
       {
          if (lock.tryLock(tryLock.intValue(), TimeUnit.SECONDS) == false)
+         {
             throw new ResourceAllocationException("Unable to obtain lock in " + tryLock + " seconds: " + this);
+         }
       }
       catch (InterruptedException e)
       {
@@ -378,7 +434,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected void unlock()
    {
       if (trace)
+      {
          log.trace("unlock()");
+      }
 
       lock.unlock();
    }
@@ -387,11 +445,13 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
     * Add a connection event listener.
     * @param l The connection event listener to be added.
     */
-   public void addConnectionEventListener(ConnectionEventListener l)
+   public void addConnectionEventListener(final ConnectionEventListener l)
    {
       if (trace)
+      {
          log.trace("addConnectionEventListener(" + l + ")");
-      
+      }
+
       eventListeners.add(l);
    }
 
@@ -399,10 +459,12 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
     * Remove a connection event listener.
     * @param l The connection event listener to be removed.
     */
-   public void removeConnectionEventListener(ConnectionEventListener l)
+   public void removeConnectionEventListener(final ConnectionEventListener l)
    {
       if (trace)
+      {
          log.trace("removeConnectionEventListener(" + l + ")");
+      }
 
       eventListeners.remove(l);
    }
@@ -415,10 +477,14 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    public XAResource getXAResource() throws ResourceException
    {
       if (trace)
+      {
          log.trace("getXAResource()");
-      
+      }
+
       if (xaConnection == null)
+      {
          throw new NotSupportedException("Non XA transaction not supported");
+      }
 
       //
       // Spec says a mc must allways return the same XA resource,
@@ -427,15 +493,23 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
       if (xaResource == null)
       {
          if (xaTopicSession != null)
+         {
             xaResource = xaTopicSession.getXAResource();
+         }
          else if (xaQueueSession != null)
+         {
             xaResource = xaQueueSession.getXAResource();
+         }
          else
+         {
             xaResource = xaSession.getXAResource();
+         }
       }
 
       if (trace)
+      {
          log.trace("XAResource=" + xaResource);
+      }
 
       xaResource = new JBMXAResource(this, xaResource);
       return xaResource;
@@ -449,12 +523,16 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    public LocalTransaction getLocalTransaction() throws ResourceException
    {
       if (trace)
+      {
          log.trace("getLocalTransaction()");
-      
+      }
+
       LocalTransaction tx = new JBMLocalTransaction(this);
 
       if (trace)
+      {
          log.trace("LocalTransaction=" + tx);
+      }
 
       return tx;
    }
@@ -468,10 +546,14 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    public ManagedConnectionMetaData getMetaData() throws ResourceException
    {
       if (trace)
+      {
          log.trace("getMetaData()");
-      
+      }
+
       if (isDestroyed.get())
+      {
          throw new IllegalStateException("The managed connection is already destroyed");
+      }
 
       return new JBMMetaData(this);
    }
@@ -481,10 +563,12 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
     * @param out The log writer
     * @exception ResourceException If operation fails
     */
-   public void setLogWriter(PrintWriter out) throws ResourceException
+   public void setLogWriter(final PrintWriter out) throws ResourceException
    {
       if (trace)
+      {
          log.trace("setLogWriter(" + out + ")");
+      }
    }
 
    /**
@@ -495,7 +579,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    public PrintWriter getLogWriter() throws ResourceException
    {
       if (trace)
+      {
          log.trace("getLogWriter()");
+      }
 
       return null;
    }
@@ -504,15 +590,19 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
     * Notifies user of a JMS exception.
     * @param exception The JMS exception
     */
-   public void onException(JMSException exception)
+   public void onException(final JMSException exception)
    {
       if (trace)
+      {
          log.trace("onException(" + exception + ")");
+      }
 
       if (isDestroyed.get())
       {
          if (trace)
+         {
             log.trace("Ignoring error on already destroyed connection " + this, exception);
+         }
          return;
       }
 
@@ -533,11 +623,11 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
       {
          log.debug("Unable to unset exception listener", e);
       }
-      
+
       ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_ERROR_OCCURRED, exception);
       sendEvent(event);
    }
-   
+
    /**
     * Is managed connection running in XA mode
     * @return True if XA; otherwise false
@@ -545,7 +635,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected boolean isXA()
    {
       if (trace)
+      {
          log.trace("isXA()");
+      }
 
       return xaConnection != null;
    }
@@ -557,19 +649,29 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected XASession getXASession()
    {
       if (trace)
+      {
          log.trace("getXASession()");
+      }
 
       if (isXA())
       {
          if (xaTopicSession != null)
+         {
             return xaTopicSession;
+         }
          else if (xaQueueSession != null)
+         {
             return xaQueueSession;
+         }
          else
+         {
             return xaSession;
+         }
       }
       else
+      {
          return null;
+      }
    }
 
    /**
@@ -579,34 +681,44 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected Session getSession()
    {
       if (trace)
+      {
          log.trace("getSession()");
+      }
 
       if (topicSession != null)
+      {
          return topicSession;
+      }
       else if (queueSession != null)
+      {
          return queueSession;
+      }
       else
+      {
          return session;
+      }
    }
 
    /**
     * Send an event.
     * @param event The event to send.
     */
-   protected void sendEvent(ConnectionEvent event)
+   protected void sendEvent(final ConnectionEvent event)
    {
       if (trace)
+      {
          log.trace("sendEvent(" + event + ")");
+      }
 
       int type = event.getId();
 
       // convert to an array to avoid concurrent modification exceptions
-      ConnectionEventListener[] list =
-         (ConnectionEventListener[])eventListeners.toArray(new ConnectionEventListener[eventListeners.size()]);
+      ConnectionEventListener[] list = eventListeners.toArray(new ConnectionEventListener[eventListeners.size()]);
 
       for (ConnectionEventListener l : list)
       {
-         switch (type) {
+         switch (type)
+         {
             case ConnectionEvent.CONNECTION_CLOSED:
                l.connectionClosed(event);
                break;
@@ -637,10 +749,12 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
     * Remove a handle from the handle map.
     * @param handle The handle to remove.
     */
-   protected void removeHandle(JBMSession handle)
+   protected void removeHandle(final JBMSession handle)
    {
       if (trace)
+      {
          log.trace("removeHandle(" + handle + ")");
+      }
 
       handles.remove(handle);
    }
@@ -652,7 +766,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected JBMConnectionRequestInfo getCRI()
    {
       if (trace)
+      {
          log.trace("getCRI()");
+      }
 
       return cri;
    }
@@ -664,7 +780,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected JBMManagedConnectionFactory getManagedConnectionFactory()
    {
       if (trace)
+      {
          log.trace("getManagedConnectionFactory()");
+      }
 
       return mcf;
    }
@@ -676,13 +794,19 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    void start() throws JMSException
    {
       if (trace)
+      {
          log.trace("start()");
+      }
 
       if (connection != null)
+      {
          connection.start();
+      }
 
       if (xaConnection != null)
+      {
          xaConnection.start();
+      }
    }
 
    /**
@@ -692,15 +816,21 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    void stop() throws JMSException
    {
       if (trace)
+      {
          log.trace("stop()");
+      }
 
       if (xaConnection != null)
+      {
          xaConnection.stop();
+      }
 
       if (connection != null)
+      {
          connection.stop();
+      }
    }
-   
+
    /**
     * Get the user name
     * @return The user name
@@ -708,7 +838,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    protected String getUserName()
    {
       if (trace)
+      {
          log.trace("getUserName()");
+      }
 
       return userName;
    }
@@ -720,7 +852,9 @@ public class JBMManagedConnection implements ManagedConnection, ExceptionListene
    private void setup() throws ResourceException
    {
       if (trace)
+      {
          log.trace("setup()");
+      }
 
       try
       {

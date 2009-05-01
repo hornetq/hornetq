@@ -23,9 +23,9 @@ package org.jboss.messaging.ra;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ManagedConnection;
+import javax.resource.spi.ManagedConnectionFactory;
 
 import org.jboss.messaging.core.logging.Logger;
 
@@ -43,17 +43,19 @@ public class JBMConnectionManager implements ConnectionManager
 
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMConnectionManager.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
-   
+
    /**
     * Constructor
     */
    public JBMConnectionManager()
    {
       if (trace)
+      {
          log.trace("constructor()");
+      }
    }
 
    /**
@@ -63,19 +65,21 @@ public class JBMConnectionManager implements ConnectionManager
     * @return The connection
     * @exception ResourceException Thrown if there is a problem obtaining the connection
     */
-   public Object allocateConnection(ManagedConnectionFactory mcf,
-                                    ConnectionRequestInfo cxRequestInfo) 
-      throws ResourceException
+   public Object allocateConnection(final ManagedConnectionFactory mcf, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
       if (trace)
+      {
          log.trace("allocateConnection(" + mcf + ", " + cxRequestInfo + ")");
-      
+      }
+
       ManagedConnection mc = mcf.createManagedConnection(null, cxRequestInfo);
       Object c = mc.getConnection(null, cxRequestInfo);
 
       if (trace)
+      {
          log.trace("Allocated connection: " + c + ", with managed connection: " + mc);
-      
+      }
+
       return c;
    }
 }

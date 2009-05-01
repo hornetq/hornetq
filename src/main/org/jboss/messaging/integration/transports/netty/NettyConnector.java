@@ -21,6 +21,24 @@
  */
 package org.jboss.messaging.integration.transports.netty;
 
+import static org.jboss.netty.channel.Channels.pipeline;
+import static org.jboss.netty.channel.Channels.write;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.ssl.SSLSupport;
@@ -30,7 +48,6 @@ import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.utils.ConfigurationHelper;
 import org.jboss.messaging.utils.Future;
-import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
@@ -40,8 +57,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
-import static org.jboss.netty.channel.Channels.pipeline;
-import static org.jboss.netty.channel.Channels.write;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.UpstreamMessageEvent;
@@ -65,21 +80,6 @@ import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 /**
  * A NettyConnector
  *
@@ -93,10 +93,6 @@ public class NettyConnector implements Connector
    private static final Logger log = Logger.getLogger(NettyConnector.class);
 
    // Attributes ----------------------------------------------------
-
-   private ExecutorService bossExecutor;
-
-   private ExecutorService workerExecutor;
 
    private ClientSocketChannelFactory channelFactory;
 
@@ -139,6 +135,8 @@ public class NettyConnector implements Connector
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    private final String servletPath;
+   
+   private final Executor threadPool;
 
    // Static --------------------------------------------------------
 
@@ -148,7 +146,8 @@ public class NettyConnector implements Connector
 
    public NettyConnector(final Map<String, Object> configuration,
                          final BufferHandler handler,
-                         final ConnectionLifeCycleListener listener)
+                         final ConnectionLifeCycleListener listener,
+                         final Executor threadPool)
    {
       if (listener == null)
       {
@@ -228,6 +227,8 @@ public class NettyConnector implements Connector
       this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
+      
+      this.threadPool = threadPool;
    }
 
    public synchronized void start()
@@ -235,22 +236,21 @@ public class NettyConnector implements Connector
       if (channelFactory != null)
       {
          return;
-      }
-      workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-worker-threads"));
+      }   
+      
       if (useNio)
-      {
-         bossExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-connector-boss-threads"));
-         channelFactory = new NioClientSocketChannelFactory(bossExecutor, workerExecutor);
+      {    
+         channelFactory = new NioClientSocketChannelFactory(threadPool, threadPool);
       }
       else
       {
-         channelFactory = new OioClientSocketChannelFactory(workerExecutor);
+         channelFactory = new OioClientSocketChannelFactory(threadPool);
       }
       // if we are a servlet wrap the socketChannelFactory
       if (useServlet)
       {
          ClientSocketChannelFactory proxyChannelFactory = channelFactory;
-         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, workerExecutor);
+         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, threadPool);
       }
       bootstrap = new ClientBootstrap(channelFactory);
 
@@ -318,8 +318,7 @@ public class NettyConnector implements Connector
       }
 
       bootstrap = null;
-      channelGroup.close().awaitUninterruptibly();
-      channelFactory.releaseExternalResources();
+      channelGroup.close().awaitUninterruptibly();    
       channelFactory = null;
 
       for (Connection connection : connections.values())
@@ -328,7 +327,6 @@ public class NettyConnector implements Connector
       }
 
       connections.clear();
-
    }
 
    public boolean isStarted()

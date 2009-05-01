@@ -22,24 +22,6 @@
 
 package org.jboss.messaging.tests.stress.remote;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.messaging.core.client.ClientSession;
@@ -147,30 +129,12 @@ public class PingStressTest extends ServiceTestBase
 
       server.getRemotingService().addInterceptor(noPongInterceptor);
 
-      final ClientSessionFactory csf1 = new ClientSessionFactoryImpl(transportConfig,
-                                                                     null,
-                                                                     DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                                     DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                                     PING_INTERVAL,
-                                                                     (long)(PING_INTERVAL * 1.5),
-                                                                     PING_INTERVAL * 10, // Using a smaller call
-                                                                                          // timeout
-                                                                     // for this test
-                                                                     DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                                     DEFAULT_CONSUMER_MAX_RATE,
-                                                                     DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                                     DEFAULT_PRODUCER_MAX_RATE,
-                                                                     DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                     DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                     DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                                     DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                                     DEFAULT_AUTO_GROUP,
-                                                                     DEFAULT_MAX_CONNECTIONS,
-                                                                     DEFAULT_PRE_ACKNOWLEDGE,
-                                                                     DEFAULT_ACK_BATCH_SIZE,
-                                                                     DEFAULT_RETRY_INTERVAL,
-                                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                     DEFAULT_RECONNECT_ATTEMPTS);
+      final ClientSessionFactory csf1 = new ClientSessionFactoryImpl(transportConfig);
+      
+      csf1.setPingPeriod(PING_INTERVAL);
+      csf1.setConnectionTTL((long)(PING_INTERVAL * 1.5));
+      csf1.setCallTimeout(PING_INTERVAL * 10);
+      
 
       final int numberOfSessions = 1;
       final int numberOfThreads = 30;
@@ -196,31 +160,11 @@ public class PingStressTest extends ServiceTestBase
             try
             {
 
-               final ClientSessionFactory csf2 = new ClientSessionFactoryImpl(transportConfig,
-                                                                              null,
-                                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                                              PING_INTERVAL,
-                                                                              (long)(PING_INTERVAL * 1.5),
-                                                                              PING_INTERVAL * 10, // Using a smaller
-                                                                                                   // call
-                                                                              // timeout for this
-                                                                              // test
-                                                                              DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                                              DEFAULT_CONSUMER_MAX_RATE,
-                                                                              DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                                              DEFAULT_PRODUCER_MAX_RATE,
-                                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                              DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                              DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                                              DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                                              DEFAULT_AUTO_GROUP,
-                                                                              DEFAULT_MAX_CONNECTIONS,
-                                                                              DEFAULT_PRE_ACKNOWLEDGE,
-                                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                                              DEFAULT_RETRY_INTERVAL,
-                                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                              DEFAULT_RECONNECT_ATTEMPTS);
+               final ClientSessionFactory csf2 = new ClientSessionFactoryImpl(transportConfig);
+               
+               csf2.setPingPeriod(PING_INTERVAL);
+               csf2.setConnectionTTL((long)(PING_INTERVAL * 1.5));
+               csf2.setCallTimeout(PING_INTERVAL * 10);
 
                // Start all at once to make concurrency worst
                flagAligned.countDown();

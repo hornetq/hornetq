@@ -27,7 +27,6 @@ import java.util.List;
 import javax.naming.Context;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.utils.Pair;
 
@@ -110,70 +109,98 @@ public interface JMSServerManager extends MessagingComponent
     */
    boolean destroyTopic(String name) throws Exception;
 
-   boolean createConnectionFactory(String name,
-                                   List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                   List<String> jndiBindings) throws Exception;
-   
-   boolean createConnectionFactory(String name,
-                                   List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                   boolean blockOnAcknowledge,
-                                   boolean blockOnNonPersistentSend,
-                                   boolean blockOnPersistentSend,
-                                   boolean preAcknowledge,
-                                   List<String> bindings) throws Exception;
+   void createConnectionFactory(String name, String discoveryAddress, int discoveryPort, List<String> jndiBindings) throws Exception;
 
-   boolean createConnectionFactory(String name,
-                                   List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                   String connectionLoadBalancingPolicyClassName,
-                                   long pingPeriod,
-                                   long connectionTTL,
-                                   long callTimeout,
-                                   String clientID,
-                                   int dupsOKBatchSize,
-                                   int transactionBatchSize,
-                                   int consumerWindowSize,
-                                   int consumerMaxRate,
-                                   int sendWindowSize,
-                                   int producerMaxRate,
-                                   int minLargeMessageSize,
-                                   boolean blockOnAcknowledge,
-                                   boolean blockOnNonPersistentSend,
-                                   boolean blockOnPersistentSend,
-                                   boolean autoGroup,
-                                   int maxConnections,
-                                   boolean preAcknowledge,                               
-                                   final long retryInterval,
-                                   final double retryIntervalMultiplier,                                   
-                                   final int reconnectAttempts,
-                                   final boolean failoverOnNodeShutdown,
-                                   List<String> jndiBindings) throws Exception;
-   
-   boolean createConnectionFactory(String name,
-                                   DiscoveryGroupConfiguration discoveryGroupConfig,
-                                   long discoveryInitialWait,
-                                   String connectionLoadBalancingPolicyClassName,
-                                   long pingPeriod,
-                                   long connectionTTL,
-                                   long callTimeout,
-                                   String clientID,
-                                   int dupsOKBatchSize,
-                                   int transactionBatchSize,
-                                   int consumerWindowSize,
-                                   int consumerMaxRate,
-                                   int sendWindowSize,
-                                   int producerMaxRate,
-                                   int minLargeMessageSize,
-                                   boolean blockOnAcknowledge,
-                                   boolean blockOnNonPersistentSend,
-                                   boolean blockOnPersistentSend,
-                                   boolean autoGroup,
-                                   int maxConnections,
-                                   boolean preAcknowledge,                            
-                                   final long retryInterval,
-                                   final double retryIntervalMultiplier,                                   
-                                   final int reconnectAttempts,
-                                   final boolean failoverOnNodeShutdown,
-                                   List<String> jndiBindings) throws Exception;
+   void createConnectionFactory(String name,
+                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                List<String> jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                TransportConfiguration liveTC,
+                                TransportConfiguration backupTC,
+                                List<String> jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name, TransportConfiguration liveTC, List<String> jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                String discoveryAddress,
+                                int discoveryPort,
+                                String clientID,
+                                List<String> jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                String clientID,
+                                List<String> jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                TransportConfiguration liveTC,
+                                TransportConfiguration backupTC,
+                                String clientID,
+                                List<String> jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name, TransportConfiguration liveTC, String clientID, List<String> jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                String clientID,
+                                long pingPeriod,
+                                long connectionTTL,
+                                long callTimeout,
+                                int maxConnections,
+                                int minLargeMessageSize,
+                                int consumerWindowSize,
+                                int consumerMaxRate,
+                                int producerWindowSize,
+                                int producerMaxRate,
+                                boolean blockOnAcknowledge,
+                                boolean blockOnPersistentSend,
+                                boolean blockOnNonPersistentSend,
+                                boolean autoGroup,
+                                boolean preAcknowledge,
+                                String loadBalancingPolicyClassName,
+                                int transactionBatchSize,
+                                int dupsOKBatchSize,
+                                boolean useGlobalPools,
+                                int scheduledThreadPoolMaxSize,
+                                int threadPoolMaxSize,
+                                long retryInterval,
+                                double retryIntervalMultiplier,
+                                int reconnectAttempts,
+                                boolean failoverOnServerShutdown,
+                                List<String> jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                String discoveryAddress,
+                                int discoveryPort,
+                                String clientID,
+                                long discoveryRefreshTimeout,
+                                long pingPeriod,
+                                long connectionTTL,
+                                long callTimeout,
+                                int maxConnections,
+                                int minLargeMessageSize,
+                                int consumerWindowSize,
+                                int consumerMaxRate,
+                                int producerWindowSize,
+                                int producerMaxRate,
+                                boolean blockOnAcknowledge,
+                                boolean blockOnPersistentSend,
+                                boolean blockOnNonPersistentSend,
+                                boolean autoGroup,
+                                boolean preAcknowledge,
+                                String loadBalancingPolicyClassName,
+                                int transactionBatchSize,
+                                int dupsOKBatchSize,
+                                long initialWaitTimeout,
+                                boolean useGlobalPools,
+                                int scheduledThreadPoolMaxSize,
+                                int threadPoolMaxSize,
+                                long retryInterval,
+                                double retryIntervalMultiplier,
+                                int reconnectAttempts,
+                                boolean failoverOnServerShutdown,
+                                List<String> jndiBindings) throws Exception;
 
    /**
     * destroys a connection factory.

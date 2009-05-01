@@ -38,7 +38,7 @@ public class JBMTopicSubscriber extends JBMMessageConsumer implements TopicSubsc
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMTopicSubscriber.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -47,12 +47,14 @@ public class JBMTopicSubscriber extends JBMMessageConsumer implements TopicSubsc
     * @param consumer the topic subscriber
     * @param session the session
     */
-   public JBMTopicSubscriber(TopicSubscriber consumer, JBMSession session)
+   public JBMTopicSubscriber(final TopicSubscriber consumer, final JBMSession session)
    {
       super(consumer, session);
 
       if (trace)
+      {
          log.trace("constructor(" + consumer + ", " + session + ")");
+      }
    }
 
    /**
@@ -63,10 +65,12 @@ public class JBMTopicSubscriber extends JBMMessageConsumer implements TopicSubsc
    public boolean getNoLocal() throws JMSException
    {
       if (trace)
+      {
          log.trace("getNoLocal()");
+      }
 
       checkState();
-      return ((TopicSubscriber) consumer).getNoLocal();
+      return ((TopicSubscriber)consumer).getNoLocal();
    }
 
    /**
@@ -77,9 +81,11 @@ public class JBMTopicSubscriber extends JBMMessageConsumer implements TopicSubsc
    public Topic getTopic() throws JMSException
    {
       if (trace)
+      {
          log.trace("getTopic()");
+      }
 
       checkState();
-      return ((TopicSubscriber) consumer).getTopic();
+      return ((TopicSubscriber)consumer).getTopic();
    }
 }

@@ -499,18 +499,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (running)
       {
          running = false;
-
-         org.jboss.messaging.utils.Future future = new Future();
-
-         executor.execute(future);
-
-         boolean ok = future.await(10000);
-
-         if (!ok)
-         {
-            log.warn("Timed out waiting for depage executor on destination " + storeName + " to stop");
-         }
-
+        
          if (currentPage != null)
          {
             currentPage.close();

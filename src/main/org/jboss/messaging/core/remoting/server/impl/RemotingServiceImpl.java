@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -85,12 +86,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    
    private volatile RemotingConnection serverSideReplicatingConnection;
    
-
+   private final Executor threadPool;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public RemotingServiceImpl(final Configuration config, final MessagingServer server, final ManagementService managementService)
+   public RemotingServiceImpl(final Configuration config, final MessagingServer server, final ManagementService managementService,
+                              final Executor threadPool)
    {
       transportConfigs = config.getAcceptorConfigurations();
 
@@ -111,6 +114,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.config = config;
       this.server = server;
       this.managementService = managementService;
+      this.threadPool = threadPool;
    }
 
    // RemotingService implementation -------------------------------
@@ -152,7 +156,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
             AcceptorFactory factory = (AcceptorFactory)clazz.newInstance();
             
-            Acceptor acceptor = factory.createAcceptor(info.getParams(), bufferHandler, this);
+            Acceptor acceptor = factory.createAcceptor(info.getParams(), bufferHandler, this, threadPool);
 
             acceptors.add(acceptor);
 
@@ -266,7 +270,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
 
-      RemotingConnection rc = new RemotingConnectionImpl(connection, interceptors, !config.isBackup(), config.getConnectionTTLOverride());
+      RemotingConnection rc = new RemotingConnectionImpl(connection, interceptors, !config.isBackup(), config.getConnectionTTLOverride(),
+                                                         threadPool);
 
       Channel channel1 = rc.getChannel(1, -1, false);
 
@@ -286,9 +291,21 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void connectionDestroyed(final Object connectionID)
    {  
-      // We DO NOT destroy the connection when this event is received.
-      // Instead, the connection will be cleaned up when the connection TTL
-      // is hit in FailedConnectionsTask.
+      RemotingConnection conn = connections.get(connectionID);
+      
+      if (conn != null)
+      {
+         //if the connection has no failure listeners it means the sesssions etc were already closed so this is a clean
+         //shutdown, therefore we can destroy the connection
+         //otherwise client might have crashed/exited without closing connections so we leave them for connection TTL
+         
+         if (conn.getFailureListeners().isEmpty())
+         {
+            connections.remove(connectionID);
+            
+            conn.destroy();
+         }
+      } 
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)

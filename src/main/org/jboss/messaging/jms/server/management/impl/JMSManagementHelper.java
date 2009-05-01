@@ -38,7 +38,6 @@ import javax.jms.Message;
  */
 public class JMSManagementHelper
 {
-
    // Constants -----------------------------------------------------
    
    // Attributes ----------------------------------------------------

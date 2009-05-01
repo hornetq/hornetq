@@ -21,25 +21,27 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
-import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
-import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.utils.Pair;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
+import org.jboss.messaging.core.server.Messaging;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.tests.util.RandomUtil;
+import org.jboss.messaging.tests.util.ServiceTestBase;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -58,30 +60,105 @@ public class ClientSessionFactoryTest extends ServiceTestBase
 
    private TransportConfiguration backupTC;
 
-   public void testConstructor1() throws Exception
+   public void testDefaultConstructor() throws Exception
+   {
+      try
+      {
+         startLiveAndBackup();
+         ClientSessionFactory cf = new ClientSessionFactoryImpl();
+         assertFactoryParams(cf,
+                             null,
+                             null,
+                             0,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+         try
+         {
+            ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+            fail("Should throw exception");
+         }
+         catch (MessagingException e)
+         {
+            // Ok
+         }
+         final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+         Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
+                                                                                                                               this.backupTC);
+         staticConnectors.add(pair0);
+         cf.setStaticConnectors(staticConnectors);
+         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+         assertNotNull(session);
+         session.close();
+         testSettersThrowException(cf);
+      }
+      finally
+      {
+         stopLiveAndBackup();
+      }
+   }
+
+   public void testDiscoveryConstructor() throws Exception
    {
       try
       {
          startLiveAndBackup();
          ClientSessionFactory cf = new ClientSessionFactoryImpl(groupAddress, groupPort);
          assertFactoryParams(cf,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                             null,
+                             groupAddress,
+                             groupPort,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
+                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
          assertNotNull(session);
          session.close();
+         testSettersThrowException(cf);
       }
       finally
       {
@@ -89,176 +166,101 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       }
    }
 
-
-   public void testConstructor2() throws Exception
+   public void testStaticConnectorListConstructor() throws Exception
    {
       try
       {
          startLiveAndBackup();
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(groupAddress, groupPort, 9999, 5555);
+         final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+         Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
+                                                                                                                               this.backupTC);
+         staticConnectors.add(pair0);
+
+         ClientSessionFactory cf = new ClientSessionFactoryImpl(staticConnectors);
          assertFactoryParams(cf,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                             staticConnectors,
+                             null,
+                             0,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
-         assertNotNull(session);
-         session.close();
-      }
-      finally
-      {
-         stopLiveAndBackup();
-      }
-   }
-
-   public void testConstructor3() throws Exception
-   {
-      try
-      {
-         startLiveAndBackup();
-         int batchSize = 33;
-         long interval = 44l;
-         double intervalMultiplier = 6.0;
-         int reconnectAttempts = 8;
-         boolean failoverOnServerShutdown = true;
-         int maxConnections = 2;
-         int minLargeMessageSize = 101;
-         int producerMaxRate = 99;
-         int windowSize = 88;
-         int consumerMaxRate = 77;
-         int windowSize1 = 66;
-         long callTimeout = 55l;
-         long ttl = 44l;
-         long period = 33l;
-         boolean onAcknowledge = true;
-         boolean blockOnNonPersistentSend = true;
-         boolean blockOnPersistentSend = true;
-         boolean autoGroup = true;
-         boolean preAcknowledge = true;
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(groupAddress, groupPort, 999, 555, org.jboss.messaging.core.client.impl.RandomConnectionLoadBalancingPolicy.class.getName(),
-                                                                period, ttl, callTimeout, windowSize1,
-                                                                consumerMaxRate, windowSize, producerMaxRate, minLargeMessageSize,
-                                                                onAcknowledge, blockOnNonPersistentSend, blockOnPersistentSend, autoGroup, maxConnections, preAcknowledge, batchSize, interval,
-                                                                intervalMultiplier, reconnectAttempts, failoverOnServerShutdown);
-         assertFactoryParams(cf,
-                             batchSize,
-                             callTimeout,
-                             consumerMaxRate,
-                             windowSize1,
-                             maxConnections,
-                             minLargeMessageSize,
-                             period,
-                             producerMaxRate,
-                             windowSize,
-                             autoGroup,
-                             onAcknowledge,
-                             blockOnPersistentSend,
-                             blockOnNonPersistentSend,
-                             preAcknowledge);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
-         assertNotNull(session);
-         session.close();
-      }
-      finally
-      {
-         stopLiveAndBackup();
-      }
-   }
-
-   public void testConstructor4() throws Exception
-   {
-      int batchSize = 33;
-      long interval = 44l;
-      double intervalMultiplier = 6.0;
-      int reconnectAttempts = 8;
-      boolean failoverOnServerShutdown = true;
-      int maxConnections = 2;
-      int minLargeMessageSize = 101;
-      int producerMaxRate = 99;
-      int windowSize = 88;
-      int consumerMaxRate = 77;
-      int windowSize1 = 66;
-      long callTimeout = 55l;
-      long ttl = 44l;
-      long period = 33l;
-      boolean onAcknowledge = true;
-      boolean blockOnNonPersistentSend = true;
-      boolean blockOnPersistentSend = true;
-      boolean autoGroup = true;
-      boolean preAcknowledge = true;
-      ArrayList<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      try
-      {
-         startLiveAndBackup();
-         connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(liveTC, backupTC));
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(connectorConfigs, org.jboss.messaging.core.client.impl.RandomConnectionLoadBalancingPolicy.class.getName(),
-                                                                period, ttl, callTimeout, windowSize1,
-                                                                consumerMaxRate, windowSize, producerMaxRate, minLargeMessageSize,
-                                                                onAcknowledge, blockOnNonPersistentSend, blockOnPersistentSend, autoGroup, maxConnections, preAcknowledge, batchSize, interval,
-                                                                intervalMultiplier, reconnectAttempts, failoverOnServerShutdown);
-         assertFactoryParams(cf,
-                             batchSize,
-                             callTimeout,
-                             consumerMaxRate,
-                             windowSize1,
-                             maxConnections,
-                             minLargeMessageSize,
-                             period,
-                             producerMaxRate,
-                             windowSize,
-                             autoGroup,
-                             onAcknowledge,
-                             blockOnPersistentSend,
-                             blockOnNonPersistentSend,
-                             preAcknowledge);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
-         assertNotNull(session);
-         session.close();
-      }
-      finally
-      {
-         stopLiveAndBackup();
-      }
-   }
-
-   public void testConstructor5() throws Exception
-   {
-      try
-      {
-         startLiveAndBackup();
-         long interval = 66l;
-         double intervalMultiplier = 7.0;
-         int reconnectAttempts = 44;
-         boolean failoverOnServerShutdown = true;
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, backupTC, failoverOnServerShutdown, interval, intervalMultiplier, reconnectAttempts);
-         assertFactoryParams(cf,
+                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                              ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+         assertNotNull(session);
+         session.close();
+         testSettersThrowException(cf);
+      }
+      finally
+      {
+         stopLiveAndBackup();
+      }
+   }
+
+   public void testStaticConnectorLiveAndBackupConstructor() throws Exception
+   {
+      try
+      {
+         startLiveAndBackup();
+         final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+         Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
+                                                                                                                               this.backupTC);
+         staticConnectors.add(pair0);
+
+         ClientSessionFactory cf = new ClientSessionFactoryImpl(this.liveTC, this.backupTC);
+         assertFactoryParams(cf,
+                             staticConnectors,
+                             null,
+                             0,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
+                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
          assertNotNull(session);
          session.close();
+         testSettersThrowException(cf);
       }
       finally
       {
@@ -266,33 +268,50 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       }
    }
 
-   public void testConstructor6() throws Exception
+   public void testStaticConnectorLiveConstructor() throws Exception
    {
       try
       {
          startLiveAndBackup();
-         long interval = 66l;
-         double intervalMultiplier = 7.0;
-         int reconnectAttempts = 44;
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, interval, intervalMultiplier, reconnectAttempts);
+         final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+         Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
+                                                                                                                               null);
+         staticConnectors.add(pair0);
+
+         ClientSessionFactory cf = new ClientSessionFactoryImpl(this.liveTC);
          assertFactoryParams(cf,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                             staticConnectors,
+                             null,
+                             0,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
                              ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                              ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                              ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
+                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                             ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
          assertNotNull(session);
          session.close();
+         testSettersThrowException(cf);
       }
       finally
       {
@@ -300,321 +319,493 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       }
    }
 
-   public void testConstructor7() throws Exception
+   public void testGettersAndSetters()
    {
-      try
-      {
-         startLiveAndBackup();
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, backupTC);
-         assertFactoryParams(cf,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
-         assertNotNull(session);
-         session.close();
-      }
-      finally
-      {
-         stopLiveAndBackup();
-      }
+      ClientSessionFactory cf = new ClientSessionFactoryImpl();
+
+      List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
+                                                                                                                            this.backupTC);
+      staticConnectors.add(pair0);
+
+      String discoveryAddress = randomString();
+      int discoveryPort = RandomUtil.randomPositiveInt();
+      long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
+      long pingPeriod = RandomUtil.randomPositiveLong();
+      long connectionTTL = RandomUtil.randomPositiveLong();
+      long callTimeout = RandomUtil.randomPositiveLong();
+      int maxConnections = RandomUtil.randomPositiveInt();
+      int minLargeMessageSize = RandomUtil.randomPositiveInt();
+      int consumerWindowSize = RandomUtil.randomPositiveInt();
+      int consumerMaxRate = RandomUtil.randomPositiveInt();
+      int producerWindowSize = RandomUtil.randomPositiveInt();
+      int producerMaxRate = RandomUtil.randomPositiveInt();
+      boolean blockOnAcknowledge = RandomUtil.randomBoolean();
+      boolean blockOnPersistentSend = RandomUtil.randomBoolean();
+      boolean blockOnNonPersistentSend = RandomUtil.randomBoolean();
+      boolean autoGroup = RandomUtil.randomBoolean();
+      boolean preAcknowledge = RandomUtil.randomBoolean();
+      String loadBalancingPolicyClassName = RandomUtil.randomString();
+      int ackBatchSize = RandomUtil.randomPositiveInt();
+      long initialWaitTimeout = RandomUtil.randomPositiveLong();
+      boolean useGlobalPools = RandomUtil.randomBoolean();
+      int scheduledThreadPoolMaxSize = RandomUtil.randomPositiveInt();
+      int threadPoolMaxSize = RandomUtil.randomPositiveInt();
+      long retryInterval = RandomUtil.randomPositiveLong();
+      double retryIntervalMultiplier = RandomUtil.randomDouble();
+      int reconnectAttempts = RandomUtil.randomPositiveInt();
+      boolean failoverOnServerShutdown = RandomUtil.randomBoolean();
+
+      cf.setStaticConnectors(staticConnectors);
+      cf.setDiscoveryAddress(discoveryAddress);
+      cf.setDiscoveryPort(discoveryPort);
+      cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+      cf.setPingPeriod(pingPeriod);
+      cf.setConnectionTTL(connectionTTL);
+      cf.setCallTimeout(callTimeout);
+      cf.setMaxConnections(maxConnections);
+      cf.setMinLargeMessageSize(minLargeMessageSize);
+      cf.setConsumerWindowSize(consumerWindowSize);
+      cf.setConsumerMaxRate(consumerMaxRate);
+      cf.setProducerWindowSize(producerWindowSize);
+      cf.setProducerMaxRate(producerMaxRate);
+      cf.setBlockOnAcknowledge(blockOnAcknowledge);
+      cf.setBlockOnPersistentSend(blockOnPersistentSend);
+      cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+      cf.setAutoGroup(autoGroup);
+      cf.setPreAcknowledge(preAcknowledge);
+      cf.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+      cf.setAckBatchSize(ackBatchSize);
+      cf.setInitialWaitTimeout(initialWaitTimeout);
+      cf.setUseGlobalPools(useGlobalPools);
+      cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+      cf.setThreadPoolMaxSize(threadPoolMaxSize);
+      cf.setRetryInterval(retryInterval);
+      cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      cf.setReconnectAttempts(reconnectAttempts);
+      cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
+
+      assertEquals(staticConnectors, cf.getStaticConnectors());
+      assertEquals(discoveryAddress, cf.getDiscoveryAddress());
+      assertEquals(discoveryPort, cf.getDiscoveryPort());
+      assertEquals(discoveryRefreshTimeout, cf.getDiscoveryRefreshTimeout());
+      assertEquals(pingPeriod, cf.getPingPeriod());
+      assertEquals(connectionTTL, cf.getConnectionTTL());
+      assertEquals(callTimeout, cf.getCallTimeout());
+      assertEquals(maxConnections, cf.getMaxConnections());
+      assertEquals(minLargeMessageSize, cf.getMinLargeMessageSize());
+      assertEquals(consumerWindowSize, cf.getConsumerWindowSize());
+      assertEquals(consumerMaxRate, cf.getConsumerMaxRate());
+      assertEquals(producerWindowSize, cf.getProducerWindowSize());
+      assertEquals(producerMaxRate, cf.getProducerMaxRate());
+      assertEquals(blockOnAcknowledge, cf.isBlockOnAcknowledge());
+      assertEquals(blockOnPersistentSend, cf.isBlockOnPersistentSend());
+      assertEquals(blockOnNonPersistentSend, cf.isBlockOnNonPersistentSend());
+      assertEquals(autoGroup, cf.isAutoGroup());
+      assertEquals(preAcknowledge, cf.isPreAcknowledge());
+      assertEquals(loadBalancingPolicyClassName, cf.getLoadBalancingPolicyClassName());
+      assertEquals(ackBatchSize, cf.getAckBatchSize());
+      assertEquals(initialWaitTimeout, cf.getInitialWaitTimeout());
+      assertEquals(useGlobalPools, cf.isUseGlobalPools());
+      assertEquals(scheduledThreadPoolMaxSize, cf.getScheduledThreadPoolMaxSize());
+      assertEquals(threadPoolMaxSize, cf.getThreadPoolMaxSize());
+      assertEquals(retryInterval, cf.getRetryInterval());
+      assertEquals(retryIntervalMultiplier, cf.getRetryIntervalMultiplier());
+      assertEquals(reconnectAttempts, cf.getReconnectAttempts());
+      assertEquals(failoverOnServerShutdown, cf.isFailoverOnServerShutdown());
+
    }
 
-   public void testConstructor8() throws Exception
+   private void testSettersThrowException(ClientSessionFactory cf)
    {
+      List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
+                                                                                                                            this.backupTC);
+      staticConnectors.add(pair0);
+
+      String discoveryAddress = randomString();
+      int discoveryPort = RandomUtil.randomPositiveInt();
+      long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
+      long pingPeriod = RandomUtil.randomPositiveLong();
+      long connectionTTL = RandomUtil.randomPositiveLong();
+      long callTimeout = RandomUtil.randomPositiveLong();
+      int maxConnections = RandomUtil.randomPositiveInt();
+      int minLargeMessageSize = RandomUtil.randomPositiveInt();
+      int consumerWindowSize = RandomUtil.randomPositiveInt();
+      int consumerMaxRate = RandomUtil.randomPositiveInt();
+      int producerWindowSize = RandomUtil.randomPositiveInt();
+      int producerMaxRate = RandomUtil.randomPositiveInt();
+      boolean blockOnAcknowledge = RandomUtil.randomBoolean();
+      boolean blockOnPersistentSend = RandomUtil.randomBoolean();
+      boolean blockOnNonPersistentSend = RandomUtil.randomBoolean();
+      boolean autoGroup = RandomUtil.randomBoolean();
+      boolean preAcknowledge = RandomUtil.randomBoolean();
+      String loadBalancingPolicyClassName = RandomUtil.randomString();
+      int ackBatchSize = RandomUtil.randomPositiveInt();
+      long initialWaitTimeout = RandomUtil.randomPositiveLong();
+      boolean useGlobalPools = RandomUtil.randomBoolean();
+      int scheduledThreadPoolMaxSize = RandomUtil.randomPositiveInt();
+      int threadPoolMaxSize = RandomUtil.randomPositiveInt();
+      long retryInterval = RandomUtil.randomPositiveLong();
+      double retryIntervalMultiplier = RandomUtil.randomDouble();
+      int reconnectAttempts = RandomUtil.randomPositiveInt();
+      boolean failoverOnServerShutdown = RandomUtil.randomBoolean();
+
       try
       {
-         int batchSize = 33;
-         long interval = 44l;
-         double intervalMultiplier = 6.0;
-         int reconnectAttempts = 8;
-         int maxConnections = 2;
-         int minLargeMessageSize = 101;
-         int producerMaxRate = 99;
-         int windowSize = 88;
-         int consumerMaxRate = 77;
-         int windowSize1 = 66;
-         long callTimeout = 55l;
-         long ttl = 44l;
-         long period = 33l;
-         boolean onAcknowledge = true;
-         boolean blockOnNonPersistentSend = true;
-         boolean blockOnPersistentSend = true;
-         boolean autoGroup = true;
-         boolean preAcknowledge = true;
-         boolean failoverOnServerShutdown = true;
-         
-         startLiveAndBackup();
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC, backupTC,
-                                                                failoverOnServerShutdown,
-                                                                org.jboss.messaging.core.client.impl.RandomConnectionLoadBalancingPolicy.class.getName(),
-                                                                period, ttl, callTimeout, windowSize1,
-                                                                consumerMaxRate, windowSize, producerMaxRate, minLargeMessageSize,
-                                                                onAcknowledge, blockOnNonPersistentSend, blockOnPersistentSend, autoGroup, maxConnections, preAcknowledge, batchSize, interval,
-                                                                intervalMultiplier, reconnectAttempts);
-
-         assertFactoryParams(cf,
-                             batchSize,
-                             callTimeout,
-                             consumerMaxRate,
-                             windowSize1,
-                             maxConnections,
-                             minLargeMessageSize,
-                             period,
-                             producerMaxRate,
-                             windowSize,
-                             autoGroup,
-                             onAcknowledge,
-                             blockOnPersistentSend,
-                             blockOnNonPersistentSend,
-                             preAcknowledge);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
-         assertNotNull(session);
-         session.close();
+         cf.setStaticConnectors(staticConnectors);
+         fail("Should throw exception");
       }
-      finally
+      catch (IllegalStateException e)
       {
-         stopLiveAndBackup();
+         // OK
       }
-   }
-
-   public void testConstructor9() throws Exception
-   {
       try
       {
-         startLiveAndBackup();
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC);
-         assertFactoryParams(cf,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
-         assertNotNull(session);
-         session.close();
+         cf.setDiscoveryAddress(discoveryAddress);
+         fail("Should throw exception");
       }
-      finally
+      catch (IllegalStateException e)
       {
-         stopLiveAndBackup();
+         // OK
       }
-   }
-
-   public void testNumSessionsNumConnections() throws Exception
-   {
       try
       {
-         startLiveAndBackup();
-         ClientSessionFactoryInternal cf = new ClientSessionFactoryImpl(liveTC);
-
-         assertFactoryParams(cf,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         ClientSessionImpl sessions[] = new ClientSessionImpl[ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2];
-         for (int i = 0; i < sessions.length; i++)
-         {
-            sessions[i] = (ClientSessionImpl) cf.createSession(false, true, true);
-
-         }
-         assertEquals(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS * 2, cf.numSessions());
-         assertEquals(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS, cf.numConnections());
-         for (ClientSessionImpl session : sessions)
-         {
-            session.close();
-         }
+         cf.setDiscoveryPort(discoveryPort);
+         fail("Should throw exception");
       }
-      finally
+      catch (IllegalStateException e)
       {
-         stopLiveAndBackup();
+         // OK
       }
-   }
-
-   public void testSetters() throws Exception
-   {
-      int batchSize = 33;
-      int minLargeMessageSize = 101;
-      int producerMaxRate = 99;
-      int windowSize = 88;
-      int consumerMaxRate = 77;
-      int windowSize1 = 66;
-      boolean onAcknowledge = true;
-      boolean blockOnNonPersistentSend = true;
-      boolean blockOnPersistentSend = true;
-      boolean autoGroup = true;
-      boolean preAcknowledge = true;
       try
       {
-         startLiveAndBackup();
-         ClientSessionFactory cf = new ClientSessionFactoryImpl(liveTC);
-         assertFactoryParams(cf,
-                             ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                             ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
-         cf.setAckBatchSize(batchSize);
-         cf.setAutoGroup(autoGroup);
-         cf.setBlockOnAcknowledge(onAcknowledge);
-         cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
-         cf.setBlockOnPersistentSend(blockOnPersistentSend);
-         cf.setConsumerMaxRate(consumerMaxRate);
-         cf.setConsumerWindowSize(windowSize1);
+         cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setPingPeriod(pingPeriod);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setConnectionTTL(connectionTTL);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setCallTimeout(callTimeout);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setMaxConnections(maxConnections);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
          cf.setMinLargeMessageSize(minLargeMessageSize);
-         cf.setPreAcknowledge(preAcknowledge);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setConsumerWindowSize(consumerWindowSize);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setConsumerMaxRate(consumerMaxRate);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setProducerWindowSize(producerWindowSize);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
          cf.setProducerMaxRate(producerMaxRate);
-         cf.setProducerWindowSize(windowSize);
-         assertFactoryParams(cf,
-                             batchSize,
-                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                             consumerMaxRate,
-                             windowSize1,
-                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-                             minLargeMessageSize,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                             producerMaxRate,
-                             windowSize,
-                             autoGroup,
-                             onAcknowledge,
-                             blockOnPersistentSend,
-                             blockOnNonPersistentSend,
-                             preAcknowledge);
-         ClientSessionImpl session = (ClientSessionImpl) cf.createSession(false, true, true);
-         assertNotNull(session);
-         session.close();
+         fail("Should throw exception");
       }
-      finally
+      catch (IllegalStateException e)
       {
-         stopLiveAndBackup();
+         // OK
       }
-   }
-
-   public void testCreateSessionFailureWithSimpleConstructorWhenNoServer() throws Exception
-   {
-
-      /****************************/
-      /* No JBM Server is started */
-      /****************************/
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-
       try
       {
-         sf.createSession(false, true, true);
-         fail("Can not create a session when there is no running JBM Server");
+         cf.setBlockOnAcknowledge(blockOnAcknowledge);
+         fail("Should throw exception");
       }
-      catch (Exception e)
+      catch (IllegalStateException e)
       {
+         // OK
       }
-
-   }
-
-   /**
-    * The test is commented because it generates an infinite loop.
-    * The configuration to have it occured is:
-    * - no backup & default values for max retries before/after failover
-    *
-    * - The infinite loop is in ConnectionManagerImpl.getConnectionForCreateSession()
-    *   - getConnection(1) always return null (no server to connect to)
-    *   - failover() always return true
-    *        - the value returned by failover() comes from the reconnect() method
-    *        - when there is no session already connected, the reconnect() method does *nothing*
-    *          and returns true (while nothing has been reconnected)
-    */
-   public void testCreateSessionFailureWithDefaultValuesWhenNoServer() throws Exception
-   {
-
-      /****************************/
-      /* No JBM Server is started */
-      /****************************/
-
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()),
-                                                             null,
-                                                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                                                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
-
       try
       {
-         sf.createSession(false, true, true);
-         fail("Can not create a session when there is no running JBM Server");
+         cf.setBlockOnPersistentSend(blockOnPersistentSend);
+         fail("Should throw exception");
       }
-      catch (Exception e)
+      catch (IllegalStateException e)
       {
+         // OK
       }
+      try
+      {
+         cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setAutoGroup(autoGroup);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setPreAcknowledge(preAcknowledge);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setAckBatchSize(ackBatchSize);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setInitialWaitTimeout(initialWaitTimeout);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setUseGlobalPools(useGlobalPools);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setThreadPoolMaxSize(threadPoolMaxSize);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setRetryInterval(retryInterval);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setReconnectAttempts(reconnectAttempts);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+      try
+      {
+         cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
+         fail("Should throw exception");
+      }
+      catch (IllegalStateException e)
+      {
+         // OK
+      }
+
+      cf.getStaticConnectors();
+      cf.getDiscoveryAddress();
+      cf.getDiscoveryPort();
+      cf.getDiscoveryRefreshTimeout();
+      cf.getPingPeriod();
+      cf.getConnectionTTL();
+      cf.getCallTimeout();
+      cf.getMaxConnections();
+      cf.getMinLargeMessageSize();
+      cf.getConsumerWindowSize();
+      cf.getConsumerMaxRate();
+      cf.getProducerWindowSize();
+      cf.getProducerMaxRate();
+      cf.isBlockOnAcknowledge();
+      cf.isBlockOnPersistentSend();
+      cf.isBlockOnNonPersistentSend();
+      cf.isAutoGroup();
+      cf.isPreAcknowledge();
+      cf.getLoadBalancingPolicyClassName();
+      cf.getAckBatchSize();
+      cf.getInitialWaitTimeout();
+      cf.isUseGlobalPools();
+      cf.getScheduledThreadPoolMaxSize();
+      cf.getThreadPoolMaxSize();
+      cf.getRetryInterval();
+      cf.getRetryIntervalMultiplier();
+      cf.getReconnectAttempts();
+      cf.isFailoverOnServerShutdown();
+
    }
 
    private void assertFactoryParams(ClientSessionFactory cf,
-                                    int ackBatchSize,
+                                    List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors,
+                                    String discoveryAddress,
+                                    int discoveryPort,
+                                    long discoveryRefreshTimeout,
+                                    long pingPeriod,
+                                    long connectionTTL,
                                     long callTimeout,
-                                    int consumerMaxRate,
-                                    int consumerWindowSize,
                                     int maxConnections,
                                     int minLargeMessageSize,
-                                    long pingPeriod,
+                                    int consumerWindowSize,
+                                    int consumerMaxRate,
+                                    int producerWindowSize,
                                     int producerMaxRate,
-                                    int sendWindowSize,
-                                    boolean autoGroup,
                                     boolean blockOnAcknowledge,
-                                    boolean blockOnNonPersistentSend,
                                     boolean blockOnPersistentSend,
-                                    boolean preAcknowledge)
+                                    boolean blockOnNonPersistentSend,
+                                    boolean autoGroup,
+                                    boolean preAcknowledge,
+                                    String loadBalancingPolicyClassName,
+                                    int ackBatchSize,
+                                    long initialWaitTimeout,
+                                    boolean useGlobalPools,
+                                    int scheduledThreadPoolMaxSize,
+                                    int threadPoolMaxSize,
+                                    long retryInterval,
+                                    double retryIntervalMultiplier,
+                                    int reconnectAttempts,
+                                    boolean failoverOnServerShutdown)
    {
-      assertEquals(cf.getAckBatchSize(), ackBatchSize);
+      List<Pair<TransportConfiguration, TransportConfiguration>> cfStaticConnectors = cf.getStaticConnectors();
+      if (staticConnectors == null)
+      {
+         assertNull(cfStaticConnectors);
+      }
+      else
+      {
+         assertEquals(staticConnectors.size(), cfStaticConnectors.size());
+
+         for (int i = 0; i < staticConnectors.size(); i++)
+         {
+            assertEquals(staticConnectors.get(i), cfStaticConnectors.get(i));
+         }
+      }
+      assertEquals(cf.getDiscoveryAddress(), discoveryAddress);
+      assertEquals(cf.getDiscoveryPort(), discoveryPort);
+      assertEquals(cf.getDiscoveryRefreshTimeout(), discoveryRefreshTimeout);
+      assertEquals(cf.getPingPeriod(), pingPeriod);
+      assertEquals(cf.getConnectionTTL(), connectionTTL);
       assertEquals(cf.getCallTimeout(), callTimeout);
-      assertEquals(cf.getConsumerMaxRate(), consumerMaxRate);
-      assertEquals(cf.getConsumerWindowSize(), consumerWindowSize);
       assertEquals(cf.getMaxConnections(), maxConnections);
       assertEquals(cf.getMinLargeMessageSize(), minLargeMessageSize);
-      assertEquals(cf.getPingPeriod(), pingPeriod);
+      assertEquals(cf.getConsumerWindowSize(), consumerWindowSize);
+      assertEquals(cf.getConsumerMaxRate(), consumerMaxRate);
+      assertEquals(cf.getProducerWindowSize(), producerWindowSize);
       assertEquals(cf.getProducerMaxRate(), producerMaxRate);
-      assertEquals(cf.getProducerWindowSize(), sendWindowSize);
-      assertEquals(cf.isAutoGroup(), autoGroup);
       assertEquals(cf.isBlockOnAcknowledge(), blockOnAcknowledge);
-      assertEquals(cf.isBlockOnNonPersistentSend(), blockOnNonPersistentSend);
       assertEquals(cf.isBlockOnPersistentSend(), blockOnPersistentSend);
+      assertEquals(cf.isBlockOnNonPersistentSend(), blockOnNonPersistentSend);
+      assertEquals(cf.isAutoGroup(), autoGroup);
       assertEquals(cf.isPreAcknowledge(), preAcknowledge);
+      assertEquals(cf.getLoadBalancingPolicyClassName(), loadBalancingPolicyClassName);
+      assertEquals(cf.getAckBatchSize(), ackBatchSize);
+      assertEquals(cf.getInitialWaitTimeout(), initialWaitTimeout);
+      assertEquals(cf.isUseGlobalPools(), useGlobalPools);
+      assertEquals(cf.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
+      assertEquals(cf.getThreadPoolMaxSize(), threadPoolMaxSize);
+      assertEquals(cf.getRetryInterval(), retryInterval);
+      assertEquals(cf.getRetryIntervalMultiplier(), retryIntervalMultiplier);
+      assertEquals(cf.getReconnectAttempts(), reconnectAttempts);
+      assertEquals(cf.isFailoverOnServerShutdown(), failoverOnServerShutdown);
    }
 
    private void stopLiveAndBackup() throws Exception
@@ -637,8 +828,8 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       backupConf.setClustered(true);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
-            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
-                                            backupParams));
+                .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory",
+                                                backupParams));
       backupConf.setBackup(true);
       backupService = Messaging.newMessagingServer(backupConf, false);
       backupService.start();
@@ -647,7 +838,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       liveConf.setSecurityEnabled(false);
       liveTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
       liveConf.getAcceptorConfigurations()
-            .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
+              .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       backupTC = new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
                                             backupParams);

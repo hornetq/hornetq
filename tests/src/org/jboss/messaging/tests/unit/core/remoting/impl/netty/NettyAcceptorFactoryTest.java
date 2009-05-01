@@ -23,6 +23,7 @@ package org.jboss.messaging.tests.unit.core.remoting.impl.netty;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import org.easymock.EasyMock;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
@@ -48,8 +49,8 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
       Map<String, Object> params = new HashMap<String, Object>();
       BufferHandler handler = EasyMock.createStrictMock(BufferHandler.class);
       ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
-
-      Acceptor acceptor = factory.createAcceptor(params, handler, listener);
+           
+      Acceptor acceptor = factory.createAcceptor(params, handler, listener, Executors.newCachedThreadPool());
 
       assertTrue(acceptor instanceof NettyAcceptor);
    }

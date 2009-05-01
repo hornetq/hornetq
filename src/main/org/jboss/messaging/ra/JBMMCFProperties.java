@@ -44,7 +44,7 @@ public class JBMMCFProperties implements Serializable
 
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMMCFProperties.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -54,10 +54,9 @@ public class JBMMCFProperties implements Serializable
    /** The topic type */
    private static final String TOPIC_TYPE = Topic.class.getName();
 
-   
    /** The transport config, changing the default configured from the RA */
    private Map<String, Object> connectionParameters;
-   
+
    public String strConnectionParameters;
 
    /** The transport type, changing the default configured from the RA */
@@ -68,14 +67,16 @@ public class JBMMCFProperties implements Serializable
 
    /** Use tryLock */
    private Integer useTryLock;
-   
+
    /**
     * Constructor
     */
    public JBMMCFProperties()
    {
       if (trace)
+      {
          log.trace("constructor()");
+      }
 
       useTryLock = null;
    }
@@ -87,11 +88,13 @@ public class JBMMCFProperties implements Serializable
    public int getType()
    {
       if (trace)
+      {
          log.trace("getType()");
+      }
 
       return type;
    }
-   
+
    /**
     * @return the connectionParameters
     */
@@ -99,18 +102,18 @@ public class JBMMCFProperties implements Serializable
    {
       return strConnectionParameters;
    }
-   
+
    public Map<String, Object> getParsedConnectionParameters()
    {
       return connectionParameters;
    }
 
-   public void setConnectionParameters(String configuration)
+   public void setConnectionParameters(final String configuration)
    {
-      this.strConnectionParameters = configuration;
-      this.connectionParameters = Util.parseConfig(configuration);
+      strConnectionParameters = configuration;
+      connectionParameters = Util.parseConfig(configuration);
    }
-   
+
    /**
     * @return the transportType
     */
@@ -118,27 +121,35 @@ public class JBMMCFProperties implements Serializable
    {
       return connectorClassName;
    }
-   
-   public void setConnectorClassName(String value)
+
+   public void setConnectorClassName(final String value)
    {
-      this.connectorClassName = value;
+      connectorClassName = value;
    }
 
    /**
     * Set the default session type.
     * @param defaultType either javax.jms.Topic or javax.jms.Queue
     */
-   public void setSessionDefaultType(String defaultType)
+   public void setSessionDefaultType(final String defaultType)
    {
       if (trace)
+      {
          log.trace("setSessionDefaultType(" + type + ")");
+      }
 
       if (defaultType.equals(QUEUE_TYPE))
-         this.type = JBMConnectionFactory.QUEUE_CONNECTION;
-      else if(defaultType.equals(TOPIC_TYPE))
-         this.type = JBMConnectionFactory.TOPIC_CONNECTION;
+      {
+         type = JBMConnectionFactory.QUEUE_CONNECTION;
+      }
+      else if (defaultType.equals(TOPIC_TYPE))
+      {
+         type = JBMConnectionFactory.TOPIC_CONNECTION;
+      }
       else
-         this.type = JBMConnectionFactory.CONNECTION;
+      {
+         type = JBMConnectionFactory.CONNECTION;
+      }
    }
 
    /**
@@ -148,14 +159,22 @@ public class JBMMCFProperties implements Serializable
    public String getSessionDefaultType()
    {
       if (trace)
+      {
          log.trace("getSessionDefaultType()");
+      }
 
       if (type == JBMConnectionFactory.CONNECTION)
+      {
          return "BOTH";
+      }
       else if (type == JBMConnectionFactory.QUEUE_CONNECTION)
+      {
          return TOPIC_TYPE;
+      }
       else
+      {
          return QUEUE_TYPE;
+      }
    }
 
    /**
@@ -165,58 +184,69 @@ public class JBMMCFProperties implements Serializable
    public Integer getUseTryLock()
    {
       if (trace)
+      {
          log.trace("getUseTryLock()");
+      }
 
       return useTryLock;
    }
-   
+
    /**
     * Set the useTryLock.
     * @param useTryLock the useTryLock.
     */
-   public void setUseTryLock(Integer useTryLock)
+   public void setUseTryLock(final Integer useTryLock)
    {
       if (trace)
+      {
          log.trace("setUseTryLock(" + useTryLock + ")");
+      }
 
       this.useTryLock = useTryLock;
    }
-   
+
    /**
     * Indicates whether some other object is "equal to" this one.
     * @param obj Object with which to compare
     * @return True if this object is the same as the obj argument; false otherwise.
     */
-   public boolean equals(Object obj)
+   @Override
+   public boolean equals(final Object obj)
    {
       if (trace)
+      {
          log.trace("equals(" + obj + ")");
+      }
 
-      if (obj == null) 
+      if (obj == null)
+      {
          return false;
-    
+      }
+
       if (obj instanceof JBMMCFProperties)
       {
-         JBMMCFProperties you = (JBMMCFProperties) obj;
-         return (type == you.getType() &&
-                 Util.compare(useTryLock, you.getUseTryLock()));
+         JBMMCFProperties you = (JBMMCFProperties)obj;
+         return type == you.getType() && Util.compare(useTryLock, you.getUseTryLock());
       }
-    
+
       return false;
    }
-  
+
    /**
     * Return the hash code for the object
     * @return The hash code
     */
+   @Override
    public int hashCode()
    {
       if (trace)
+      {
          log.trace("hashCode()");
+      }
 
       int hash = 7;
 
-      hash += 31 * hash + (Integer.valueOf(type).hashCode());
+      hash += 31 * hash + Integer.valueOf(type).hashCode();
       hash += 31 * hash + (useTryLock != null ? useTryLock.hashCode() : 0);
 
       return hash;

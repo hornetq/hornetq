@@ -64,7 +64,7 @@ public class NettyConnection implements Connection
       
       this.listener = listener;
       
-      listener.connectionCreated(this);
+      listener.connectionCreated(this);           
    }
 
    // Public --------------------------------------------------------
@@ -94,21 +94,7 @@ public class NettyConnection implements Connection
       {
          channel.close();
       }
-
-      // This block has been disabled because this method can be called from
-      // the Netty I/O thread.
-      // TODO Netty should be improved to provide a way to determine
-      // if the current code is running in the I/O thread.
-      //
-      // if (channel.getParent() == null) {
-      // // A client channel - wait until everything is cleaned up.
-      // // TODO Do not spin - use signal.
-      // MessagingChannelHandler handler = (MessagingChannelHandler) channel.getPipeline().get("handler");
-      // while (handler.active) {
-      // Thread.yield();
-      // }
-      // }
-
+      
       closed = true;
       
       listener.connectionDestroyed(getID());

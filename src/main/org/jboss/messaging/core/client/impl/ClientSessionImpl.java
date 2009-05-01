@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -83,7 +82,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.IDGenerator;
-import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TokenBucketLimiterImpl;
@@ -113,8 +111,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean trace = log.isTraceEnabled();
 
    public static final int INITIAL_MESSAGE_BODY_SIZE = 1024;
-
-   private static final org.jboss.messaging.utils.ExecutorFactory executorFactory = new OrderedExecutorFactory(Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-client-session-threads")));
 
    // Attributes ----------------------------------------------------------------------------
 
@@ -192,7 +188,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final int minLargeMessageSize,
                             final RemotingConnection remotingConnection,
                             final int version,
-                            final Channel channel) throws MessagingException
+                            final Channel channel,
+                            final Executor executor) throws MessagingException
    {
       this.connectionManager = connectionManager;
 
@@ -200,7 +197,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       this.remotingConnection = remotingConnection;
 
-      executor = executorFactory.getExecutor();
+      this.executor = executor;
 
       this.xa = xa;
 

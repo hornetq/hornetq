@@ -225,7 +225,7 @@ public class ConnectionFactoryTest extends JMSTestCase
             public void onMessage(Message msg)
             {
                processed++;
-
+               
                if (processed == numMessages - 2)
                {
                   synchronized (waitLock)
@@ -245,7 +245,7 @@ public class ConnectionFactoryTest extends JMSTestCase
             public void onMessage(Message msg)
             {
                processed++;
-              
+               
                synchronized (waitLock)
                {
                   //Should really cope with spurious wakeups

@@ -21,6 +21,13 @@
  */
 package org.jboss.messaging.tests.integration.http;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
@@ -32,11 +39,6 @@ import org.jboss.messaging.integration.transports.netty.NettyConnector;
 import org.jboss.messaging.integration.transports.netty.TransportConstants;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
@@ -45,13 +47,37 @@ public class NettyHttpTest extends UnitTestCase
    private NettyAcceptor acceptor;
 
    private NettyConnector connector;
-
-   public void testFoo()
-   {
-   }
-
-   // Commented out until https://jira.jboss.org/jira/browse/JBMESSAGING-1555 is fixed
    
+   private ExecutorService threadPool;
+   
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      threadPool = Executors.newCachedThreadPool();
+   }
+   
+   @Override
+   protected void tearDown() throws Exception
+   {
+      if (connector != null)
+      {
+         connector.close();
+         connector = null;
+      }
+      if (acceptor != null)
+      {
+         acceptor.stop();
+         acceptor = null;
+      }
+      
+      threadPool.shutdownNow();
+
+      super.tearDown();
+   }
+   
+
    public void testSendAndReceiveAtSameTime() throws Exception
    {
 
@@ -64,11 +90,11 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
       acceptor.start();
 
       SimpleBufferHandler2 connectorHandler = new SimpleBufferHandler2(connectorLatch);
-      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null), threadPool);
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -114,11 +140,11 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
       acceptor.start();
 
       SimpleBufferHandler2 connectorHandler = new SimpleBufferHandler2(connectorLatch);
-      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null), threadPool);
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -167,11 +193,11 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
       acceptor.start();
 
       SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null), threadPool);
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -221,11 +247,11 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
       acceptor.start();
 
       SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null), threadPool);
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -274,11 +300,11 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME, 500l);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
       acceptor.start();
 
       SimpleBufferHandler connectorHandler = new SimpleBufferHandler(connectorLatch);
-      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null), threadPool);
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -323,11 +349,11 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, 5000l);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
-      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
       acceptor.start();
 
       BogusResponseHandler connectorHandler = new BogusResponseHandler(connectorLatch);
-      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null), threadPool);
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -365,11 +391,11 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, 5000l);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler2 acceptorHandler = new SimpleBufferHandler2(acceptorLatch);
-      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener);
+      acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
       acceptor.start();
 
       BogusResponseHandler connectorHandler = new BogusResponseHandler(connectorLatch);
-      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null));
+      connector = new NettyConnector(conf, connectorHandler, new DummyConnectionLifeCycleListener(null), threadPool);
       connector.start();
       Connection conn = connector.createConnection();
       connCreatedLatch.await(5, TimeUnit.SECONDS);
@@ -393,22 +419,6 @@ public class NettyHttpTest extends UnitTestCase
       }
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (connector != null)
-      {
-         connector.close();
-         connector = null;
-      }
-      if (acceptor != null)
-      {
-         acceptor.stop();
-         acceptor = null;
-      }
-
-      super.tearDown();
-   }
 
    class SimpleBufferHandler extends AbstractBufferHandler
    {

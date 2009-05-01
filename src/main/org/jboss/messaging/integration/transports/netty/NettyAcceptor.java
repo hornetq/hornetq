@@ -30,8 +30,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 import javax.net.ssl.SSLContext;
 
@@ -44,7 +43,6 @@ import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.utils.ConfigurationHelper;
-import org.jboss.messaging.utils.JBMThreadFactory;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -76,10 +74,6 @@ import org.jboss.netty.handler.ssl.SslHandler;
 public class NettyAcceptor implements Acceptor
 {
    private static final Logger log = Logger.getLogger(NettyAcceptor.class);
-
-   private ExecutorService bossExecutor;
-
-   private ExecutorService workerExecutor;
 
    private ChannelFactory channelFactory;
 
@@ -130,10 +124,13 @@ public class NettyAcceptor implements Acceptor
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
    
    private boolean paused;
+   
+   private final Executor threadPool;
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
-                        final ConnectionLifeCycleListener listener)
+                        final ConnectionLifeCycleListener listener,
+                        final Executor threadPool)
    {
       this.handler = handler;
 
@@ -210,6 +207,8 @@ public class NettyAcceptor implements Acceptor
       this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
+      
+      this.threadPool= threadPool;
    }
 
    public synchronized void start() throws Exception
@@ -219,8 +218,6 @@ public class NettyAcceptor implements Acceptor
          // Already started        
          return;
       }
-      bossExecutor = Executors.newCachedThreadPool(new org.jboss.messaging.utils.JBMThreadFactory("jbm-netty-acceptor-boss-threads"));
-      workerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("jbm-netty-acceptor-worker-threads"));
 
       if (useInvm)
       {
@@ -228,11 +225,11 @@ public class NettyAcceptor implements Acceptor
       }
       else if (useNio)
       {
-         channelFactory = new NioServerSocketChannelFactory(bossExecutor, workerExecutor);
+         channelFactory = new NioServerSocketChannelFactory(threadPool, threadPool);
       }
       else
       {
-         channelFactory = new OioServerSocketChannelFactory(bossExecutor, workerExecutor);
+         channelFactory = new OioServerSocketChannelFactory(threadPool, threadPool);
       }
       bootstrap = new ServerBootstrap(channelFactory);
 
@@ -337,25 +334,7 @@ public class NettyAcceptor implements Acceptor
       //We *pause* the acceptor so no new connections are made
       
       serverChannelGroup.close().awaitUninterruptibly();     
-      
-//      //We also need to wait for workers to complete, otherwise requests could still sneak in after we have returned
-//      //from this method
-//      workerExecutor.shutdown();
-//      
-//      log.info("Waiting for worker to complete************************");
-//      try
-//      {
-//         boolean ok = workerExecutor.awaitTermination(5000, TimeUnit.MILLISECONDS);
-//         
-//         if (!ok)
-//         {
-//            log.warn("Timed out in waiting for worker to complete");
-//         }
-//      }
-//      catch (InterruptedException e)
-//      {         
-//      }
-      
+     
       try
       {
          Thread.sleep(500);
@@ -399,7 +378,7 @@ public class NettyAcceptor implements Acceptor
       }
       
       channelGroup.close().awaitUninterruptibly();
-      channelFactory.releaseExternalResources();
+
       channelFactory = null;  
       
       for (Connection connection : connections.values())

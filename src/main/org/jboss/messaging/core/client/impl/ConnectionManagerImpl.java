@@ -34,7 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.locks.Lock;
 
 import org.jboss.messaging.core.client.ClientSession;
@@ -56,6 +57,8 @@ import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.ExecutorFactory;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.messaging.utils.VersionLoader;
 
@@ -110,25 +113,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private final Object failoverLock = new Object();
 
-   private static ScheduledThreadPoolExecutor pingExecutor;
-
-   static
-   {
-      recreatePingExecutor();
-   }
-
-   public static void recreatePingExecutor()
-   {
-      if (pingExecutor != null)
-      {
-         pingExecutor.shutdown();
-      }
-
-      // TODO - allow this to be configurable
-      pingExecutor = new ScheduledThreadPoolExecutor(5,
-                                                     new org.jboss.messaging.utils.JBMThreadFactory("jbm-pinger-threads"));
-
-   }
+   private final ExecutorFactory orderedExecutorFactory;
+   
+   private final ExecutorService threadPool;
+   
+   private final ScheduledExecutorService scheduledThreadPool;
 
    private final Map<Object, ConnectionEntry> connections = Collections.synchronizedMap(new LinkedHashMap<Object, ConnectionEntry>());
 
@@ -178,7 +167,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                 final long connectionTTL,
                                 final long retryInterval,
                                 final double retryIntervalMultiplier,
-                                final int reconnectAttempts)
+                                final int reconnectAttempts,
+                                final ExecutorService threadPool,
+                                final ScheduledExecutorService scheduledThreadPool)
    {
       this.connectorConfig = connectorConfig;
 
@@ -216,9 +207,15 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       this.retryIntervalMultiplier = retryIntervalMultiplier;
 
       this.reconnectAttempts = reconnectAttempts;
+      
+      this.scheduledThreadPool = scheduledThreadPool; 
+      
+      this.threadPool = threadPool;
+      
+      this.orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
    }
 
-   // ConnectionLifeCycleListener implementation --------------------
+   // ConnectionLifeCycleListener implementation --------------------------------------------------
 
    public void connectionCreated(final Connection connection)
    {
@@ -233,7 +230,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    {
       failConnection(connectionID, me);
    }
-
+   
    // ConnectionManager implementation ------------------------------------------------------------------
 
    public ClientSession createSession(final String username,
@@ -246,10 +243,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                       final int minLargeMessageSize,
                                       final boolean blockOnAcknowledge,
                                       final boolean autoGroup,
-                                      final int sendWindowSize,
+                                      final int producerWindowSize,
                                       final int consumerWindowSize,
-                                      final int consumerMaxRate,
                                       final int producerMaxRate,
+                                      final int consumerMaxRate,
                                       final boolean blockOnNonPersistentSend,
                                       final boolean blockOnPersistentSend) throws MessagingException
    {
@@ -308,7 +305,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                                          autoCommitSends,
                                                          autoCommitAcks,
                                                          preAcknowledge,
-                                                         sendWindowSize);
+                                                         producerWindowSize);
 
                Packet pResponse = channel1.sendBlocking(request);
 
@@ -327,7 +324,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                {
                   CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
 
-                  Channel sessionChannel = connection.getChannel(sessionChannelID, sendWindowSize, sendWindowSize != -1);
+                  Channel sessionChannel = connection.getChannel(sessionChannelID, producerWindowSize, producerWindowSize != -1);
 
                   ClientSessionInternal session = new ClientSessionImpl(this,
                                                                         name,
@@ -346,7 +343,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                                                         minLargeMessageSize,
                                                                         connection,
                                                                         response.getServerVersion(),
-                                                                        sessionChannel);
+                                                                        sessionChannel,
+                                                                        orderedExecutorFactory.getExecutor());
 
                   sessions.put(session, connection);
 
@@ -507,7 +505,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.SERVER_DISCONNECTED);
 
          boolean done = false;
-
+         
          if (attemptFailover || reconnectAttempts != 0)
          {
             lockAllChannel1s();
@@ -815,18 +813,16 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       if (connections.size() < maxConnections)
       {
          // Create a new one
-
-         DelegatingBufferHandler handler = new DelegatingBufferHandler();
-
-         Connector connector = null;
-
+        
          Connection tc = null;
 
          try
          {
             if (connector == null)
-            {
-               connector = connectorFactory.createConnector(transportParams, handler, this);
+            {               
+               DelegatingBufferHandler handler = new DelegatingBufferHandler();
+               
+               connector = connectorFactory.createConnector(transportParams, handler, this, threadPool);
 
                if (connector != null)
                {
@@ -891,11 +887,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             return null;
          }
 
-         conn = new RemotingConnectionImpl(tc, callTimeout, pingPeriod, connectionTTL, pingExecutor, null);
+         conn = new RemotingConnectionImpl(tc, callTimeout, pingPeriod, connectionTTL, scheduledThreadPool, threadPool, null);
 
          conn.addFailureListener(new DelegatingFailureListener(conn.getID()));
-
-         handler.conn = conn;
 
          conn.startPinger();
 
@@ -1034,12 +1028,15 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    private class DelegatingBufferHandler extends AbstractBufferHandler
-   {
-      RemotingConnection conn;
-
+   {     
       public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
       {
-         conn.bufferReceived(connectionID, buffer);
+         ConnectionEntry entry = connections.get(connectionID);
+         
+         if (entry != null)
+         {         
+            entry.connection.bufferReceived(connectionID, buffer);
+         }
       }
    }
 

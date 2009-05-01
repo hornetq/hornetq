@@ -48,6 +48,11 @@ public class AcknowledgementTest extends JMSTestCase
 
    // Public --------------------------------------------------------
 
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+   
    /* Topics shouldn't hold on to messages if there are no subscribers */
 
    public void testPersistentMessagesForTopicDropped() throws Exception
@@ -503,7 +508,6 @@ public class AcknowledgementTest extends JMSTestCase
 
       try
       {
-
          conn = cf.createConnection();
 
          Session producerSess = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);

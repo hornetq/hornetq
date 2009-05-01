@@ -1339,13 +1339,10 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    {
       final ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                            new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                      backupParams),
-                                                                           ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-                                                                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                           -1);
-
+                                                                                                      backupParams));
+      sf.setReconnectAttempts(-1);
       sf.setProducerWindowSize(32 * 1024);
+      
       return sf;
    }
 

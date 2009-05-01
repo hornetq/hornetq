@@ -592,11 +592,13 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                      new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams),
-                                                                     true,
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+                                                                                                backupParams));
+      
+      
+      sf.setFailoverOnServerShutdown(true);
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       sf.setProducerWindowSize(32 * 1024);
 
@@ -695,12 +697,13 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
          ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                         new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                   backupParams),
-                                                                        true,
-                                                                        100,
-                                                                        1,
-                                                                        -1);
-
+                                                                                                   backupParams));
+         
+         
+         sf.setFailoverOnServerShutdown(true);
+         sf.setRetryInterval(100);
+         sf.setRetryIntervalMultiplier(1);
+         sf.setReconnectAttempts(-1);
          sf.setProducerWindowSize(32 * 1024);
 
          for (int i = 0; i < 10; i++)

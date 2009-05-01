@@ -48,15 +48,15 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_BACKUP = false;
 
    public static final boolean DEFAULT_ENABLE_FILE_DEPLOYMENT = false;
-   
+
    public static final boolean DEFAULT_ENABLE_PERSISTENCE = true;
 
    public static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
 
    public static final long DEFAULT_QUEUE_ACTIVATION_TIMEOUT = 30000;
 
-   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 10;
-   
+   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
+
    public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
 
    public static final long DEFAULT_SECURITY_INVALIDATION_INTERVAL = 10000;
@@ -106,9 +106,9 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_MESSAGE_COUNTER_ENABLED = false;
 
    public static final long DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD = 10000;
-   
+
    public static final int DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY = 10;
-   
+
    public static final long DEFAULT_TRANSACTION_TIMEOUT = 60000;
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
@@ -150,7 +150,7 @@ public class ConfigurationImpl implements Configuration
    protected boolean backup = DEFAULT_BACKUP;
 
    protected boolean enableFileDeployment = DEFAULT_ENABLE_FILE_DEPLOYMENT;
-   
+
    protected boolean enablePersistence = DEFAULT_ENABLE_PERSISTENCE;
 
    protected long fileDeploymentScanPeriod = DEFAULT_FILE_DEPLOYER_SCAN_PERIOD;
@@ -160,7 +160,7 @@ public class ConfigurationImpl implements Configuration
    protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
 
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-   
+
    protected int threadPoolMaxSize = DEFAULT_THREAD_POOL_MAX_SIZE;
 
    protected long securityInvalidationInterval = DEFAULT_SECURITY_INVALIDATION_INTERVAL;
@@ -242,7 +242,7 @@ public class ConfigurationImpl implements Configuration
    protected long messageCounterSamplePeriod = DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD;
 
    protected int messageCounterMaxDayHistory = DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY;
-   
+
    protected long transactionTimeout = DEFAULT_TRANSACTION_TIMEOUT;
 
    protected long transactionTimeoutScanPeriod = DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD;
@@ -296,17 +296,17 @@ public class ConfigurationImpl implements Configuration
    {
       enableFileDeployment = enable;
    }
-   
+
    public boolean isEnablePersistence()
    {
       return this.enablePersistence;
    }
-   
+
    public void setEnablePersistence(boolean enable)
    {
       this.enablePersistence = enable;
    }
-   
+
    public long getFileDeployerScanPeriod()
    {
       return fileDeploymentScanPeriod;
@@ -357,7 +357,7 @@ public class ConfigurationImpl implements Configuration
    {
       scheduledThreadPoolMaxSize = maxSize;
    }
-   
+
    public int getThreadPoolMaxSize()
    {
       return threadPoolMaxSize;

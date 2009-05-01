@@ -52,6 +52,19 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private static final boolean isTrace = log.isTraceEnabled();
 
+   private int getMessageEncodeSize(final SimpleString address) throws Exception
+   {
+      ClientSessionFactory cf = createInVMFactory();
+      ClientSession session = cf.createSession(false, true, true);
+      ClientMessage message = session.createClientMessage(false);
+      // we need to set the destination so we can calculate the encodesize correctly
+      message.setDestination(address);
+      int encodeSize = message.getEncodeSize();
+      session.close();
+      cf.close();
+      return encodeSize;      
+   }
+   
    /*
    * tests send window size. we do this by having 2 receivers on the q. since we roundrobin the consumer for delivery we
    * know if consumer 1 has received n messages then consumer 2 must have also have received n messages or at least up
@@ -65,15 +78,13 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          messagingService.start();
          cf.setBlockOnNonPersistentSend(false);
+         int numMessage = 100;
+         cf.setConsumerWindowSize(numMessage * this.getMessageEncodeSize(addressA));
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession receiveSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          ClientConsumer receivingConsumer = receiveSession.createConsumer(queueA);
-         ClientMessage cm = sendSession.createClientMessage(false);
-         cm.setDestination(addressA);
-         int encodeSize = cm.getEncodeSize();
-         int numMessage = 100;
-         cf.setConsumerWindowSize(numMessage * encodeSize);
+
          ClientSession session = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientConsumer cc = session.createConsumer(queueA);

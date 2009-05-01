@@ -563,7 +563,7 @@ public class ManagementServiceImpl implements ManagementService
 
       messageCounterManager.clear();
       
-      replicationInvoker.stop();
+  //    replicationInvoker.stop();
 
       started = false;
    }

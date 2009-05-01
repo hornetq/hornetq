@@ -106,6 +106,7 @@ public class ReplicationAwareTestBase extends UnitTestCase
       assertTrue(backupMBeanServer != liveMBeanServer);
       
       Configuration backupConf = new ConfigurationImpl();
+      backupConf.setJournalMinFiles(2);      
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName(),
@@ -119,6 +120,7 @@ public class ReplicationAwareTestBase extends UnitTestCase
       }
 
       Configuration liveConf = new ConfigurationImpl();
+      liveConf.setJournalMinFiles(2);
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();

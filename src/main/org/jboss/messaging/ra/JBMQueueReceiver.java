@@ -38,7 +38,7 @@ public class JBMQueueReceiver extends JBMMessageConsumer implements QueueReceive
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMQueueReceiver.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -47,12 +47,14 @@ public class JBMQueueReceiver extends JBMMessageConsumer implements QueueReceive
     * @param consumer the queue receiver
     * @param session the session
     */
-   public JBMQueueReceiver(QueueReceiver consumer, JBMSession session)
+   public JBMQueueReceiver(final QueueReceiver consumer, final JBMSession session)
    {
       super(consumer, session);
 
       if (trace)
+      {
          log.trace("constructor(" + consumer + ", " + session + ")");
+      }
    }
 
    /**
@@ -63,9 +65,11 @@ public class JBMQueueReceiver extends JBMMessageConsumer implements QueueReceive
    public Queue getQueue() throws JMSException
    {
       if (trace)
+      {
          log.trace("getQueue()");
+      }
 
       checkState();
-      return ((QueueReceiver) consumer).getQueue();
+      return ((QueueReceiver)consumer).getQueue();
    }
 }

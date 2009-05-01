@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.impl.invm;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -32,6 +33,8 @@ import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.utils.ConfigurationHelper;
+import org.jboss.messaging.utils.ExecutorFactory;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
 
 /**
  * A InVMAcceptor
@@ -54,16 +57,21 @@ public class InVMAcceptor implements Acceptor
    private volatile boolean started;
       
    private boolean paused;
+   
+   private final ExecutorFactory executorFactory;
 
    public InVMAcceptor(final Map<String, Object> configuration,
                        final BufferHandler handler,
-                       final ConnectionLifeCycleListener listener)
+                       final ConnectionLifeCycleListener listener,
+                       final Executor threadPool)
    {
       this.handler = handler;
 
       this.listener = listener;
 
       this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
+      
+      this.executorFactory = new OrderedExecutorFactory(threadPool);
    }
 
    public synchronized void start() throws Exception
@@ -148,15 +156,21 @@ public class InVMAcceptor implements Acceptor
 
       return handler;
    }
+   
+   public ExecutorFactory getExecutorFactory()
+   {
+      return this.executorFactory;
+   }
 
-   public void connect(final String connectionID, final BufferHandler remoteHandler, final InVMConnector connector)
+   public void connect(final String connectionID, final BufferHandler remoteHandler, final InVMConnector connector,
+                       final Executor clientExecutor)
    {
       if (!started)
       {
          throw new IllegalStateException("Acceptor is not started");
       }
 
-      new InVMConnection(id, connectionID, remoteHandler, new Listener(connector));
+      new InVMConnection(id, connectionID, remoteHandler, new Listener(connector), clientExecutor);
    }
 
    public void disconnect(final String connectionID)

@@ -127,29 +127,10 @@ public class PingTest extends ServiceTestBase
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
-                                                              null,                                 
-                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                              PING_INTERVAL,
-                                                              DEFAULT_CONNECTION_TTL,
-                                                              DEFAULT_CALL_TIMEOUT,
-                                                              DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                              DEFAULT_CONSUMER_MAX_RATE,
-                                                              DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                              DEFAULT_PRODUCER_MAX_RATE,
-                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                              DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                              DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                              DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                              DEFAULT_AUTO_GROUP,
-                                                              DEFAULT_MAX_CONNECTIONS,
-                                                              DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                              DEFAULT_RETRY_INTERVAL,
-                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_RECONNECT_ATTEMPTS);
-
+      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
+      
+      csf.setPingPeriod(PING_INTERVAL);
+      
       ClientSession session = csf.createSession(false, true, true);
 
       assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
@@ -202,28 +183,9 @@ public class PingTest extends ServiceTestBase
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
-                                                              null,
-                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                              PING_INTERVAL,
-                                                              DEFAULT_CONNECTION_TTL,
-                                                              DEFAULT_CALL_TIMEOUT,
-                                                              DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                              DEFAULT_CONSUMER_MAX_RATE,
-                                                              DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                              DEFAULT_PRODUCER_MAX_RATE,
-                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                              DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                              DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                              DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                              DEFAULT_AUTO_GROUP,
-                                                              DEFAULT_MAX_CONNECTIONS,
-                                                              DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                              DEFAULT_RETRY_INTERVAL,
-                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,                                             
-                                                              DEFAULT_RECONNECT_ATTEMPTS);
+      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
+      
+      csf.setPingPeriod(PING_INTERVAL);
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -277,29 +239,11 @@ public class PingTest extends ServiceTestBase
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
-                                                              null,
-                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                              PING_INTERVAL,
-                                                              (long)(PING_INTERVAL * 1.5),
-                                                              DEFAULT_CALL_TIMEOUT,
-                                                              DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                              DEFAULT_CONSUMER_MAX_RATE,
-                                                              DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                              DEFAULT_PRODUCER_MAX_RATE,
-                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                              DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                              DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                              DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                              DEFAULT_AUTO_GROUP,
-                                                              DEFAULT_MAX_CONNECTIONS,
-                                                              DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                              DEFAULT_RETRY_INTERVAL,
-                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_RECONNECT_ATTEMPTS);
-
+      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
+      
+      csf.setPingPeriod(PING_INTERVAL);
+      csf.setConnectionTTL((long)(PING_INTERVAL * 1.5));
+      
       Listener clientListener = new Listener();
 
       ClientSession session = csf.createSession(false, true, true);
@@ -396,28 +340,10 @@ public class PingTest extends ServiceTestBase
 
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig,
-                                                              null,
-                                                              DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                              PING_INTERVAL,
-                                                              (long)(PING_INTERVAL * 1.5),
-                                                              DEFAULT_CALL_TIMEOUT,
-                                                              DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                              DEFAULT_CONSUMER_MAX_RATE,
-                                                              DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                              DEFAULT_PRODUCER_MAX_RATE,
-                                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                              DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                              DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                                              DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                                              DEFAULT_AUTO_GROUP,
-                                                              DEFAULT_MAX_CONNECTIONS,
-                                                              DEFAULT_PRE_ACKNOWLEDGE,
-                                                              DEFAULT_ACK_BATCH_SIZE,
-                                                              DEFAULT_RETRY_INTERVAL,
-                                                              DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                              DEFAULT_RECONNECT_ATTEMPTS);
+      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
+      
+      csf.setPingPeriod(PING_INTERVAL);
+      csf.setConnectionTTL((long)(PING_INTERVAL * 1.5));
 
       ClientSession session = csf.createSession(false, true, true);
 

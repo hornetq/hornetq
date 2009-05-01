@@ -549,15 +549,25 @@ public class ClientSessionStopStartTest extends ServiceTestBase
       assertNull(consumer.getLastException());
       session.close();
    }
+   
+   private int getMessageEncodeSize(final SimpleString address) throws Exception
+   {
+      ClientSessionFactory cf = createInVMFactory();
+      ClientSession session = cf.createSession(false, true, true);
+      ClientMessage message = session.createClientMessage(false);
+      // we need to set the destination so we can calculate the encodesize correctly
+      message.setDestination(address);
+      int encodeSize = message.getEncodeSize();
+      session.close();
+      cf.close();
+      return encodeSize;      
+   }
 
    public void testStopStartMultipleConsumers() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
-      ClientSession tempSess = sf.createSession(false, true, true);
-      ClientMessage tempMessage = tempSess.createClientMessage(false);
-      tempMessage.setDestination(QUEUE);
-      int size = tempMessage.getEncodeSize();
-      sf.setConsumerWindowSize(size * 33);
+      sf.setConsumerWindowSize(this.getMessageEncodeSize(QUEUE) * 33);
+
       final ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);

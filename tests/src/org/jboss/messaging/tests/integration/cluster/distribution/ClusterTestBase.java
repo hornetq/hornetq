@@ -828,8 +828,12 @@ public class ClusterTestBase extends ServiceTestBase
          serverBackuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
       }
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc, serverBackuptc, false, 100, 1d, -1);
-
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc, serverBackuptc);
+      
+      sf.setFailoverOnServerShutdown(false);
+      sf.setRetryInterval(100);
+      sf.setRetryIntervalMultiplier(1d);
+      sf.setReconnectAttempts(-1);
       sf.setBlockOnNonPersistentSend(blocking);
       sf.setBlockOnPersistentSend(blocking);
 

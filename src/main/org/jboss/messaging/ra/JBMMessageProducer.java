@@ -39,13 +39,13 @@ public class JBMMessageProducer implements MessageProducer
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMMessageProducer.class);
-   
+
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The wrapped message producer */
    protected MessageProducer producer;
-   
+
    /** The session for this consumer */
    protected JBMSession session;
 
@@ -54,13 +54,15 @@ public class JBMMessageProducer implements MessageProducer
     * @param producer the producer
     * @param session the session
     */
-   public JBMMessageProducer(MessageProducer producer, JBMSession session)
+   public JBMMessageProducer(final MessageProducer producer, final JBMSession session)
    {
       this.producer = producer;
       this.session = session;
-      
+
       if (trace)
+      {
          log.trace("new JBMMessageProducer " + this + " producer=" + producer + " session=" + session);
+      }
    }
 
    /**
@@ -70,7 +72,9 @@ public class JBMMessageProducer implements MessageProducer
    public void close() throws JMSException
    {
       if (trace)
+      {
          log.trace("close " + this);
+      }
       try
       {
          closeProducer();
@@ -90,20 +94,38 @@ public class JBMMessageProducer implements MessageProducer
     * @param timeToLive The time to live
     * @exception JMSException Thrown if an error occurs
     */
-   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void send(final Destination destination,
+                    final Message message,
+                    final int deliveryMode,
+                    final int priority,
+                    final long timeToLive) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
-            log.trace("send " + this + " destination=" + destination + " message=" + message + " deliveryMode=" + deliveryMode + " priority=" + priority + " ttl=" + timeToLive);
+         {
+            log.trace("send " + this +
+                      " destination=" +
+                      destination +
+                      " message=" +
+                      message +
+                      " deliveryMode=" +
+                      deliveryMode +
+                      " priority=" +
+                      priority +
+                      " ttl=" +
+                      timeToLive);
+         }
 
          checkState();
 
          producer.send(destination, message, deliveryMode, priority, timeToLive);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {
@@ -117,20 +139,24 @@ public class JBMMessageProducer implements MessageProducer
     * @param message The message
     * @exception JMSException Thrown if an error occurs
     */
-   public void send(Destination destination, Message message) throws JMSException
+   public void send(final Destination destination, final Message message) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
+         {
             log.trace("send " + this + " destination=" + destination + " message=" + message);
+         }
 
          checkState();
 
          producer.send(destination, message);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {
@@ -146,20 +172,32 @@ public class JBMMessageProducer implements MessageProducer
     * @param timeToLive The time to live
     * @exception JMSException Thrown if an error occurs
     */
-   public void send(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
+   public void send(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
-            log.trace("send " + this + " message=" + message + " deliveryMode=" + deliveryMode + " priority=" + priority + " ttl=" + timeToLive);
+         {
+            log.trace("send " + this +
+                      " message=" +
+                      message +
+                      " deliveryMode=" +
+                      deliveryMode +
+                      " priority=" +
+                      priority +
+                      " ttl=" +
+                      timeToLive);
+         }
 
          checkState();
 
          producer.send(message, deliveryMode, priority, timeToLive);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {
@@ -172,20 +210,24 @@ public class JBMMessageProducer implements MessageProducer
     * @param message The message
     * @exception JMSException Thrown if an error occurs
     */
-   public void send(Message message) throws JMSException
+   public void send(final Message message) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
+         {
             log.trace("send " + this + " message=" + message);
+         }
 
          checkState();
 
          producer.send(message);
 
          if (trace)
+         {
             log.trace("sent " + this + " result=" + message);
+         }
       }
       finally
       {
@@ -201,7 +243,9 @@ public class JBMMessageProducer implements MessageProducer
    public int getDeliveryMode() throws JMSException
    {
       if (trace)
+      {
          log.trace("getDeliveryMode()");
+      }
 
       return producer.getDeliveryMode();
    }
@@ -214,7 +258,9 @@ public class JBMMessageProducer implements MessageProducer
    public Destination getDestination() throws JMSException
    {
       if (trace)
+      {
          log.trace("getDestination()");
+      }
 
       return producer.getDestination();
    }
@@ -227,7 +273,9 @@ public class JBMMessageProducer implements MessageProducer
    public boolean getDisableMessageID() throws JMSException
    {
       if (trace)
+      {
          log.trace("getDisableMessageID()");
+      }
 
       return producer.getDisableMessageID();
    }
@@ -240,7 +288,9 @@ public class JBMMessageProducer implements MessageProducer
    public boolean getDisableMessageTimestamp() throws JMSException
    {
       if (trace)
+      {
          log.trace("getDisableMessageTimestamp()");
+      }
 
       return producer.getDisableMessageTimestamp();
    }
@@ -253,7 +303,9 @@ public class JBMMessageProducer implements MessageProducer
    public int getPriority() throws JMSException
    {
       if (trace)
+      {
          log.trace("getPriority()");
+      }
 
       return producer.getPriority();
    }
@@ -266,7 +318,9 @@ public class JBMMessageProducer implements MessageProducer
    public long getTimeToLive() throws JMSException
    {
       if (trace)
+      {
          log.trace("getTimeToLive()");
+      }
 
       return producer.getTimeToLive();
    }
@@ -276,10 +330,12 @@ public class JBMMessageProducer implements MessageProducer
     * @param deliveryMode The mode
     * @exception JMSException Thrown if an error occurs
     */
-   public void setDeliveryMode(int deliveryMode) throws JMSException
+   public void setDeliveryMode(final int deliveryMode) throws JMSException
    {
       if (trace)
+      {
          log.trace("setDeliveryMode(" + deliveryMode + ")");
+      }
 
       producer.setDeliveryMode(deliveryMode);
    }
@@ -289,10 +345,12 @@ public class JBMMessageProducer implements MessageProducer
     * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
-   public void setDisableMessageID(boolean value) throws JMSException
+   public void setDisableMessageID(final boolean value) throws JMSException
    {
       if (trace)
+      {
          log.trace("setDisableMessageID(" + value + ")");
+      }
 
       producer.setDisableMessageID(value);
    }
@@ -302,10 +360,12 @@ public class JBMMessageProducer implements MessageProducer
     * @param value The value
     * @exception JMSException Thrown if an error occurs
     */
-   public void setDisableMessageTimestamp(boolean value) throws JMSException
+   public void setDisableMessageTimestamp(final boolean value) throws JMSException
    {
       if (trace)
+      {
          log.trace("setDisableMessageTimestamp(" + value + ")");
+      }
 
       producer.setDisableMessageTimestamp(value);
    }
@@ -315,10 +375,12 @@ public class JBMMessageProducer implements MessageProducer
     * @param defaultPriority The value
     * @exception JMSException Thrown if an error occurs
     */
-   public void setPriority(int defaultPriority) throws JMSException
+   public void setPriority(final int defaultPriority) throws JMSException
    {
       if (trace)
+      {
          log.trace("setPriority(" + defaultPriority + ")");
+      }
 
       producer.setPriority(defaultPriority);
    }
@@ -328,10 +390,12 @@ public class JBMMessageProducer implements MessageProducer
     * @param timeToLive The value
     * @exception JMSException Thrown if an error occurs
     */
-   public void setTimeToLive(long timeToLive) throws JMSException
+   public void setTimeToLive(final long timeToLive) throws JMSException
    {
       if (trace)
+      {
          log.trace("setTimeToLive(" + timeToLive + ")");
+      }
 
       producer.setTimeToLive(timeToLive);
    }

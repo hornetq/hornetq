@@ -122,10 +122,11 @@ public class FailureOnCreateConnectionTest extends UnitTestCase
 
       final int reconnectAttempts = -1;      
 
-      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                                     retryInterval,
-                                                                     retryMultiplier,
-                                                                     reconnectAttempts);
+      ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      
+      sf.setRetryInterval(retryInterval);
+      sf.setRetryIntervalMultiplier(retryMultiplier);
+      sf.setReconnectAttempts(reconnectAttempts);
 
       InVMConnector.failOnCreateConnection = true;
       //One failure only

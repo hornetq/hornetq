@@ -37,13 +37,8 @@ import javax.jms.XATopicConnectionFactory;
  * @author <a href="mailto:jesper.pedersen@jboss.com">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public interface JBMConnectionFactory extends ConnectionFactory, 
-                                              TopicConnectionFactory,
-                                              QueueConnectionFactory, 
-                                              XAConnectionFactory,
-                                              XAQueueConnectionFactory,
-                                              XATopicConnectionFactory,
-                                              Serializable
+public interface JBMConnectionFactory extends ConnectionFactory, TopicConnectionFactory, QueueConnectionFactory,
+         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable
 {
    /** Connection factory capable of handling connections */
    public static final int CONNECTION = 0;

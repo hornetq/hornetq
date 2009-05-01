@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.impl.invm;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -33,6 +34,7 @@ import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.utils.ConfigurationHelper;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
 
 /**
  * A InVMConnector
@@ -79,15 +81,20 @@ public class InVMConnector implements Connector
 
    private volatile boolean started;
 
+   protected final OrderedExecutorFactory executorFactory;
+
    public InVMConnector(final Map<String, Object> configuration,
                         final BufferHandler handler,
-                        final ConnectionLifeCycleListener listener)
+                        final ConnectionLifeCycleListener listener,
+                        final Executor threadPool)
    {
       this.listener = listener;
 
       this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
       this.handler = handler;
+
+      this.executorFactory = new OrderedExecutorFactory(threadPool);
 
       InVMRegistry registry = InVMRegistry.instance;
 
@@ -128,9 +135,9 @@ public class InVMConnector implements Connector
          return null;
       }
 
-      Connection conn = internalCreateConnection(acceptor.getHandler(), new Listener());
+      Connection conn = internalCreateConnection(acceptor.getHandler(), new Listener(), acceptor.getExecutorFactory().getExecutor());
 
-      acceptor.connect((String)conn.getID(), handler, this);
+      acceptor.connect((String)conn.getID(), handler, this, executorFactory.getExecutor());
 
       return conn;
    }
@@ -161,9 +168,11 @@ public class InVMConnector implements Connector
    }
 
    // This may be an injection point for mocks on tests
-   protected Connection internalCreateConnection(final BufferHandler handler, final ConnectionLifeCycleListener listener)
+   protected Connection internalCreateConnection(final BufferHandler handler,
+                                                 final ConnectionLifeCycleListener listener,
+                                                 final Executor serverExecutor)
    {
-      return new InVMConnection(id, handler, listener);
+      return new InVMConnection(id, handler, listener, serverExecutor);
    }
 
    private class Listener implements ConnectionLifeCycleListener
@@ -179,10 +188,10 @@ public class InVMConnector implements Connector
       }
 
       public void connectionDestroyed(final Object connectionID)
-      {         
+      {
          if (connections.remove(connectionID) != null)
-         {            
-            //Execute on different thread to avoid deadlocks
+         {
+            // Execute on different thread to avoid deadlocks
             new Thread()
             {
                public void run()

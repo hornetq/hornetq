@@ -12,15 +12,8 @@
 
 package org.jboss.messaging.jms.client;
 
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
-import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
-import org.jboss.messaging.utils.Pair;
+import java.io.Serializable;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -37,9 +30,14 @@ import javax.jms.XATopicConnection;
 import javax.jms.XATopicConnectionFactory;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.referenceable.ConnectionFactoryObjectFactory;
+import org.jboss.messaging.jms.referenceable.SerializableObjectRefAddr;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -62,372 +60,44 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private transient volatile ClientSessionFactory sessionFactory;
+   private transient ClientSessionFactory sessionFactory;
 
-   private final String connectionLoadBalancingPolicyClassName;
+   private String clientID;
 
-   private final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs;
+   private int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 
-   private final String discoveryGroupAddress;
-
-   private final int discoveryGroupPort;
-
-   private final long discoveryRefreshTimeout;
-
-   private final long discoveryInitialWaitTimeout;
-
-   private final String clientID;
-
-   private final int dupsOKBatchSize;
-
-   private final int transactionBatchSize;
-
-   private final long pingPeriod;
-
-   private final long connectionTTL;
-
-   private final long callTimeout;
-
-   private final int consumerWindowSize;
-
-   private final int consumerMaxRate;
-
-   private final int producerWindowSize;
-
-   private final int producerMaxRate;
-
-   private final int minLargeMessageSize;
-
-   private final boolean blockOnAcknowledge;
-
-   private final boolean blockOnNonPersistentSend;
-
-   private final boolean blockOnPersistentSend;
-
-   private final boolean autoGroup;
-
-   private final int maxConnections;
-
-   private final boolean preAcknowledge;
-
-   private final long retryInterval;
-
-   private final double retryIntervalMultiplier; // For exponential backoff
-
-   private final int reconnectAttempts;
-
-   private final boolean failoverOnServerShutdown;
-
+   private int transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+   
+   private boolean readOnly;
+   
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossConnectionFactory(final String discoveryGroupAddress,
-                                 final int discoveryGroupPort,
-                                 final long discoveryRefreshTimeout,
-                                 final long discoveryInitialWaitTimeout,
-                                 final String loadBalancingPolicyClassName,
-                                 final long pingPeriod,
-                                 final long connectionTTL,
-                                 final long callTimeout,
-                                 final String clientID,
-                                 final int dupsOKBatchSize,
-                                 final int transactionBatchSize,
-                                 final int consumerWindowSize,
-                                 final int consumerMaxRate,
-                                 final int producerWindowSize,
-                                 final int producerMaxRate,
-                                 final int minLargeMessageSize,
-                                 final boolean blockOnAcknowledge,
-                                 final boolean blockOnNonPersistentSend,
-                                 final boolean blockOnPersistentSend,
-                                 final boolean autoGroup,
-                                 final int maxConnections,
-                                 final boolean preAcknowledge,
-                                 final long retryInterval,
-                                 final double retryIntervalMultiplier,
-                                 final int reconnectAttempts,
-                                 final boolean failoverOnServerShutdown)
+   public JBossConnectionFactory()
    {
-      this.connectorConfigs = null;
-      this.discoveryGroupAddress = discoveryGroupAddress;
-      this.discoveryGroupPort = discoveryGroupPort;
-      this.discoveryRefreshTimeout = discoveryRefreshTimeout;
-      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
-      this.connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
-      this.clientID = clientID;
-      this.dupsOKBatchSize = dupsOKBatchSize;
-      this.transactionBatchSize = transactionBatchSize;
-      this.pingPeriod = pingPeriod;
-      this.connectionTTL = connectionTTL;
-      this.callTimeout = callTimeout;
-      this.consumerMaxRate = consumerMaxRate;
-      this.consumerWindowSize = consumerWindowSize;
-      this.producerMaxRate = producerMaxRate;
-      this.producerWindowSize = producerWindowSize;
-      this.blockOnAcknowledge = blockOnAcknowledge;
-      this.minLargeMessageSize = minLargeMessageSize;
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      this.blockOnPersistentSend = blockOnPersistentSend;
-      this.autoGroup = autoGroup;
-      this.maxConnections = maxConnections;
-      this.preAcknowledge = preAcknowledge;
-      this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.reconnectAttempts = reconnectAttempts;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
+      sessionFactory = new ClientSessionFactoryImpl();
    }
 
-   public JBossConnectionFactory(final String discoveryGroupAddress,
-                                 final int discoveryGroupPort,
-                                 final long discoveryRefreshTimeout,
-                                 final long discoveryInitialWaitTimeout)
+   public JBossConnectionFactory(final String discoveryAddress, final int discoveryPort)
    {
-      this.connectorConfigs = null;
-      this.discoveryGroupAddress = discoveryGroupAddress;
-      this.discoveryGroupPort = discoveryGroupPort;
-      this.discoveryRefreshTimeout = discoveryRefreshTimeout;
-      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
-      this.connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-      this.clientID = null;
-      this.dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      this.transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      this.pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-      this.connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-      this.callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-      this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-      this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-      this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-      this.producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-      this.blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-      this.blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      this.blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-      this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-      this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-      this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+      sessionFactory = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
    }
 
-   public JBossConnectionFactory(final String discoveryGroupAddress, final int discoveryGroupPort)
+   public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
    {
-      this(discoveryGroupAddress,
-           discoveryGroupPort,
-           ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
-           ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT);
+      sessionFactory = new ClientSessionFactoryImpl(staticConnectors);
    }
 
-   public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                 final String loadBalancingPolicyClassName,
-                                 final long pingPeriod,
-                                 final long connectionTTL,
-                                 final long callTimeout,
-                                 final String clientID,
-                                 final int dupsOKBatchSize,
-                                 final int transactionBatchSize,
-                                 final int consumerWindowSize,
-                                 final int consumerMaxRate,
-                                 final int sendWindowSize,
-                                 final int producerMaxRate,
-                                 final int minLargeMessageSize,
-                                 final boolean blockOnAcknowledge,
-                                 final boolean blockOnNonPersistentSend,
-                                 final boolean blockOnPersistentSend,
-                                 final boolean autoGroup,
-                                 final int maxConnections,
-                                 final boolean preAcknowledge,
-                                 final long retryInterval,
-                                 final double retryIntervalMultiplier,
-                                 final int reconnectAttempts,
-                                 final boolean failoverOnServerShutdown)
+   public JBossConnectionFactory(final TransportConfiguration connectorConfig,
+                                 final TransportConfiguration backupConnectorConfig)
    {
-      this.discoveryGroupAddress = null;
-      this.discoveryGroupPort = -1;
-      this.discoveryRefreshTimeout = -1;
-      this.discoveryInitialWaitTimeout = -1;
-      this.connectorConfigs = connectorConfigs;
-      this.connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
-      this.clientID = clientID;
-      this.dupsOKBatchSize = dupsOKBatchSize;
-      this.transactionBatchSize = transactionBatchSize;
-      this.pingPeriod = pingPeriod;
-      this.connectionTTL = connectionTTL;
-      this.callTimeout = callTimeout;
-      this.consumerMaxRate = consumerMaxRate;
-      this.consumerWindowSize = consumerWindowSize;
-      this.producerMaxRate = producerMaxRate;
-      this.producerWindowSize = sendWindowSize;
-      this.blockOnAcknowledge = blockOnAcknowledge;
-      this.minLargeMessageSize = minLargeMessageSize;
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      this.blockOnPersistentSend = blockOnPersistentSend;
-      this.autoGroup = autoGroup;
-      this.maxConnections = maxConnections;
-      this.preAcknowledge = preAcknowledge;     
-      this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.reconnectAttempts = reconnectAttempts;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
-   }
-
-   public JBossConnectionFactory(final TransportConfiguration transportConfig,
-                                 final TransportConfiguration backupConfig,
-                                 final String loadBalancingPolicyClassName,
-                                 final long pingPeriod,
-                                 final long connectionTTL,
-                                 final long callTimeout,
-                                 final String clientID,
-                                 final int dupsOKBatchSize,
-                                 final int transactionBatchSize,
-                                 final int consumerWindowSize,
-                                 final int consumerMaxRate,
-                                 final int sendWindowSize,
-                                 final int producerMaxRate,
-                                 final int minLargeMessageSize,
-                                 final boolean blockOnAcknowledge,
-                                 final boolean blockOnNonPersistentSend,
-                                 final boolean blockOnPersistentSend,
-                                 final boolean autoGroup,
-                                 final int maxConnections,
-                                 final boolean preAcknowledge,
-                                 final long retryInterval,
-                                 final double retryIntervalMultiplier,
-                                 final int reconnectAttempts,
-                                 final boolean failoverOnServerShutdown)
-   {
-      this.discoveryGroupAddress = null;
-      this.discoveryGroupPort = -1;
-      this.discoveryRefreshTimeout = -1;
-      this.discoveryInitialWaitTimeout = -1;
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(transportConfig, backupConfig));
-      this.connectorConfigs = connectorConfigs;
-      this.connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
-      this.clientID = null;
-      this.dupsOKBatchSize = dupsOKBatchSize;
-      this.transactionBatchSize = transactionBatchSize;
-      this.pingPeriod = pingPeriod;
-      this.connectionTTL = connectionTTL;
-      this.callTimeout = callTimeout;
-      this.consumerMaxRate = consumerMaxRate;
-      this.consumerWindowSize = consumerWindowSize;
-      this.producerMaxRate = producerMaxRate;
-      this.producerWindowSize = sendWindowSize;
-      this.blockOnAcknowledge = blockOnAcknowledge;
-      this.minLargeMessageSize = minLargeMessageSize;
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      this.blockOnPersistentSend = blockOnPersistentSend;
-      this.autoGroup = autoGroup;
-      this.maxConnections = maxConnections;
-      this.preAcknowledge = preAcknowledge;
-      this.retryInterval = retryInterval;
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-      this.reconnectAttempts = reconnectAttempts;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
-   }
-
-   public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs)
-   {
-      this.discoveryGroupAddress = null;
-      this.discoveryGroupPort = -1;
-      this.discoveryRefreshTimeout = -1;
-      this.discoveryInitialWaitTimeout = -1;
-      this.connectorConfigs = connectorConfigs;
-      this.connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-      this.clientID = null;
-      this.dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      this.transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      this.pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-      this.connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-      this.callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-      this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-      this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-      this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-      this.producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-      this.blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-      this.blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      this.blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-      this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-      this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-      this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-   }
-
-   public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                 final boolean blockOnAcknowledge,
-                                 final boolean blockOnNonPersistentSend,
-                                 final boolean blockOnPersistentSend,
-                                 final boolean preAcknowledge)
-   {
-      this.discoveryGroupAddress = null;
-      this.discoveryGroupPort = -1;
-      this.discoveryRefreshTimeout = -1;
-      this.discoveryInitialWaitTimeout = -1;
-      this.connectorConfigs = connectorConfigs;
-      this.connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-      this.clientID = null;
-      this.dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      this.transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      this.pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-      this.connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-      this.callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-      this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-      this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-      this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-      this.producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-      this.blockOnAcknowledge = blockOnAcknowledge;
-      this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-      this.blockOnNonPersistentSend = blockOnNonPersistentSend;
-      this.blockOnPersistentSend = blockOnPersistentSend;
-      this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-      this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-      this.preAcknowledge = preAcknowledge;
-      this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-      this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+      sessionFactory = new ClientSessionFactoryImpl(connectorConfig, backupConnectorConfig);
    }
 
    public JBossConnectionFactory(final TransportConfiguration connectorConfig)
    {
-      this.discoveryGroupAddress = null;
-      this.discoveryGroupPort = -1;
-      this.discoveryRefreshTimeout = -1;
-      this.discoveryInitialWaitTimeout = -1;
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
-                                                                                                                           null);
-      connectorConfigs.add(pair);
-      this.connectorConfigs = connectorConfigs;
-      this.connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-      this.clientID = null;
-      this.dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      this.transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      this.pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-      this.connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-      this.callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-      this.consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-      this.consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-      this.producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-      this.producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-      this.blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-      this.minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-      this.blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-      this.blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-      this.autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-      this.maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-      this.preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-      this.retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-      this.retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      this.reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-      this.failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+      this(connectorConfig, null);
    }
-
+      
    // ConnectionFactory implementation -------------------------------------------------------------
 
    public Connection createConnection() throws JMSException
@@ -512,109 +182,312 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    // Public ---------------------------------------------------------------------------------------
 
-   public long getPingPeriod()
+   public synchronized String getConnectionLoadBalancingPolicyClassName()
    {
-      return pingPeriod;
+      return sessionFactory.getLoadBalancingPolicyClassName();
    }
 
-   public long getCallTimeout()
+   public synchronized void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
    {
-      return callTimeout;
+      sessionFactory.setLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
    }
 
-   public String getClientID()
+   public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
+   {
+      return sessionFactory.getStaticConnectors();
+   }
+
+   public synchronized void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   {
+      sessionFactory.setStaticConnectors(staticConnectors);
+   }
+
+   public synchronized String getDiscoveryAddress()
+   {
+      return sessionFactory.getDiscoveryAddress();
+   }
+
+   public synchronized void setDiscoveryAddress(String discoveryAddress)
+   {
+      sessionFactory.setDiscoveryAddress(discoveryAddress);
+   }
+
+   public synchronized int getDiscoveryPort()
+   {
+      return sessionFactory.getDiscoveryPort();
+   }
+
+   public synchronized void setDiscoveryPort(int discoveryPort)
+   {
+      sessionFactory.setDiscoveryPort(discoveryPort);
+   }
+
+   public synchronized long getDiscoveryRefreshTimeout()
+   {
+      return sessionFactory.getDiscoveryRefreshTimeout();
+   }
+
+   public synchronized void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout)
+   {
+      sessionFactory.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+   }
+
+   public synchronized long getDiscoveryInitialWaitTimeout()
+   {
+     return sessionFactory.getInitialWaitTimeout();
+   }
+
+   public synchronized void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
+   {
+      sessionFactory.setInitialWaitTimeout(discoveryInitialWaitTimeout);
+   }
+
+   public synchronized String getClientID()
    {
       return clientID;
    }
 
-   public int getDupsOKBatchSize()
+   public synchronized void setClientID(String clientID)
+   {
+      checkWrite();
+      this.clientID = clientID;
+   }
+
+   public synchronized int getDupsOKBatchSize()
    {
       return dupsOKBatchSize;
    }
 
-   public int getTransactionBatchSize()
+   public synchronized void setDupsOKBatchSize(int dupsOKBatchSize)
+   {
+      checkWrite();
+      this.dupsOKBatchSize = dupsOKBatchSize;
+   }
+
+   public synchronized int getTransactionBatchSize()
    {
       return transactionBatchSize;
    }
 
-   public long getConnectionTTL()
+   public synchronized void setTransactionBatchSize(int transactionBatchSize)
    {
-      return connectionTTL;
+      checkWrite();
+      this.transactionBatchSize = transactionBatchSize;
    }
 
-   public int getConsumerWindowSize()
+   public synchronized long getPingPeriod()
    {
-      return consumerWindowSize;
+      return sessionFactory.getPingPeriod();
    }
 
-   public int getConsumerMaxRate()
+   public synchronized void setPingPeriod(long pingPeriod)
    {
-      return consumerMaxRate;
+      sessionFactory.setPingPeriod(pingPeriod);
    }
 
-   public int getProducerWindowSize()
+   public synchronized long getConnectionTTL()
    {
-      return producerWindowSize;
+      return sessionFactory.getConnectionTTL();
    }
 
-   public int getProducerMaxRate()
+   public synchronized void setConnectionTTL(long connectionTTL)
    {
-      return producerMaxRate;
+      sessionFactory.setConnectionTTL(connectionTTL);
    }
 
-   public int getMinLargeMessageSize()
+   public synchronized long getCallTimeout()
    {
-      return minLargeMessageSize;
+      return sessionFactory.getCallTimeout();
    }
 
-   public int getMaxConnections()
+   public synchronized void setCallTimeout(long callTimeout)
    {
-      return maxConnections;
+      sessionFactory.setCallTimeout(callTimeout);
    }
 
-   public int getReconnectAttempts()
+   public synchronized int getConsumerWindowSize()
    {
-      return reconnectAttempts;
+      return sessionFactory.getConsumerWindowSize();
    }
 
-   public boolean isFailoverOnServerShutdown()
+   public synchronized void setConsumerWindowSize(int consumerWindowSize)
    {
-      return failoverOnServerShutdown;
+      sessionFactory.setConsumerWindowSize(consumerWindowSize);
    }
 
-   public boolean isBlockOnAcknowledge()
+   public synchronized int getConsumerMaxRate()
    {
-      return blockOnAcknowledge;
+      return sessionFactory.getConsumerMaxRate();
    }
 
-   public boolean isBlockOnNonPersistentSend()
+   public synchronized void setConsumerMaxRate(int consumerMaxRate)
    {
-      return blockOnNonPersistentSend;
+      sessionFactory.setConsumerMaxRate(consumerMaxRate);
    }
 
-   public boolean isBlockOnPersistentSend()
+   public synchronized int getProducerWindowSize()
    {
-      return blockOnPersistentSend;
+      return sessionFactory.getProducerWindowSize();
    }
 
-   public boolean isPreAcknowledge()
+   public synchronized void setProducerWindowSize(int producerWindowSize)
    {
-      return preAcknowledge;
+      sessionFactory.setProducerWindowSize(producerWindowSize);
    }
 
-   public boolean isAutoGroup()
+   public synchronized int getProducerMaxRate()
    {
-      return autoGroup;
+      return sessionFactory.getProducerMaxRate();
    }
 
-   public long getRetryInterval()
+   public synchronized void setProducerMaxRate(int producerMaxRate)
    {
-      return retryInterval;
+      sessionFactory.setProducerMaxRate(producerMaxRate);
    }
 
-   public double getRetryIntervalMultiplier()
+   public synchronized int getMinLargeMessageSize()
    {
-      return retryIntervalMultiplier;
+      return sessionFactory.getMinLargeMessageSize();
+   }
+
+   public synchronized void setMinLargeMessageSize(int minLargeMessageSize)
+   {
+      sessionFactory.setMinLargeMessageSize(minLargeMessageSize);
+   }
+
+   public synchronized boolean isBlockOnAcknowledge()
+   {
+      return sessionFactory.isBlockOnAcknowledge();
+   }
+
+   public synchronized void setBlockOnAcknowledge(boolean blockOnAcknowledge)
+   {
+      sessionFactory.setBlockOnAcknowledge(blockOnAcknowledge);
+   }
+
+   public synchronized boolean isBlockOnNonPersistentSend()
+   {
+      return sessionFactory.isBlockOnNonPersistentSend();
+   }
+
+   public synchronized void setBlockOnNonPersistentSend(boolean blockOnNonPersistentSend)
+   {
+      sessionFactory.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+   }
+
+   public synchronized boolean isBlockOnPersistentSend()
+   {
+      return sessionFactory.isBlockOnPersistentSend();
+   }
+
+   public synchronized void setBlockOnPersistentSend(boolean blockOnPersistentSend)
+   {
+      sessionFactory.setBlockOnPersistentSend(blockOnPersistentSend);
+   }
+
+   public synchronized boolean isAutoGroup()
+   {
+      return sessionFactory.isAutoGroup();
+   }
+
+   public synchronized void setAutoGroup(boolean autoGroup)
+   {
+      sessionFactory.setAutoGroup(autoGroup);
+   }
+
+   public synchronized int getMaxConnections()
+   {
+      return sessionFactory.getMaxConnections();
+   }
+
+   public synchronized void setMaxConnections(int maxConnections)
+   {
+      sessionFactory.setMaxConnections(maxConnections);
+   }
+
+   public synchronized boolean isPreAcknowledge()
+   {
+      return sessionFactory.isPreAcknowledge();
+   }
+
+   public synchronized void setPreAcknowledge(boolean preAcknowledge)
+   {
+      sessionFactory.setPreAcknowledge(preAcknowledge);
+   }
+
+   public synchronized long getRetryInterval()
+   {
+      return sessionFactory.getRetryInterval();
+   }
+
+   public synchronized void setRetryInterval(long retryInterval)
+   {
+      sessionFactory.setRetryInterval(retryInterval);
+   }
+
+   public synchronized double getRetryIntervalMultiplier()
+   {
+      return sessionFactory.getRetryIntervalMultiplier();
+   }
+
+   public synchronized void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   {
+      sessionFactory.setRetryIntervalMultiplier(retryIntervalMultiplier);
+   }
+
+   public synchronized int getReconnectAttempts()
+   {
+      return sessionFactory.getReconnectAttempts();
+   }
+
+   public synchronized void setReconnectAttempts(int reconnectAttempts)
+   {
+      sessionFactory.setReconnectAttempts(reconnectAttempts);
+   }
+
+   public synchronized boolean isFailoverOnServerShutdown()
+   {
+      return sessionFactory.isFailoverOnServerShutdown();
+   }
+
+   public synchronized void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   {
+      sessionFactory.setFailoverOnServerShutdown(failoverOnServerShutdown);
+   }
+   
+   public synchronized boolean isUseGlobalPools()
+   {
+      return sessionFactory.isUseGlobalPools();
+   }
+
+   public synchronized void setUseGlobalPools(boolean useGlobalPools)
+   {
+      sessionFactory.setUseGlobalPools(useGlobalPools);
+   }
+   
+   public synchronized int getScheduledThreadPoolMaxSize()
+   {
+      return sessionFactory.getScheduledThreadPoolMaxSize();
+   }
+
+   public synchronized void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize)
+   {
+      sessionFactory.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+   }
+
+   public synchronized int getThreadPoolMaxSize()
+   {
+      return sessionFactory.getThreadPoolMaxSize();
+   }
+
+   public synchronized void setThreadPoolMaxSize(int threadPoolMaxSize)
+   {
+      sessionFactory.setThreadPoolMaxSize(threadPoolMaxSize);
+   }
+   
+   public ClientSessionFactory getCoreFactory()
+   {
+      return sessionFactory;
    }
 
    // Package protected ----------------------------------------------------------------------------
@@ -626,18 +499,8 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                                    final boolean isXA,
                                                                    final int type) throws JMSException
    {
-      try
-      {
-         if (sessionFactory == null)
-         {
-            createFactory();
-         }
-      }
-      catch (MessagingException me)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(me);
-      }
-
+      readOnly = false;
+      
       JBossConnection connection = new JBossConnection(username,
                                                        password,
                                                        type,
@@ -647,75 +510,21 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        sessionFactory);
 
       connection.authorize();
-      
-      return connection;
-   }
 
-   private void createFactory() throws MessagingException
-   {
-      if (connectorConfigs != null)
-      {
-         sessionFactory = new ClientSessionFactoryImpl(connectorConfigs,
-                                                       connectionLoadBalancingPolicyClassName,
-                                                       pingPeriod,
-                                                       connectionTTL,
-                                                       callTimeout,
-                                                       consumerWindowSize,
-                                                       consumerMaxRate,
-                                                       producerWindowSize,
-                                                       producerMaxRate,
-                                                       minLargeMessageSize,
-                                                       blockOnAcknowledge,
-                                                       blockOnNonPersistentSend,
-                                                       blockOnPersistentSend,
-                                                       autoGroup,
-                                                       maxConnections,
-                                                       preAcknowledge,
-                                                       dupsOKBatchSize,
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,
-                                                       reconnectAttempts,
-                                                       failoverOnServerShutdown);
-      }
-      else
-      {
-         sessionFactory = new ClientSessionFactoryImpl(discoveryGroupAddress,
-                                                       discoveryGroupPort,
-                                                       discoveryRefreshTimeout,
-                                                       discoveryInitialWaitTimeout,
-                                                       connectionLoadBalancingPolicyClassName,
-                                                       pingPeriod,
-                                                       connectionTTL,
-                                                       callTimeout,
-                                                       consumerWindowSize,
-                                                       consumerMaxRate,
-                                                       producerWindowSize,
-                                                       producerMaxRate,
-                                                       minLargeMessageSize,
-                                                       blockOnAcknowledge,
-                                                       blockOnNonPersistentSend,
-                                                       blockOnPersistentSend,
-                                                       autoGroup,
-                                                       maxConnections,
-                                                       preAcknowledge,
-                                                       dupsOKBatchSize,
-                                                       retryInterval,
-                                                       retryIntervalMultiplier,
-                                                       reconnectAttempts,
-                                                       failoverOnServerShutdown);
-      }
+      return connection;
    }
 
    // Private --------------------------------------------------------------------------------------
 
+   private void checkWrite()
+   {
+      if (readOnly)
+      {
+         throw new IllegalStateException("Cannot set attribute on JBossConnectionFactory after it has been used");
+      }
+   }
+
+   
    // Inner classes --------------------------------------------------------------------------------
 
-   public ClientSessionFactory getCoreFactory() throws MessagingException
-   {
-      if (sessionFactory == null)
-      {
-         createFactory();
-      }
-      return sessionFactory;
-   }
 }

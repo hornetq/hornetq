@@ -22,6 +22,7 @@
 package org.jboss.messaging.tests.unit.core.remoting.impl;
 
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -39,7 +40,7 @@ public class AcceptorFactory1 implements AcceptorFactory
 {
 
    public Acceptor createAcceptor(Map<String, Object> params,
-         BufferHandler handler, ConnectionLifeCycleListener listener)
+         BufferHandler handler, ConnectionLifeCycleListener listener, Executor threadPool)
    {
       return new Acceptor1();
    }

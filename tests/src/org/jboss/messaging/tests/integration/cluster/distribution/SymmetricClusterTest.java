@@ -70,6 +70,8 @@ public class SymmetricClusterTest extends ClusterTestBase
       setupCluster();
 
       startServers();
+      
+      log.info("********** started servers");
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -115,6 +117,8 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       this.closeAllSessionFactories();
 
+      log.info("** stopping servers");
+      
       stopServers(0, 1, 2, 3, 4);
 
       startServers();

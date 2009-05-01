@@ -21,16 +21,7 @@
  */
 package org.jboss.messaging.ra.inflow;
 
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.MessageHandler;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.utils.SimpleString;
+import java.util.UUID;
 
 import javax.jms.InvalidClientIDException;
 import javax.jms.JMSException;
@@ -41,7 +32,17 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.util.UUID;
+
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.JBossMessage;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * The message handler
@@ -78,9 +79,9 @@ public class JBMMessageHandler implements MessageHandler
    /**
     * The transaction demarcation strategy factory
     */
-   private DemarcationStrategyFactory strategyFactory = new DemarcationStrategyFactory();
+   private final DemarcationStrategyFactory strategyFactory = new DemarcationStrategyFactory();
 
-   public JBMMessageHandler(JBMActivation activation, ClientSession session)
+   public JBMMessageHandler(final JBMActivation activation, final ClientSession session)
    {
       this.activation = activation;
       this.session = session;
@@ -110,7 +111,8 @@ public class JBMMessageHandler implements MessageHandler
             throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
          }
 
-         SimpleString queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(activation.getActivationSpec().getClientId(),
+         SimpleString queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(activation.getActivationSpec()
+                                                                                                              .getClientId(),
                                                                                                     subscriptionName));
 
          SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
@@ -129,8 +131,12 @@ public class JBMMessageHandler implements MessageHandler
 
             SimpleString oldFilterString = subResponse.getFilterString();
 
-            boolean selectorChanged = (selector == null && oldFilterString != null) || (oldFilterString == null && selector != null) ||
-                                      (oldFilterString != null && selector != null && !oldFilterString.equals(selector));
+            boolean selectorChanged = selector == null && oldFilterString != null ||
+                                      oldFilterString == null &&
+                                      selector != null ||
+                                      oldFilterString != null &&
+                                      selector != null &&
+                                      !oldFilterString.equals(selector);
 
             SimpleString oldTopicName = subResponse.getAddress();
 
@@ -210,10 +216,12 @@ public class JBMMessageHandler implements MessageHandler
       }
    }
 
-   public void onMessage(ClientMessage message)
+   public void onMessage(final ClientMessage message)
    {
       if (trace)
+      {
          log.trace("onMessage(" + message + ")");
+      }
 
       TransactionDemarcationStrategy txnStrategy = strategyFactory.getStrategy();
       try
@@ -239,8 +247,8 @@ public class JBMMessageHandler implements MessageHandler
          return;
       }
 
-      if (activation.getActivationSpec().getAcknowledgeModeInt() == Session.SESSION_TRANSACTED ||
-          activation.getActivationSpec().getAcknowledgeModeInt() == Session.CLIENT_ACKNOWLEDGE)
+      if (activation.getActivationSpec().getAcknowledgeModeInt() == Session.SESSION_TRANSACTED || activation.getActivationSpec()
+                                                                                                            .getAcknowledgeModeInt() == Session.CLIENT_ACKNOWLEDGE)
       {
          try
          {
@@ -256,7 +264,7 @@ public class JBMMessageHandler implements MessageHandler
          endpoint.beforeDelivery(JBMActivation.ONMESSAGE);
          try
          {
-            MessageListener listener = (MessageListener) endpoint;
+            MessageListener listener = (MessageListener)endpoint;
             listener.onMessage(jbm);
          }
          finally
@@ -347,8 +355,8 @@ public class JBMMessageHandler implements MessageHandler
    private class LocalDemarcationStrategy implements TransactionDemarcationStrategy
    {
       /*
-   * Start
-   */
+      * Start
+      */
 
       public void start()
       {
@@ -431,7 +439,7 @@ public class JBMMessageHandler implements MessageHandler
    {
       private Transaction trans = null;
 
-      private TransactionManager tm = activation.getTransactionManager();
+      private final TransactionManager tm = activation.getTransactionManager();
 
       public void start() throws Throwable
       {
@@ -549,4 +557,3 @@ public class JBMMessageHandler implements MessageHandler
       }
    }
 }
-

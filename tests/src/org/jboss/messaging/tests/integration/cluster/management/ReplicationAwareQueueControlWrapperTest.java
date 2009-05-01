@@ -473,27 +473,9 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()),
                                                                      new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                                                backupParams),
-                                                                                                DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                                                                DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                                                                DEFAULT_PING_PERIOD,
-                                                                                                DEFAULT_CONNECTION_TTL,
-                                                                                                DEFAULT_CALL_TIMEOUT,
-                                                                                                DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                                                                DEFAULT_CONSUMER_MAX_RATE,
-                                                                                                DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                                                                DEFAULT_PRODUCER_MAX_RATE,
-                                                                                                DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                                                                DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                                                                                true,
-                                                                                                true,
-                                                                                                DEFAULT_AUTO_GROUP,
-                                                                                                DEFAULT_MAX_CONNECTIONS,
-                                                                                                DEFAULT_PRE_ACKNOWLEDGE,
-                                                                                                DEFAULT_ACK_BATCH_SIZE,                                 
-                                                                                                DEFAULT_RETRY_INTERVAL,
-                                                                                                DEFAULT_RETRY_INTERVAL_MULTIPLIER,                                        
-                                                                                                DEFAULT_RECONNECT_ATTEMPTS);
+                                                                                                backupParams));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
 
       session = sf.createSession(false, true, true);
 

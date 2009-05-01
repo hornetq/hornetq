@@ -23,6 +23,7 @@
 package org.jboss.messaging.integration.transports.netty;
 
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -38,8 +39,9 @@ public class NettyAcceptorFactory implements AcceptorFactory
 {
    public Acceptor createAcceptor(final Map<String, Object> configuration,
                                   final BufferHandler handler,
-                                  final ConnectionLifeCycleListener listener)
+                                  final ConnectionLifeCycleListener listener,
+                                  final Executor threadPool)
    {
-      return new NettyAcceptor(configuration, handler, listener);
+      return new NettyAcceptor(configuration, handler, listener, threadPool);
    }
 }

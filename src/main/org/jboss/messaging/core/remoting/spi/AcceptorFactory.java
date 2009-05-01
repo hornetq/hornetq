@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.remoting.spi;
 
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -32,5 +33,6 @@ public interface AcceptorFactory
 {
    Acceptor createAcceptor(final Map<String, Object> configuration,
                            BufferHandler handler,                        
-                           ConnectionLifeCycleListener listener);
+                           ConnectionLifeCycleListener listener,
+                           Executor threadPool);
 }

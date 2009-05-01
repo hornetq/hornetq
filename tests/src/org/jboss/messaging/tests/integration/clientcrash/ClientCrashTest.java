@@ -22,25 +22,6 @@
 
 package org.jboss.messaging.tests.integration.clientcrash;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -149,29 +130,10 @@ public class ClientCrashTest extends ClientTestBase
    {
       super.setUp();
 
-      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                                        null,
-                                        DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                        DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                        PING_PERIOD,
-                                        CONNECTION_TTL,
-                                        DEFAULT_CALL_TIMEOUT,
-                                        DEFAULT_CONSUMER_WINDOW_SIZE,
-                                        DEFAULT_CONSUMER_MAX_RATE,
-                                        DEFAULT_PRODUCER_WINDOW_SIZE,
-                                        DEFAULT_PRODUCER_MAX_RATE,
-                                        DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                        DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-                                        DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                        DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                        DEFAULT_AUTO_GROUP,
-                                        DEFAULT_MAX_CONNECTIONS,
-                                        DEFAULT_PRE_ACKNOWLEDGE,
-                                        DEFAULT_ACK_BATCH_SIZE,
-                                        DEFAULT_RETRY_INTERVAL,
-                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                        DEFAULT_RECONNECT_ATTEMPTS);
-
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
+      
+      sf.setPingPeriod(PING_PERIOD);
+      sf.setConnectionTTL(CONNECTION_TTL);
    }
 
    @Override

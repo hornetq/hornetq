@@ -39,7 +39,7 @@ public class JBMConnectionMetaData implements ConnectionMetaData
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMConnectionMetaData.class);
-   
+
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
@@ -49,7 +49,9 @@ public class JBMConnectionMetaData implements ConnectionMetaData
    public JBMConnectionMetaData()
    {
       if (trace)
+      {
          log.trace("constructor()");
+      }
    }
 
    /**
@@ -59,11 +61,13 @@ public class JBMConnectionMetaData implements ConnectionMetaData
    public String getJMSVersion()
    {
       if (trace)
+      {
          log.trace("getJMSVersion()");
+      }
 
       return "1.1";
    }
-   
+
    /**
     * Get the JMS major version
     * @return The major version
@@ -71,11 +75,13 @@ public class JBMConnectionMetaData implements ConnectionMetaData
    public int getJMSMajorVersion()
    {
       if (trace)
+      {
          log.trace("getJMSMajorVersion()");
+      }
 
       return 1;
    }
-   
+
    /**
     * Get the JMS minor version
     * @return The minor version
@@ -83,7 +89,9 @@ public class JBMConnectionMetaData implements ConnectionMetaData
    public int getJMSMinorVersion()
    {
       if (trace)
+      {
          log.trace("getJMSMinorVersion()");
+      }
 
       return 1;
    }
@@ -95,7 +103,9 @@ public class JBMConnectionMetaData implements ConnectionMetaData
    public String getJMSProviderName()
    {
       if (trace)
+      {
          log.trace("getJMSProviderName()");
+      }
 
       return "JBoss Messaging";
    }
@@ -107,7 +117,9 @@ public class JBMConnectionMetaData implements ConnectionMetaData
    public String getProviderVersion()
    {
       if (trace)
+      {
          log.trace("getJMSProviderName()");
+      }
 
       return "2.0";
    }
@@ -119,7 +131,9 @@ public class JBMConnectionMetaData implements ConnectionMetaData
    public int getProviderMajorVersion()
    {
       if (trace)
+      {
          log.trace("getProviderMajorVersion()");
+      }
 
       return 2;
    }
@@ -131,7 +145,9 @@ public class JBMConnectionMetaData implements ConnectionMetaData
    public int getProviderMinorVersion()
    {
       if (trace)
+      {
          log.trace("getProviderMinorVersion()");
+      }
 
       return 0;
    }
