@@ -1017,7 +1017,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
       }
    }
-
+   
    public void testSendStreamingSingleMessage() throws Exception
    {
       ClientSession session = null;
@@ -1069,6 +1069,13 @@ public class LargeMessageTest extends LargeMessageTestBase
          // }
 
          session.commit();
+         
+         // addGlobalSize on LargeMessage is only done after the delivery, and the addSize could be asynchronous
+         long timeout = System.currentTimeMillis() + 5000;
+         while (timeout > System.currentTimeMillis() && server.getPostOffice().getPagingManager().getGlobalSize() != 0)
+         {
+            Thread.sleep(100);
+         }
 
          assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
