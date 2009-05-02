@@ -105,7 +105,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
       }
       else
       {
-         throw new Exception(ManagementHelper.getOperationExceptionMessage(reply));
+         throw new Exception((String)ManagementHelper.getResult(reply));
       }
    }
 

@@ -22,15 +22,8 @@
 
 package org.jboss.messaging.jms.client;
 
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.utils.UUIDGenerator;
-import org.jboss.messaging.utils.VersionLoader;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
@@ -53,8 +46,16 @@ import javax.jms.XAQueueSession;
 import javax.jms.XASession;
 import javax.jms.XATopicConnection;
 import javax.jms.XATopicSession;
-import java.util.HashSet;
-import java.util.Set;
+
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.FailureListener;
+import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.UUIDGenerator;
+import org.jboss.messaging.utils.VersionLoader;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

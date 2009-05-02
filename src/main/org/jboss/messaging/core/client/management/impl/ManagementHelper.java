@@ -21,40 +21,39 @@
 
 package org.jboss.messaging.core.client.management.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /*
+ * 
+ * Operation params and results are encoded as JSON arrays
+ * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
 public class ManagementHelper
 {
-
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ManagementHelper.class);
+
 
    public static final SimpleString HDR_RESOURCE_NAME = new SimpleString("_JBM_ResourceName");
 
    public static final SimpleString HDR_ATTRIBUTE = new SimpleString("_JBM_Attribute");
 
-   public static final SimpleString HDR_OPERATION_PREFIX = new SimpleString("_JBM_Operation$");
-
-   public static final SimpleString HDR_OPERATION_NAME = new SimpleString(HDR_OPERATION_PREFIX + "name");
+   public static final SimpleString HDR_OPERATION_NAME = new SimpleString("_JBM_OperationName");
 
    public static final SimpleString HDR_OPERATION_SUCCEEDED = new SimpleString("_JBM_OperationSucceeded");
-
-   public static final SimpleString HDR_OPERATION_EXCEPTION = new SimpleString("_JBM_OperationException");
 
    public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("_JBM_NotifType");
 
@@ -74,8 +73,6 @@ public class ManagementHelper
 
    public static final SimpleString HDR_DISTANCE = new SimpleString("_JBM_Distance");
 
-   private static final SimpleString NULL = new SimpleString("_JBM_NULL");
-
    public static final SimpleString HDR_CONSUMER_COUNT = new SimpleString("_JBM_ConsumerCount");
 
    public static final SimpleString HDR_USER = new SimpleString("_JBM_User");
@@ -94,65 +91,154 @@ public class ManagementHelper
 
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
-                                             final String operationName,
-                                             final Object... parameters)
+                                             final String operationName) throws Exception
    {
-      // store the name of the operation...
-      message.putStringProperty(HDR_RESOURCE_NAME, new SimpleString(resourceName));
-      message.putStringProperty(HDR_OPERATION_NAME, new SimpleString(operationName));
-      // ... and all the parameters (preserving their types)
-      for (int i = 0; i < parameters.length; i++)
-      {
-         Object parameter = parameters[i];
-         // use a zero-filled 2-padded index:
-         // if there is more than 10 parameters, order is preserved (e.g. 02 will be before 10)
-         SimpleString key = new SimpleString(String.format("%s%02d", HDR_OPERATION_PREFIX, i));
-         storeTypedProperty(message, key, parameter);
-      }
+      putOperationInvocation(message, resourceName, operationName, (Object[])null);
    }
 
-   public static List<Object> retrieveOperationParameters(final Message message)
+   public static void putOperationInvocation(final Message message,
+                                             final String resourceName,
+                                             final String operationName,
+                                             final Object... parameters) throws Exception
    {
-      List<Object> params = new ArrayList<Object>();
-      Set<SimpleString> propertyNames = message.getPropertyNames();
-      // put the property names in a list to sort them and have the parameters
-      // in the correct order
-      List<SimpleString> propsNames = new ArrayList<SimpleString>(propertyNames);
-      Collections.sort(propsNames);
-      for (SimpleString propertyName : propsNames)
+      // store the name of the operation in the headers
+      message.putStringProperty(HDR_RESOURCE_NAME, new SimpleString(resourceName));
+      message.putStringProperty(HDR_OPERATION_NAME, new SimpleString(operationName));
+
+      // and the params go in the body, since might be too large for header
+
+      String paramString;
+
+      if (parameters != null)
       {
-         if (propertyName.startsWith(ManagementHelper.HDR_OPERATION_PREFIX))
+         JSONArray jsonArray = toJSONArray(parameters);
+
+         paramString = jsonArray.toString();
+      }
+      else
+      {
+         paramString = null;
+      }
+
+      message.getBody().writeNullableString(paramString);
+   }
+
+   private static JSONArray toJSONArray(final Object[] array) throws Exception
+   {
+      JSONArray jsonArray = new JSONArray();
+
+      for (int i = 0; i < array.length; i++)
+      {
+         Object parameter = array[i];
+
+         if (parameter instanceof Map)
          {
-            String s = propertyName.toString();
-            // split by the dot
-            String[] ss = s.split("\\$");
-            try
+            Map<String, Object> map = (Map<String, Object>)parameter;
+
+            JSONObject jsonObject = new JSONObject();
+
+            for (Map.Entry<String, Object> entry : map.entrySet())
             {
-               int index = Integer.parseInt(ss[ss.length - 1]);
-               Object value = message.getProperty(propertyName);
-               if (value instanceof SimpleString)
-               {
-                  value = value.toString();
-               }
-               if (NULL.toString().equals(value))
-               {
-                  value = null;
-               }
-               else if (value.toString().startsWith("L["))
-               {
-                  String str = value.toString().substring(2);
-                  String[] strings = str.split("\\|\\|");
-                  value = strings;
-               }
-               params.add(index, value);
+               String key = entry.getKey();
+
+               Object val = entry.getValue();
+
+               checkType(val);
+
+               jsonObject.put(key, val);
             }
-            catch (NumberFormatException e)
+
+            jsonArray.put(jsonObject);
+         }
+         else
+         {
+            Class clz = parameter.getClass();
+
+            if (clz.isArray())
             {
-               // ignore the property (it is the operation name)
+               Object[] innerArray = (Object[])parameter;
+
+               jsonArray.put(toJSONArray(innerArray));
+            }
+            else
+            {
+               checkType(parameter);
+
+               jsonArray.put(parameter);
             }
          }
       }
-      return params;
+
+      return jsonArray;
+   }
+
+   private static Object[] fromJSONArray(final JSONArray jsonArray) throws Exception
+   {
+      Object[] array = new Object[jsonArray.length()];
+
+      for (int i = 0; i < jsonArray.length(); i++)
+      {
+         Object val = jsonArray.get(i);
+
+         if (val instanceof JSONArray)
+         {
+            Object[] inner = fromJSONArray((JSONArray)val);
+            
+            array[i] = inner;
+         }
+         else if (val instanceof JSONObject)
+         {
+            JSONObject jsonObject = (JSONObject)val;
+
+            Map<String, Object> map = new HashMap<String, Object>();
+
+            Iterator<String> iter = jsonObject.keys();
+
+            while (iter.hasNext())
+            {
+               String key = iter.next();
+
+               Object innerVal = jsonObject.get(key);
+
+               map.put(key, innerVal);
+            }
+
+            array[i] = map;
+         }
+         else
+         {
+            array[i] = val;
+         }
+      }
+
+      return array;
+   }
+
+   private static void checkType(final Object param)
+   {
+      if (param instanceof Integer == false && param instanceof Long == false &&
+          param instanceof Double == false &&
+          param instanceof String == false &&
+          param instanceof Boolean == false)
+      {
+         throw new IllegalArgumentException("Params for management operations must be of the following type: " + "int long double String boolean Map or array thereof");
+      }
+   }
+
+   public static Object[] retrieveOperationParameters(final Message message) throws Exception
+   {
+      String jsonString = message.getBody().readNullableString();
+
+      if (jsonString != null)
+      {
+         JSONArray jsonArray = new JSONArray(jsonString);
+
+         return fromJSONArray(jsonArray);
+      }
+      else
+      {
+         return null;
+      }
    }
 
    public static boolean isOperationResult(final Message message)
@@ -165,31 +251,58 @@ public class ManagementHelper
       return !(isOperationResult(message));
    }
 
-   public static void storeResult(final Message message, final Object result)
+   public static void storeResult(final Message message, final Object result) throws Exception
    {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      try
+      String resultString;
+
+      if (result != null)
       {
-         ObjectOutputStream oos = new ObjectOutputStream(baos);
-         oos.writeObject(result);
+         // Result is stored in body, also encoded as JSON array of length 1
+
+         JSONArray jsonArray = toJSONArray(new Object[] { result });
+
+         resultString = jsonArray.toString();
       }
-      catch (IOException e)
+      else
       {
-         throw new IllegalStateException(result + " can not be written to a byte array");
+         resultString = null;
       }
-      byte[] data = baos.toByteArray();
-      message.getBody().writeInt(data.length);
-      message.getBody().writeBytes(data);
+
+      message.getBody().writeNullableString(resultString);
+   }
+   
+   public static Object[] getResults(final Message message) throws Exception
+   {      
+      String jsonString = message.getBody().readNullableString();
+
+      if (jsonString != null)
+      {
+         JSONArray jsonArray = new JSONArray(jsonString);
+
+         Object[] res = fromJSONArray(jsonArray);
+
+         return res;
+      }
+      else
+      {
+         return null;
+      }
    }
 
-   public static Object getResult(final Message message)
+   public static Object getResult(final Message message) throws Exception
    {
-      int len = message.getBody().readInt();
-      byte[] data = new byte[len];
-      message.getBody().readBytes(data);
-      return from(data);
+      Object[] res = getResults(message);
+      
+      if (res != null)
+      {
+         return res[0];
+      }
+      else
+      {
+         return null;
+      }
    }
-
+     
    public static boolean hasOperationSucceeded(final Message message)
    {
       if (!isOperationResult(message))
@@ -201,110 +314,6 @@ public class ManagementHelper
          return (Boolean)message.getProperty(HDR_OPERATION_SUCCEEDED);
       }
       return false;
-   }
-
-   public static String getOperationExceptionMessage(final Message message)
-   {
-      if (message.containsProperty(HDR_OPERATION_EXCEPTION))
-      {
-         return ((SimpleString)message.getProperty(HDR_OPERATION_EXCEPTION)).toString();
-      }
-      return null;
-   }
-
-   public static void storeTypedProperty(final Message message, final SimpleString key, final Object typedProperty)
-   {
-      if (typedProperty == null)
-      {
-         message.putStringProperty(key, NULL);
-         return;
-      }
-      
-      checkSimpleType(typedProperty);
-
-      if (typedProperty instanceof Void)
-      {
-         // do not put the returned value if the operation was a procedure
-      }
-      else if (typedProperty instanceof Boolean)
-      {
-         message.putBooleanProperty(key, (Boolean)typedProperty);
-      }
-      else if (typedProperty instanceof Byte)
-      {
-         message.putByteProperty(key, (Byte)typedProperty);
-      }
-      else if (typedProperty instanceof Short)
-      {
-         message.putShortProperty(key, (Short)typedProperty);
-      }
-      else if (typedProperty instanceof Integer)
-      {
-         message.putIntProperty(key, (Integer)typedProperty);
-      }
-      else if (typedProperty instanceof Long)
-      {
-         message.putLongProperty(key, (Long)typedProperty);
-      }
-      else if (typedProperty instanceof Float)
-      {
-         message.putFloatProperty(key, (Float)typedProperty);
-      }
-      else if (typedProperty instanceof Double)
-      {
-         message.putDoubleProperty(key, (Double)typedProperty);
-      }
-      else if (typedProperty instanceof String)
-      {
-         message.putStringProperty(key, new SimpleString((String)typedProperty));
-      }
-      else if (typedProperty instanceof String[])
-      {
-         String str = "L[";
-         String[] strings = (String[])typedProperty;
-         for (String string : strings)
-         {
-            str += string + "||";
-         }
-         message.putStringProperty(key, new SimpleString(str));         
-      }
-      // serialize as a SimpleString
-      else
-      {
-         message.putStringProperty(key, new SimpleString("" + typedProperty));
-      }
-   }
-
-   private static void checkSimpleType(Object o)
-   {
-      if (!((o instanceof Void) || (o instanceof Boolean) ||
-            (o instanceof Byte) ||
-            (o instanceof Short) ||
-            (o instanceof Integer) ||
-            (o instanceof Long) ||
-            (o instanceof Float) ||
-            (o instanceof Double) ||
-            (o instanceof String) || 
-            (o instanceof String[]) || 
-            (o instanceof SimpleString)))
-      {
-         throw new IllegalStateException("Can not store object as a message property: " + o);
-      }
-   }
-
-   public static Object from(final byte[] bytes)
-   {
-      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-      ObjectInputStream ois;
-      try
-      {
-         ois = new ObjectInputStream(bais);
-         return ois.readObject();
-      }
-      catch (Exception e)
-      {
-         throw new IllegalStateException(e);
-      }
    }
 
    // Constructors --------------------------------------------------

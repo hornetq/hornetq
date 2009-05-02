@@ -35,6 +35,7 @@ import org.jboss.messaging.utils.Pair;
  * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface JMSServerManager extends MessagingComponent
 {

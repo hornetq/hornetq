@@ -21,18 +21,16 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_ATTRIBUTE;
-import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_OPERATION_EXCEPTION;
-import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_OPERATION_NAME;
-import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_OPERATION_PREFIX;
-import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_OPERATION_SUCCEEDED;
-import static org.jboss.messaging.core.client.management.impl.ManagementHelper.HDR_RESOURCE_NAME;
-
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
+import org.jboss.messaging.jms.client.JBossMessage;
+import org.jboss.messaging.utils.json.JSONArray;
+
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  */
@@ -44,17 +42,43 @@ public class JMSManagementHelper
 
    // Static --------------------------------------------------------
 
+   private static org.jboss.messaging.core.message.Message getCoreMessage(final Message jmsMessage)
+   {
+      if (jmsMessage instanceof JBossMessage == false)
+      {
+         throw new IllegalArgumentException("Cannot send a non JBoss message as a management message " +
+                                            jmsMessage.getClass().getName());
+      }
+      
+      return ((JBossMessage)jmsMessage).getCoreMessage();
+   }
+   
    public static void putAttribute(final Message message, final String resourceName, final String attribute) throws JMSException
    {
-      message.setStringProperty(HDR_RESOURCE_NAME.toString(), resourceName);
-      message.setStringProperty(HDR_ATTRIBUTE.toString(), attribute);
+      ManagementHelper.putAttribute(getCoreMessage(message), resourceName, attribute);
    }
    
    public static void putOperationInvocation(final Message message,
                                              final String resourceName,
                                              final String operationName) throws JMSException
+   {      
+      try
+      {
+         ManagementHelper.putOperationInvocation(getCoreMessage(message), resourceName, operationName);
+      }
+      catch (Exception e)
+      {
+         throw convertFromException(e);
+      }
+   }
+   
+   private static JMSException convertFromException(Exception e)
    {
-      putOperationInvocation(message, resourceName, operationName, (Object[])null);
+      JMSException jmse =  new JMSException(e.getMessage());
+      
+      jmse.initCause(e);
+      
+      return jmse;
    }
 
    public static void putOperationInvocation(final Message message,
@@ -62,108 +86,39 @@ public class JMSManagementHelper
                                              final String operationName,
                                              final Object... parameters) throws JMSException
    {
-      // store the name of the operation...
-      message.setStringProperty(HDR_RESOURCE_NAME.toString(), resourceName);
-      message.setStringProperty(HDR_OPERATION_NAME.toString(), operationName);
-      // ... and all the parameters (preserving their types)
-      if (parameters != null)
+      try
       {
-         for (int i = 0; i < parameters.length; i++)
-         {
-            Object parameter = parameters[i];
-            // use a zero-filled 2-padded index:
-            // if there is more than 10 parameters, order is preserved (e.g. 02 will be before 10)
-            String key = String.format("%s%02d", HDR_OPERATION_PREFIX, i);
-            storeTypedProperty(message, key, parameter);
-         }
+         ManagementHelper.putOperationInvocation(getCoreMessage(message), resourceName, operationName, parameters);
+      }
+      catch (Exception e)
+      {
+         throw convertFromException(e);
       }
    }
 
    public static boolean isOperationResult(final Message message) throws JMSException
    {
-      return message.propertyExists(HDR_OPERATION_SUCCEEDED.toString());
+      return ManagementHelper.isOperationResult(getCoreMessage(message));
    }
 
    public static boolean isAttributesResult(final Message message) throws JMSException
    {
-      return !(isOperationResult(message));
+      return ManagementHelper.isAttributesResult(getCoreMessage(message));
    }
 
    public static boolean hasOperationSucceeded(final Message message) throws JMSException
    {
-      if (!isOperationResult(message))
-      {
-         return false;
-      }
-      if (message.propertyExists(HDR_OPERATION_SUCCEEDED.toString()))
-      {
-         return message.getBooleanProperty(HDR_OPERATION_SUCCEEDED.toString());
-      }
-      return false;
+      return ManagementHelper.hasOperationSucceeded(getCoreMessage(message));
+   }
+   
+   public static Object[] getResults(final Message message) throws Exception
+   {
+      return ManagementHelper.getResults(getCoreMessage(message));
    }
 
-   public static String getOperationExceptionMessage(final Message message) throws JMSException
+   public static Object getResult(final Message message) throws Exception
    {
-      if (message.propertyExists(HDR_OPERATION_EXCEPTION.toString()))
-      {
-         return message.getStringProperty(HDR_OPERATION_EXCEPTION.toString());
-      }
-      return null;
-   }
-
-   public static void storeTypedProperty(final Message message, final String key, final Object typedProperty) throws JMSException
-   {
-      if (typedProperty instanceof Void)
-      {
-         // do not put the returned value if the operation was a procedure
-      }
-      else if (typedProperty instanceof Boolean)
-      {
-         message.setBooleanProperty(key, (Boolean)typedProperty);
-      }
-      else if (typedProperty instanceof Byte)
-      {
-         message.setByteProperty(key, (Byte)typedProperty);
-      }
-      else if (typedProperty instanceof Short)
-      {
-         message.setShortProperty(key, (Short)typedProperty);
-      }
-      else if (typedProperty instanceof Integer)
-      {
-         message.setIntProperty(key, (Integer)typedProperty);
-      }
-      else if (typedProperty instanceof Long)
-      {
-         message.setLongProperty(key, (Long)typedProperty);
-      }
-      else if (typedProperty instanceof Float)
-      {
-         message.setFloatProperty(key, (Float)typedProperty);
-      }
-      else if (typedProperty instanceof Double)
-      {
-         message.setDoubleProperty(key, (Double)typedProperty);
-      }
-      else if (typedProperty instanceof String)
-      {
-         message.setStringProperty(key, (String)typedProperty);
-      }
-      else if (typedProperty instanceof String[])
-      {
-         String str = "L[";
-         String[] strings = (String[])typedProperty;
-         for (String string : strings)
-         {
-            str += string + "||";
-         }
-         message.setStringProperty(key, str);         
-      }
-      // serialize as a SimpleString
-      else
-      {
-         message.setStringProperty(key, typedProperty.toString());
-      }
+      return ManagementHelper.getResult(getCoreMessage(message));
    }
 
    // Constructors --------------------------------------------------

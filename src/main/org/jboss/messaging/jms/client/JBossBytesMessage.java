@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.jms.client;
 
-import java.nio.BufferUnderflowException;
-
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
@@ -31,7 +29,6 @@ import javax.jms.MessageFormatException;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.LargeMessageBufferImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 

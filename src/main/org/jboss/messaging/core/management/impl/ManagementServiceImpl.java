@@ -357,42 +357,65 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(ResourceNames.CORE_CLUSTER_CONNECTION + name);
    }
 
-   public ServerMessage handleMessage(final ServerMessage message)
+   public ServerMessage handleMessage(final ServerMessage message) throws Exception
    {
       // a reply message is sent with the result stored in the message body.
       // we set its type to MessageImpl.OBJECT_TYPE so that I can be received
       // as an ObjectMessage when using JMS to send management message
-      ServerMessageImpl reply = new ServerMessageImpl(message);
-      reply.setType(MessageImpl.OBJECT_TYPE);
+      ServerMessageImpl reply = new ServerMessageImpl(storageManager.generateUniqueID());      
+      reply.setBody(ChannelBuffers.dynamicBuffer(1024));
 
       SimpleString resourceName = (SimpleString)message.getProperty(ManagementHelper.HDR_RESOURCE_NAME);
       if (log.isDebugEnabled())
       {
          log.debug("handling management message for " + resourceName);
       }
-      Set<SimpleString> propertyNames = message.getPropertyNames();
-      // use an array with all the property names to avoid a
-      // ConcurrentModificationException
-      // when invoking an operation or retrieving attributes (since they add
-      // properties to the message)
-      List<SimpleString> propNames = new ArrayList<SimpleString>(propertyNames);
 
-      if (propNames.contains(ManagementHelper.HDR_OPERATION_NAME))
-      {
-         SimpleString operation = (SimpleString)message.getProperty(ManagementHelper.HDR_OPERATION_NAME);
-         List<Object> operationParameters = ManagementHelper.retrieveOperationParameters(message);
-
-         if (operation != null)
+      SimpleString operation = (SimpleString)message.getProperty(ManagementHelper.HDR_OPERATION_NAME);
+      
+      if (operation != null)
+      {         
+         Object[] params = ManagementHelper.retrieveOperationParameters(message);
+                  
+         try
          {
+            Object result = invokeOperation(resourceName.toString(), operation.toString(), params);
+            
+            log.info("Result is " + result);
+            
+            ManagementHelper.storeResult(reply, result);
+            
+            reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, true);
+         }
+         catch (Exception e)
+         {
+            log.warn("exception while invoking " + operation + " on " + resourceName, e);
+            reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
+            String exceptionMessage = e.getMessage();
+            if (e instanceof InvocationTargetException)
+            {
+               exceptionMessage = ((InvocationTargetException)e).getTargetException().getMessage();
+            }
+            if (e != null)
+            {
+               ManagementHelper.storeResult(message, exceptionMessage);
+            }
+         }         
+      }
+      else
+      {
+         SimpleString attribute = (SimpleString)message.getProperty(ManagementHelper.HDR_ATTRIBUTE);
+         
+         if (attribute != null)
+         {            
             try
             {
-               Object result = invokeOperation(resourceName.toString(), operation.toString(), operationParameters);
-               reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, true);
+               Object result = getAttribute(resourceName.toString(), attribute.toString());
                ManagementHelper.storeResult(reply, result);
             }
             catch (Exception e)
             {
-               log.warn("exception while invoking " + operation + " on " + resourceName, e);
+               log.warn("exception while retrieving attribute " + attribute + " on " + resourceName, e);
                reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
                String exceptionMessage = e.getMessage();
                if (e instanceof InvocationTargetException)
@@ -401,40 +424,9 @@ public class ManagementServiceImpl implements ManagementService
                }
                if (e != null)
                {
-                  reply.putStringProperty(ManagementHelper.HDR_OPERATION_EXCEPTION,
-                                          new SimpleString(exceptionMessage));
+                  ManagementHelper.storeResult(message, exceptionMessage);
                }
-            }
-         }
-      }
-      else
-      {
-         for (SimpleString propertyName : propNames)
-         {
-            if (propertyName.equals(ManagementHelper.HDR_ATTRIBUTE))
-            {
-               SimpleString attribute = (SimpleString)message.getProperty(propertyName);
-               try
-               {
-                  Object result = getAttribute(resourceName.toString(), attribute.toString());
-                  ManagementHelper.storeResult(reply, result);
-               }
-               catch (Exception e)
-               {
-                  log.warn("exception while retrieving attribute " + attribute + " on " + resourceName, e);
-                  reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, false);
-                  String exceptionMessage = e.getMessage();
-                  if (e instanceof InvocationTargetException)
-                  {
-                     exceptionMessage = ((InvocationTargetException)e).getTargetException().getMessage();
-                  }
-                  if (e != null)
-                  {
-                     reply.putStringProperty(ManagementHelper.HDR_OPERATION_EXCEPTION,
-                                             new SimpleString(exceptionMessage));
-                  }
-               }
-            }
+            }            
          }
       }
 
@@ -685,7 +677,7 @@ public class ManagementServiceImpl implements ManagementService
       }
    }
 
-   private Object invokeOperation(final String resourceName, final String operation, final List<Object> params) throws Exception
+   private Object invokeOperation(final String resourceName, final String operation, final Object[] params) throws Exception
    {
       Object resource = registry.get(resourceName);
       
@@ -699,19 +691,18 @@ public class ManagementServiceImpl implements ManagementService
       Method[] methods = resource.getClass().getMethods();
       for (Method m : methods)
       {
-         if (m.getName().equals(operation) && m.getParameterTypes().length == params.size())
+         if (m.getName().equals(operation) && m.getParameterTypes().length == params.length)
          {
             method = m;
          }
       }
       if (method == null)
       {
-         throw new IllegalArgumentException("no operation " + operation + "/" + params.size());
+         throw new IllegalArgumentException("no operation " + operation + "/" + params.length);
       }
       
-      Object[] p = params.toArray(new Object[params.size()]);
+      Object result = method.invoke(resource, params);
       
-      Object result = method.invoke(resource, p);
       return result;
    }
 

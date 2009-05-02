@@ -118,17 +118,17 @@ public class JBossMessage implements javax.jms.Message
 
       switch (type)
       {
-         case JBossMessage.TYPE:
+         case JBossMessage.TYPE: //0
          {
             msg = new JBossMessage(message, session);
             break;
          }
-         case JBossBytesMessage.TYPE:
+         case JBossBytesMessage.TYPE: //4
          {
             msg = new JBossBytesMessage(message, session);
             break;
          }
-         case JBossMapMessage.TYPE:
+         case JBossMapMessage.TYPE: //5
          {
             msg = new JBossMapMessage(message, session);
             break;
@@ -138,12 +138,12 @@ public class JBossMessage implements javax.jms.Message
             msg = new JBossObjectMessage(message, session);
             break;
          }
-         case JBossStreamMessage.TYPE:
+         case JBossStreamMessage.TYPE:  //6
          {
             msg = new JBossStreamMessage(message, session);
             break;
          }
-         case JBossTextMessage.TYPE:
+         case JBossTextMessage.TYPE: //3
          {
             msg = new JBossTextMessage(message, session);
             break;

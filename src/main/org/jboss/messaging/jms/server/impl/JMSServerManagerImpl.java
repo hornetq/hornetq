@@ -124,11 +124,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          return;
       }
       
-      log.info("context is " + context);
-
       if (context == null)
       {
-         log.info("creating initial context");
          context = new InitialContext();
       }
 
@@ -184,8 +181,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    // JMSServerManager implementation -------------------------------
 
    public synchronized void setContext(final Context context)
-   {
-      log.info("setting context with " + context);
+   {      
       this.context = context;
    }
 

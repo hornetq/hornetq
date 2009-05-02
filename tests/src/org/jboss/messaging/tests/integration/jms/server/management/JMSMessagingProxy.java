@@ -23,7 +23,6 @@
 package org.jboss.messaging.tests.integration.jms.server.management;
 
 import javax.jms.Message;
-import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueRequestor;
 import javax.jms.QueueSession;
@@ -76,8 +75,8 @@ public class JMSMessagingProxy
       {
          Message m = session.createMessage();
          JMSManagementHelper.putAttribute(m, resourceName, attributeName);
-         ObjectMessage reply = (ObjectMessage)requestor.request(m);
-         return reply.getObject();
+         Message reply = requestor.request(m);
+         return JMSManagementHelper.getResult(reply);
       }
       catch (Exception e)
       {
@@ -89,14 +88,14 @@ public class JMSMessagingProxy
    {
       Message m = session.createMessage();
       JMSManagementHelper.putOperationInvocation(m, resourceName, operationName, args);
-      ObjectMessage reply = (ObjectMessage)requestor.request(m);
+      Message reply = requestor.request(m);
       if (JMSManagementHelper.hasOperationSucceeded(reply))
       {
-         return reply.getObject();
+         return JMSManagementHelper.getResult(reply);
       }
       else
       {
-         throw new Exception(JMSManagementHelper.getOperationExceptionMessage(reply));
+         throw new Exception((String)JMSManagementHelper.getResult(reply));
       }
    }
 

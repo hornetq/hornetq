@@ -251,8 +251,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
                                       "Header size (" + headerSize + ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
       }
-      
-      
+            
       // msg.getBody() could be Null on LargeServerMessage
       if (msg.getBodyInputStream() == null && msg.getBody() != null)
       {

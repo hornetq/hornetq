@@ -96,7 +96,7 @@ public class CoreMessagingProxy
       }
       else
       {
-         throw new Exception(ManagementHelper.getOperationExceptionMessage(reply));
+         throw new Exception((String)ManagementHelper.getResult(reply));
       }
    }
 

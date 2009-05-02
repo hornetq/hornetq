@@ -132,5 +132,5 @@ public interface ManagementService extends NotificationService, MessagingCompone
 
    Object getResource(String resourceName);
 
-   ServerMessage handleMessage(ServerMessage message);
+   ServerMessage handleMessage(ServerMessage message) throws Exception;
 }

@@ -292,6 +292,7 @@ public class JBossMessagingAdmin implements Admin
    // Private -------------------------------------------------------
 
    private Object invokeSyncOperation(String resourceName, String operationName, Object... parameters)
+      throws Exception
    {
       ClientMessage message = clientSession.createClientMessage(false);
       ManagementHelper.putOperationInvocation(message, resourceName, operationName, parameters);
@@ -314,7 +315,7 @@ public class JBossMessagingAdmin implements Admin
                                          " on " +
                                          resourceName +
                                          ": " +
-                                         ManagementHelper.getOperationExceptionMessage(reply));
+                                         ManagementHelper.getResult(reply));
 
       }
       return ManagementHelper.getResult(reply);

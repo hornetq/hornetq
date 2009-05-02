@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.DataConstants;
 import org.jboss.messaging.utils.SimpleString;
@@ -44,6 +45,8 @@ import org.jboss.messaging.utils.UTF8Util;
  */
 public abstract class AbstractChannelBuffer implements ChannelBuffer
 {
+   private static final Logger log = Logger.getLogger(AbstractChannelBuffer.class);
+
 
    private int readerIndex;
 
@@ -671,6 +674,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    public String readString()
    {
       int len = readInt();
+        
       char[] chars = new char[len];
       for (int i = 0; i < len; i++)
       {
@@ -741,7 +745,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
     * @see org.jboss.messaging.core.remoting.spi.MessagingBuffer#writeNullableString(java.lang.String)
     */
    public void writeNullableString(final String val)
-   {
+   {      
       if (val == null)
       {
          writeByte(DataConstants.NULL);

@@ -22,23 +22,22 @@
 
 package org.jboss.messaging.jms.server.management.jmx.impl;
 
-import java.util.List;
+import java.util.Map;
 
 import javax.management.MBeanInfo;
 
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
-import org.jboss.messaging.utils.Pair;
 
 /**
  * A ReplicationAwareJMSServerControlWrapper
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
          JMSServerControlMBean
@@ -68,120 +67,37 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
       return localControl.closeConnectionsForAddress(ipAddress);
    }
 
-   public void createConnectionFactory(String name,
-                                       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                       List<String> jndiBindings) throws Exception
-   {
-      replicationAwareInvoke("createConnectionFactory", connectorConfigs, jndiBindings);
-   }
-
-   public void createConnectionFactory(String name,
-                                       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                       String clientID,
-                                       List<String> jndiBindings) throws Exception
-   {
-      replicationAwareInvoke("createConnectionFactory", connectorConfigs, clientID, jndiBindings);
-   }
-
-   public void createConnectionFactory(String name,
-                                       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                       String clientID,
-                                       long pingPeriod,
-                                       long connectionTTL,
-                                       long callTimeout,
-                                       int maxConnections,
-                                       int minLargeMessageSize,
-                                       int consumerWindowSize,
-                                       int consumerMaxRate,
-                                       int producerWindowSize,
-                                       int producerMaxRate,
-                                       boolean blockOnAcknowledge,
-                                       boolean blockOnPersistentSend,
-                                       boolean blockOnNonPersistentSend,
-                                       boolean autoGroup,
-                                       boolean preAcknowledge,
-                                       String loadBalancingPolicyClassName,
-                                       int transactionBatchSize,
-                                       int dupsOKBatchSize,
-                                       boolean useGlobalPools,
-                                       int scheduledThreadPoolMaxSize,
-                                       int threadPoolMaxSize,
-                                       long retryInterval,
-                                       double retryIntervalMultiplier,
-                                       int reconnectAttempts,
-                                       boolean failoverOnServerShutdown,
-                                       List<String> jndiBindings) throws Exception
-   {
-      replicationAwareInvoke("createConnectionFactory",
-                             connectorConfigs,
-                             clientID,
-                             pingPeriod,
-                             connectionTTL,
-                             callTimeout,
-                             maxConnections,
-                             minLargeMessageSize,
-                             consumerWindowSize,
-                             consumerMaxRate,
-                             producerWindowSize,
-                             producerMaxRate,
-                             blockOnAcknowledge,
-                             blockOnPersistentSend,
-                             blockOnNonPersistentSend,
-                             autoGroup,
-                             preAcknowledge,
-                             loadBalancingPolicyClassName,
-                             transactionBatchSize,
-                             dupsOKBatchSize,
-                             useGlobalPools,
-                             scheduledThreadPoolMaxSize,
-                             threadPoolMaxSize,
-                             retryInterval,
-                             retryIntervalMultiplier,
-                             reconnectAttempts,
-                             failoverOnServerShutdown,
-                             jndiBindings);
-   }
-
-   public void createConnectionFactory(String name,
-                                       String discoveryAddress,
-                                       int discoveryPort,
-                                       String clientID,
-                                       List<String> jndiBindings) throws Exception
-   {
-      replicationAwareInvoke("createConnectionFactory", discoveryAddress, discoveryPort, clientID, jndiBindings);
-   }
-
-   public void createConnectionFactory(String name,
-                                       String discoveryAddress,
-                                       int discoveryPort,
-                                       String clientID,
-                                       long discoveryRefreshTimeout,
-                                       long pingPeriod,
-                                       long connectionTTL,
-                                       long callTimeout,
-                                       int maxConnections,
-                                       int minLargeMessageSize,
-                                       int consumerWindowSize,
-                                       int consumerMaxRate,
-                                       int producerWindowSize,
-                                       int producerMaxRate,
-                                       boolean blockOnAcknowledge,
-                                       boolean blockOnPersistentSend,
-                                       boolean blockOnNonPersistentSend,
-                                       boolean autoGroup,
-                                       boolean preAcknowledge,
-                                       String loadBalancingPolicyClassName,
-                                       int transactionBatchSize,
-                                       int dupsOKBatchSize,
-                                       long initialWaitTimeout,
-                                       boolean useGlobalPools,
-                                       int scheduledThreadPoolMaxSize,
-                                       int threadPoolMaxSize,
-                                       long retryInterval,
-                                       double retryIntervalMultiplier,
-                                       int reconnectAttempts,
-                                       boolean failoverOnServerShutdown,
-                                       List<String> jndiBindings) throws Exception
+   public void createConnectionFactory(final String name,
+                                       final String discoveryAddress,
+                                       final int discoveryPort,
+                                       final String clientID,
+                                       final long discoveryRefreshTimeout,
+                                       final long pingPeriod,
+                                       final long connectionTTL,
+                                       final long callTimeout,
+                                       final int maxConnections,
+                                       final int minLargeMessageSize,
+                                       final int consumerWindowSize,
+                                       final int consumerMaxRate,
+                                       final int producerWindowSize,
+                                       final int producerMaxRate,
+                                       final boolean blockOnAcknowledge,
+                                       final boolean blockOnPersistentSend,
+                                       final boolean blockOnNonPersistentSend,
+                                       final boolean autoGroup,
+                                       final boolean preAcknowledge,
+                                       final String loadBalancingPolicyClassName,
+                                       final int transactionBatchSize,
+                                       final int dupsOKBatchSize,
+                                       final long initialWaitTimeout,
+                                       final boolean useGlobalPools,
+                                       final int scheduledThreadPoolMaxSize,
+                                       final int threadPoolMaxSize,
+                                       final long retryInterval,
+                                       final double retryIntervalMultiplier,
+                                       final int reconnectAttempts,
+                                       final boolean failoverOnServerShutdown,
+                                       final String[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
                              discoveryAddress,
@@ -213,36 +129,169 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                              reconnectAttempts,
                              failoverOnServerShutdown,
                              jndiBindings);
+
    }
 
-   public void createConnectionFactory(String name, TransportConfiguration liveTC, List<String> jndiBindings) throws Exception
+   public void createConnectionFactory(final String name,
+                                       final String discoveryAddress,
+                                       final int discoveryPort,
+                                       final String clientID,
+                                       final String[] jndiBindings) throws Exception
    {
-      replicationAwareInvoke("createConnectionFactory", liveTC, jndiBindings);
+      replicationAwareInvoke("createConnectionFactory", discoveryAddress, discoveryPort, clientID, jndiBindings);
+
    }
 
-   public void createConnectionFactory(String name,
-                                       TransportConfiguration liveTC,
-                                       String clientID,
-                                       List<String> jndiBindings) throws Exception
+   public void createConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final String backupTransportClassName,
+                                       final Map<String, Object> backupTransportParams,
+                                       final String clientID,
+                                       final String[] jndiBindings) throws Exception
    {
-      replicationAwareInvoke("createConnectionFactory", liveTC, clientID, jndiBindings);
+      replicationAwareInvoke("createConnectionFactory",
+                             liveTransportClassName,
+                             liveTransportParams,
+                             backupTransportClassName,
+                             backupTransportParams,
+                             clientID,
+                             jndiBindings);
    }
 
-   public void createConnectionFactory(String name,
-                                       TransportConfiguration liveTC,
-                                       TransportConfiguration backupTC,
-                                       List<String> jndiBindings) throws Exception
+   public void createConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final String backupTransportClassName,
+                                       final Map<String, Object> backupTransportParams,
+                                       final String[] jndiBindings) throws Exception
    {
-      replicationAwareInvoke("createConnectionFactory", liveTC, backupTC, jndiBindings);
+      replicationAwareInvoke("createConnectionFactory",
+                             liveTransportClassName,
+                             liveTransportParams,
+                             backupTransportClassName,
+                             backupTransportParams,
+                             jndiBindings);
    }
 
-   public void createConnectionFactory(String name,
-                                       TransportConfiguration liveTC,
-                                       TransportConfiguration backupTC,
-                                       String clientID,
-                                       List<String> jndiBindings) throws Exception
+   public void createConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final String clientID,
+                                       final String[] jndiBindings) throws Exception
    {
-      replicationAwareInvoke("createConnectionFactory", liveTC, backupTC, clientID, jndiBindings);
+      replicationAwareInvoke("createConnectionFactory",
+                             liveTransportClassName,
+                             liveTransportParams,
+                             clientID,
+                             jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final String[] jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory", liveTransportClassName, liveTransportParams, jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
+                                       final String[] liveConnectorsTransportClassNames,
+                                       final Map<String, Object>[] liveConnectorTransportParams,
+                                       final String[] backupConnectorsTransportClassNames,
+                                       final Map<String, Object>[] backupConnectorTransportParams,
+                                       final String clientID,
+                                       final long pingPeriod,
+                                       final long connectionTTL,
+                                       final long callTimeout,
+                                       final int maxConnections,
+                                       final int minLargeMessageSize,
+                                       final int consumerWindowSize,
+                                       final int consumerMaxRate,
+                                       final int producerWindowSize,
+                                       final int producerMaxRate,
+                                       final boolean blockOnAcknowledge,
+                                       final boolean blockOnPersistentSend,
+                                       final boolean blockOnNonPersistentSend,
+                                       final boolean autoGroup,
+                                       final boolean preAcknowledge,
+                                       final String loadBalancingPolicyClassName,
+                                       final int transactionBatchSize,
+                                       final int dupsOKBatchSize,
+                                       final boolean useGlobalPools,
+                                       final int scheduledThreadPoolMaxSize,
+                                       final int threadPoolMaxSize,
+                                       final long retryInterval,
+                                       final double retryIntervalMultiplier,
+                                       final int reconnectAttempts,
+                                       final boolean failoverOnServerShutdown,
+                                       final String[] jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory",
+                             liveConnectorsTransportClassNames,
+                             liveConnectorTransportParams,
+                             backupConnectorsTransportClassNames,
+                             backupConnectorTransportParams,
+                             clientID,
+                             pingPeriod,
+                             connectionTTL,
+                             callTimeout,
+                             maxConnections,
+                             minLargeMessageSize,
+                             consumerWindowSize,
+                             consumerMaxRate,
+                             producerWindowSize,
+                             producerMaxRate,
+                             blockOnAcknowledge,
+                             blockOnPersistentSend,
+                             blockOnNonPersistentSend,
+                             autoGroup,
+                             preAcknowledge,
+                             loadBalancingPolicyClassName,
+                             transactionBatchSize,
+                             dupsOKBatchSize,
+                             useGlobalPools,
+                             scheduledThreadPoolMaxSize,
+                             threadPoolMaxSize,
+                             retryInterval,
+                             retryIntervalMultiplier,
+                             reconnectAttempts,
+                             failoverOnServerShutdown,
+                             jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
+                                       final String[] liveConnectorsTransportClassNames,
+                                       final Map<String, Object>[] liveConnectorTransportParams,
+                                       final String[] backupConnectorsTransportClassNames,
+                                       final Map<String, Object>[] backupConnectorTransportParams,
+                                       final String clientID,
+                                       final String[] jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory",
+                             liveConnectorsTransportClassNames,
+                             liveConnectorTransportParams,
+                             backupConnectorsTransportClassNames,
+                             backupConnectorTransportParams,
+                             clientID,
+
+                             jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
+                                       final String[] liveConnectorsTransportClassNames,
+                                       final Map<String, Object>[] liveConnectorTransportParams,
+                                       final String[] backupConnectorsTransportClassNames,
+                                       final Map<String, Object>[] backupConnectorTransportParams,
+                                       final String[] jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory",
+                             liveConnectorsTransportClassNames,
+                             liveConnectorTransportParams,
+                             backupConnectorsTransportClassNames,
+                             backupConnectorTransportParams,
+
+                             jndiBindings);
    }
 
    public boolean createQueue(final String name, final String jndiBinding) throws Exception

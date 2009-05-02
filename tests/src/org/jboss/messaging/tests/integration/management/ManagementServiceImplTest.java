@@ -106,7 +106,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
       
       assertFalse(ManagementHelper.hasOperationSucceeded(reply));
-      assertNotNull(ManagementHelper.getOperationExceptionMessage(reply));
+      assertNotNull(ManagementHelper.getResult(reply));
       server.stop();
    }
    
@@ -130,7 +130,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
       
       assertFalse(ManagementHelper.hasOperationSucceeded(reply));
-      assertNotNull(ManagementHelper.getOperationExceptionMessage(reply));
+      assertNotNull(ManagementHelper.getResult(reply));
       server.stop();
    }
 
@@ -152,7 +152,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
       
       assertFalse(ManagementHelper.hasOperationSucceeded(reply));
-      assertNotNull(ManagementHelper.getOperationExceptionMessage(reply));
+      assertNotNull(ManagementHelper.getResult(reply));
       server.stop();
    }
    // Package protected ---------------------------------------------

@@ -33,7 +33,6 @@ import javax.jms.ObjectMessage;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 
 /**
  * This class implements javax.jms.ObjectMessage
@@ -54,7 +53,7 @@ public class JBossObjectMessage extends JBossMessage implements ObjectMessage
 {
    // Constants -----------------------------------------------------
 
-   public static final byte TYPE = MessageImpl.OBJECT_TYPE;
+   public static final byte TYPE = 2;
 
    // Attributes ----------------------------------------------------
    

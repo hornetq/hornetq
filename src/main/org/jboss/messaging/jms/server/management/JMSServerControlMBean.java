@@ -25,15 +25,14 @@ package org.jboss.messaging.jms.server.management;
 import static javax.management.MBeanOperationInfo.ACTION;
 import static javax.management.MBeanOperationInfo.INFO;
 
-import java.util.List;
+import java.util.Map;
 
-import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
-import org.jboss.messaging.utils.Pair;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
  * @version <tt>$Revision$</tt>
  * 
@@ -67,37 +66,25 @@ public interface JMSServerControlMBean
    String name) throws Exception;
 
    void createConnectionFactory(String name,
-                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                List<String> jndiBindings) throws Exception;
+                                String[] liveConnectorsTransportClassNames,
+                                Map<String, Object>[] liveConnectorTransportParams,
+                                String[] backupConnectorsTransportClassNames,
+                                Map<String, Object>[] backupConnectorTransportParams,
+                                String[] jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
-                                TransportConfiguration liveTC,
-                                TransportConfiguration backupTC,
-                                List<String> jndiBindings) throws Exception;
-
-   void createConnectionFactory(String name, TransportConfiguration liveTC, List<String> jndiBindings) throws Exception;
-
-   void createConnectionFactory(String name,
-                                String discoveryAddress,
-                                int discoveryPort,
+                                String[] liveConnectorsTransportClassNames,
+                                Map<String, Object>[] liveConnectorTransportParams,
+                                String[] backupConnectorsTransportClassNames,
+                                Map<String, Object>[] backupConnectorTransportParams,
                                 String clientID,
-                                List<String> jndiBindings) throws Exception;
+                                String[] jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
-                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                String clientID,
-                                List<String> jndiBindings) throws Exception;
-
-   void createConnectionFactory(String name,
-                                TransportConfiguration liveTC,
-                                TransportConfiguration backupTC,
-                                String clientID,
-                                List<String> jndiBindings) throws Exception;
-
-   void createConnectionFactory(String name, TransportConfiguration liveTC, String clientID, List<String> jndiBindings) throws Exception;
-
-   void createConnectionFactory(String name,
-                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                String[] liveConnectorsTransportClassNames,
+                                Map<String, Object>[] liveConnectorTransportParams,
+                                String[] backupConnectorsTransportClassNames,
+                                Map<String, Object>[] backupConnectorTransportParams,
                                 String clientID,
                                 long pingPeriod,
                                 long connectionTTL,
@@ -123,7 +110,13 @@ public interface JMSServerControlMBean
                                 double retryIntervalMultiplier,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
-                                List<String> jndiBindings) throws Exception;
+                                String[] jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                String discoveryAddress,
+                                int discoveryPort,
+                                String clientID,
+                                String[] jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String discoveryAddress,
@@ -155,7 +148,33 @@ public interface JMSServerControlMBean
                                 double retryIntervalMultiplier,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
-                                List<String> jndiBindings) throws Exception;
+                                String[] jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                String liveTransportClassName,
+                                Map<String, Object> liveTransportParams,
+                                String[] jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                String liveTransportClassName,
+                                Map<String, Object> liveTransportParams,
+                                String clientID,
+                                String[] jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                String liveTransportClassName,
+                                Map<String, Object> liveTransportParams,
+                                String backupTransportClassName,
+                                Map<String, Object> backupTransportParams,
+                                String[] jndiBindings) throws Exception;
+
+   void createConnectionFactory(String name,
+                                String liveTransportClassName,
+                                Map<String, Object> liveTransportParams,
+                                String backupTransportClassName,
+                                Map<String, Object> backupTransportParams,
+                                String clientID,
+                                String[] jndiBindings) throws Exception;
 
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
    void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
