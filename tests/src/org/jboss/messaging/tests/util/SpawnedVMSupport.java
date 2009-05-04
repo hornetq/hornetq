@@ -102,6 +102,17 @@ public class SpawnedVMSupport
 
       sb.append("-Djava.library.path=").append(System.getProperty("java.library.path", "./native/bin")).append(" ");
 
+      String loggingConfigFile = System.getProperty("java.util.logging.config.file");
+      if (loggingConfigFile != null)
+      {
+         sb.append(" -Djava.util.logging.config.file=" + loggingConfigFile + " ");
+      }
+      String loggingPlugin = System.getProperty("org.jboss.logging.Logger.pluginClass");
+      if (loggingPlugin != null)
+      {
+         sb.append(" -Dorg.jboss.logging.Logger.pluginClass=" + loggingPlugin + " ");
+      }
+
       // sb.append("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 ");
       sb.append(className).append(' ');
 
