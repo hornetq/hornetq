@@ -226,13 +226,9 @@ public class JBossMessagingAdmin implements Admin
       String line = null;
       while ((line = br.readLine()) != null)
       {
-         System.out.println(line);
+         System.out.println("SERVER: " + line);
          line.replace('|', '\n');
-         if (line.startsWith("Listening for transport"))
-         {
-            continue;
-         }
-         else if ("OK".equals(line.trim()))
+         if ("OK".equals(line.trim()))
          {
             new Thread()
             {
@@ -254,7 +250,7 @@ public class JBossMessagingAdmin implements Admin
             }.start();
             return;
          }
-         else
+         else if ("KO".equals(line.trim()))
          {
             // something went wrong with the server, destroy it:
             serverProcess.destroy();

@@ -121,11 +121,8 @@ public class SpawnedJMSServer
             allStack += stackTraceElement.toString() + "|";
          }
          System.out.println(allStack);
-         System.exit(1);
-      }
-      finally
-      {
          System.out.println("KO");
+         System.exit(1);
       }
    }
 
