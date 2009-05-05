@@ -2,126 +2,47 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
 
-   <!--  manangement address -->
+   <!--  management address -->
    <security match="jbm.management">
       <!--  only the admin role can interact with the management address  -->
       <permission type="consume" roles="admin"/>
       <permission type="send" roles="admin"/>
       <permission type="manage" roles="admin"/>
    </security>
-   
-   <security match="jms.topic.testTopic">
-      <permission type="createDurableQueue" roles="durpublisher"/>
-      <permission type="deleteDurableQueue" roles="durpublisher"/>
-      <permission type="consume" roles="guest,publisher,durpublisher"/>
-      <permission type="send" roles="guest,publisher,durpublisher"/>
-   </security>
-
-   <security match="jms.topic.securedTopic">
-      <permission type="send" roles="publisher"/>
-      <permission type="consume" roles="publisher"/>
-   </security>
-
-   <security match="jms.topic.testDurableTopic">
-      <permission type="createDurableQueue" roles="durpublisher"/>
-      <permission type="deleteDurableQueue" roles="durpublisher"/>
-      <permission type="consume" roles="guest,publisher,durpublisher"/>
-      <permission type="send" roles="guest,publisher,durpublisher"/>
-   </security>
-
-   <security match="jms.queue.testQueue">
-      <permission type="consume" roles="guest,publisher"/>
-      <permission type="send" roles="guest,publisher"/>
-   </security>
-
-   <security match="jms.queue.NoSuchQueue">
-      <permission type="consume" roles="guest,publisher"/>
-      <permission type="send" roles="guest,publisher"/>
-   </security>
-
-   <security match="jms.topic.NoSuchTopic">
-      <permission type="consume" roles="guest,publisher"/>
-      <permission type="send" roles="guest,publisher"/>
-   </security>
-
-   <security match="jms.tempqueue.#">
-      <permission type="createTempQueue" roles="guest,def"/>
-      <permission type="deleteTempQueue" roles="guest,def"/>
-      <permission type="consume" roles="guest,def"/>
-      <permission type="send" roles="guest,def"/>
-   </security>
-
-   <security match="jms.temptopic.#">
-      <permission type="createTempQueue" roles="guest,def"/>
-      <permission type="deleteTempQueue" roles="guest,def"/>
-      <permission type="consume" roles="guest,def"/>
-      <permission type="send" roles="guest,def"/>
-   </security>
-
-   <!--this will catch any word i.e. jms.queue.anything-->
+<!--example queue or topic configuration-->
    <!--<security match="jms.queue.#">
       <permission type="consume" roles="guest,publisher"/>
       <permission type="send" roles="guest,publisher"/>
    </security>-->
-
-   <!--this will catch any word i.e. jms.queue.anything-->
    <!--<security match="jms.topic.#">
       <permission type="consume" roles="guest,publisher"/>
       <permission type="send" roles="guest,publisher"/>
    </security>-->
 
-   <!--default security to catch all-->
-   <security match="#">
-      <permission type="createDurableQueue" roles="guest,def"/>
-      <permission type="deleteDurableQueue" roles="guest,def"/>
-      <permission type="createTempQueue" roles="guest,def"/>
-      <permission type="deleteTempQueue" roles="guest,def"/>
-      <permission type="consume" roles="guest,def"/>
-      <permission type="send" roles="guest,def"/>
+   <!-- example temp queue or topic configuration -->
+   <!--<security match="jms.tempqueue.#">
+      <permission type="createTempQueue" roles="guest"/>
+      <permission type="deleteTempQueue" roles="guest"/>
+      <permission type="consume" roles="guest"/>
+      <permission type="send" roles="guest"/>
    </security>
 
-   <address-settings match="jms.queue.QueueWithOwnDLQAndExpiryQueue">
-      <dead-letter-address>jms.queue.PrivateDLQ</dead-letter-address>
-      <expiry-address>jms.queue.PrivateExpiryQueue</expiry-address>
-   </address-settings>
+   <security match="jms.temptopic.#">
+      <permission type="createTempQueue" roles="guest"/>
+      <permission type="deleteTempQueue" roles="guest"/>
+      <permission type="consume" roles="guest"/>
+      <permission type="send" roles="guest"/>
+   </security>-->
 
-   <address-settings match="jms.topic.TopicWithOwnDLQAndExpiryQueue">
-      <dead-letter-address>jms.queue.PrivateDLQ</dead-letter-address>
-      <expiry-address>jms.queue.PrivateExpiryQueue</expiry-address>
-   </address-settings>
-
-   <address-settings match="jms.queue.QueueWithOwnRedeliveryDelay">
-      <redelivery-delay>5000</redelivery-delay>
-   </address-settings>
-
-   <address-settings match="jms.topic.TopicWithOwnRedeliveryDelay">
-      <redelivery-delay>5000</redelivery-delay>
-   </address-settings>
-
-   <address-settings match="jms.queue.testDistributedQueue">
-      <clustered>true</clustered>
-   </address-settings>
-
-   <address-settings match="jms.topic.testDistributedTopic">
-      <clustered>true</clustered>
-   </address-settings>
-
-   <address-settings match="jms.queue.testPerfQueue">
-      <clustered>false</clustered>
-   </address-settings>
-
-   <address-settings match="jms.queue.MyQueue">
-      <max-size-bytes>-1</max-size-bytes>
-      <page-size-bytes>10485760</page-size-bytes>
-      <drop-messages-when-full>false</drop-messages-when-full>
-   </address-settings>
-
-   <address-settings match="jms.queue.testGroupQueue">
-      <max-size-bytes>-1</max-size-bytes>
-      <page-size-bytes>10485760</page-size-bytes>
-      <drop-messages-when-full>false</drop-messages-when-full>
-      <distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor</distribution-policy-class>
-   </address-settings>
+   <!--default security to catch all-->
+   <security match="#">
+      <permission type="createDurableQueue" roles="guest"/>
+      <permission type="deleteDurableQueue" roles="guest"/>
+      <permission type="createTempQueue" roles="guest"/>
+      <permission type="deleteTempQueue" roles="guest"/>
+      <permission type="consume" roles="guest"/>
+      <permission type="send" roles="guest"/>
+   </security>
 
    <!--default for catch all-->
    <address-settings match="#">

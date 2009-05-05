@@ -260,6 +260,8 @@ public class MessagingServerImpl implements MessagingServer
       // We start the remoting service here - if the server is a backup remoting service needs to be started
       // so it can be initialised by the live node
       remotingService.start();
+
+      log.info("JBoss Messaging Server version " + getVersion().getFullVersion() + " started");
    }
 
    public synchronized void stop() throws Exception
