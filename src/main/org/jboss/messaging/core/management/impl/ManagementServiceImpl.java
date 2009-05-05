@@ -703,7 +703,7 @@ public class ManagementServiceImpl implements ManagementService
 
             for (int i = 0; i < paramTypes.length; i++)
             {
-               if (params[i].getClass() != paramTypes[i])
+               if (params[i] != null && params[i].getClass() != paramTypes[i])
                {
                   continue;
                }

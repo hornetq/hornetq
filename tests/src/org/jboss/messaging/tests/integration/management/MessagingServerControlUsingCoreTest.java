@@ -168,7 +168,13 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
          public String[] getInterceptorClassNames()
          {
-            return (String[])proxy.retrieveAttributeValue("InterceptorClassNames");
+            Object[] res = (Object[])proxy.retrieveAttributeValue("InterceptorClassNames");
+            String[] names = new String[res.length];
+            for (int i = 0; i < res.length; i++)
+            {
+               names[i] = res[i].toString();               
+            }
+            return names;
          }
 
          public int getJournalBufferReuseSize()
