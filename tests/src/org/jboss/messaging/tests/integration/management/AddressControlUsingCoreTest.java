@@ -37,7 +37,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ResourceNames;
-import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.security.CheckType;
@@ -120,25 +119,25 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       CoreMessagingProxy proxy = createProxy(address);
-      Object[] data = (Object[])proxy.retrieveAttributeValue("Roles");
-      assertEquals(0, data.length);
+      Object[] roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      assertEquals(0, roles.length);
 
       Set<Role> newRoles = new HashSet<Role>();
       newRoles.add(role);
       server.getSecurityRepository().addMatch(address.toString(), newRoles);
 
-      data = (Object[])proxy.retrieveAttributeValue("Roles");
-      assertEquals(1, data.length);
-      RoleInfo[] roleInfos = RoleInfo.from(data);
-      assertEquals(role.getName(), roleInfos[0].getName());
-      assertEquals(CheckType.CONSUME.hasRole(role), roleInfos[0].isConsume());
-      assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateDurableQueue());
-      assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateNonDurableQueue());
-      assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteDurableQueue());
-      assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteNonDurableQueue());
-      assertEquals(CheckType.MANAGE.hasRole(role), roleInfos[0].isManage());
-      assertEquals(CheckType.SEND.hasRole(role), roleInfos[0].isSend());
-
+      roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      assertEquals(1, roles.length);
+      Object[] r = (Object[])roles[0];
+      assertEquals(role.getName(), r[0]);
+      assertEquals(CheckType.SEND.hasRole(role), r[1]);
+      assertEquals(CheckType.CONSUME.hasRole(role), r[2]);
+      assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), r[3]);
+      assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), r[4]);
+      assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), r[5]);
+      assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), r[6]);
+      assertEquals(CheckType.MANAGE.hasRole(role), r[7]);
+      
       session.deleteQueue(queue);
    }
 
@@ -151,8 +150,8 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       CoreMessagingProxy proxy = createProxy(address);
-      Object[] data = (Object[])proxy.retrieveAttributeValue("Roles");
-      assertEquals(0, data.length);
+      Object[] roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      assertEquals(0, roles.length);
 
       proxy.invokeOperation("addRole", role.getName(),
                              CheckType.SEND.hasRole(role),
@@ -163,17 +162,18 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
                              CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
                              CheckType.MANAGE.hasRole(role));
 
-      data = (Object[])proxy.retrieveAttributeValue("Roles");
-      assertEquals(1, data.length);
-      RoleInfo[] roleInfos = RoleInfo.from(data);
-      assertEquals(role.getName(), roleInfos[0].getName());
-      assertEquals(CheckType.CONSUME.hasRole(role), roleInfos[0].isConsume());
-      assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateDurableQueue());
-      assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), roleInfos[0].isCreateNonDurableQueue());
-      assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteDurableQueue());
-      assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), roleInfos[0].isDeleteNonDurableQueue());
-      assertEquals(CheckType.MANAGE.hasRole(role), roleInfos[0].isManage());
-      assertEquals(CheckType.SEND.hasRole(role), roleInfos[0].isSend());
+      roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      assertEquals(1, roles.length);
+      Object[] r = (Object[])roles[0];
+      assertEquals(role.getName(), r[0]);
+      assertEquals(CheckType.SEND.hasRole(role), r[1]);
+      assertEquals(CheckType.CONSUME.hasRole(role), r[2]);
+      assertEquals(CheckType.CREATE_DURABLE_QUEUE.hasRole(role), r[3]);
+      assertEquals(CheckType.DELETE_DURABLE_QUEUE.hasRole(role), r[4]);
+      assertEquals(CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role), r[5]);
+      assertEquals(CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role), r[6]);
+      assertEquals(CheckType.MANAGE.hasRole(role), r[7]);
+
 
 
       session.deleteQueue(queue);
