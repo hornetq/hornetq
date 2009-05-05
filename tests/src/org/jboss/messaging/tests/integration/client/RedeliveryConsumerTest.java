@@ -222,6 +222,8 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       server.stop();
 
       server.start();
+      
+      factory = createInVMFactory();
 
       session = factory.createSession(false, true, false);
       session.start();
