@@ -71,13 +71,31 @@ public class CoreMessagingProxy
 
    public Object retrieveAttributeValue(String attributeName)
    {
+      return retrieveAttributeValue(attributeName, null);
+   }
+   
+   public Object retrieveAttributeValue(String attributeName, Class desiredType)
+   {
       ClientMessage m = session.createClientMessage(false);
       ManagementHelper.putAttribute(m, resourceName, attributeName);
       ClientMessage reply;
       try
       {
          reply = requestor.request(m);
-         return ManagementHelper.getResult(reply);
+         Object result = ManagementHelper.getResult(reply);
+         
+         if (desiredType != null && desiredType != result.getClass())
+         {
+            //Conversions
+            if (desiredType == Long.class && result.getClass() == Integer.class)
+            {
+               Integer in = (Integer)result;
+               
+               result = new Long(in.intValue());
+            }
+         }
+         
+         return result;
       }
       catch (Exception e)
       {

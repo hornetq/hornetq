@@ -81,7 +81,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       assertEquals(conf.getThreadPoolMaxSize(), serverControl.getThreadPoolMaxSize());
       assertEquals(conf.getSecurityInvalidationInterval(), serverControl.getSecurityInvalidationInterval());
       assertEquals(conf.isSecurityEnabled(), serverControl.isSecurityEnabled());
-      assertEquals(conf.getInterceptorClassNames(), serverControl.getInterceptorClassNames());
+      assertEquals(conf.getInterceptorClassNames().size(), serverControl.getInterceptorClassNames().length);
       assertEquals(conf.getConnectionScanPeriod(), serverControl.getConnectionScanPeriod());
       assertEquals(conf.getConnectionTTLOverride(), serverControl.getConnectionTTLOverride());
       assertEquals(conf.getBackupConnectorName(), serverControl.getBackupConnectorName());

@@ -148,12 +148,12 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
          public long getConnectionScanPeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("ConnectionScanPeriod");
+            return (Long)proxy.retrieveAttributeValue("ConnectionScanPeriod", Long.class);
          }
 
          public long getConnectionTTLOverride()
          {
-            return (Long)proxy.retrieveAttributeValue("ConnectionTTLOverride");
+            return (Long)proxy.retrieveAttributeValue("ConnectionTTLOverride", Long.class);
          }
 
          public Object[] getConnectors() throws Exception
@@ -218,7 +218,7 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
          public long getManagementRequestTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("ManagementRequestTimeout");
+            return (Long)proxy.retrieveAttributeValue("ManagementRequestTimeout", Long.class);
          }
 
          public int getMessageCounterMaxDayCount()
@@ -228,17 +228,17 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
          public long getMessageCounterSamplePeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("MessageCounterSamplePeriod");
+            return (Long)proxy.retrieveAttributeValue("MessageCounterSamplePeriod", Long.class);
          }
 
          public long getMessageExpiryScanPeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("MessageExpiryScanPeriod");
+            return (Long)proxy.retrieveAttributeValue("MessageExpiryScanPeriod", Long.class);
          }
 
          public long getMessageExpiryThreadPriority()
          {
-            return (Long)proxy.retrieveAttributeValue("MessageExpiryThreadPriority");
+            return (Long)proxy.retrieveAttributeValue("MessageExpiryThreadPriority", Long.class);
          }
 
          public String getPagingDirectory()
@@ -253,12 +253,12 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
          public long getPagingMaxGlobalSizeBytes()
          {
-            return (Long)proxy.retrieveAttributeValue("PagingMaxGlobalSizeBytes");
+            return (Long)proxy.retrieveAttributeValue("PagingMaxGlobalSizeBytes", Long.class);
          }
 
          public long getQueueActivationTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("QueueActivationTimeout");
+            return (Long)proxy.retrieveAttributeValue("QueueActivationTimeout", Long.class);
          }
 
          public int getScheduledThreadPoolMaxSize()
@@ -273,17 +273,17 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
          public long getSecurityInvalidationInterval()
          {
-            return (Long)proxy.retrieveAttributeValue("SecurityInvalidationInterval");
+            return (Long)proxy.retrieveAttributeValue("SecurityInvalidationInterval", Long.class);
          }
 
          public long getTransactionTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("TransactionTimeout");
+            return (Long)proxy.retrieveAttributeValue("TransactionTimeout", Long.class);
          }
 
          public long getTransactionTimeoutScanPeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("TransactionTimeoutScanPeriod");
+            return (Long)proxy.retrieveAttributeValue("TransactionTimeoutScanPeriod", Long.class);
          }
 
          public String getVersion()
