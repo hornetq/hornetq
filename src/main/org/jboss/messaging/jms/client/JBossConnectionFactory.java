@@ -60,7 +60,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private transient ClientSessionFactory sessionFactory;
+   private ClientSessionFactory sessionFactory;
 
    private String clientID;
 

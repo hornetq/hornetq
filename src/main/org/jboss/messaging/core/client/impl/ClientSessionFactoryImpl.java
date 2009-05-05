@@ -11,6 +11,7 @@
  */
 package org.jboss.messaging.core.client.impl;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,7 +47,7 @@ import org.jboss.messaging.utils.UUIDGenerator;
  * @version <tt>$Revision: 3602 $</tt>
  * 
  */
-public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, DiscoveryListener
+public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, DiscoveryListener, Serializable
 {
    // Constants
    // ------------------------------------------------------------------------------------
