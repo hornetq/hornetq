@@ -87,6 +87,8 @@ public class SpawnedJMSServer
          serverManager.setContext(new InitialContext(env));         
          serverManager.start();
 
+         System.out.println("Server started, ready to start client test");
+         
          // create the reader before printing OK so that if the test is quick
          // we will still capture the STOP message sent by the client
          InputStreamReader isr = new InputStreamReader(System.in);

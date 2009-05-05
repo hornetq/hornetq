@@ -222,7 +222,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          public void createConnectionFactory(String name,
                                              String liveTransportClassName,
                                              Map<String, Object> liveTransportParams,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,

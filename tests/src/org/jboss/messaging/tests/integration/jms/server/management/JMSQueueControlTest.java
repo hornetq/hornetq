@@ -27,7 +27,9 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -137,10 +139,18 @@ public class JMSQueueControlTest extends ManagementTestBase
       Map<String, Object>[] data = queueControl.listAllMessages();
       assertEquals(2, data.length);
 
-      // retrieve the first message info      
-      String messageID = (String)data[0].get("JMSMessageID");
+      System.out.println(data[0]);
+      // retrieve the first message info 
+      Set<String> keySet = data[0].keySet();
+      Iterator<String> it = keySet.iterator();
+      while (it.hasNext())
+      {
+         System.out.println(it.next());
+      }
+      Map props = (Map)data[0].get("properties");
+      SimpleString messageID = (SimpleString)props.get("JMSMessageID");
 
-      queueControl.removeMessage(messageID);
+      queueControl.removeMessage(messageID.toString());
 
       assertEquals(1, queueControl.getMessageCount());
    }
@@ -231,13 +241,14 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] data = queueControl.listAllMessages();
       // retrieve the first message info     
-      String messageID = (String)data[0].get("JMSMessageID");
-      int currentPriority = (Integer)data[0].get("JMSPriority");
+      Map props = (Map)data[0].get("properties");
+      SimpleString messageID = (SimpleString)props.get("JMSMessageID");
+      int currentPriority = (Byte)data[0].get("JMSPriority");
       int newPriority = 9;
 
       assertTrue(newPriority != currentPriority);
 
-      queueControl.changeMessagePriority(messageID, newPriority);
+      queueControl.changeMessagePriority(messageID.toString(), newPriority);
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       connection.start();
@@ -675,10 +686,10 @@ public class JMSQueueControlTest extends ManagementTestBase
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);
-      serverManager.start();
-      serverManager.activated();
       context = new InVMContext();
       serverManager.setContext(context);
+      serverManager.start();
+      serverManager.activated();
 
       String queueName = randomString();
       serverManager.createQueue(queueName, queueName);

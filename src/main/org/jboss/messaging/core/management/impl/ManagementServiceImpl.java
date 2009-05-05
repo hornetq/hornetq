@@ -703,7 +703,9 @@ public class ManagementServiceImpl implements ManagementService
 
             for (int i = 0; i < paramTypes.length; i++)
             {
-               if (params[i] != null && params[i].getClass() != paramTypes[i])
+               if (params[i] != null 
+                        && !(params[i].getClass().isArray())
+                        && params[i].getClass().isAssignableFrom(paramTypes[i].getClass()))
                {
                   continue;
                }
@@ -719,7 +721,6 @@ public class ManagementServiceImpl implements ManagementService
       {
          throw new IllegalArgumentException("no operation " + operation + "/" + params.length);
       }
-
       Object result = method.invoke(resource, params);
 
       return result;

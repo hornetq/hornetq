@@ -294,20 +294,42 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
 
+   // FIXME
+//   public void createConnectionFactory(final String name,
+//                                       final String liveTransportClassName,
+//                                       final Map<String, Object> liveTransportParams,
+//                                       final String[] jndiBindings) throws Exception
+//   {
+//      TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
+//
+//      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
+//
+//      server.createConnectionFactory(name, liveTC, jndiBindingsList);
+//
+//      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+//   }
+
    public void createConnectionFactory(final String name,
                                        final String liveTransportClassName,
                                        final Map<String, Object> liveTransportParams,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
+      String[] bindings = new String[jndiBindings.length];
+      for (int i = 0; i < jndiBindings.length; i++)
+      {
+         bindings[i] = jndiBindings[i].toString();
+         
+      }
+      
       TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
 
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
+      List<String> jndiBindingsList = Arrays.asList(bindings);
 
       server.createConnectionFactory(name, liveTC, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
-
+   
    public void createConnectionFactory(final String name,
                                        final String liveTransportClassName,
                                        final Map<String, Object> liveTransportParams,

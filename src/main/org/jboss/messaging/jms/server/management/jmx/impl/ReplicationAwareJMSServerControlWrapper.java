@@ -196,6 +196,14 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
    }
 
    public void createConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final Object[] jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory", liveTransportClassName, liveTransportParams, jndiBindings);
+   }
+   
+   public void createConnectionFactory(final String name,
                                        final String[] liveConnectorsTransportClassNames,
                                        final Map<String, Object>[] liveConnectorTransportParams,
                                        final String[] backupConnectorsTransportClassNames,

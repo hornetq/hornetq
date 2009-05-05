@@ -150,11 +150,17 @@ public interface JMSServerControlMBean
                                 boolean failoverOnServerShutdown,
                                 String[] jndiBindings) throws Exception;
 
+   // FIXME String[]Êdoes not work, they are converted to Object[]
+   //   void createConnectionFactory(String name,
+   //                                String liveTransportClassName,
+   //                                Map<String, Object> liveTransportParams,
+   //                                String[] jndiBindings) throws Exception;
+
    void createConnectionFactory(String name,
                                 String liveTransportClassName,
                                 Map<String, Object> liveTransportParams,
-                                String[] jndiBindings) throws Exception;
-
+                                Object[] jndiBindings) throws Exception;
+   
    void createConnectionFactory(String name,
                                 String liveTransportClassName,
                                 Map<String, Object> liveTransportParams,

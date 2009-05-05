@@ -198,6 +198,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
          for (Map<String, Object> coreMessage : coreMessages)
          {
             Map<String, Object> jmsMessage = JBossMessage.coreMaptoJMSMap(coreMessage);
+            jmsMessages[i++] = jmsMessage;
          }
          return jmsMessages;
       }

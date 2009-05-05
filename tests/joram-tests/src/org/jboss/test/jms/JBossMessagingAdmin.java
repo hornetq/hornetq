@@ -25,6 +25,7 @@ package org.jboss.test.jms;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -106,10 +107,7 @@ public class JBossMessagingAdmin implements Admin
                              "createConnectionFactory",
                              name,
                              NettyConnectorFactory.class.getName(),
-                             true,
-                             true,
-                             true,
-                             false,
+                             new HashMap<String, Object>(),
                              new String[] {name});
       }
       catch (Exception e)
@@ -219,7 +217,7 @@ public class JBossMessagingAdmin implements Admin
 
    public void startServer() throws Exception
    {
-      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), true);
+      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
      
       final BufferedReader br = new BufferedReader(isr);
