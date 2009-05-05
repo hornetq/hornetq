@@ -402,7 +402,7 @@ public class ManagementServiceImpl implements ManagementService
             }
             if (e != null)
             {
-               ManagementHelper.storeResult(message, exceptionMessage);
+               ManagementHelper.storeResult(reply, exceptionMessage);
             }
          }
       }
@@ -429,7 +429,7 @@ public class ManagementServiceImpl implements ManagementService
                }
                if (e != null)
                {
-                  ManagementHelper.storeResult(message, exceptionMessage);
+                  ManagementHelper.storeResult(reply, exceptionMessage);
                }
             }
          }
