@@ -25,7 +25,6 @@ package org.jboss.messaging.tests.integration.jms.cluster.management;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import javax.jms.Connection;
-import javax.jms.Session;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -38,7 +37,6 @@ import org.jboss.messaging.tests.integration.cluster.management.ReplicationAware
 import org.jboss.messaging.tests.integration.jms.server.management.JMSUtil;
 import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ReplicationAwareQueueControlWrapperTest
