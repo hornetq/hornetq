@@ -22,23 +22,17 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
-import org.jboss.messaging.jms.server.management.JMSMessageInfo;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 
 /**
@@ -56,7 +50,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
    // Attributes ----------------------------------------------------
 
    private final JBossQueue managedQueue;
-   
+
    private final QueueControlMBean coreQueueControl;
 
    private final String binding;
@@ -184,25 +178,27 @@ public class JMSQueueControl implements JMSQueueControlMBean
       return coreQueueControl.removeAllMessages();
    }
 
-   public TabularData listAllMessages() throws Exception
+   public Map<String, Object>[] listAllMessages() throws Exception
    {
       return listMessages(null);
    }
 
-   public TabularData listMessages(final String filterStr) throws Exception
+   public Map<String, Object>[] listMessages(final String filterStr) throws Exception
    {
       try
       {
          String filter = createFilterFromJMSSelector(filterStr);
-         TabularData coreMessages = coreQueueControl.listMessages(filter);
-         List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(coreMessages.size());
-         MessageInfo[] coreMessageInfos = MessageInfo.from(coreMessages);
-         for (MessageInfo messageInfo : coreMessageInfos)
+         Map<String, Object>[] coreMessages = coreQueueControl.listMessages(filter);
+
+         Map<String, Object>[] jmsMessages = new Map[coreMessages.length]; 
+         
+         int i = 0;
+         
+         for (Map<String, Object> coreMessage : coreMessages)
          {
-            JMSMessageInfo info = JMSMessageInfo.fromCoreMessage(messageInfo);
-            infos.add(info);
+            Map<String, Object> jmsMessage = JBossMessage.coreMaptoJMSMap(coreMessage);
          }
-         return JMSMessageInfo.toTabularData(infos);
+         return jmsMessages;
       }
       catch (MessagingException e)
       {
@@ -264,7 +260,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
-      
+
       return true;
    }
 
@@ -280,9 +276,10 @@ public class JMSQueueControl implements JMSQueueControlMBean
       return moveMatchingMessages(null, otherQueueName);
    }
 
-   public CompositeData listMessageCounter()
+   public Object[] listMessageCounter()
    {
-      return MessageCounterInfo.toCompositeData(counter);
+      //return MessageCounterInfo.toCompositeData(counter);
+      return new Object[0];
    }
 
    public String listMessageCounterAsHTML()
@@ -290,7 +287,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[] { counter });
    }
 
-   public TabularData listMessageCounterHistory() throws Exception
+   public Object[] listMessageCounterHistory() throws Exception
    {
       return MessageCounterHelper.listMessageCounterHistory(counter);
    }

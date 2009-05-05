@@ -25,21 +25,18 @@ package org.jboss.messaging.jms.server.management.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.management.openmbean.TabularData;
+import java.util.Map;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
-import org.jboss.messaging.jms.server.management.JMSMessageInfo;
-import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControlMBean;
 import org.jboss.messaging.utils.Pair;
 
@@ -71,7 +68,7 @@ public class TopicControl implements TopicControlMBean
    {
       return (selectorStr == null) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
    }
-   
+
    // Constructors --------------------------------------------------
 
    public TopicControl(final JBossTopic topic,
@@ -112,62 +109,65 @@ public class TopicControl implements TopicControlMBean
       return getMessageCount(DurabilityType.ALL);
    }
 
-   public int getDurableMessagesCount()
+   public int getDurableMessageCount()
    {
       return getMessageCount(DurabilityType.DURABLE);
    }
 
-   public int getNonDurableMessagesCount()
+   public int getNonDurableMessageCount()
    {
       return getMessageCount(DurabilityType.NON_DURABLE);
    }
 
-   public int getSubcriptionsCount()
+   public int getSubscriptionCount()
    {
       return getQueues(DurabilityType.ALL).size();
    }
 
-   public int getDurableSubcriptionsCount()
+   public int getDurableSubscriptionCount()
    {
       return getQueues(DurabilityType.DURABLE).size();
    }
 
-   public int getNonDurableSubcriptionsCount()
+   public int getNonDurableSubscriptionCount()
    {
       return getQueues(DurabilityType.NON_DURABLE).size();
    }
 
-   public TabularData listAllSubscriptions()
+   public Object[] listAllSubscriptions()
    {
-      return SubscriptionInfo.toTabularData(listSubscribersInfos(DurabilityType.ALL));
+      return listSubscribersInfos(DurabilityType.ALL);
    }
 
-   public TabularData listDurableSubscriptions()
+   public Object[] listDurableSubscriptions()
    {
-      return SubscriptionInfo.toTabularData(listSubscribersInfos(DurabilityType.DURABLE));
+      return listSubscribersInfos(DurabilityType.DURABLE);
    }
 
-   public TabularData listNonDurableSubscriptions()
+   public Object[] listNonDurableSubscriptions()
    {
-      return SubscriptionInfo.toTabularData(listSubscribersInfos(DurabilityType.NON_DURABLE));
+      return listSubscribersInfos(DurabilityType.NON_DURABLE);
    }
 
-   public TabularData listMessagesForSubscription(final String queueName) throws Exception
+   public Map<String, Object>[] listMessagesForSubscription(final String queueName) throws Exception
    {
       QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
       if (coreQueueControl == null)
       {
          throw new IllegalArgumentException("No subscriptions with name " + queueName);
       }
-      TabularData coreMessages = coreQueueControl.listAllMessages();
-      List<JMSMessageInfo> infos = new ArrayList<JMSMessageInfo>(coreMessages.size());
-      MessageInfo[] coreMessageInfos = MessageInfo.from(coreMessages);
-      for (MessageInfo messageInfo : coreMessageInfos)
+
+      Map<String, Object>[] coreMessages = coreQueueControl.listAllMessages();
+
+      Map<String, Object>[] jmsMessages = new Map[coreMessages.length];
+
+      int i = 0;
+
+      for (Map<String, Object> coreMessage : coreMessages)
       {
-         JMSMessageInfo info = JMSMessageInfo.fromCoreMessage(messageInfo);
-         infos.add(info);
+         jmsMessages[i++] = JBossMessage.coreMaptoJMSMap(coreMessage);
       }
-      return JMSMessageInfo.toTabularData(infos);
+      return jmsMessages;
    }
 
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
@@ -179,7 +179,7 @@ public class TopicControl implements TopicControlMBean
          throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
       }
       String filter = createFilterFromJMSSelector(filterStr);
-      return coreQueueControl.listMessages(filter).size();
+      return coreQueueControl.listMessages(filter).length;
    }
 
    public int removeAllMessages() throws Exception
@@ -223,10 +223,10 @@ public class TopicControl implements TopicControlMBean
 
    // Private -------------------------------------------------------
 
-   private SubscriptionInfo[] listSubscribersInfos(final DurabilityType durability)
+   private Object[] listSubscribersInfos(final DurabilityType durability)
    {
       List<QueueControlMBean> queues = getQueues(durability);
-      List<SubscriptionInfo> subInfos = new ArrayList<SubscriptionInfo>(queues.size());
+      List<Object[]> subInfos = new ArrayList<Object[]>(queues.size());
 
       for (QueueControlMBean queue : queues)
       {
@@ -241,15 +241,17 @@ public class TopicControl implements TopicControlMBean
          }
 
          String filter = queue.getFilter() != null ? queue.getFilter() : null;
-         SubscriptionInfo info = new SubscriptionInfo(queue.getName(),
-                                                      clientID,
-                                                      subName,
-                                                      queue.isDurable(),
-                                                      filter,
-                                                      queue.getMessageCount());
-         subInfos.add(info);
+
+         Object[] subscriptionInfo = new Object[6];
+         subscriptionInfo[0] = queue.getName();
+         subscriptionInfo[1] = clientID;
+         subscriptionInfo[2] = subName;
+         subscriptionInfo[3] = queue.isDurable();
+         subscriptionInfo[4] = queue.getMessageCount();
+
+         subInfos.add(subscriptionInfo);
       }
-      return (SubscriptionInfo[])subInfos.toArray(new SubscriptionInfo[subInfos.size()]);
+      return subInfos.toArray(new Object[subInfos.size()]);
    }
 
    private int getMessageCount(final DurabilityType durability)
@@ -273,11 +275,11 @@ public class TopicControl implements TopicControlMBean
          {
             QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
 
-            //Ignore the "special" subscription
+            // Ignore the "special" subscription
             if (!coreQueueControl.getName().equals(addressControl.getAddress()))
             {
                if (durability == DurabilityType.ALL || (durability == DurabilityType.DURABLE && coreQueueControl.isDurable()) ||
-                        (durability == DurabilityType.NON_DURABLE && !coreQueueControl.isDurable()))
+                   (durability == DurabilityType.NON_DURABLE && !coreQueueControl.isDurable()))
                {
                   matchingQueues.add(coreQueueControl);
                }

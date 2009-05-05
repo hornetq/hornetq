@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.CompositeData;
 
 /**
  * A BridgeControlMBean
@@ -42,7 +41,7 @@ public interface BridgeControlMBean extends MessagingComponentControlMBean
 
    String getTransformerClassName();
 
-   CompositeData getConnectorPair() throws Exception;
+   String[] getConnectorPair() throws Exception;
 
    String getDiscoveryGroupName();
 

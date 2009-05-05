@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -71,9 +69,9 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
             return (Long)proxy.retrieveAttributeValue("BroadcastPeriod");
          }
 
-         public TabularData getConnectorPairs()
+         public Object[] getConnectorPairs()
          {
-            return (TabularData)proxy.retrieveAttributeValue("ConnectorPairs");
+            return (Object[])proxy.retrieveAttributeValue("ConnectorPairs");
          }
 
          public String getGroupAddress()

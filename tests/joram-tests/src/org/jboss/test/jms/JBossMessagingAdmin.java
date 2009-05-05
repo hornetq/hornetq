@@ -219,7 +219,7 @@ public class JBossMessagingAdmin implements Admin
 
    public void startServer() throws Exception
    {
-      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), false);
+      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), true);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
      
       final BufferedReader br = new BufferedReader(isr);

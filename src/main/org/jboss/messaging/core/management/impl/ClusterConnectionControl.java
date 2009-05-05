@@ -22,12 +22,10 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
-import org.jboss.messaging.core.management.PairsInfo;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A ClusterConnectionControl
@@ -83,9 +81,22 @@ public class ClusterConnectionControl implements ClusterConnectionControlMBean
       return configuration.getRetryInterval();
    }
 
-   public TabularData getStaticConnectorNamePairs()
+   public Object[] getStaticConnectorNamePairs()
    {
-      return PairsInfo.toTabularData(configuration.getStaticConnectorNamePairs());
+      Object[] ret = new Object[configuration.getStaticConnectorNamePairs().size()];
+      
+      int i = 0;
+      for (Pair<String, String> pair: configuration.getStaticConnectorNamePairs())
+      {
+         String[] opair = new String[2];
+         
+         opair[0] = pair.a;
+         opair[1] = pair.b != null ? pair.b : null;
+         
+         ret[i++] = opair;
+      }
+      
+      return ret;            
    }
 
    public boolean isDuplicateDetection()

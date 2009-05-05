@@ -25,8 +25,6 @@ package org.jboss.messaging.tests.unit.core.deployers.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
@@ -246,7 +244,7 @@ public class QueueDeployerTest extends UnitTestCase
          return 0;
       }
 
-      public TabularData getConnectors() throws Exception
+      public Object[] getConnectors() throws Exception
       {
          // TODO Auto-generated method stub
          return null;
@@ -258,7 +256,7 @@ public class QueueDeployerTest extends UnitTestCase
          return 0;
       }
 
-      public List<String> getInterceptorClassNames()
+      public String[] getInterceptorClassNames()
       {
          // TODO Auto-generated method stub
          return null;

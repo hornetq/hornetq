@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.TabularData;
 
 /**
  * A BroadcastGroupControlMBean
@@ -42,5 +41,5 @@ public interface BroadcastGroupControlMBean extends MessagingComponentControlMBe
 
    long getBroadcastPeriod();
    
-   TabularData getConnectorPairs();
+   Object[] getConnectorPairs();
 }

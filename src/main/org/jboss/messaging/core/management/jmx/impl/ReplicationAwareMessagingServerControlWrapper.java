@@ -22,10 +22,7 @@
 
 package org.jboss.messaging.core.management.jmx.impl;
 
-import java.util.List;
-
 import javax.management.MBeanInfo;
-import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
@@ -89,7 +86,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getConnectionScanPeriod();
    }
 
-   public List<String> getInterceptorClassNames()
+   public String[] getInterceptorClassNames()
    {
       return localControl.getInterceptorClassNames();
    }
@@ -148,7 +145,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       return localControl.getScheduledThreadPoolMaxSize();
    }
-   
+
    public int getThreadPoolMaxSize()
    {
       return localControl.getThreadPoolMaxSize();
@@ -234,7 +231,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.listSessions(connectionID);
    }
 
-   public TabularData getConnectors() throws Exception
+   public Object[] getConnectors() throws Exception
    {
       return localControl.getConnectors();
    }

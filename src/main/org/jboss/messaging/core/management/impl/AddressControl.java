@@ -22,8 +22,11 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import java.util.Iterator;
+import java.util.Set;
+
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AddressControlMBean;
-import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -31,10 +34,6 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.utils.SimpleString;
-
-import javax.management.openmbean.TabularData;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -46,6 +45,8 @@ public class AddressControl implements AddressControlMBean
 {
 
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(AddressControl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -84,8 +85,8 @@ public class AddressControl implements AddressControlMBean
          Bindings bindings = postOffice.getBindingsForAddress(address);
          String[] queueNames = new String[bindings.getBindings().size()];
          int i = 0;
-         for (Binding binding: bindings.getBindings())
-         {           
+         for (Binding binding : bindings.getBindings())
+         {
             queueNames[i++] = binding.getUniqueName().toString();
          }
          return queueNames;
@@ -96,23 +97,25 @@ public class AddressControl implements AddressControlMBean
       }
    }
 
-   public TabularData getRoles() throws Exception
+   public Object[] getRoles() throws Exception
    {
       Set<Role> roles = securityRepository.getMatch(address.toString());
-      RoleInfo[] roleInfos = new RoleInfo[roles.size()];
+
+      Object[] objRoles = new Object[roles.size()];
+
       int i = 0;
       for (Role role : roles)
       {
-         roleInfos[i++] = new RoleInfo(role.getName(),
+         objRoles[i++] = new Object[] { role.getName(),
                                        CheckType.SEND.hasRole(role),
                                        CheckType.CONSUME.hasRole(role),
                                        CheckType.CREATE_DURABLE_QUEUE.hasRole(role),
                                        CheckType.DELETE_DURABLE_QUEUE.hasRole(role),
                                        CheckType.CREATE_NON_DURABLE_QUEUE.hasRole(role),
                                        CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
-                                       CheckType.MANAGE.hasRole(role));
+                                       CheckType.MANAGE.hasRole(role) };
       }
-      return RoleInfo.toTabularData(roleInfos);
+      return objRoles;
    }
 
    public synchronized void addRole(final String name,
@@ -125,7 +128,14 @@ public class AddressControl implements AddressControlMBean
                                     final boolean manage) throws Exception
    {
       Set<Role> roles = securityRepository.getMatch(address.toString());
-      Role newRole = new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
+      Role newRole = new Role(name,
+                              send,
+                              consume,
+                              createDurableQueue,
+                              deleteDurableQueue,
+                              createNonDurableQueue,
+                              deleteNonDurableQueue,
+                              manage);
       boolean added = roles.add(newRole);
       if (!added)
       {

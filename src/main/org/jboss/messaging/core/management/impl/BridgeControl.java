@@ -22,11 +22,8 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import javax.management.openmbean.CompositeData;
-
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.management.BridgeControlMBean;
-import org.jboss.messaging.core.management.PairsInfo;
 import org.jboss.messaging.core.server.cluster.Bridge;
 
 /**
@@ -59,9 +56,14 @@ public class BridgeControl implements BridgeControlMBean
 
    // BridgeControlMBean implementation ---------------------------
 
-   public CompositeData getConnectorPair() throws Exception
+   public String[] getConnectorPair() throws Exception
    {
-      return PairsInfo.toCompositeData(configuration.getConnectorPair());
+      String[] pair = new String[2];
+      
+      pair[0] = configuration.getConnectorPair().a;
+      pair[1] = configuration.getConnectorPair().b != null ? configuration.getConnectorPair().b : null;
+      
+      return pair;
    }
 
    public String getForwardingAddress()

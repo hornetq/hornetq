@@ -479,7 +479,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          managementService = server1.getManagementService();
       }
       TopicControlMBean topicControl = (TopicControlMBean)managementService.getResource(ResourceNames.JMS_TOPIC + topic.getTopicName());
-      assertEquals(0, topicControl.getSubcriptionsCount());
+      assertEquals(0, topicControl.getSubscriptionCount());
 
    }
 

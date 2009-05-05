@@ -39,7 +39,6 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
-import javax.management.openmbean.TabularData;
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -48,7 +47,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.NotificationType;
-import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -154,9 +152,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.getConnectionScanPeriod();
    }
 
-   public List<String> getInterceptorClassNames()
+   public String[] getInterceptorClassNames()
    {
-      return configuration.getInterceptorClassNames();
+      return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames().size()]);
    }
 
    public int getJournalBufferReuseSize()
@@ -464,10 +462,25 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return sessionIDs;
    }
 
-   public TabularData getConnectors() throws Exception
+   public Object[] getConnectors() throws Exception
    {
       Collection<TransportConfiguration> connectorConfigurations = configuration.getConnectorConfigurations().values();
-      return TransportConfigurationInfo.toTabularData(connectorConfigurations);
+      
+      Object[] ret = new Object[connectorConfigurations.size()];
+      
+      int i = 0;
+      for (TransportConfiguration config: connectorConfigurations)
+      {
+         Object[] tc = new Object[3];
+         
+         tc[0] = config.getName();
+         tc[1] = config.getFactoryClassName();
+         tc[2] = config.getParams();
+         
+         ret[i++] = tc;
+      }
+      
+      return ret;
    }
 
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception

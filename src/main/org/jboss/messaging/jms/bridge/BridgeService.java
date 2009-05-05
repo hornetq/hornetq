@@ -40,6 +40,7 @@ import org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl;
 public class BridgeService implements BridgeMBean
 {
    private static final Logger log = Logger.getLogger(BridgeService.class);
+   
    private JMSBridge bridge;
    
    private String sourceDestinationLookup;

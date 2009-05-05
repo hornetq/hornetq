@@ -199,10 +199,55 @@ public class ManagementHelperTest extends TestCase
       assertEquals(value3_3, mapRes3.get(key3_3));
       assertEquals(value3_4, mapRes3.get(key3_4));
       assertEquals(value3_5, mapRes3.get(key3_5));
-
-
-
    }
+   
+   public void testMapWithArrayValues() throws Exception
+   {
+      String resource = randomString();
+      String operationName = randomString();
+
+      Map<String, Object> map = new HashMap<String, Object>();
+      String key1 = randomString();
+      String[] val1 = new String[] { "a", "b", "c" };
+      
+      log.info("val1 type is " + val1);
+      
+      String key2 = randomString();
+      Integer[] val2 = new Integer[] { 1, 2, 3, 4, 5 };
+      
+      log.info("val2 type is " + val2);
+      
+      map.put(key1, val1);
+      map.put(key2, val2);
+      
+      Object[] params = new Object[] { "hello", map };
+
+      Message msg = new ClientMessageImpl(false, ChannelBuffers.dynamicBuffer(1024));
+      ManagementHelper.putOperationInvocation(msg, resource, operationName, params);
+
+      Object[] parameters = ManagementHelper.retrieveOperationParameters(msg);
+
+      assertEquals(params.length, parameters.length);
+      
+      assertEquals("hello", parameters[0]);
+      
+      Map map2 = (Map)parameters[1];
+      assertEquals(2, map2.size());
+      
+      Object[] arr1 = (Object[])map2.get(key1);
+      assertEquals(val1.length, arr1.length);
+      assertEquals(arr1[0], val1[0]);
+      assertEquals(arr1[1], val1[1]);
+      assertEquals(arr1[2], val1[2]);
+      
+      Object[] arr2 = (Object[])map2.get(key2);
+      assertEquals(val2.length, arr2.length);
+      assertEquals(arr2[0], val2[0]);
+      assertEquals(arr2[1], val2[1]);
+      assertEquals(arr2[2], val2[2]);
+      
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

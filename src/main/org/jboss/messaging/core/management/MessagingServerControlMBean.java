@@ -25,10 +25,6 @@ package org.jboss.messaging.core.management;
 import static javax.management.MBeanOperationInfo.ACTION;
 import static javax.management.MBeanOperationInfo.INFO;
 
-import java.util.List;
-
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.config.Configuration;
 
 /**
@@ -46,7 +42,7 @@ public interface MessagingServerControlMBean
 
    boolean isStarted();
 
-   List<String> getInterceptorClassNames();
+   String[] getInterceptorClassNames();
 
    boolean isClustered();
 
@@ -167,7 +163,7 @@ public interface MessagingServerControlMBean
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID")
    String connectionID) throws Exception;
 
-   TabularData getConnectors() throws Exception;
+   Object[] getConnectors() throws Exception;
 
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;
 

@@ -26,15 +26,12 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.HashMap;
 
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
-import org.jboss.messaging.core.management.TransportConfigurationInfo;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
@@ -120,14 +117,13 @@ public class MessagingServerControlTest extends ManagementTestBase
    {
       MessagingServerControlMBean serverControl = createManagementControl();
 
-      TabularData connectorData = serverControl.getConnectors();
+      Object[] connectorData = serverControl.getConnectors();
       assertNotNull(connectorData);
-      assertEquals(1, connectorData.size());
+      assertEquals(1, connectorData.length);
 
-      TransportConfiguration[] connectorConfigurations = TransportConfigurationInfo.from(connectorData);
-      assertEquals(1, connectorConfigurations.length);
+      Object[] config = (Object[])connectorData[0];           
 
-      assertEquals(connectorConfig.getName(), connectorConfigurations[0].getName());
+      assertEquals(connectorConfig.getName(), config[0]);
    }
 
    public void testCreateAndDestroyQueue() throws Exception

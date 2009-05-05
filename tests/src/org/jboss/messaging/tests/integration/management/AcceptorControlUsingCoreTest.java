@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import javax.management.openmbean.TabularData;
+import java.util.Map;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
@@ -64,8 +64,7 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
       return new AcceptorControlMBean()
       {
 
-         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                                         ResourceNames.CORE_ACCEPTOR + name);
+         private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_ACCEPTOR + name);
 
          public String getFactoryClassName()
          {
@@ -77,9 +76,9 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
             return (String)proxy.retrieveAttributeValue("Name");
          }
 
-         public TabularData getParameters()
+         public Map<String, Object> getParameters()
          {
-            return (TabularData)proxy.retrieveAttributeValue("Parameters");
+            return (Map<String, Object>)proxy.retrieveAttributeValue("Parameters");
          }
 
          public void pause() throws Exception

@@ -30,8 +30,9 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import java.util.Map;
+
 import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
@@ -43,7 +44,6 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -303,15 +303,14 @@ public class QueueControlTest extends ManagementTestBase
       // unscheduled message
       producer.send(session.createClientMessage(false));
 
-      TabularData tabularData = queueControl.listScheduledMessages();
-      assertEquals(1, tabularData.size());
-      MessageInfo[] messageInfos = MessageInfo.from(tabularData);
-      assertEquals(Integer.toString(intValue), messageInfos[0].getProperties().get("key"));
+      Map<String, Object>[] messages = queueControl.listScheduledMessages();
+      assertEquals(1, messages.length);     
+      assertEquals(Integer.toString(intValue), messages[0].get("key"));
 
       Thread.sleep(delay);
 
-      tabularData = queueControl.listScheduledMessages();
-      assertEquals(0, tabularData.size());
+      messages = queueControl.listScheduledMessages();
+      assertEquals(0, messages.length);
 
       consumeMessages(2, session, queue);
 
@@ -358,15 +357,14 @@ public class QueueControlTest extends ManagementTestBase
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
 
-      TabularData tabularData = queueControl.listAllMessages();
-      assertEquals(1, tabularData.size());
-      MessageInfo[] messageInfos = MessageInfo.from(tabularData);
-      assertEquals(Integer.toString(intValue), messageInfos[0].getProperties().get("key"));
+      Map<String, Object>[] messages =  queueControl.listAllMessages();
+      assertEquals(1, messages.length);     
+      assertEquals(Integer.toString(intValue), messages[0].get("key"));
 
       consumeMessages(1, session, queue);
 
-      tabularData = queueControl.listAllMessages();
-      assertEquals(0, tabularData.size());
+      messages = queueControl.listAllMessages();
+      assertEquals(0, messages.length);
 
       session.deleteQueue(queue);
    }
@@ -392,15 +390,14 @@ public class QueueControlTest extends ManagementTestBase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      TabularData tabularData = queueControl.listMessages(filter);
-      assertEquals(1, tabularData.size());
-      MessageInfo[] messageInfos = MessageInfo.from(tabularData);
-      assertEquals(Long.toString(matchingValue), messageInfos[0].getProperties().get("key"));
+      Map<String, Object>[] messages = queueControl.listMessages(filter);
+      assertEquals(1, messages.length);
+      assertEquals(Long.toString(matchingValue), messages[0].get("key"));
 
       consumeMessages(2, session, queue);
 
-      tabularData = queueControl.listMessages(filter);
-      assertEquals(0, tabularData.size());
+      messages = queueControl.listMessages(filter);
+      assertEquals(0, messages.length);
 
       session.deleteQueue(queue);
    }
@@ -571,9 +568,9 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(0, otherQueueControl.getMessageCount());
 
       // the message IDs are set on the server
-      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
-      assertEquals(2, messageInfos.length);
-      long messageID = messageInfos[0].getID();
+      Map<String, Object>[] messages = queueControl.listAllMessages();   
+      assertEquals(2, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
 
       boolean moved = queueControl.moveMessage(messageID, otherQueue.toString());
       assertTrue(moved);
@@ -603,9 +600,9 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
+      Map<String, Object>[] messages = queueControl.listAllMessages(); 
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
 
       // moved all messages to unknown queue
       try
@@ -725,9 +722,9 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
-      assertEquals(2, messageInfos.length);
-      long messageID = messageInfos[0].getID();
+      Map<String, Object>[] messages = queueControl.listAllMessages(); 
+      assertEquals(2, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
 
       // delete 1st message
       boolean deleted = queueControl.removeMessage(messageID);
@@ -834,9 +831,9 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(0, expiryQueueControl.getMessageCount());
 
       // the message IDs are set on the server
-      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
+      Map<String, Object>[] messages = queueControl.listAllMessages();       
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
 
       queueControl.setExpiryAddress(expiryAddress.toString());
       boolean expired = queueControl.expireMessage(messageID);
@@ -872,9 +869,9 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
-      assertEquals(2, messageInfos.length);
-      long messageID = messageInfos[0].getID();
+      Map<String, Object>[] messages = queueControl.listAllMessages();       
+      assertEquals(2, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
 
       queueControl.setDeadLetterAddress(deadLetterAddress.toString());
 
@@ -913,9 +910,9 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
+      Map<String, Object>[] messages = queueControl.listAllMessages();       
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
 
       boolean priorityChanged = queueControl.changeMessagePriority(messageID, newPriority);
       assertTrue(priorityChanged);
@@ -946,9 +943,9 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      MessageInfo[] messageInfos = MessageInfo.from(queueControl.listAllMessages());
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
+      Map<String, Object>[] messages = queueControl.listAllMessages();       
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
 
       try
       {
@@ -980,43 +977,46 @@ public class QueueControlTest extends ManagementTestBase
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
-      CompositeData compositeData = queueControl.listMessageCounter();
-      MessageCounterInfo info = MessageCounterInfo.from(compositeData);
-      assertEquals(0, info.getDepth());
-      assertEquals(0, info.getCount());
-
-      ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
-
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      compositeData = queueControl.listMessageCounter();
-      info = MessageCounterInfo.from(compositeData);
-      assertEquals(1, info.getDepth());
-      assertEquals(1, info.getDepthDelta());
-      assertEquals(1, info.getCount());
-      assertEquals(1, info.getCountDelta());
-
-      producer.send(session.createClientMessage(false));
-
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      compositeData = queueControl.listMessageCounter();
-      info = MessageCounterInfo.from(compositeData);
-      assertEquals(2, info.getDepth());
-      assertEquals(1, info.getDepthDelta());
-      assertEquals(2, info.getCount());
-      assertEquals(1, info.getCountDelta());
-
-      consumeMessages(2, session, queue);
-
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
-      compositeData = queueControl.listMessageCounter();
-      info = MessageCounterInfo.from(compositeData);
-      assertEquals(0, info.getDepth());
-      assertEquals(-2, info.getDepthDelta());
-      assertEquals(2, info.getCount());
-      assertEquals(0, info.getCountDelta());
-
-      session.deleteQueue(queue);
+      Object[] compositeData = queueControl.listMessageCounter();
+    
+      fail("Re-enable test");
+      
+      //TODO re-enable this
+//      assertEquals(0, info.getDepth());
+//      assertEquals(0, info.getCount());
+//
+//      ClientProducer producer = session.createProducer(address);
+//      producer.send(session.createClientMessage(false));
+//
+//      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
+//      compositeData = queueControl.listMessageCounter();
+//      info = MessageCounterInfo.from(compositeData);
+//      assertEquals(1, info.getDepth());
+//      assertEquals(1, info.getDepthDelta());
+//      assertEquals(1, info.getCount());
+//      assertEquals(1, info.getCountDelta());
+//
+//      producer.send(session.createClientMessage(false));
+//
+//      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
+//      compositeData = queueControl.listMessageCounter();
+//      info = MessageCounterInfo.from(compositeData);
+//      assertEquals(2, info.getDepth());
+//      assertEquals(1, info.getDepthDelta());
+//      assertEquals(2, info.getCount());
+//      assertEquals(1, info.getCountDelta());
+//
+//      consumeMessages(2, session, queue);
+//
+//      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
+//      compositeData = queueControl.listMessageCounter();
+//      info = MessageCounterInfo.from(compositeData);
+//      assertEquals(0, info.getDepth());
+//      assertEquals(-2, info.getDepthDelta());
+//      assertEquals(2, info.getCount());
+//      assertEquals(0, info.getCountDelta());
+//
+//      session.deleteQueue(queue);
    }
    
    public void testResetMessageCounter() throws Exception
@@ -1031,43 +1031,47 @@ public class QueueControlTest extends ManagementTestBase
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
-      CompositeData compositeData = queueControl.listMessageCounter();
-      MessageCounterInfo info = MessageCounterInfo.from(compositeData);
-      assertEquals(0, info.getDepth());
-      assertEquals(0, info.getCount());
-
-      ClientProducer producer = session.createProducer(address);
-      producer.send(session.createClientMessage(false));
-
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      compositeData = queueControl.listMessageCounter();
-      info = MessageCounterInfo.from(compositeData);
-      assertEquals(1, info.getDepth());
-      assertEquals(1, info.getDepthDelta());
-      assertEquals(1, info.getCount());
-      assertEquals(1, info.getCountDelta());
-
-      consumeMessages(1, session, queue);
-
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
-      compositeData = queueControl.listMessageCounter();
-      info = MessageCounterInfo.from(compositeData);
-      assertEquals(0, info.getDepth());
-      assertEquals(-1, info.getDepthDelta());
-      assertEquals(1, info.getCount());
-      assertEquals(0, info.getCountDelta());
-
-      queueControl.resetMessageCounter();
+      Object[] compositeData = queueControl.listMessageCounter();
       
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
-      compositeData = queueControl.listMessageCounter();
-      info = MessageCounterInfo.from(compositeData);
-      assertEquals(0, info.getDepth());
-      assertEquals(0, info.getDepthDelta());
-      assertEquals(0, info.getCount());
-      assertEquals(0, info.getCountDelta());
+      fail("re-enable test");
       
-      session.deleteQueue(queue);
+      //TODO re-enable
+//      MessageCounterInfo info = MessageCounterInfo.from(compositeData);
+//      assertEquals(0, info.getDepth());
+//      assertEquals(0, info.getCount());
+//
+//      ClientProducer producer = session.createProducer(address);
+//      producer.send(session.createClientMessage(false));
+//
+//      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
+//      compositeData = queueControl.listMessageCounter();
+//      info = MessageCounterInfo.from(compositeData);
+//      assertEquals(1, info.getDepth());
+//      assertEquals(1, info.getDepthDelta());
+//      assertEquals(1, info.getCount());
+//      assertEquals(1, info.getCountDelta());
+//
+//      consumeMessages(1, session, queue);
+//
+//      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
+//      compositeData = queueControl.listMessageCounter();
+//      info = MessageCounterInfo.from(compositeData);
+//      assertEquals(0, info.getDepth());
+//      assertEquals(-1, info.getDepthDelta());
+//      assertEquals(1, info.getCount());
+//      assertEquals(0, info.getCountDelta());
+//
+//      queueControl.resetMessageCounter();
+//      
+//      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
+//      compositeData = queueControl.listMessageCounter();
+//      info = MessageCounterInfo.from(compositeData);
+//      assertEquals(0, info.getDepth());
+//      assertEquals(0, info.getDepthDelta());
+//      assertEquals(0, info.getCount());
+//      assertEquals(0, info.getCountDelta());
+//      
+//      session.deleteQueue(queue);
    }
    
    public void testListMessageCounterAsHTML() throws Exception
@@ -1097,8 +1101,8 @@ public class QueueControlTest extends ManagementTestBase
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
 
-      TabularData tabularData = queueControl.listMessageCounterHistory();
-      assertEquals(1, tabularData.size());
+      Object[] tabularData = queueControl.listMessageCounterHistory();
+      assertEquals(1, tabularData.length);
 
       session.deleteQueue(queue);
    }

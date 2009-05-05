@@ -22,10 +22,11 @@
 
 package org.jboss.messaging.jms.server.management.jmx.impl;
 
-import javax.management.MBeanInfo;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
+import java.util.Map;
 
+import javax.management.MBeanInfo;
+
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
@@ -43,6 +44,8 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
 {
 
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(ReplicationAwareJMSQueueControlWrapper.class);
 
    // Attributes ----------------------------------------------------
 
@@ -116,12 +119,12 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.isTemporary();
    }
 
-   public TabularData listAllMessages() throws Exception
+   public Map<String, Object>[] listAllMessages() throws Exception
    {
       return localControl.listAllMessages();
    }
 
-   public CompositeData listMessageCounter()
+   public Object[] listMessageCounter()
    {
       return localControl.listMessageCounter();
    }
@@ -131,7 +134,7 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.listMessageCounterAsHTML();
    }
 
-   public TabularData listMessageCounterHistory() throws Exception
+   public Object[] listMessageCounterHistory() throws Exception
    {
       return localControl.listMessageCounterHistory();
    }
@@ -141,7 +144,7 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.listMessageCounterHistoryAsHTML();
    }
 
-   public TabularData listMessages(String filter) throws Exception
+   public Map<String, Object>[] listMessages(String filter) throws Exception
    {
       return localControl.listMessages(filter);
    }

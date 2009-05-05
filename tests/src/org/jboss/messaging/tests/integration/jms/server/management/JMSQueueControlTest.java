@@ -22,29 +22,12 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -52,8 +35,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
 import javax.naming.Context;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -153,12 +134,11 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(2, queueControl.getMessageCount());
 
-      TabularData data = queueControl.listAllMessages();
-      assertEquals(2, data.size());
+      Map<String, Object>[] data = queueControl.listAllMessages();
+      assertEquals(2, data.length);
 
-      // retrieve the first message info
-      CompositeData compositeData = (CompositeData)data.values().iterator().next();
-      String messageID = (String)compositeData.get("JMSMessageID");
+      // retrieve the first message info      
+      String messageID = (String)data[0].get("JMSMessageID");
 
       queueControl.removeMessage(messageID);
 
@@ -249,11 +229,10 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(1, queueControl.getMessageCount());
 
-      TabularData data = queueControl.listAllMessages();
-      // retrieve the first message info
-      CompositeData compositeData = (CompositeData)data.values().iterator().next();
-      String messageID = (String)compositeData.get("JMSMessageID");
-      int currentPriority = (Integer)compositeData.get("JMSPriority");
+      Map<String, Object>[] data = queueControl.listAllMessages();
+      // retrieve the first message info     
+      String messageID = (String)data[0].get("JMSMessageID");
+      int currentPriority = (Integer)data[0].get("JMSPriority");
       int newPriority = 9;
 
       assertTrue(newPriority != currentPriority);

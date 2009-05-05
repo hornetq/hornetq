@@ -42,7 +42,7 @@ public interface ClusterConnectionControlMBean extends MessagingComponentControl
 
    int getMaxHops();
 
-   TabularData getStaticConnectorNamePairs();
+   Object[] getStaticConnectorNamePairs();
 
    String getDiscoveryGroupName();
 

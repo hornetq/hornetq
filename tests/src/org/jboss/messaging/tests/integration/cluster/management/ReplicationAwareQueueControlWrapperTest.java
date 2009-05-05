@@ -22,30 +22,12 @@
 
 package org.jboss.messaging.tests.integration.cluster.management;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import javax.management.openmbean.TabularData;
+import java.util.Map;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -54,7 +36,6 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.MessageInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.tests.util.RandomUtil;
@@ -68,7 +49,7 @@ import org.jboss.messaging.utils.SimpleString;
 public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTestBase
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(ReplicationAwareQueueControlWrapperTest.class);
 
    // Attributes ----------------------------------------------------
@@ -87,7 +68,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
    {
       byte oldPriority = (byte)1;
       byte newPriority = (byte)8;
-      
+
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
       QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
@@ -99,36 +80,32 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       ClientMessage message = session.createClientMessage(false);
       message.setPriority(oldPriority);
       producer.send(message);
-      
+
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      TabularData messages = liveQueueControl.listAllMessages();
-      MessageInfo[] messageInfos = MessageInfo.from(messages);
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
-      assertEquals(oldPriority, messageInfos[0].getPriority());
-      
-       messages = backupQueueControl.listAllMessages();
-       messageInfos = MessageInfo.from(messages);
-      assertEquals(1, messageInfos.length);
-      assertEquals(oldPriority, messageInfos[0].getPriority());
-      
+      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
+      assertEquals(oldPriority, messages[0].get("Priority"));
+
+      messages = backupQueueControl.listAllMessages();
+      assertEquals(1, messages.length);
+      assertEquals(oldPriority, messages[0].get("Priority"));
+
       assertTrue(liveQueueControl.changeMessagePriority(messageID, newPriority));
 
       // check the priority is changed on both live & backup nodes
       messages = liveQueueControl.listAllMessages();
-      messageInfos = MessageInfo.from(messages);
-      assertEquals(1, messageInfos.length);
-      assertEquals(newPriority, messageInfos[0].getPriority());
+      assertEquals(1, messages.length);
+      assertEquals(newPriority, messages[0].get("Priority"));
 
       messages = backupQueueControl.listAllMessages();
-      messageInfos = MessageInfo.from(messages);
-      assertEquals(1, messageInfos.length);
-      assertEquals(newPriority, messageInfos[0].getPriority());
+      assertEquals(1, messages.length);
+      assertEquals(newPriority, messages[0].get("Priority"));
    }
-   
+
    public void testExpireMessage() throws Exception
    {
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
@@ -140,23 +117,22 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       // send 1 message
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
-      
+
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      TabularData messages = liveQueueControl.listAllMessages();
-      MessageInfo[] messageInfos = MessageInfo.from(messages);
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
-      
+      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
+
       assertTrue(liveQueueControl.expireMessage(messageID));
-      
+
       // check the message is no longer in the queue on both live & backup nodes
       assertEquals(0, liveQueueControl.getMessageCount());
       assertEquals(0, backupQueueControl.getMessageCount());
    }
-   
+
    public void testExpireMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -177,18 +153,18 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       ClientMessage matchingMessage = session.createClientMessage(false);
       matchingMessage.putLongProperty(key, matchingValue);
       producer.send(matchingMessage);
-      
+
       // check messages are on both live & backup nodes
       assertEquals(2, liveQueueControl.getMessageCount());
       assertEquals(2, backupQueueControl.getMessageCount());
 
       assertEquals(1, liveQueueControl.expireMessages(key + " =" + matchingValue));
-      
+
       // check there is only 1 message in the queue on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
    }
-   
+
    public void testMoveAllMessages() throws Exception
    {
       SimpleString otherQueue = randomSimpleString();
@@ -221,16 +197,15 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       // moved all messages to otherQueue
       int movedMessagesCount = liveQueueControl.moveAllMessages(otherQueue.toString());
       assertEquals(1, movedMessagesCount);
-      
+
       assertEquals(0, liveQueueControl.getMessageCount());
       assertEquals(0, backupQueueControl.getMessageCount());
       assertEquals(1, liveOtherQueueControl.getMessageCount());
       assertEquals(1, backupOtherQueueControl.getMessageCount());
 
-
       session.deleteQueue(otherQueue);
    }
-   
+
    public void testMoveMatchingMessages() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -261,7 +236,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
       // moved matching messages to otherQueue
-      int movedMatchedMessagesCount = liveQueueControl.moveMatchingMessages(key + " =" + matchingValue, otherQueue.toString());
+      int movedMatchedMessagesCount = liveQueueControl.moveMatchingMessages(key + " =" + matchingValue,
+                                                                            otherQueue.toString());
       assertEquals(1, movedMatchedMessagesCount);
 
       assertEquals(1, liveQueueControl.getMessageCount());
@@ -271,7 +247,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       session.deleteQueue(otherQueue);
    }
-   
+
    public void testMoveMessage() throws Exception
    {
       SimpleString otherQueue = randomSimpleString();
@@ -289,20 +265,19 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       // send 1 message
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
-      
+
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
       assertEquals(0, liveOtherQueueControl.getMessageCount());
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
-      TabularData messages = liveQueueControl.listAllMessages();
-      MessageInfo[] messageInfos = MessageInfo.from(messages);
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
-            
+      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
+
       assertTrue(liveQueueControl.moveMessage(messageID, otherQueue.toString()));
-      
+
       // check the message is no longer in the queue on both live & backup nodes
       assertEquals(0, liveQueueControl.getMessageCount());
       assertEquals(0, backupQueueControl.getMessageCount());
@@ -311,7 +286,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       session.deleteQueue(otherQueue);
    }
-   
+
    public void testRemoveAllMessages() throws Exception
    {
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
@@ -365,7 +340,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
    }
-   
+
    public void testRemoveMessage() throws Exception
    {
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
@@ -377,23 +352,22 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       // send 1 message
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
-      
+
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      TabularData messages = liveQueueControl.listAllMessages();
-      MessageInfo[] messageInfos = MessageInfo.from(messages);
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
-      
+      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
+
       assertTrue(liveQueueControl.removeMessage(messageID));
-      
+
       // check the message is no longer in the queue on both live & backup nodes
       assertEquals(0, liveQueueControl.getMessageCount());
       assertEquals(0, backupQueueControl.getMessageCount());
    }
-   
+
    public void testSendMessageToDeadLetterAddress() throws Exception
    {
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
@@ -405,27 +379,26 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       // send 1 message
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
-      
+
       // check it is on both live & backup nodes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      TabularData messages = liveQueueControl.listAllMessages();
-      MessageInfo[] messageInfos = MessageInfo.from(messages);
-      assertEquals(1, messageInfos.length);
-      long messageID = messageInfos[0].getID();
-      
+      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      assertEquals(1, messages.length);
+      long messageID = (Long)messages[0].get("MessageID");
+
       assertTrue(liveQueueControl.sendMessageToDeadLetterAddress(messageID));
-      
+
       // check the message is no longer in the queue on both live & backup nodes
       assertEquals(0, liveQueueControl.getMessageCount());
       assertEquals(0, backupQueueControl.getMessageCount());
    }
-   
+
    public void testSetDeadLetterAddress() throws Exception
    {
       String deadLetterAddress = randomString();
-      
+
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
       QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
@@ -434,17 +407,17 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       assertNull(liveQueueControl.getDeadLetterAddress());
       assertNull(backupQueueControl.getDeadLetterAddress());
-      
+
       liveQueueControl.setDeadLetterAddress(deadLetterAddress);
-      
+
       assertEquals(deadLetterAddress, liveQueueControl.getDeadLetterAddress());
       assertEquals(deadLetterAddress, backupQueueControl.getDeadLetterAddress());
    }
-   
+
    public void testSetExpiryAddress() throws Exception
    {
       String expiryAddress = randomString();
-      
+
       QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
       QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
@@ -453,9 +426,9 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       assertNull(liveQueueControl.getExpiryAddress());
       assertNull(backupQueueControl.getExpiryAddress());
-      
+
       liveQueueControl.setExpiryAddress(expiryAddress);
-      
+
       assertEquals(expiryAddress, liveQueueControl.getExpiryAddress());
       assertEquals(expiryAddress, backupQueueControl.getExpiryAddress());
    }

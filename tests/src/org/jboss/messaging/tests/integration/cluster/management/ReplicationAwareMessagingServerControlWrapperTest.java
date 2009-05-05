@@ -161,19 +161,23 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       Thread.sleep(liveServerControl.getMessageCounterSamplePeriod() * 2);
 
       // check the count is to 1 on both live & backup nodes
-      CompositeData counter = liveQueueControl.listMessageCounter();
-      assertEquals((long)1, counter.get("count"));
-      counter = backupQueueControl.listMessageCounter();
-      assertEquals((long)1, counter.get("count"));
-
-      liveServerControl.resetAllMessageCounters();
-      Thread.sleep(liveServerControl.getMessageCounterSamplePeriod() * 2);
-
-      // check the count has been reset to 0 on both live & backup nodes
-      counter = liveQueueControl.listMessageCounter();
-      assertEquals((long)0, counter.get("count"));
-      counter = backupQueueControl.listMessageCounter();
-      assertEquals((long)0, counter.get("count"));
+      Object[] counter = liveQueueControl.listMessageCounter();
+      
+      fail("re-enable test");
+//      assertEquals((long)1, counter.get("count"));
+//      counter = backupQueueControl.listMessageCounter();
+//      assertEquals((long)1, counter.get("count"));
+//
+//      liveServerControl.resetAllMessageCounters();
+//      Thread.sleep(liveServerControl.getMessageCounterSamplePeriod() * 2);
+//
+//      // check the count has been reset to 0 on both live & backup nodes
+//      counter = liveQueueControl.listMessageCounter();
+//      assertEquals((long)0, counter.get("count"));
+//      counter = backupQueueControl.listMessageCounter();
+//      assertEquals((long)0, counter.get("count"));
+      
+      //TODO re-enable test
    }
 
    public void testSetMessageCounterSamplePeriod() throws Exception

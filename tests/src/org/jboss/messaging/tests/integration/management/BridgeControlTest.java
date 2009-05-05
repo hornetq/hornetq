@@ -90,9 +90,9 @@ public class BridgeControlTest extends ManagementTestBase
       assertEquals(bridgeConfig.isFailoverOnServerShutdown(), bridgeControl.isFailoverOnServerShutdown());
       assertEquals(bridgeConfig.isUseDuplicateDetection(), bridgeControl.isUseDuplicateDetection());
 
-      CompositeData connectorPairData = bridgeControl.getConnectorPair();
-      assertEquals(bridgeConfig.getConnectorPair().a, connectorPairData.get("a"));
-      assertEquals(bridgeConfig.getConnectorPair().b, connectorPairData.get("b"));
+      String[] connectorPairData = bridgeControl.getConnectorPair();
+      assertEquals(bridgeConfig.getConnectorPair().a, connectorPairData[0]);
+      assertEquals(bridgeConfig.getConnectorPair().b, connectorPairData[1]);
 
       assertTrue(bridgeControl.isStarted());
    }

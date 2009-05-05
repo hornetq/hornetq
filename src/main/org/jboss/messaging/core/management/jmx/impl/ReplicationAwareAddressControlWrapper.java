@@ -23,7 +23,6 @@
 package org.jboss.messaging.core.management.jmx.impl;
 
 import javax.management.MBeanInfo;
-import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.AddressControlMBean;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
@@ -37,7 +36,8 @@ import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStandardMBeanWrapper implements AddressControlMBean
+public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
+         AddressControlMBean
 {
 
    // Constants -----------------------------------------------------
@@ -53,7 +53,9 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
    public ReplicationAwareAddressControlWrapper(final AddressControl localAddressControl,
                                                 final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(ResourceNames.CORE_ADDRESS + localAddressControl.getAddress(), AddressControlMBean.class, replicationInvoker);
+      super(ResourceNames.CORE_ADDRESS + localAddressControl.getAddress(),
+            AddressControlMBean.class,
+            replicationInvoker);
 
       this.localAddressControl = localAddressControl;
    }
@@ -70,7 +72,7 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
       return localAddressControl.getQueueNames();
    }
 
-   public TabularData getRoles() throws Exception
+   public Object[] getRoles() throws Exception
    {
       return localAddressControl.getRoles();
    }
@@ -81,15 +83,23 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
    }
 
    public void addRole(final String name,
-                                    final boolean send,
-                                    final boolean consume,
-                                    final boolean createDurableQueue,
-                                    final boolean deleteDurableQueue,
-                                    final boolean createNonDurableQueue,
-                                    final boolean deleteNonDurableQueue,
-                                    final boolean manage) throws Exception
+                       final boolean send,
+                       final boolean consume,
+                       final boolean createDurableQueue,
+                       final boolean deleteDurableQueue,
+                       final boolean createNonDurableQueue,
+                       final boolean deleteNonDurableQueue,
+                       final boolean manage) throws Exception
    {
-      replicationAwareInvoke("addRole", name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
+      replicationAwareInvoke("addRole",
+                             name,
+                             send,
+                             consume,
+                             createDurableQueue,
+                             deleteDurableQueue,
+                             createNonDurableQueue,
+                             deleteNonDurableQueue,
+                             manage);
    }
 
    // StandardMBean overrides ---------------------------------------

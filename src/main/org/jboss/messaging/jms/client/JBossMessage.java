@@ -17,8 +17,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -89,6 +91,40 @@ public class JBossMessage implements javax.jms.Message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
 
    public static final byte TYPE = 0;
+   
+   public static Map<String, Object> coreMaptoJMSMap(final Map<String, Object> coreMessage)
+   {
+      Map<String, Object> jmsMessage = new HashMap<String, Object>();
+
+      String deliveryMode = (Boolean)coreMessage.get("Durable") ? "PERSISTENT" : "NON_PERSISTENT";
+      byte priority = (Byte)coreMessage.get("Priority");
+      long timestamp = (Long)coreMessage.get("Timestamp");
+      long expiration = (Long)coreMessage.get("Expiration");
+
+      jmsMessage.put("JMSPriority", priority);
+      jmsMessage.put("JMSTimestamp", timestamp);
+      jmsMessage.put("JMSExpiration", expiration);
+      jmsMessage.put("JMSDeliveryMode", deliveryMode);
+
+      for (Map.Entry<String, Object> entry : coreMessage.entrySet())
+      {
+         if (entry.getKey().equals("MessageID") || entry.getKey().equals("Destination") ||
+             entry.getKey().equals("Type") ||
+             entry.getKey().equals("Durable") ||
+             entry.getKey().equals("Expiration") ||
+             entry.getKey().equals("Timestamp") ||
+             entry.getKey().equals("Priority"))
+         {
+            // Ignore
+         }
+         else
+         {
+            jmsMessage.put(entry.getKey(), entry.getValue());
+         }
+      }
+      
+      return jmsMessage;
+   }
 
    // Static --------------------------------------------------------
 

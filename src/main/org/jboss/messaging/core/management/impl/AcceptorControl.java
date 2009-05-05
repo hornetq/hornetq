@@ -22,11 +22,10 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import javax.management.openmbean.TabularData;
+import java.util.Map;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
-import org.jboss.messaging.core.management.PropertiesInfo;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 
 /**
@@ -69,9 +68,9 @@ public class AcceptorControl implements AcceptorControlMBean
       return configuration.getName();
    }
 
-   public TabularData getParameters()
+   public Map<String, Object> getParameters()
    {
-      return PropertiesInfo.toTabularData(configuration.getParams());
+      return configuration.getParams();
    }
 
    public boolean isStarted()

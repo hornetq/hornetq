@@ -454,12 +454,12 @@ public class LocalTestServer implements Server, Runnable
                                                                                                  objectName,
                                                                                                  TopicControlMBean.class,
                                                                                                  false);
-      TabularData subInfos = topic.listAllSubscriptions();
+      Object[] subInfos = topic.listAllSubscriptions();
       List<String> subs = new ArrayList<String>();
-      for (Object o : subInfos.values())
+      for (Object o : subInfos)
       {
-         CompositeData data = (CompositeData)o;
-         subs.add((String)data.get("name"));
+         Object[] data = (Object[])o;
+         subs.add((String)data[0]);
       }
       return subs;
    }

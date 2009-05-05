@@ -43,9 +43,8 @@ import org.jboss.messaging.utils.json.JSONObject;
 public class ManagementHelper
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(ManagementHelper.class);
 
+   private static final Logger log = Logger.getLogger(ManagementHelper.class);
 
    public static final SimpleString HDR_RESOURCE_NAME = new SimpleString("_JBM_ResourceName");
 
@@ -126,11 +125,11 @@ public class ManagementHelper
    private static JSONArray toJSONArray(final Object[] array) throws Exception
    {
       JSONArray jsonArray = new JSONArray();
-
+      
       for (int i = 0; i < array.length; i++)
       {
          Object parameter = array[i];
-
+         
          if (parameter instanceof Map)
          {
             Map<String, Object> map = (Map<String, Object>)parameter;
@@ -143,7 +142,17 @@ public class ManagementHelper
 
                Object val = entry.getValue();
 
-               checkType(val);
+               if (val != null)
+               {
+                  if (val.getClass().isArray())
+                  {                   
+                     val = toJSONArray((Object[])val);
+                  }
+                  else
+                  {
+                     checkType(val);
+                  }
+               }
 
                jsonObject.put(key, val);
             }
@@ -152,19 +161,26 @@ public class ManagementHelper
          }
          else
          {
-            Class clz = parameter.getClass();
-
-            if (clz.isArray())
+            if (parameter != null)
             {
-               Object[] innerArray = (Object[])parameter;
-
-               jsonArray.put(toJSONArray(innerArray));
+               Class clz = parameter.getClass();
+   
+               if (clz.isArray())
+               {
+                  Object[] innerArray = (Object[])parameter;
+   
+                  jsonArray.put(toJSONArray(innerArray));
+               }
+               else
+               {
+                  checkType(parameter);
+   
+                  jsonArray.put(parameter);
+               }
             }
             else
             {
-               checkType(parameter);
-
-               jsonArray.put(parameter);
+               jsonArray.put((Object)null);
             }
          }
       }
@@ -183,7 +199,7 @@ public class ManagementHelper
          if (val instanceof JSONArray)
          {
             Object[] inner = fromJSONArray((JSONArray)val);
-            
+
             array[i] = inner;
          }
          else if (val instanceof JSONObject)
@@ -193,12 +209,17 @@ public class ManagementHelper
             Map<String, Object> map = new HashMap<String, Object>();
 
             Iterator<String> iter = jsonObject.keys();
-
+            
             while (iter.hasNext())
             {
                String key = iter.next();
-
+               
                Object innerVal = jsonObject.get(key);
+               
+               if (innerVal instanceof JSONArray)
+               {
+                  innerVal = fromJSONArray(((JSONArray)innerVal));
+               }
 
                map.put(key, innerVal);
             }
@@ -219,9 +240,12 @@ public class ManagementHelper
       if (param instanceof Integer == false && param instanceof Long == false &&
           param instanceof Double == false &&
           param instanceof String == false &&
-          param instanceof Boolean == false)
+          param instanceof Boolean == false &&
+          param instanceof Byte == false &&
+          param instanceof Short == false)
       {
-         throw new IllegalArgumentException("Params for management operations must be of the following type: " + "int long double String boolean Map or array thereof");
+         throw new IllegalArgumentException("Params for management operations must be of the following type: " + "int long double String boolean Map or array thereof " +
+                                            " but found " + param.getClass().getName());
       }
    }
 
@@ -261,7 +285,7 @@ public class ManagementHelper
 
          JSONArray jsonArray = toJSONArray(new Object[] { result });
 
-         resultString = jsonArray.toString();
+         resultString = jsonArray.toString();                  
       }
       else
       {
@@ -270,11 +294,11 @@ public class ManagementHelper
 
       message.getBody().writeNullableString(resultString);
    }
-   
-   public static Object[] getResults(final Message message) throws Exception
-   {      
-      String jsonString = message.getBody().readNullableString();
 
+   public static Object[] getResults(final Message message) throws Exception
+   {
+      String jsonString = message.getBody().readNullableString();
+      
       if (jsonString != null)
       {
          JSONArray jsonArray = new JSONArray(jsonString);
@@ -292,7 +316,7 @@ public class ManagementHelper
    public static Object getResult(final Message message) throws Exception
    {
       Object[] res = getResults(message);
-      
+
       if (res != null)
       {
          return res[0];
@@ -302,7 +326,7 @@ public class ManagementHelper
          return null;
       }
    }
-     
+
    public static boolean hasOperationSucceeded(final Message message)
    {
       if (!isOperationResult(message))

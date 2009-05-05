@@ -26,10 +26,8 @@ package org.jboss.messaging.core.management.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,7 +62,6 @@ import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -119,15 +116,15 @@ public class ManagementServiceImpl implements ManagementService
    private MessagingServerControl messagingServerControl;
 
    private final MessageCounterManager messageCounterManager;
-   
+
    private final SimpleString managementNotificationAddress;
-   
+
    private final SimpleString managementAddress;
-   
+
    private final String managementClusterPassword;
-   
+
    private final long managementRequestTimeout;
-   
+
    private boolean started = false;
 
    private boolean messageCounterEnabled;
@@ -156,7 +153,7 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager = new MessageCounterManagerImpl();
       messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
       messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
-      
+
       replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterPassword,
                                                                managementAddress,
                                                                managementRequestTimeout);
@@ -187,13 +184,13 @@ public class ManagementServiceImpl implements ManagementService
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
 
-      messagingServerControl = new MessagingServerControl(postOffice,                                                 
-                                                 configuration,
-                                                 resourceManager,
-                                                 remotingService,
-                                                 messagingServer,
-                                                 messageCounterManager,
-                                                 broadcaster);
+      messagingServerControl = new MessagingServerControl(postOffice,
+                                                          configuration,
+                                                          resourceManager,
+                                                          remotingService,
+                                                          messagingServer,
+                                                          messageCounterManager,
+                                                          broadcaster);
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(messagingServerControl,
                                                                                   replicationInvoker));
@@ -214,8 +211,7 @@ public class ManagementServiceImpl implements ManagementService
       ObjectName objectName = ObjectNames.getAddressObjectName(address);
       AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
 
-      registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(addressControl,
-                                                                          replicationInvoker));
+      registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(addressControl, replicationInvoker));
 
       registerInRegistry(ResourceNames.CORE_ADDRESS + address, addressControl);
 
@@ -233,7 +229,9 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(ResourceNames.CORE_ADDRESS + address);
    }
 
-   public synchronized void registerQueue(final Queue queue, final SimpleString address, final StorageManager storageManager) throws Exception
+   public synchronized void registerQueue(final Queue queue,
+                                          final SimpleString address,
+                                          final StorageManager storageManager) throws Exception
    {
       QueueControl queueControl = new QueueControl(queue, address.toString(), postOffice, addressSettingsRepository);
       MessageCounter counter = new MessageCounter(queue.getName().toString(),
@@ -297,7 +295,8 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(ResourceNames.CORE_ACCEPTOR + name);
    }
 
-   public synchronized void registerBroadcastGroup(BroadcastGroup broadcastGroup, BroadcastGroupConfiguration configuration) throws Exception
+   public synchronized void registerBroadcastGroup(BroadcastGroup broadcastGroup,
+                                                   BroadcastGroupConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(configuration.getName());
       BroadcastGroupControlMBean control = new BroadcastGroupControl(broadcastGroup, configuration);
@@ -312,7 +311,8 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(ResourceNames.CORE_BROADCAST_GROUP + name);
    }
 
-   public synchronized void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception
+   public synchronized void registerDiscoveryGroup(DiscoveryGroup discoveryGroup,
+                                                   DiscoveryGroupConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(configuration.getName());
       DiscoveryGroupControlMBean control = new DiscoveryGroupControl(discoveryGroup, configuration);
@@ -342,7 +342,8 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(ResourceNames.CORE_BRIDGE + name);
    }
 
-   public synchronized void registerCluster(final ClusterConnection cluster, final ClusterConnectionConfiguration configuration) throws Exception
+   public synchronized void registerCluster(final ClusterConnection cluster,
+                                            final ClusterConnectionConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getClusterConnectionObjectName(configuration.getName());
       ClusterConnectionControlMBean control = new ClusterConnectionControl(cluster, configuration);
@@ -362,7 +363,7 @@ public class ManagementServiceImpl implements ManagementService
       // a reply message is sent with the result stored in the message body.
       // we set its type to MessageImpl.OBJECT_TYPE so that I can be received
       // as an ObjectMessage when using JMS to send management message
-      ServerMessageImpl reply = new ServerMessageImpl(storageManager.generateUniqueID());      
+      ServerMessageImpl reply = new ServerMessageImpl(storageManager.generateUniqueID());
       reply.setBody(ChannelBuffers.dynamicBuffer(1024));
 
       SimpleString resourceName = (SimpleString)message.getProperty(ManagementHelper.HDR_RESOURCE_NAME);
@@ -372,19 +373,22 @@ public class ManagementServiceImpl implements ManagementService
       }
 
       SimpleString operation = (SimpleString)message.getProperty(ManagementHelper.HDR_OPERATION_NAME);
-      
+
       if (operation != null)
-      {         
+      {
          Object[] params = ManagementHelper.retrieveOperationParameters(message);
-                  
+
+         if (params == null)
+         {
+            params = new Object[0];
+         }
+
          try
          {
             Object result = invokeOperation(resourceName.toString(), operation.toString(), params);
-            
-            log.info("Result is " + result);
-            
+
             ManagementHelper.storeResult(reply, result);
-            
+
             reply.putBooleanProperty(ManagementHelper.HDR_OPERATION_SUCCEEDED, true);
          }
          catch (Exception e)
@@ -400,17 +404,18 @@ public class ManagementServiceImpl implements ManagementService
             {
                ManagementHelper.storeResult(message, exceptionMessage);
             }
-         }         
+         }
       }
       else
       {
          SimpleString attribute = (SimpleString)message.getProperty(ManagementHelper.HDR_ATTRIBUTE);
-         
+
          if (attribute != null)
-         {            
+         {
             try
             {
                Object result = getAttribute(resourceName.toString(), attribute.toString());
+
                ManagementHelper.storeResult(reply, result);
             }
             catch (Exception e)
@@ -426,7 +431,7 @@ public class ManagementServiceImpl implements ManagementService
                {
                   ManagementHelper.storeResult(message, exceptionMessage);
                }
-            }            
+            }
          }
       }
 
@@ -444,7 +449,7 @@ public class ManagementServiceImpl implements ManagementService
       {
          return;
       }
-      
+
       synchronized (mbeanServer)
       {
          unregisterFromJMX(objectName);
@@ -455,7 +460,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerInRegistry(final String resourceName, final Object managedResource)
    {
       unregisterFromRegistry(resourceName);
-      
+
       registry.put(resourceName, managedResource);
    }
 
@@ -525,7 +530,7 @@ public class ManagementServiceImpl implements ManagementService
       {
          messageCounterManager.start();
       }
-      
+
       started = true;
    }
 
@@ -535,9 +540,9 @@ public class ManagementServiceImpl implements ManagementService
 
       for (String resourceName : resourceNames)
       {
-         unregisterFromRegistry(resourceName);         
+         unregisterFromRegistry(resourceName);
       }
-      
+
       if (jmxManagementEnabled)
       {
          Set<ObjectName> names = mbeanServer.queryNames(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
@@ -546,16 +551,16 @@ public class ManagementServiceImpl implements ManagementService
             mbeanServer.unregisterMBean(name);
          }
       }
-      
+
       messageCounterManager.stop();
-      
+
       messageCounterManager.resetAllCounters();
-      
+
       messageCounterManager.resetAllCounterHistories();
 
       messageCounterManager.clear();
-      
-  //    replicationInvoker.stop();
+
+      // replicationInvoker.stop();
 
       started = false;
    }
@@ -578,12 +583,12 @@ public class ManagementServiceImpl implements ManagementService
          // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
          synchronized (this)
          {
-            //We also need to synchronize on the post office notification lock
-            //otherwise we can get notifications arriving in wrong order / missing
-            //if a notification occurs at same time as sendQueueInfoToQueue is processed
+            // We also need to synchronize on the post office notification lock
+            // otherwise we can get notifications arriving in wrong order / missing
+            // if a notification occurs at same time as sendQueueInfoToQueue is processed
             synchronized (postOffice.getNotificationLock())
             {
-               
+
                // First send to any local listeners
                for (NotificationListener listener : listeners)
                {
@@ -597,17 +602,18 @@ public class ManagementServiceImpl implements ManagementService
                      log.error("Failed to call listener", e);
                   }
                }
-   
+
                // Now send message
-   
+
                ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
-   
+
                notificationMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
-               // Notification messages are always durable so the user can choose whether to add a durable queue to consume
+               // Notification messages are always durable so the user can choose whether to add a durable queue to
+               // consume
                // them in
                notificationMessage.setDurable(true);
                notificationMessage.setDestination(managementNotificationAddress);
-   
+
                TypedProperties notifProps;
                if (notification.getProperties() != null)
                {
@@ -617,19 +623,19 @@ public class ManagementServiceImpl implements ManagementService
                {
                   notifProps = new TypedProperties();
                }
-   
+
                notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
                                             new SimpleString(notification.getType().toString()));
-   
+
                notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
-   
+
                if (notification.getUID() != null)
                {
                   notifProps.putStringProperty(new SimpleString("foobar"), new SimpleString(notification.getUID()));
                }
-   
+
                notificationMessage.putTypedProperties(notifProps);
-   
+
                postOffice.route(notificationMessage, null);
             }
          }
@@ -646,12 +652,12 @@ public class ManagementServiceImpl implements ManagementService
       try
       {
          Object resource = registry.get(resourceName);
-         
+
          if (resource == null)
          {
             throw new IllegalArgumentException("Cannot find resource with name " + resourceName);
          }
-         
+
          Method method = null;
 
          try
@@ -680,12 +686,12 @@ public class ManagementServiceImpl implements ManagementService
    private Object invokeOperation(final String resourceName, final String operation, final Object[] params) throws Exception
    {
       Object resource = registry.get(resourceName);
-      
+
       if (resource == null)
       {
          throw new IllegalArgumentException("Cannot find resource with name " + resourceName);
       }
-      
+
       Method method = null;
 
       Method[] methods = resource.getClass().getMethods();
@@ -693,16 +699,29 @@ public class ManagementServiceImpl implements ManagementService
       {
          if (m.getName().equals(operation) && m.getParameterTypes().length == params.length)
          {
+            Class<?>[] paramTypes = m.getParameterTypes();
+
+            for (int i = 0; i < paramTypes.length; i++)
+            {
+               if (params[i].getClass() != paramTypes[i])
+               {
+                  continue;
+               }
+            }
+
             method = m;
+
+            break;
          }
       }
+
       if (method == null)
       {
          throw new IllegalArgumentException("no operation " + operation + "/" + params.length);
       }
-      
+
       Object result = method.invoke(resource, params);
-      
+
       return result;
    }
 

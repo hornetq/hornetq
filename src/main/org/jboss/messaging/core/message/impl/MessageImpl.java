@@ -28,6 +28,8 @@ import static org.jboss.messaging.utils.DataConstants.SIZE_INT;
 import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
@@ -98,8 +100,7 @@ public abstract class MessageImpl implements Message
 
    /** Used on LargeMessages */
    private InputStream bodyInputStream;
-
-     
+   
    // Constructors --------------------------------------------------
 
    protected MessageImpl()
@@ -342,7 +343,24 @@ public abstract class MessageImpl implements Message
       this.bodyInputStream = bodyInputStream;
    }
 
-
+   public Map<String, Object> toMap()
+   {
+      Map<String, Object> map = new HashMap<String, Object>();
+      
+      map.put("MessageID", messageID);
+      map.put("Destination", destination);
+      map.put("Type", type);
+      map.put("Durable", durable);
+      map.put("Expiration", expiration);
+      map.put("Timestamp", timestamp);
+      map.put("Priority", priority);
+      for (SimpleString propName: properties.getPropertyNames())
+      {
+         map.put(propName.toString(), properties.getProperty(propName));
+      }
+      return map;      
+   }
+     
    
    // Properties
    // ---------------------------------------------------------------------------------------

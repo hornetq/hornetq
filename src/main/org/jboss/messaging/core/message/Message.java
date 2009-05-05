@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.message;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
@@ -136,6 +137,8 @@ public interface Message
    boolean containsProperty(SimpleString key);
    
    Set<SimpleString> getPropertyNames();
+   
+   Map<String, Object> toMap();
    
    // Body
    // ---------------------------------------------------------------------------------

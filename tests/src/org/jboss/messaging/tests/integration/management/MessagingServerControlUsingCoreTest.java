@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.tests.integration.management;
 
-import java.util.List;
-
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -160,9 +156,9 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             return (Long)proxy.retrieveAttributeValue("ConnectionTTLOverride");
          }
 
-         public TabularData getConnectors() throws Exception
+         public Object[] getConnectors() throws Exception
          {
-            return (TabularData)proxy.retrieveAttributeValue("Connectors");
+            return (Object[])proxy.retrieveAttributeValue("Connectors");
          }
 
          public int getIDCacheSize()
@@ -170,9 +166,9 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             return (Integer)proxy.retrieveAttributeValue("IDCacheSize");
          }
 
-         public List<String> getInterceptorClassNames()
+         public String[] getInterceptorClassNames()
          {
-            return (List<String>)proxy.retrieveAttributeValue("InterceptorClassNames");
+            return (String[])proxy.retrieveAttributeValue("InterceptorClassNames");
          }
 
          public int getJournalBufferReuseSize()

@@ -24,7 +24,7 @@ package org.jboss.messaging.jms.server.management;
 
 import static javax.management.MBeanOperationInfo.ACTION;
 
-import javax.management.openmbean.TabularData;
+import java.util.Map;
 
 import org.jboss.messaging.core.management.Operation;
 import org.jboss.messaging.core.management.Parameter;
@@ -39,29 +39,29 @@ public interface TopicControlMBean extends DestinationControlMBean
 {
    // Attributes ----------------------------------------------------
 
-   int getSubcriptionsCount();
+   int getSubscriptionCount();
 
-   int getDurableSubcriptionsCount();
+   int getDurableSubscriptionCount();
 
-   int getNonDurableSubcriptionsCount();
+   int getNonDurableSubscriptionCount();
 
-   int getDurableMessagesCount();
+   int getDurableMessageCount();
 
-   int getNonDurableMessagesCount();
+   int getNonDurableMessageCount();
 
    // Operations ----------------------------------------------------
 
    @Operation(desc = "List all subscriptions")
-   TabularData listAllSubscriptions() throws Exception;
+   Object[] listAllSubscriptions() throws Exception;
 
    @Operation(desc = "List only the durable subscriptions")
-   TabularData listDurableSubscriptions() throws Exception;
+   Object[] listDurableSubscriptions() throws Exception;
 
    @Operation(desc = "List only the non durable subscriptions")
-   TabularData listNonDurableSubscriptions() throws Exception;
+   Object[] listNonDurableSubscriptions() throws Exception;
 
    @Operation(desc = "List all the message for the given subscription")
-   public TabularData listMessagesForSubscription(
+   public Map<String, Object>[] listMessagesForSubscription(
          @Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName)
          throws Exception;
 

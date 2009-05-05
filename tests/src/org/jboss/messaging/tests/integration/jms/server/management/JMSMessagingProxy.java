@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
+import java.util.Map;
+
 import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueRequestor;

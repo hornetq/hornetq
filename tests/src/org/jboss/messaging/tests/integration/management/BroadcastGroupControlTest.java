@@ -104,11 +104,11 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       assertEquals(broadcastGroupConfig.getLocalBindPort(), broadcastGroupControl.getLocalBindPort());
       assertEquals(broadcastGroupConfig.getBroadcastPeriod(), broadcastGroupControl.getBroadcastPeriod());
       
-      TabularData connectorPairs = broadcastGroupControl.getConnectorPairs();
-      assertEquals(1, connectorPairs.size());
-      CompositeData connectorPairData = (CompositeData)connectorPairs.values().iterator().next();
-      assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).a, connectorPairData.get("a"));
-      assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).b, connectorPairData.get("b"));
+      Object[] connectorPairs = broadcastGroupControl.getConnectorPairs();
+      assertEquals(1, connectorPairs.length);
+      String[] connectorPairData = (String[])connectorPairs[0];
+      assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).a, connectorPairData[0]);
+      assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).b, connectorPairData[1]);
       
       assertTrue(broadcastGroupControl.isStarted());
    }

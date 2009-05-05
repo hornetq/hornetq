@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.TabularData;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +35,7 @@ public interface AddressControlMBean
 
    String getAddress();
 
-   TabularData getRoles() throws Exception;
+   Object[] getRoles() throws Exception;
    
    String[] getQueueNames() throws Exception;
 

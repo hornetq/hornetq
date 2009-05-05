@@ -22,12 +22,10 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
-import org.jboss.messaging.core.management.PairsInfo;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * A BroadcastGroupControl
@@ -69,9 +67,22 @@ public class BroadcastGroupControl implements BroadcastGroupControlMBean
       return configuration.getBroadcastPeriod();
    }
 
-   public TabularData getConnectorPairs()
+   public Object[] getConnectorPairs()
    {
-      return PairsInfo.toTabularData(configuration.getConnectorInfos());
+      Object[] ret = new Object[configuration.getConnectorInfos().size()];
+      
+      int i = 0;
+      for (Pair<String, String> pair: configuration.getConnectorInfos())
+      {
+         String[] opair = new String[2];
+         
+         opair[0] = pair.a;
+         opair[1] = pair.b != null ? pair.b : null;
+         
+         ret[i++] = opair;
+      }
+      
+      return ret;      
    }
 
    public String getGroupAddress()

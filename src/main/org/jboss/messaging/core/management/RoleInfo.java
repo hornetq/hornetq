@@ -22,19 +22,22 @@
 
 package org.jboss.messaging.core.management;
 
+import static javax.management.openmbean.SimpleType.BOOLEAN;
+import static javax.management.openmbean.SimpleType.STRING;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
-import static javax.management.openmbean.SimpleType.BOOLEAN;
-import static javax.management.openmbean.SimpleType.STRING;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -114,6 +117,27 @@ public class RoleInfo
       for (Object object : values)
       {
          CompositeData compositeData = (CompositeData) object;
+         String name = (String) compositeData.get("name");
+         boolean send = (Boolean) compositeData.get("send");
+         boolean consume = (Boolean) compositeData.get("consume");
+         boolean createDurableQueue = (Boolean) compositeData.get("createDurableQueue");
+         boolean deleteDurableQueue = (Boolean) compositeData.get("deleteDurableQueue");
+         boolean createNonDurableQueue = (Boolean) compositeData.get("createNonDurableQueue");
+         boolean deleteNonDurableQueue = (Boolean) compositeData.get("deleteNonDurableQueue");
+         boolean manage = (Boolean) compositeData.get("manage");
+         infos.add(new RoleInfo(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage));
+      }
+
+      return (RoleInfo[]) infos.toArray(new RoleInfo[infos.size()]);
+   }
+   
+   public static RoleInfo[] from(Object[] roles)
+   {
+      //Collection values = roles.values();
+      List<RoleInfo> infos = new ArrayList<RoleInfo>();
+      for (Object object : roles)
+      {
+         Map<String, Object> compositeData = (Map<String, Object>) object;
          String name = (String) compositeData.get("name");
          boolean send = (Boolean) compositeData.get("send");
          boolean consume = (Boolean) compositeData.get("consume");

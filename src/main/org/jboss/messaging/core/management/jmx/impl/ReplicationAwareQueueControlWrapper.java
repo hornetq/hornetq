@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.management.jmx.impl;
 
+import java.util.Map;
+
 import javax.management.MBeanInfo;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
@@ -141,12 +143,12 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.isTemporary();
    }
 
-   public TabularData listAllMessages() throws Exception
+   public Map<String, Object>[] listAllMessages() throws Exception
    {
       return localQueueControl.listAllMessages();
    }
 
-   public CompositeData listMessageCounter() throws Exception
+   public Object[] listMessageCounter() throws Exception
    {
       return localQueueControl.listMessageCounter();
    }
@@ -161,7 +163,7 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.listMessageCounterAsHTML();
    }
 
-   public TabularData listMessageCounterHistory() throws Exception
+   public Object[] listMessageCounterHistory() throws Exception
    {
       return localQueueControl.listMessageCounterHistory();
    }
@@ -171,7 +173,7 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.listMessageCounterHistoryAsHTML();
    }
 
-   public TabularData listMessages(final String filter) throws Exception
+   public Map<String, Object>[] listMessages(final String filter) throws Exception
    {
       return localQueueControl.listMessages(filter);
    }
@@ -181,7 +183,7 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.countMessages(filter);
    }
 
-   public TabularData listScheduledMessages() throws Exception
+   public Map<String, Object>[] listScheduledMessages() throws Exception
    {
       return localQueueControl.listScheduledMessages();
    }

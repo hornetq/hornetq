@@ -90,11 +90,11 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                    clusterConnectionControl.isForwardWhenNoConsumers());
       assertEquals(clusterConnectionConfig.getMaxHops(), clusterConnectionControl.getMaxHops());
 
-      TabularData connectorPairs = clusterConnectionControl.getStaticConnectorNamePairs();
-      assertEquals(1, connectorPairs.size());
-      CompositeData connectorPairData = (CompositeData)connectorPairs.values().iterator().next();
-      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).a, connectorPairData.get("a"));
-      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).b, connectorPairData.get("b"));
+      Object[] connectorPairs = clusterConnectionControl.getStaticConnectorNamePairs();
+      assertEquals(1, connectorPairs.length);
+      String[] connectorPairData = (String[])connectorPairs[0];
+      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).a, connectorPairData[0]);
+      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).b, connectorPairData[1]);
 
       assertTrue(clusterConnectionControl.isStarted());
    }

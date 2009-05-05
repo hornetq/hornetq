@@ -62,13 +62,13 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
       AddressControlMBean liveAddressControl = createAddressControl(address, liveMBeanServer);
       AddressControlMBean backupAddressControl = createAddressControl(address, backupMBeanServer);
 
-      TabularData roles = liveAddressControl.getRoles();
-      assertEquals(roles.size(), backupAddressControl.getRoles().size());
+      Object[] roles = liveAddressControl.getRoles();
+      assertEquals(roles.length, backupAddressControl.getRoles().length);
 
       // add a role
       liveAddressControl.addRole(randomString(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
-      assertEquals(roles.size() + 1, liveAddressControl.getRoles().size());
+      assertEquals(roles.length + 1, liveAddressControl.getRoles().length);
    }
 
    public void testRemoveRole() throws Exception
@@ -78,20 +78,20 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
       AddressControlMBean liveAddressControl = createAddressControl(address, liveMBeanServer);
       AddressControlMBean backupAddressControl = createAddressControl(address, backupMBeanServer);
 
-      TabularData roles = liveAddressControl.getRoles();
-      assertEquals(roles.size(), backupAddressControl.getRoles().size());
+      Object[] roles = liveAddressControl.getRoles();
+      assertEquals(roles.length, backupAddressControl.getRoles().length);
 
       // add a role
       liveAddressControl.addRole(roleName, randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
-      assertEquals(roles.size() + 1, liveAddressControl.getRoles().size());
-      assertEquals(roles.size() + 1, backupAddressControl.getRoles().size());
+      assertEquals(roles.length + 1, liveAddressControl.getRoles().length);
+      assertEquals(roles.length + 1, backupAddressControl.getRoles().length);
 
       // and remove it
       liveAddressControl.removeRole(roleName);
 
-      assertEquals(roles.size(), liveAddressControl.getRoles().size());
-      assertEquals(roles.size(), backupAddressControl.getRoles().size());
+      assertEquals(roles.length, liveAddressControl.getRoles().length);
+      assertEquals(roles.length, backupAddressControl.getRoles().length);
    }
 
    // Package protected ---------------------------------------------

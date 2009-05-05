@@ -22,8 +22,9 @@
 
 package org.jboss.messaging.jms.server.management.jmx.impl;
 
+import java.util.Map;
+
 import javax.management.MBeanInfo;
-import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
@@ -71,42 +72,42 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
       replicationAwareInvoke("dropDurableSubscription", clientID, subscriptionName);
    }
 
-   public int getDurableMessagesCount()
+   public int getDurableMessageCount()
    {
-      return localControl.getDurableMessagesCount();
+      return localControl.getDurableMessageCount();
    }
 
-   public int getDurableSubcriptionsCount()
+   public int getDurableSubscriptionCount()
    {
-      return localControl.getDurableSubcriptionsCount();
+      return localControl.getDurableSubscriptionCount();
    }
 
-   public int getNonDurableMessagesCount()
+   public int getNonDurableMessageCount()
    {
-      return localControl.getNonDurableMessagesCount();
+      return localControl.getNonDurableMessageCount();
    }
 
-   public int getNonDurableSubcriptionsCount()
+   public int getNonDurableSubscriptionCount()
    {
-      return localControl.getNonDurableSubcriptionsCount();
+      return localControl.getNonDurableSubscriptionCount();
    }
 
-   public int getSubcriptionsCount()
+   public int getSubscriptionCount()
    {
-      return localControl.getSubcriptionsCount();
+      return localControl.getSubscriptionCount();
    }
 
-   public TabularData listAllSubscriptions()
+   public Object[] listAllSubscriptions()
    {
       return localControl.listAllSubscriptions();
    }
 
-   public TabularData listDurableSubscriptions()
+   public Object[] listDurableSubscriptions()
    {
       return localControl.listDurableSubscriptions();
    }
 
-   public TabularData listMessagesForSubscription(final String queueName) throws Exception
+   public Map<String, Object>[] listMessagesForSubscription(final String queueName) throws Exception
    {
       return localControl.listMessagesForSubscription(queueName);
    }
@@ -116,7 +117,7 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
       return localControl.countMessagesForSubscription(clientID, subscriptionName, filterStr);
    }
 
-   public TabularData listNonDurableSubscriptions()
+   public Object[] listNonDurableSubscriptions()
    {
       return localControl.listNonDurableSubscriptions();
    }

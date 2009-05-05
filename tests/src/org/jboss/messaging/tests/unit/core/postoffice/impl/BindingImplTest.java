@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.xa.Xid;
@@ -265,6 +266,12 @@ public class BindingImplTest extends UnitTestCase
 
    class FakeMessage implements ServerMessage
    {
+
+      public Map<String, Object> toMap()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
 
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.server.ServerMessage#copy(long)

@@ -22,7 +22,7 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.TabularData;
+import java.util.Map;
 
 /**
  * A AcceptorMBean
@@ -40,5 +40,5 @@ public interface AcceptorControlMBean extends MessagingComponentControlMBean
 
    String getFactoryClassName();
 
-   TabularData getParameters();
+   Map<String, Object> getParameters();
 }
