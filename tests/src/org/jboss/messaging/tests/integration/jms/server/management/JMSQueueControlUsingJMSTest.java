@@ -149,7 +149,8 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
 
       // retrieve the first message info
       Map map = (Map)maps[0];
-      String messageID = (String)map.get("JMSMessageID");
+      Map props = (Map)map.get("properties");
+      String messageID = (String)props.get("JMSMessageID");
 
       proxy.invokeOperation("removeMessage", messageID);
 
@@ -238,11 +239,12 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
 
       assertEquals(1, proxy.retrieveAttributeValue("MessageCount"));
 
-      Object[] maps = (Object[])proxy.invokeOperation("listAllMessages", null);
+      Object[] maps = (Object[])proxy.invokeOperation("listAllMessages");
       // retrieve the first message info
       Map map = (Map)maps[0];
-      String messageID = (String)map.get("JMSMessageID");
-      int currentPriority = (Integer)map.get("JMSPriority");
+      Map props = (Map)map.get("properties");
+      String messageID = (String)props.get("JMSMessageID");
+      int currentPriority = ((Long)map.get("JMSPriority")).intValue();
       int newPriority = 9;
 
       assertTrue(newPriority != currentPriority);
@@ -673,10 +675,10 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);
-      serverManager.start();
-      serverManager.activated();
       context = new InVMContext();
       serverManager.setContext(context);
+      serverManager.start();
+      serverManager.activated();
 
       String queueName = randomString();
       serverManager.createQueue(queueName, queueName);
