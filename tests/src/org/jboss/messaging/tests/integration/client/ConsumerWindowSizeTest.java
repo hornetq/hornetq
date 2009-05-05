@@ -861,11 +861,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       testNoWindowRoundRobin(false);
    }
 
-   public void testNoWindowRoundRobinLargeMessage() throws Exception
-   {
-      testNoWindowRoundRobin(true);
-   }
-
    private void testNoWindowRoundRobin(final boolean largeMessages) throws Exception
    {
 
