@@ -93,9 +93,9 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       assertEquals(bridgeConfig.isFailoverOnServerShutdown(), ((Boolean)proxy.retrieveAttributeValue("FailoverOnServerShutdown")).booleanValue());
       assertEquals(bridgeConfig.isUseDuplicateDetection(), ((Boolean)proxy.retrieveAttributeValue("UseDuplicateDetection")).booleanValue());
 
-      Map data = (Map)proxy.retrieveAttributeValue("ConnectorPair");
-      assertEquals(bridgeConfig.getConnectorPair().a, data.get("a"));
-      assertEquals(bridgeConfig.getConnectorPair().b, data.get("b"));
+      Object[] data = (Object[])proxy.retrieveAttributeValue("ConnectorPair");
+      assertEquals(bridgeConfig.getConnectorPair().a, data[0]);
+      assertEquals(bridgeConfig.getConnectorPair().b, data[1]);
 
       assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
    }
@@ -108,10 +108,10 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       // started by the server
       assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
 
-      proxy.invokeOperation("stop", null);      
+      proxy.invokeOperation("stop");      
       assertFalse((Boolean)proxy.retrieveAttributeValue("Started"));
 
-      proxy.invokeOperation("start", null);      
+      proxy.invokeOperation("start");      
       assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
    }
 

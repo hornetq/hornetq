@@ -34,7 +34,6 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.openmbean.CompositeData;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
