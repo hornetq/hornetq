@@ -66,7 +66,7 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
          
          public long getBroadcastPeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("BroadcastPeriod");
+            return ((Integer)proxy.retrieveAttributeValue("BroadcastPeriod")).longValue();
          }
 
          public Object[] getConnectorPairs()

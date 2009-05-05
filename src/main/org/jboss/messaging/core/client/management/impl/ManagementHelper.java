@@ -228,7 +228,14 @@ public class ManagementHelper
          }
          else
          {
-            array[i] = val;
+            if (val == JSONObject.NULL)
+            {
+               array[i] = null;
+            }
+            else
+            {
+               array[i] = val;
+            }
          }
       }
 

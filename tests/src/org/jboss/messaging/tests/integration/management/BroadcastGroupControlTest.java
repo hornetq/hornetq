@@ -28,9 +28,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
@@ -106,7 +103,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       
       Object[] connectorPairs = broadcastGroupControl.getConnectorPairs();
       assertEquals(1, connectorPairs.length);
-      String[] connectorPairData = (String[])connectorPairs[0];
+      Object[] connectorPairData = (Object[])connectorPairs[0];
       assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).a, connectorPairData[0]);
       assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).b, connectorPairData[1]);
       
