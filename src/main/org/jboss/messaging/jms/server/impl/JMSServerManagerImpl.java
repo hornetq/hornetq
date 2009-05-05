@@ -358,7 +358,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
          cf.setThreadPoolMaxSize(threadPoolMaxSize);
          cf.setRetryInterval(retryInterval);
-         cf.setRetryInterval(retryInterval);
+         cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
          cf.setReconnectAttempts(reconnectAttempts);
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
       }
@@ -427,7 +427,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
          cf.setThreadPoolMaxSize(threadPoolMaxSize);
          cf.setRetryInterval(retryInterval);
-         cf.setRetryInterval(retryInterval);
+         cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
          cf.setReconnectAttempts(reconnectAttempts);
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
       }
