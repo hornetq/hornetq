@@ -459,7 +459,7 @@ public class LocalTestServer implements Server, Runnable
       for (Object o : subInfos)
       {
          Object[] data = (Object[])o;
-         subs.add((String)data[0]);
+         subs.add((String)data[2]);
       }
       return subs;
    }
