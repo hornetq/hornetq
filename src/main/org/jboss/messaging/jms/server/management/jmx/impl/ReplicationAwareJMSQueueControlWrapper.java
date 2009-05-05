@@ -124,7 +124,7 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.listAllMessages();
    }
 
-   public Object[] listMessageCounter()
+   public String listMessageCounter()
    {
       return localControl.listMessageCounter();
    }
@@ -134,7 +134,7 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.listMessageCounterAsHTML();
    }
 
-   public Object[] listMessageCounterHistory() throws Exception
+   public String listMessageCounterHistory() throws Exception
    {
       return localControl.listMessageCounterHistory();
    }

@@ -34,7 +34,6 @@ import javax.jms.TextMessage;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
-import javax.management.openmbean.CompositeData;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -102,8 +101,8 @@ public class MessageCounterExample extends JMSExample
                                                                                                                  false);
 
          // Step 8. List the message counters and convert them to MessageCounterInfo data structure.
-         CompositeData compositeData = queueControl.listMessageCounter();
-         MessageCounterInfo messageCounter = MessageCounterInfo.from(compositeData);
+         String counters = queueControl.listMessageCounter();
+         MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);
          
          // Step 9. Display the message counter
          displayMessageCounter(messageCounter);
@@ -113,8 +112,8 @@ public class MessageCounterExample extends JMSExample
          Thread.sleep(3000);
 
          // Step 11. List the messages counters again
-         compositeData = queueControl.listMessageCounter();
-         messageCounter = MessageCounterInfo.from(compositeData);
+         counters = queueControl.listMessageCounter();
+         messageCounter = MessageCounterInfo.fromJSON(counters);
          displayMessageCounter(messageCounter);
 
          // Step 12. Create a JMS consumer on the queue
@@ -132,8 +131,8 @@ public class MessageCounterExample extends JMSExample
          Thread.sleep(3000);
          
          // Step 16. Display one last time the message counter
-         compositeData = queueControl.listMessageCounter();
-         messageCounter = MessageCounterInfo.from(compositeData);
+         counters = queueControl.listMessageCounter();
+         messageCounter = MessageCounterInfo.fromJSON(counters);
          displayMessageCounter(messageCounter);
          
          return true;

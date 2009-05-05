@@ -22,23 +22,12 @@
 
 package org.jboss.messaging.core.management;
 
-import static javax.management.openmbean.SimpleType.INTEGER;
-import static javax.management.openmbean.SimpleType.STRING;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.OpenType;
-import javax.management.openmbean.TabularData;
-import javax.management.openmbean.TabularDataSupport;
-import javax.management.openmbean.TabularType;
+import java.util.Arrays;
 
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONException;
+import org.jboss.messaging.utils.json.JSONObject;
 
 
 /**
@@ -53,63 +42,6 @@ public class DayCounterInfo
 
    private static final Logger log = Logger.getLogger(DayCounterInfo.class);
 
-   public static final CompositeType TYPE;
-   private static final String MESSAGE_TYPE_NAME = "DayCounterInfo";
-   private static final String MESSAGE_TABULAR_TYPE_NAME = "TabularDayCounterInfo";
-   private static final String[] ITEM_NAMES = new String[] { "date", "00",
-         "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
-         "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
-         "23", "total" };
-   private static final String[] ITEM_DESCRIPTIONS = new String[] { "Date",
-         "Messages received during the 1st hour",
-         "Messages received during the 2nd hour",
-         "Messages received during the 3rd hour",
-         "Messages received during the 4th hour",
-         "Messages received during the 5th hour",
-         "Messages received during the 6th hour",
-         "Messages received during the 7th hour",
-         "Messages received during the 8th hour",
-         "Messages received during the 9th hour",
-         "Messages received during the 10th hour",
-         "Messages received during the 11th hour",
-         "Messages received during the 12th hour",
-         "Messages received during the 13th hour",
-         "Messages received during the 14th hour",
-         "Messages received during the 15th hour",
-         "Messages received during the 16th hour",
-         "Messages received during the 17th hour",
-         "Messages received during the 18th hour",
-         "Messages received during the 19th hour",
-         "Messages received during the 20th hour",
-         "Messages received during the 21th hour",
-         "Messages received during the 22th hour",
-         "Messages received during the 23th hour",
-         "Messages received during the 24th hour",
-         "Total of messages for the day" };
-   private static final OpenType[] TYPES;
-   private static final TabularType TABULAR_TYPE;
-
-   static
-   {
-      try
-      {
-         TYPES = new OpenType[] { STRING, INTEGER, INTEGER, INTEGER, INTEGER,
-               INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER,
-               INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER,
-               INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER, INTEGER };
-         TYPE = new CompositeType(MESSAGE_TYPE_NAME,
-               "Information for a DayCounterInfo", ITEM_NAMES,
-               ITEM_DESCRIPTIONS, TYPES);
-         TABULAR_TYPE = new TabularType(MESSAGE_TABULAR_TYPE_NAME,
-               "Information for Tabular DayCounterInfo", TYPE,
-               new String[] { "date" });
-      } catch (OpenDataException e)
-      {
-         log.error("Unable to create open types for a DayCounter", e);
-         throw new IllegalStateException(e);
-      }
-   }
-
    // Attributes ----------------------------------------------------
 
    private final String date;
@@ -117,36 +49,45 @@ public class DayCounterInfo
 
    // Static --------------------------------------------------------
 
-   public static TabularData toTabularData(final DayCounterInfo[] infos)
-         throws OpenDataException
+   public static String toJSON(final DayCounterInfo[] infos) throws JSONException
    {
-      TabularData data = new TabularDataSupport(TABULAR_TYPE);
+      JSONObject json = new JSONObject();
+      JSONArray counters = new JSONArray();
       for (DayCounterInfo info : infos)
       {
-         data.put(info.toCompositeData());
+         JSONObject counter = new JSONObject();
+         counter.put("date", info.getDate());
+         counter.put("counters", Arrays.asList(info.getCounters()));
+         counters.put(counter);
       }
-      return data;
+      json.put("dayCounters", counters);
+      return json.toString();
    }
    
-   public static DayCounterInfo[] from(TabularData data)
+   public static DayCounterInfo[] fromJSON(final String jsonString) throws JSONException
    {
-      Collection values = data.values();
-      List<DayCounterInfo> infos = new ArrayList<DayCounterInfo>();
-      for (Object object : values)
-      {
-         CompositeData compositeData = (CompositeData)object;
-         String date = (String)compositeData.get("date");
-         int[] counters = new int[24];
-         for (int i = 0; i < counters.length; i++)
-         {
-            counters[i] = (Integer)compositeData.get(String.format("%02d", i));
-         }
-         infos.add(new DayCounterInfo(date, counters));
-      }
       
-      return (DayCounterInfo[])infos.toArray(new DayCounterInfo[infos.size()]);
+      JSONObject json = new JSONObject(jsonString);
+      JSONArray dayCounters = json.getJSONArray("dayCounters");
+      System.out.println(json.toString(2));
+      DayCounterInfo[] infos = new DayCounterInfo[dayCounters.length()];
+      for (int i = 0; i < dayCounters.length(); i++)
+      {
+         
+         JSONObject counter = (JSONObject)dayCounters.get(i);
+         JSONArray hour = (JSONArray)counter.getJSONArray("counters").get(0);
+         System.out.println(hour.toString(3));
+         int[] hourCounters = new int[24];
+         for (int j = 0; j < 24; j++)
+         {
+            hourCounters[j] = hour.getInt(j);
+         }
+         DayCounterInfo info = new DayCounterInfo(counter.getString("date"), hourCounters);
+         infos[i] = info;
+      }
+      return infos;
    }
-
+   
    // Constructors --------------------------------------------------
 
    public DayCounterInfo(final String date, final int[] counters)
@@ -157,33 +98,14 @@ public class DayCounterInfo
 
    // Public --------------------------------------------------------
 
-   public CompositeData toCompositeData()
+   public String getDate()
    {
-      try
-      {
-         // 1 for the date, 24 for the hours, 1 for the total
-         Object[] objects = new Object[1 + 24 + 1];
-         objects[0] = date;
-         int total = 0;
-         for (int i = 0; i < counters.length; i++)
-         {
-            int value = counters[i];
-            if (value == -1)
-            {
-               objects[1 + i] = 0;
-            } else
-            {
-               objects[1 + i] = value;
-               total += value;
-            }
-         }
-         objects[objects.length - 1] = total;
-         return new CompositeDataSupport(TYPE, ITEM_NAMES, objects);
-      } catch (OpenDataException e)
-      {
-         log.error("Unable to create a CompositeData from a DayCounter", e);
-         return null;
-      }
+      return date;
+   }
+   
+   public int[] getCounters()
+   {
+      return counters;
    }
 
    // Package protected ---------------------------------------------

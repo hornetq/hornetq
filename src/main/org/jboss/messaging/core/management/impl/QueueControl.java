@@ -28,6 +28,7 @@ import java.util.Map;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
+import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
@@ -39,6 +40,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -367,18 +369,16 @@ public class QueueControl implements QueueControlMBean
       return queue.changeReferencePriority(messageID, (byte)newPriority);
    }
 
-   public Object[] listMessageCounter()
+   public String listMessageCounter()
    {
-      Object[] counterData = new Object[] { counter.getDestinationName(),
-                                           counter.getDestinationSubscription(),
-                                           counter.isDestinationDurable(),
-                                           counter.getCount(),
-                                           counter.getCountDelta(),
-                                           counter.getMessageCount(),
-                                           counter.getMessageCountDelta(),
-                                           counter.getLastAddedMessageTime(),
-                                           counter.getLastUpdate() };
-      return counterData;
+      try
+      {
+         return MessageCounterInfo.toJSon(counter);
+      }
+      catch (Exception e)
+      {
+         throw new IllegalStateException(e);
+      }
    }
 
    public void resetMessageCounter()
@@ -391,7 +391,7 @@ public class QueueControl implements QueueControlMBean
       return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[] { counter });
    }
 
-   public Object[] listMessageCounterHistory() throws Exception
+   public String listMessageCounterHistory() throws Exception
    {
       return MessageCounterHelper.listMessageCounterHistory(counter);
    }

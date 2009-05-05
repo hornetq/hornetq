@@ -38,6 +38,7 @@ import javax.management.openmbean.OpenType;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -118,6 +119,41 @@ public class MessageCounterInfo
    private final String udpateTimestamp;
 
    // Static --------------------------------------------------------
+
+   public static String toJSon(MessageCounter counter) throws Exception
+   {
+      JSONObject json = new JSONObject(counter);
+      String lastAddTimestamp = DATE_FORMAT.format(new Date(counter.getLastAddedMessageTime()));
+      json.put("lastAddTimestamp", lastAddTimestamp);
+      String updateTimestamp = DATE_FORMAT.format(new Date(counter.getLastUpdate()));
+      json.put("updateTimestamp", updateTimestamp);
+      
+      return json.toString();
+   }
+   
+   public static MessageCounterInfo fromJSON(String jsonString) throws Exception
+   {
+      JSONObject data = new JSONObject(jsonString);
+      String name = data.getString("destinationName");
+      String subscription = data.getString("destinationSubscription");
+      boolean durable = data.getBoolean("destinationDurable");
+      long count = data.getLong("count");
+      long countDelta = data.getLong("countDelta");
+      int depth = data.getInt("messageCount");
+      int depthDelta = data.getInt("messageCountDelta");
+      String lastAddTimestamp = data.getString("lastAddTimestamp");
+      String updateTimestamp = data.getString("updateTimestamp");
+
+      return new MessageCounterInfo(name,
+                                    subscription,
+                                    durable,
+                                    count,
+                                    countDelta,
+                                    depth,
+                                    depthDelta,
+                                    lastAddTimestamp,
+                                    updateTimestamp);
+   }
 
    public static CompositeData toCompositeData(MessageCounter counter)
    {

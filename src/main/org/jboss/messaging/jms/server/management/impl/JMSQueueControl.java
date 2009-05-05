@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.QueueControlMBean;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
@@ -276,10 +277,16 @@ public class JMSQueueControl implements JMSQueueControlMBean
       return moveMatchingMessages(null, otherQueueName);
    }
 
-   public Object[] listMessageCounter()
+   public String listMessageCounter()
    {
-      //return MessageCounterInfo.toCompositeData(counter);
-      return new Object[0];
+      try
+      {
+         return MessageCounterInfo.toJSon(counter);
+      }
+      catch (Exception e)
+      {
+         throw new IllegalStateException(e);
+      }
    }
 
    public String listMessageCounterAsHTML()
@@ -287,7 +294,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[] { counter });
    }
 
-   public Object[] listMessageCounterHistory() throws Exception
+   public String listMessageCounterHistory() throws Exception
    {
       return MessageCounterHelper.listMessageCounterHistory(counter);
    }

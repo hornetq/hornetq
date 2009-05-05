@@ -118,11 +118,11 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
    int moveAllMessages(@Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to")
    String otherQueueName) throws Exception;
 
-   Object[] listMessageCounter() throws Exception;
+   String listMessageCounter() throws Exception;
 
    String listMessageCounterAsHTML() throws Exception;
 
-   Object[] listMessageCounterHistory() throws Exception;
+   String listMessageCounterHistory() throws Exception;
 
    String listMessageCounterHistoryAsHTML() throws Exception;
 

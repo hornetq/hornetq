@@ -148,7 +148,7 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.listAllMessages();
    }
 
-   public Object[] listMessageCounter() throws Exception
+   public String listMessageCounter() throws Exception
    {
       return localQueueControl.listMessageCounter();
    }
@@ -163,7 +163,7 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.listMessageCounterAsHTML();
    }
 
-   public Object[] listMessageCounterHistory() throws Exception
+   public String listMessageCounterHistory() throws Exception
    {
       return localQueueControl.listMessageCounterHistory();
    }

@@ -29,7 +29,6 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
 import javax.management.ObjectName;
-import javax.management.openmbean.CompositeData;
 
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -37,6 +36,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.management.QueueControlMBean;
@@ -161,23 +161,21 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       Thread.sleep(liveServerControl.getMessageCounterSamplePeriod() * 2);
 
       // check the count is to 1 on both live & backup nodes
-      Object[] counter = liveQueueControl.listMessageCounter();
+      String jsonString = liveQueueControl.listMessageCounter();
+      MessageCounterInfo counter = MessageCounterInfo.fromJSON(jsonString);
       
-      fail("re-enable test");
-//      assertEquals((long)1, counter.get("count"));
-//      counter = backupQueueControl.listMessageCounter();
-//      assertEquals((long)1, counter.get("count"));
-//
-//      liveServerControl.resetAllMessageCounters();
-//      Thread.sleep(liveServerControl.getMessageCounterSamplePeriod() * 2);
-//
-//      // check the count has been reset to 0 on both live & backup nodes
-//      counter = liveQueueControl.listMessageCounter();
-//      assertEquals((long)0, counter.get("count"));
-//      counter = backupQueueControl.listMessageCounter();
-//      assertEquals((long)0, counter.get("count"));
-      
-      //TODO re-enable test
+      assertEquals(1, counter.getCount());
+      counter = MessageCounterInfo.fromJSON(backupQueueControl.listMessageCounter());
+      assertEquals(1, counter.getCount());
+
+      liveServerControl.resetAllMessageCounters();
+      Thread.sleep(liveServerControl.getMessageCounterSamplePeriod() * 2);
+
+      // check the count has been reset to 0 on both live & backup nodes
+      counter = MessageCounterInfo.fromJSON(liveQueueControl.listMessageCounter());
+      assertEquals(0, counter.getCount());
+      counter = MessageCounterInfo.fromJSON(backupQueueControl.listMessageCounter());
+      assertEquals(0, counter.getCount());      
    }
 
    public void testSetMessageCounterSamplePeriod() throws Exception

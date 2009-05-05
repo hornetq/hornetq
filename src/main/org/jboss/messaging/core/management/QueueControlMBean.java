@@ -133,13 +133,13 @@ public interface QueueControlMBean
 
    int changeMessagesPriority(String filter, int newPriority) throws Exception;
 
-   Object[] listMessageCounter() throws Exception;
+   String listMessageCounter() throws Exception;
 
    void resetMessageCounter() throws Exception;
 
    String listMessageCounterAsHTML() throws Exception;
 
-   Object[] listMessageCounterHistory() throws Exception;
+   String listMessageCounterHistory() throws Exception;
 
    String listMessageCounterHistoryAsHTML() throws Exception;
 

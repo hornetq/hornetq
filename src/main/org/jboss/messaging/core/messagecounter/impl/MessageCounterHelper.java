@@ -50,25 +50,21 @@ public class MessageCounterHelper
 
    // Static --------------------------------------------------------
 
-   public static Object[] listMessageCounterHistory(final MessageCounter counter) throws Exception
+   public static String listMessageCounterHistory(final MessageCounter counter) throws Exception
    {
-//      List<DayCounter> history = counter.getHistory();
-//      DayCounterInfo[] infos = new DayCounterInfo[history.size()];
-//      for (int i = 0; i < infos.length; i++)
-//      {
-//         DayCounter dayCounter = history.get(i);
-//         int[] counters = dayCounter.getCounters();
-//         GregorianCalendar date = dayCounter.getDate();
-//
-//         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-//         String strData = dateFormat.format(date.getTime());
-//         infos[i] = new DayCounterInfo(strData, counters);
-//      }
-//      return DayCounterInfo.toTabularData(infos);
-      
-      //TODO
-      
-      return new Object[0];
+      List<DayCounter> history = counter.getHistory();
+      DayCounterInfo[] infos = new DayCounterInfo[history.size()];
+      for (int i = 0; i < infos.length; i++)
+      {
+         DayCounter dayCounter = history.get(i);
+         int[] counters = dayCounter.getCounters();
+         GregorianCalendar date = dayCounter.getDate();
+
+         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+         String strData = dateFormat.format(date.getTime());
+         infos[i] = new DayCounterInfo(strData, counters);
+      }
+      return DayCounterInfo.toJSON(infos);
    }
    
    public static String listMessageCounterAsHTML(MessageCounter[] counters)
