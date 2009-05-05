@@ -92,7 +92,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
       Object[] connectorPairs = clusterConnectionControl.getStaticConnectorNamePairs();
       assertEquals(1, connectorPairs.length);
-      String[] connectorPairData = (String[])connectorPairs[0];
+      Object[] connectorPairData = (Object[])connectorPairs[0];
       assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).a, connectorPairData[0]);
       assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).b, connectorPairData[1]);
 
