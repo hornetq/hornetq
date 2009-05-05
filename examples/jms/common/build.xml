@@ -161,6 +161,12 @@
       <delete dir="./server5/logs" quiet="true" />
       <delete dir="./server5/data" quiet="true" />
       <delete dir="./ObjectStore" quiet="true" />
+      <!-- large-message creates huge .dat files -->
+      <delete>
+	     <fileset dir=".">
+	        <include name="*.dat"/>
+	     </fileset>
+      </delete>
    </target>
     
    <target name="all" description="Run all the JMS examples">
