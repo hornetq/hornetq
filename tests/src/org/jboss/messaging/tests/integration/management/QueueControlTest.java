@@ -303,8 +303,9 @@ public class QueueControlTest extends ManagementTestBase
       producer.send(session.createClientMessage(false));
 
       Map<String, Object>[] messages = queueControl.listScheduledMessages();
-      assertEquals(1, messages.length);     
-      assertEquals(intValue, messages[0].get("key"));
+      assertEquals(1, messages.length);    
+      Map properties = (Map)messages[0].get("properties");
+      assertEquals(intValue, properties.get("key"));
 
       Thread.sleep(delay);
 
@@ -357,8 +358,9 @@ public class QueueControlTest extends ManagementTestBase
       producer.send(message);
 
       Map<String, Object>[] messages =  queueControl.listAllMessages();
-      assertEquals(1, messages.length);     
-      assertEquals(intValue, messages[0].get("key"));
+      assertEquals(1, messages.length);
+      Map properties = (Map)messages[0].get("properties");
+      assertEquals(intValue, properties.get("key"));
 
       consumeMessages(1, session, queue);
 
@@ -391,7 +393,8 @@ public class QueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] messages = queueControl.listMessages(filter);
       assertEquals(1, messages.length);
-      assertEquals(matchingValue, messages[0].get("key"));
+      Map properties = (Map)messages[0].get("properties");
+      assertEquals(matchingValue, properties.get("key"));
 
       consumeMessages(2, session, queue);
 

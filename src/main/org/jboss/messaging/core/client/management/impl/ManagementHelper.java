@@ -219,8 +219,23 @@ public class ManagementHelper
                if (innerVal instanceof JSONArray)
                {
                   innerVal = fromJSONArray(((JSONArray)innerVal));
+               } 
+               else if (innerVal instanceof JSONObject)
+               {
+                  Map<String, Object> innerMap = new HashMap<String, Object>();
+                  JSONObject o = ((JSONObject)innerVal);
+                  Iterator it = o.keys();
+                  while (it.hasNext())
+                  {
+                     String k = (String)it.next();
+                     innerMap.put(k, o.get(k));                     
+                  }
+                  innerVal = innerMap;
+               } else if (innerVal instanceof Integer)
+               {
+                  innerVal = ((Integer)innerVal).longValue();
                }
-
+               
                map.put(key, innerVal);
             }
 
@@ -248,6 +263,7 @@ public class ManagementHelper
           param instanceof Double == false &&
           param instanceof String == false &&
           param instanceof Boolean == false &&
+          param instanceof Map == false &&
           param instanceof Byte == false &&
           param instanceof Short == false)
       {

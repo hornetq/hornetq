@@ -43,6 +43,8 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.DayCounterInfo;
+import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -304,11 +306,10 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       // unscheduled message
       producer.send(session.createClientMessage(false));
 
-      Object[] data = (Object[])proxy.invokeOperation("listScheduledMessages", null);
+      Object[] data = (Object[])proxy.invokeOperation("listScheduledMessages");
       assertEquals(1, data.length);     
       Map messageReceived = (Map)data[0];
-      Object[] p = (Object[])messageReceived.get("properties");
-      Map properties = (Map)p[0];
+      Map properties = (Map)messageReceived.get("properties");
       
       Set entries = properties.entrySet();      
       Iterator iter = entries.iterator();
@@ -320,11 +321,11 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       }
       
       
-      assertEquals(Integer.toString(intValue), properties.get("key"));
+      assertEquals(intValue, properties.get("key"));
 
       Thread.sleep(delay);
 
-      data = (Object[])proxy.invokeOperation("listScheduledMessages", null);
+      data = (Object[])proxy.invokeOperation("listScheduledMessages");
       assertEquals(0, data.length);
 
       consumeMessages(2, session, queue);
@@ -377,7 +378,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       //MessageInfo[] messageInfos = MessageInfo.from(data);
       Map messageReceived = (Map)data[0];
       Map properties = (Map)messageReceived.get("properties");
-      assertEquals(Integer.toString(intValue), properties.get("key"));
+      assertEquals(intValue, properties.get("key"));
 
       consumeMessages(1, session, queue);
 
@@ -413,7 +414,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
      // MessageInfo[] messageInfos = MessageInfo.from(data);
       Map messageReceived = (Map)data[0];
       Map properties = (Map)messageReceived.get("properties");
-      assertEquals(Long.toString(matchingValue), properties.get("key"));
+      assertEquals(matchingValue, properties.get("key"));
 
       consumeMessages(2, session, queue);
 
@@ -590,10 +591,10 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       assertEquals(0, otherproxy.retrieveAttributeValue("MessageCount"));
 
       // the message IDs are set on the server
-      Object[] data = (Object[])proxy.invokeOperation("listAllMessages", null);
+      Object[] data = (Object[])proxy.invokeOperation("listAllMessages");
       Map messageReceived = (Map)data[0];
       assertEquals(2, data.length);
-      long messageID = (Long)messageReceived.get("ID");
+      long messageID = (Long)messageReceived.get("MessageID");
 
       boolean moved = (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueue.toString());
       assertTrue(moved);
@@ -623,10 +624,10 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       assertEquals(1, proxy.retrieveAttributeValue("MessageCount"));
 
       // the message IDs are set on the server
-      Object[] data = (Object[])proxy.invokeOperation("listAllMessages", null);
+      Object[] data = (Object[])proxy.invokeOperation("listAllMessages");
       assertEquals(1, data.length);
       Map messageReceived = (Map)data[0];
-      long messageID = (Long)messageReceived.get("ID");
+      long messageID = (Long)messageReceived.get("MessageID");
 
       // moved all messages to unknown queue
       try
@@ -748,7 +749,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       Object[] data = (Object[])proxy.invokeOperation("listAllMessages", null);    
       assertEquals(2, data.length);
       Map message = (Map)data[0];
-      long messageID = (Long)message.get("ID");
+      long messageID = (Long)message.get("MessageID");
 
       // delete 1st message
       boolean deleted = (Boolean)proxy.invokeOperation("removeMessage", messageID);
@@ -857,10 +858,10 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       assertEquals(0, expiryproxy.retrieveAttributeValue("MessageCount"));
 
       // the message IDs are set on the server
-      Object[] data = (Object[])proxy.invokeOperation("listAllMessages", null);    
+      Object[] data = (Object[])proxy.invokeOperation("listAllMessages");    
       assertEquals(1, data.length);
       Map messageReceived = (Map)data[0];
-      long messageID = (Long)messageReceived.get("ID");
+      long messageID = (Long)messageReceived.get("MessageID");
 
       proxy.invokeOperation("setExpiryAddress", expiryAddress.toString());
       boolean expired = (Boolean)proxy.invokeOperation("expireMessage", messageID);
@@ -897,10 +898,10 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       assertEquals(2, proxy.retrieveAttributeValue("MessageCount"));
 
       // the message IDs are set on the server
-      Object[] data = (Object[])proxy.invokeOperation("listAllMessages", null);    
+      Object[] data = (Object[])proxy.invokeOperation("listAllMessages");    
       assertEquals(2, data.length);
       Map message = (Map)data[0];
-      long messageID = (Long)message.get("ID");
+      long messageID = (Long)message.get("MessageID");
 
       proxy.invokeOperation("setDeadLetterAddress", deadLetterAddress.toString());
 
@@ -939,9 +940,9 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       assertEquals(1, proxy.retrieveAttributeValue("MessageCount"));
 
       // the message IDs are set on the server
-      Object[] messages = (Object[])proxy.invokeOperation("listAllMessages", null);
+      Object[] messages = (Object[])proxy.invokeOperation("listAllMessages");
       assertEquals(1, messages.length);
-      long messageID = (Long)((Map)messages[0]).get("ID");
+      long messageID = (Long)((Map)messages[0]).get("MessageID");
 
       boolean priorityChanged = (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);
       assertTrue(priorityChanged);
@@ -972,10 +973,10 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       assertEquals(1, proxy.retrieveAttributeValue("MessageCount"));
 
       // the message IDs are set on the server
-      Object[] data = (Object[])proxy.invokeOperation("listAllMessages", null);    
+      Object[] data = (Object[])proxy.invokeOperation("listAllMessages");    
       assertEquals(1, data.length);
       Map messageReceived = (Map)data[0];
-      long messageID = (Long)messageReceived.get("ID");
+      long messageID = (Long)messageReceived.get("MessageID");
 
       try
       {
@@ -1007,37 +1008,41 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
-      Map map = (Map)proxy.invokeOperation("listMessageCounters", null);     
-      assertEquals(0, map.get("Depth"));
-      assertEquals(0, map.get("Count"));
+      String jsonString = (String)proxy.invokeOperation("listMessageCounter");     
+      MessageCounterInfo info = MessageCounterInfo.fromJSON(jsonString);
+      assertEquals(0, info.getDepth());
+      assertEquals(0, info.getCount());
 
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      map = (Map)proxy.invokeOperation("listMessageCounters", null);        
-      assertEquals(1, map.get("Depth"));
-      assertEquals(1, map.get("DepthDelta"));
-      assertEquals(1, map.get("Count"));
-      assertEquals(1, map.get("CountDelta"));
+      jsonString = (String)proxy.invokeOperation("listMessageCounter");     
+      info = MessageCounterInfo.fromJSON(jsonString);
+      assertEquals(1, info.getDepth());
+      assertEquals(1, info.getDepthDelta());
+      assertEquals(1, info.getCount());
+      assertEquals(1, info.getCountDelta());
 
       producer.send(session.createClientMessage(false));
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      map = (Map)proxy.invokeOperation("listMessageCounters", null);        
-      assertEquals(2, map.get("Depth"));
-      assertEquals(1, map.get("DepthDelta"));
-      assertEquals(2, map.get("Count"));
-      assertEquals(1, map.get("CountDelta"));
+      jsonString = (String)proxy.invokeOperation("listMessageCounter");     
+      info = MessageCounterInfo.fromJSON(jsonString);
+      assertEquals(2, info.getDepth());
+      assertEquals(1, info.getDepthDelta());
+      assertEquals(2, info.getCount());
+      assertEquals(1, info.getCountDelta());
 
       consumeMessages(2, session, queue);
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      map = (Map)proxy.invokeOperation("listMessageCounters", null);        
-      assertEquals(0, map.get("Depth"));
-      assertEquals(-2, map.get("DepthDelta"));
-      assertEquals(2, map.get("Count"));
-      assertEquals(0, map.get("CountDelta"));
+      jsonString = (String)proxy.invokeOperation("listMessageCounter");     
+      info = MessageCounterInfo.fromJSON(jsonString);
+      assertEquals(0, info.getDepth());
+      assertEquals(-2, info.getDepthDelta());
+      assertEquals(2, info.getCount());
+      assertEquals(0, info.getCountDelta());
 
       session.deleteQueue(queue);
    }
@@ -1054,37 +1059,41 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
-      Map map = (Map)proxy.invokeOperation("listMessageCounters", null);     
-      assertEquals(0, map.get("Depth"));
-      assertEquals(0, map.get("Count"));
+      String jsonString = (String)proxy.invokeOperation("listMessageCounter");     
+      MessageCounterInfo info = MessageCounterInfo.fromJSON(jsonString);
+      assertEquals(0, info.getDepth());
+      assertEquals(0, info.getCount());
 
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      map = (Map)proxy.invokeOperation("listMessageCounters", null);        
-      assertEquals(1, map.get("Depth"));
-      assertEquals(1, map.get("DepthDelta"));
-      assertEquals(1, map.get("Count"));
-      assertEquals(1, map.get("CountDelta"));
+      jsonString = (String)proxy.invokeOperation("listMessageCounter");     
+      info = MessageCounterInfo.fromJSON(jsonString);
+      assertEquals(1, info.getDepth());
+      assertEquals(1, info.getDepthDelta());
+      assertEquals(1, info.getCount());
+      assertEquals(1, info.getCountDelta());
 
       consumeMessages(1, session, queue);
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      map = (Map)proxy.invokeOperation("listMessageCounters", null);        
-      assertEquals(0, map.get("Depth"));
-      assertEquals(-1, map.get("DepthDelta"));
-      assertEquals(1, map.get("Count"));
-      assertEquals(0, map.get("CountDelta"));
+      jsonString = (String)proxy.invokeOperation("listMessageCounter");     
+      info = MessageCounterInfo.fromJSON(jsonString);
+      assertEquals(0, info.getDepth());
+      assertEquals(-1, info.getDepthDelta());
+      assertEquals(1, info.getCount());
+      assertEquals(0, info.getCountDelta());
 
-      proxy.invokeOperation("resetMessageCounter", null) ;
+      proxy.invokeOperation("resetMessageCounter") ;
 
       Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
-      map = (Map)proxy.invokeOperation("listMessageCounters", null);        
-      assertEquals(0, map.get("Depth"));
-      assertEquals(0, map.get("DepthDelta"));
-      assertEquals(0, map.get("Count"));
-      assertEquals(0, map.get("CountDelta"));
+      jsonString = (String)proxy.invokeOperation("listMessageCounter");     
+      info = MessageCounterInfo.fromJSON(jsonString);
+      assertEquals(0, info.getDepth());
+      assertEquals(0, info.getDepthDelta());
+      assertEquals(0, info.getCount());
+      assertEquals(0, info.getCountDelta());
 
       session.deleteQueue(queue);
    }
@@ -1116,8 +1125,9 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
 
-      Map[] data= (Map[])proxy.invokeOperation("listMessageCounterHistory", null);
-      assertEquals(1, data.length);
+      String jsonString = (String)proxy.invokeOperation("listMessageCounterHistory");
+      DayCounterInfo[] infos = DayCounterInfo.fromJSON(jsonString);
+      assertEquals(1, infos.length);
 
       session.deleteQueue(queue);
    }

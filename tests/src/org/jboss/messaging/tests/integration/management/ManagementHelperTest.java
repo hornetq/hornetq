@@ -170,7 +170,7 @@ public class ManagementHelperTest extends TestCase
       assertEquals(l, parameters[4]);
       Map mapRes = (Map)parameters[5];
       assertEquals(map.size(), mapRes.size());
-      assertEquals(value1, mapRes.get(key1));
+      assertEquals((long)value1, mapRes.get(key1));
       assertEquals(value2, mapRes.get(key2));
       assertEquals(value3, mapRes.get(key3));
       assertEquals(value4, mapRes.get(key4));
@@ -186,7 +186,7 @@ public class ManagementHelperTest extends TestCase
       assertEquals(2, mapArray.length);
       Map mapRes2 = (Map)mapArray[0];
       assertEquals(map2.size(), mapRes2.size());
-      assertEquals(value2_1, mapRes2.get(key2_1));
+      assertEquals((long)value2_1, mapRes2.get(key2_1));
       assertEquals(value2_2, mapRes2.get(key2_2));
       assertEquals(value2_3, mapRes2.get(key2_3));
       assertEquals(value2_4, mapRes2.get(key2_4));
@@ -194,7 +194,7 @@ public class ManagementHelperTest extends TestCase
       
       Map mapRes3 = (Map)mapArray[1];
       assertEquals(map3.size(), mapRes3.size());
-      assertEquals(value3_1, mapRes3.get(key3_1));
+      assertEquals((long)value3_1, mapRes3.get(key3_1));
       assertEquals(value3_2, mapRes3.get(key3_2));
       assertEquals(value3_3, mapRes3.get(key3_3));
       assertEquals(value3_4, mapRes3.get(key3_4));
