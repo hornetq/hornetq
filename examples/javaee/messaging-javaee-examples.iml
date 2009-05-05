@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module relativePaths="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/output/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/ejb-jms-transaction/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/hajndi/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/jca-config/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/jms-bridge/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/mdb/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/servlet-transport/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/xarecovery/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/mdb/build" />
+      <excludeFolder url="file://$MODULE_DIR$/output" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="messaging" />
+    <orderEntry type="library" name="messaging_jars" level="project" />
+    <orderEntry type="library" name="jboss 5.1 client libs" level="application" />
+    <orderEntryProperties />
+  </component>
+</module>
+

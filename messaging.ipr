@@ -2,35 +2,135 @@
 <project relativePaths="false" version="4">
   <component name="AntConfiguration">
     <defaultAnt bundledAnt="true" />
-    <buildFile url="file://$PROJECT_DIR$/build.xml">
-      <additionalClassPath />
-      <antReference name="Apache Ant version 1.7.0" />
-      <customJdkName value="1.5" />
-      <maximumHeapSize value="128" />
-      <properties>
-        <property name="ENV.JBOSS_HOME" value="/home/andy/projects/jbossas/build/output/jboss-5.0.0.Beta3/" />
-      </properties>
-    </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/examples/jms/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
-      <customJdkName value="" />
-      <maximumHeapSize value="128" />
-      <properties />
-    </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/examples/messaging/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
-      <customJdkName value="" />
-      <maximumHeapSize value="128" />
-      <properties />
-    </buildFile>
     <buildFile url="file://$PROJECT_DIR$/build-messaging.xml">
       <additionalClassPath />
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
       <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/common/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/queue/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/topic/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/expiry/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/dead-letter/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/browser/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/paging/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/queue-requestor/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/request-reply/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/temp-queue/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/transactional/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/clustered-queue/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/durable-subscription/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/large-message/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/clustered-topic/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties />
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/javaee/mdb/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="ENV.JBOSS_HOME" value="/home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.CR1" />
+      </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/javaee/ejb-jms-transaction/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <properties>
+        <property name="ENV.JBOSS_HOME" value="/home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.CR1" />
+      </properties>
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -348,6 +448,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/messaging.iml" filepath="$PROJECT_DIR$/messaging.iml" />
+      <module fileurl="file://$PROJECT_DIR$/examples/javaee/messaging-javaee-examples.iml" filepath="$PROJECT_DIR$/examples/javaee/messaging-javaee-examples.iml" />
+      <module fileurl="file://$PROJECT_DIR$/examples/jms/messaging-jms-examples.iml" filepath="$PROJECT_DIR$/examples/jms/messaging-jms-examples.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tests/jms-tests/messaging-jms-tests.iml" filepath="$PROJECT_DIR$/tests/jms-tests/messaging-jms-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tests/joram-tests/messaging-joram-tests.iml" filepath="$PROJECT_DIR$/tests/joram-tests/messaging-joram-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tests/messaging-tests.iml" filepath="$PROJECT_DIR$/tests/messaging-tests.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
@@ -402,96 +507,112 @@
   <component name="libraryTable">
     <library name="messaging">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-log4j/lib/log4j.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging-src.zip!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-xerces/lib/xercesImpl.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-xml-commons/lib/resolver.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-xml-commons/lib/xml-apis.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/dom4j/lib/dom4j.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/javassist/lib/javassist.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-aop-as4-deployer.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-aop-deployer-jdk50.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-aop-jdk50-client.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-aop-jdk50.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-asintegration-src.zip!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jboss-standalone-aspect-library-jdk50.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/jrockit-pluggable-instrumentor.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/aop/lib/pluggable-instrumentor.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common/lib/jboss-common-client.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common/lib/jboss-common.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common/lib/namespace.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/common-core/lib/jboss-common-core.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/integration/lib/jboss-classloading-spi-sources.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/integration/lib/jboss-classloading-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/integration/lib/jboss-corba-ots-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/integration/lib/jboss-integration.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/integration/lib/jboss-transaction-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi-jdk14.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jboss-security-spi/lib/jboss-security-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts14/lib/jbossjta-integration.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts14/lib/jbossjta.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts14/lib/jbossts-common.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jnpserver/lib/jnpserver.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-aop-mc-int.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-classloader.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-container-metadata-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-container-metadata.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-container-sources.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-container.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-dependency.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-client-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-client.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-core-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-core.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-impl.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-spi-sources.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-structure-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-vfs-spi.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-deployers-vfs.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-kernel.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-managed.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib/jboss-metatype.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/junit/lib/junit.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/oswego-concurrent/lib/concurrent.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/snmptrapappender/lib/snmpTrapAppender.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/sun-javacc/lib/javacc.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/trove/lib/trove.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/wutka-dtdparser/lib/dtdparser.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/api/lib/slf4j-api-1.5.2.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/slf4j/log4j/lib/slf4j-log4j12-1.5.2.jar!/" />
-        <root url="file://$PROJECT_DIR$/tests/config" />
-        <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
-        <root url="file://$PROJECT_DIR$/src/config" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/easymock/lib/easymock.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/cglib/lib/cglib.jar!/" />
-        <root url="jar://$PROJECT_DIR$/tools/lib/jbossbuild.jar!/" />
-        <root url="jar://$ANT_HOME$/lib/ant-junit.jar!/" />
-        <root url="jar://$ANT_HOME$/lib/ant.jar!/" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/apache-mina/lib/mina-core-2.0.0-M4.jar!/" />
-        <root url="file:///home/andy/etc" />
-        <root url="jar://$PROJECT_DIR$/thirdparty/netty/lib/netty-3.1.0.ALPHA4.jar!/" />
         <root url="file://$PROJECT_DIR$/src/schemas" />
+        <root url="file://$PROJECT_DIR$/src/config" />
+        <root url="file://$PROJECT_DIR$/src/config/common" />
+        <root url="file://$PROJECT_DIR$/src/config/stand-alone/non-clustered" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jnpserver/lib/jnpserver-sources.jar!/" />
-      </SOURCES>
-      <jarDirectory url="file:///home/andy/etc" recursive="false" />
+      <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/src/etc" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/src/schemas" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tests/etc" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tests/jms-tests/etc" recursive="false" />
     </library>
+    <library name="messaging_jars">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/thirdparty/trove/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/sun-jaxb/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/netty/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/integration/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/cglib/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jnpserver/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/easymock-classextension/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/easymock/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/apache-logging/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/profiler/jvmti/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jbossxb/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-reflect/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-common-logging-spi/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-common-logging-log4j/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/aop/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/junit/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/apache-log4j/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-mdr/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-security-spi/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/javassist/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-javaee/lib" />
+        <root url="file://$PROJECT_DIR$/tools/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/apache-xerces/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/sun-javacc/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-jaspi-api/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jbosssx-client/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/jbossts/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/wutka-dtdparser/lib" />
+        <root url="file://$PROJECT_DIR$/thirdparty/jboss/common-core/lib" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/apache-log4j/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/apache-logging/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/apache-xerces/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/cglib/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/easymock-classextension/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/easymock/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/javassist/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/aop/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/common-core/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/integration/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-common-logging-log4j/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-common-logging-spi/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-jaspi-api/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-javaee/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-mdr/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-reflect/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jboss-security-spi/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jbosssx-client/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jbossts/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jbossxb/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/jnpserver/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/microcontainer/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/jboss/profiler/jvmti/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/junit/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/netty/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/sun-javacc/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/sun-jaxb/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/trove/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/thirdparty/wutka-dtdparser/lib" recursive="false" />
+      <jarDirectory url="file://$PROJECT_DIR$/tools/lib" recursive="false" />
+    </library>
+    <library name="messaging-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-joram-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/joram-tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-jms-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-jms-examples">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/examples/jms/common/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
-  <UsedPathMacros>
-    <macro name="ANT_HOME" />
-  </UsedPathMacros>
 </project>
 
