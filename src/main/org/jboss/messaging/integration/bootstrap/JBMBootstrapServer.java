@@ -69,6 +69,8 @@ public class JBMBootstrapServer extends BasicBootstrap
     */
    public static void main(final String[] args) throws Exception
    {
+      log.info("Starting JBoss Messaging server");
+
       JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
       
       bootstrap.run();
@@ -79,6 +81,7 @@ public class JBMBootstrapServer extends BasicBootstrap
       try
       {
          super.run();
+         log.info("JBoss Messaging server started");
       }
       catch (RuntimeException e)
       {
