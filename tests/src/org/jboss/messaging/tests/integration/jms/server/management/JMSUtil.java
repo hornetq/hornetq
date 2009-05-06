@@ -65,6 +65,7 @@ public class JMSUtil
       
       cf.setBlockOnNonPersistentSend(true);
       cf.setBlockOnPersistentSend(true);
+      cf.setBlockOnAcknowledge(true);
 
       return cf.createConnection();
    }
@@ -75,6 +76,7 @@ public class JMSUtil
       
       cf.setBlockOnNonPersistentSend(true);
       cf.setBlockOnPersistentSend(true);
+      cf.setBlockOnAcknowledge(true);
       cf.setConnectionTTL(connectionTTL);
       cf.setPingPeriod(pingPeriod);
 
