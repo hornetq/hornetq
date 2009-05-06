@@ -77,22 +77,30 @@ public class NettyConnection implements Connection
       {
          return;
       }
-      
+                  
       SslHandler sslHandler = (SslHandler)channel.getPipeline().get("ssl");
       if (sslHandler != null)
       {
          try
          {
-            sslHandler.close(channel).addListener(ChannelFutureListener.CLOSE);
+            ChannelFuture sslCloseFuture = sslHandler.close(channel);
+            
+            if (!sslCloseFuture.awaitUninterruptibly(10000))
+            {
+               log.warn("Timed out waiting for ssl close future to complete");
+            }
          }
          catch (Throwable t)
          {
             // ignore
          }
       }
-      else
+      
+      ChannelFuture closeFuture = channel.close();
+      
+      if (!closeFuture.awaitUninterruptibly(10000))
       {
-         channel.close();
+         log.warn("Timed out waiting for channel to close");
       }
       
       closed = true;

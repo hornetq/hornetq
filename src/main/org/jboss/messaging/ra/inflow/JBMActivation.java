@@ -433,8 +433,7 @@ public class JBMActivation
             catch (Exception e)
             {
                if (destinationName == null)
-               {
-                  System.out.println("destination is null, rethrowing exception");
+               {                 
                   throw e;
                }
                // If there is no binding on naming, we will just create a new instance

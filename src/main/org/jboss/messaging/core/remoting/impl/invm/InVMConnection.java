@@ -31,6 +31,7 @@ import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
@@ -82,34 +83,52 @@ public class InVMConnection implements Connection
       listener.connectionCreated(this);
    }
 
-   public synchronized void close()
-   {
-      if (closed)
+   private volatile boolean closing;
+   
+   public void close()
+   {      
+      if (closing)
       {
          return;
       }
+      
+      closing = true;
 
-      // Must execute this on the executor, to ensure connection destroyed doesn't get fired before the last DISCONNECT
-      // packet is processed
-
-      try
-      {
-         executor.execute(new Runnable()
+      synchronized (this)
+      {         
+         // Must execute this on the executor, to ensure connection destroyed doesn't get fired before the last DISCONNECT
+         // packet is processed   
+         try
          {
-            public void run()
+            executor.execute(new Runnable()
             {
-               if (!closed)
+               public void run()
                {
-                  listener.connectionDestroyed(id);
-
-                  closed = true;
+                  if (!closed)
+                  {
+//                     log.info("calling listener connection destroyed: " + listener);
+                     listener.connectionDestroyed(id);
+   
+                     closed = true;
+                  }
                }
+            });
+            
+            Future future = new Future();
+            
+            executor.execute(future);
+            
+            boolean ok = future.await(10000);
+            
+            if (!ok)
+            {
+               log.warn("Timed out waiting to close");
             }
-         });
-      }
-      catch (RejectedExecutionException e)
-      {
-         // Ignore - this can happen if server/client is shutdown
+         }
+         catch (RejectedExecutionException e)
+         {
+            // Ignore - this can happen if server/client is shutdown
+         }
       }
    }
 

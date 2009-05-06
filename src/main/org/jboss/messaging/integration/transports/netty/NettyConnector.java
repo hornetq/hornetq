@@ -318,7 +318,7 @@ public class NettyConnector implements Connector
       }
 
       bootstrap = null;
-      channelGroup.close().awaitUninterruptibly();    
+      channelGroup.close().awaitUninterruptibly();
       channelFactory = null;
 
       for (Connection connection : connections.values())

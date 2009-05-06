@@ -127,17 +127,9 @@ public class ReplicationAwareJMSServerControlWrapperTest extends ReplicationAwar
 
       assertEquals(1, liveServerControl.listRemoteAddresses().length);
       assertEquals(1, backupServerControl.listRemoteAddresses().length);
-      
+          
       connection.close();
 
-      // FIXME: Closing a connection should be Synchronous
-      //        Remove this loop block when https://jira.jboss.org/jira/browse/JBMESSAGING-1618 is done
-      long timeout = System.currentTimeMillis() + 5000;
-      while (timeout > System.currentTimeMillis() && liveServerControl.listRemoteAddresses().length != 0)
-      {
-         Thread.sleep(10);
-      }
-      
       assertEquals(0, liveServerControl.listRemoteAddresses().length);
       assertEquals(1, backupServerControl.listRemoteAddresses().length);
    }

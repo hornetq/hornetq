@@ -69,14 +69,12 @@ public class DayCounterInfo
       
       JSONObject json = new JSONObject(jsonString);
       JSONArray dayCounters = json.getJSONArray("dayCounters");
-      System.out.println(json.toString(2));
       DayCounterInfo[] infos = new DayCounterInfo[dayCounters.length()];
       for (int i = 0; i < dayCounters.length(); i++)
       {
          
          JSONObject counter = (JSONObject)dayCounters.get(i);
          JSONArray hour = (JSONArray)counter.getJSONArray("counters").get(0);
-         System.out.println(hour.toString(3));
          int[] hourCounters = new int[24];
          for (int j = 0; j < 24; j++)
          {
