@@ -182,12 +182,12 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    // Public ---------------------------------------------------------------------------------------
 
-   public synchronized String getConnectionLoadBalancingPolicyClassName()
+   public synchronized String getLoadBalancingPolicyClassName()
    {
       return sessionFactory.getLoadBalancingPolicyClassName();
    }
 
-   public synchronized void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   public synchronized void setLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
    {
       sessionFactory.setLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
    }
@@ -232,12 +232,12 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       sessionFactory.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
    }
 
-   public synchronized long getDiscoveryInitialWaitTimeout()
+   public synchronized long getInitialWaitTimeout()
    {
      return sessionFactory.getInitialWaitTimeout();
    }
 
-   public synchronized void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
+   public synchronized void setInitialWaitTimeout(long discoveryInitialWaitTimeout)
    {
       sessionFactory.setInitialWaitTimeout(discoveryInitialWaitTimeout);
    }
@@ -248,7 +248,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    }
 
    public synchronized void setClientID(String clientID)
-   {
+   {      
       checkWrite();
       this.clientID = clientID;
    }
@@ -499,7 +499,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                                    final boolean isXA,
                                                                    final int type) throws JMSException
    {
-      readOnly = false;
+      readOnly = true;
       
       JBossConnection connection = new JBossConnection(username,
                                                        password,
@@ -518,6 +518,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private void checkWrite()
    {
+      log.info("read only is " + readOnly);
       if (readOnly)
       {
          throw new IllegalStateException("Cannot set attribute on JBossConnectionFactory after it has been used");

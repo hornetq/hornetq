@@ -44,7 +44,13 @@ import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.Pair;
 
 /**
+ * 
+ * A ClientSessionFactoryTest
+ *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
+ *
  */
 public class ClientSessionFactoryTest extends ServiceTestBase
 {

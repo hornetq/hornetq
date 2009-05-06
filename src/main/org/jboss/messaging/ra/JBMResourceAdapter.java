@@ -1316,7 +1316,7 @@ public class JBMResourceAdapter implements ResourceAdapter
    {
       if (getLoadBalancingPolicyClassName() != null)
       {
-         cf.setConnectionLoadBalancingPolicyClassName(getLoadBalancingPolicyClassName());
+         cf.setLoadBalancingPolicyClassName(getLoadBalancingPolicyClassName());
       }
 
       if (getPingPeriod() != null)
