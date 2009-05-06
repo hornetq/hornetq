@@ -31,7 +31,6 @@ import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
@@ -84,50 +83,23 @@ public class InVMConnection implements Connection
    }
 
    private volatile boolean closing;
-   
+
    public void close()
-   {      
+   {
       if (closing)
       {
          return;
       }
-      
+
       closing = true;
 
       synchronized (this)
-      {         
-         // Must execute this on the executor, to ensure connection destroyed doesn't get fired before the last DISCONNECT
-         // packet is processed   
-         try
+      {
+         if (!closed)
          {
-            executor.execute(new Runnable()
-            {
-               public void run()
-               {
-                  if (!closed)
-                  {
-//                     log.info("calling listener connection destroyed: " + listener);
-                     listener.connectionDestroyed(id);
-   
-                     closed = true;
-                  }
-               }
-            });
-            
-            Future future = new Future();
-            
-            executor.execute(future);
-            
-            boolean ok = future.await(10000);
-            
-            if (!ok)
-            {
-               log.warn("Timed out waiting to close");
-            }
-         }
-         catch (RejectedExecutionException e)
-         {
-            // Ignore - this can happen if server/client is shutdown
+            listener.connectionDestroyed(id);
+
+            closed = true;
          }
       }
    }

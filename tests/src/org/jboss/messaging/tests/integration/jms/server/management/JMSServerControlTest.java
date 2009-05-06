@@ -22,10 +22,6 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
-import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.Map;
@@ -52,7 +48,6 @@ import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
-import org.jboss.messaging.tests.util.RandomUtil;
 
 /**
  * A JMSServerControlTest

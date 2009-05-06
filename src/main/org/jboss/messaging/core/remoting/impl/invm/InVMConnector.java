@@ -189,12 +189,11 @@ public class InVMConnector implements Connector
 
       public void connectionDestroyed(final Object connectionID)
       {
-         // Close the corresponding connection on the other side - this MUST be done on the same thread otherwise
-         // closing won't be synchronous!
-         acceptor.disconnect((String)connectionID);
-         
          if (connections.remove(connectionID) != null)
          {
+            // Close the corresponding connection on the other side
+            acceptor.disconnect((String)connectionID);
+            
             // Execute on different thread to avoid deadlocks
             new Thread()
             {

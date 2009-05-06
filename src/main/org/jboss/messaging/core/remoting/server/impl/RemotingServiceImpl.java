@@ -290,7 +290,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    }
 
    public void connectionDestroyed(final Object connectionID)
-   {       
+   {         
       RemotingConnection conn = connections.get(connectionID);
       
       if (conn != null)

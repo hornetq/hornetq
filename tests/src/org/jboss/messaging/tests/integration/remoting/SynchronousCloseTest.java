@@ -45,9 +45,8 @@ public class SynchronousCloseTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(SynchronousCloseTest.class);
 
+   private static final Logger log = Logger.getLogger(SynchronousCloseTest.class);
 
    // Attributes ----------------------------------------------------
 
@@ -81,12 +80,12 @@ public class SynchronousCloseTest extends ServiceTestBase
 
       super.tearDown();
    }
-   
+
    protected boolean isNetty()
    {
       return false;
    }
-   
+
    protected ClientSessionFactory createSessionFactory()
    {
       ClientSessionFactory sf;
@@ -98,10 +97,10 @@ public class SynchronousCloseTest extends ServiceTestBase
       {
          sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       }
-      
+
       return sf;
    }
-   
+
    /*
     * Server side resources should be cleaned up befor call to close has returned or client could launch
     * DoS attack
@@ -109,24 +108,27 @@ public class SynchronousCloseTest extends ServiceTestBase
    public void testSynchronousClose() throws Exception
    {
       assertEquals(0, server.getMessagingServerControl().listRemoteAddresses().length);
-      
+
       ClientSessionFactory sf = createSessionFactory();
-      
+
       for (int i = 0; i < 100; i++)
-      {      
+      {
          ClientSession session = sf.createSession(false, true, true);
 
          assertEquals(1, server.getMessagingServerControl().listRemoteAddresses().length);
-             
+
+         log.info("closing session");
          session.close();
+         log.info("closed session");
+
+         // Thread.sleep(10000);
 
          assertEquals(0, server.getMessagingServerControl().listRemoteAddresses().length);
       }
-      
+
       sf.close();
    }
 
-   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
