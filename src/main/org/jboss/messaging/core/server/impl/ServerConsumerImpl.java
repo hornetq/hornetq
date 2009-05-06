@@ -486,6 +486,12 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Public ---------------------------------------------------------------------------------------
 
+   
+   /** Only use this on tests */
+   public AtomicInteger getAvailableCredits()
+   {
+      return availableCredits;
+   }
    // Private --------------------------------------------------------------------------------------
 
    private void promptDelivery()
