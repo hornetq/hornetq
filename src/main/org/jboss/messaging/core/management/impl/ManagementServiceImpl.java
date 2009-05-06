@@ -699,21 +699,41 @@ public class ManagementServiceImpl implements ManagementService
       {
          if (m.getName().equals(operation) && m.getParameterTypes().length == params.length)
          {
+            boolean match = true;
+
             Class<?>[] paramTypes = m.getParameterTypes();
 
             for (int i = 0; i < paramTypes.length; i++)
             {
-               if (params[i] != null 
-                        && !(params[i].getClass().isArray())
-                        && params[i].getClass().isAssignableFrom(paramTypes[i].getClass()))
-               {
+               if (params[i] == null)
+               { 
                   continue;
                }
+               // System.out.format("param=%s, expecting=%s\n", params[i].getClass(), paramTypes[i]);
+               // System.out.println(!paramTypes[i].isAssignableFrom(params[i].getClass()));
+               // System.out.println(paramTypes[i] == Long.TYPE && params[i].getClass() == Integer.class);
+               if (paramTypes[i].isAssignableFrom(params[i].getClass())
+                       || (paramTypes[i] == Long.TYPE && params[i].getClass() == Integer.class)
+                       || (paramTypes[i] == Double.TYPE && params[i].getClass() == Integer.class)
+                       || (paramTypes[i] == Long.TYPE && params[i].getClass() == Long.class)
+                       || (paramTypes[i] == Double.TYPE && params[i].getClass() == Double.class)
+                       || (paramTypes[i] == Integer.TYPE && params[i].getClass() == Integer.class)
+                       || (paramTypes[i] == Boolean.TYPE && params[i].getClass() == Boolean.class))
+               {
+                  // parameter match
+               }
+               else
+               {
+                  match = false;
+                  break; // parameter check loop
+               }
             }
-
-            method = m;
-
-            break;
+            
+            if (match)
+            {
+               method = m;
+               break; // method match loop
+            }
          }
       }
 
@@ -721,6 +741,22 @@ public class ManagementServiceImpl implements ManagementService
       {
          throw new IllegalArgumentException("no operation " + operation + "/" + params.length);
       }
+      // System.out.println(method.getName());
+      // for (Class<?> parameters : method.getParameterTypes())
+      // {
+      // System.out.println(parameters);
+      // }
+      // System.out.println("===");
+      // for (Object object : params)
+      // {
+      // if (object == null)
+      // {
+      // System.out.println("null");
+      // } else
+      // {
+      // System.out.println(object.getClass());
+      // }
+      // }
       Object result = method.invoke(resource, params);
 
       return result;

@@ -23,7 +23,6 @@
 package org.jboss.messaging.jms.server.management.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -67,6 +66,16 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
 
    // Static --------------------------------------------------------
 
+   private static List<String> convert(Object[] jndiBindings)
+   {
+      List<String> bindings = new ArrayList<String>();
+      for (Object object : jndiBindings)
+      {
+         bindings.add(object.toString());
+      }
+      return bindings;
+   }
+
    // Constructors --------------------------------------------------
 
    public JMSServerControl(final JMSServerManager server) throws NotCompliantMBeanException
@@ -81,37 +90,50 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
    // JMSServerControlMBean implementation --------------------------
 
    public void createConnectionFactory(final String name,
-                                       final String[] liveConnectorsTransportClassNames,
-                                       final Map<String, Object>[] liveConnectorTransportParams,
-                                       final String[] backupConnectorsTransportClassNames,
-                                       final Map<String, Object>[] backupConnectorTransportParams,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] liveConnectorsTransportClassNames,
+                                       final Object[] liveConnectorTransportParams,
+                                       final Object[] backupConnectorsTransportClassNames,
+                                       final Object[] backupConnectorTransportParams,
+                                       final Object[] jndiBindings) throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> pairs = convertToConnectorPairs(liveConnectorsTransportClassNames,
                                                                                                  liveConnectorTransportParams,
                                                                                                  backupConnectorsTransportClassNames,
                                                                                                  backupConnectorTransportParams);
 
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
-
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       server.createConnectionFactory(name, pairs, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
 
-   private List<Pair<TransportConfiguration, TransportConfiguration>> convertToConnectorPairs(final String[] liveConnectorsTransportClassNames,
-                                                                                              final Map<String, Object>[] liveConnectorTransportParams,
-                                                                                              final String[] backupConnectorsTransportClassNames,
-                                                                                              final Map<String, Object>[] backupConnectorTransportParams)
+   private List<Pair<TransportConfiguration, TransportConfiguration>> convertToConnectorPairs(final Object[] liveConnectorsTransportClassNames,
+                                                                                              final Object[] liveConnectorTransportParams,
+                                                                                              final Object[] backupConnectorsTransportClassNames,
+                                                                                              final Object[] backupConnectorTransportParams)
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> pairs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
 
       for (int i = 0; i < liveConnectorsTransportClassNames.length; i++)
       {
-         TransportConfiguration tcLive = new TransportConfiguration(liveConnectorsTransportClassNames[i],
-                                                                    liveConnectorTransportParams[i]);
-         TransportConfiguration tcBackup = new TransportConfiguration(liveConnectorsTransportClassNames[i],
-                                                                      liveConnectorTransportParams[i]);
+         Map<String, Object>[] liveParams = new Map[liveConnectorTransportParams.length];
+         for (int j = 0; j < liveConnectorTransportParams.length; j++)
+         {
+            liveParams[i] = (Map<String, Object>)liveConnectorTransportParams[j];            
+         }
+         
+         TransportConfiguration tcLive = new TransportConfiguration(liveConnectorsTransportClassNames[i].toString(),
+                                                                    liveParams[i]);
+
+         Map<String, Object>[] backupParams = new Map[backupConnectorTransportParams.length];
+         for (int j = 0; j < backupConnectorTransportParams.length; j++)
+         {
+            backupParams[i] = (Map<String, Object>)backupConnectorTransportParams[j];            
+         }
+
+         TransportConfiguration tcBackup = new TransportConfiguration(backupConnectorsTransportClassNames[i].toString(),
+                                                                      backupParams[i]);
          Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(tcLive,
                                                                                                                               tcBackup);
 
@@ -122,30 +144,30 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
    }
 
    public void createConnectionFactory(final String name,
-                                       final String[] liveConnectorsTransportClassNames,
-                                       final Map<String, Object>[] liveConnectorTransportParams,
-                                       final String[] backupConnectorsTransportClassNames,
-                                       final Map<String, Object>[] backupConnectorTransportParams,
+                                       final Object[] liveConnectorsTransportClassNames,
+                                       final Object[] liveConnectorTransportParams,
+                                       final Object[] backupConnectorsTransportClassNames,
+                                       final Object[] backupConnectorTransportParams,
                                        final String clientID,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> pairs = convertToConnectorPairs(liveConnectorsTransportClassNames,
                                                                                                  liveConnectorTransportParams,
                                                                                                  backupConnectorsTransportClassNames,
                                                                                                  backupConnectorTransportParams);
 
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
-
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       server.createConnectionFactory(name, pairs, clientID, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
 
    public void createConnectionFactory(final String name,
-                                       final String[] liveConnectorsTransportClassNames,
-                                       final Map<String, Object>[] liveConnectorTransportParams,
-                                       final String[] backupConnectorsTransportClassNames,
-                                       final Map<String, Object>[] backupConnectorTransportParams,
+                                       final Object[] liveConnectorsTransportClassNames,
+                                       final Object[] liveConnectorTransportParams,
+                                       final Object[] backupConnectorsTransportClassNames,
+                                       final Object[] backupConnectorTransportParams,
                                        final String clientID,
                                        final long pingPeriod,
                                        final long connectionTTL,
@@ -171,15 +193,15 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        final double retryIntervalMultiplier,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> pairs = convertToConnectorPairs(liveConnectorsTransportClassNames,
                                                                                                  liveConnectorTransportParams,
                                                                                                  backupConnectorsTransportClassNames,
                                                                                                  backupConnectorTransportParams);
 
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
-
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       server.createConnectionFactory(name,
                                      pairs,
                                      clientID,
@@ -216,10 +238,10 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        final String discoveryAddress,
                                        final int discoveryPort,
                                        final String clientID,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
-
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       server.createConnectionFactory(name, discoveryAddress, discoveryPort, clientID, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -255,10 +277,10 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        final double retryIntervalMultiplier,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
-
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       server.createConnectionFactory(name,
                                      discoveryAddress,
                                      discoveryPort,
@@ -294,37 +316,16 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
 
-   // FIXME
-//   public void createConnectionFactory(final String name,
-//                                       final String liveTransportClassName,
-//                                       final Map<String, Object> liveTransportParams,
-//                                       final String[] jndiBindings) throws Exception
-//   {
-//      TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
-//
-//      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
-//
-//      server.createConnectionFactory(name, liveTC, jndiBindingsList);
-//
-//      sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-//   }
-
    public void createConnectionFactory(final String name,
                                        final String liveTransportClassName,
                                        final Map<String, Object> liveTransportParams,
                                        final Object[] jndiBindings) throws Exception
    {
-      String[] bindings = new String[jndiBindings.length];
-      for (int i = 0; i < jndiBindings.length; i++)
-      {
-         bindings[i] = jndiBindings[i].toString();
-         
-      }
       
       TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
 
-      List<String> jndiBindingsList = Arrays.asList(bindings);
-
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       server.createConnectionFactory(name, liveTC, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -334,11 +335,11 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        final String liveTransportClassName,
                                        final Map<String, Object> liveTransportParams,
                                        final String clientID,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
-
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
 
       server.createConnectionFactory(name, liveTC, clientID, jndiBindingsList);
 
@@ -350,14 +351,14 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        final Map<String, Object> liveTransportParams,
                                        final String backupTransportClassName,
                                        final Map<String, Object> backupTransportParams,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
 
       TransportConfiguration backupTC = new TransportConfiguration(backupTransportClassName, backupTransportParams);
 
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
-
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       server.createConnectionFactory(name, liveTC, backupTC, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -369,14 +370,14 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
                                        final String backupTransportClassName,
                                        final Map<String, Object> backupTransportParams,
                                        final String clientID,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
 
       TransportConfiguration backupTC = new TransportConfiguration(backupTransportClassName, backupTransportParams);
 
-      List<String> jndiBindingsList = Arrays.asList(jndiBindings);
-
+      List<String> jndiBindingsList = convert(jndiBindings);
+      
       server.createConnectionFactory(name, liveTC, backupTC, clientID, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);

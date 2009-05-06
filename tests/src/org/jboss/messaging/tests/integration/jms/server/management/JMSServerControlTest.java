@@ -22,16 +22,13 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomDouble;
-import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveInt;
-import static org.jboss.messaging.tests.util.RandomUtil.randomPositiveLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomInt;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -49,12 +46,13 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
+import org.jboss.messaging.tests.util.RandomUtil;
 
 /**
  * A JMSServerControlTest
@@ -75,7 +73,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    protected InVMContext context;
 
-   protected MessagingServer server;
+   private JMSServerManagerImpl serverManager;
 
    // Static --------------------------------------------------------
 
@@ -87,7 +85,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       JMSServerControlMBean control = createManagementControl();
       String version = control.getVersion();
-      assertEquals(server.getVersion().getFullVersion(), version);
+      assertEquals(serverManager.getVersion(), version);
    }
 
    public void testCreateQueue() throws Exception
@@ -167,264 +165,231 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
    }
 
-//   public void testCreateConnectionFactoryLiveConnector() throws Exception
-//   {
-//      //String[] cfJNDIBindings = new String[] { randomString(), randomString(), randomString() };
-//      List<String> cfJNDIBindings = new ArrayList<String>();
-//      cfJNDIBindings.add(randomString());
-//      cfJNDIBindings.add(randomString());
-//      cfJNDIBindings.add(randomString());
-//            
-//      String cfName = randomString();
-//
-//      for (String cfJNDIBinding : cfJNDIBindings)
-//      {
-//         checkNoBinding(context, cfJNDIBinding);
-//      }
-//      checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//
-//      JMSServerControlMBean control = createManagementControl();
-//      
-//      TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
-//      
-//      control.createConnectionFactory(cfName, tcLive, cfJNDIBindings);
-//
-//      for (String cfJNDIBinding : cfJNDIBindings)
-//      {
-//         Object o = checkBinding(context, cfJNDIBinding);
-//         assertTrue(o instanceof ConnectionFactory);
-//         ConnectionFactory cf = (ConnectionFactory)o;
-//         Connection connection = cf.createConnection();
-//         connection.close();
-//      }
-//      checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//   }
-//
-//   public void testCreateConnectionFactory_2() throws Exception
-//   {
-//      String[] cfJNDIBindings = new String[] { randomString(), randomString(), randomString() };
-//      String cfName = randomString();
-//      boolean preAcknowledge = randomBoolean();
-//      boolean blockOnAcknowledge = randomBoolean();
-//      boolean blockOnNonPersistentSend = randomBoolean();
-//      boolean blockOnPersistentSend = randomBoolean();
-//
-//      for (String cfJNDIBinding : cfJNDIBindings)
-//      {
-//         checkNoBinding(context, cfJNDIBinding);         
-//      }
-//      checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//
-//      JMSServerControlMBean control = createManagementControl();
-//      control.createConnectionFactory(cfName,
-//                                      InVMConnectorFactory.class.getName(),
-//                                      blockOnAcknowledge,
-//                                      blockOnNonPersistentSend,
-//                                      blockOnPersistentSend,
-//                                      preAcknowledge,
-//                                      cfJNDIBindings);
-//
-//      for (String cfJNDIBinding : cfJNDIBindings)
-//      {
-//         Object o = checkBinding(context, cfJNDIBinding);
-//         assertTrue(o instanceof ConnectionFactory);
-//         ConnectionFactory cf = (ConnectionFactory)o;
-//         Connection connection = cf.createConnection();
-//         connection.close();
-//      }
-//
-//      checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//      ConnectionFactoryControlMBean cfControl = ManagementControlHelper.createConnectionFactoryControl(cfName,
-//                                                                                                       mbeanServer);
-//      assertEquals(preAcknowledge, cfControl.isPreAcknowledge());
-//      assertEquals(blockOnAcknowledge, cfControl.isBlockOnAcknowledge());
-//      assertEquals(blockOnNonPersistentSend, cfControl.isBlockOnNonPersistentSend());
-//      assertEquals(blockOnPersistentSend, cfControl.isBlockOnPersistentSend());
-//   }
-//
-//   public void testCreateConnectionFactory_3() throws Exception
-//   {
-//      String[] cfJNDIBindings = new String[] {randomString(), randomString(), randomString()} ;
-//      String cfName = randomString();
-//      long pingPeriod = randomPositiveLong();
-//      long connectionTTL = randomPositiveLong();
-//      long callTimeout = randomPositiveLong();
-//      String clientID = randomString();
-//      int dupsOKBatchSize = randomPositiveInt();
-//      int transactionBatchSize = randomPositiveInt();
-//      int consumerWindowSize = randomPositiveInt();
-//      int consumerMaxRate = randomPositiveInt();
-//      int producerWindowSize = randomPositiveInt();
-//      int producerMaxRate = randomPositiveInt();
-//      int minLargeMessageSize = randomPositiveInt();
-//      boolean autoGroup = randomBoolean();
-//      int maxConnections = randomPositiveInt();
-//      long retryInterval = randomPositiveLong();
-//      double retryIntervalMultiplier = randomDouble();
-//      int reconnectAttempts = randomPositiveInt();
-//      boolean failoverOnServerShutdown = randomBoolean();
-//      boolean preAcknowledge = randomBoolean();
-//      boolean blockOnAcknowledge = randomBoolean();
-//      boolean blockOnNonPersistentSend = randomBoolean();
-//      boolean blockOnPersistentSend = randomBoolean();
-//
-//      for (String cfJNDIBinding : cfJNDIBindings)
-//      {
-//         checkNoBinding(context, cfJNDIBinding);         
-//      }
-//      checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//
-//      JMSServerControlMBean control = createManagementControl();
-//
-//      control.createSimpleConnectionFactory(cfName,
-//                                            InVMConnectorFactory.class.getName(),
-//                                            ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-//                                            pingPeriod,
-//                                            connectionTTL,
-//                                            callTimeout,
-//                                            clientID,
-//                                            dupsOKBatchSize,
-//                                            transactionBatchSize,
-//                                            consumerWindowSize,
-//                                            consumerMaxRate,
-//                                            producerWindowSize,
-//                                            producerMaxRate,
-//                                            minLargeMessageSize,
-//                                            blockOnAcknowledge,
-//                                            blockOnNonPersistentSend,
-//                                            blockOnPersistentSend,
-//                                            autoGroup,
-//                                            maxConnections,
-//                                            preAcknowledge,
-//                                            retryInterval,
-//                                            retryIntervalMultiplier,
-//                                            reconnectAttempts,
-//                                            failoverOnServerShutdown,
-//                                            cfJNDIBindings);
-//
-//      for (String cfJNDIBinding : cfJNDIBindings)
-//      {
-//         Object o = checkBinding(context, cfJNDIBinding);
-//         assertTrue(o instanceof ConnectionFactory);
-//         ConnectionFactory cf = (ConnectionFactory)o;
-//         Connection connection = cf.createConnection();
-//         connection.close();
-//      }
-//
-//      checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//      ConnectionFactoryControlMBean cfControl = ManagementControlHelper.createConnectionFactoryControl(cfName,
-//                                                                                                       mbeanServer);
-//      assertEquals(cfName, cfControl.getName());
-//      assertEquals(pingPeriod, cfControl.getPingPeriod());
-//      assertEquals(connectionTTL, cfControl.getConnectionTTL());
-//      assertEquals(callTimeout, cfControl.getCallTimeout());
-//      assertEquals(clientID, cfControl.getClientID());
-//      assertEquals(dupsOKBatchSize, cfControl.getDupsOKBatchSize());
-//      assertEquals(transactionBatchSize, cfControl.getTransactionBatchSize());
-//      assertEquals(consumerWindowSize, cfControl.getConsumerWindowSize());
-//      assertEquals(consumerMaxRate, cfControl.getConsumerMaxRate());
-//      assertEquals(producerWindowSize, cfControl.getProducerWindowSize());
-//      assertEquals(producerMaxRate, cfControl.getProducerMaxRate());
-//      assertEquals(minLargeMessageSize, cfControl.getMinLargeMessageSize());
-//      assertEquals(autoGroup, cfControl.isAutoGroup());
-//      assertEquals(maxConnections, cfControl.getMaxConnections());
-//      assertEquals(retryInterval, cfControl.getRetryInterval());
-//      assertEquals(retryIntervalMultiplier, cfControl.getRetryIntervalMultiplier());
-//      assertEquals(reconnectAttempts, cfControl.getReconnectAttempts());
-//      assertEquals(failoverOnServerShutdown, cfControl.isFailoverOnNodeShutdown());
-//      assertEquals(preAcknowledge, cfControl.isPreAcknowledge());
-//      assertEquals(blockOnAcknowledge, cfControl.isBlockOnAcknowledge());
-//      assertEquals(blockOnNonPersistentSend, cfControl.isBlockOnNonPersistentSend());
-//      assertEquals(blockOnPersistentSend, cfControl.isBlockOnPersistentSend());
-//   }
-//   
-//   public void _testCreateConnectionFactoryWithDiscoveryGroup() throws Exception
-//   {
-//      MessagingServer server = null;
-//      try
-//      {
-//         String[] cfJNDIBindings = new String[] {randomString(), randomString(), randomString()};
-//         String cfName = randomString();
-//
-//         server = startMessagingServer(8765);
-//
-//         for (String cfJNDIBinding : cfJNDIBindings)
-//         {
-//            checkNoBinding(context, cfJNDIBinding);            
-//         }
-//
-//         JMSServerControlMBean control = createManagementControl();
-//         control.createConnectionFactory(cfName,
-//                                         randomString(),
-//                                         "231.7.7.7",
-//                                         8765,
-//                                         ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
-//                                         ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
-//                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-//                                         ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-//                                         ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-//                                         ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-//                                         null,
-//                                         ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-//                                         ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-//                                         ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
-//                                         ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-//                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
-//                                         ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
-//                                         ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-//                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
-//                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-//                                         ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-//                                         ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
-//                                         ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
-//                                         ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
-//                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
-//                                         ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-//                                         DEFAULT_RECONNECT_ATTEMPTS,
-//                                         DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-//                                         cfJNDIBindings);
-//
-//         for (String cfJNDIBinding : cfJNDIBindings)
-//         {
-//            Object o = checkBinding(context, cfJNDIBinding);
-//            assertTrue(o instanceof ConnectionFactory);
-//            ConnectionFactory cf = (ConnectionFactory)o;
-//            Connection connection = cf.createConnection();
-//            connection.close();
-//         }
-//      }
-//      finally
-//      {
-//         if (server != null)
-//         {
-//            server.stop();
-//         }
-//      }
-//   }
-//
-//   public void testDestroyConnectionFactory() throws Exception
-//   {
-//      String cfJNDIBinding = randomString();
-//      String cfName = randomString();
-//
-//      checkNoBinding(context, cfJNDIBinding);
-//      checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//
-//      JMSServerControlMBean control = createManagementControl();
-//      control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), new String[] {cfJNDIBinding});
-//
-//      Object o = checkBinding(context, cfJNDIBinding);
-//      assertTrue(o instanceof ConnectionFactory);
-//      ConnectionFactory cf = (ConnectionFactory)o;
-//      Connection connection = cf.createConnection();
-//      connection.close();
-//      checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//
-//      control.destroyConnectionFactory(cfName);
-//
-//      checkNoBinding(context, cfJNDIBinding);
-//      checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
-//   }
+   public void testCreateConnectionFactory_1() throws Exception
+   {
+      doCreateConnectionFactory(new ConnectionFactoryCreator()
+      {
+         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         {
+            String cfName = randomString();
+            TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+
+            control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), bindings);
+         }         
+      });
+   }
+
+   public void testCreateConnectionFactory_2() throws Exception
+   {
+      doCreateConnectionFactory(new ConnectionFactoryCreator()
+      {
+         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         {
+            String cfName = randomString();
+            String clientID = randomString();
+            TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+
+            control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), clientID, bindings);
+         }         
+      });
+   }
+
+   public void testCreateConnectionFactory_3() throws Exception
+   {
+      doCreateConnectionFactory(new ConnectionFactoryCreator()
+      {
+         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         {
+            String cfName = randomString();
+            TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+            TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
+
+            control.createConnectionFactory(cfName, 
+                                            tcLive.getFactoryClassName(),
+                                            tcLive.getParams(),
+                                            tcBackup.getFactoryClassName(),
+                                            tcBackup.getParams(),
+                                            bindings);
+         }         
+      });
+   }
+   
+   public void testCreateConnectionFactory_4() throws Exception
+   {
+      doCreateConnectionFactory(new ConnectionFactoryCreator()
+      {
+         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         {
+            String cfName = randomString();
+            String clientID = randomString();
+            TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+            TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
+
+            control.createConnectionFactory(cfName, 
+                                            tcLive.getFactoryClassName(),
+                                            tcLive.getParams(),
+                                            tcBackup.getFactoryClassName(),
+                                            tcBackup.getParams(),
+                                            clientID,
+                                            bindings);
+         }         
+      });
+   }
+   
+   public void testCreateConnectionFactory_5() throws Exception
+   {
+      doCreateConnectionFactory(new ConnectionFactoryCreator()
+      {
+         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         {
+            String cfName = randomString();
+            TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+            TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
+
+            control.createConnectionFactory(cfName, 
+                                            new Object[] {tcLive.getFactoryClassName()},
+                                            new Object[] {tcLive.getParams()},
+                                            new Object[] {tcBackup.getFactoryClassName()},
+                                            new Object[] {tcBackup.getParams()},
+                                            bindings);
+         }         
+      });
+   }
+      
+   public void testCreateConnectionFactory_6() throws Exception
+   {
+      doCreateConnectionFactory(new ConnectionFactoryCreator()
+      {
+         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         {
+            String cfName = randomString();
+            String clientID = randomString();
+            TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+            TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
+
+            control.createConnectionFactory(cfName, 
+                                            new Object[] {tcLive.getFactoryClassName()},
+                                            new Object[] {tcLive.getParams()},
+                                            new Object[] {tcBackup.getFactoryClassName()},
+                                            new Map[] {tcBackup.getParams()},
+                                            clientID,
+                                            bindings);
+         }         
+      });
+   }
+   
+   public void testCreateConnectionFactory_7() throws Exception
+   {
+      doCreateConnectionFactory(new ConnectionFactoryCreator()
+      {
+         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         {
+            String cfName = randomString();
+            String clientID = randomString();
+            TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+            TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
+
+            control.createConnectionFactory(cfName, 
+                                            new Object[] {tcLive.getFactoryClassName()},
+                                            new Object[] {tcLive.getParams()},
+                                            new Object[] {tcBackup.getFactoryClassName()},
+                                            new Object[] {tcBackup.getParams()},
+                                            clientID,
+                                            ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                            ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                            ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                            ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
+                                            ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                                            ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                                            ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                            ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                            ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                            ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                                            ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                                            ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                            ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                                            ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                                            ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                            ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                                            ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                            bindings);
+         }         
+      });
+   }
+
+   public void _testCreateConnectionFactoryWithDiscoveryGroup() throws Exception
+   {
+      String[] cfJNDIBindings = new String[] {randomString(), randomString(), randomString()};
+      String cfName = randomString();
+      String clientID = randomString();
+
+      // restart the server with a discovery group configuration
+      serverManager.stop();
+      startMessagingServer(8765);
+
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         checkNoBinding(context, cfJNDIBinding);            
+      }
+
+      JMSServerControlMBean control = createManagementControl();
+
+      control.createConnectionFactory(cfName, 
+                                      "231.7.7.7",
+                                      8765,
+                                      clientID,
+                                      cfJNDIBindings);
+
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         Object o = checkBinding(context, cfJNDIBinding);
+         assertTrue(o instanceof ConnectionFactory);
+         ConnectionFactory cf = (ConnectionFactory)o;
+         Connection connection = cf.createConnection();
+         connection.close();
+      }
+   }
+   
+   public void testDestroyConnectionFactory() throws Exception
+   {
+      String[] cfJNDIBindings = new String[] {randomString(), randomString(), randomString()};
+      String cfName = randomString();
+
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         checkNoBinding(context, cfJNDIBinding);            
+      }
+
+      JMSServerControlMBean control = createManagementControl();
+
+      TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+
+      control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), cfJNDIBindings);
+
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         Object o = checkBinding(context, cfJNDIBinding);
+         assertTrue(o instanceof ConnectionFactory);
+         ConnectionFactory cf = (ConnectionFactory)o;
+         Connection connection = cf.createConnection();
+         connection.close();
+      }
+      
+      control.destroyConnectionFactory(cfName);
+      
+      for (String cfJNDIBinding : cfJNDIBindings)
+      {
+         checkNoBinding(context, cfJNDIBinding);            
+      }
+
+   }
 
    // Package protected ---------------------------------------------
 
@@ -439,10 +404,10 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newMessagingServer(conf, mbeanServer, false);      
+      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);      
 
       context = new InVMContext();
-      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);      
+      serverManager = new JMSServerManagerImpl(server);      
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
@@ -451,7 +416,7 @@ public class JMSServerControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      server.stop();
+      serverManager.stop();
 
       super.tearDown();
    }
@@ -463,8 +428,37 @@ public class JMSServerControlTest extends ManagementTestBase
 
    // Private -------------------------------------------------------
 
+   private void doCreateConnectionFactory(ConnectionFactoryCreator creator) throws Exception
+   {
+      Object[] cfJNDIBindings = new Object[] { randomString(), randomString(), randomString() };
+            
+      String cfName = randomString();
 
-   private MessagingServer startMessagingServer(int discoveryPort) throws Exception
+      for (Object cfJNDIBinding : cfJNDIBindings)
+      {
+         checkNoBinding(context, cfJNDIBinding.toString());
+      }
+      checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
+
+      JMSServerControlMBean control = createManagementControl();
+     creator.createConnectionFactory(control, cfJNDIBindings);
+      
+      TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+      
+      control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), cfJNDIBindings);
+
+      for (Object cfJNDIBinding : cfJNDIBindings)
+      {
+         Object o = checkBinding(context, cfJNDIBinding.toString());
+         assertTrue(o instanceof ConnectionFactory);
+         ConnectionFactory cf = (ConnectionFactory)o;
+         Connection connection = cf.createConnection();
+         connection.close();
+      }
+      checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
+   }
+
+   private JMSServerManager startMessagingServer(int discoveryPort) throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
@@ -476,16 +470,22 @@ public class JMSServerControlTest extends ManagementTestBase
                                                discoveryPort,
                                                ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
       MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
-      server.start();
-
+      
       context = new InVMContext();
       JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
-      serverManager.start();
       serverManager.setContext(context);
+      serverManager.start();
+      serverManager.activated();
 
-      return server;
+      return serverManager;
    }
    
    // Inner classes -------------------------------------------------
+
+   interface ConnectionFactoryCreator{
+      void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception;
+   }
+   
+
 
 }

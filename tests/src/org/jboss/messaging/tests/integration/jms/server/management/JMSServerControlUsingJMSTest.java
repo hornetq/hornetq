@@ -35,7 +35,6 @@ import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
 
 /**
@@ -64,10 +63,6 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    protected void setUp() throws Exception
    {
       super.setUp();
-
-      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
-      serverManager.start();
-      serverManager.setContext(context);
 
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
@@ -122,7 +117,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              double retryIntervalMultiplier,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -161,7 +156,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              String discoveryAddress,
                                              int discoveryPort,
                                              String clientID,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -177,7 +172,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              String backupTransportClassName,
                                              Map<String, Object> backupTransportParams,
                                              String clientID,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -194,7 +189,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              Map<String, Object> liveTransportParams,
                                              String backupTransportClassName,
                                              Map<String, Object> backupTransportParams,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -209,7 +204,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              String liveTransportClassName,
                                              Map<String, Object> liveTransportParams,
                                              String clientID,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -232,10 +227,10 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          }
 
          public void createConnectionFactory(String name,
-                                             String[] liveConnectorsTransportClassNames,
-                                             Map<String, Object>[] liveConnectorTransportParams,
-                                             String[] backupConnectorsTransportClassNames,
-                                             Map<String, Object>[] backupConnectorTransportParams,
+                                             Object[] liveConnectorsTransportClassNames,
+                                             Object[] liveConnectorTransportParams,
+                                             Object[] backupConnectorsTransportClassNames,
+                                             Object[] backupConnectorTransportParams,
                                              String clientID,
                                              long pingPeriod,
                                              long connectionTTL,
@@ -261,7 +256,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              double retryIntervalMultiplier,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -299,12 +294,12 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          }
 
          public void createConnectionFactory(String name,
-                                             String[] liveConnectorsTransportClassNames,
-                                             Map<String, Object>[] liveConnectorTransportParams,
-                                             String[] backupConnectorsTransportClassNames,
-                                             Map<String, Object>[] backupConnectorTransportParams,
+                                             Object[] liveConnectorsTransportClassNames,
+                                             Object[] liveConnectorTransportParams,
+                                             Object[] backupConnectorsTransportClassNames,
+                                             Object[] backupConnectorTransportParams,
                                              String clientID,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -317,11 +312,11 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          }
 
          public void createConnectionFactory(String name,
-                                             String[] liveConnectorsTransportClassNames,
-                                             Map<String, Object>[] liveConnectorTransportParams,
-                                             String[] backupConnectorsTransportClassNames,
-                                             Map<String, Object>[] backupConnectorTransportParams,
-                                             String[] jndiBindings) throws Exception
+                                             Object[] liveConnectorsTransportClassNames,
+                                             Object[] liveConnectorTransportParams,
+                                             Object[] backupConnectorsTransportClassNames,
+                                             Object[] backupConnectorTransportParams,
+                                             Object[] jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,

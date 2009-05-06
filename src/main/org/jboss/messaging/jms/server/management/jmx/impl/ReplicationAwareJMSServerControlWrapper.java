@@ -97,9 +97,10 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final double retryIntervalMultiplier,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
+                             name,
                              discoveryAddress,
                              discoveryPort,
                              clientID,
@@ -136,9 +137,9 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final String discoveryAddress,
                                        final int discoveryPort,
                                        final String clientID,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
-      replicationAwareInvoke("createConnectionFactory", discoveryAddress, discoveryPort, clientID, jndiBindings);
+      replicationAwareInvoke("createConnectionFactory", name, discoveryAddress, discoveryPort, clientID, jndiBindings);
 
    }
 
@@ -148,9 +149,10 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final String backupTransportClassName,
                                        final Map<String, Object> backupTransportParams,
                                        final String clientID,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
+                             name,
                              liveTransportClassName,
                              liveTransportParams,
                              backupTransportClassName,
@@ -164,9 +166,10 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final Map<String, Object> liveTransportParams,
                                        final String backupTransportClassName,
                                        final Map<String, Object> backupTransportParams,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
+                             name,
                              liveTransportClassName,
                              liveTransportParams,
                              backupTransportClassName,
@@ -178,21 +181,14 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final String liveTransportClassName,
                                        final Map<String, Object> liveTransportParams,
                                        final String clientID,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
+                             name, 
                              liveTransportClassName,
                              liveTransportParams,
                              clientID,
                              jndiBindings);
-   }
-
-   public void createConnectionFactory(final String name,
-                                       final String liveTransportClassName,
-                                       final Map<String, Object> liveTransportParams,
-                                       final String[] jndiBindings) throws Exception
-   {
-      replicationAwareInvoke("createConnectionFactory", liveTransportClassName, liveTransportParams, jndiBindings);
    }
 
    public void createConnectionFactory(final String name,
@@ -200,14 +196,14 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final Map<String, Object> liveTransportParams,
                                        final Object[] jndiBindings) throws Exception
    {
-      replicationAwareInvoke("createConnectionFactory", liveTransportClassName, liveTransportParams, jndiBindings);
+      replicationAwareInvoke("createConnectionFactory", name, liveTransportClassName, liveTransportParams, jndiBindings);
    }
    
    public void createConnectionFactory(final String name,
-                                       final String[] liveConnectorsTransportClassNames,
-                                       final Map<String, Object>[] liveConnectorTransportParams,
-                                       final String[] backupConnectorsTransportClassNames,
-                                       final Map<String, Object>[] backupConnectorTransportParams,
+                                       final Object[] liveConnectorsTransportClassNames,
+                                       final Object[] liveConnectorTransportParams,
+                                       final Object[] backupConnectorsTransportClassNames,
+                                       final Object[] backupConnectorTransportParams,
                                        final String clientID,
                                        final long pingPeriod,
                                        final long connectionTTL,
@@ -233,9 +229,10 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final double retryIntervalMultiplier,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
+                             name,
                              liveConnectorsTransportClassNames,
                              liveConnectorTransportParams,
                              backupConnectorsTransportClassNames,
@@ -269,36 +266,36 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
    }
 
    public void createConnectionFactory(final String name,
-                                       final String[] liveConnectorsTransportClassNames,
-                                       final Map<String, Object>[] liveConnectorTransportParams,
-                                       final String[] backupConnectorsTransportClassNames,
-                                       final Map<String, Object>[] backupConnectorTransportParams,
+                                       final Object[] liveConnectorsTransportClassNames,
+                                       final Object[] liveConnectorTransportParams,
+                                       final Object[] backupConnectorsTransportClassNames,
+                                       final Object[] backupConnectorTransportParams,
                                        final String clientID,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
+                             name,
                              liveConnectorsTransportClassNames,
                              liveConnectorTransportParams,
                              backupConnectorsTransportClassNames,
                              backupConnectorTransportParams,
                              clientID,
-
                              jndiBindings);
    }
 
    public void createConnectionFactory(final String name,
-                                       final String[] liveConnectorsTransportClassNames,
-                                       final Map<String, Object>[] liveConnectorTransportParams,
-                                       final String[] backupConnectorsTransportClassNames,
-                                       final Map<String, Object>[] backupConnectorTransportParams,
-                                       final String[] jndiBindings) throws Exception
+                                       final Object[] liveConnectorsTransportClassNames,
+                                       final Object[] liveConnectorTransportParams,
+                                       final Object[] backupConnectorsTransportClassNames,
+                                       final Object[] backupConnectorTransportParams,
+                                       final Object[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
+                             name,
                              liveConnectorsTransportClassNames,
                              liveConnectorTransportParams,
                              backupConnectorsTransportClassNames,
                              backupConnectorTransportParams,
-
                              jndiBindings);
    }
 
