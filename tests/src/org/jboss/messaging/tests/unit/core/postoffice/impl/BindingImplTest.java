@@ -23,8 +23,10 @@
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
 
@@ -33,8 +35,11 @@ import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
 import org.jboss.messaging.core.postoffice.impl.BindingsImpl;
+import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.Bindable;
+import org.jboss.messaging.core.server.Consumer;
+import org.jboss.messaging.core.server.Distributor;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -109,11 +114,19 @@ public class BindingImplTest extends UnitTestCase
          }
       };
 
+      Queue queue = new FakeQueue(new SimpleString("a"));
       t.start();
 
       for (int i = 0; i < 100; i++)
       {
-         bind.route(new FakeMessage(), new FakeTransaction());
+         if (route)
+         {
+            bind.route(new FakeMessage(), new FakeTransaction());
+         }
+         else
+         {
+            bind.redistribute(new FakeMessage(), queue, new FakeTransaction());
+         }
       }
    }
 
@@ -269,7 +282,6 @@ public class BindingImplTest extends UnitTestCase
 
       public Map<String, Object> toMap()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
@@ -887,6 +899,473 @@ public class BindingImplTest extends UnitTestCase
        * @see org.jboss.messaging.core.postoffice.Binding#willRoute(org.jboss.messaging.core.server.ServerMessage)
        */
       public void willRoute(final ServerMessage message)
+      {
+
+      }
+
+   }
+
+   class FakeQueue implements Queue
+   {
+
+      private SimpleString name;
+      
+      FakeQueue(SimpleString name)
+      {
+         this.name = name;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#acknowledge(org.jboss.messaging.core.server.MessageReference)
+       */
+      public void acknowledge(MessageReference ref) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#acknowledge(org.jboss.messaging.core.transaction.Transaction, org.jboss.messaging.core.server.MessageReference)
+       */
+      public void acknowledge(Transaction tx, MessageReference ref) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#activate()
+       */
+      public boolean activate()
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#activateNow(java.util.concurrent.Executor)
+       */
+      public void activateNow(Executor executor)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#addConsumer(org.jboss.messaging.core.server.Consumer)
+       */
+      public void addConsumer(Consumer consumer) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#addFirst(org.jboss.messaging.core.server.MessageReference)
+       */
+      public void addFirst(MessageReference ref)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#addLast(org.jboss.messaging.core.server.MessageReference)
+       */
+      public void addLast(MessageReference ref)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#addRedistributor(long, java.util.concurrent.Executor, org.jboss.messaging.core.remoting.Channel)
+       */
+      public void addRedistributor(long delay, Executor executor, Channel replicatingChannel)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#cancel(org.jboss.messaging.core.transaction.Transaction, org.jboss.messaging.core.server.MessageReference)
+       */
+      public void cancel(Transaction tx, MessageReference ref) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#cancel(org.jboss.messaging.core.server.MessageReference)
+       */
+      public void cancel(MessageReference reference) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#cancelRedistributor()
+       */
+      public void cancelRedistributor() throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#changeReferencePriority(long, byte)
+       */
+      public boolean changeReferencePriority(long messageID, byte newPriority) throws Exception
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#checkDLQ(org.jboss.messaging.core.server.MessageReference)
+       */
+      public boolean checkDLQ(MessageReference ref) throws Exception
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#consumerFailedOver()
+       */
+      public boolean consumerFailedOver()
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#deleteAllReferences()
+       */
+      public int deleteAllReferences() throws Exception
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#deleteMatchingReferences(org.jboss.messaging.core.filter.Filter)
+       */
+      public int deleteMatchingReferences(Filter filter) throws Exception
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#deleteReference(long)
+       */
+      public boolean deleteReference(long messageID) throws Exception
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#deliverAsync(java.util.concurrent.Executor)
+       */
+      public void deliverAsync(Executor executor)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#deliverNow()
+       */
+      public void deliverNow()
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#expire(org.jboss.messaging.core.server.MessageReference)
+       */
+      public void expire(MessageReference ref) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#expireReference(long)
+       */
+      public boolean expireReference(long messageID) throws Exception
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#expireReferences(org.jboss.messaging.core.filter.Filter)
+       */
+      public int expireReferences(Filter filter) throws Exception
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#expireReferences()
+       */
+      public void expireReferences() throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getConsumerCount()
+       */
+      public int getConsumerCount()
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getConsumers()
+       */
+      public Set<Consumer> getConsumers()
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getDeliveringCount()
+       */
+      public int getDeliveringCount()
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getDistributionPolicy()
+       */
+      public Distributor getDistributionPolicy()
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getFilter()
+       */
+      public Filter getFilter()
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getMessageCount()
+       */
+      public int getMessageCount()
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getMessagesAdded()
+       */
+      public int getMessagesAdded()
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getName()
+       */
+      public SimpleString getName()
+      {
+         return name;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getPersistenceID()
+       */
+      public long getPersistenceID()
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getReference(long)
+       */
+      public MessageReference getReference(long id)
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getScheduledCount()
+       */
+      public int getScheduledCount()
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#getScheduledMessages()
+       */
+      public List<MessageReference> getScheduledMessages()
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#isBackup()
+       */
+      public boolean isBackup()
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#isDurable()
+       */
+      public boolean isDurable()
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#isTemporary()
+       */
+      public boolean isTemporary()
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#list(org.jboss.messaging.core.filter.Filter)
+       */
+      public List<MessageReference> list(Filter filter)
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#moveReference(long, org.jboss.messaging.utils.SimpleString)
+       */
+      public boolean moveReference(long messageID, SimpleString toAddress) throws Exception
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#moveReferences(org.jboss.messaging.core.filter.Filter, org.jboss.messaging.utils.SimpleString)
+       */
+      public int moveReferences(Filter filter, SimpleString toAddress) throws Exception
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#reacknowledge(org.jboss.messaging.core.transaction.Transaction, org.jboss.messaging.core.server.MessageReference)
+       */
+      public void reacknowledge(Transaction tx, MessageReference ref) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#referenceHandled()
+       */
+      public void referenceHandled()
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#removeConsumer(org.jboss.messaging.core.server.Consumer)
+       */
+      public boolean removeConsumer(Consumer consumer) throws Exception
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#removeFirstReference(long)
+       */
+      public MessageReference removeFirstReference(long id) throws Exception
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#removeReferenceWithID(long)
+       */
+      public MessageReference removeReferenceWithID(long id) throws Exception
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#reroute(org.jboss.messaging.core.server.ServerMessage, org.jboss.messaging.core.transaction.Transaction)
+       */
+      public MessageReference reroute(ServerMessage message, Transaction tx) throws Exception
+      {
+
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#sendMessageToDeadLetterAddress(long)
+       */
+      public boolean sendMessageToDeadLetterAddress(long messageID) throws Exception
+      {
+
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#setBackup()
+       */
+      public void setBackup()
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#setDistributionPolicy(org.jboss.messaging.core.server.Distributor)
+       */
+      public void setDistributionPolicy(Distributor policy)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#setPersistenceID(long)
+       */
+      public void setPersistenceID(long id)
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Bindable#preroute(org.jboss.messaging.core.server.ServerMessage, org.jboss.messaging.core.transaction.Transaction)
+       */
+      public void preroute(ServerMessage message, Transaction tx) throws Exception
+      {
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Bindable#route(org.jboss.messaging.core.server.ServerMessage, org.jboss.messaging.core.transaction.Transaction)
+       */
+      public void route(ServerMessage message, Transaction tx) throws Exception
       {
 
       }
