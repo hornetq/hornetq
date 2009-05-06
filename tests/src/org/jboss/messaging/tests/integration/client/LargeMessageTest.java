@@ -70,7 +70,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
    // Static --------------------------------------------------------
-   private static final Logger log = Logger.getLogger(LargeMessageTest.class);
+   private final Logger log = Logger.getLogger(LargeMessageTest.class);
 
    // Constructors --------------------------------------------------
 
@@ -479,7 +479,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          msg.acknowledge();
          consumer.close();
 
-         System.out.println("Stopping");
+         log.debug("Stopping");
 
          session.stop();
 
@@ -1046,12 +1046,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.start();
 
-         System.out.println("Sending");
+         log.debug("Sending");
          producer.send(clientFile);
 
          producer.close();
 
-         System.out.println("Waiting");
+         log.debug("Waiting");
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -1127,16 +1127,16 @@ public class LargeMessageTest extends LargeMessageTestBase
             msg.putIntProperty(new SimpleString("key"), i);
             producer.send(msg);
 
-            System.out.println("Sent msg " + i);
+            log.debug("Sent msg " + i);
          }
 
          session.start();
 
-         System.out.println("Sending");
+         log.debug("Sending");
 
          producer.close();
 
-         System.out.println("Waiting");
+         log.debug("Waiting");
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -1158,7 +1158,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
-         System.out.println("Thread done");
+         log.debug("Thread done");
       }
       finally
       {
@@ -1285,7 +1285,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          {
             ClientMessage message2 = consumer.receive(RECEIVE_WAIT_TIME);
 
-            log.info("got message " + i);
+            log.debug("got message " + i);
 
             assertNotNull(message2);
 

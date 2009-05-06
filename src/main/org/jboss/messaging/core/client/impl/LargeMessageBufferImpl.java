@@ -117,8 +117,6 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       }
    }
 
-   long size;
-
    /**
     * Add a buff to the List, or save it to the OutputStream if set
     * @param packet

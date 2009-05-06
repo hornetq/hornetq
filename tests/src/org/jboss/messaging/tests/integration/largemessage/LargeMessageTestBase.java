@@ -222,7 +222,7 @@ public class LargeMessageTestBase extends ServiceTestBase
          for (int iteration = testBrowser ? 0 : 1; iteration < 2; iteration++)
          {
 
-            System.out.println("Iteration: " + iteration);
+            log.debug("Iteration: " + iteration);
 
             session.stop();
 
@@ -243,7 +243,7 @@ public class LargeMessageTestBase extends ServiceTestBase
 
                      try
                      {
-                        System.out.println("Message on consumer: " + msgCounter);
+                        log.debug("Message on consumer: " + msgCounter);
 
                         if (delayDelivery > 0)
                         {
@@ -279,15 +279,11 @@ public class LargeMessageTestBase extends ServiceTestBase
                                  if (b[0] == getSamplebyte(bytesRead.get()))
                                  {
                                     bytesRead.addAndGet(b.length);
-                                    System.out.println("Read position " + bytesRead.get() + " on consumer");
-                                    if (bytesRead.get() == 1126400l)
-                                    {
-                                       System.out.println("I'm here");
-                                    }
+                                    log.debug("Read position " + bytesRead.get() + " on consumer");
                                  }
                                  else
                                  {
-                                    System.out.println("Received invalid packet at position " + bytesRead.get());
+                                    log.warn("Received invalid packet at position " + bytesRead.get());
                                  }
                               }
 
@@ -300,7 +296,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                                  }
                                  else
                                  {
-                                    System.out.println("byte not as expected!");
+                                    log.warn("byte not as expected!");
                                  }
                               }
                            });
@@ -317,7 +313,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                            {
                               if (b % (1024l * 1024l) == 0)
                               {
-                                 System.out.println("Read " + b + " bytes");
+                                 log.debug("Read " + b + " bytes");
                               }
                               
                               assertEquals(getSamplebyte(b), buffer.readByte());
@@ -327,7 +323,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                      catch (Throwable e)
                      {
                         e.printStackTrace();
-                        System.out.println("Got an error");
+                        log.warn("Got an error", e);
                         errors.incrementAndGet();
                      }
                      finally
@@ -359,7 +355,7 @@ public class LargeMessageTestBase extends ServiceTestBase
 
                   assertNotNull(message);
 
-                  System.out.println("Message: " + i);
+                  log.debug("Message: " + i);
 
                   System.currentTimeMillis();
 
@@ -401,7 +397,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                            }
                            else
                            {
-                              System.out.println("Received invalid packet at position " + bytesRead.get());
+                              log.warn("Received invalid packet at position " + bytesRead.get());
                            }
 
                         }
@@ -411,7 +407,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                         {
                            if (bytesRead.get() % (1024l * 1024l) == 0)
                            {
-                              System.out.println("Read " + bytesRead.get() + " bytes");
+                              log.debug("Read " + bytesRead.get() + " bytes");
                            }
                            if (b == (byte)'a')
                            {
@@ -419,7 +415,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                            }
                            else
                            {
-                              System.out.println("byte not as expected!");
+                              log.warn("byte not as expected!");
                            }
                         }
                      });
@@ -432,7 +428,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                      {
                         if (b % (1024l * 1024l) == 0l)
                         {
-                           System.out.println("Read " + b + " bytes");
+                           log.debug("Read " + b + " bytes");
                         }
                         assertEquals(getSamplebyte(b), buffer.readByte());
                      }
@@ -513,7 +509,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                              final ClientSession session,
                              final ClientProducer producer) throws Exception
    {
-      System.out.println("NumberOfBytes = " + numberOfBytes);
+      log.debug("NumberOfBytes = " + numberOfBytes);
       for (int i = 0; i < numberOfMessages; i++)
       {
          ClientMessage message = session.createClientMessage(true);
@@ -522,12 +518,12 @@ public class LargeMessageTestBase extends ServiceTestBase
          // test
          if (numberOfBytes > 1024 * 1024 || i % 2 == 0)
          {
-            System.out.println("Sending message (stream)" + i);
+            log.debug("Sending message (stream)" + i);
             message.setBodyInputStream(createFakeLargeStream(numberOfBytes));
          }
          else
          {
-            System.out.println("Sending message (array)" + i);
+            log.debug("Sending message (array)" + i);
             byte[] bytes = new byte[(int)numberOfBytes];
             for (int j = 0; j < bytes.length; j++)
             {
@@ -652,7 +648,7 @@ public class LargeMessageTestBase extends ServiceTestBase
          {
             if (count++ % 1024 * 1024 == 0)
             {
-               //System.out.println("OutputStream received " + count + " bytes");
+               log.debug("OutputStream received " + count + " bytes");
             }
             if (closed)
             {
