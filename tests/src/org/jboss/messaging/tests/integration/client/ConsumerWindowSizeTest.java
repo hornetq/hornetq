@@ -887,6 +887,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          ClientSessionFactory sf = createInVMFactory();
          sf.setConsumerWindowSize(-1);
+         if (largeMessages)
+         {
+            sf.setMinLargeMessageSize(100);
+         }
 
          sessionA = sf.createSession(false, true, true);
 
@@ -904,8 +908,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          ClientConsumerInternal consB = (ClientConsumerInternal)sessionB.createConsumer(ADDRESS);
 
          {
-            // We can only guarantee round robing with WindowSize = -1, after the ServerConsumer object received SessionConsumerFlowCreditMessage(-1)
-            // Since that is done asynchronously we verify that the information was received before we proceed on sending messages or else the distribution won't be 
+            // We can only guarantee round robing with WindowSize = -1, after the ServerConsumer object received
+            // SessionConsumerFlowCreditMessage(-1)
+            // Since that is done asynchronously we verify that the information was received before we proceed on
+            // sending messages or else the distribution won't be
             // even as expected by the test
             Bindings bindings = server.getPostOffice().getBindingsForAddress(ADDRESS);
 
@@ -921,7 +927,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                   long timeout = System.currentTimeMillis() + 5000;
                   while (timeout > System.currentTimeMillis() && consumerImpl.getAvailableCredits() != null)
                   {
-                     new Exception("Trace").printStackTrace();
                      Thread.sleep(10);
                   }
                }
