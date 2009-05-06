@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.DISCONNECT;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
@@ -502,7 +504,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
 
-         boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.SERVER_DISCONNECTED);
+         boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.DISCONNECTED);
 
          boolean done = false;
          
@@ -773,21 +775,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          connections.clear();
 
          for (ConnectionEntry entry : copy)
-         {
+         {           
             try
             {
                entry.connection.destroy();
             }
             catch (Throwable ignore)
             {
-            }
-            // try
-            // {
-            // entry.connector.close();
-            // }
-            // catch (Throwable ignore)
-            // {
-            // }
+            }           
          }
 
          mapIterator = null;

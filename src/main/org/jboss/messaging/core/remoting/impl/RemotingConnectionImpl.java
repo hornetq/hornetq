@@ -1751,7 +1751,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          }
          else if (type == PacketImpl.DISCONNECT)
          {
-            fail(new MessagingException(MessagingException.SERVER_DISCONNECTED, "The connection was closed by the server"));
+            fail(new MessagingException(MessagingException.DISCONNECTED, "The connection was closed by the server"));
          }
          else
          {

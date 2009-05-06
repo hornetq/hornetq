@@ -290,7 +290,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    }
 
    public void connectionDestroyed(final Object connectionID)
-   {  
+   {       
       RemotingConnection conn = connections.get(connectionID);
       
       if (conn != null)
@@ -309,7 +309,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
-   {
+   {            
       //We DO NOT call fail on connection exception, otherwise in event of real connection failure, the
       //connection  will be failed, the session will be closed and won't be able to reconnect
       
