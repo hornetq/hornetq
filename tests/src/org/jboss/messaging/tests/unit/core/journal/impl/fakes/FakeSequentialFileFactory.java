@@ -574,4 +574,29 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       // nothing to be done on the fake Sequential file
    }
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#releaseBuffer(java.nio.ByteBuffer)
+    */
+   public void releaseBuffer(ByteBuffer buffer)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#getBufferCallback()
+    */
+   public BufferCallback getBufferCallback()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#setBufferCallback(org.jboss.messaging.core.journal.BufferCallback)
+    */
+   public void setBufferCallback(BufferCallback bufferCallback)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 }

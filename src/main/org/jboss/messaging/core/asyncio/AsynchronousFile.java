@@ -40,8 +40,9 @@ public interface AsynchronousFile
     * Note: If you are using a native Linux implementation, maxIO can't be higher than what's defined on /proc/sys/fs/aio-max-nr, or you would get an error 
     * @param fileName
     * @param maxIO The number of max concurrent asynchrnous IO operations. It has to be balanced between the size of your writes and the capacity of your disk.
+    * @throws MessagingException 
     */
-   void open(String fileName, int maxIO);
+   void open(String fileName, int maxIO) throws MessagingException;
 
    /** 
     * Warning: This function will perform a synchronous IO, probably translating to a fstat call
@@ -49,13 +50,12 @@ public interface AsynchronousFile
     * */
    long size() throws MessagingException;
 
-   void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioPackage) throws MessagingException;
+   /** Any error will be reported on the callback interface */ 
+   void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback);
 
-   void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioPackage) throws MessagingException;
+   void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback) throws MessagingException;
 
    void fill(long position, int blocks, long size, byte fillChar) throws MessagingException;
-
-   ByteBuffer newBuffer(int size);
 
    void setBufferCallback(BufferCallback callback);
 

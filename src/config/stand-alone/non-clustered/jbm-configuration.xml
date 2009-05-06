@@ -187,7 +187,7 @@
 
       <create-journal-dir>true</create-journal-dir>
 
-      <journal-type>NIO</journal-type>
+      <journal-type>ASYNCIO</journal-type>
 
       <!-- The journal will reuse any buffers where the size < journal-buffer-reuse-size on write operations
            Set this to -1 to disable this feature -->

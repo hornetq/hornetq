@@ -48,8 +48,6 @@ public interface SequentialFile
     */
    void open(int maxIO) throws Exception;
 
-   void setBufferCallback(BufferCallback callback);
-
    int getAlignment() throws Exception;
 
    int calculateBlockStart(int position) throws Exception;

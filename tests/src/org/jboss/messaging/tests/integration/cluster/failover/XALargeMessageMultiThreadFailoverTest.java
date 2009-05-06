@@ -85,7 +85,7 @@ public class XALargeMessageMultiThreadFailoverTest extends XAMultiThreadRandomFa
       backupConf.setPagingDirectory(getPageDir(getTestDir() + "/backup"));
       backupConf.setJournalFileSize(100 * 1024);
 
-      backupConf.setJournalType(JournalType.NIO);
+      backupConf.setJournalType(JournalType.ASYNCIO);
 
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -106,7 +106,7 @@ public class XALargeMessageMultiThreadFailoverTest extends XAMultiThreadRandomFa
 
       liveConf.setJournalFileSize(100 * 1024);
 
-      liveConf.setJournalType(JournalType.NIO);
+      liveConf.setJournalType(JournalType.ASYNCIO);
 
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 
@@ -44,6 +45,8 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    private static final Logger log = Logger.getLogger(AbstractSequentialFactory.class);
 
    protected final String journalDir;
+   
+   protected BufferCallback bufferCallback;
 
    public AbstractSequentialFactory(final String journalDir)
    {
@@ -85,4 +88,22 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
       return Arrays.asList(fileNames);
    }
 
+   /**
+    * @return the bufferCallback
+    */
+   public BufferCallback getBufferCallback()
+   {
+      return bufferCallback;
+   }
+
+   /**
+    * @param bufferCallback the bufferCallback to set
+    */
+   public void setBufferCallback(BufferCallback bufferCallback)
+   {
+      this.bufferCallback = bufferCallback;
+   }
+
+   
+   
 }

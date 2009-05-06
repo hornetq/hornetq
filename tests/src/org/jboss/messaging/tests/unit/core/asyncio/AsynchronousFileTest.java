@@ -22,12 +22,7 @@
 
 package org.jboss.messaging.tests.unit.core.asyncio;
 
-import org.jboss.messaging.core.asyncio.AIOCallback;
-import org.jboss.messaging.core.asyncio.BufferCallback;
-import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -35,6 +30,16 @@ import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.messaging.core.asyncio.AIOCallback;
+import org.jboss.messaging.core.asyncio.BufferCallback;
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.JBMThreadFactory;
 
 /**
  * 
@@ -53,19 +58,40 @@ public class AsynchronousFileTest extends AIOTestBase
    private static CharsetEncoder UTF_8_ENCODER = Charset.forName("UTF-8").newEncoder();
 
    byte commonBuffer[] = null;
+   
+   ExecutorService executor;
+   
+   ExecutorService pollerExecutor;
+
 
    private static void debug(final String msg)
    {
       log.debug(msg);
    }
 
+   
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
+      executor = Executors.newSingleThreadExecutor();
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      executor.shutdown();
+      pollerExecutor.shutdown();
+      super.tearDown();
+   }
+   
    /** 
     * Opening and closing a file immediately can lead to races on the native layer,
     * creating crash conditions.
     * */
    public void testOpenClose() throws Exception
    {
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
       for (int i = 0; i < 1000; i++)
       {
          controller.open(FILE_NAME, 10000);
@@ -73,16 +99,16 @@ public class AsynchronousFileTest extends AIOTestBase
 
       }
    }
-   
+
    public void testFileNonExistent() throws Exception
    {
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
       for (int i = 0; i < 1000; i++)
       {
          try
          {
             controller.open("/non-existent/IDontExist.error", 10000);
-            fail ("Exception expected! The test could create a file called /non-existent/IDontExist.error when it was supposed to fail.");
+            fail("Exception expected! The test could create a file called /non-existent/IDontExist.error when it was supposed to fail.");
          }
          catch (Throwable ignored)
          {
@@ -106,21 +132,22 @@ public class AsynchronousFileTest extends AIOTestBase
     */
    public void testTwoFiles() throws Exception
    {
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
-      final AsynchronousFileImpl controller2 = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
+      final AsynchronousFileImpl controller2 = new AsynchronousFileImpl(executor, pollerExecutor);
       controller.open(FILE_NAME + ".1", 10000);
       controller2.open(FILE_NAME + ".2", 10000);
 
       int numberOfLines = 1000;
       int size = 1024;
 
+      ByteBuffer buffer = null;
       try
       {
          CountDownLatch latchDone = new CountDownLatch(numberOfLines);
          CountDownLatch latchDone2 = new CountDownLatch(numberOfLines);
 
-         ByteBuffer block = controller.newBuffer(size);
-         encodeBufer(block);
+         buffer = AsynchronousFileImpl.newBuffer(size);
+         encodeBufer(buffer);
 
          preAlloc(controller, numberOfLines * size);
          preAlloc(controller2, numberOfLines * size);
@@ -144,8 +171,8 @@ public class AsynchronousFileTest extends AIOTestBase
          {
             CountDownCallback tmp2 = iter2.next();
 
-            controller.write(counter * size, size, block, tmp);
-            controller.write(counter * size, size, block, tmp2);
+            controller.write(counter * size, size, buffer, tmp);
+            controller.write(counter * size, size, buffer, tmp2);
             if (++counter % 5000 == 0)
             {
                debug(5000 * 1000 / (System.currentTimeMillis() - lastTime) + " rec/sec (Async)");
@@ -202,6 +229,7 @@ public class AsynchronousFileTest extends AIOTestBase
       }
       finally
       {
+         AsynchronousFileImpl.destroyBuffer(buffer);
          try
          {
             controller.close();
@@ -249,7 +277,8 @@ public class AsynchronousFileTest extends AIOTestBase
          }
       }
 
-      AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
+      ByteBuffer buffer = null;
       try
       {
 
@@ -258,13 +287,13 @@ public class AsynchronousFileTest extends AIOTestBase
          controller.open(FILE_NAME, 10);
          controller.close();
 
-         controller = new AsynchronousFileImpl();
+         controller = new AsynchronousFileImpl(executor, pollerExecutor);
 
          controller.open(FILE_NAME, 10);
 
          controller.fill(0, 1, 512, (byte)'j');
 
-         ByteBuffer buffer = controller.newBuffer(SIZE);
+         buffer = AsynchronousFileImpl.newBuffer(SIZE);
 
          buffer.clear();
 
@@ -305,8 +334,7 @@ public class AsynchronousFileTest extends AIOTestBase
          {
          }
 
-         // newBuffer = ByteBuffer.allocateDirect(512);
-         newBuffer = controller.newBuffer(512);
+         newBuffer = AsynchronousFileImpl.newBuffer(512);
          callbackLocal = new LocalCallback();
          controller.read(0, 512, newBuffer, callbackLocal);
          callbackLocal.latch.await();
@@ -325,6 +353,8 @@ public class AsynchronousFileTest extends AIOTestBase
       }
       finally
       {
+         AsynchronousFileImpl.destroyBuffer(buffer);
+         
          try
          {
             controller.close();
@@ -340,7 +370,7 @@ public class AsynchronousFileTest extends AIOTestBase
    public void testBufferCallbackUniqueBuffers() throws Exception
    {
       boolean closed = false;
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
       try
       {
          final int NUMBER_LINES = 1000;
@@ -366,7 +396,7 @@ public class AsynchronousFileTest extends AIOTestBase
          CountDownCallback aio = new CountDownCallback(latch);
          for (int i = 0; i < NUMBER_LINES; i++)
          {
-            ByteBuffer buffer = controller.newBuffer(SIZE);
+            ByteBuffer buffer = AsynchronousFileImpl.newBuffer(SIZE);
             buffer.rewind();
             for (int j = 0; j < SIZE; j++)
             {
@@ -400,6 +430,11 @@ public class AsynchronousFileTest extends AIOTestBase
             }
          }
 
+         for (ByteBuffer bufferTmp : buffers)
+         {
+            AsynchronousFileImpl.destroyBuffer(bufferTmp);
+         }
+
          buffers.clear();
 
       }
@@ -415,7 +450,8 @@ public class AsynchronousFileTest extends AIOTestBase
    public void testBufferCallbackAwaysSameBuffer() throws Exception
    {
       boolean closed = false;
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
+      ByteBuffer buffer = null;
       try
       {
          final int NUMBER_LINES = 1000;
@@ -440,7 +476,7 @@ public class AsynchronousFileTest extends AIOTestBase
          CountDownLatch latch = new CountDownLatch(NUMBER_LINES);
          CountDownCallback aio = new CountDownCallback(latch);
 
-         ByteBuffer buffer = controller.newBuffer(SIZE);
+         buffer = AsynchronousFileImpl.newBuffer(SIZE);
          buffer.rewind();
          for (int j = 0; j < SIZE; j++)
          {
@@ -482,6 +518,7 @@ public class AsynchronousFileTest extends AIOTestBase
       }
       finally
       {
+         AsynchronousFileImpl.destroyBuffer(buffer);
          if (!closed)
          {
             controller.close();
@@ -491,11 +528,22 @@ public class AsynchronousFileTest extends AIOTestBase
 
    public void testRead() throws Exception
    {
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
+      controller.setBufferCallback(new BufferCallback()
+      {
+
+         public void bufferDone(ByteBuffer buffer)
+         {
+            AsynchronousFileImpl.destroyBuffer(buffer);
+         }
+
+      });
+
+      ByteBuffer readBuffer = null;
       try
       {
 
-         final int NUMBER_LINES = 5000;
+         final int NUMBER_LINES = 10000;
          final int SIZE = 1024;
 
          controller.open(FILE_NAME, 1000);
@@ -508,13 +556,15 @@ public class AsynchronousFileTest extends AIOTestBase
 
             for (int i = 0; i < NUMBER_LINES; i++)
             {
-               ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
-               addString("Str value " + i + "\n", buffer);
-               for (int j = buffer.position(); j < buffer.capacity() - 1; j++)
+               if (i % 1000 == 0)
                {
-                  buffer.put((byte)' ');
+                  System.out.println("Wrote " + i + " lines");
                }
-               buffer.put((byte)'\n');
+               ByteBuffer buffer = AsynchronousFileImpl.newBuffer(SIZE);
+               for (int j = 0; j < SIZE; j++)
+               {
+                  buffer.put(getSamplebyte(j));
+               }
 
                controller.write(i * SIZE, SIZE, buffer, aio);
             }
@@ -527,48 +577,76 @@ public class AsynchronousFileTest extends AIOTestBase
          // If you call close you're supposed to wait events to finish before
          // closing it
          controller.close();
+         controller.setBufferCallback(null);
+
          controller.open(FILE_NAME, 10);
 
-         ByteBuffer newBuffer = ByteBuffer.allocateDirect(SIZE);
+         readBuffer = AsynchronousFileImpl.newBuffer(SIZE);
+
+         Thread t = null;
 
          for (int i = 0; i < NUMBER_LINES; i++)
          {
-            newBuffer.clear();
-            addString("Str value " + i + "\n", newBuffer);
-            for (int j = newBuffer.position(); j < newBuffer.capacity() - 1; j++)
+            if (i % 1000 == 0)
             {
-               newBuffer.put((byte)' ');
+               System.out.println("Read " + i + " lines");
             }
-            newBuffer.put((byte)'\n');
+            AsynchronousFileImpl.clearBuffer(readBuffer);
 
             CountDownLatch latch = new CountDownLatch(1);
             CountDownCallback aio = new CountDownCallback(latch);
 
-            ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
+            controller.read(i * SIZE, SIZE, readBuffer, aio);
 
-            controller.read(i * SIZE, SIZE, buffer, aio);
+            // at the first 20 lines, we will force a lot of garbage, to make sure the pointers are well isolated from Garbage Collection
+            if (i < 20)
+            {
+               if (t != null)
+               {
+                  t.join();
+               }
+
+               t = new Thread()
+               {
+                  public void run()
+                  {
+                     // Force a lot of garbage during reading, to make sure the memory read is well isolated from
+                     // garbage collection
+                     WeakReference<Object> garbage = new WeakReference<Object>(new Object());
+                     // Stays in loop until GC kicks in to clean up this reference
+                     while (garbage.get() != null)
+                     {
+                        @SuppressWarnings("unused")
+                        byte[] garbage2 = new byte[10 * 1024 * 1024]; // More Garbage
+                     }
+
+                  }
+               };
+
+               t.start();
+            }
+
             latch.await();
             assertFalse(aio.errorCalled);
             assertTrue(aio.doneCalled);
 
             byte bytesRead[] = new byte[SIZE];
-            byte bytesCompare[] = new byte[SIZE];
-
-            newBuffer.rewind();
-            newBuffer.get(bytesCompare);
-            buffer.rewind();
-            buffer.get(bytesRead);
+            readBuffer.get(bytesRead);
 
             for (int count = 0; count < SIZE; count++)
             {
-               assertEquals("byte position " + count + " differs on line " + i, bytesCompare[count], bytesRead[count]);
+               assertEquals("byte position " + count + " differs on line " + i + " position = " + count,
+                            getSamplebyte(count),
+                            bytesRead[count]);
             }
-
-            assertTrue(buffer.equals(newBuffer));
          }
       }
       finally
       {
+         if (readBuffer != null)
+         {
+            AsynchronousFileImpl.destroyBuffer(readBuffer);
+         }
          try
          {
             controller.close();
@@ -587,7 +665,7 @@ public class AsynchronousFileTest extends AIOTestBase
     *  The file is also read after being written to validate its correctness */
    public void testConcurrentClose() throws Exception
    {
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
       try
       {
 
@@ -598,10 +676,20 @@ public class AsynchronousFileTest extends AIOTestBase
          controller.open(FILE_NAME, 10000);
 
          controller.fill(0, 1, NUMBER_LINES * SIZE, (byte)'j');
+         
+         controller.setBufferCallback(new BufferCallback()
+         {
+
+            public void bufferDone(ByteBuffer buffer)
+            {
+               AsynchronousFileImpl.destroyBuffer(buffer);
+            }
+            
+         });
 
          for (int i = 0; i < NUMBER_LINES; i++)
          {
-            ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
+            ByteBuffer buffer = AsynchronousFileImpl.newBuffer(SIZE);
 
             buffer.clear();
             addString("Str value " + i + "\n", buffer);
@@ -618,14 +706,16 @@ public class AsynchronousFileTest extends AIOTestBase
          // If you call close you're supposed to wait events to finish before
          // closing it
          controller.close();
+         
+         controller.setBufferCallback(null);
 
          assertEquals(0, readLatch.getCount());
          readLatch.await();
          controller.open(FILE_NAME, 10);
 
-         ByteBuffer newBuffer = ByteBuffer.allocateDirect(SIZE);
+         ByteBuffer newBuffer = AsynchronousFileImpl.newBuffer(SIZE);
 
-         ByteBuffer buffer = ByteBuffer.allocateDirect(SIZE);
+         ByteBuffer buffer = AsynchronousFileImpl.newBuffer(SIZE);
 
          for (int i = 0; i < NUMBER_LINES; i++)
          {
@@ -659,6 +749,9 @@ public class AsynchronousFileTest extends AIOTestBase
 
             assertTrue(buffer.equals(newBuffer));
          }
+         
+         AsynchronousFileImpl.destroyBuffer(newBuffer);
+         AsynchronousFileImpl.destroyBuffer(buffer);
 
       }
       finally
@@ -676,15 +769,17 @@ public class AsynchronousFileTest extends AIOTestBase
 
    private void asyncData(final int numberOfLines, final int size, final int aioLimit) throws Exception
    {
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
       controller.open(FILE_NAME, aioLimit);
-
+      
+      ByteBuffer buffer = null;
+      
       try
       {
          CountDownLatch latchDone = new CountDownLatch(numberOfLines);
 
-         ByteBuffer block = controller.newBuffer(size);
-         encodeBufer(block);
+         buffer = AsynchronousFileImpl.newBuffer(size);
+         encodeBufer(buffer);
 
          preAlloc(controller, numberOfLines * size);
 
@@ -701,7 +796,7 @@ public class AsynchronousFileTest extends AIOTestBase
          int counter = 0;
          for (CountDownCallback tmp : list)
          {
-            controller.write(counter * size, size, block, tmp);
+            controller.write(counter * size, size, buffer, tmp);
             if (++counter % 20000 == 0)
             {
                debug(20000 * 1000 / (System.currentTimeMillis() - lastTime) + " rec/sec (Async)");
@@ -736,6 +831,7 @@ public class AsynchronousFileTest extends AIOTestBase
       }
       finally
       {
+         AsynchronousFileImpl.destroyBuffer(buffer);
          try
          {
             controller.close();
@@ -749,16 +845,17 @@ public class AsynchronousFileTest extends AIOTestBase
 
    public void testDirectSynchronous() throws Exception
    {
+      ByteBuffer buffer = null;
       try
       {
          final int NUMBER_LINES = 3000;
          final int SIZE = 1024;
 
-         final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+         final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
          controller.open(FILE_NAME, 2000);
 
-         ByteBuffer block = ByteBuffer.allocateDirect(SIZE);
-         encodeBufer(block);
+         buffer = AsynchronousFileImpl.newBuffer(SIZE);
+         encodeBufer(buffer);
 
          preAlloc(controller, NUMBER_LINES * SIZE);
 
@@ -768,7 +865,7 @@ public class AsynchronousFileTest extends AIOTestBase
          {
             CountDownLatch latchDone = new CountDownLatch(1);
             CountDownCallback aioBlock = new CountDownCallback(latchDone);
-            controller.write(i * 512, 512, block, aioBlock);
+            controller.write(i * 512, 512, buffer, aioBlock);
             latchDone.await();
             assertTrue(aioBlock.doneCalled);
             assertFalse(aioBlock.errorCalled);
@@ -793,27 +890,33 @@ public class AsynchronousFileTest extends AIOTestBase
       {
          throw e;
       }
+      finally
+      {
+         AsynchronousFileImpl.destroyBuffer(buffer);
+      }
 
    }
 
    public void testInvalidWrite() throws Exception
    {
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
       controller.open(FILE_NAME, 2000);
-
+      
+      ByteBuffer buffer = null;
+      
       try
       {
          final int SIZE = 512;
 
-         ByteBuffer block = controller.newBuffer(SIZE);
-         encodeBufer(block);
+         buffer = AsynchronousFileImpl.newBuffer(SIZE);
+         encodeBufer(buffer);
 
          preAlloc(controller, 10 * 512);
 
          CountDownLatch latchDone = new CountDownLatch(1);
 
          CountDownCallback aioBlock = new CountDownCallback(latchDone);
-         controller.write(11, 512, block, aioBlock);
+         controller.write(11, 512, buffer, aioBlock);
 
          latchDone.await();
 
@@ -827,6 +930,7 @@ public class AsynchronousFileTest extends AIOTestBase
       }
       finally
       {
+         AsynchronousFileImpl.destroyBuffer(buffer);
          controller.close();
       }
 
@@ -834,10 +938,10 @@ public class AsynchronousFileTest extends AIOTestBase
 
    public void testInvalidAlloc() throws Exception
    {
-      AsynchronousFileImpl controller = new AsynchronousFileImpl();
       try
       {
-         ByteBuffer buffer = controller.newBuffer(300);
+         @SuppressWarnings("unused")
+         ByteBuffer buffer = AsynchronousFileImpl.newBuffer(300);
          fail("Exception expected");
       }
       catch (Exception ignored)
@@ -845,10 +949,58 @@ public class AsynchronousFileTest extends AIOTestBase
       }
 
    }
+   
+   // This is in particular testing for http://bugs.sun.com/view_bug.do?bug_id=6791815
+   public void testAllocations() throws Exception
+   {
+      final AtomicInteger errors = new AtomicInteger(0);
+ 
+      Thread ts[] = new Thread[100];
+
+      final CountDownLatch align = new CountDownLatch(ts.length);
+      final CountDownLatch start = new CountDownLatch(1);
+
+      for (int i = 0; i < ts.length; i++)
+      {
+         ts[i] = new Thread()
+         {
+            public void run()
+            {
+               try
+               {
+                  align.countDown();
+                  start.await();
+                  for (int i = 0; i < 1000; i++)
+                  {
+                     ByteBuffer buffer = AsynchronousFileImpl.newBuffer(512);
+                     AsynchronousFileImpl.destroyBuffer(buffer);
+                  }
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace();
+                  errors.incrementAndGet();
+               }
+            }
+         };
+         ts[i].start();
+      }
+      
+      align.await();
+      start.countDown();
+      
+      for (Thread t: ts)
+      {
+         t.join();
+      }
+      
+      assertEquals(0, errors.get());
+   }
+
 
    public void testSize() throws Exception
    {
-      final AsynchronousFileImpl controller = new AsynchronousFileImpl();
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
 
       final int NUMBER_LINES = 10;
       final int SIZE = 1024;

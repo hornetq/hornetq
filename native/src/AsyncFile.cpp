@@ -13,7 +13,7 @@
     USA
 
     The GNU Lesser General Public License is available in the file COPYING.
-    
+
     Software written by Clebert Suconic (csuconic at redhat dot com)
 */
 
@@ -48,12 +48,12 @@
 std::string io_error(int rc)
 {
 	std::stringstream buffer;
-	
+
 	if (rc == -ENOSYS)
 		buffer << "AIO not in this kernel";
-	else 
+	else
 		buffer << "Error:= " << strerror(-rc);
-	
+
 	return buffer.str();
 }
 
@@ -62,27 +62,27 @@ AsyncFile::AsyncFile(std::string & _fileName, AIOController * _controller, int _
 {
 	::pthread_mutex_init(&fileMutex,0);
 	::pthread_mutex_init(&pollerMutex,0);
-	
+
 	maxIO = _maxIO;
 	fileName = _fileName;
 	if (io_queue_init(maxIO, &aioContext))
 	{
-		throw AIOException(NATIVE_ERROR_CANT_INITIALIZE_AIO, "Can't initialize aio"); 
+		throw AIOException(NATIVE_ERROR_CANT_INITIALIZE_AIO, "Can't initialize aio, out of AIO Handlers");
 	}
 
 	fileHandle = ::open(fileName.data(),  O_RDWR | O_CREAT | O_DIRECT, 0666);
 	if (fileHandle < 0)
 	{
 		io_queue_release(aioContext);
-		throw AIOException(NATIVE_ERROR_CANT_OPEN_CLOSE_FILE, "Can't open file"); 
+		throw AIOException(NATIVE_ERROR_CANT_OPEN_CLOSE_FILE, "Can't open file");
 	}
-	
+
 #ifdef DEBUG
 	fprintf (stderr,"File Handle %d", fileHandle);
 #endif
 
 	events = (struct io_event *)malloc (maxIO * sizeof (struct io_event));
-	
+
 	if (events == 0)
 	{
 		throw AIOException (NATIVE_ERROR_CANT_ALLOCATE_QUEUE, "Can't allocate ioEvents");
@@ -112,17 +112,17 @@ int isException (THREAD_CONTEXT threadContext)
 
 void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 {
-	
+
 	LockClass lock(&pollerMutex);
 	pollerRunning=1;
-	
+
 	// TODO: Maybe we don't need to wait for one second.... we just keep waiting forever, and use something to interrupt it
 	// maybe an invalid write to interrupt it.
 	struct timespec oneSecond;
 	oneSecond.tv_sec = 1;
 	oneSecond.tv_nsec = 0;
-	
-	
+
+
 	while (pollerRunning)
 	{
 		if (isException(threadContext))
@@ -130,15 +130,15 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 			return;
 		}
 		int result = io_getevents(this->aioContext, 1, maxIO, events, 0);
-		
-		
+
+
 #ifdef DEBUG
 		fprintf (stderr, "poll, pollerRunning=%d\n", pollerRunning); fflush(stderr);
 #endif
-		
+
 		if (result > 0)
 		{
-			
+
 #ifdef DEBUG
 			fprintf (stdout, "Received %d events\n", result);
 			fflush(stdout);
@@ -147,9 +147,9 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 
 		for (int i=0; i<result; i++)
 		{
-			
+
 			struct iocb * iocbp = events[i].obj;
-	
+
 			if (iocbp->data == (void *) -1)
 			{
 				pollerRunning = 0;
@@ -160,7 +160,7 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 			else
 			{
 				CallbackAdapter * adapter = (CallbackAdapter *) iocbp->data;
-				
+
 				long result = events[i].res;
 				if (result < 0)
 				{
@@ -172,13 +172,13 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 					adapter->done(threadContext);
 				}
 			}
-			
+
 			delete iocbp;
 		}
 	}
 #ifdef DEBUG
 	controller->log(threadContext, 2, "Poller finished execution");
-#endif	
+#endif
 }
 
 
@@ -189,18 +189,18 @@ void AsyncFile::preAllocate(THREAD_CONTEXT , off_t position, int blocks, size_t 
 	{
 		throw AIOException (NATIVE_ERROR_PREALLOCATE_FILE, "You can only pre allocate files in multiples of 512");
 	}
-	
+
 	void * preAllocBuffer = 0;
 	if (posix_memalign(&preAllocBuffer, 512, size))
 	{
 		throw AIOException(NATIVE_ERROR_ALLOCATE_MEMORY, "Error on posix_memalign");
 	}
-	
+
 	memset(preAllocBuffer, fillChar, size);
-	
-	
+
+
 	if (::lseek (fileHandle, position, SEEK_SET) < 0) throw AIOException (11, "Error positioning the file");
-	
+
 	for (int i=0; i<blocks; i++)
 	{
 		if (::write(fileHandle, preAllocBuffer, size)<0)
@@ -208,9 +208,9 @@ void AsyncFile::preAllocate(THREAD_CONTEXT , off_t position, int blocks, size_t 
 			throw AIOException (NATIVE_ERROR_PREALLOCATE_FILE, "Error pre allocating the file");
 		}
 	}
-	
+
 	if (::lseek (fileHandle, position, SEEK_SET) < 0) throw AIOException (NATIVE_ERROR_IO, "Error positioning the file");
-	
+
 	free (preAllocBuffer);
 }
 
@@ -223,7 +223,7 @@ void AsyncFile::write(THREAD_CONTEXT threadContext, long position, size_t size, 
 
 	int tries = 0;
 	int result = 0;
-	
+
 	while ((result = ::io_submit(aioContext, 1, &iocb)) == (-EAGAIN))
 	{
 #ifdef DEBUG
@@ -237,7 +237,7 @@ void AsyncFile::write(THREAD_CONTEXT threadContext, long position, size_t size, 
 #endif
 			controller->log(threadContext, 1, "You should consider expanding AIOLimit if this message appears too many times");
 		}
-		
+
 		if (tries > TRIES_BEFORE_ERROR)
 		{
 #ifdef DEBUG
@@ -247,7 +247,7 @@ void AsyncFile::write(THREAD_CONTEXT threadContext, long position, size_t size, 
 		}
 		::usleep(WAIT_FOR_SPOT);
 	}
-	
+
 	if (result<0)
 	{
 		std::stringstream str;
@@ -265,7 +265,7 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 
 	int tries = 0;
 	int result = 0;
-	
+
 	while ((result = ::io_submit(aioContext, 1, &iocb)) == (-EAGAIN))
 	{
 #ifdef DEBUG
@@ -279,7 +279,7 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 #endif
 			controller->log(threadContext, 1, "You should consider expanding AIOLimit if this message appears too many times");
 		}
-		
+
 		if (tries > TRIES_BEFORE_ERROR)
 		{
 #ifdef DEBUG
@@ -289,7 +289,7 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 		}
 		::usleep(WAIT_FOR_SPOT);
 	}
-	
+
 	if (result<0)
 	{
 		std::stringstream str;
@@ -301,7 +301,7 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 long AsyncFile::getSize()
 {
 	struct stat64 statBuffer;
-	
+
 	if (fstat64(fileHandle, &statBuffer) < 0)
 	{
 		return -1l;
@@ -313,21 +313,21 @@ long AsyncFile::getSize()
 void AsyncFile::stopPoller(THREAD_CONTEXT threadContext)
 {
 	pollerRunning = 0;
-	
-	
+
+
 	struct iocb * iocb = new struct iocb();
 	::io_prep_pwrite(iocb, fileHandle, 0, 0, 0);
 	iocb->data = (void *) -1;
 
 	int result = 0;
-	
+
 	while ((result = ::io_submit(aioContext, 1, &iocb)) == (-EAGAIN))
 	{
 		fprintf(stderr, "Couldn't send request to stop poller, trying again");
 		controller->log(threadContext, 1, "Couldn't send request to stop poller, trying again");
 		::usleep(WAIT_FOR_SPOT);
 	}
-	
+
 	// Waiting the Poller to finish (by giving up the lock)
 	LockClass lock(&pollerMutex);
 }

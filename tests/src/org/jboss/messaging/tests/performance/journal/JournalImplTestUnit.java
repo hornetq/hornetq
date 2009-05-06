@@ -202,7 +202,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       Journal journal =
          new JournalImpl(10 * 1024 * 1024, 10, true, true, getFileFactory(),
-               "jbm-data", "jbm", 5000, 0);
+               "jbm-data", "jbm", 5000, 10 * 1024);
       
       journal.start();
       

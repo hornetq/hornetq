@@ -23,9 +23,13 @@
 package org.jboss.messaging.core.journal.impl;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.utils.JBMThreadFactory;
 
 /**
  * 
@@ -36,6 +40,16 @@ import org.jboss.messaging.core.journal.SequentialFile;
  */
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
 {
+   
+   /** A single AIO write executor for every AIO File.
+    *  This is used only for AIO & instant operations. We only need one executor-thread for the entire journal as we always have only one active file.
+    *  And even if we had multiple files at a given moment, this should still be ok, as we control max-io in a semaphore, guaranteeing AIO calls don't block on disk calls */
+   private final Executor writeExecutor = Executors.newSingleThreadExecutor();
+   
+
+   private final Executor pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
+
+
    public AIOSequentialFileFactory(final String journalDir)
    {
       super(journalDir);
@@ -43,7 +57,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
 
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
    {
-      return new AIOSequentialFile(journalDir, fileName, maxIO);
+      return new AIOSequentialFile(journalDir, fileName, maxIO, bufferCallback, writeExecutor, pollerExecutor);
    }
 
    public boolean isSupportsCallbacks()
@@ -62,12 +76,12 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       {
          size = (size / 512 + 1) * 512;
       }
-      return ByteBuffer.allocateDirect(size);
+      return AsynchronousFileImpl.newBuffer(size);
    }
 
    public void clearBuffer(final ByteBuffer directByteBuffer)
    {
-      AsynchronousFileImpl.resetBuffer(directByteBuffer, directByteBuffer.limit());
+      AsynchronousFileImpl.clearBuffer(directByteBuffer);
    }
 
    public int getAlignment()
@@ -90,5 +104,13 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       int pos = (position / alignment + (position % alignment != 0 ? 1 : 0)) * alignment;
 
       return pos;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#releaseBuffer(java.nio.ByteBuffer)
+    */
+   public void releaseBuffer(ByteBuffer buffer)
+   {
+      AsynchronousFileImpl.destroyBuffer(buffer);
    }
 }

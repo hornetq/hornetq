@@ -382,7 +382,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
          backupConf.setPagingDirectory(getPageDir(getTestDir() + "/backup"));
          backupConf.setJournalFileSize(100 * 1024);
 
-         backupConf.setJournalType(JournalType.NIO);
+         backupConf.setJournalType(JournalType.ASYNCIO);
 
          backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
          backupConf.setPagingGlobalWatermarkSize(pageSize);
@@ -422,7 +422,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
          liveConf.setPagingGlobalWatermarkSize(pageSize);
          liveConf.setJournalFileSize(100 * 1024);
 
-         liveConf.setJournalType(JournalType.NIO);
+         liveConf.setJournalType(JournalType.ASYNCIO);
       }
 
       if (fileBased)

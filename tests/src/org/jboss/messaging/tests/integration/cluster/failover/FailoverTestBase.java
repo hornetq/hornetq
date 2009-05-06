@@ -124,7 +124,7 @@ public class FailoverTestBase extends ServiceTestBase
          backupConf.setPagingDirectory(getPageDir(getTestDir() + "/backup"));
          backupConf.setJournalFileSize(100 * 1024);
 
-         backupConf.setJournalType(JournalType.NIO);
+         backupConf.setJournalType(JournalType.ASYNCIO);
 
          backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
          backupConf.setPagingGlobalWatermarkSize(pageSize);
@@ -164,7 +164,7 @@ public class FailoverTestBase extends ServiceTestBase
          liveConf.setPagingGlobalWatermarkSize(pageSize);
          liveConf.setJournalFileSize(100 * 1024);
 
-         liveConf.setJournalType(JournalType.NIO);
+         liveConf.setJournalType(JournalType.ASYNCIO);
       }
 
       if (fileBased)
@@ -208,7 +208,7 @@ public class FailoverTestBase extends ServiceTestBase
          backupConf.setPagingDirectory(getPageDir(getTestDir() + "/backup"));
          backupConf.setJournalFileSize(100 * 1024);
 
-         backupConf.setJournalType(JournalType.NIO);
+         backupConf.setJournalType(JournalType.ASYNCIO);
 
          backupConf.setPagingMaxGlobalSizeBytes(-1);
          backupConf.setPagingGlobalWatermarkSize(-1);
@@ -262,7 +262,7 @@ public class FailoverTestBase extends ServiceTestBase
          liveConf.setPagingGlobalWatermarkSize(-1);
          liveConf.setJournalFileSize(100 * 1024);
 
-         liveConf.setJournalType(JournalType.NIO);
+         liveConf.setJournalType(JournalType.ASYNCIO);
          liveServer = Messaging.newMessagingServer(liveConf);
       }
       else

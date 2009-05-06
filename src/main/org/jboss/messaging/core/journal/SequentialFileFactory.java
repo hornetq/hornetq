@@ -42,8 +42,14 @@ public interface SequentialFileFactory
    boolean isSupportsCallbacks();
 
    ByteBuffer newBuffer(int size);
+   
+   void releaseBuffer(ByteBuffer buffer);
+   
+   void setBufferCallback(BufferCallback bufferCallback);
+   
+   BufferCallback getBufferCallback();
 
-   // Avoid using this method in production as it creates an unecessary copy
+   // To be used in tests only
    ByteBuffer wrapBuffer(byte[] bytes);
 
    int getAlignment();

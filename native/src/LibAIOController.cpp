@@ -35,8 +35,6 @@
 #include "Version.h"
 
 
-
-
 /*
  * Class:     org_jboss_jaio_libaioimpl_LibAIOController
  * Method:    init
@@ -110,6 +108,8 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	}
 }
 
+
+// Fast memset on buffer
 JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_resetBuffer
   (JNIEnv *env, jclass, jobject jbuffer, jint size)
 {
@@ -125,7 +125,46 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	
 }
 
+JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_destroyBuffer
+  (JNIEnv * env, jclass, jobject jbuffer)
+{
+	void *  buffer = env->GetDirectBufferAddress(jbuffer);
+	free(buffer);
+}
 
+JNIEXPORT jobject JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_newNativeBuffer
+  (JNIEnv * env, jclass, jlong size)
+{
+	try
+	{
+		
+		if (size % ALIGNMENT)
+		{
+			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Buffer size needs to be aligned to 512");
+			return 0;
+		}
+		
+		
+		// This will allocate a buffer, aligned by 512.
+		// Buffers created here need to be manually destroyed by destroyBuffer, or this would leak on the process heap away of Java's GC managed memory
+		void * buffer = 0;
+		if (::posix_memalign(&buffer, 512, size))
+		{
+			throwException(env, NATIVE_ERROR_INTERNAL, "Error on posix_memalign");
+			return 0;
+		}
+		
+		memset(buffer, 0, (size_t)size);
+		
+		jobject jbuffer = env->NewDirectByteBuffer(buffer, size);
+		return jbuffer;
+	}
+	catch (AIOException& e)
+	{
+		throwException(env, e.getErrorCode(), e.what());
+		return 0;
+	}
+}
 
 JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_write
   (JNIEnv *env, jobject objThis, jlong controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
@@ -134,11 +173,13 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	{
 		AIOController * controller = (AIOController *) controllerAddress;
 		void * buffer = env->GetDirectBufferAddress(jbuffer);
+
 		if (buffer == 0)
 		{
 			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Direct Buffer used");
 			return;
 		}
+		
 		
 		CallbackAdapter * adapter = new JNICallbackAdapter(controller, env->NewGlobalRef(callback), env->NewGlobalRef(objThis), env->NewGlobalRef(jbuffer));
 		

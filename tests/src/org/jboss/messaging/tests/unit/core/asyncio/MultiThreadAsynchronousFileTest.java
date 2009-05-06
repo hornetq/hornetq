@@ -22,17 +22,18 @@
 
 package org.jboss.messaging.tests.unit.core.asyncio;
 
-import org.jboss.messaging.core.asyncio.AIOCallback;
-import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
-import org.jboss.messaging.core.logging.Logger;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.messaging.core.asyncio.AIOCallback;
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.JBMThreadFactory;
 
 /**
  * 
@@ -59,18 +60,35 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
    // Executor exec
 
-   Executor executor = Executors.newSingleThreadExecutor();
+   ExecutorService executor;
+   
+   ExecutorService pollerExecutor;
 
-   @Override
+
+   private static void debug(final String msg)
+   {
+      log.debug(msg);
+   }
+
+   
+   
    protected void setUp() throws Exception
    {
       super.setUp();
-      position.set(0);
+      pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
+      executor = Executors.newSingleThreadExecutor();
    }
-
+   
+   protected void tearDown() throws Exception
+   {
+      executor.shutdown();
+      pollerExecutor.shutdown();
+      super.tearDown();
+   }
+   
    public void testMultipleASynchronousWrites() throws Throwable
    {
-      executeTest(false);
+         executeTest(false);
    }
 
    public void testMultipleSynchronousWrites() throws Throwable
@@ -80,15 +98,15 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
    private void executeTest(final boolean sync) throws Throwable
    {
-      log.debug(sync ? "Sync test:" : "Async test");
-      AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl();
+      debug(sync ? "Sync test:" : "Async test");
+      AsynchronousFileImpl jlibAIO = new AsynchronousFileImpl(executor, pollerExecutor);
       jlibAIO.open(FILE_NAME, 21000);
       try
       {
-         log.debug("Preallocating file");
+         debug("Preallocating file");
 
          jlibAIO.fill(0l, NUMBER_OF_THREADS, SIZE * NUMBER_OF_LINES, (byte)0);
-         log.debug("Done Preallocating file");
+         debug("Done Preallocating file");
 
          CountDownLatch latchStart = new CountDownLatch(NUMBER_OF_THREADS + 1);
 
@@ -115,7 +133,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
          }
          long endTime = System.currentTimeMillis();
 
-         log.debug((sync ? "Sync result:" : "Async result:") + " Records/Second = " +
+         debug((sync ? "Sync result:" : "Async result:") + " Records/Second = " +
                    NUMBER_OF_THREADS *
                    NUMBER_OF_LINES *
                    1000 /
@@ -164,10 +182,16 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
       {
          super.run();
 
+
+         ByteBuffer buffer = null;
+         
+         synchronized (MultiThreadAsynchronousFileTest.class)
+         {
+            buffer = AsynchronousFileImpl.newBuffer(SIZE);
+         }
+
          try
          {
-
-            ByteBuffer buffer = libaio.newBuffer(SIZE);
 
             // I'm aways reusing the same buffer, as I don't want any noise from
             // malloc on the measurement
@@ -225,7 +249,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
             long endtime = System.currentTimeMillis();
 
-            log.debug(Thread.currentThread().getName() + " Rec/Sec= " +
+            debug(Thread.currentThread().getName() + " Rec/Sec= " +
                       NUMBER_OF_LINES *
                       1000 /
                       (endtime - startTime) +
@@ -245,6 +269,13 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
          {
             e.printStackTrace();
             failed = e;
+         }
+         finally
+         {
+            synchronized (MultiThreadAsynchronousFileTest.class)
+            {
+               AsynchronousFileImpl.destroyBuffer(buffer);
+            }
          }
 
       }

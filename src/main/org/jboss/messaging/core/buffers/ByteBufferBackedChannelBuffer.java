@@ -60,7 +60,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer
          throw new NullPointerException("buffer");
       }
 
-      this.buffer = buffer.slice();
+      this.buffer = buffer;
       capacity = buffer.remaining();
    }
 

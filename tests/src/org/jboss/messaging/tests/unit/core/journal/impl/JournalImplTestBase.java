@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -474,7 +475,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
     * @param expected
     * @param actual
     */
-   private void printJournalLists(final List<RecordInfo> expected, final List<RecordInfo> actual)
+   protected void printJournalLists(final List<RecordInfo> expected, final List<RecordInfo> actual)
    {
       System.out.println("***********************************************");
       System.out.println("Expected list:");
@@ -482,10 +483,14 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          System.out.println("Record " + info.id + " isUpdate = " + info.isUpdate);
       }
-      System.out.println("Actual list:");
-      for (RecordInfo info : actual)
+      if (actual != null)
       {
-         System.out.println("Record " + info.id + " isUpdate = " + info.isUpdate);
+         System.out.println("***********************************************");
+         System.out.println("Actual list:");
+         for (RecordInfo info : actual)
+         {
+            System.out.println("Record " + info.id + " isUpdate = " + info.isUpdate);
+         }
       }
       System.out.println("***********************************************");
    }

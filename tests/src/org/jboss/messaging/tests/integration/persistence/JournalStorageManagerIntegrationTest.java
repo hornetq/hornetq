@@ -60,7 +60,7 @@ public class JournalStorageManagerIntegrationTest extends ServiceTestBase
 
       configuration.start();
 
-      configuration.setJournalType(JournalType.NIO);
+      configuration.setJournalType(JournalType.ASYNCIO);
 
       final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
       journal.start();

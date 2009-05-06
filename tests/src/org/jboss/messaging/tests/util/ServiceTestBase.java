@@ -132,7 +132,7 @@ public class ServiceTestBase extends UnitTestCase
       Configuration config = new ConfigurationImpl();
       config.setJournalDirectory(getJournalDir());
       config.setBindingsDirectory(getBindingsDir());
-      config.setJournalType(JournalType.NIO);
+      config.setJournalType(JournalType.ASYNCIO);
       config.setLargeMessagesDirectory(getLargeMessagesDir());
       return config;
    }
@@ -278,7 +278,7 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(index, false));
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(JournalType.NIO);
+      configuration.setJournalType(JournalType.ASYNCIO);
       configuration.setPagingDirectory(getPageDir(index, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(index, false));
 
@@ -305,7 +305,7 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setPagingDirectory(getPageDir());
       configuration.setLargeMessagesDirectory(getLargeMessagesDir());
 
-      configuration.setJournalType(JournalType.NIO);
+      configuration.setJournalType(JournalType.ASYNCIO);
 
       configuration.getAcceptorConfigurations().clear();
 

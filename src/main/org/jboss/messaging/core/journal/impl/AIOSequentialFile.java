@@ -25,8 +25,7 @@ package org.jboss.messaging.core.journal.impl;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -60,18 +59,26 @@ public class AIOSequentialFile implements SequentialFile
    private AsynchronousFile aioFile;
 
    private final AtomicLong position = new AtomicLong(0);
+   
+   private BufferCallback bufferCallback;
 
-   // A context switch on AIO would make it to synchronize the disk before
-   // switching to the new thread, what would cause
-   // serious performance problems. Because of that we make all the writes on
-   // AIO using a single thread.
-   private ExecutorService executor;
+   /** A context switch on AIO would make it to synchronize the disk before
+       switching to the new thread, what would cause
+       serious performance problems. Because of that we make all the writes on
+       AIO using a single thread. */
+   private final Executor executor;
 
-   public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO)
+   /** The pool for Thread pollers */
+   private final Executor pollerExecutor;
+
+   public AIOSequentialFile(final String journalDir, final String fileName, final int maxIO, final BufferCallback bufferCallback, final Executor executor, final Executor pollerExecutor)
    {
       this.journalDir = journalDir;
       this.fileName = fileName;
       this.maxIO = maxIO;
+      this.bufferCallback = bufferCallback;
+      this.executor = executor;
+      this.pollerExecutor = pollerExecutor;
    }
 
    public boolean isOpen() 
@@ -99,9 +106,19 @@ public class AIOSequentialFile implements SequentialFile
    {
       checkOpened();
       opened = false;
-      executor.shutdown();
 
-      while (!executor.awaitTermination(60, TimeUnit.SECONDS))
+      final CountDownLatch donelatch = new CountDownLatch(1);
+      
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            donelatch.countDown();
+         }
+      });
+      
+      
+      while (!donelatch.await(60, TimeUnit.SECONDS))
       {
          log.warn("Executor on file " + fileName + " couldn't complete its tasks in 60 seconds.",
                   new Exception("Warning: Executor on file " + fileName + " couldn't complete its tasks in 60 seconds."));
@@ -190,10 +207,10 @@ public class AIOSequentialFile implements SequentialFile
    public synchronized void open(final int currentMaxIO) throws Exception
    {
       opened = true;
-      executor = Executors.newSingleThreadExecutor();
       aioFile = newFile();
       aioFile.open(journalDir + "/" + fileName, currentMaxIO);
       position.set(0);
+      aioFile.setBufferCallback(bufferCallback);
 
    }
 
@@ -289,7 +306,7 @@ public class AIOSequentialFile implements SequentialFile
     */
    protected AsynchronousFile newFile()
    {
-      return new AsynchronousFileImpl();
+      return new AsynchronousFileImpl(executor, pollerExecutor);
    }
 
    // Private methods
@@ -300,24 +317,7 @@ public class AIOSequentialFile implements SequentialFile
                           final int bytesToWrite,
                           final long positionToWrite)
    {
-      executor.execute(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
-            }
-            catch (Exception e)
-            {
-               log.warn(e.getMessage(), e);
-               if (callback != null)
-               {
-                  callback.onError(-1, e.getMessage());
-               }
-            }
-         }
-      });
+      aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
    }
 
    private void checkOpened() throws Exception

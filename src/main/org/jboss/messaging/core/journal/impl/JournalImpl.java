@@ -274,6 +274,8 @@ public class JournalImpl implements TestableJournal
       this.syncNonTransactional = syncNonTransactional;
 
       this.fileFactory = fileFactory;
+      
+      this.fileFactory.setBufferCallback(this.buffersControl.callback);
 
       this.filePrefix = filePrefix;
 
@@ -870,6 +872,10 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be in started state");
       }
 
+      // Disabling life cycle control on buffers, as we are reading the buffer 
+      buffersControl.disable();
+
+
       Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
 
       List<JournalFile> orderedFiles = orderFiles();
@@ -880,11 +886,11 @@ public class JournalImpl implements TestableJournal
 
       for (JournalFile file : orderedFiles)
       {
+         ByteBuffer wholeFileBuffer = fileFactory.newBuffer(fileSize);
+
          file.getFile().open(1);
 
-         ByteBuffer bb = fileFactory.newBuffer(fileSize);
-
-         int bytesRead = file.getFile().read(bb);
+         int bytesRead = file.getFile().read(wholeFileBuffer);
 
          if (bytesRead != fileSize)
          {
@@ -900,16 +906,19 @@ public class JournalImpl implements TestableJournal
                                             file.getFile().getFileName());
          }
 
+         
+         wholeFileBuffer.position(0);
+         
          // First long is the ordering timestamp, we just jump its position
-         bb.position(SIZE_HEADER);
+         wholeFileBuffer.position(SIZE_HEADER);
 
          boolean hasData = false;
 
-         while (bb.hasRemaining())
+         while (wholeFileBuffer.hasRemaining())
          {
-            final int pos = bb.position();
+            final int pos = wholeFileBuffer.position();
 
-            byte recordType = bb.get();
+            byte recordType = wholeFileBuffer.get();
 
             if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
             {
@@ -919,7 +928,7 @@ public class JournalImpl implements TestableJournal
                continue;
             }
 
-            if (bb.position() + SIZE_INT > fileSize)
+            if (wholeFileBuffer.position() + SIZE_INT > fileSize)
             {
                // II - Ignore this record, lets keep looking
                continue;
@@ -927,7 +936,7 @@ public class JournalImpl implements TestableJournal
 
             // III - Every record has the file-id.
             // This is what supports us from not re-filling the whole file
-            int readFileId = bb.getInt();
+            int readFileId = wholeFileBuffer.getInt();
 
             // IV - This record is from a previous file-usage. The file was
             // reused and we need to ignore this record
@@ -937,7 +946,7 @@ public class JournalImpl implements TestableJournal
                // next reclaiming will fix it
                hasData = true;
 
-               bb.position(pos + 1);
+               wholeFileBuffer.position(pos + 1);
 
                continue;
             }
@@ -946,24 +955,24 @@ public class JournalImpl implements TestableJournal
 
             if (isTransaction(recordType))
             {
-               if (bb.position() + SIZE_LONG > fileSize)
+               if (wholeFileBuffer.position() + SIZE_LONG > fileSize)
                {
                   continue;
                }
 
-               transactionID = bb.getLong();
+               transactionID = wholeFileBuffer.getLong();
             }
 
             long recordID = 0;
 
             if (!isCompleteTransaction(recordType))
             {
-               if (bb.position() + SIZE_LONG > fileSize)
+               if (wholeFileBuffer.position() + SIZE_LONG > fileSize)
                {
                   continue;
                }
 
-               recordID = bb.getLong();
+               recordID = wholeFileBuffer.getLong();
 
                maxID = Math.max(maxID, recordID);
             }
@@ -984,14 +993,14 @@ public class JournalImpl implements TestableJournal
 
             if (isContainsBody(recordType))
             {
-               if (bb.position() + SIZE_INT > fileSize)
+               if (wholeFileBuffer.position() + SIZE_INT > fileSize)
                {
                   continue;
                }
 
-               variableSize = bb.getInt();
+               variableSize = wholeFileBuffer.getInt();
 
-               if (bb.position() + variableSize > fileSize)
+               if (wholeFileBuffer.position() + variableSize > fileSize)
                {
                   log.warn("Record at position " + pos +
                            " file:" +
@@ -1002,12 +1011,12 @@ public class JournalImpl implements TestableJournal
 
                if (recordType != DELETE_RECORD_TX)
                {
-                  userRecordType = bb.get();
+                  userRecordType = wholeFileBuffer.get();
                }
 
                record = new byte[variableSize];
 
-               bb.get(record);
+               wholeFileBuffer.get(record);
             }
 
             if (recordType == PREPARE_RECORD || recordType == COMMIT_RECORD)
@@ -1015,11 +1024,11 @@ public class JournalImpl implements TestableJournal
                if (recordType == PREPARE_RECORD)
                {
                   // Add the variable size required for preparedTransactions
-                  preparedTransactionExtraDataSize = bb.getInt();
+                  preparedTransactionExtraDataSize = wholeFileBuffer.getInt();
                }
                // Both commit and record contain the recordSummary, and this is
                // used to calculate the record-size on both record-types
-               variableSize += bb.getInt() * SIZE_INT * 2;
+               variableSize += wholeFileBuffer.getInt() * SIZE_INT * 2;
             }
 
             int recordSize = getRecordSize(recordType);
@@ -1042,11 +1051,11 @@ public class JournalImpl implements TestableJournal
                continue;
             }
 
-            int oldPos = bb.position();
+            int oldPos = wholeFileBuffer.position();
 
-            bb.position(pos + variableSize + recordSize + preparedTransactionExtraDataSize - SIZE_INT);
+            wholeFileBuffer.position(pos + variableSize + recordSize + preparedTransactionExtraDataSize - SIZE_INT);
 
-            int checkSize = bb.getInt();
+            int checkSize = wholeFileBuffer.getInt();
 
             // VII - The checkSize at the end has to match with the size
             // informed at the beggining.
@@ -1063,12 +1072,12 @@ public class JournalImpl implements TestableJournal
                // next reclaiming will fix it
                hasData = true;
 
-               bb.position(pos + SIZE_BYTE);
+               wholeFileBuffer.position(pos + SIZE_BYTE);
 
                continue;
             }
 
-            bb.position(oldPos);
+            wholeFileBuffer.position(oldPos);
 
             // At this point everything is checked. So we relax and just load
             // the data now.
@@ -1190,10 +1199,10 @@ public class JournalImpl implements TestableJournal
 
                   byte extraData[] = new byte[preparedTransactionExtraDataSize];
 
-                  bb.get(extraData);
+                  wholeFileBuffer.get(extraData);
 
                   // Pair <FileID, NumberOfElements>
-                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, bb);
+                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, wholeFileBuffer);
 
                   tx.prepared = true;
 
@@ -1231,7 +1240,7 @@ public class JournalImpl implements TestableJournal
                   // We need to read it even if transaction was not found, or
                   // the reading checks would fail
                   // Pair <OrderId, NumberOfElements>
-                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, bb);
+                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, wholeFileBuffer);
 
                   // The commit could be alone on its own journal-file and the
                   // whole transaction body was reclaimed but not the
@@ -1319,18 +1328,20 @@ public class JournalImpl implements TestableJournal
                }
             }
 
-            checkSize = bb.getInt();
+            checkSize = wholeFileBuffer.getInt();
 
             // This is a sanity check about the loading code itself.
             // If this checkSize doesn't match, it means the reading method is
             // not doing what it was supposed to do
             if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
             {
-               throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize");
+               throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize, file = " + file.getFile() + ", pos = " + pos);
             }
 
-            lastDataPos = bb.position();
+            lastDataPos = wholeFileBuffer.position();
          }
+         
+         fileFactory.releaseBuffer(wholeFileBuffer);
 
          file.getFile().close();
 
@@ -1345,6 +1356,8 @@ public class JournalImpl implements TestableJournal
          }
       }
 
+      buffersControl.enable();
+      
       // Create any more files we need
 
       // FIXME - size() involves a scan
@@ -1376,11 +1389,6 @@ public class JournalImpl implements TestableJournal
       if (currentFile != null)
       {
          currentFile.getFile().open();
-
-         if (reuseBufferSize > 0)
-         {
-            currentFile.getFile().setBufferCallback(buffersControl.callback);
-         }
 
          currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
 
@@ -1680,6 +1688,8 @@ public class JournalImpl implements TestableJournal
          freeFiles.clear();
 
          openedFiles.clear();
+         
+         buffersControl.clearPoll();
 
          state = STATE_STOPPED;
       }
@@ -1932,8 +1942,19 @@ public class JournalImpl implements TestableJournal
       return recordSize;
    }
 
+   
+   /** 
+    * This method requires bufferControl disabled, or the reads are going to be invalid
+    * */
    private List<JournalFile> orderFiles() throws Exception
    {
+      
+      if (buffersControl.enabled)
+      {
+         // Sanity check, this shouldn't happen unless someone made an invalid change on the code
+         throw new IllegalStateException("Buffer life cycle control needs to be disabled at this point!!!");
+      }
+      
       List<String> fileNames = fileFactory.listFiles(fileExtension);
 
       List<JournalFile> orderedFiles = new ArrayList<JournalFile>(fileNames.size());
@@ -1949,6 +1970,10 @@ public class JournalImpl implements TestableJournal
          file.read(bb);
 
          int orderingID = bb.getInt();
+         
+         fileFactory.releaseBuffer(bb);
+         
+         bb = null;
 
          if (nextOrderingId.get() < orderingID)
          {
@@ -2105,11 +2130,6 @@ public class JournalImpl implements TestableJournal
       file.getFile().position(file.getFile().calculateBlockStart(SIZE_HEADER));
 
       file.setOffset(file.getFile().calculateBlockStart(SIZE_HEADER));
-
-      if (reuseBufferSize > 0)
-      {
-         file.getFile().setBufferCallback(buffersControl.callback);
-      }
    }
 
    private int generateOrderingID()
@@ -2387,9 +2407,22 @@ public class JournalImpl implements TestableJournal
       /** This queue is fed by {@link JournalImpl.ReuseBuffersController.LocalBufferCallback}} which is called directly by NIO or NIO.
        * On the case of the AIO this is almost called by the native layer as soon as the buffer is not being used any more
        * and ready to be reused or GCed */
-      private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffers = new ConcurrentLinkedQueue<ByteBuffer>();
+      private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffersQueue = new ConcurrentLinkedQueue<ByteBuffer>();
+      
+      /** During reload we may disable/enable buffer reuse */
+      private boolean enabled = true;
 
       final BufferCallback callback = new LocalBufferCallback();
+      
+      public void enable()
+      {
+         this.enabled = true;
+      }
+      
+      public void disable()
+      {
+         this.enabled = false;
+      }
 
       public ByteBuffer newBuffer(final int size)
       {
@@ -2398,11 +2431,11 @@ public class JournalImpl implements TestableJournal
          // just to cleanup this
          if (reuseBufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
          {
-            trace("Clearing reuse buffers queue with " + reuseBuffers.size() + " elements");
+            trace("Clearing reuse buffers queue with " + reuseBuffersQueue.size() + " elements");
 
             bufferReuseLastTime = System.currentTimeMillis();
 
-            reuseBuffers.clear();
+            clearPoll();
          }
 
          // if a buffer is bigger than the configured-size, we just create a new
@@ -2418,7 +2451,7 @@ public class JournalImpl implements TestableJournal
             int alignedSize = fileFactory.calculateBlockSize(size);
 
             // Try getting a buffer from the queue...
-            ByteBuffer buffer = reuseBuffers.poll();
+            ByteBuffer buffer = reuseBuffersQueue.poll();
 
             if (buffer == null)
             {
@@ -2434,10 +2467,20 @@ public class JournalImpl implements TestableJournal
 
                fileFactory.clearBuffer(buffer);
             }
-
+            
             buffer.rewind();
 
             return buffer;
+         }
+      }
+
+      public void clearPoll()
+      {
+         ByteBuffer reusedBuffer;
+         
+         while ((reusedBuffer = reuseBuffersQueue.poll()) != null)
+         {
+            fileFactory.releaseBuffer(reusedBuffer);
          }
       }
 
@@ -2445,13 +2488,20 @@ public class JournalImpl implements TestableJournal
       {
          public void bufferDone(final ByteBuffer buffer)
          {
-            bufferReuseLastTime = System.currentTimeMillis();
-
-            // If a buffer has any other than the configured size, the buffer
-            // will be just sent to GC
-            if (buffer.capacity() == reuseBufferSize)
+            if (enabled)
             {
-               reuseBuffers.offer(buffer);
+               bufferReuseLastTime = System.currentTimeMillis();
+   
+               // If a buffer has any other than the configured size, the buffer
+               // will be just sent to GC
+               if (buffer.capacity() == reuseBufferSize)
+               {
+                  reuseBuffersQueue.offer(buffer);
+               }
+               else
+               {
+                  fileFactory.releaseBuffer(buffer);
+               }
             }
          }
       }

@@ -54,10 +54,11 @@ public class NIOSequentialFile implements SequentialFile
 
    BufferCallback bufferCallback;
 
-   public NIOSequentialFile(final String directory, final String fileName)
+   public NIOSequentialFile(final String directory, final String fileName, final BufferCallback bufferCallback)
    {
       this.directory = directory;
       file = new File(directory + "/" + fileName);
+      this.bufferCallback = bufferCallback;
    }
 
    public int getAlignment()
@@ -90,11 +91,6 @@ public class NIOSequentialFile implements SequentialFile
    public void open(final int currentMaxIO) throws Exception
    {
       open();
-   }
-
-   public void setBufferCallback(final BufferCallback callback)
-   {
-      bufferCallback = callback;
    }
 
    public void fill(final int position, final int size, final byte fillCharacter) throws Exception

@@ -882,9 +882,11 @@ public class ClusterTestBase extends ServiceTestBase
       configuration.setSecurityEnabled(false);
       configuration.setBindingsDirectory(getBindingsDir(node, backup));
       configuration.setJournalMinFiles(2);
+      configuration.setJournalMaxAIO(1000);
       configuration.setJournalDirectory(getJournalDir(node, backup));
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(JournalType.NIO);
+      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalMaxAIO(1000);
       configuration.setPagingDirectory(getPageDir(node, backup));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, backup));
       configuration.setClustered(true);
@@ -978,7 +980,8 @@ public class ClusterTestBase extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       configuration.setJournalDirectory(getJournalDir(node, false));
       configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(JournalType.NIO);
+      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalMaxAIO(1000);
       configuration.setPagingDirectory(getPageDir(node, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));
       configuration.setClustered(true);

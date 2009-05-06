@@ -25,7 +25,6 @@ package org.jboss.messaging.tests.integration.journal;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
@@ -78,6 +77,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       ByteBuffer buff = factory.newBuffer(10);
       assertEquals(512, buff.limit());
       file.close();
+      factory.releaseBuffer(buff);
    }
 
    public void testBlockCallback() throws Exception
@@ -131,7 +131,7 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 
       BlockCallback callback = new BlockCallback();
 
-      final int NUMBER_OF_RECORDS = 10000;
+      final int NUMBER_OF_RECORDS = 500;
 
       SequentialFile file = factory.createSequentialFile("callbackBlock.log", 1000);
       file.open();
