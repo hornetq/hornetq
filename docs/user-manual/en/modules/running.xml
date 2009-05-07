@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="running">
+   <title>Running JBoss Messaging</title>
+
+   <section id="running.standalone">
+      <title>Running JBoss Messaging in Standalone</title>
+      <para>To run JBM, open up a shell or command prompt and navigate into the 'bin' directory. Then execute './run.sh'
+         (or 'run.bat' on windows) and you should see the following output
+      </para>
+      <programlisting>
+         java -Xmx512M -Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.core
+         .logging.JBMLoggerPlugin -Djava.library.path=. -classpath ../lib/xercesImpl.j
+         ar:../lib/trove.jar:../lib/slf4j-log4j12.jar:../lib/slf4j-api-1.4.3.jar:../li
+         b/mina-core-2.0.0-M2-20080418.144850.jar:../lib/log4j.jar:../lib/jnpserver.ja
+         r:../lib/jgroups.jar:../lib/jboss-xml-binding.jar:../lib/jbossts-common.jar:.
+         ./lib/jboss-transaction-spi.jar:../lib/jbosssx-client.jar:../lib/jboss-securi
+         ty-spi.jar:../lib/jboss-messaging.jar:../lib/jboss-messaging-client.jar:../li
+         b/jboss-kernel.jar:../lib/jbossjta.jar:../lib/jbossjta-integration.jar:../lib
+         /jboss-javaee.jar:../lib/jboss-jaspi-api.jar:../lib/jboss-dependency.jar:../l
+         ib/jboss-container.jar:../lib/jboss-common-logging-spi.jar:../lib/jboss-commo
+         n-core.jar:../lib/jboss-aop-mc-int.jar:../lib/jboss-aop-jdk50.jar:../lib/java
+         ssist.jar:../lib/concurrent.jar:../lib/commons-logging.jar:../config/ org.jbo
+         ss.jms.server.microcontainer.JBMBootstrapServer jbm-standalone-beans.xml
+         10:25:57,225 INFO @main [JournalStorageManager] Directory /home/andy/jbm-tes
+         t/data/bindings does not already exists
+         10:25:57,226 INFO @main [JournalStorageManager] Creating it
+         10:25:57,270 INFO @main [JournalStorageManager] Directory /home/andy/jbm-tes
+         t/data/journal does not already exists
+         10:25:57,271 INFO @main [JournalStorageManager] Creating it
+         10:25:57,276 INFO @main [JournalStorageManager] AIO loaded successfully
+         10:25:57,689 INFO @main [MinaService] Registering:tcp://localhost:5400
+         10:25:57,707 INFO @main [FileDeploymentManager] Deploying org.jboss.messagin
+         g.core.deployers.impl.SecurityDeployer@fe0fd9 with urlfile:/home/andy/project
+         s/jBossMessaging/build/messaging-2.0.0.alpha1/config/queues.xml
+         10:25:57,758 INFO @main [XmlDeployer] deploying jms.topic.testTopic
+         10:25:57,761 INFO @main [XmlDeployer] deploying jms.topic.securedTopic
+         10:25:57,761 INFO @main [XmlDeployer] deploying jms.topic.testDurableTopic
+         10:25:57,762 INFO @main [XmlDeployer] deploying jms.queue.testQueue
+         10:25:57,762 INFO @main [XmlDeployer] deploying jms.queue.NoSuchQueue
+         10:25:57,763 INFO @main [XmlDeployer] deploying jms.topic.NoSuchTopic
+         10:25:57,763 INFO @main [XmlDeployer] deploying queuetempjms.*
+         10:25:57,764 INFO @main [XmlDeployer] deploying topictempjms.*
+         10:25:57,764 INFO @main [XmlDeployer] deploying *
+         10:25:57,765 INFO @main [FileDeploymentManager] Deploying org.jboss.messagin
+         g.core.deployers.impl.QueueSettingsDeployer@1220b36 with urlfile:/home/andy/p
+         rojects/jBossMessaging/build/messaging-2.0.0.alpha1/config/queues.xml
+         10:25:57,783 INFO @main [XmlDeployer] deploying jms.queue.QueueWithOwnDLQAndE
+         xpiryQueue
+         10:25:57,784 INFO @main [XmlDeployer] deploying jms.topic.TopicWithOwnDLQAndE
+         xpiryQueue
+         10:25:57,784 INFO @main [XmlDeployer] deploying jms.queue.QueueWithOwnRedeliv
+         eryDelay
+         10:25:57,784 INFO @main [XmlDeployer] deploying jms.topic.TopicWithOwnRedeliv
+         eryDelay
+         10:25:57,785 INFO @main [XmlDeployer] deploying jms.queue.testDistributedQueu
+         e
+         10:25:57,785 INFO @main [XmlDeployer] deploying jms.topic.testDistributedTopi
+         c
+         10:25:57,785 INFO @main [XmlDeployer] deploying jms.queue.testPerfQueue
+         10:25:57,785 INFO @main [XmlDeployer] deploying *
+         10:26:02,824 INFO @main [FileDeploymentManager] Deploying org.jboss.messagin
+         g.core.deployers.impl.SecurityManagerDeployer@1a1ff9 with urlfile:/home/andy/
+         projects/jBossMessaging/build/messaging-2.0.0.alpha1/config/jbm-security.xml
+         10:26:02,831 INFO @main [XmlDeployer] deploying guest
+         10:26:02,991 INFO @main [FileDeploymentManager] Deploying org.jboss.messagin
+         g.jms.server.impl.JMSServerDeployer@d6c07 with urlfile:/home/andy/projects/jB
+         ossMessaging/build/messaging-2.0.0.alpha1/config/jbm-jms.xml
+         10:26:03,005 INFO @main [XmlDeployer] deploying DLQ
+         10:26:03,035 INFO @main [XmlDeployer] deploying ExpiryQueue
+         10:26:03,038 INFO @main [XmlDeployer] deploying testQueue
+         10:26:03,044 INFO @main [XmlDeployer] deploying testPerfQueue
+         10:26:03,046 INFO @main [XmlDeployer] deploying A
+         10:26:03,048 INFO @main [XmlDeployer] deploying B
+         10:26:03,050 INFO @main [XmlDeployer] deploying C
+         10:26:03,051 INFO @main [XmlDeployer] deploying D
+         10:26:03,072 INFO @main [XmlDeployer] deploying ex
+         10:26:03,075 INFO @main [XmlDeployer] deploying PrivateDLQ
+         10:26:03,077 INFO @main [XmlDeployer] deploying PrivateExpiryQueue
+         10:26:03,078 INFO @main [XmlDeployer] deploying QueueWithOwnDLQAndExpiryQueu
+         e
+         10:26:03,080 INFO @main [XmlDeployer] deploying QueueWithOwnRedeliveryDelay
+         10:26:03,081 INFO @main [XmlDeployer] deploying testDistributedQueue
+         10:26:03,083 INFO @main [XmlDeployer] deploying testTopic
+         10:26:03,086 INFO @main [XmlDeployer] deploying securedTopic
+         10:26:03,087 INFO @main [XmlDeployer] deploying testDurableTopic
+         10:26:03,088 INFO @main [XmlDeployer] deploying TopicWithOwnDLQAndExpiryQueu
+         e
+         10:26:03,089 INFO @main [XmlDeployer] deploying TopicWithOwnRedeliveryDelay
+         10:26:03,090 INFO @main [XmlDeployer] deploying testDistributedTopic
+         10:26:03,091 INFO @main [XmlDeployer] deploying testConnectionFactory
+         10:26:03,091 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,101 INFO @main [XmlDeployer] deploying ConnectionFactory
+         10:26:03,101 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,102 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,103 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,103 WARN @main [JMSServerManagerImpl] Binding for java:/ConnectionF
+         actory already exists
+         10:26:03,103 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,104 WARN @main [JMSServerManagerImpl] Binding for java:/XAConnectio
+         nFactory already exists
+         10:26:03,104 INFO @main [XmlDeployer] deploying ClusteredConnectionFactory
+         10:26:03,104 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,105 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,106 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,106 WARN @main [JMSServerManagerImpl] Binding for java:/ClusteredCo
+         nnectionFactory already exists
+         10:26:03,106 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,106 WARN @main [JMSServerManagerImpl] Binding for java:/ClusteredXA
+         ConnectionFactory already exists
+         10:26:03,107 INFO @main [XmlDeployer] deploying MyExampleConnectionFactory
+         10:26:03,107 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,118 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,130 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,131 INFO @main [JMSServerManagerImpl] Creating cf ** with ws:1000
+         10:26:03,133 INFO @main [JBMBootstrapServer] JBM Server Started
+      </programlisting>
+      <para>JBoss Messaging is now running. If any errors are seen, refer to the troubleshooting guide for help</para>
+   </section>
+
+   <section id="running.jboss.as">
+      <title>Running JBoss Messaging in JBoss AS 5</title>
+      <para>TODO</para>
+   </section>
+
+</chapter>
