@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
-        "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
-        <!ENTITY about        SYSTEM "modules/about.xml">
-        <!ENTITY introduction SYSTEM "modules/introduction.xml">
-        <!ENTITY download     SYSTEM "modules/download.xml">
-        <!ENTITY installation SYSTEM "modules/installation.xml">
-        <!ENTITY running      SYSTEM "modules/running.xml">
-        <!ENTITY examples     SYSTEM "modules/examples.xml">
+        "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [       
+        <!ENTITY preface      SYSTEM "modules/preface.xml">
+        <!ENTITY introduction SYSTEM "modules/introduction.xml">        
         ]>
 <book lang="en">
    <bookinfo>
@@ -16,10 +12,6 @@
 
    <toc></toc>
 
-   &about;
+   &preface;
    &introduction;
-   &download;
-   &installation;
-   &running;
-   &examples;
 </book>
