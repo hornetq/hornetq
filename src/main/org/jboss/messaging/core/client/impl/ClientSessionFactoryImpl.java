@@ -952,7 +952,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       }
    }
 
-   private void updateConnectionManagerArray()
+   private synchronized void updateConnectionManagerArray()
    {
       connectionManagerArray = new ConnectionManager[connectionManagerMap.size()];
 
