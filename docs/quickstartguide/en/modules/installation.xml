@@ -9,7 +9,8 @@
       <note><para>JBoss Messaging only runs on Java 5 or later.</para></note>
       <para>By default, JBoss Messaging server is run with 1GB of memory. If your computer has less memory, 
       modify the value in <literal>bin/run.sh</literal> accordingly.</para>
-      <para>For persistence, JBoss Messaging use Java NIO to load and store data. On Linux, it is possible to use libaio instead.</para>
+      <para>For persistence, JBoss Messaging use Java NIO to load and store data. On Linux, it is possible to use 
+      <ulink url="http://git.kernel.org/?p=libs/libaio/libaio.git">libaio</ulink> instead.</para>
       <para><ulink url="http://ant.apache.org/">Apache Ant</ulink> is required to create the profiles for JBoss AS 5 and run the examples.</para>
    </section>
 
