@@ -81,7 +81,6 @@ public class JBMBootstrapServer extends BasicBootstrap
       try
       {
          super.run();
-         log.info("JBoss Messaging server started");
       }
       catch (RuntimeException e)
       {
