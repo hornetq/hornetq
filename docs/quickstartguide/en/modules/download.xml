@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="download">
+   <title>Download</title>
+   <para>The official JBoss Messaging project page is <ulink
+   url="http://www.jboss.org/jbossmessaging/">http://www.jboss.org/jbossmessaging/</ulink>.</para>
+
+   <section id="download.software">
+    <title>Software Download</title>
+    <para>The download location is the JBoss Labs Messaging Project download
+    zone: <ulink
+    url="http://www.jboss.org/jbossmessaging/downloads/">http://www.jboss.org/jbossmessaging/downloads/</ulink></para>
+   </section>
+   
+   <section id="download.svn">
+      <title>SVN Repository</title>
+      <para>You can checkout the development version of JBoss Messaging directly from its
+          Subversion repository. Be aware that the
+      information provided in this manual might then not be accurate. For the
+      latest instructions on how to check out and build source code, please go
+      to <ulink
+      url="http://wiki.jboss.org/wiki/JBossMessagingDevelopment">
+      Messaging Development wiki</ulink>, and specifically <ulink
+      url="http://wiki.jboss.org/wiki/JBossMessagingBuildInstructions">
+      "Building and Running JBoss Messaging"</ulink> page.</para>
+   </section>
+</chapter>

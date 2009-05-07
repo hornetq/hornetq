@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="installation">
+   <title>Installation</title>
+   <para>This section describes how to install JBoss Messaging.
+   </para>
+
+   <section id="installation.prerequisites">
+      <title>Prerequisites</title>
+      <para><note>JBoss Messaging only runs with Java 5 or later. We recommend Java 6 for the best performance.</note></para>
+      <para>By default, JBoss Messaging server is run with 1GB of memory. If your computer has less memory, 
+      modify the value in <literal>bin/run.sh</literal> accordingly.</para>
+      <para><ulink url="http://ant.apache.org/">Ant</ulink> is required to build and run the examples.</para>
+   </section>
+
+   <section id="installation.standalone">
+      <title>Installing JBoss Messaging standalone</title>
+      <para>After downloading the distribution unzip it into your chosen directory. At this point it should be possible
+         to run straight out of the box, the following describes the directory structure that should be seen
+      </para>
+      <programlisting>
+         |-- bin
+         |-- config
+         |-- lib
+         |-- docs
+         | |-- api
+         | `-- userguide
+         `-- examples
+      </programlisting>
+      <itemizedlist>
+         <listitem>
+            <para>bin</para>
+            <para>This contains the binaries and scripts needed to run JBM.</para>
+         </listitem>
+         <listitem>
+            <para>config</para>
+            <para>This contains configuration files needed to configure JBM. Refer to the configuration chapter for
+               details on how to do this.
+            </para>
+         </listitem>
+         <listitem>
+            <para>lib</para>
+            <para>This contains jars needed to run JBM.
+            </para>
+         </listitem>
+         <listitem>
+            <para>docs</para>
+            <para>This contains this user guide and the JBM Javadocs..
+            </para>
+         </listitem>
+         <listitem>
+            <para>examples</para>
+            <para>This contains a set of examples. Refer to the 'running examples'
+               chapter for details on how to run them.
+            </para>
+         </listitem>
+      </itemizedlist>
+   </section>
+
+   <section id="installation.jboss">
+      <title>Installing JBoss Messaging in JBoss AS 5</title>
+      <para>At this point JBoss Messaging 2 Alpha is a technology preview and we only support the standalone or embedded
+         versions.
+      </para>
+   </section>
+
+</chapter>

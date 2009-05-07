@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="examples">
+   <title>Running the Examples</title>
+
+   <para>In the directory<literal>examples</literal>, you will find 2 sets of examples:
+   </para>
+   <itemizedlist>
+      <listitem>a set of JMS examples</listitem>
+      <listitem>a set of non-JMS examples that demonstrate how to use the JBoss Messaging core API</listitem>
+   </itemizedlist>
+   <para>The examples will be expanded on before JBoss Messaging 2.0 GA release</para>
+   <para>It is highly recommended that you familiarise yourself with the
+      examples.
+   </para>
+   <para>Make sure you start JBoss Messaging before running the
+      examples!
+   </para>
+   <section id="examples.jms">
+      <title>The JMS examples</title>
+      <para>The following JMS examples are provided. To run these you will first need to start the server as shown
+         in the installation chapter.
+      </para>
+
+      <para>For each example, you can always override the default ports it will
+         try to connect to by editing jndi.properties in the config directory
+      </para>
+      <para>To run a specific example open up a shell or command prompt and navigate into the
+         <literal>examples/jms</literal>
+         directory and run the command ant followed by the example name, as follows
+      </para>
+      <programlisting>
+         ant queueExample
+      </programlisting>
+      <para>The output should be similar to the following</para>
+      <programlisting>
+         Buildfile: build.xml
+
+         init:
+         [mkdir] Created dir: /home/andy/projects/jBossMessaging/docs/examples/jms/build
+
+         compile:
+         [javac] Compiling 5 source files to /home/andy/projects/jBossMessaging/docs/
+         examples/jms/build
+
+         queueExample:
+         [java] 10:59:02,124 INFO @main [QueueExample] sending message to queue
+         [java] 10:59:02,187 INFO @main [QueueExample] message received from queue
+         [java] 10:59:02,187 INFO @main [QueueExample] message = This is a text message!
+
+         BUILD SUCCESSFUL
+         Total time: 3 seconds
+      </programlisting>
+      <para>The following examples are available</para>
+      <itemizedlist>
+         <listitem>
+            <para>queueExample</para>
+            <para>This example shows a simple send and receive to a remote queue
+               using a JMS client
+            </para>
+         </listitem>
+         <listitem>
+            <para>topicExample</para>
+            <para>This example shows a simple send and receive to a remote topic
+               using a JMS client
+            </para>
+         </listitem>
+         <listitem>
+            <para>durSubExample</para>
+            <para>This example shows the use of a durable subscriber.
+            </para>
+         </listitem>
+         <listitem>
+            <para>perfSender</para>
+            <para>This example will run a basic performance test. It sends messages to a destination according to the specified parameters. This needs to be used in conjunction with the  perfListener example.
+		    The number of messages,  delivery mode etc can be configured as follows:
+		    <programlisting>
+			    ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT perfSender
+               </programlisting>
+            </para>
+	    
+	    <para>
+		The following parameters can be configured for the sender
+		<itemizedlist>
+			<listitem>
+				<para>message.count</para>
+				<para>The number of messages to send.</para>
+			</listitem>
+			<listitem>
+				<para>delivery.mode</para>
+				<para>The delivery mode to use, PERSISTENT or NON_PERSISTENT.</para>
+			</listitem>
+			<listitem>
+				<para>message.warmup.count</para>
+				<para>How many messages to warm up for. Because of the JIT compiler maximum throughput will take a
+					little
+					while to kick in.
+				</para>
+			</listitem>
+			<listitem>
+				<para>message.size</para>
+				<para>The size of message to send, in bytes</para>
+			</listitem>
+			<listitem>
+				<para>sess.trans</para>
+				<para>Whether or not the session is transacted.</para>
+			</listitem>
+			<listitem>
+				<para>sess.trans.size</para>
+				<para>If the session is transacted the batch size to commit.</para>
+			</listitem>
+			<listitem>
+				<para>queue.lookup</para>
+				<para>The name of the queue to use.</para>
+			</listitem>
+			<listitem>
+				<para>cf.lookup</para>
+				<para>The name of the connection factory to use.</para>
+			</listitem>
+		</itemizedlist>
+            </para>
+         </listitem>
+         <listitem>
+            <para>perfListener</para>
+            <para>This example will run a basic performance test. It will consume messages from a destination according to the parameters specified. Before running start the example and wait for it to
+               start, you will see
+               <literal>READY!!!</literal>
+               when the listener has started. The number of messages,
+               delivery mode etc can be configured as follows:
+               <programlisting>
+                  ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT perfSender
+               </programlisting>
+            </para>
+	    
+            <para>If running the sender and listener seperately make sure to run the listener with the parameter
+               <literal>drain.queue</literal>
+               set to false
+            </para>
+            <para>
+               The following parameters can be configured:
+               <itemizedlist>
+                  <listitem>
+                     <para>message.count</para>
+                     <para>The number of messages to consume.</para>
+                  </listitem>
+                  <listitem>
+                     <para>message.warmup.count</para>
+                     <para>How many messages to warm up for. Because of the JIT compiler maximum throughput will take a
+                        little
+                        while to kick in.
+                     </para>
+                  </listitem>
+                  <listitem>
+                     <para>sess.trans</para>
+                     <para>Whether or not the session is transacted.</para>
+                  </listitem>
+                  <listitem>
+                     <para>sess.trans.size</para>
+                     <para>If the session is transacted the batch size to commit.</para>
+                  </listitem>
+                  <listitem>
+                     <para>sess.ackmode</para>
+                     <para>The acknowledge mode to use, DUPS_OK or AUTO_ACK. Ignored if the session is transacted</para>
+                  </listitem>
+                  <listitem>
+                     <para>drain.queue</para>
+                     <para>Whether or not the listener will empty the queue before starting.</para>
+                  </listitem>
+                  <listitem>
+                     <para>queue.lookup</para>
+                     <para>The name of the queue to use.</para>
+                  </listitem>
+                  <listitem>
+                     <para>cf.lookup</para>
+                     <para>The name of the connection factory to use.</para>
+                  </listitem>
+               </itemizedlist>
+            </para>
+            <para>There are also some ant targets for running the perf sender and listener in different modes:
+               <programlisting>
+                  perfNonTransactionalSender
+                  perfTransactionalSender
+                  perfAutoAckListener
+                  perfDupsOKListener
+                  perfDupsOKListener
+               </programlisting>
+            </para>
+         </listitem>
+      </itemizedlist>
+   </section>
+
+   <section id="examples.messaging">
+      <title>The Messaging examples</title>
+      <para>The messaging examples demonstrate the use of the messaging core API and also how to create and run an
+         embedded
+         instance of JBM. The following examples are available:
+      </para>
+      <para>to run a specific example open up a shell or command prompt and navigate into the
+         <literal>examples/messaging</literal>
+         directory and run the command ant followed by the example name, as follows
+      </para>
+      <programlisting>
+         ant simpleClient
+      </programlisting>
+      <itemizedlist>
+         <listitem>
+            <para>SimpleClient</para>
+            <para>This example shows a simple send and receive to a remote queue
+               using a core messaging client. The server will need to be running for this example.
+            </para>
+         </listitem>
+         <listitem>
+            <para>SSLClient</para>
+            <para>This example shows a simple send and receive to a remote queue using SS. The server will need to be
+               running and configured to use SSL for this example. Refer to the configuration chapter for details on how
+               to do this.
+            </para>
+         </listitem>
+         <listitem>
+            <para>simpleExample</para>
+            <para>This example shows how to create an embedded JBM server using the core API. The server must not have 
+               been started before running this example.
+            </para>
+         </listitem>
+      </itemizedlist>
+   </section>
+
+
+</chapter>
