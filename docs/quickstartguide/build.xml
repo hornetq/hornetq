@@ -1,4 +1,4 @@
-<project name="jbmessaging.documentation" default="all" basedir=".">
+<project name="jbmessaging.quickstart.documentation" default="all" basedir=".">
 
   <property name="build.dir" value="${basedir}/../../output/docs/quickstartguide"/>
   <property name="pdf.name"  value="JBossMessaging_QuickStartGuide.pdf"/>

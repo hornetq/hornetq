@@ -1,228 +1,224 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="examples">
    <title>Running the Examples</title>
-
-   <para>In the directory<literal>examples</literal>, you will find 2 sets of examples:
-   </para>
+   <para>In the directory <literal>examples</literal> there are 2 sets of examples, these are </para>
    <itemizedlist>
-      <listitem>a set of JMS examples</listitem>
-      <listitem>a set of non-JMS examples that demonstrate how to use the JBoss Messaging core API</listitem>
+      <listitem>
+         <para>JMS Examples</para>
+      </listitem>
+      <listitem>
+         <para>Java EE Examples</para>
+      </listitem>
    </itemizedlist>
-   <para>The examples will be expanded on before JBoss Messaging 2.0 GA release</para>
-   <para>It is highly recommended that you familiarise yourself with the
-      examples.
-   </para>
-   <para>Make sure you start JBoss Messaging before running the
-      examples!
-   </para>
+   <para>All the examples are run using Ant.</para>
    <section id="examples.jms">
       <title>The JMS examples</title>
-      <para>The following JMS examples are provided. To run these you will first need to start the server as shown
-         in the installation chapter.
-      </para>
-
-      <para>For each example, you can always override the default ports it will
-         try to connect to by editing jndi.properties in the config directory
-      </para>
-      <para>To run a specific example open up a shell or command prompt and navigate into the
-         <literal>examples/jms</literal>
-         directory and run the command ant followed by the example name, as follows
-      </para>
-      <programlisting>
-         ant queueExample
-      </programlisting>
-      <para>The output should be similar to the following</para>
-      <programlisting>
-         Buildfile: build.xml
-
-         init:
-         [mkdir] Created dir: /home/andy/projects/jBossMessaging/docs/examples/jms/build
-
-         compile:
-         [javac] Compiling 5 source files to /home/andy/projects/jBossMessaging/docs/
-         examples/jms/build
-
-         queueExample:
-         [java] 10:59:02,124 INFO @main [QueueExample] sending message to queue
-         [java] 10:59:02,187 INFO @main [QueueExample] message received from queue
-         [java] 10:59:02,187 INFO @main [QueueExample] message = This is a text message!
-
-         BUILD SUCCESSFUL
-         Total time: 3 seconds
-      </programlisting>
-      <para>The following examples are available</para>
+      <para>The JMS Examples all follow the same format. Each examples is contained in its own
+         directory which contains the following.</para>
       <itemizedlist>
          <listitem>
-            <para>queueExample</para>
-            <para>This example shows a simple send and receive to a remote queue
-               using a JMS client
-            </para>
+            <para>build.xml</para>
+            <para>This is the ant build file used to run the example</para>
          </listitem>
          <listitem>
-            <para>topicExample</para>
-            <para>This example shows a simple send and receive to a remote topic
-               using a JMS client
-            </para>
+            <para>src directory</para>
+            <para>This contains the source code for the example</para>
          </listitem>
          <listitem>
-            <para>durSubExample</para>
-            <para>This example shows the use of a durable subscriber.
-            </para>
-         </listitem>
-         <listitem>
-            <para>perfSender</para>
-            <para>This example will run a basic performance test. It sends messages to a destination according to the specified parameters. This needs to be used in conjunction with the  perfListener example.
-		    The number of messages,  delivery mode etc can be configured as follows:
-		    <programlisting>
-			    ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT perfSender
-               </programlisting>
-            </para>
-	    
-	    <para>
-		The following parameters can be configured for the sender
-		<itemizedlist>
-			<listitem>
-				<para>message.count</para>
-				<para>The number of messages to send.</para>
-			</listitem>
-			<listitem>
-				<para>delivery.mode</para>
-				<para>The delivery mode to use, PERSISTENT or NON_PERSISTENT.</para>
-			</listitem>
-			<listitem>
-				<para>message.warmup.count</para>
-				<para>How many messages to warm up for. Because of the JIT compiler maximum throughput will take a
-					little
-					while to kick in.
-				</para>
-			</listitem>
-			<listitem>
-				<para>message.size</para>
-				<para>The size of message to send, in bytes</para>
-			</listitem>
-			<listitem>
-				<para>sess.trans</para>
-				<para>Whether or not the session is transacted.</para>
-			</listitem>
-			<listitem>
-				<para>sess.trans.size</para>
-				<para>If the session is transacted the batch size to commit.</para>
-			</listitem>
-			<listitem>
-				<para>queue.lookup</para>
-				<para>The name of the queue to use.</para>
-			</listitem>
-			<listitem>
-				<para>cf.lookup</para>
-				<para>The name of the connection factory to use.</para>
-			</listitem>
-		</itemizedlist>
-            </para>
-         </listitem>
-         <listitem>
-            <para>perfListener</para>
-            <para>This example will run a basic performance test. It will consume messages from a destination according to the parameters specified. Before running start the example and wait for it to
-               start, you will see
-               <literal>READY!!!</literal>
-               when the listener has started. The number of messages,
-               delivery mode etc can be configured as follows:
-               <programlisting>
-                  ant -Dmessage.count=20000 -Ddelivery.mode=PERSISTENT perfSender
-               </programlisting>
-            </para>
-	    
-            <para>If running the sender and listener seperately make sure to run the listener with the parameter
-               <literal>drain.queue</literal>
-               set to false
-            </para>
-            <para>
-               The following parameters can be configured:
-               <itemizedlist>
-                  <listitem>
-                     <para>message.count</para>
-                     <para>The number of messages to consume.</para>
-                  </listitem>
-                  <listitem>
-                     <para>message.warmup.count</para>
-                     <para>How many messages to warm up for. Because of the JIT compiler maximum throughput will take a
-                        little
-                        while to kick in.
-                     </para>
-                  </listitem>
-                  <listitem>
-                     <para>sess.trans</para>
-                     <para>Whether or not the session is transacted.</para>
-                  </listitem>
-                  <listitem>
-                     <para>sess.trans.size</para>
-                     <para>If the session is transacted the batch size to commit.</para>
-                  </listitem>
-                  <listitem>
-                     <para>sess.ackmode</para>
-                     <para>The acknowledge mode to use, DUPS_OK or AUTO_ACK. Ignored if the session is transacted</para>
-                  </listitem>
-                  <listitem>
-                     <para>drain.queue</para>
-                     <para>Whether or not the listener will empty the queue before starting.</para>
-                  </listitem>
-                  <listitem>
-                     <para>queue.lookup</para>
-                     <para>The name of the queue to use.</para>
-                  </listitem>
-                  <listitem>
-                     <para>cf.lookup</para>
-                     <para>The name of the connection factory to use.</para>
-                  </listitem>
-               </itemizedlist>
-            </para>
-            <para>There are also some ant targets for running the perf sender and listener in different modes:
-               <programlisting>
-                  perfNonTransactionalSender
-                  perfTransactionalSender
-                  perfAutoAckListener
-                  perfDupsOKListener
-                  perfDupsOKListener
-               </programlisting>
-            </para>
+            <para>server0 config dir</para>
+            <para>This contains the configuration files needed to run the server for the example.
+               There may be multiple config directories server0, server1 etc for clustered examples
+               etc.</para>
          </listitem>
       </itemizedlist>
-   </section>
+      <para>Each example will start 1 or more standalone servers and stop them after the example has
+         completed.</para>
+      <para>As a quick start we'll run the queue example. For all other examples refer to the main
+         User Manual.</para>
+      <para>Firstly open a Shell or a Command prompt and navigate to the <literal
+            >examples/jms/queue</literal> directory.</para>
+      <para>Type the command <literal>ant</literal> and you should see the following output:</para>
+      <programlisting>Buildfile: build.xml
 
+run:
+
+init:
+
+compile:
+     [echo] src.example.dir=/home/andy/projects/JBMTrunk/examples/jms/queue/src
+    [javac] Compiling 5 source files to /home/andy/projects/JBMTrunk/examples/jms/queue
+/build/classes
+
+runExample:
+     [java] 10:41:04,149 INFO  @main [JMSExample] jbm.example.runServer is true
+     [java] 10:41:04,149 INFO  @main [JMSExample] starting server with config 'server0'
+ logServerOutput true
+     [java] 10:41:04,149 INFO  @main [JMSExample] and vm args: -Xms512M,-Xmx512M,-XX:+U
+seParallelGC,-XX:+AggressiveOpts,-XX:+UseFastAccessorMethods,-Djava.util.logging.config.
+file=/home/andy/projects/JBMTrunk/examples/jms/common/../../../src/config/stand-alone/no
+n-clustered/logging.properties
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:08,437 INFO  @main [Journal
+StorageManager] AIO journal selected
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:08,437 WARN  @main [Journal
+StorageManager] AIO wasn't located on this platform, it will fall back to using pure Jav
+a NIO. If your platform is Linux, install LibAIO to enable the AIO journal
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:08,437 WARN  @main [Securit
+yStoreImpl] It has been detected that the cluster admin password which is used to replic
+ate management operation from one node to the other has not had its password changed fro
+m the installation default. Please see the JBoss Messaging user guide for instructions o
+n how to do this.
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [JBossCo
+nnectionFactory] read only is false
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [JBossCo
+nnectionFactory] read only is false
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [JBossCo
+nnectionFactory] read only is false
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:10,991 WARN  @main [JMSServ
+erManagerImpl] Binding for java:/ConnectionFactory already exists
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:10,991 WARN  @main [JMSServ
+erManagerImpl] Binding for java:/XAConnectionFactory already exists
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [Messagi
+ngServerImpl] JBoss Messaging Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+     [java] org.jboss.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [JBMBoot
+strapServer] JBoss Messaging server started
+     [java] org.jboss.jms.example.SpawnedJMSServer out:STARTED::
+     [java] 10:41:11,276 INFO  @main [JMSExample] using server0/client-jndi.properties f
+or jndi
+     [java] Sent message: This is a text message
+     [java] Received message: This is a text message
+     [java] 
+     [java] #####################
+     [java] ###    SUCCESS!   ###
+     [java] #####################
+
+BUILD SUCCESSFUL
+Total time: 13 seconds
+</programlisting>
+      <para>Congratulations! You have succesfully run your first Jboss Messaging example. Try some
+         of the others.</para>
+   </section>
    <section id="examples.messaging">
-      <title>The Messaging examples</title>
-      <para>The messaging examples demonstrate the use of the messaging core API and also how to create and run an
-         embedded
-         instance of JBM. The following examples are available:
-      </para>
-      <para>to run a specific example open up a shell or command prompt and navigate into the
-         <literal>examples/messaging</literal>
-         directory and run the command ant followed by the example name, as follows
-      </para>
+      <title>The Java EE Examples</title>
+      <para>The Java EE Examples are examples that require an Application Server to run. They
+         include MDB, Servlet, EJB examples etc. For this you will need The JBoss Application Server
+         installed. How to do this is explained in the previous chapters.</para>
+      <para>We'll use the MDB example for the purposes of this guide. For the other examples refer
+         to the user guide. Before going any further ensure that the Jboss Application Server is
+         running.</para>
+      <para>Like the other Java EE examples the MDB example is a J2EE Application which first needs
+         deploying in the JBoss Application Server. The first thing we need to do is set the
+            <literal>JBOSS_HOME</literal> environment property to the location of the JBoss
+         Application Server, in a Linux shell this would be something like:</para>
+      <programlisting>export JBOSS_HOME=/home/jbossas5.1/build/output/jboss-5.1.0.GA</programlisting>
+      <para>Once set we can then deploy the application, from inside the <literal
+            >examples/javaee/mdb</literal> directory run the command:</para>
+      <programlisting>ant deploy</programlisting>
+      <para>In the shell window you should see something like the following output:</para>
+      <programlisting>Buildfile: build.xml
+
+validate-jboss:
+
+deploy:
+
+deploy-resources:
+     [copy] Copying 1 file to /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
+     /server/default-with-jbm2/deploy/messaging.sar
+     [copy] Copying 1 file to /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
+     /server/default-with-jbm2/deploy/messaging.sar
+
+init:
+
+compile:
+
+jar:
+      [jar] Building jar: /home/andy/projects/JBMTrunk/examples/javaee/mdb/build/mdb-exa
+      mple.jar
+
+ear:
+      [jar] Building jar: /home/andy/projects/JBMTrunk/examples/javaee/mdb/build/mdb-exa
+      mple.ear
+
+deploy-ear:
+     [copy] Copying 1 file to /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
+     /server/default-with-jbm2/deploy
+
+deploy-misc:
+
+BUILD SUCCESSFUL
+Total time: 6 seconds
+</programlisting>
+      <para>You can then confirm that the application has been succesfully deployed by checking the
+         output from the JBoss Application Server, you should see something like:</para>
       <programlisting>
-         ant simpleClient
-      </programlisting>
-      <itemizedlist>
-         <listitem>
-            <para>SimpleClient</para>
-            <para>This example shows a simple send and receive to a remote queue
-               using a core messaging client. The server will need to be running for this example.
-            </para>
-         </listitem>
-         <listitem>
-            <para>SSLClient</para>
-            <para>This example shows a simple send and receive to a remote queue using SS. The server will need to be
-               running and configured to use SSL for this example. Refer to the configuration chapter for details on how
-               to do this.
-            </para>
-         </listitem>
-         <listitem>
-            <para>simpleExample</para>
-            <para>This example shows how to create an embedded JBM server using the core API. The server must not have 
-               been started before running this example.
-            </para>
-         </listitem>
-      </itemizedlist>
+16:26:31,584 INFO  [Ejb3DependenciesDeployer] Encountered deployment AbstractVFSDeploymen
+tContext@1992739{vfszip:/home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA/server
+/default-with-jbm2/deploy/mdb-example.ear/mdb-example.jar/}
+16:26:31,584 INFO  [Ejb3DependenciesDeployer] Encountered deployment AbstractVFSDeploymen
+tContext@1992739{vfszip:/home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA/server
+/default-with-jbm2/deploy/mdb-example.ear/mdb-example.jar/}
+16:26:31,621 INFO  [JBossASKernel] Created KernelDeployment for: mdb-example.jar
+16:26:31,622 INFO  [JBossASKernel] installing bean: jboss.j2ee:ear=mdb-example.ear,jar=md
+b-example.jar,name=Mes
+sageMDBExample,service=EJB3
+16:26:31,622 INFO  [JBossASKernel]   with dependencies:
+16:26:31,622 INFO  [JBossASKernel]   and demands:
+16:26:31,622 INFO  [JBossASKernel] 	jboss.ejb:service=EJBTimerService
+16:26:31,622 INFO  [JBossASKernel]   and supplies:
+16:26:31,622 INFO  [JBossASKernel] 	jndi:null
+16:26:31,622 INFO  [JBossASKernel] 	Class:javax.jms.MessageListener
+16:26:31,622 INFO  [JBossASKernel] Added bean(jboss.j2ee:ear=mdb-example.ear,jar=mdb-examp
+le.jar,name=MessageMD
+BExample,service=EJB3) to KernelDeployment of: mdb-example.jar
+16:26:31,651 INFO  [EJBContainer] STARTED EJB: org.jboss.javaee.example.server.MDBExample 
+ejbName: MessageMDBEx
+ample
+</programlisting>
+      <para>We can now run the example, do this by running the follwing command from within the
+            <literal>mdb</literal> directory.</para>
+      <programlisting>ant</programlisting>
+      <para>You should see some output similar to the following:</para>
+      <programlisting>Buildfile: build.xml
+
+run:
+
+init:
+
+compile:
+
+runExample:
+     [java] Sent message: This is a text message
+
+BUILD SUCCESSFUL
+Total time: 7 seconds</programlisting>
+      <para>You may also see some output from the JBoss Application Server, in this instance it
+         is:</para>
+      <programlisting>16:27:54,703 INFO  [STDOUT] message This is a text message received</programlisting>
+      <para>The application can then be undeployed by running the following command from within the
+            <literal>mdb</literal> directory.</para>
+      <programlisting>ant undeploy</programlisting>
+      <para>This should so some output similar to the following:</para>
+      <programlisting>Buildfile: build.xml
+
+validate-jboss:
+
+undeploy:
+
+undeploy-misc:
+   [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
+   /server/default-with-jbm2/deploy/mdb-example.ear
+   [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
+   /server/default-with-jbm2/deploy/messaging.sar/jbm-queues.xml
+   [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
+   /server/default-with-jbm2/deploy/messaging.sar/jbm-jms.xml
+
+BUILD SUCCESSFUL
+Total time: 1 second
+</programlisting>
+      <para>You can verify that the application has been undeployed by checking the output from the
+         JBoss Application Server, in this isntance it will be something like:</para>
+      <programlisting>16:36:45,277 INFO  [EJBContainer] STOPPED EJB: org.jboss.javaee.example.server.MDBExample 
+         ejbName: MessageMDBExample
+</programlisting>
+      <para>Congratulations! you have sucessfully deployed and run a Java EE example.</para>
    </section>
-
-
 </chapter>
