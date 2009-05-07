@@ -130,12 +130,11 @@ public class MDBRemoteExample implements MessageListener
      <p>Refer to the <i>Resource Adapter</i> Chapter on the <i>JBoss Messaging Documentation</i> for more information about configuring the ra.xml properties.
             
      <p>You may choose to deploy multiple JBossMessaging Resource adapters on the same application server, for example if you are connecting to different JBM servers and if you wish to have a higher control of properties on each server you are connecting to. You will be able to determine which rar you are using individually at each <i>MDB</i> and <i>ConnectionFactory</i> as specified before here. Just copy the directory jms-ra.rar in your application as any other name with the extension .rar and use that file name at your deployments.</p>
+
+     <p>Please refer to JBoss Messaging Quickstart guide to <a href="../../../docs/quickstartguide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
      
      <h2>Please follow these steps to configure the example:</h2>
      <ol>
-     <li>Define the property JBOSS_HOME pointing to the root of a JBoss 5.1 distribution</li>
-     <li>Create a JBoss messaging clustered profile by typing <code>ant</code> int the <code>AS</code> directory off the root of
-     the JBoss Messaging distribution. This will create a server profile called <code>$JBOSS_HOME/server/default-with-jbm2</code>.</li>
      <li>Copy the directory <code>$JBOSS_HOME/server/default-with-jbm2</code> to <code>$JBOSS_HOME/server/default-with-jbm2_2</code>.</li>
      <li>Start the first server with <code>./run.sh -c default-with-jbm2</code></li>
      <li>Start the second server with <code>./run.sh -c default-with-jbm2_2 -Djboss.service.binding.set=ports-01</code></li>
@@ -145,7 +144,7 @@ public class MDBRemoteExample implements MessageListener
      <p><i>To deploy the example, simply type <code>ant deploy</code> from this directory **</i></p>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <p><i>To undeploy the example, simply type <code>ant undeploy</code> from this directory **</i></p>
-     <p><i> ** make sure that JBOSS_HOME is set to the Jboss installation directory</i></p>
+     <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>

@@ -7,6 +7,13 @@
      <h1>Java EE Servlet Example</h1>
      <br>
      <p>This example shows you how to configure and use servlet transport with JBoss Messaging.</p>
+     
+     <h2>JBoss AS configuration</h2>
+
+     <p>Please refer to JBoss Messaging Quickstart guide to <a href="../../../docs/quickstartguide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+  
+     <h2>Example configuration</h2>
+        
      <p>
          JBoss Messaging supports different transports through configuration. In fact JBoss Messaging provides a set of
          simple SPI that allow new transports can be plugged in easily. In this example, netty's servlet transport is 
@@ -16,11 +23,12 @@
 
          <ol>         
          <li>Create a servlet</li>
-            There is a servlet for this example under config. Please take a look at config/jms-servlet/WEB-INF/web.xml for 
+            There is a servlet for this example under config. Please take a look at 
+            <code>${JBOSS_HOME}/server/default-with-jbm2/config/jms-servlet/WEB-INF/web.xml</code> for 
             details of the servlet configuration. The servlet is used to accept requests and send response. Before using servlet 
             transport, the servlet need to be deployed to the AS 5.
             
-         <li>Add servlet connector/acceptor entries in deploy/messaging.sar/jbm-configuration.xml</li>
+         <li>Add servlet connector/acceptor entries in <code>${JBOSS_HOME}/server/default-with-jbm2/deploy/messaging.sar/jbm-configuration.xml</code></li>
             The corresponding connector/acceptor need to be configured to tell JBoss Messaging to use netty servlet transport.
             The configure looks like:
             <p>
@@ -63,9 +71,7 @@
      </ol>
      </p>
      <h2>Example step-by-step</h2>
-     <p><em>To run the example, first you need to install a JBoss AS 5 server and set JBOSS_HOME environment accordingly.
-     Then you need to create a AS server profile with JBoss Messaging service, and start AS with that profile.</p>
-     From this directory, type <code>ant deploy</code> to deploy resources in the application server (including the WAR).</br >
+     <p><em>From this directory, type <code>ant deploy</code> to deploy resources in the application server (including the WAR).</br >
      Type <code>ant</code> to run the example.<br />
      Finally type <code>ant undeploy</code> to undeploy the example resources from the application server.</em></p>
      
