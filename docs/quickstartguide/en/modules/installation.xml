@@ -6,16 +6,17 @@
 
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
-      <para><note>JBoss Messaging only runs on Java 5 or later.</note></para>
+      <note><para>JBoss Messaging only runs on Java 5 or later.</para></note>
       <para>By default, JBoss Messaging server is run with 1GB of memory. If your computer has less memory, 
       modify the value in <literal>bin/run.sh</literal> accordingly.</para>
+      <para>For persistence, JBoss Messaging use Java NIO to load and store data. On Linux, it is possible to use libaio instead.</para>
       <para><ulink url="http://ant.apache.org/">Apache Ant</ulink> is required to create the profiles for JBoss AS 5 and run the examples.</para>
    </section>
 
    <section id="installation.standalone">
-      <title>Installing JBoss Messaging standalone</title>
+      <title>Standalone JBoss Messaging Server</title>
       <para>After downloading the distribution, unzip it into your chosen directory. At this point it should be possible
-         to run straight out of the box, the following describes the directory structure:
+         to <link linkend="running.standalone">run straight out of the box</link>, the following describes the directory structure:
       </para>
       <programlisting>
          |-- bin
@@ -24,10 +25,10 @@
          | `-- stand-alone 
          |-- docs
          | |-- api
-         | |-- quickstartguide
-         | |-- migrationguide
-         | |-- referenceguide
-         | `-- userguide
+         | |-- quickstart-guide
+         | |-- migration-guide
+         | |-- reference
+         | `-- user-manual
          |-- examples
          | |-- javaee
          | `-- jms
@@ -69,7 +70,7 @@
    </section>
 
    <section id="installation.jboss">
-      <title>Installing JBoss Messaging in JBoss AS 5</title>
+      <title>JBoss Messaging In JBoss AS 5</title>
       <para>JBoss Messaging 2.0 can be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss AS 5</ulink>.
       It is not shipped by default with the application server and you need to create new AS 5 profiles to run AS 5 with JBoss Messaging.</para>
 
