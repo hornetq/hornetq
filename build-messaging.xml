@@ -91,7 +91,8 @@
    <property name="doc.dir" value="docs"/>
    <property name="licenses.dir" value="licenses"/>
    <property name="doc.examples.dir" value="examples"/>
-   <property name="doc.build.dir" value="${doc.dir}/userguide/build"/>
+   <property name="user-manual.build.dir" value="${doc.dir}/user-manual/build"/>
+   <property name="quickstartguide.build.dir" value="${doc.dir}/quickstartguide/build"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
@@ -879,11 +880,16 @@
 
    <target name="dist-doc" unless="no-doc">
     <antcall target="userdoc"/>
-    <copy todir="${build.distro.dir}/docs/userguide">
-       <fileset dir="${doc.build.dir}">
+    <copy todir="${build.distro.dir}/docs/user-manual">
+       <fileset dir="${user-manual.build.dir}">
           <include name="**"/>
        </fileset>
     </copy>
+      <copy todir="${build.distro.dir}/docs/quickstartguide">
+         <fileset dir="${quickstartguide.build.dir}">
+            <include name="**"/>
+         </fileset>
+      </copy>
     <antcall target="javadoc"/>
     <copy todir="${build.distro.api.dir}/">
        <fileset dir="${build.api.dir}">
@@ -894,7 +900,8 @@
 
 	
    <target name="userdoc">
-      <ant dir="./docs/userguide" antfile="build.xml" target="all"/>
+      <ant dir="./docs/user-manual" antfile="build.xml" target="all"/>
+      <ant dir="./docs/quickstartguide" antfile="build.xml" target="all"/>
    </target>
 
    <target name="javadoc">
