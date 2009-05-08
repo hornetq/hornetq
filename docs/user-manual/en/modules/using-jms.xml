@@ -2,6 +2,21 @@
 <chapter id="using-jms">
     <title>Using JMS</title>
     <para>blah</para>
-    
+    <section>
+        <title>JMS Configuration</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Deploying JMS Administered Objects</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Using JNDI</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Directly instantiating JMS Administered Objects</title>
+        <para></para>
+    </section>
    
 </chapter>

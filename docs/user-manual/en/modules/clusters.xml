@@ -2,7 +2,34 @@
 <chapter id="clusters">
     <title>Clusters</title>
     <para>blah</para>
-   
+    <section>
+        <title>Clusters Overview</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Client-Side Load balancing</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Message load balancing</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Message Redistribution</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Cluster topologies</title>
+        <para></para>
+        <section>
+            <title>Symmetric cluster</title>
+            <para></para>
+        </section>
+        <section>
+            <title>Chain cluster</title>
+            <para></para>
+        </section>
+    </section>
 
    
 </chapter>

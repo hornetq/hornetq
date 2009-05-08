@@ -2,6 +2,22 @@
 <chapter id="using-server">
     <title>Using the Server</title>
     <para>blah</para>
+    <section>
+        <title>Server directoy layout</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Configuration files</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Starting and stopping the server</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Server JVM settings</title>
+        <para></para>
+    </section>
     
 
    

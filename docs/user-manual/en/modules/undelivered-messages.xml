@@ -3,5 +3,19 @@
     <title>Undelivered Messages</title>
     <para>blah</para>
    
+    <section>
+        <title>Message redelivery</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Delayed redelivery</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Dead Letter Addresses</title>
+        <para></para>
+    </section>
    
 </chapter>

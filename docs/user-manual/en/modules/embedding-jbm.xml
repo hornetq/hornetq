@@ -2,7 +2,10 @@
 <chapter id="embedding-jbm">
     <title>Embedding JBoss Messaging</title>
     <para>blah</para>
-    
+    <section>
+        <title>Embedding JBM</title>
+        <para></para>
+    </section>
 
    
 </chapter>

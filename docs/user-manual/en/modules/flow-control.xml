@@ -2,6 +2,33 @@
 <chapter id="flow-control">
     <title>Flow Control</title>
     <para>blah</para>
-   
+    <section>
+        <title>Consumer flow control</title>
+        <para></para>
+        <section>
+            <title>Window based flow control</title>
+            <para></para>
+        </section>
+        <section>
+            <title>Rate limited flow control</title>
+            <para></para>
+        </section>
+    </section>
+    
+    <section>
+        <title>Producer flow control</title>
+        <para></para>
+        
+        <section>
+            <title>Window based flow control</title>
+            <para></para>
+        </section>
+        
+        <section>
+            <title>Rate limited flow control</title>
+            <para></para>
+        </section>
+        
+    </section>
    
 </chapter>

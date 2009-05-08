@@ -3,6 +3,25 @@
     <title>High Availability and Failover</title>
     <para>blah</para>
     
+    <section>
+        <title>Server replication</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Automatic client failover</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Application-level client failover</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Network partitions</title>
+        <para></para>
+    </section>
 
    
 </chapter>

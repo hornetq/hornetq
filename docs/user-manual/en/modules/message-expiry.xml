@@ -2,5 +2,20 @@
 <chapter id="message-expiry">
     <title>Message Expiry</title>
     <para>blah</para>
+    
+    <section>
+        <title>Message expiry</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Configuring expiry addresses</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Configuring the reaper</title>
+        <para></para>
+    </section>
    
 </chapter>

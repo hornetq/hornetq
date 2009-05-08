@@ -3,5 +3,29 @@
     <title>Security</title>
     <para>blah</para>
    
+    <section>
+        <title>Configuring role based security for addresses</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>SSL</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Basic user credentials</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>JAAS</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>JBoss AS security manager</title>
+        <para></para>
+    </section>
    
 </chapter>

@@ -3,5 +3,24 @@
     <title>Management</title>
     <para>blah</para>
     
+    <section>
+        <title>The management API</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Using management with JMX</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Using management via a core connection</title>
+        <para></para>
+    </section>
+    
+    <section>
+        <title>Management notifications</title>
+        <para></para>
+    </section>
    
 </chapter>
