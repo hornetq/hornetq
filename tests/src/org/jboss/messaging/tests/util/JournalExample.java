@@ -6,6 +6,7 @@ import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.utils.TimeAndCounterIDGenerator;
 
 /*
@@ -33,6 +34,8 @@ import org.jboss.messaging.utils.TimeAndCounterIDGenerator;
 /**
  * A JournalExample: Just an example on how to use the Journal Directly
  *
+ * TODO: find a better to store this example
+ * 
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
@@ -68,7 +71,7 @@ public class JournalExample
          //SequentialFileFactory fileFactory = new NIOSequentialFileFactory("/tmp"); // any dir you want
          JournalImpl journalExample = new JournalImpl(
                                                       10 * 1024 * 1024, // 10M.. we believe that's the usual cilinder size.. not an exact science here
-                                                      10, // number of files pre-allocated
+                                                      2, // number of files pre-allocated
                                                       true, // sync on commit
                                                       false, // no sync on non transactional
                                                       fileFactory, // AIO or NIO
@@ -92,11 +95,19 @@ public class JournalExample
 
          System.out.println("Adding Records:");
          
-         journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[] { 0, 1, 2} );
+         for (int i = 0 ; i < 10; i++)
+         {
+            journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[] { 0, 1, 2} );
+         }
          
          long tx = idgenerator.generateID(); // some id generation system
-         journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[] { 0, 1, 2});
          
+         for (int i = 0 ; i < 100; i++)
+         {
+            journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[] { 0, 1, 2});
+         }
+         
+         // After this is complete, you're sure the records are there
          journalExample.appendCommitRecord(tx);
 
          System.out.println("Done!");
