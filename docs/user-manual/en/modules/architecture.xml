@@ -40,7 +40,14 @@
             into operations on the JBoss Messaging core client API before being transferred over the
             wire using the JBoss Messaging wire format.</para>
         <para>The server always just deals with core API interactions.</para>
-        <para>A schematic illustrating this relationship is shown in figure 1</para>
+        <para>A schematic illustrating this relationship is shown in figure 3.1 below:</para>
+        <para/>
+        <para><inlinegraphic fileref="../images/architecture1.jpg" align="center"/></para>
+        <para>Figure 3.1 shows two user applications interacting with a JBoss Mesaging server. User
+            Application 1 is using the JMS API, while User Application 2 is using the core client
+            API directly.</para>
+        <para>You can see from the diagram that the JMS API is implemented by a thin facade layer on
+            the client side.</para>
     </section>
     <section>
         <title>JBoss Messaging embedded in your own application</title>
@@ -87,8 +94,7 @@
         <para>The stand-alone server configuration uses JBoss Microcontainer to instantiate and
             enforce dependencies between the components. JBoss Microcontainer is a very lightweight
             POJO bootstrapper.</para>
-        <para>The stand-alone server architecture is shown in figure X</para>
-     </section>
-
-   
+        <para>The stand-alone server architecture is shown in figure X<inlinegraphic
+                fileref="../diagrams/architecture-diagram3.jpg"/></para>
+    </section>
 </chapter>
