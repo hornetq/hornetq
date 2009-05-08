@@ -90,21 +90,21 @@ public class JournalExample
          
          for (RecordInfo record: committedRecords)
          {
-            System.out.println("Record id = " + record.id + " userType = " + record.userRecordType + " is stored.. keep it on the memory somewhere until you delete it");
+            System.out.println("Record id = " + record.id + " userType = " + record.userRecordType + " with " + record.data.length + " bytes is stored on the journal");
          }
 
          System.out.println("Adding Records:");
          
          for (int i = 0 ; i < 10; i++)
          {
-            journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[] { 0, 1, 2} );
+            journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[] { 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2} );
          }
          
          long tx = idgenerator.generateID(); // some id generation system
          
          for (int i = 0 ; i < 100; i++)
          {
-            journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[] { 0, 1, 2});
+            journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[] { 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 5});
          }
          
          // After this is complete, you're sure the records are there
