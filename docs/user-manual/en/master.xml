@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
         "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [       
         <!ENTITY preface      SYSTEM "modules/preface.xml">
-        <!ENTITY introduction SYSTEM "modules/introduction.xml">
+        <!ENTITY messaging-concepts SYSTEM "modules/messaging-concepts.xml">       
         <!ENTITY architecture SYSTEM "modules/architecture.xml">
         ]>
 <book lang="en">
@@ -14,6 +14,6 @@
    <toc></toc>
 
    &preface;
-   &introduction;
+   &messaging-concepts;  
    &architecture;
 </book>
