@@ -4,6 +4,39 @@
         <!ENTITY preface      SYSTEM "modules/preface.xml">
         <!ENTITY messaging-concepts SYSTEM "modules/messaging-concepts.xml">       
         <!ENTITY architecture SYSTEM "modules/architecture.xml">
+        <!ENTITY using-server SYSTEM "modules/using-server.xml">
+        <!ENTITY using-jms SYSTEM "modules/using-jms.xml">
+        <!ENTITY using-core SYSTEM "modules/using-core.xml">
+        <!ENTITY embedding-jbm SYSTEM "modules/embedding-jbm.xml">
+        <!ENTITY security SYSTEM "modules/security.xml">
+        <!ENTITY persistence SYSTEM "modules/persistence.xml">
+        <!ENTITY management SYSTEM "modules/management.xml">
+        <!ENTITY large-messages SYSTEM "modules/large-messages.xml">
+        <!ENTITY paging SYSTEM "modules/paging.xml">
+        <!ENTITY queue-attributes SYSTEM "modules/queue-attributes.xml">
+        <!ENTITY diverts SYSTEM "modules/diverts.xml">
+        <!ENTITY logging SYSTEM "modules/logging.xml">
+        <!ENTITY scheduled-messages SYSTEM "modules/scheduled-messages.xml">
+        <!ENTITY flow-control SYSTEM "modules/flow-control.xml">
+        <!ENTITY undelivered-messages SYSTEM "modules/undelivered-messages.xml">
+        <!ENTITY message-expiry SYSTEM "modules/message-expiry.xml">
+        <!ENTITY configuring-transports SYSTEM "modules/configuring-transports.xml">
+        <!ENTITY intercepting-operations SYSTEM "modules/intercepting-operations.xml">
+        <!ENTITY last-value-queues SYSTEM "modules/last-value-queues.xml">
+        <!ENTITY message-grouping SYSTEM "modules/message-grouping.xml">
+        <!ENTITY consumer-buffering SYSTEM "modules/consumer-buffering.xml">
+        <!ENTITY pre-acknowledge SYSTEM "modules/pre-acknowledge.xml">
+        <!ENTITY client-reconnection SYSTEM "modules/client-reconnection.xml">
+        <!ENTITY server-discovery SYSTEM "modules/server-discovery.xml">
+        <!ENTITY jca-adaptor SYSTEM "modules/jca-adaptor.xml">
+        <!ENTITY jms-bridge SYSTEM "modules/jms-bridge.xml">
+        <!ENTITY ha-jndi SYSTEM "modules/ha-jndi.xml">
+        <!ENTITY xa-recovery SYSTEM "modules/xa-recovery.xml">
+        <!ENTITY core-bridges SYSTEM "modules/core-bridges.xml">
+        <!ENTITY clusters SYSTEM "modules/clusters.xml">
+        <!ENTITY ha SYSTEM "modules/ha.xml">
+        <!ENTITY interoperability SYSTEM "modules/interoperability.xml">
+        <!ENTITY perf-tuning SYSTEM "modules/perf-tuning.xml">
         ]>
 <book lang="en">
    <bookinfo>
@@ -16,4 +49,37 @@
    &preface;
    &messaging-concepts;  
    &architecture;
+   &using-server;
+   &using-jms;
+   &using-core;
+   &embedding-jbm;
+   &security;
+   &persistence;
+   &management;
+   &large-messages;
+   &paging;
+   &queue-attributes;
+   &diverts;
+   &logging;
+   &scheduled-messages;
+   &flow-control;
+   &undelivered-messages;
+   &message-expiry;
+   &configuring-transports;
+   &intercepting-operations;
+   &last-value-queues;
+   &message-grouping;
+   &consumer-buffering;
+   &pre-acknowledge;
+   &client-reconnection;
+   &server-discovery;
+   &jca-adaptor;
+   &jms-bridge;
+   &ha-jndi;
+   &core-bridges;
+   &clusters;
+   &ha;
+   &interoperability;
+   &perf-tuning;
+   
 </book>

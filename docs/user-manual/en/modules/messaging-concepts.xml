@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter id="introduction">
+<chapter id="messaging-concepts">
     <title>Messaging Concepts</title>
     <para>JBoss Messaging is an asynchronous messaging system, an example of <ulink
             url="http://en.wikipedia.org/wiki/Message_oriented_middleware">Message Oriented
