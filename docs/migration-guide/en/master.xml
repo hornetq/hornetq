@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
+      "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
+      <!ENTITY introduction SYSTEM "modules/introduction.xml">
+      <!ENTITY installation SYSTEM "modules/installation.xml">
+      <!ENTITY differences  SYSTEM "modules/differences.xml">
+      <!ENTITY migration    SYSTEM "modules/migration.xml">
+      ]>
+<book>
+   <bookinfo>
+      <title>JBoss Messaging 2.0 Migration Guide</title>
+      <subtitle>Setting the Standard for High Performance Messaging</subtitle>
+   </bookinfo>
+   <toc/>
+   &introduction;
+   &installation;
+   &differences;
+   &migration;
+</book>

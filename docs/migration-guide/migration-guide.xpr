@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <meta>
+        <filters directoryPatterns="" filePatterns=""
+            positiveFilePatterns="" showHiddenFiles="false"/>
+        <options/>
+    </meta>
+    <projectTree name="migration-guide.xpr">
+        <folder name="en">
+            <folder name="modules">
+                <file name="en/modules/differences.xml"/>
+                <file name="en/modules/installation.xml"/>
+                <file name="en/modules/introduction.xml"/>
+                <file name="en/modules/migration.xml"/>
+            </folder>
+            <file name="en/master.xml"/>
+        </folder>
+    </projectTree>
+</project>
