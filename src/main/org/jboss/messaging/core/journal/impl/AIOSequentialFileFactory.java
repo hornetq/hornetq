@@ -44,10 +44,10 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    /** A single AIO write executor for every AIO File.
     *  This is used only for AIO & instant operations. We only need one executor-thread for the entire journal as we always have only one active file.
     *  And even if we had multiple files at a given moment, this should still be ok, as we control max-io in a semaphore, guaranteeing AIO calls don't block on disk calls */
-   private final Executor writeExecutor = Executors.newSingleThreadExecutor();
+   private final Executor writeExecutor = Executors.newSingleThreadExecutor(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), true));
    
 
-   private final Executor pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
+   private final Executor pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), true));
 
 
    public AIOSequentialFileFactory(final String journalDir)
