@@ -6,6 +6,7 @@ import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
+import org.jboss.messaging.utils.TimeAndCounterIDGenerator;
 
 /*
  * JBoss, Home of Professional Open Source
@@ -60,6 +61,7 @@ public class JournalExample
    
    public static void main(String arg[])
    {
+      TimeAndCounterIDGenerator idgenerator = new TimeAndCounterIDGenerator();
       try
       {
          SequentialFileFactory fileFactory = new AIOSequentialFileFactory("/tmp"); // any dir you want
@@ -90,10 +92,10 @@ public class JournalExample
 
          System.out.println("Adding Records:");
          
-         journalExample.appendAddRecord(System.currentTimeMillis(), (byte)1, new byte[] { 0, 1, 2} );
+         journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[] { 0, 1, 2} );
          
-         long tx = System.currentTimeMillis() + 1; // some id generation system
-         journalExample.appendAddRecordTransactional(tx, System.currentTimeMillis() + 2, (byte)2, new byte[] { 0, 1, 2});
+         long tx = idgenerator.generateID(); // some id generation system
+         journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[] { 0, 1, 2});
          
          journalExample.appendCommitRecord(tx);
 
