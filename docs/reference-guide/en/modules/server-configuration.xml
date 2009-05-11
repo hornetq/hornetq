@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="server.configuration">
    <title>Server Configuration</title>
-   <para>TODO</para>
+   <para>Server settings are configured in the <literal>jbm-configuration.xml</literal> configuration file.</para>
    
    <section id="remoting.configuration">
       <title>Remoting</title>
@@ -11,16 +11,12 @@
          <title>backup</title>
          <variablelist>  
            <varlistentry>
-             <term>type</term>
-             <listitem><para>boolean</para></listitem>
+             <term>description</term>
+             <listitem><para>Set to <literal>true</literal> to configure the server as a backup node</para></listitem>
            </varlistentry>
            <varlistentry>
              <term>default</term>
              <listitem><para>false</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>Set to <literal>true</literal> to configure the server as a backup node</para></listitem>
            </varlistentry>
          </variablelist>
       </section>
@@ -28,16 +24,9 @@
          <title>backup-connector-ref</title>
          <variablelist>  
            <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
              <term>description</term>
-             <listitem><para>TODO</para></listitem>
+             <listitem><para>The name of the <link linkend="connector.configuration">connector</link> to 
+             use to connect to the backup node</para></listitem>
            </varlistentry>
          </variablelist>
       </section>      
@@ -45,154 +34,207 @@
          <title>clustered</title>
          <variablelist>  
            <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
+             <term>description</term>
+             <listitem><para>Set to <literal>true</literal> to configure the server as a part of a cluster</para></listitem>
            </varlistentry>
            <varlistentry>
              <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
-      </section>
-      <section id="connectors.configuration">
-         <title>connectors</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
+             <listitem><para>false</para></listitem>
            </varlistentry>
          </variablelist>
       </section>
       <section id="acceptors.configuration">
          <title>acceptors</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>The <literal>acceptors</literal> defines one or more <literal>acceptor</literal> to
+         allow the server to accept connections from clients (or other nodes).</para>
+         <para>The server <emphasis>must</emphasis> define at least 1 acceptor (otherwise the server will not
+         accept any connections).</para>         
+         <section id="acceptor.configuration">
+            <title>acceptor</title>
+            <varlistentry>
+              <term>description</term>
+              <listitem><para>A single acceptor configuration is composed of a <literal>factory-class</literal> element (the 
+                name of a Java class implementing <literal>org.jboss.messaging.core.remoting.spi.AcceptorFactory</literal>) and zero or more
+                <literal>param</literal> elements (containing <literal>key</literal>, <literal>value</literal>, <literal>type</literal>
+                attributes) which will be passed to the instance of the factory.</para>
+                <para>The <literal>acceptor</literal>'s <literal>name</literal> attribute is optional.</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>example</term>
+              <listitem><programlisting>
+&lt;acceptors&gt;
+   &lt;!-- accept connections from Netty on port 5445 --&gt;
+   &lt;acceptor name="netty-acceptor"&gt;
+      &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
+      &lt;param key="jbm.remoting.netty.port" value="5445" type="Integer"/&gt;
+   &lt;/acceptor&gt;
+&lt;/acceptors&gt;
+               </programlisting></listitem>
+            </varlistentry>
+         </section>                   
+      </section>
+      <section id="connectors.configuration">
+         <title>connectors</title>
+         <para>The <literal>connectors</literal> allows to specify zero or more <literal>connector</literal> that the server
+         will use to connect <emphasis>to</emphasis> other servers.</para>
+         <section id="connector.configuration">
+            <title>connector</title>
+            <varlistentry>
+              <term>description</term>
+              <listitem><para>A single connector configuration is composed of a <literal>factory-class</literal> element (the
+                name of a Java class implementing <literal>org.jboss.messaging.core.remoting.spi.ConnectorFactory</literal>) and zero or more
+                <literal>param</literal> elements (containing <literal>key</literal>, <literal>value</literal>, <literal>type</literal>
+                attributes) which will be passed to the instance of the factory.</para>
+                <para>The <literal>connector</literal>'s <literal>name</literal> attribute is mandatory.</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>example</term>
+              <listitem><programlisting>
+&lt;connectors&gt;
+   &lt;!-- a connector to a server running on localhost:5446 using Netty --&gt;
+   &lt;connector name="netty-connector"&gt;
+      &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class&gt;
+      &lt;param key="jbm.remoting.netty.host" value="localhost" type="String"/&gt;      
+      &lt;param key="jbm.remoting.netty.port" value="5446" type="Integer"/&gt;
+   &lt;/connector&gt;                
+   &lt;!-- other connectors --&gt;
+   ...
+&lt;/connectors&gt;
+              </programlisting></listitem>
+            </varlistentry>
+         </section>                  
       </section>
       <section id="broadcast-groups.configuration">
          <title>broadcast-groups</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>The <literal>broadcast-groups</literal> defines zero or more <literal>broadcast-group</literal> which are used
+         to broadcast connector information to other nodes and clients.</para>
+         <section id="broadcast-group.configuration">
+            <title>broadcast-group</title>
+            <variablelist>  
+              <varlistentry>
+                <term>description</term>
+                <listitem><para>A broadcast-group configuration is composed of the following elements:</para>
+                    <itemizedlist>
+                        <listitem><para><literal>local-bind-port</literal> -- the local port (any free port if unspecified)</para></listitem>
+                        <listitem><para><literal>group-address</literal> -- the group IP address</para></listitem>
+                        <listitem><para><literal>group-port</literal> -- the group port</para></listitem>
+                        <listitem><para><literal>broadcast-period</literal> -- broadcast period (defaults to 5000ms)</para></listitem>
+                        <listitem><para>zero or more <literal>connector-ref</literal> -- one or more <link linkend="connector.configuration">connector</link> references</para></listitem>
+                    </itemizedlist>
+                    <para>The <literal>broadcast-group</literal>'s <literal>name</literal> attribute is mandatory.</para>
+                 </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>example</term>
+                <listitem><programlisting>
+&lt;broadcast-groups&gt;
+   &lt;broadcast-group name="my-broadcast-group"&gt;
+      &lt;group-address&gt;231.7.7.7&lt;/group-address&gt;
+      &lt;group-port&gt;9876&lt;/group-port&gt;
+      &lt;broadcast-period&gt;100&lt;/broadcast-period&gt;
+      &lt;!-- a netty-connector has been defined --&gt;
+      &lt;connector-ref connector-name="netty-connector"/&gt;
+   &lt;/broadcast-group&gt;
+&lt;/broadcast-groups&gt;
+                </programlisting></listitem>
+              </varlistentry>
+            </variablelist>
+         </section>
       </section>
       <section id="discovery-groups.configuration">
          <title>discovery-groups</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
-      </section>      
+         <para>TODO</para>
+         <section id="discovery-group.configuration">
+            <title>discovery-group</title>
+            <variablelist>  
+              <varlistentry>
+                <term>description</term>
+                <listitem><para>TODO</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>example</term>
+                <listitem><programlisting>
+                   TODO
+                </programlisting></listitem>
+              </varlistentry>
+            </variablelist>
+         </section>
+      </section>  
       <section id="diverts.configuration">
          <title>diverts</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>TODO</para>
+         <section id="divert.configuration">
+            <title>divert</title>
+            <variablelist>  
+              <varlistentry>
+                <term>description</term>
+                <listitem><para>TODO</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>example</term>
+                <listitem><programlisting>
+                   TODO
+                </programlisting></listitem>
+              </varlistentry>
+            </variablelist>
+         </section>
       </section>
       <section id="queues.configuration">
          <title>queues</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>TODO</para>
+         <section id="queue.configuration">
+            <title>queue</title>
+            <variablelist>  
+              <varlistentry>
+                <term>description</term>
+                <listitem><para>TODO</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>example</term>
+                <listitem><programlisting>
+                   TODO
+                </programlisting></listitem>
+              </varlistentry>
+            </variablelist>
+         </section>
       </section>
       <section id="bridges.configuration">
          <title>bridges</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>TODO</para>
+         <section id="bridge.configuration">
+            <title>bridge-group</title>
+            <variablelist>  
+              <varlistentry>
+                <term>description</term>
+                <listitem><para>TODO</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>example</term>
+                <listitem><programlisting>
+                   TODO
+                </programlisting></listitem>
+              </varlistentry>
+            </variablelist>
+         </section>
       </section>
       <section id="cluster-connections.configuration">
          <title>cluster-connections</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>TODO</para>
+         <section id="cluster-connection.configuration">
+            <title>cluster-connection</title>
+            <variablelist>  
+              <varlistentry>
+                <term>description</term>
+                <listitem><para>TODO</para></listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>example</term>
+                <listitem><programlisting>
+                   TODO
+                </programlisting></listitem>
+              </varlistentry>
+            </variablelist>
+         </section>
       </section>
       <section id="remoting-interceptors.configuration">
          <title>remoting-interceptors</title>
@@ -215,20 +257,6 @@
       
    <section id="persistence.configuration">
       <title>Persistence</title>
-      <variablelist>  
-        <varlistentry>
-          <term>type</term>
-          <listitem><para>TODO</para></listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>default</term>
-          <listitem><para>TODO</para></listitem>
-        </varlistentry>
-        <varlistentry>
-          <term>description</term>
-          <listitem><para>TODO</para></listitem>
-        </varlistentry>
-      </variablelist>
       
       <section id="enable-persistence.configuration">
          <title>enable-persistence</title>
