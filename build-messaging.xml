@@ -842,6 +842,9 @@
          <fileset dir="${doc.examples.dir}">
             <exclude name="build.properties"/>
             <exclude name="**/build/**"/>
+            <exclude name="**/data**"/>
+            <exclude name="**/logs/**"/>
+            <exclude name="**/*.dat"/>
          </fileset>
       </copy>
 
