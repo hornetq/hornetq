@@ -92,7 +92,7 @@
    <property name="licenses.dir" value="licenses"/>
    <property name="doc.examples.dir" value="examples"/>
    <property name="user-manual.build.dir" value="${doc.dir}/user-manual/build"/>
-   <property name="quickstartguide.build.dir" value="${doc.dir}/quickstartguide/build"/>
+   <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/build"/>
    <property name="migration-guide.build.dir" value="${doc.dir}/migration-guide/build"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
    <property name="native.bin.dir" value="native/bin"/>
@@ -886,8 +886,8 @@
           <include name="**"/>
        </fileset>
     </copy>
-    <copy todir="${build.distro.dir}/docs/quickstartguide">
-       <fileset dir="${quickstartguide.build.dir}">
+    <copy todir="${build.distro.dir}/docs/quickstart-guide">
+       <fileset dir="${quickstart-guide.build.dir}">
           <include name="**"/>
        </fileset>
     </copy>
@@ -907,7 +907,7 @@
 	
    <target name="userdoc">
       <ant dir="./docs/user-manual" antfile="build.xml" target="all"/>
-      <ant dir="./docs/quickstartguide" antfile="build.xml" target="all"/>
+      <ant dir="./docs/quickstart-guide" antfile="build.xml" target="all"/>
       <ant dir="./docs/migration-guide" antfile="build.xml" target="all"/>
    </target>
 
