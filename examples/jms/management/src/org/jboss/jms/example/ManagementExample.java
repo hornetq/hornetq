@@ -99,10 +99,10 @@ public class ManagementExample extends JMSExample
          JMSManagementHelper.putAttribute(m, "jms.queue.exampleQueue", "MessageCount");
          
          // Step 14. Use the requestor to send the request and wait for the reply
-         ObjectMessage reply = (ObjectMessage)requestor.request(m);
+         Message reply = requestor.request(m);
 
-         // Step 15. The attribute value is returned as the body of an ObjectMessage (in this case, an integer)
-         int messageCount = (Integer) reply.getObject();
+         // Step 15. Use a helper class to retrieve the operation result
+         int messageCount = (Integer)JMSManagementHelper.getResult(reply);
          System.out.println(queue.getQueueName() + " contains " + messageCount + " messages");
          
          // Step 16. Create another JMS message to use as a management message
@@ -115,15 +115,15 @@ public class ManagementExample extends JMSExample
          JMSManagementHelper.putOperationInvocation(m, "jms.queue.exampleQueue", "removeMessage", message.getJMSMessageID());
 
          // Step 18 Use the requestor to send the request and wait for the reply
-         reply = (ObjectMessage)requestor.request(m);
+         reply = requestor.request(m);
          
          // Step 19. Use a helper class to check that the operation has succeeded
          boolean success = JMSManagementHelper.hasOperationSucceeded(reply);
          System.out.println("operation invocation has succeeded: " + success);
 
-         // Step 20. The return value of the operation invocation is returned as the body of an ObjectMessage
+         // Step 20. Use a helper class to retrieve the operation result
          // in that case, a boolean which is true if the message was removed, false else
-         boolean messageRemoved = (Boolean) reply.getObject();
+         boolean messageRemoved = (Boolean)JMSManagementHelper.getResult(reply);
          System.out.println("message has been removed: " + messageRemoved);
          
          // Step 21. Create a JMS Message Consumer on the queue

@@ -104,12 +104,12 @@
         
         <li>We send the <em>management</em> message using the requestor and wait for a reply</li>
         <pre>
-            <code>ObjectMessage reply = (ObjectMessage)requestor.request(m);</code>
+            <code>Message reply = requestor.request(m);</code>
         </pre>
         
-        <li>The attribute value is returned as the body of an <code>ObjectMessage</code> (in this case, the <code>MessageCount</code> is an integer)
+        <li>We use a helper class <a href="../../../docs/api/org/jboss/messaging/jms/server/management/impl/JMSManagementHelper.html">JMSManagementHelper</a> to retrieve the result from the reply message:
         <pre>
-            <code>int messageCount = (Integer) reply.getObject();
+            <code>int messageCount = (Integer)JMSManagementHelper.getResult(reply);
             System.out.println(queue.getQueueName() + " contains " + messageCount + " messages");</code>
         </pre>
         
@@ -131,7 +131,7 @@
         
         <li>Again, we use the requestor to send the management message and wait for a reply</li>
         <pre>
-            <code>reply = (ObjectMessage)requestor.request(m);</code>
+            <code>reply = requestor.request(m);</code>
         </pre>
         
         <li>We use the helper class to check that the operation was successfully invoked on the server</li>
@@ -140,10 +140,10 @@
             System.out.println("operation invocation has succeeded: " + success);</code>
         </pre>
         
-        <li>The return value of the operation invocation is returned as the body of an ObjectMessage
+        <li>We use a helper class <a href="../../../docs/api/org/jboss/messaging/jms/server/management/impl/JMSManagementHelper.html">JMSManagementHelper</a> to retrieve the result from the reply message:
             (in our case, the <code>removeMessage</code> method returns a boolean)</li>
         <pre>
-            <code>boolean messageRemoved = (Boolean) reply.getObject();
+            <code>boolean messageRemoved = (Boolean)JMSManagementHelper.getResult(reply);
             System.out.println("message has been removed: " + messageRemoved);</code>
         </pre>
             
