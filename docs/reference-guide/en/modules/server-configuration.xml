@@ -9,87 +9,64 @@
    
       <section id="backup.configuration">
          <title>backup</title>
-         <variablelist>  
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>Set to <literal>true</literal> to configure the server as a backup node</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>false</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>Set to <literal>true</literal> to configure the server as a backup node (default specified by
+          <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_BACKUP">DEFAULT_BACKUP</ulink> is <literal>false</literal>)</para>
       </section>
       <section id="backup-connector-ref.configuration">
          <title>backup-connector-ref</title>
-         <variablelist>  
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>The name of the <link linkend="connector.configuration">connector</link> to 
-             use to connect to the backup node</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>The name of the <link linkend="connectors.configuration">connector</link> to 
+             use to connect to the backup node</para>
       </section>      
       <section id="clustered.configuration">
          <title>clustered</title>
-         <variablelist>  
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>Set to <literal>true</literal> to configure the server as a part of a cluster</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>false</para></listitem>
-           </varlistentry>
-         </variablelist>
+         <para>Set to <literal>true</literal> to configure the server as a part of a cluster (default specified by
+           <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_CLUSTERED">DEFAULT_CLUSTERED</ulink> is <literal>false</literal>)</para>
       </section>
       <section id="acceptors.configuration">
          <title>acceptors</title>
          <para>The <literal>acceptors</literal> defines one or more <literal>acceptor</literal> to
          allow the server to accept connections from clients (or other nodes).</para>
          <para>The server <emphasis>must</emphasis> define at least 1 acceptor (otherwise the server will not
-         accept any connections).</para>         
-         <section id="acceptor.configuration">
-            <title>acceptor</title>
-            <varlistentry>
-              <term>description</term>
-              <listitem><para>A single acceptor configuration is composed of a <literal>factory-class</literal> element (the 
-                name of a Java class implementing <literal>org.jboss.messaging.core.remoting.spi.AcceptorFactory</literal>) and zero or more
-                <literal>param</literal> elements (containing <literal>key</literal>, <literal>value</literal>, <literal>type</literal>
-                attributes) which will be passed to the instance of the factory.</para>
-                <para>The <literal>acceptor</literal>'s <literal>name</literal> attribute is optional.</para></listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>example</term>
-              <listitem><programlisting>
-&lt;acceptors&gt;
+         accept any connection).</para>
+         <variablelist>
+           <varlistentry>
+           <term>description</term>
+           <listitem><para>A single acceptor configuration is composed of a <literal>factory-class</literal> element (the 
+             name of a Java class implementing <ulink url="../../../api/org/jboss/messaging/core/remoting/spi/AcceptorFactory.html">AcceptorFactory</ulink>) and zero or more
+             <literal>param</literal> elements (containing <literal>key</literal>, <literal>value</literal>, <literal>type</literal>
+             attributes) which will be passed to the instance of the factory.</para>
+             <para>The <literal>acceptor</literal>'s <literal>name</literal> attribute is optional.</para></listitem>
+         </varlistentry>
+         <varlistentry>
+           <term>example</term>
+           <listitem><programlisting>
+;acceptors&gt;
    &lt;!-- accept connections from Netty on port 5445 --&gt;
    &lt;acceptor name="netty-acceptor"&gt;
       &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
       &lt;param key="jbm.remoting.netty.port" value="5445" type="Integer"/&gt;
    &lt;/acceptor&gt;
 &lt;/acceptors&gt;
-               </programlisting></listitem>
-            </varlistentry>
-         </section>                   
+            </programlisting></listitem>
+         </varlistentry>
+         </variablelist>
       </section>
       <section id="connectors.configuration">
          <title>connectors</title>
          <para>The <literal>connectors</literal> allows to specify zero or more <literal>connector</literal> that the server
          will use to connect <emphasis>to</emphasis> other servers.</para>
-         <section id="connector.configuration">
-            <title>connector</title>
-            <varlistentry>
-              <term>description</term>
-              <listitem><para>A single connector configuration is composed of a <literal>factory-class</literal> element (the
-                name of a Java class implementing <literal>org.jboss.messaging.core.remoting.spi.ConnectorFactory</literal>) and zero or more
-                <literal>param</literal> elements (containing <literal>key</literal>, <literal>value</literal>, <literal>type</literal>
-                attributes) which will be passed to the instance of the factory.</para>
-                <para>The <literal>connector</literal>'s <literal>name</literal> attribute is mandatory.</para></listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>example</term>
-              <listitem><programlisting>
+         <variablelist>
+        <varlistentry>
+           <term>description</term>
+           <listitem><para>A single connector configuration is composed of a <literal>factory-class</literal> element (the
+             name of a Java class implementing <ulink url="../../../api/org/jboss/messaging/core/remoting/spi/ConnectorFactory.html">ConnectorFactory</ulink>)
+             and zero or more <literal>param</literal> elements (containing <literal>key</literal>, <literal>value</literal>, <literal>type</literal>
+             attributes) which will be passed to the instance of the factory.</para>
+             <para>The <literal>connector</literal>'s <literal>name</literal> attribute is mandatory.</para></listitem>
+         </varlistentry>
+         <varlistentry>
+           <term>example</term>
+           <listitem><programlisting>
 &lt;connectors&gt;
    &lt;!-- a connector to a server running on localhost:5446 using Netty --&gt;
    &lt;connector name="netty-connector"&gt;
@@ -100,33 +77,33 @@
    &lt;!-- other connectors --&gt;
    ...
 &lt;/connectors&gt;
-              </programlisting></listitem>
-            </varlistentry>
-         </section>                  
+           </programlisting></listitem>
+         </varlistentry>
+         </variablelist>
       </section>
       <section id="broadcast-groups.configuration">
          <title>broadcast-groups</title>
          <para>The <literal>broadcast-groups</literal> defines zero or more <literal>broadcast-group</literal> which are used
          to broadcast connector information to other nodes and clients.</para>
-         <section id="broadcast-group.configuration">
-            <title>broadcast-group</title>
-            <variablelist>  
-              <varlistentry>
-                <term>description</term>
-                <listitem><para>A broadcast-group configuration is composed of the following elements:</para>
-                    <itemizedlist>
-                        <listitem><para><literal>local-bind-port</literal> -- the local port (any free port if unspecified)</para></listitem>
-                        <listitem><para><literal>group-address</literal> -- the group IP address</para></listitem>
-                        <listitem><para><literal>group-port</literal> -- the group port</para></listitem>
-                        <listitem><para><literal>broadcast-period</literal> -- broadcast period (defaults to 5000ms)</para></listitem>
-                        <listitem><para>zero or more <literal>connector-ref</literal> -- one or more <link linkend="connector.configuration">connector</link> references</para></listitem>
-                    </itemizedlist>
-                    <para>The <literal>broadcast-group</literal>'s <literal>name</literal> attribute is mandatory.</para>
-                 </listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>example</term>
-                <listitem><programlisting>
+        <para>A broadcast-group configuration is composed of the following elements:</para>
+        <variablelist>  
+           <varlistentry>
+             <term>description</term>
+             <listitem>
+               <itemizedlist>
+                     <listitem><para><literal>local-bind-port</literal> -- the local port (any free port if unspecified)</para></listitem>
+                     <listitem><para><literal>group-address</literal> -- the group IP address</para></listitem>
+                     <listitem><para><literal>group-port</literal> -- the group port</para></listitem>
+                     <listitem><para><literal>broadcast-period</literal> -- broadcast period in milliseconds (default specified by
+                     <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_BROADCAST_PERIOD">DEFAULT_BROADCAST_PERIOD</ulink>)</para></listitem>
+                     <listitem><para>zero or more <literal>connector-ref</literal> -- one or more <link linkend="connectors.configuration">connector</link> references</para></listitem>
+                 </itemizedlist>
+                 <para>The <literal>broadcast-group</literal>'s <literal>name</literal> attribute is mandatory.</para>
+              </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>example</term>
+             <listitem><programlisting>
 &lt;broadcast-groups&gt;
    &lt;broadcast-group name="my-broadcast-group"&gt;
       &lt;group-address&gt;231.7.7.7&lt;/group-address&gt;
@@ -136,105 +113,172 @@
       &lt;connector-ref connector-name="netty-connector"/&gt;
    &lt;/broadcast-group&gt;
 &lt;/broadcast-groups&gt;
-                </programlisting></listitem>
-              </varlistentry>
-            </variablelist>
-         </section>
+             </programlisting></listitem>
+           </varlistentry>
+         </variablelist>
       </section>
       <section id="discovery-groups.configuration">
          <title>discovery-groups</title>
-         <para>TODO</para>
-         <section id="discovery-group.configuration">
-            <title>discovery-group</title>
-            <variablelist>  
-              <varlistentry>
-                <term>description</term>
-                <listitem><para>TODO</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>example</term>
-                <listitem><programlisting>
-                   TODO
-                </programlisting></listitem>
-              </varlistentry>
-            </variablelist>
-         </section>
+         <para>The <literal>discovery-groups</literal> defines zero or more <literal>discovery-group</literal> which are used
+         to notify when connectors are changed.</para>
+         <variablelist>  
+           <varlistentry>
+             <term>description</term>
+             <listitem><para>A discovery-group configuration is composed of the following elements:</para>
+                 <itemizedlist>
+                     <listitem><para><literal>group-address</literal> -- the group IP address</para></listitem>
+                     <listitem><para><literal>group-port</literal> -- the group port</para></listitem>
+                     <listitem><para><literal>refresh-timeout</literal> -- broadcast period in milliseconds (default specified by
+                     <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_BROADCAST_REFRESH_TIMEOUT">DEFAULT_BROADCAST_REFRESH_TIMEOUT</ulink>)</para></listitem>
+                 </itemizedlist>
+                 <para>The <literal>discovery-group</literal>'s <literal>name</literal> attribute is mandatory.</para>
+              </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>example</term>
+             <listitem><programlisting>
+&lt;discovery-groups&gt;
+   &lt;discovery-group name="my-discovery-group"&gt;
+      &lt;group-address&gt;231.7.7.7&lt;/group-address&gt;
+      &lt;group-port&gt;9876&lt;/group-port&gt;
+      &lt;refresh-timeout&gt;10000&lt;/refresh-timeout&gt;
+   &lt;/discovery-group&gt;
+&lt;/discovery-groups&gt;
+             </programlisting></listitem>
+           </varlistentry>
+         </variablelist>
       </section>  
       <section id="diverts.configuration">
          <title>diverts</title>
-         <para>TODO</para>
-         <section id="divert.configuration">
-            <title>divert</title>
-            <variablelist>  
-              <varlistentry>
-                <term>description</term>
-                <listitem><para>TODO</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>example</term>
-                <listitem><programlisting>
-                   TODO
+         <para>The <literal>diverts</literal> defines zero or more <literal>divert</literal>.</para>
+         <variablelist>  
+           <varlistentry>
+             <term>description</term>
+             <listitem><para>A divert "diverts" messages sent to an address and forwards them to another address. The configuration is composed of the following elements:</para>
+                 <itemizedlist>
+                     <listitem><para><literal>routing-name</literal> -- an optional unique name used for clustering routing (automatically generated if not specified)</para></listitem>
+                     <listitem><para><literal>address</literal> -- the address from which messages are diverted </para></listitem>
+                     <listitem><para><literal>forwarding-address</literal> -- the address to which messages are forwarded</para></listitem>
+                     <listitem><para><literal>filter</literal> -- an optional message selector</para></listitem>
+                     <listitem><para><literal>transformer-class-name</literal> -- an optional transformer (it must be the name of a Java class implementing 
+                     <ulink url="../../../api/org/jboss/messaging/core/server/cluster/Transformer.html">Transformer</ulink>)</para></listitem>
+                     <listitem><para><literal>exclusive</literal> -- set to <literal>true</literal> if messages must be exclusively diverted (default specified by
+                     <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_DIVERT_EXCLUSIVE">DEFAULT_DIVERT_EXCLUSIVE</ulink>)</para></listitem>
+                 </itemizedlist>
+                 <para>The <literal>divert</literal>'s <literal>name</literal> attribute is mandatory.</para>
+              </listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>example</term>
+             <listitem><programlisting>
+ &lt;diverts&gt;
+   &lt;divert name="order-divert"&gt;                 
+      &lt;address&gt;jms.queue.orders&lt;/address&gt;
+      &lt;forwarding-address&gt;jms.topic.spyTopic&lt;/forwarding-address&gt;         
+      &lt;exclusive&gt;false&lt;/exclusive&gt;
+   &lt;/divert&gt;
+
+   &lt;divert name="prices-divert"&gt;                  
+      &lt;address&gt;jms.topic.priceUpdates&lt;/address&gt;
+      &lt;forwarding-address&gt;jms.queue.priceForwarding&lt;/forwarding-address&gt;    
+      &lt;filter string="office='New York'"/&gt;
+      &lt;transformer-class-name&gt;org.jboss.jms.example.AddForwardingTimeTransformer&lt;/transformer-class-name&gt;     
+      &lt;exclusive&gt;true&lt;/exclusive&gt;
+   &lt;/divert&gt;
+&lt;/diverts&gt;
                 </programlisting></listitem>
-              </varlistentry>
-            </variablelist>
-         </section>
+             </varlistentry>
+          </variablelist>
       </section>
       <section id="queues.configuration">
          <title>queues</title>
-         <para>TODO</para>
-         <section id="queue.configuration">
-            <title>queue</title>
-            <variablelist>  
-              <varlistentry>
-                <term>description</term>
-                <listitem><para>TODO</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>example</term>
-                <listitem><programlisting>
-                   TODO
-                </programlisting></listitem>
-              </varlistentry>
-            </variablelist>
-         </section>
+         <para>The <literal>queues</literal> defines zero or more <literal>queue</literal> which are created when the server starts.</para>
+         <variablelist>  
+           <varlistentry>
+             <term>description</term>
+             <listitem><para>A <literal>queue</literal> configuration is composed of the following elements:</para>
+                 <itemizedlist>
+                     <listitem><para><literal>address</literal> -- an optional unique name used for clustering routing (automatically generated if not specified)</para></listitem>
+                     <listitem><para><literal>filter</literal> -- an optional message selector</para></listitem>
+                     <listitem><para><literal>durable</literal> -- set to <literal>true</literal> to create a durable queue (default is <literal>false</literal>)</para></listitem>
+                 </itemizedlist>
+                 <para>The <literal>queue</literal>'s <literal>name</literal> attribute is mandatory.</para>
+              </listitem>
+           </varlistentry>
+           <varlistentry>
+              <term>example</term>
+              <listitem><programlisting>
+&lt;queues&gt;     
+	&lt;queue name="jms.queue.priceForwarding"&gt;
+	    &lt;address&gt;jms.queue.priceForwarding&lt;/address&gt;
+	&lt;/queue&gt;
+&lt;/queues&gt;
+               </programlisting></listitem>
+            </varlistentry>
+         </variablelist>
       </section>
       <section id="bridges.configuration">
          <title>bridges</title>
-         <para>TODO</para>
-         <section id="bridge.configuration">
-            <title>bridge-group</title>
-            <variablelist>  
-              <varlistentry>
-                <term>description</term>
-                <listitem><para>TODO</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>example</term>
-                <listitem><programlisting>
-                   TODO
-                </programlisting></listitem>
-              </varlistentry>
-            </variablelist>
-         </section>
+         <para>The <literal>bridges</literal> defines zero or more <literal>bridge</literal> which are used
+         to "bridge" a queue (from which messages are consumed) and deliver the message to a forwarding address (on the same server or
+         on another server).</para>
+        <variablelist>  
+          <varlistentry>
+            <term>description</term>
+            <listitem><para>A <literal>bridge</literal> configuration is composed of the following elements:</para>
+                <itemizedlist>
+                    <listitem><para><literal>queue-name</literal> -- the name of the queue to consume messages</para></listitem>
+                    <listitem><para><literal>forwarding-address</literal> -- the address where the message will be forwared</para></listitem>
+                    <listitem><para><literal>filter</literal> -- an optional message selector</para></listitem>
+                    <listitem><para><literal>transformer-class-name</literal> -- an optional transformer (it must be the name of a Java class implementing 
+                    <ulink url="../../../api/org/jboss/messaging/core/server/cluster/Transformer.html">Transformer</ulink>)</para></listitem>
+                    <listitem><para><literal>retry-interval</literal> -- interval (in milliseconds) to retry to connect to the other node
+                       (specified by <ulink url="../../../api/org/jboss/messaging/core/client/impl/ClientSessionFactoryImpl.html#DEFAULT_RETRY_INTERVAL">DEFAULT_RETRY_INTERVAL</ulink>)</para></listitem>
+                    <listitem><para><literal>retry-interval-multiplier</literal> -- exponential backoff when retrying to connect
+                       (specified by <ulink url="../../../api/org/jboss/messaging/core/client/impl/ClientSessionFactoryImpl.html#DEFAULT_RETRY_INTERVAL_MULTIPLIER">DEFAULT_RETRY_INTERVAL_MULTIPLIER</ulink>)</para></listitem>
+                    <listitem><para><literal>reconnect-attempts</literal> -- number of attempts to reconnect (-1 for infinite attempts, 
+                       specified by <ulink url="../../../api/org/jboss/messaging/core/client/impl/ClientSessionFactoryImpl.html#DEFAULT_RECONNECT_ATTEMPTS">DEFAULT_RECONNECT_ATTEMPTS</ulink>)</para></listitem>
+                    <listitem><para><literal>failover-on-server-shutdown</literal> -- set to <literal>true</literal> to trigger a failover when the server shuts down
+                       (specified by <ulink url="../../../api/org/jboss/messaging/core/client/impl/ClientSessionFactoryImpl.html#DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN">DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN</ulink>)</para></listitem>
+                    <listitem><para><literal>use-duplicate-detection</literal> -- set to <literal>true</literal> to use duplicate detection
+                       (specified by <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_BRIDGE_DUPLICATE_DETECTION">DEFAULT_BRIDGE_DUPLICATE_DETECTION</ulink>)</para></listitem>
+                    <listitem><para>either a <literal>connector-ref</literal> to specify a <link linkend="connectors.configuration">connector</link>
+                     (and a backup connector) or a <literal>discovery-group-ref</literal> 
+                    to use a <link linkend="discovery-groups.configuration">discovery group</link> instead</para></listitem>
+                </itemizedlist>
+                <para>The <literal>bridge</literal>'s <literal>name</literal> attribute is mandatory.</para>
+             </listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>example</term>
+            <listitem><programlisting>
+&lt;bridges&gt;
+  &lt;bridge name="price-forward-bridge"&gt;
+     &lt;queue-name&gt;jms.queue.priceForwarding&lt;/queue-name&gt;
+     &lt;forwarding-address&gt;jms.topic.newYorkPriceUpdates&lt;/forwarding-address&gt;         
+     &lt;reconnect-attempts&gt;-1&lt;/reconnect-attempts&gt;
+     &lt;connector-ref connector-name="newyork-connector"/&gt;          
+  &lt;/bridge&gt;
+&lt;/bridges&gt;
+            </programlisting></listitem>
+          </varlistentry>
+        </variablelist>
       </section>
       <section id="cluster-connections.configuration">
          <title>cluster-connections</title>
          <para>TODO</para>
-         <section id="cluster-connection.configuration">
-            <title>cluster-connection</title>
-            <variablelist>  
-              <varlistentry>
-                <term>description</term>
-                <listitem><para>TODO</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>example</term>
-                <listitem><programlisting>
-                   TODO
-                </programlisting></listitem>
-              </varlistentry>
-            </variablelist>
-         </section>
+         <variablelist>  
+           <varlistentry>
+             <term>description</term>
+             <listitem><para>TODO</para></listitem>
+           </varlistentry>
+           <varlistentry>
+             <term>example</term>
+             <listitem><programlisting>
+                TODO
+             </programlisting></listitem>
+           </varlistentry>
+         </variablelist>
       </section>
       <section id="remoting-interceptors.configuration">
          <title>remoting-interceptors</title>
@@ -252,7 +296,7 @@
              <listitem><para>TODO</para></listitem>
            </varlistentry>
          </variablelist>
-      </section>
+     </section>
    </section>
       
    <section id="persistence.configuration">
