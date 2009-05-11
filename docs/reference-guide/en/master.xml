@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
+        "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
+        <!ENTITY about                 SYSTEM "modules/about.xml">
+        <!ENTITY introduction          SYSTEM "modules/introduction.xml">
+        <!ENTITY server-configuration  SYSTEM "modules/server-configuration.xml">
+        <!ENTITY queue-configuration   SYSTEM "modules/queue-configuration.xml">
+        <!ENTITY user-configuration    SYSTEM "modules/user-configuration.xml">
+        <!ENTITY jms-configuration     SYSTEM "modules/jms-configuration.xml">
+        <!ENTITY logging-configuration SYSTEM "modules/logging-configuration.xml">
+        ]>
+<book lang="en">
+   <bookinfo>
+      <title>JBoss Messaging 2.0 Reference Guide</title>
+      <subtitle>Setting the Standard for High Performance Messaging</subtitle>
+   </bookinfo>
+
+   <toc></toc>
+
+   &about;
+   &introduction;
+   &server-configuration; 
+   &queue-configuration; 
+   &user-configuration;
+   &jms-configuration;  
+   &logging-configuration;
+</book>
