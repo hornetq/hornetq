@@ -1,11 +1,5 @@
 <deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
    <configuration>
-     <!-- just use all the defaults -->
-     <!--  we must declare at least one acceptor to have a valid configuration -->
-     <acceptors>
-        <acceptor>
-           <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
-        </acceptor>
-     </acceptors>        
+     <!-- just use all the defaults -->        
    </configuration>
 </deployment>

@@ -1,22 +1,150 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="using-jms">
     <title>Using JMS</title>
-    <para>blah</para>
+    <para>Although JBoss Messaging provides a JMS agnostic messaging API, many users will be more comfortable using JMS.</para>
+    <para>JMS is a very popular API standard for messaging, and most messaging systems provide a JMS API. If you are completely
+    new to JMS we suggest you following the Sun JMS tutorial [link] - a full JMS tutorial is out of scope for this guide.</para>    
+    <para>JBoss Messaging also ships with a wide range of examples, many of which demonstrate JMS API usage. A good place to start would be to play around
+    with the simple JMS Queue and Topic example, but we also provide examples for many other parts of the JMS API.</para>
+    <para>In this section we'll go through the main steps in configuring the server for JMS and creating a simple JMS program. We'll also show
+    how to configure and use JNDI, and also how to use JMS with JBoss Messaging without using any JNDI.</para>
     <section>
-        <title>JMS Configuration</title>
+        <title>A simple ordering system</title>
+        <para>For this chapter we're going to use a very simple ordering system as our example. It's a somewhat contrived example because of
+        its extreme simplicity, but it serves to demonstrates the very basics of setting up and using JMS.</para>
+        <para>We will have a single JMS Queue <literal>OrderQueue</literal>, and we will have a single <literal>MessageProducer</literal>
+        sending an order message to the queue and a single <literal>MessageConsumer</literal> consuming the order message from the queue.</para>
+        <para>The queue will be a <literal>durable</literal> queue, i.e. it will survive a server restart or crash. We also want to predeploy the
+        queue, i.e. specifiy the queue in the server JMS config so it's created automatically without us having to explicitly create it
+        from the client.</para>
         <para></para>
     </section>
+    
     <section>
-        <title>Deploying JMS Administered Objects</title>
-        <para></para>
+        <title>JMS Server Configuration</title>
+        <para>The file <literal>jbm-jms.xml</literal> on the server classpath contains any JMS Queue, Topic and ConnectionFactory instances
+        that we wish to pre-deploy into the JNDI server so we can look them up.</para>
+        <para>A JMS ConnectionFactory object is used by the client to make connections to the server. It knows the location of the server
+        it is connecting to, as well as many other configuration parameters. In most cases the defaults will be acceptable.</para>
+        <para>We'll deploy a single JMS Queue and a single JMS Connection Factory instance on the server for this example but there
+            are no limits to the number of Queues, Topics and Connection Factory instances you can deploy from the file. Here's our config:</para>
+        <programlisting>
+&lt;configuration xmlns="urn:jboss:messaging" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd "&gt;
+    
+    &lt;connection-factory name="ConnectionFactory"&gt;
+        &lt;connector-ref connector-name="netty"/&gt;
+        &lt;entries&gt;
+            &lt;entry name="ConnectionFactory"/&gt;           
+        &lt;/entries&gt;
+    &lt;/connection-factory&gt;
+    
+    &lt;queue name="OrderQueue"&gt;
+        &lt;entry name="queues/OrderQueue"/&gt;
+    &lt;/queue&gt;
+    
+&lt;/configuration&gt; 
+        </programlisting>
+        <para>We deploy one ConnectionFactory called <literal>ConnectionFactory</literal> and bind it in just one place in JNDI as given by
+            the <literal>entry</literal> element. ConnectionFactory instances can be bound in many places in JNDI if you require.        
+        </para>
+        <para>Note that the JMS connection factory references a <literal>connector</literal> called <literal>netty</literal>. This is
+        a reference to a connector object deployed in the main core configuration file <literal>jbm-configuration.xml</literal> which
+        defines the transport and parameters used to actually connect to the server.</para>
+    </section>    
+    <section>
+        <title>JNDI configuration</title>
+        <para>When using JNDI from the client side you need to specify a set of JNDI properties which tell the JNDI client where to locate
+        the JNDI server, amongst other things. These are often specified in a file jndi.properties on the client classpath, or you can
+        specify them directly when creating the JNDI initial context. A full JNDI tutorial is outside the scope of this document, please
+        see the Sun JNDI tutorial for more information on how to use JNDI. [LINK]</para>
+        <para>For talking to the JBoss JNDI Server, the jndi properties will look something like this:</para>
+        <programlisting>
+java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
+java.naming.provider.url=jnp://myhost:1099
+java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces                        
+        </programlisting>
+        <para>Where <literal>myhost</literal> is the hostname or IP address of the JNDI server. 1099 is the port used by the JNDI server
+        and may vary depending on how you have configured your JNDI server.</para>
+        <para>In the default standalone configuration, JNDI server ports are configured in the <literal>jbm-jboss-beans.xml</literal>
+        file where the JNDIServer bean is confgured, here's a snippet from the file:</para>
+        <programlisting>
+&lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
+    &lt;property name="namingInfo"&gt;
+        &lt;inject bean="Naming"/&gt;
+    &lt;/property&gt;
+    &lt;property name="port"&gt;1099&lt;/property&gt;
+    &lt;property name="bindAddress"&gt;localhost&lt;/property&gt;
+    &lt;property name="rmiPort"&gt;1098&lt;/property&gt;
+    &lt;property name="rmiBindAddress"&gt;localhost&lt;/property&gt;
+&lt;/bean&gt;                        
+        </programlisting>
+        <para>If you want your JNDI server to be available to non local clients make sure you change it's bind address to something other
+        than <literal>localhost</literal>!</para>
     </section>
     <section>
-        <title>Using JNDI</title>
-        <para></para>
-    </section>
+        <title>The code</title>
+        <para>Here's the code for the example:</para> 
+        <para>First we'll create a JNDI initial context from which to lookup our JMS objects:</para>
+        <programlisting>InitialContect ic = new InitialContext();</programlisting>
+        <para>Now we'll look up the connection factory:</para>
+        <programlisting>ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");</programlisting>
+        <para>And look up the Queue:</para>
+        <programlisting>Queue orderQueue = (Queue)ic.lookup("/queues/OrderQueue");</programlisting>
+        <para>Next we create a JMS connection using the connection factory:</para>
+        <programlisting>Connection connection = cf.createConnection();</programlisting>
+        <para>And we create a non transacted JMS Session, with AUTO_ACKNOWLEDGE acknowledge mode:</para>
+        <programlisting>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</programlisting>
+        <para>We create a MessageProducer that will send orders to the queue:</para>
+        <programlisting>MessageProducer producer = session.createProducer(orderQueue);</programlisting>
+        <para>And we create a MessageConsumer which will consume orders from the queue:</para>
+        <programlisting>MessageConsumer consumer = session.createConsumer(orderQueue);</programlisting>
+        <para>We make sure we start the connection, or delivery won't occur on it:</para>
+        <programlisting>connection.start();</programlisting>
+        <para>We create a simple TextMessage and send it:</para>
+        <programlisting>TextMessage message = session.createTextMessage("This is an order");
+producer.send(message);</programlisting>
+        <para>And we consume the message:</para>
+        <programlisting>TextMessage receivedMessage = (TextMessage)consumer.receive();
+System.out.println("Got order: " + receivedMessage.getText());
+        </programlisting>
+        <para>It's as simple as that. For a wide range of working JMS examples please see the examples directory in the distribution.</para>
+    </section>    
     <section>
-        <title>Directly instantiating JMS Administered Objects</title>
-        <para></para>
+        <title>Directly instantiating JMS Queue, Topic and ConnectionFactory instances without using JNDI</title>
+        <para>Although it's a very common JMS usage pattern to lookup JMS <emphasis>Administered Objects</emphasis> (that's
+        JMS Queues, Topics and Connection Factories) from JNDI, in some cases a JNDI server is not available and you still want to 
+        use JMS, or you just think "Why do I need JNDI? Why can't I just instantiate these objects directly?"</para>
+        <para>With JBoss Messaging you can do exactly that. JBoss Messaging supports the direct instantiation of JMS Queue, Topic
+        and Connection Factory instances, so you don't have to use JNDI at all.</para>
+        <para>For a full working example of direct instantiation please see the JMS examples.</para>
+        <para>Here's our simple example, rewritten to not use JNDI at all:</para>
+        <para>We create the JMS ConnectionFactory object directly, note we need to provide connection params and specify which transport we are using:</para>
+        <programlisting>              
+TransportConfiguration transportConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName());                
+ConnectionFactory cf = new JBossConnectionFactory();
+        </programlisting>
+        <para>We create the JMS Queue Object directly:</para>
+        <programlisting>Queue orderQueue = new JBossQueue("OrderQueue");</programlisting>
+        <para>Next we create a JMS connection using the connection factory:</para>
+        <programlisting>Connection connection = cf.createConnection();</programlisting>
+        <para>And we create a non transacted JMS Session, with AUTO_ACKNOWLEDGE acknowledge mode:</para>
+        <programlisting>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</programlisting>
+        <para>We create a MessageProducer that will send orders to the queue:</para>
+        <programlisting>MessageProducer producer = session.createProducer(orderQueue);</programlisting>
+        <para>And we create a MessageConsumer which will consume orders from the queue:</para>
+        <programlisting>MessageConsumer consumer = session.createConsumer(orderQueue);</programlisting>
+        <para>We make sure we start the connection, or delivery won't occur on it:</para>
+        <programlisting>connection.start();</programlisting>
+        <para>We create a simple TextMessage and send it:</para>
+        <programlisting>TextMessage message = session.createTextMessage("This is an order");
+            producer.send(message);</programlisting>
+        <para>And we consume the message:</para>
+        <programlisting>TextMessage receivedMessage = (TextMessage)consumer.receive();
+            System.out.println("Got order: " + receivedMessage.getText());
+        </programlisting>        
+        
     </section>
    
 </chapter>

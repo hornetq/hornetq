@@ -512,11 +512,6 @@ public class ManagementServiceImpl implements ManagementService
       return managementClusterPassword;
    }
 
-   public long getManagementRequestTimeout()
-   {
-      return managementRequestTimeout;
-   }
-
    public ReplicationOperationInvoker getReplicationOperationInvoker()
    {
       return replicationInvoker;

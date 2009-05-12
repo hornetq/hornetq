@@ -274,12 +274,12 @@ public class ConnectionTest extends JMSTestCase
     * This needs to be run remotely to see the exception
     */
    
-// This test is currently commented out until we fix netty issue https://jira.jboss.org/jira/browse/JBMESSAGING-1618   
+   // This test is currently commented out until we fix netty issue https://jira.jboss.org/jira/browse/JBMESSAGING-1618   
 //   public void testConnectionListenerBug() throws Exception
 //   {
-//      for (int i = 0; i < 1000; i++)
+//      for (int i = 0; i < 10000; i++)
 //      {
-//         log.info("********************************************");
+//         //log.info("******************************************** it " + i);
 //         
 //         Connection conn = cf.createConnection();
 //         
@@ -287,12 +287,7 @@ public class ConnectionTest extends JMSTestCase
 //         
 //         conn.setExceptionListener(listener);
 //         
-//         conn.close();        
-//         
-//         //The problem with this test is I would need to capture the output and search
-//         //for NullPointerException!!!    
-//         
-//         //Thread.sleep(100);
+//         conn.close();                 
 //      } 
 //   }
 

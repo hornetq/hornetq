@@ -6,7 +6,7 @@ if [ a"$1" = a ]; then CONFIG_DIR=$JBM_HOME/config/stand-alone/non-clustered; el
 if [ a"$2" = a ]; then FILENAME=jbm-standalone-beans.xml; else FILENAME="$2"; fi
 
 export CLASSPATH=$CONFIG_DIR:$JBM_HOME/schemas/
-export JVM_ARGS="-XX:+UseParallelGC -Xms512M -Xmx1024M -Djava.util.logging.config.file=$CONFIG_DIR/logging.properties -Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin -Djava.library.path=."
+export JVM_ARGS="-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms512M -Xmx1024M -Djava.util.logging.config.file=$CONFIG_DIR/logging.properties -Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin -Djava.library.path=."
 #export JVM_ARGS="-Xmx512M -Djava.util.logging.config.file=$CONFIG_DIR/logging.properties -Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin -Djava.library.path=. -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
 
 for i in `ls $JBM_HOME/lib/*.jar`; do

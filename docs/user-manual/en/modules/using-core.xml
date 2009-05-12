@@ -1,11 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="using-core">
     <title>Using Core</title>
-    <para>Blah</para>
+    <para>JBoss Messaging core is a completely JMS agnostic messaging system with its own core API.</para>
+    <para>If you don't want to use JMS you can use the core API directly. The core API provides all the functionality of JMS but without
+    much of the complications. It also provides features that are not normally available using JMS.</para>
     <section>
-        <title>Simple Core Example</title>
+        <title>Core Messaging Concepts</title>
+        <para>Some of the core messaging concepts are similar to JMS concepts, but Core messaging concepts differ in some ways.</para>
+        <para>In core, there is no concept of a Topic, Topic is a JMS only term. Instead, in core, we just deal with <emphasis>addresses</emphasis>
+        and <emphasis>queues</emphasis>.</para>
+        <para>Queues can de durable, meaning they survive a server crash or restart, as long as the messages in them are durable. Non durable queues
+        do not survive a server restart or crash even if the messages they contain are durable.</para>
+        <para>Queues can also be temporary, meaning they are automatically deleted when the client connection is closed, if they are not explicitly
+        deleted before that.</para>
+        <para>Messages can durable or non durable. Durable messages in a durable queue will survive a server crash or restart. Non durable messages
+        will never survive a server crash or restart.</para>
+        <para>Clients use <literal>ClientSessionFactory</literal> instances to create <literal>ClientSession</literal> instances. <literal>ClientSessionFactory</literal>
+        instances know how to connect to the server to create sessions.</para>
+        <para>Clients create <literal>ClientProducer</literal> instances on <literal>ClientSession</literal> instances so they can send
+        messages.</para>
+        <para>Messages are sent to <literal>addresses</literal>. When the message arrives on the server the server routes it to zero or more
+        queues depending on the address. Many queues can be bound to a particular address on the server. The server will route the message
+        to all queues bound to that address.</para>
+        <para>For example, a JMS topic would implemented by a single address to which many queues are bound. Each queue represents a subscription of the topic. A JMS
+        Queue would be implemented as a single address to which one queue is bound - that queue represents the JMS queue.</para>
+        <para>Queues can be bound with an optional filter expression. If a filter expression is supplied then the server will only route messages
+        who match that filter expression to any queues bound to the address.</para>
+        <para>Clients use <literal>ClientConsumer</literal> instances to consume messages from a queue. Core Messaging supports both synchronous
+        and asynchronous message consumption semantics. <literal>ClientConsumer</literal> instances can be configured with an optional 
+        filter expression and will only consume messages which match that expression.</para>
+        <para>Core Messaging also fully supports both local and XA transactional semantics.</para>
+    </section>
+    <section>
+        <title>A simpe example of using Core</title>
         <para></para>
     </section>
+    
     
    
 </chapter>

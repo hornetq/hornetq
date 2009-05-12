@@ -80,7 +80,7 @@ public class FailBackupServerTest extends UnitTestCase
 
    public void testFailBackup() throws Exception
    {
-      for (int j = 0; j < 5; j++)
+      for (int j = 0; j < 1000; j++)
       {
          ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                          new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory",

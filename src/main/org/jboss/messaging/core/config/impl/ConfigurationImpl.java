@@ -77,8 +77,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_PAGING_DIR = "data/paging";
 
-   public static final int DEFAULT_PAGE_MAX_THREADS = 10;
-
    public static final int DEFAULT_PAGE_WATERMARK_SIZE = 10 * 1024 * 1024;
 
    public static final long DEFAULT_PAGE_MAX_GLOBAL_SIZE = -1;
@@ -95,11 +93,11 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_FILE_SIZE = 10485760;
 
-   public static final int DEFAULT_JOURNAL_MIN_FILES = 10;
+   public static final int DEFAULT_JOURNAL_MIN_FILES = 2;
 
    public static final int DEFAULT_JOURNAL_MAX_AIO = 5000;
 
-   public static final int DEFAULT_JOURNAL_REUSE_BUFFER_SIZE = -1;
+   public static final int DEFAULT_JOURNAL_REUSE_BUFFER_SIZE = 1024;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 

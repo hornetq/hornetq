@@ -24,8 +24,6 @@ package org.jboss.messaging.core.management.impl;
 
 import static org.jboss.messaging.core.security.impl.SecurityStoreImpl.CLUSTER_ADMIN_USER;
 
-import javax.management.ObjectName;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;

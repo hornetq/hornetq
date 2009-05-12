@@ -42,7 +42,9 @@
         <para>The server always just deals with core API interactions.</para>
         <para>A schematic illustrating this relationship is shown in figure 3.1 below:</para>
         <para/>
-        <para><inlinegraphic fileref="images/architecture1.jpg" align="center"/></para>
+        <para>
+            <graphic fileref="../images/architecture1.jpg" align="center"/>
+        </para>
         <para>Figure 3.1 shows two user applications interacting with a JBoss Mesaging server. User
             Application 1 is using the JMS API, while User Application 2 is using the core client
             API directly.</para>
@@ -66,7 +68,7 @@
         <para>JEE application servers provide Message Driven Beans (MDBs), which are a special type
             of Enterprise Java Beans (EJBs) which can process messages from sources such as JMS
             systems or mail systems.</para>
-        <para>Problem the most common use of an MDB is to consume messages from a JMS messaging
+        <para>Probably the most common use of an MDB is to consume messages from a JMS messaging
             system.</para>
         <para>According to the JEE specification, a JEE application server uses a JCA adapter to
             integrate with a JMS messaging system so it can consume messages for MDBs.</para>
@@ -77,24 +79,48 @@
             is always recommended that this is done via the JCA adaptor.</para>
         <para>The application server's JCA service provides extra functionality such as connection
             pooling and automatic transaction enlistment, which are desirable when using messaging,
-            say, from inside an EJB.</para>
-        <para>Diagram</para>
+            say, from inside an EJB. It is possible to talk to a JMS messaging system directly from
+            an EJB, MDB or servlet without going through a JCA adapter, but this is not recommended
+            since you will not be able to take advantage of the JCA features.</para>
+        <para>Figure 3.2 belows shows a JEE application server integrating with a JBoss Messaging
+            server via the JBoss Messaging JCA adaptor. Note that all communication between EJB
+            session or entiry beans and Message Driven beans go through the adaptor and not directly
+            to JBoss Messaging.</para>
+        <para>The large arrow with the prohibited sign shows an EJB session bean talking directly to
+            the JBoss Messaging server. This is not recommended as you'll most likely end up
+            creating a new connection and session every time you want to interact from the EJB,
+            which is an anti-pattern.</para>
+        <para/>
+        <para>
+            <graphic fileref="../images/architecture2.jpg"/>
+        </para>
     </section>
     <section>
         <title>JBoss Messaging stand-alone server</title>
         <para>JBoss Messaging can also be deployed as a stand-alone server. This means a fully
             independent messaging server not dependent on a JEE application server.</para>
         <para>The standard stand-alone messaging server configuration comprises a core messaging
-            server, plus a JMS server manager service which allows JMS connection factorys, Queues
-            and Topics to be deployed from xml configuration on the server side, and also a JNDI
-            service.</para>
-        <para>We choose to include these in the standard stand-alone config since JMS and JNDI are
-            often requirements in many deployments. If JNDI or JMS is not required then these
-            services can easily be disabled in the configuration.</para>
+            server, a JMS service and a JNDI service.</para>
+        <para>The role of the JMS Service is to deploy any JMS Queues, Topics and ConnectionFactorys
+            from any server side jbm-jms.xml config files. It also provides a simple management API
+            for creating and destroying Queues, Topics and ConnectionFactorys which can be accessed
+            via JMX or the connection. It is a separate service to the JBoss Messaging core server,
+            since the core server is JMS agnostic. If you don't want to deploy any JMS Queues,
+            Topics and ConnectionFactorys via server side xml config and don't require a JMS
+            management API on the server side then you can disable this service.</para>
+        <para>We also include a JNDI server since JNDI is a common requirement when using JMS to
+            lookup Queues, Topics and ConnectionFactorys. If you do not require JNDI then this
+            service can be disabled. JBoss Messaging allows you to programmatically create JMS and
+            Core objects directly on the client side as opposed to looking them up from JNDI, so a
+            JNDI server is not always a requirement.</para>
         <para>The stand-alone server configuration uses JBoss Microcontainer to instantiate and
             enforce dependencies between the components. JBoss Microcontainer is a very lightweight
             POJO bootstrapper.</para>
-        <para>The stand-alone server architecture is shown in figure X<inlinegraphic
-                fileref="../diagrams/architecture-diagram3.jpg"/></para>
+        <para>[TODO]  need to add mbean server, jndi server etc to diagram</para>
+        <para>The stand-alone server architecture is shown in figure 3.3 below:</para>
+        <para/>
+        <para>
+            <graphic fileref="../images/architecture3.jpg"/>
+        </para>
     </section>
 </chapter>
