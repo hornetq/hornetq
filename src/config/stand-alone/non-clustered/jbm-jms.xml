@@ -1,4 +1,4 @@
-<deployment xmlns="urn:jboss:messaging" 
+<configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
 
@@ -18,4 +18,4 @@
       <entry name="/queue/ExpiryQueue"/>
    </queue>
 
-</deployment>
+</configuration>

@@ -1,4 +1,4 @@
-<deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<configuration xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-users.xsd ">
    <!-- the default user.  this is used where username is null-->
    <defaultuser name="guest" password="guest">
@@ -8,4 +8,4 @@
       you don't want to do this in real life -->
       <role name="admin"/>
    </defaultuser>
-</deployment>
+</configuration>

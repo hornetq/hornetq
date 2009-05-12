@@ -1,4 +1,4 @@
-<deployment xmlns="urn:jboss:messaging" 
+<configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-jms.xsd ">
 
@@ -45,4 +45,4 @@
       <entry name="/topic/fullConfigurationTopic"/>
    </topic>
 
-</deployment>
+</configuration>

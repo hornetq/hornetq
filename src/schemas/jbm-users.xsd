@@ -7,7 +7,7 @@
    attributeFormDefault="unqualified"
    version="1.0">
    
-   <xsd:element name="deployment">
+   <xsd:element name="configuration">
    	<xsd:complexType>
    		<xsd:sequence>
             <xsd:element name="defaultuser" type="userType" maxOccurs="1" minOccurs="0"></xsd:element>

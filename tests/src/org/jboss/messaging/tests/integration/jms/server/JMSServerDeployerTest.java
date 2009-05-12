@@ -22,12 +22,6 @@
 
 package org.jboss.messaging.tests.integration.jms.server;
 
-import java.net.URL;
-
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.naming.Context;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -43,6 +37,11 @@ import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.unit.util.InVMContext;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.w3c.dom.Element;
+
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.naming.Context;
+import java.net.URL;
 
 /**
  * A JMSServerDeployerTest
@@ -77,7 +76,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
 
-      String xml = "<deployment xmlns='urn:jboss:messaging'> " + "</deployment>";
+      String xml = "<configuration xmlns='urn:jboss:messaging'> " + "</configuration>";
 
       Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);

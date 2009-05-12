@@ -38,29 +38,29 @@ import java.util.HashMap;
  */
 public class XMLDeployerTest extends UnitTestCase
 {
-   private static final String conf1 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
+   private static final String conf1 = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
                                        + "   <test name=\"test2\">content2</test>\n"
                                        + "   <test name=\"test3\">content3</test>\n"
                                        + "   <test name=\"test4\">content4</test>\n"
-                                       + "</deployment>";
+                                       + "</configuration>";
 
-   private static final String conf2 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
+   private static final String conf2 = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
                                        + "   <test name=\"test2\">contenthaschanged2</test>\n"
                                        + "   <test name=\"test3\">contenthaschanged3</test>\n"
                                        + "   <test name=\"test4\">content4</test>\n"
-                                       + "</deployment>";
+                                       + "</configuration>";
 
-   private static final String conf3 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
+   private static final String conf3 = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
                                        + "   <test name=\"test2\">contenthaschanged2</test>\n"
-                                       + "</deployment>";
+                                       + "</configuration>";
 
-   private static final String conf4 = "<deployment>\n" + "   <test name=\"test1\">content1</test>\n"
+   private static final String conf4 = "<configuration>\n" + "   <test name=\"test1\">content1</test>\n"
                                        + "   <test name=\"test2\">content2</test>\n"
                                        + "   <test name=\"test3\">content3</test>\n"
                                        + "   <test name=\"test4\">content4</test>\n"
                                        + "   <test name=\"test5\">content5</test>\n"
                                        + "   <test name=\"test6\">content6</test>\n"
-                                       + "</deployment>";
+                                       + "</configuration>";
 
    private URL url;
 

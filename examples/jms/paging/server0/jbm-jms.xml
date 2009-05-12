@@ -1,4 +1,4 @@
-<deployment xmlns="urn:jboss:messaging"
+<configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
    <!--the connection factory used by the example-->
@@ -18,4 +18,4 @@
       <entry name="/queue/pagingQueue"/>
    </queue>
 
-</deployment>
+</configuration>

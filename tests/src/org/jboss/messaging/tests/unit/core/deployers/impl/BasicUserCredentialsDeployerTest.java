@@ -22,12 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.BasicUserCredentialsDeployer;
 import org.jboss.messaging.core.security.CheckType;
@@ -37,6 +31,12 @@ import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * tests BasicUserCredentialsDeployer
@@ -49,19 +49,19 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
    
    FakeJBMUpdateableSecurityManager securityManager;
 
-   private static final String simpleSecurityXml = "<deployment>\n" +
+   private static final String simpleSecurityXml = "<configuration>\n" +
                                                    "<defaultuser name=\"guest\" password=\"guest\">\n" +
                                                    "      <role name=\"guest\"/>\n" +
                                                    "   </defaultuser>" +
-                                                   "</deployment>";
+                                                   "</configuration>";
 
-   private static final String singleUserXml = "<deployment>\n" +
+   private static final String singleUserXml = "<configuration>\n" +
                                                "      <user name=\"guest\" password=\"guest\">\n" +
                                                "         <role name=\"guest\"/>\n" +
                                                "      </user>\n" +
-                                               "</deployment>";
+                                               "</configuration>";
 
-   private static final String multipleUserXml = "<deployment>\n" +
+   private static final String multipleUserXml = "<configuration>\n" +
                                                  "      <user name=\"guest\" password=\"guest\">\n" +
                                                  "         <role name=\"guest\"/>\n" +
                                                  "         <role name=\"foo\"/>\n" +
@@ -71,7 +71,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
                                                  "         <role name=\"foo\"/>\n" +
                                                  "         <role name=\"bar\"/>\n" +
                                                  "      </user>\n" +
-                                                 "</deployment>";
+                                                 "</configuration>";
 
    protected void setUp() throws Exception
    {
