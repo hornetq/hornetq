@@ -266,37 +266,71 @@
       </section>
       <section id="cluster-connections.configuration">
          <title>cluster-connections</title>
-         <para>TODO</para>
+         <para>The <literal>cluster-connections</literal> defines zero or more <literal>cluster-connection</literal> which are used
+         for replication among cluster nodes.</para>
          <variablelist>  
            <varlistentry>
              <term>description</term>
-             <listitem><para>TODO</para></listitem>
+             <listitem><para>A <literal>cluster-connection</literal> configuration is composed of the following elements:</para>
+                 <itemizedlist>
+                     <listitem><para><literal>address</literal> -- the name of the address where messages are delivered</para></listitem>
+                     <listitem><para><literal>retry-interval</literal> -- interval (in milliseconds) to retry to connect to the other node
+                        (specified by <ulink url="../../../api/org/jboss/messaging/core/client/impl/ClientSessionFactoryImpl.html#DEFAULT_RETRY_INTERVAL">DEFAULT_RETRY_INTERVAL</ulink>)</para></listitem>
+                     <listitem><para><literal>use-duplicate-detection</literal> -- set to <literal>true</literal> to use duplicate detection
+                        (specified by <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_BRIDGE_DUPLICATE_DETECTION">DEFAULT_BRIDGE_DUPLICATE_DETECTION</ulink>)</para></listitem>
+                     <listitem><para><literal>forward-when-no-consumers</literal> -- set to <literal>true</literal> to forward messages when there is no local consumers
+                        (specified by <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS">DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS</ulink>)</para></listitem>
+                     <listitem><para><literal>max-hops</literal> -- maximum distance in the cluster to route a message
+                        (specified by <ulink url="../../../api/org/jboss/messaging/core/config/impl/ConfigurationImpl.html#DEFAULT_CLUSTER_MAX_HOPS">DEFAULT_CLUSTER_MAX_HOPS</ulink>)</para></listitem>
+                     <listitem><para>either a <literal>connector-ref</literal> to specify a <link linkend="connectors.configuration">connector</link>
+                      (and a backup connector) or a <literal>discovery-group-ref</literal> 
+                     to use a <link linkend="discovery-groups.configuration">discovery group</link> instead</para></listitem>
+                 </itemizedlist>
+                 <para>The <literal>cluster-connection</literal>'s <literal>name</literal> attribute is mandatory.</para>
+               </listitem>
            </varlistentry>
            <varlistentry>
              <term>example</term>
              <listitem><programlisting>
-                TODO
+&lt;cluster-connections&gt;
+   &lt;cluster-connection name="my-cluster"&gt;
+      &lt;address&gt;jms&lt;/address&gt;
+      &lt;retry-interval&gt;500&lt;/retry-interval&gt;
+      &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
+      &lt;forward-when-no-consumers&gt;true&lt;/forward-when-no-consumers&gt;
+      &lt;max-hops&gt;1&lt;/max-hops&gt;
+      &lt;!-- a discovery group named "my-discovery-group" has been defined --&gt;
+      &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
+   &lt;/cluster-connection&gt;
+&lt;/cluster-connections&gt;                
              </programlisting></listitem>
            </varlistentry>
          </variablelist>
       </section>
       <section id="remoting-interceptors.configuration">
          <title>remoting-interceptors</title>
+         <para>The <literal>remoting-interceptors</literal> defines zero or more <literal>remoting-interceptor</literal> which are used
+         to intercept packet sent on the wire.</para>
          <variablelist>  
            <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
              <term>description</term>
-             <listitem><para>TODO</para></listitem>
+             <listitem><para>A <literal>remoting-interceptor</literal> configuration is composed of a sequence of the following element:</para>
+                 <itemizedlist>
+                     <listitem><para><literal>class-name</literal> -- the name of a Java class implementing 
+                     <ulink url="../../../api/org/jboss/messaging/core/remoting/Interceptor.html">Interceptor</ulink>)</para></listitem>
+                 </itemizedlist>
+             </listitem>
            </varlistentry>
-         </variablelist>
-     </section>
+           <varlistentry>
+            <term>example</term>
+            <listitem><programlisting>
+&lt;remoting-interceptors&gt;
+   &lt;class-name&gt;org.jboss.jms.example.SimpleInterceptor&lt;/class-name&gt;
+&lt;/remoting-interceptors&gt;
+            </programlisting></listitem>
+         </varlistentry>
+      </variablelist>
+      </section>
    </section>
       
    <section id="persistence.configuration">
