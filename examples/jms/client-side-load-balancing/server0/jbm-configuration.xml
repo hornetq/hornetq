@@ -1,50 +1,46 @@
-<deployment xmlns="urn:jboss:messaging"
+<configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
-   <configuration>
+   <clustered>true</clustered>
 
-      <clustered>true</clustered>
+   <!-- Connectors -->
 
-      <!-- Connectors -->
+   <connectors>
+      <connector name="netty-connector">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+      </connector>
+   </connectors>
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+      </acceptor>
+   </acceptors>
+   
+   <!-- Clustering configuration -->
 
-      <connectors>
-         <connector name="netty-connector">
-            <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-            <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
-         </connector>
-      </connectors>
-      
-      <!-- Acceptors -->
-      <acceptors>
-         <acceptor name="netty-acceptor">
-            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-            <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
-         </acceptor>
-      </acceptors>
-      
-      <!-- Clustering configuration -->
+   <broadcast-groups>
+      <broadcast-group name="my-broadcast-group">
+         <group-address>231.7.7.7</group-address>
+         <group-port>9876</group-port>
+         <broadcast-period>100</broadcast-period>
+         <connector-ref connector-name="netty-connector"/>
+      </broadcast-group>
+   </broadcast-groups>
+   
+   <discovery-groups>
+      <discovery-group name="my-discovery-group">
+         <group-address>231.7.7.7</group-address>
+         <group-port>9876</group-port>
+         <refresh-timeout>10000</refresh-timeout>
+      </discovery-group>
+   </discovery-groups>
+   
+   <!-- Other config -->
 
-      <broadcast-groups>
-         <broadcast-group name="my-broadcast-group">
-            <group-address>231.7.7.7</group-address>
-            <group-port>9876</group-port>
-            <broadcast-period>100</broadcast-period>
-            <connector-ref connector-name="netty-connector"/>
-         </broadcast-group>
-      </broadcast-groups>
-      
-      <discovery-groups>
-         <discovery-group name="my-discovery-group">
-            <group-address>231.7.7.7</group-address>
-            <group-port>9876</group-port>
-            <refresh-timeout>10000</refresh-timeout>
-         </discovery-group>
-      </discovery-groups>
-      
-      <!-- Other config -->
+   <journal-min-files>2</journal-min-files>
 
-      <journal-min-files>2</journal-min-files>
-
-   </configuration>
-
-</deployment>
+</configuration>

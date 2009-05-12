@@ -1,7 +1,6 @@
-<deployment xmlns="urn:jboss:messaging"
+<configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
-   <configuration>
+            xsi:schemaLocation="urn:jboss:messaging ../../../../src/schemas/jbm-configuration.xsd">
 
       <clustered>true</clustered>
       
@@ -26,6 +25,4 @@
 
       <journal-min-files>2</journal-min-files>
 
-   </configuration>
-
-</deployment>
+</configuration>

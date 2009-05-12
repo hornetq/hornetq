@@ -76,20 +76,13 @@ public class AddressSettingsDeployer extends XmlDeployer
     */
    public String[] getElementTagName()
    {
-      return new String[] { "address-settings" };
+      return new String[] { "address-setting" };
    }
 
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      if ("deployment".equals(rootNode.getNodeName()))
-      {
-         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
-      }
-      else
-      {
-         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-queues.xsd");
-      }
+      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
    }
 
    /**

@@ -1,5 +1,7 @@
-<deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
-   <configuration>
+<configuration 
+   xmlns="urn:jboss:messaging" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
       <clustered>true</clustered>
       <enable-file-deployment>true</enable-file-deployment>
       <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>             
@@ -184,12 +186,4 @@
              <discovery-group-ref discovery-group-name="dg1"/>
          </cluster-connection>
       </cluster-connections>
-   </configuration>
-   
-   <settings>
-      <queue name="foo3">
-        <address>bar</address>
-      </queue>
-   </settings>
-
-</deployment>
+</configuration>

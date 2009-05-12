@@ -5,20 +5,6 @@
 	elementFormDefault="qualified" attributeFormDefault="unqualified"
 	version="1.0">
 
-	<xsd:include schemaLocation="jbm-queues.xsd"></xsd:include>
-	<xsd:element name="deployment">
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element ref="configuration" maxOccurs="1"
-					minOccurs="1">
-				</xsd:element>
-				<xsd:element ref="settings" maxOccurs="1"
-					minOccurs="0">
-				</xsd:element>
-			</xsd:sequence>
-		</xsd:complexType>
-	</xsd:element>
-
 	<xsd:element name="configuration">
 		<xsd:complexType>
 			<xsd:all>
@@ -163,13 +149,6 @@
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="queues" maxOccurs="1" minOccurs="0">
-                    <xsd:complexType>
-                        <xsd:sequence>
-            				<xsd:element name="queue" type="queueType"
-	               				maxOccurs="unbounded" minOccurs="0">
-				            </xsd:element>
-                        </xsd:sequence>
-                    </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="bridges" maxOccurs="1" minOccurs="0">
                     <xsd:complexType>
@@ -237,7 +216,12 @@
 				<xsd:element name="large-messages-directory"
 					type="xsd:string" maxOccurs="1" minOccurs="0">
 				</xsd:element>
-
+                <xsd:element name="security-settings" maxOccurs="1"
+                    minOccurs="0">
+                </xsd:element>
+                <xsd:element name="address-settings" maxOccurs="1"
+                   minOccurs="0">
+                </xsd:element>
 			</xsd:all>
 		</xsd:complexType>
 	</xsd:element>
@@ -379,9 +363,12 @@
 			<xsd:element name="forwarding-address" type="xsd:string"
 				maxOccurs="1" minOccurs="1">
 			</xsd:element>
-			<xsd:element name="filter" type="filterType" maxOccurs="1"
-				minOccurs="0">
-			</xsd:element>
+            <xsd:element name="filter"
+                maxOccurs="1" minOccurs="0">
+                <xsd:complexType>
+                   <xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
 			<xsd:element name="transformer-class-name" type="xsd:string"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
@@ -463,9 +450,12 @@
 			<xsd:element name="forwarding-address" type="xsd:string"
 				maxOccurs="1" minOccurs="1">
 			</xsd:element>
-			<xsd:element name="filter" type="filterType" maxOccurs="1"
-				minOccurs="0">
-			</xsd:element>
+            <xsd:element name="filter"
+                maxOccurs="1" minOccurs="0">
+                <xsd:complexType>
+                   <xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
 			<xsd:element name="transformer-class-name" type="xsd:string"
 				maxOccurs="1" minOccurs="0">
 			</xsd:element>
@@ -483,6 +473,114 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
+  <xsd:element name="security-settings">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="security-setting"
+                         maxOccurs="unbounded" minOccurs="0">
+            </xsd:element>
+          </xsd:sequence>
+       </xsd:complexType>
+    </xsd:element>
+
+   <xsd:element name="security-setting">
+    <xsd:complexType>
+        <xsd:sequence>
+           <xsd:element name="permission" minOccurs="0" maxOccurs="unbounded">
+              <xsd:complexType>
+                 <xsd:attribute name="type" type="xsd:string" use="required"></xsd:attribute>
+                 <xsd:attribute name="roles" type="xsd:string" use="required"></xsd:attribute>
+              </xsd:complexType>
+           </xsd:element>
+        </xsd:sequence>
+            <xsd:attribute name="match" type="xsd:string" use="required"></xsd:attribute>
+        </xsd:complexType>
+   </xsd:element>
+
+  <xsd:element name="address-settings">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="address-setting"
+                         maxOccurs="unbounded" minOccurs="0">
+            </xsd:element>
+          </xsd:sequence>
+       </xsd:complexType>
+    </xsd:element>
+    
+   <xsd:element name="address-setting">
+    <xsd:complexType>
+      <xsd:all>
+        <xsd:element name="clustered" type="xsd:boolean"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="dead-letter-address" type="xsd:string"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="expiry-address" type="xsd:string"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="redelivery-delay" type="xsd:unsignedLong"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="max-delivery-attempts" type="xsd:unsignedInt"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="max-size-bytes" type="xsd:long"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="page-size-bytes" type="xsd:unsignedLong"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="drop-messages-when-full" type="xsd:boolean"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="distribution-policy-class" type="xsd:string"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="message-counter-history-day-limit" type="xsd:positiveInteger"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="last-value-queue" type="xsd:boolean"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+        <xsd:element name="redistribution-delay" type="xsd:unsignedLong"
+            maxOccurs="1" minOccurs="0">
+        </xsd:element>
+      </xsd:all>
+    <xsd:attribute name="match" type="xsd:string" use="required"></xsd:attribute>
+   </xsd:complexType> 
+   </xsd:element>
+     
+   <xsd:element name="queues">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="queue"
+                         maxOccurs="unbounded" minOccurs="0">
+            </xsd:element>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+   
+   <xsd:element name="queue">
+      <xsd:complexType>
+        <xsd:all>
+            <xsd:element name="address" type="xsd:string"
+                maxOccurs="1" minOccurs="1">
+            </xsd:element>
+            <xsd:element name="filter"
+                maxOccurs="1" minOccurs="0">
+                <xsd:complexType>
+                   <xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="durable" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+        </xsd:all>
+        <xsd:attribute name="name" type="xsd:ID" use="required"></xsd:attribute>
+       </xsd:complexType>
+    </xsd:element>
+    
 	<xsd:complexType name="backup-connectorType">
 		<xsd:attribute name="connector-name" type="xsd:IDREF"
 			use="required">

@@ -64,8 +64,7 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
       
       assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE, conf.getConnectionTTLOverride());
 
-      // there must be at least 1 acceptor for the configuration to be valid
-      assertEquals(1, conf.getAcceptorConfigurations().size());
+      assertEquals(0, conf.getAcceptorConfigurations().size());
 
       assertEquals(emptyMap(), conf.getConnectorConfigurations());
 

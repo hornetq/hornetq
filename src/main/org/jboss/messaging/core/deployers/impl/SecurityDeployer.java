@@ -30,7 +30,6 @@ import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -48,7 +47,7 @@ public class SecurityDeployer extends XmlDeployer
    private static final String ROLES_ATTR_NAME = "roles";
    private static final String QUEUES_XML = "jbm-queues.xml";
    private static final String MATCH = "match";
-   private static final String SECURITY_ELEMENT_NAME = "security";
+   private static final String SECURITY_ELEMENT_NAME = "security-setting";
 
    public static final String SEND_NAME = "send";
    public static final String CONSUME_NAME = "consume";
@@ -83,14 +82,7 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      if ("deployment".equals(rootNode.getNodeName()))
-      {
-         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
-      }
-      else
-      {
-         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-queues.xsd");
-      }
+      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
    }
    
    /**

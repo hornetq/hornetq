@@ -51,26 +51,10 @@ public class ConfigurationValidationTest extends UnitTestCase
 
    public void testMinimalConfiguration() throws Exception
    {
-      String xml = "<deployment xmlns='urn:jboss:messaging'>" 
-                 + "<configuration></configuration>"
-                 + "</deployment>";
+      String xml = "<configuration xmlns='urn:jboss:messaging'>" 
+                 + "</configuration>";
       Element element = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       assertNotNull(element);
-      try
-      {
-         XMLUtil.validate(element, "jbm-configuration.xsd");
-         fail("minimal configuration must declare at least one acceptor");
-      }
-      catch (IllegalStateException e)
-      {
-      }
-
-      xml = "<deployment xmlns='urn:jboss:messaging'> " + "<configuration>"
-            + "<acceptors>"
-            + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
-            + "</acceptors>"
-            + "</configuration>"
-            + "</deployment>";
       element = XMLUtil.stringToElement(xml);
       assertNotNull(element);
       XMLUtil.validate(element, "jbm-configuration.xsd");

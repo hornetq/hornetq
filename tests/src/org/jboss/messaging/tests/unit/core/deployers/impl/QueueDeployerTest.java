@@ -59,13 +59,15 @@ public class QueueDeployerTest extends UnitTestCase
 
    public void testParseQueueConfigurationFromAddressSettings() throws Exception
    {
-      String xml = "<settings xmlns='urn:jboss:messaging'>"
-                 + "   <queue name='foo'>"
-                 + "      <address>bar</address>"
-                 + "      <filter string='speed > 88' />"
-                 + "      <durable>false</durable>" 
-                 + "   </queue>"
-                 + "</settings>";
+      String xml = "<configuration xmlns='urn:jboss:messaging'>"
+                 + "   <queues>"
+                 + "      <queue name='foo'>"
+                 + "         <address>bar</address>"
+                 + "         <filter string='speed > 88' />"
+                 + "         <durable>false</durable>" 
+                 + "      </queue>"
+                 + "   </queues>"
+                 + "</configuration>";
       
       Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
@@ -84,27 +86,20 @@ public class QueueDeployerTest extends UnitTestCase
 
    public void testParseQueueConfigurationFromJBMConfiguration() throws Exception
    {
-      String xml = "<deployment xmlns='urn:jboss:messaging'> " 
-                 + "<configuration>"
-                 + "<acceptors>"
-                 + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
-                 + "</acceptors>"
+      String xml = "<configuration xmlns='urn:jboss:messaging'> " 
                  + "<queues>"
                  + "   <queue name='foo'>"
                  + "      <address>bar</address>"
                  + "      <filter string='speed > 88' />"
                  + "      <durable>false</durable>" 
                  + "   </queue>"
-                 + "</queues>"
-                 + "</configuration>"
-                 + "<settings>"
                  + "   <queue name='foo2'>"
                  + "      <address>bar2</address>"
                  + "      <filter string='speed > 88' />"
                  + "      <durable>true</durable>" 
                  + "   </queue>"
-                 + "</settings>"
-                 + "</deployment>";
+                 + "</queues>"
+                 + "</configuration>";
       
       Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);

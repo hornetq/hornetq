@@ -1,5 +1,7 @@
-<deployment xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
-   <configuration>
+<configuration 
+   xmlns="urn:jboss:messaging" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
       <clustered>true</clustered>
       <enable-file-deployment>true</enable-file-deployment>
       <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>              
@@ -60,5 +62,3 @@
       <journal-min-files>100</journal-min-files>
       <journal-max-aio>56546</journal-max-aio>
    </configuration>
-
-</deployment>

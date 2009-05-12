@@ -1,39 +1,36 @@
-<deployment xmlns="urn:jboss:messaging"
+<configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
-   <configuration>
 
-      <!-- Connectors -->
+   <!-- Connectors -->
 
-      <connectors>
-         <connector name="netty-ssl-connector">
-            <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
-            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                     
-            <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
-            <param key="jbm.remoting.netty.keystorepath" value="server0/jbm.example.keystore" type="String"/>
-            <param key="jbm.remoting.netty.keystorepassword" value="jbmexample" type="String"/>
-         </connector>
-      </connectors>
-      
-      <!-- Acceptors -->
-      <acceptors>
-         <acceptor name="netty-ssl-acceptor">
-            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-            <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
-            <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                     
-            <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
-            <param key="jbm.remoting.netty.keystorepath" value="jbm.example.keystore" type="String"/>
-            <param key="jbm.remoting.netty.keystorepassword" value="jbmexample" type="String"/>
-            <param key="jbm.remoting.netty.truststorepath" value="jbm.example.truststore" type="String"/>
-            <param key="jbm.remoting.netty.truststorepassword" value="jbmexample" type="String"/>
-         </acceptor>
-      </acceptors>
+   <connectors>
+      <connector name="netty-ssl-connector">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                     
+         <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
+         <param key="jbm.remoting.netty.keystorepath" value="server0/jbm.example.keystore" type="String"/>
+         <param key="jbm.remoting.netty.keystorepassword" value="jbmexample" type="String"/>
+      </connector>
+   </connectors>
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-ssl-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         <param key="jbm.remoting.netty.port" value="5500" type="Integer"/>	                     
+         <param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
+         <param key="jbm.remoting.netty.keystorepath" value="jbm.example.keystore" type="String"/>
+         <param key="jbm.remoting.netty.keystorepassword" value="jbmexample" type="String"/>
+         <param key="jbm.remoting.netty.truststorepath" value="jbm.example.truststore" type="String"/>
+         <param key="jbm.remoting.netty.truststorepassword" value="jbmexample" type="String"/>
+      </acceptor>
+   </acceptors>
 
-      <!-- Other config -->
+   <!-- Other config -->
 
-      <journal-min-files>2</journal-min-files>
+   <journal-min-files>2</journal-min-files>
 
-   </configuration>
-
-</deployment>
+</configuration>

@@ -1,43 +1,40 @@
-<deployment xmlns="urn:jboss:messaging"
+<configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
-   <configuration>
 
-      <!-- Connectors -->
+   <!-- Connectors -->
 
-      <connectors>
-         <connector name="netty-connector">
-            <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-            <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
-         </connector>
-         
-         <!-- We just use this connector so we can send management operations while the other acceptor
-         is stopped -->
-	     <connector name="netty-connector2">
-            <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-            <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
-         </connector>
-      </connectors>
+   <connectors>
+      <connector name="netty-connector">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+      </connector>
       
-      <!-- Acceptors -->
-      <acceptors>
-         <acceptor name="netty-acceptor">
-            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-            <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
-         </acceptor>
+      <!-- We just use this connector so we can send management operations while the other acceptor
+      is stopped -->
+     <connector name="netty-connector2">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
+      </connector>
+   </connectors>
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+      </acceptor>
 
-         <!-- We just use this acceptor so we can send management operations while the other acceptor
-         is stopped -->
-         <acceptor name="netty-acceptor2">
-            <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-            <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
-         </acceptor>
-      </acceptors>
-      
-      <!-- Other config -->
+      <!-- We just use this acceptor so we can send management operations while the other acceptor
+      is stopped -->
+      <acceptor name="netty-acceptor2">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
+      </acceptor>
+   </acceptors>
+   
+   <!-- Other config -->
 
-      <journal-min-files>2</journal-min-files>
+   <journal-min-files>2</journal-min-files>
 
-   </configuration>
-
-</deployment>
+</configuration>

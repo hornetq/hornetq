@@ -146,9 +146,9 @@ public class PreacknowledgeExample extends JMSExample
 
       JMSManagementHelper.putAttribute(m, "jms.queue.exampleQueue", "MessageCount");
 
-      ObjectMessage response = (ObjectMessage)requestor.request(m);
+      Message response = requestor.request(m);
 
-      int messageCount = (Integer)response.getObject();
+      int messageCount = (Integer)JMSManagementHelper.getResult(response);
       
       return messageCount;
    }

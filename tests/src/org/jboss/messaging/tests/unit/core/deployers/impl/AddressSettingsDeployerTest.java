@@ -75,27 +75,22 @@ public class AddressSettingsDeployerTest extends UnitTestCase
    
    public void testDeployFromConfigurationFile() throws Exception
    {
-      String xml = "<deployment xmlns='urn:jboss:messaging'> " 
-                 + "<configuration>"
-                 + "<acceptors>"
-                 + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
-                 + "</acceptors>"
-                 + "</configuration>"
-                 + "<settings>"
-                 + "   <address-settings match=\"queues.*\">"
+      String xml = "<configuration xmlns='urn:jboss:messaging'> " 
+                 + "<address-settings>"
+                 + "   <address-setting match=\"queues.*\">"
                  + "      <dead-letter-address>DLQtest</dead-letter-address>\n"
                  + "      <expiry-address>ExpiryQueueTest</expiry-address>\n"
                  + "      <redelivery-delay>100</redelivery-delay>\n"
                  + "      <max-size-bytes>-100</max-size-bytes>\n"
                  + "      <distribution-policy-class>org.jboss.messaging.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>"
                  + "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>"
-                 + "   </address-settings>"
-                 + "</settings>"
-                 + "</deployment>";
+                 + "   </address-setting>"
+                 + "</address-settings>"
+                 + "</configuration>";
       
       Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       addressSettingsDeployer.validate(rootNode);
-      NodeList addressSettingsNode = rootNode.getElementsByTagName("address-settings");
+      NodeList addressSettingsNode = rootNode.getElementsByTagName("address-setting");
       assertEquals(1, addressSettingsNode.getLength());
 
       addressSettingsDeployer.deploy(addressSettingsNode.item(0));

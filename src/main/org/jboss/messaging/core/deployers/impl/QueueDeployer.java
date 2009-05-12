@@ -58,14 +58,7 @@ public class QueueDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      if ("deployment".equals(rootNode.getNodeName()))
-      {
-         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
-      }
-      else
-      {
-         org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-queues.xsd");
-      }
+      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
    }
 
    /**

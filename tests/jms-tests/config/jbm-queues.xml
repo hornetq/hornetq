@@ -1,14 +1,16 @@
-<settings xmlns="urn:jboss:messaging" 
+<configuration xmlns="urn:jboss:messaging" 
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
+            xsi:schemaLocation="urn:jboss:messaging ../../../src/schemas/jbm-configuration.xsd ">
 
-   <security match="#">
-      <permission type="createDurableQueue" roles="guest,def"/>
-      <permission type="deleteDurableQueue" roles="guest,def"/>
-      <permission type="createTempQueue" roles="guest,def"/>
-      <permission type="deleteTempQueue" roles="guest,def"/>
-      <permission type="consume" roles="guest,def"/>
-      <permission type="send" roles="guest,def"/>
-   </security>
+   <security-settings>
+      <security-setting match="#">
+         <permission type="createDurableQueue" roles="guest,def"/>
+         <permission type="deleteDurableQueue" roles="guest,def"/>
+         <permission type="createTempQueue" roles="guest,def"/>
+         <permission type="deleteTempQueue" roles="guest,def"/>
+         <permission type="consume" roles="guest,def"/>
+         <permission type="send" roles="guest,def"/>
+      </security-setting>
+   </security-settings>
    
-</settings>
+</configuration>

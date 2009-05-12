@@ -1,24 +1,28 @@
-<settings xmlns="urn:jboss:messaging"
+<configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-queues.xsd ">
+            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd ">
 
-   <!--security for example queue-->
-   <security match="jms.queue.exampleQueue">
-      <permission type="createDurableQueue" roles="guest"/>
-      <permission type="deleteDurableQueue" roles="guest"/>
-      <permission type="createTempQueue" roles="guest"/>
-      <permission type="deleteTempQueue" roles="guest"/>
-      <permission type="consume" roles="guest"/>
-      <permission type="send" roles="guest"/>
-   </security>
+   <security-settings>
+      <!--security for example queue-->
+      <security-setting match="jms.queue.exampleQueue">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+   
+      <!-- needed so the session can create a temporary queue-->
+      <security-setting match="jms.tempqueue.#">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+   
+   </security-settings>
 
-   <!-- needed so the session can create a temporary queue-->
-   <security match="jms.tempqueue.#">
-      <permission type="createDurableQueue" roles="guest"/>
-      <permission type="deleteDurableQueue" roles="guest"/>
-      <permission type="createTempQueue" roles="guest"/>
-      <permission type="deleteTempQueue" roles="guest"/>
-      <permission type="consume" roles="guest"/>
-      <permission type="send" roles="guest"/>
-   </security>
-</settings>
+</configuration>

@@ -22,19 +22,17 @@
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.SecurityDeployer;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.settings.impl.HierarchicalObjectRepository;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.utils.SimpleString;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -43,20 +41,20 @@ public class SecurityDeployerTest extends UnitTestCase
 {
    private SecurityDeployer deployer;
 
-   private String conf = "<security match=\"jms.topic.testTopic\">\n" +
+   private String conf = "<security-setting match=\"jms.topic.testTopic\">\n" +
                          "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>\n" +
                          "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>\n" +
                          "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n" +
                          "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n" +
                          "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>\n" +
-                         "   </security>";
+                         "   </security-setting>";
 
-   private String conf2 = "<security match=\"jms.topic.testQueue\">\n" +
+   private String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" +
                           "      <permission type=\"createTempQueue\" roles=\"durpublisher\"/>\n" +
                           "      <permission type=\"deleteTempQueue\" roles=\"durpublisher\"/>\n" +
                           "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n" +
                           "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n" +
-                          "   </security>";
+                          "   </security-setting>";
 
    private String noRoles =
          "   <securityfoo match=\"queues.testQueue\">\n" +
@@ -214,26 +212,21 @@ public class SecurityDeployerTest extends UnitTestCase
    
    public void testDeployFromConfigurationFile() throws Exception
    {
-      String xml = "<deployment xmlns='urn:jboss:messaging'> " 
-                 + "<configuration>"
-                 + "<acceptors>"
-                 + "<acceptor><factory-class>FooAcceptor</factory-class></acceptor>"
-                 + "</acceptors>"
-                 + "</configuration>"
-                 + "<settings>"
-                 + "   <security match=\"jms.topic.testTopic\">"
+      String xml = "<configuration xmlns='urn:jboss:messaging'> " 
+                 + "<security-settings>"
+                 + "   <security-setting match=\"jms.topic.testTopic\">"
                  + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>"
                  + "      <permission type=\"deleteDurableQueue\" roles=\"durpublisher\"/>"
                  + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>"
                  + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>"
                  + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>"
-                 + "   </security>"
-                 + "</settings>"
-                 + "</deployment>";
+                 + "   </security-setting>"
+                 + "</security-settings>"
+                 + "</configuration>";
       
       Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
-      NodeList securityNodes = rootNode.getElementsByTagName("security");
+      NodeList securityNodes = rootNode.getElementsByTagName("security-setting");
       assertEquals(1, securityNodes.getLength());
 
       deployer.deploy(securityNodes.item(0));
