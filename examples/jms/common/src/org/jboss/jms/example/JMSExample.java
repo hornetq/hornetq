@@ -21,14 +21,13 @@
  */
 package org.jboss.jms.example;
 
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.naming.InitialContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 import java.util.logging.Logger;
-
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.naming.InitialContext;
 
 /**
  * a baee class for examples. This takes care of starting and stopping the server as well as deploying any queue needed.
@@ -189,7 +188,7 @@ public abstract class JMSExample
             "STARTED::",
             "FAILED::",
             config,
-            "jbm-standalone-beans.xml");   
+            "jbm-jboss-beans.xml");   
    }
    
    private void startServers() throws Exception

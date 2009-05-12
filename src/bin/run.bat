@@ -10,9 +10,9 @@ SET CLASSPATH=!CLASSPATH!;%%A
 )
 
 echo ***********************************************************************************
-echo "java %JVM_ARGS% -classpath %CLASSPATH% org.jboss.messaging.integration.bootstrap.JBMBootstrapServer jbm-standalone-beans.xml"
+echo "java %JVM_ARGS% -classpath %CLASSPATH% org.jboss.messaging.integration.bootstrap.JBMBootstrapServer jbm-jboss-beans.xml"
 echo ***********************************************************************************
-java %JVM_ARGS% -classpath %CLASSPATH% org.jboss.messaging.integration.bootstrap.JBMBootstrapServer jbm-standalone-beans.xml
+java %JVM_ARGS% -classpath %CLASSPATH% org.jboss.messaging.integration.bootstrap.JBMBootstrapServer jbm-jboss-beans.xml
 
 
 

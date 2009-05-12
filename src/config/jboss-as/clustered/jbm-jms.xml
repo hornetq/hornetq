@@ -7,13 +7,22 @@
       <entries>
          <entry name="ConnectionFactory"/>
          <entry name="XAConnectionFactory"/>
+      </entries>j
+   </connection-factory>
+
+   <connection-factory name="ClusteredConnectionFactory">
+      <connector-ref connector-name="netty" backup-connector-name="netty-backup"/>
+      <entries>
+         <entry name="/ClusteredConnectionFactory"/>
+         <entry name="/ClusteredXAConnectionFactory"/>
+         <entry name="java:/ClusteredConnectionFactory"/>
+         <entry name="java:/ClusteredXAConnectionFactory"/>
       </entries>
    </connection-factory>
 
    <queue name="DLQ">
       <entry name="/queue/DLQ"/>
    </queue>
-
    <queue name="ExpiryQueue">
       <entry name="/queue/ExpiryQueue"/>
    </queue>

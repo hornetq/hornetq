@@ -6,10 +6,7 @@
       <connector-ref connector-name="netty"/>
       <entries>
          <entry name="ConnectionFactory"/>
-         <entry name="/ConnectionFactory"/>
-         <entry name="/XAConnectionFactory"/>
-         <entry name="java:/ConnectionFactory"/>
-         <entry name="java:/XAConnectionFactory"/>
+         <entry name="XAConnectionFactory"/>
       </entries>
    </connection-factory>
 
@@ -23,49 +20,6 @@
       </entries>
    </connection-factory>
 
-   <!-- example connection factory -->
-  <!-- <connection-factory name="MyExampleConnectionFactory">
-      <connector-ref connector-name="netty"/>
-      <entries>
-         <entry name="/MyExampleConnectionFactory"/>
-         <entry name="/acme/MyExampleConnectionFactoryDupe"/>
-         <entry name="java:/xyz/CF1"/>
-         <entry name="java:/connectionfactories/acme/connection_factory"/>
-      </entries>
-      <ping-period>5000</ping-period>
-      <call-timeout>30000</call-timeout>
-      --><!-- This is the window size in bytes to use when using consumer window based flow control --><!--
-      <consumer-window-size>1048576</consumer-window-size>
-      --><!-- This is the maximum producer send rate that will be applied when using rate based consumer flow control --><!--
-      <consumer-max-rate>5000</consumer-max-rate>
-      --><!-- This is the send window size in bytes --><!--
-      <producer-window-size>1048576</producer-window-size>
-      --><!-- This is the maximum producer send rate that will be applied when using rate based producer flow control --><!--
-      <producer-max-rate>100</producer-max-rate>
-      --><!-- When using this ConnectionFactory, messages beyond this limit are considered largeMessages and will be sent using smaller packets --><!--
-      <min-large-message-size>10240</min-large-message-size>
-      --><!-- You can specify the default Client ID to use for connections created using this factory --><!--
-      <client-id>MyClientID</client-id>
-      --><!-- The batch size in bytes to use when using the DUPS_OK_ACKNOWLEDGE acknowledgement mode --><!--
-      <dups-ok-batch-size>1048576</dups-ok-batch-size>
-      --><!-- The batch size in bytes to use when using transactional sessions --><!--
-      <transaction-batch-size>1048576</transaction-batch-size>
-      --><!--Whether or not we use a blocking call when acknowledging a message--><!--
-      <block-on-acknowledge>false</block-on-acknowledge>
-      --><!--Whether we send non persistent messages synchronously--><!--
-      <send-np-messages-synchronously>true</send-np-messages-synchronously>
-      --><!--Whether we send persistent messages synchronously--><!--
-      <send-p-messages-synchronously>true</send-p-messages-synchronously>
-      --><!--If true, any connections will automatically set a unique group id (per producer) on every message sent--><!--
-      <auto-group-id>true</auto-group-id>
-      --><!--if true then the server will pre ack any message before delivery to a consumer--><!--
-      <pre-acknowledge>false</pre-acknowledge>
-   </connection-factory>
--->
-
-   <queue name="MyQueue">
-      <entry name="MyQueue"/>
-   </queue>
    <queue name="DLQ">
       <entry name="/queue/DLQ"/>
    </queue>

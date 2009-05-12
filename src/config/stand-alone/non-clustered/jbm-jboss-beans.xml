@@ -33,7 +33,7 @@
 
 	<!-- The core server -->
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
-      <start ignored="true"/>
+     <start ignored="true"/>
       <stop ignored="true"/>  
       <constructor>
          <parameter>

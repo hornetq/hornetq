@@ -1,17 +1,20 @@
-<deployment xmlns="urn:jboss:messaging"
+<deployment xmlns="urn:jboss:messaging" 
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
-   <!--the connection factory used by the example-->
+
    <connection-factory name="ConnectionFactory">
-      <connector-ref connector-name="netty-connector"/>
+      <connector-ref connector-name="netty"/>
       <entries>
          <entry name="ConnectionFactory"/>
+         <entry name="XAConnectionFactory"/>
       </entries>
    </connection-factory>
-
-   <!--the queue used by the example-->
-   <queue name="exampleQueue">
-      <entry name="/queue/exampleQueue"/>
+   
+   <queue name="DLQ">
+      <entry name="/queue/DLQ"/>
+   </queue>
+   <queue name="ExpiryQueue">
+      <entry name="/queue/ExpiryQueue"/>
    </queue>
 
 </deployment>

@@ -8,9 +8,6 @@
       <discovery-group-ref discovery-group-name="my-discovery-group"/>
       <entries>
          <entry name="ConnectionFactory"/>
-         <entry name="XAConnectionFactory"/>
-         <entry name="java:/ConnectionFactory"/>
-         <entry name="java:/XAConnectionFactory"/>
       </entries>
    </connection-factory>
    

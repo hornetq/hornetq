@@ -1,5 +1,0 @@
-#!/bin/sh
-
-while ./runtest; do
-   echo "SUCCESS"
-done

@@ -6,9 +6,6 @@
       <connector-ref connector-name="netty"/>
       <entries>
          <entry name="ConnectionFactory"/>
-         <entry name="XAConnectionFactory"/>
-         <entry name="java:/ConnectionFactory"/>
-         <entry name="java:/XAConnectionFactory"/>
       </entries>
    </connection-factory>
    

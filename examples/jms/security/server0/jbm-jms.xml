@@ -8,9 +8,6 @@
       <send-np-messages-synchronously>true</send-np-messages-synchronously>
       <entries>
          <entry name="ConnectionFactory"/>
-         <entry name="XAConnectionFactory"/>
-         <entry name="java:/ConnectionFactory"/>
-         <entry name="java:/XAConnectionFactory"/>
       </entries>
    </connection-factory>
 
