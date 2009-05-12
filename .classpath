@@ -34,6 +34,7 @@
 	<classpathentry kind="src" path="examples/jms/http-transport/src"/>
 	<classpathentry kind="src" path="examples/jms/instantiate-connection-factory/src"/>
 	<classpathentry kind="src" path="examples/jms/interceptor/src"/>
+	<classpathentry kind="src" path="examples/jms/jaas/src"/>
 	<classpathentry kind="src" path="examples/jms/jmx/src"/>
 	<classpathentry kind="src" path="examples/jms/large-message/src"/>
 	<classpathentry kind="src" path="examples/jms/last-value-queue/src"/>
