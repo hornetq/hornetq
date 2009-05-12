@@ -1,21 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="message-expiry">
-    <title>Message Expiry</title>
-    <para>blah</para>
-    
-    <section>
-        <title>Message expiry</title>
-        <para></para>
-    </section>
-    
-    <section>
-        <title>Configuring expiry addresses</title>
-        <para></para>
-    </section>
-    
-    <section>
-        <title>Configuring the reaper</title>
-        <para></para>
-    </section>
-   
+   <title>Message Expiry</title>
+   <para>Messages can be retained in the messaging system for a limited period of time before being
+      removed. JMS specification states that clients should not receive messages that have been
+      expired (but it does not guarantee this will not happen).</para>
+   <para>JBoss Messaging's addresses can be assigned a expiry address that when messages are
+      expired, they are removed from the queue and sent to the expiry address. These
+         <emphasis>expired</emphasis> messages can later be consumed for further inspection.</para>
+   <section>
+      <title>Message Expiry</title>
+      <para>JMS MessageProducer allows to set a TimeToLive for the messages it sent:</para>
+      <programlisting>
+// messages sent by this producer will be retained for 5s (5000ms) before expiration           
+producer.setTimeToLive(5000);
+        </programlisting>
+      <para>Using JBoss Messaging Core API, you can set an expiration time directly on the
+         message:</para>
+      <programlisting>
+// message will expire in 5000ms from now
+message.setExpiration(System.currentTimeMillis() + 5000);         
+        </programlisting>
+        <para>Expired messages which are consumed from an expiry address have the following properties:</para>
+        <itemizedlist>
+         <listitem>
+            <para><literal>_JBM_ORIG_DESTINATION</literal></para>
+            <para>a String property containing the <emphasis>original destination</emphasis> of the
+            expired message </para>
+         </listitem>
+        </itemizedlist>
+        <listitem>
+           <para><literal>_JBM_ACTUAL_EXPIRY</literal></para>
+           <para>a Long property containing the <emphasis>actual expiration time</emphasis> of the expired message</para>
+        </listitem>
+        
+   </section>
+   <section>
+      <title>Configuring Expiry Addresses</title>
+      <para>Expiry address are defined in the address-setting configuration:</para>
+      <programlisting>
+&lt;!-- expired messages in exampleQueue will be sent to the expiry address expiryQueue --&gt;
+&lt;address-setting match="jms.queue.exampleQueue"&gt;
+   &lt;expiry-address&gt;jms.queue.expiryQueue&lt;/expiry-address&gt;
+&lt;/address-setting&gt;
+        </programlisting>
+      <para>If messages are expired and no expiry address is specified, messages are simply removed
+         from the queue.</para>
+   </section>
+   <section>
+      <title>Configuring The Expiry Reaper Thread</title>
+      <para>A reaper thread is periodically inspecting the queues to check if messages have
+         expired.</para>
+      <para>The reaper thread can be configured with the following properties in <literal
+            >jbm-configuration.xml</literal></para>
+      <itemizedlist>
+         <listitem>
+            <para><literal>message-expiry-scan-period</literal></para>
+            <para>How often the queues will be scanned to detect expired messages (in milliseconds,
+               default is 30000ms)</para>
+         </listitem>
+         <listitem>
+            <para><literal>message-expiry-thread-priority</literal></para>
+            <para>The reaper thread priority (it must be between 0 and 9, 9 being the highest
+               priority, default is 3)</para>
+         </listitem>
+      </itemizedlist>
+   </section>
+   <section>
+      <title>Example</title>
+      <para>The <ulink url="../../../../examples/jms/expiry/readme.html">Expiry example</ulink> shows
+         how message expiry is configured and used with JMS.</para>
+   </section>
 </chapter>
