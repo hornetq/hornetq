@@ -9,6 +9,7 @@
         <!ENTITY using-core SYSTEM "modules/using-core.xml">
         <!ENTITY embedding-jbm SYSTEM "modules/embedding-jbm.xml">
         <!ENTITY security SYSTEM "modules/security.xml">
+        <!ENTITY wildcard-syntax SYSTEM "modules/wildcard-syntax.xml">
         <!ENTITY persistence SYSTEM "modules/persistence.xml">
         <!ENTITY management SYSTEM "modules/management.xml">
         <!ENTITY large-messages SYSTEM "modules/large-messages.xml">
@@ -54,6 +55,7 @@
    &using-core;
    &embedding-jbm;
    &security;
+   &wildcard-syntax;
    &persistence;
    &management;
    &large-messages;
