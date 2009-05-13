@@ -1,0 +1,92 @@
+<html>
+  <head>
+    <title>JBoss Messaging JAAS Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>JAAS Example</h1>
+
+     <p>This example shows you how to configure JBoss Messaging to use JAAS for security.</p>
+     <p>JBoss Messaging can leverage JAAS to delegate user authentication and authorization to existing security infrastructure.</p>
+     
+     <p>
+         The example will show how to configure JBoss Messaging with JAAS in <a href="server0/jbm-jboss-beans.xml">jbm-jboss-beans.xml</a>.
+         It will use a simple <code>LoginModule</code> without any user interaction.
+         The example will create a connection and authenticate the user with this JAAS LoginModule, send a message
+         to a queue and receive it (see the <a href="../queue/readme.html">Queue example</a> for a complete description
+         of the application code)
+     </p>
+     <h2>Example setup</h2>
+     <p>JBoss Messaging can use a JAAS security manager by specifying it in <a href="server0/jbm-jboss-beans.xml">jbm-jboss-beans.xml</a>:</p>
+     <pre>
+         <code>
+            &lt;!-- The security manager using JAAS --&gt;
+            &lt;bean name="JBMSecurityManager" class="org.jboss.messaging.integration.security.JAASSecurityManager"&gt;
+               &lt;property name="configurationName"&gt;org.jboss.jms.example.ExampleLoginModule&lt;/property&gt;
+               &lt;property name="configuration"&gt;
+                  &lt;inject bean="ExampleConfiguration"/&gt;
+               &lt;/property&gt;
+               &lt;property name="callbackHandler"&gt;
+                 &lt;inject bean="ExampleCallbackHandler" /&gt;
+               &lt;/property&gt;
+            &lt;/bean&gt;
+
+            &lt;!-- JAAS uses a simple LoginModule where the user credentials and roles  are
+                 specified as options in the constructor --&gt;
+            &lt;bean name="ExampleConfiguration" class="org.jboss.jms.example.ExampleConfiguration"&gt;
+               &lt;constructor&gt;
+                  &lt;parameter&gt;org.jboss.jms.example.ExampleLoginModule&lt;/parameter&gt;
+                  &lt;parameter&gt;
+                    &lt;map class="java.util.HashMap" keyClass="java.lang.String"
+                                                   valueClass="java.lang.String"&gt;
+                        &lt;entry&gt;
+                           &lt;key&gt;user&lt;/key&gt;
+                           &lt;value&gt;jboss&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                           &lt;key&gt;pass&lt;/key&gt;
+                           &lt;value&gt;redhat&lt;/value&gt;
+                        &lt;/entry&gt;
+                        &lt;entry&gt;
+                           &lt;key&gt;role&lt;/key&gt;
+                           &lt;value&gt;guest&lt;/value&gt;
+                        &lt;/entry&gt;
+                     &lt;/map&gt; 
+                  &lt;/parameter&gt;
+               &lt;/constructor&gt;
+            &lt;/bean&gt;
+
+            &lt;!-- the CallbackHandler does nothing as we don't have any user interaction --&gt;
+            &lt;bean name="ExampleCallbackHandler" class="org.jboss.jms.example.ExampleCallbackHandler" /&gt;                             
+         </code>
+     </pre>
+     
+     <ul>
+        <li>the JBMSecurityManager's <code>configurationName</code> must be the name of the Java class implementing <code>LoginModule</code></li>
+        <li>the <code>callbackHandler</code> property must be an implementation of <code>CallbackHandler</code>. In this example, the ExampleCallbackHandler
+           does nothing since the authentication requires no user interaction</li>
+        <li>the <code>configuration</code> property must be an implementation of <code>Configuration</code>. For simplicity, we pass directly the
+           user credentials as options to the <code>ExampleConfiguration</code> constructor. These options will be passed to an instance
+           of ExampleLoginModule which will check that the only valid user is "jboss" with the password "redhat"
+           and it has the role "guest". </li>
+     </ul>        
+
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <p>The only relevant step with regard to JAAS configuration is step 4 (all the other
+        steps are identical to the <a href="../queue/readme.html">Queue example</a>).
+     <ol start="4">
+        <li>We create a JMS Connection with user "jboss" and password "redhat". Any other
+           combination of name and password won't be valid for the ExampleLoginModule</li>
+        <pre>
+           <code>connection = cf.createConnection("jboss", "redhat");</code>
+        </pre>  
+     </ol>
+        
+     <h2>More information</h2>
+     
+     <ul>
+         <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#security">Security chapter</a></li>
+     </ul>
+  </body>
+</html>

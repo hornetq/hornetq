@@ -66,14 +66,14 @@
         <para>Let's take a simple example, here's a security block from <literal
                 >jbm-configuration.xml</literal> or <literal>jbm-queues.xml</literal> file:</para>
         <programlisting>
-&lt;security match="globalqueues.europe.#"&gt;
+&lt;security-setting match="globalqueues.europe.#"&gt;
     &lt;permission type="createDurableQueue" roles="admin"/&gt;
     &lt;permission type="deleteDurableQueue" roles="admin"/&gt;
     &lt;permission type="createTempQueue" roles="admin, guest, europe-users"/&gt;
     &lt;permission type="deleteTempQueue" roles="admin, guest, europe-users"/&gt;
     &lt;permission type="send" roles="admin, europe-users"/&gt;
     &lt;permission type="consume" roles="admin, europe-users"/&gt;
-&lt;/security&gt;            
+&lt;/security-setting&gt;            
         </programlisting>
         <para>The '<literal>#</literal>' character signifies "any sequence of words". Words are
             delimited by the '<literal>.</literal>' character. For a full description of the
@@ -99,10 +99,10 @@
             match takes precedence.</para>
         <para>Let's look at an example of that, here's another security block:</para>
         <programlisting>
-&lt;security match="globalqueues.europe.orders.#"&gt;
+&lt;security-setting match="globalqueues.europe.orders.#"&gt;
     &lt;permission type="send" roles="europe-users"/&gt;
     &lt;permission type="consume" roles="europe-users"/&gt;
-&lt;/security&gt;            
+&lt;/security-setting&gt;            
         </programlisting>
         <para>In this security block the match 'globalqueues.europe.orders.#' is more specific than
             the previous match 'globalqueues.europe.#'. So any addresses which match
@@ -199,8 +199,8 @@
         <title>JAAS Security Manager</title>
         <para>JAAS stands for 'Java Authentication and Authorization Service' and is a standard part
             of the Java platform. It provides a common API for security authentication and
-            authorization, allowing you to plugin in your pre-built implementations.</para>
-        <para>To use the JAAS security manager. Specify the class name <literal
+            authorization, allowing you to plugin your pre-built implementations.</para>
+        <para>To use the JAAS security manager, specify the class name <literal
                 >org.jboss.messaging.integration.security.JAASSecurityManager</literal> in the
                 <literal>jbm-jboss-beans.xml</literal> file.</para>
         <para>To configure the JAAS security manager to work with your pre-built JAAS infrastructure you need to specify the security manager
@@ -210,19 +210,27 @@
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
     
-    &lt;attribute name="ConfigurationName"&gt;MyJAASConfigurationName&lt;/attribute&gt;
-    &lt;attribute name="CallbackHandler"&gt;&lt;inject bean="MyJAASCallbackHandler"/&gt;&lt;/attribute&gt;
-    &lt;attribute name="Configuration"&gt;&lt;inject bean="MyJAASConfiguration"/&gt;&lt;/attribute&gt;
-    
+    &lt;property name="ConfigurationName"&gt;org.jboss.jms.example.ExampleLoginModule&lt;/property&gt;
+    &lt;property name="Configuration"&gt;
+       &lt;inject bean="ExampleConfiguration"/&gt;
+    &lt;/property&gt;
+    &lt;property name="CallbackHandler"&gt;
+       &lt;inject bean="ExampleCallbackHandler"/&gt;
+    &lt;/property&gt;
 &lt;/bean&gt;            
         </programlisting>
-        <para>Note that you need to feed the JAAS security manager with three attributes:</para>
+        <para>Note that you need to feed the JAAS security manager with three properties:</para>
         <itemizedlist>
-            <listitem><para>ConfigurationName: Jeff please complete</para></listitem>
-            <listitem><para>CallbackHandler: Jeff please complete</para></listitem>
-            <listitem><para>Configuration: Jeff please complete</para></listitem>
+            <listitem><para>ConfigurationName: the name of the <literal>LoginModule</literal> implementation that JAAS must use</para></listitem>
+            <listitem><para>Configuration: the <literal>Configuration</literal> implementation used by JAAS</para></listitem>
+            <listitem><para>CallbackHandler: the <literal>CallbackHandler</literal> implementation to use if user interaction are required</para></listitem>
         </itemizedlist>
-        <para>TODO Blah blah Jeff please complete</para>        
+
+        <section>
+           <title>Example</title>
+           <para>The <ulink url="../../../../examples/jms/jaas/readme.html">JAAS example</ulink> shows
+              how JBoss Messaging can be configured to use JAAS.</para>              
+        </section>
     </section>
     <section>
         <title>JBoss AS Security Manager</title>

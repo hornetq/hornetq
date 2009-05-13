@@ -35,6 +35,8 @@
       </property>
    </bean>
 
+   <!-- JAAS uses a simple LoginModule where the user credentials and roles  are
+        specified as options in the constructor -->
    <bean name="ExampleConfiguration" class="org.jboss.jms.example.ExampleConfiguration">
       <constructor>
          <parameter>org.jboss.jms.example.ExampleLoginModule</parameter>
@@ -58,6 +60,7 @@
       </constructor>
    </bean>
 
+   <!-- the CallbackHandler does nothing as we don't have any user interaction -->
    <bean name="ExampleCallbackHandler" class="org.jboss.jms.example.ExampleCallbackHandler" />                 
       
    <!-- The core server -->
