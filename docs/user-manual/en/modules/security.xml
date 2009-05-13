@@ -94,29 +94,31 @@
             file on disk, and can also plug into JAAS or JBoss Application Server security.</para>
         <para>For more information on configuring the security manager please see section
             [LINK]</para>
-        <para>There can be zero or more <literal>security</literal> elements in each xml file. Where
-            more than one match applies to a set of addresses the <emphasis>more specific</emphasis>
-            match takes precedence.</para>
-        <para>Let's look at an example of that, here's another security block:</para>
+        <para>There can be zero or more <literal>security-setting</literal> elements in each xml
+            file. Where more than one match applies to a set of addresses the <emphasis>more
+                specific</emphasis> match takes precedence.</para>
+        <para>Let's look at an example of that, here's another <literal>security-setting</literal>
+            block:</para>
         <programlisting>
 &lt;security-setting match="globalqueues.europe.orders.#"&gt;
     &lt;permission type="send" roles="europe-users"/&gt;
     &lt;permission type="consume" roles="europe-users"/&gt;
 &lt;/security-setting&gt;            
         </programlisting>
-        <para>In this security block the match 'globalqueues.europe.orders.#' is more specific than
-            the previous match 'globalqueues.europe.#'. So any addresses which match
-            'globalqueues.europe.orders.#' will take their security settings
-                <emphasis>only</emphasis> from the latter security block.</para>
+        <para>In this <literal>security-setting</literal> block the match
+            'globalqueues.europe.orders.#' is more specific than the previous match
+            'globalqueues.europe.#'. So any addresses which match 'globalqueues.europe.orders.#'
+            will take their security settings <emphasis>only</emphasis> from the latter
+            security-setting block.</para>
         <para>Note that settings are not inherited from the former block. All the settings will be
             taken from the more specific matching block, so for the address
             'globalqueues.europe.orders.plastics' the only permissions that exist are send and
             consume for the role europe-users. The permissions createDurableQueue,
             deleteDurableQueue, createTempQueue, deleteTempQueue are not inherited from the other
-            security block.</para>
+            security-setting block.</para>
         <para>By not inheriting permissions, it allows you to effectively deny permissions in more
-            specific security blocks by simply not specifying them. Otherwise it would not be
-            possible to deny permissions in sub-groups of addresses.</para>
+            specific security-setting blocks by simply not specifying them. Otherwise it would not
+            be possible to deny permissions in sub-groups of addresses.</para>
     </section>
     <section>
         <title>Secure Sockets Transport</title>
@@ -200,11 +202,9 @@
         <para>JAAS stands for 'Java Authentication and Authorization Service' and is a standard part
             of the Java platform. It provides a common API for security authentication and
             authorization, allowing you to plugin your pre-built implementations.</para>
-        <para>To use the JAAS security manager, specify the class name <literal
-                >org.jboss.messaging.integration.security.JAASSecurityManager</literal> in the
-                <literal>jbm-jboss-beans.xml</literal> file.</para>
-        <para>To configure the JAAS security manager to work with your pre-built JAAS infrastructure you need to specify the security manager
-        as a JAASSecurityManager in the beans file. Here's an example:</para>
+        <para>To configure the JAAS security manager to work with your pre-built JAAS infrastructure
+            you need to specify the security manager as a JAASSecurityManager in the beans file.
+            Here's an example:</para>
         <programlisting>
 &lt;bean name="JBMSecurityManager" class="org.jboss.messaging.integration.security.JAASSecurityManager"&gt;      
     &lt;start ignored="true"/&gt;
@@ -221,15 +221,23 @@
         </programlisting>
         <para>Note that you need to feed the JAAS security manager with three properties:</para>
         <itemizedlist>
-            <listitem><para>ConfigurationName: the name of the <literal>LoginModule</literal> implementation that JAAS must use</para></listitem>
-            <listitem><para>Configuration: the <literal>Configuration</literal> implementation used by JAAS</para></listitem>
-            <listitem><para>CallbackHandler: the <literal>CallbackHandler</literal> implementation to use if user interaction are required</para></listitem>
+            <listitem>
+                <para>ConfigurationName: the name of the <literal>LoginModule</literal>
+                    implementation that JAAS must use</para>
+            </listitem>
+            <listitem>
+                <para>Configuration: the <literal>Configuration</literal> implementation used by
+                    JAAS</para>
+            </listitem>
+            <listitem>
+                <para>CallbackHandler: the <literal>CallbackHandler</literal> implementation to use
+                    if user interaction are required</para>
+            </listitem>
         </itemizedlist>
-
         <section>
-           <title>Example</title>
-           <para>The <ulink url="../../../../examples/jms/jaas/readme.html">JAAS example</ulink> shows
-              how JBoss Messaging can be configured to use JAAS.</para>              
+            <title>Example</title>
+            <para>The <ulink url="../../../../examples/jms/jaas/readme.html">JAAS example</ulink>
+                shows how JBoss Messaging can be configured to use JAAS.</para>
         </section>
     </section>
     <section>
@@ -240,7 +248,8 @@
         <para>When running inside JBoss Application Server you will, by default, be using this
             security manager. The class name of this security manager is <literal
                 >org.jboss.messaging.integration.security.JBossASSecurityManager</literal></para>
-        <para>Take a look at one of the default <literal>jbm-jboss-beans.xml</literal> files for JBoss Application Server that are bundled
-        in the distribution for an example of how this is configured.</para>
+        <para>Take a look at one of the default <literal>jbm-jboss-beans.xml</literal> files for
+            JBoss Application Server that are bundled in the distribution for an example of how this
+            is configured.</para>
     </section>
 </chapter>
