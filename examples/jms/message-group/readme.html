@@ -84,6 +84,7 @@
          {
             groupMessages[i] = session.createTextMessage("Group-0 message " + i);
             groupMessages[i].setStringProperty(JBossMessage.JMSXGROUPID, "Group-0");
+            groupMessages[i].setIntProperty("JMSXGroupSeq", i + 1);
             producer.send(groupMessages[i]);
             System.out.println("Sent message: " + groupMessages[i].getText());
          }
@@ -126,9 +127,13 @@
               }
            }</code>
         </pre>
-
-
-
      </ol>
+     
+     <h2>More information</h2>
+     
+     <ul>
+         <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#message-grouping">Message Grouping chapter</a></li>
+     </ul>
+     
   </body>
 </html>
