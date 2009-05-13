@@ -27,12 +27,12 @@ message.setExpiration(System.currentTimeMillis() + 5000);
             <para>a String property containing the <emphasis>original destination</emphasis> of the
             expired message </para>
          </listitem>
-        </itemizedlist>
         <listitem>
            <para><literal>_JBM_ACTUAL_EXPIRY</literal></para>
            <para>a Long property containing the <emphasis>actual expiration time</emphasis> of the expired message</para>
         </listitem>
-        
+        </itemizedlist>
+      
    </section>
    <section>
       <title>Configuring Expiry Addresses</title>
