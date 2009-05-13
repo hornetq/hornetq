@@ -15,6 +15,7 @@
         <!ENTITY large-messages SYSTEM "modules/large-messages.xml">
         <!ENTITY paging SYSTEM "modules/paging.xml">
         <!ENTITY queue-attributes SYSTEM "modules/queue-attributes.xml">
+        <!ENTITY thread-pooling SYSTEM "modules/thread-pooling.xml">
         <!ENTITY diverts SYSTEM "modules/diverts.xml">
         <!ENTITY logging SYSTEM "modules/logging.xml">
         <!ENTITY scheduled-messages SYSTEM "modules/scheduled-messages.xml">
@@ -61,6 +62,7 @@
    &large-messages;
    &paging;
    &queue-attributes;
+   &thread-pooling;
    &diverts;
    &logging;
    &scheduled-messages;

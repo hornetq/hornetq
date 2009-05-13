@@ -121,10 +121,10 @@
             be possible to deny permissions in sub-groups of addresses.</para>
     </section>
     <section>
-        <title>Secure Sockets Transport</title>
+        <title>Secure Sockets Layer (SSL) Transport</title>
         <para>When messaging clients are connected to servers, or servers are connected to other
             servers (e.g. via bridges) over an untrusted network then JBoss Messaging allows that
-            traffic to be encrypted using the Secure Sockets Transport (SSL).</para>
+            traffic to be encrypted using the Secure Sockets Layer (SSL) transport.</para>
         <para>For more information on configuring the SSL transport please see the section
             [LINK]</para>
     </section>
