@@ -16,11 +16,11 @@
         We will then consume from the queue the <em>last</em> message.</p>
         
      <h2>Example setup</h2>
-     <p>Last-Value queues are defined in the queue settings configuration file <a href="server0/jbm-queues.xml">jbm-queues.xml</a>:</p>
+     <p>Last-Value queues are defined in the configuration file <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a>:</p>
      <pre>
-         <code>&lt;address-settings match="jms.queue.lastValueQueue"&gt;
+         <code>&lt;address-setting match="jms.queue.lastValueQueue"&gt;
                 &lt;last-value-queue&gt;true&lt;/last-value-queue&gt;
-         &lt;/address-settings&gt;</code>
+         &lt;/address-setting&gt;</code>
      </pre>          
      
      <h2>Example step-by-step</h2>

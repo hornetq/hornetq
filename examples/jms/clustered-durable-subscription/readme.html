@@ -25,16 +25,15 @@
      <p>Here's the relevant snippet from the server configuration, which tells the server to form a cluster between the two nodes
      and to load balance the messages between the nodes.</p>     
      <pre>
-     <code>
-   &lt;cluster-connection name="my-cluster"&gt;
-      &lt;address&gt;jms&lt;/address&gt;
-	   &lt;retry-interval&gt;500&lt;/retry-interval&gt;
-	   &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
-	   &lt;forward-when-no-consumers&gt;true&lt;/forward-when-no-consumers&gt;
-	   &lt;max-hops&gt;1&lt;/max-hops&gt;
-	   &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
-   &lt;/cluster-connection&gt;
-   </code>
+     <code>&lt;cluster-connection name="my-cluster"&gt;
+        &lt;address&gt;jms&lt;/address&gt;
+        &lt;retry-interval&gt;500&lt;/retry-interval&gt;
+        &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
+        &lt;forward-when-no-consumers&gt;true&lt;/forward-when-no-consumers&gt;
+        &lt;max-hops&gt;1&lt;/max-hops&gt;
+        &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
+     &lt;/cluster-connection&gt;
+     </code>
      </pre>    
      <p>For more information on JBoss Messaging load balancing, and clustering in general, please see the clustering
      section of the user manual.</p>      

@@ -19,12 +19,12 @@
          We will then consume the message from this dead letter queue.
      </p>
      <h2>Example setup</h2>
-     <p><em>Dead letter destinations</em> and <em>maximum delivery attempts</em> are defined in the address settings configuration file <a href="server0/jbm-queues.xml">jbm-queues.xml</a>:</p>
+     <p><em>Dead letter destinations</em> and <em>maximum delivery attempts</em> are defined in the configuration file <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a>:</p>
      <pre>
-         <code>&lt;address-settings match="jms.queue.exampleQueue"&gt;
+         <code>&lt;address-setting match="jms.queue.exampleQueue"&gt;
             &lt;dead-letter-address&gt;jms.queue.deadLetterQueue&lt;/dead-letter-address&gt;
             &lt;max-delivery-attempts&gt;3&lt;/max-delivery-attempts&gt;
-         &lt;/address-settings&gt;
+         &lt;/address-setting&gt;
          </code>
      </pre>          
      <p>This configuration will moved dead letter messages from <code>exampleQueue</code> to the <code>deadLetterQueue</code>.</p>

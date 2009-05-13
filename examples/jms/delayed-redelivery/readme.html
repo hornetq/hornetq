@@ -18,16 +18,16 @@
      matching on the address settings.</p>
 
      <h2>Example setup</h2>
-     <p>Redelivery delay is specified in the address settings configuration file <a href="server0/jbm-queues.xml">jbm-queues.xml</a>:</p>
+     <p>Redelivery delay is specified in the configuration file <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a>:</p>
      <p>In this example we set the redelivery delay to 5 seconds for the specific example queue. We could set redelivery delay on
      on multiple queues by specifying a wild-card in the match, e.g. <code>match="jms.#"</code> would apply the settings
      to all JMS queues and topics.</p>
      <p>We then consume a message in a transacted session, and rollback, and note that the message is not redelivered until
      after 5 seconds.</p>
      <pre>
-         <code>&lt;address-settings match="jms.queue.exampleQueue"&gt;           
+         <code>&lt;address-setting match="jms.queue.exampleQueue"&gt;           
             &lt;redelivery-delay&gt;5000&lt;/redelivery-delay&gt;
-         &lt;/address-settings&gt;
+         &lt;/address-setting&gt;
          </code>
      </pre>                 
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>

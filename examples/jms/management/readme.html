@@ -17,11 +17,11 @@
      </pre>
      
      <p>The management queue requires a "special" user permission <code>manage</code> to be able to receive management messages.
-         This is configured in <a href="server0/jbm-queues.xml">jbm-queues.xml</a></p>
+         This is also configured in <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a></p>
      <pre>
-         <code>&lt;security match="jbm.management"&gt;
+         <code>&lt;security-setting match="jbm.management"&gt;
             &lt;permission type="manage" roles="guest" /&gt;
-         &lt;/security&gt;</code>
+         &lt;/security-setting&gt;</code>
      </pre>
      
      <h2>Example step-by-step</h2>

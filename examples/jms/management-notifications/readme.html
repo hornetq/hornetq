@@ -31,14 +31,14 @@
          &lt;/queues&gt;</code>
      </pre>
      <p>The notification queue requires permission to create/delete temporary queues and consume messages.
-         This is configured in <a href="server0/jbm-queues.xml">jbm-queues.xml</a></p>
+         This is also configured in <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a></p>
      <pre>
          <code><!--security for notification queue-->
-         &lt;security match="example.notifications"&gt;
+         &lt;security-setting match="example.notifications"&gt;
             &lt;permission type="consume" roles="guest"/&gt;
             &lt;permission type="createTempQueue" roles="guest"/&gt;
             &lt;permission type="deleteTempQueue" roles="guest"/&gt;
-         &lt;/security&gt;</code>
+         &lt;/security-setting&gt;</code>
      </pre>
      
      <h2>Example step-by-step</h2>

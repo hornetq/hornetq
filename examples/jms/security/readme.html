@@ -56,36 +56,38 @@
      <p>
      User name and password consists of a valid account that can be used to establish connections to a JBoss Messaging server, while 
      roles are used in controling the access privileges against JBoss Messaging topics and queues. You can achieve this control by
-     configuring proper permissions in <code>jbm-queues.xml</code>, like in the following
+     configuring proper permissions in <code>jbm-configuration.xml</code>, like in the following
      </p>
      <pre><code>
-		   &lt;!-- any user can have full control of generic topics --&gt;
-		   &lt;security match=&quot;jms.topic.#&quot;&gt;
+      &lt;security-settings&gt;
+         &lt;!-- any user can have full control of generic topics --&gt;
+		   &lt;security-setting match=&quot;jms.topic.#&quot;&gt;
 		      &lt;permission type=&quot;createDurableQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;deleteDurableQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;createTempQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;deleteTempQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;send&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;consume&quot; roles=&quot;user&quot;/&gt;
-		   &lt;/security&gt;
+		   &lt;/security-setting&gt;
 		
-		   &lt;security match=&quot;jms.topic.news.europe.#&quot;&gt;
+		   &lt;security-setting match=&quot;jms.topic.news.europe.#&quot;&gt;
 		      &lt;permission type=&quot;createDurableQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;deleteDurableQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;createTempQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;deleteTempQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;send&quot; roles=&quot;europe-user&quot;/&gt;
 		      &lt;permission type=&quot;consume&quot; roles=&quot;news-user&quot;/&gt;
-		   &lt;/security&gt;
+		   &lt;/security-setting&gt;
 		
-		   &lt;security match=&quot;jms.topic.news.us.#&quot;&gt;
+		   &lt;security-setting match=&quot;jms.topic.news.us.#&quot;&gt;
 		      &lt;permission type=&quot;createDurableQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;deleteDurableQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;createTempQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;deleteTempQueue&quot; roles=&quot;user&quot;/&gt;
 		      &lt;permission type=&quot;send&quot; roles=&quot;us-user&quot;/&gt;
 		      &lt;permission type=&quot;consume&quot; roles=&quot;news-user&quot;/&gt;
-		   &lt;/security&gt;
+		   &lt;/security-setting&gt;
+     &lt;/security-settings&gt;
      </code></pre>
      
      <p>Permissions can be defined on any group of queues, by using a wildcard. You can easily specify 
