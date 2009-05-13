@@ -19,9 +19,9 @@
      <h2>Example setup</h2>
      <p>Expiry destinations are defined as in the queue settings configuration file <a href="server0/jbm-queues.xml">jbm-queues.xml</a>:</p>
      <pre>
-         <code>&lt;address-settings match="jms.queue.exampleQueue"&gt;
+         <code>&lt;address-setting match="jms.queue.exampleQueue"&gt;
             &lt;expiry-address&gt;jms.queue.expiryQueue&lt;/expiry-address&gt;
-         &lt;/address-settings&gt;
+         &lt;/address-setting&gt;
          </code>
      </pre>          
      <p>This configuration will moved expired messages from the <code>exampleQueue</code> to the <code>expiryQueue</code></p>

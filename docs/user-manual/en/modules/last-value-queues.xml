@@ -21,7 +21,8 @@
 
        <section>
           <title>Using Last-Value Property</title>
-          <para>The property name used to identify the last value is <literal>_JBM_LVQ_NAME</literal>.</para>
+          <para>The property name used to identify the last value is <literal>"_JBM_LVQ_NAME"</literal>
+          (or the constant <literal>MessageImpl.HDR_LAST_VALUE_NAME</literal> from the Core API).</para>
           <para>For example, if two messages with the same value for the Last-Value property are
              sent to a Last-Value queue, only the latest message will be kept in the queue:</para>
           <programlisting>
@@ -47,4 +48,5 @@
           <title>Example</title>
           <para>The <ulink url="../../../../examples/jms/last-value-queue/readme.html">Last-Value Queue example</ulink> shows
              how last value queues are configured and used with JMS.</para>
-       </section></chapter>
+       </section>
+</chapter>
