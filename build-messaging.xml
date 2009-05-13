@@ -86,7 +86,7 @@
    <property name="src.config.standalone.clustered.dir" value="${src.dir}/config/stand-alone/clustered"/>
    <property name="src.config.jbossas.non-clustered.dir" value="${src.dir}/config/jboss-as/non-clustered"/>    
    <property name="src.config.jbossas.clustered.dir" value="${src.dir}/config/jboss-as/clustered"/>
-   <property name="src.schemas.dir" value="${src.dir}/schemas"/>
+   <property name="src.schema.dir" value="${src.config.dir}/common/schema"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
    <property name="licenses.dir" value="licenses"/>
@@ -103,7 +103,7 @@
              value="${build.dir}/${build.artifact}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
-   <property name="build.distro.schemas.dir" value="${build.distro.dir}/schemas"/>
+   <property name="build.distro.schema.dir" value="${build.distro.dir}/schemas"/>
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
    <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
    <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
@@ -264,7 +264,7 @@
       <pathelement location="${test.dir}/tmpfiles"/>
       <pathelement location="${test.classes.dir}"/>
       <pathelement location="${src.config.dir}/common"/>
-      <pathelement location="${src.schemas.dir}"/>
+      <pathelement location="${src.schema.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
       <path refid="apache.log4j.classpath"/>
@@ -284,7 +284,7 @@
       <pathelement location="${test.dir}/tmpfiles"/>
       <pathelement location="${test.classes.dir}"/>
       <pathelement location="${src.config.dir}/common"/>
-      <pathelement location="${src.schemas.dir}"/>
+      <pathelement location="${src.schema.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="apache.log4j.classpath"/>
       <path refid="cglib.classpath"/>
@@ -300,7 +300,7 @@
    <path id="jms.test.execution.classpath">
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${src.config.dir}/common"/>
-      <pathelement location="${src.schemas.dir}"/>
+      <pathelement location="${src.schema.dir}"/>
       <pathelement location="${test.jms.dir}/config"/>
       <pathelement location="${test.jms.classes.dir}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
@@ -327,7 +327,7 @@
    </path>
 
    <path id="jms.standalone.server.classpath">
-      <pathelement location="${src.schemas.dir}"/>
+      <pathelement location="${src.schema.dir}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.execution.classpath"/>
 
@@ -556,7 +556,7 @@
       <!-- user configuration is only for standalone -->
       <schemavalidate file="${src.config.standalone.non-clustered.dir}/jbm-users.xml">
          <schema namespace="urn:jboss:messaging" 
-                 file="${src.schemas.dir}/jbm-users.xsd"/>
+                 file="${src.schema.dir}/jbm-users.xsd"/>
       </schemavalidate>
 
       <antcall target="-validate-configuration">
@@ -565,7 +565,7 @@
       <!-- user configuration is only for standalone -->
       <schemavalidate file="${src.config.standalone.clustered.dir}/jbm-users.xml">
          <schema namespace="urn:jboss:messaging" 
-                 file="${src.schemas.dir}/jbm-users.xsd"/>
+                 file="${src.schema.dir}/jbm-users.xsd"/>
       </schemavalidate>
       
       <antcall target="-validate-configuration">
@@ -581,7 +581,7 @@
       <echo>validating configuration from ${conf.dir}</echo>
       <schemavalidate file="${conf.dir}/jbm-configuration.xml">
          <schema namespace="urn:jboss:messaging" 
-                 file="${src.schemas.dir}/jbm-configuration.xsd"/>
+                 file="${src.schema.dir}/jbm-configuration.xsd"/>
       </schemavalidate>
       <!--
       <schemavalidate file="${conf.dir}/jbm-queues.xml">
@@ -607,9 +607,9 @@
 
       <jar jarfile="${build.jars.dir}/${core.jar.name}">
          <fileset dir="${build.core.classes.dir}" includes="**"/>
-         <fileset dir="${src.schemas.dir}">
+         <fileset dir="${src.config.dir}/common">
             <include name="**/*.xsd"/>
-            <exclude name="jbm-jms.xsd"/>
+            <exclude name="**/jbm-jms.xsd"/>
          </fileset>
          <manifest>
             <attribute name="JBossMessaging-Version" value="${messaging.version.string}"/>
@@ -623,8 +623,8 @@
 
       <jar jarfile="${build.jars.dir}/${jms.jar.name}">
          <fileset dir="${build.jms.classes.dir}" includes="**"/>
-         <fileset dir="${src.schemas.dir}">
-            <include name="jbm-jms.xsd"/>
+         <fileset dir="${src.config.dir}/common">
+            <include name="**/jbm-jms.xsd"/>
          </fileset>
       </jar>
 
@@ -812,8 +812,8 @@
             <include name="messaging.truststore"/>
          </fileset>
       </copy>
-      <copy todir="${build.distro.schemas.dir}">
-         <fileset dir="${src.schemas.dir}">
+      <copy todir="${build.distro.schema.dir}">
+         <fileset dir="${src.schema.dir}">
             <include name="*.xsd"/>
          </fileset>
       </copy>

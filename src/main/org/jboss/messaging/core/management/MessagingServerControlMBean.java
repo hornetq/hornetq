@@ -22,10 +22,10 @@
 
 package org.jboss.messaging.core.management;
 
+import org.jboss.messaging.core.config.Configuration;
+
 import static javax.management.MBeanOperationInfo.ACTION;
 import static javax.management.MBeanOperationInfo.INFO;
-
-import org.jboss.messaging.core.config.Configuration;
 
 /**
  * This interface describes the core management interface exposed by the server
@@ -113,7 +113,7 @@ public interface MessagingServerControlMBean
    @Operation(desc = "Deploy a queue", impact = ACTION)
    void deployQueue(@Parameter(name = "address", desc = "Address of the queue")
    String address, @Parameter(name = "name", desc = "Name of the queue")
-   String name) throws Exception;
+   String name, String filterString) throws Exception;
 
    @Operation(desc = "Deploy a queue", impact = ACTION)
    void deployQueue(@Parameter(name = "address", desc = "Address of the queue")

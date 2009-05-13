@@ -22,14 +22,14 @@
 
 package org.jboss.messaging.core.management.jmx.impl;
 
-import javax.management.MBeanInfo;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.impl.MessagingServerControl;
+
+import javax.management.MBeanInfo;
 
 /**
  * A ReplicationAwareMessagingServerControlWrapper
@@ -271,7 +271,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       replicationAwareInvoke("deployQueue", address, name, filter, durable);
    }
 
-   public void deployQueue(String address, String name) throws Exception
+   public void deployQueue(String address, String name, String filterString) throws Exception
    {
       replicationAwareInvoke("deployQueue", address, name);
    }

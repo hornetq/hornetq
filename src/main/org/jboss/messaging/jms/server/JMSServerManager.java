@@ -22,13 +22,12 @@
 
 package org.jboss.messaging.jms.server;
 
-import java.util.List;
-
-import javax.naming.Context;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.utils.Pair;
+
+import javax.naming.Context;
+import java.util.List;
 
 /**
  * The JMS Management interface.
@@ -55,12 +54,14 @@ public interface JMSServerManager extends MessagingComponent
     *           The name of the queue to create
     * @param jndiBinding
     *           the name of the binding for JNDI
+    * @param filterString
+    * @param durable
     * @return true if the queue is created or if it existed and was added to
     *         JNDI
     * @throws Exception
     *            if problems were encountered creating the queue.
     */
-   boolean createQueue(String queueName, String jndiBinding) throws Exception;
+   boolean createQueue(String queueName, String jndiBinding, String filterString, boolean durable) throws Exception;
 
    /**
     * Creates a JMS Topic

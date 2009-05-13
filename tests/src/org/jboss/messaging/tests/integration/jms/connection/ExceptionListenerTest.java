@@ -21,11 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.jms.connection;
 
-import javax.jms.Connection;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.Session;
-
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -39,6 +34,11 @@ import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 import org.jboss.messaging.tests.util.UnitTestCase;
+
+import javax.jms.Connection;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import javax.jms.Session;
 
 /**
  * 
@@ -72,7 +72,7 @@ public class ExceptionListenerTest extends UnitTestCase
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();     
-      jmsServer.createQueue(Q_NAME, Q_NAME);
+      jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
       cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));      
       cf.setBlockOnPersistentSend(true);
       cf.setPreAcknowledge(true);

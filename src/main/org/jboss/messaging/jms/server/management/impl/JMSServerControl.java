@@ -22,10 +22,11 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
+import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+import org.jboss.messaging.utils.Pair;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanInfo;
@@ -37,12 +38,10 @@ import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.StandardMBean;
-
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
-import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
-import org.jboss.messaging.utils.Pair;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -385,7 +384,7 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
 
    public boolean createQueue(final String name, final String jndiBinding) throws Exception
    {
-      boolean created = server.createQueue(name, jndiBinding);
+      boolean created = server.createQueue(name, jndiBinding, null, true);
       if (created)
       {
          sendNotification(NotificationType.QUEUE_CREATED, name);

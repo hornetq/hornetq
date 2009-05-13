@@ -22,6 +22,14 @@
 
 package org.jboss.messaging.tests.integration.jms.cluster.management;
 
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
+import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.tests.integration.cluster.management.ReplicationAwareTestBase;
+import org.jboss.messaging.tests.integration.jms.server.management.JMSUtil;
+import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
@@ -31,15 +39,6 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.tests.integration.cluster.management.ReplicationAwareTestBase;
-import org.jboss.messaging.tests.integration.jms.server.management.JMSUtil;
-import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 
 /**
  * A ReplicationAwareQueueControlWrapperTest
@@ -323,13 +322,13 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       liveServerManager.start();
                   
       String queueName = randomString();
-      liveServerManager.createQueue(queueName, queueName);
-      backupServerManager.createQueue(queueName, queueName);
+      liveServerManager.createQueue(queueName, queueName, null, true);
+      backupServerManager.createQueue(queueName, queueName, null, true);
       queue = new JBossQueue(queueName);
       
       String otherQueueName = randomString();     
-      liveServerManager.createQueue(otherQueueName, otherQueueName);
-      backupServerManager.createQueue(otherQueueName, otherQueueName);
+      liveServerManager.createQueue(otherQueueName, otherQueueName, null, true);
+      backupServerManager.createQueue(otherQueueName, otherQueueName, null, true);
       otherQueue = new JBossQueue(otherQueueName);
       
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());

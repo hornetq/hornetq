@@ -22,23 +22,6 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
-import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.naming.Context;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -52,9 +35,24 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.utils.SimpleString;
+
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.naming.Context;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A QueueControlTest
@@ -342,7 +340,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       JMSQueueControlMBean queueControl = createManagementControl();
       String expiryQueueName = randomString();
       JBossQueue expiryQueue = new JBossQueue(expiryQueueName);
-      serverManager.createQueue(expiryQueueName, expiryQueueName);
+      serverManager.createQueue(expiryQueueName, expiryQueueName, null, true);
       queueControl.setExpiryAddress(expiryQueue.getAddress());
 
       JMSQueueControlMBean expiryQueueControl = createJMSQueueControl(expiryQueue, mbeanServer);
@@ -469,7 +467,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    public void testSendMessageToDLQ() throws Exception
    {
       String deadLetterQueue = randomString();
-      serverManager.createQueue(deadLetterQueue, deadLetterQueue);
+      serverManager.createQueue(deadLetterQueue, deadLetterQueue, null, true);
       JBossQueue dlq = new JBossQueue(deadLetterQueue);
 
       Connection conn = createConnection();
@@ -526,7 +524,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String otherQueueName = randomString();
 
-      serverManager.createQueue(otherQueueName, otherQueueName);
+      serverManager.createQueue(otherQueueName, otherQueueName, null, true);
       JBossQueue otherQueue = new JBossQueue(otherQueueName);
 
       // send on queue
@@ -573,7 +571,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String filter = "key = " + matchingValue;
       String otherQueueName = randomString();
 
-      serverManager.createQueue(otherQueueName, otherQueueName);
+      serverManager.createQueue(otherQueueName, otherQueueName, null, true);
       JBossQueue otherQueue = new JBossQueue(otherQueueName);
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
@@ -608,7 +606,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String otherQueueName = randomString();
 
-      serverManager.createQueue(otherQueueName, otherQueueName);
+      serverManager.createQueue(otherQueueName, otherQueueName, null, true);
       JBossQueue otherQueue = new JBossQueue(otherQueueName);
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
@@ -631,7 +629,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String unknownMessageID = randomString();
       String otherQueueName = randomString();
 
-      serverManager.createQueue(otherQueueName, otherQueueName);
+      serverManager.createQueue(otherQueueName, otherQueueName, null, true);
 
       JMSQueueControlMBean queueControl = createManagementControl();
       assertEquals(0, queueControl.getMessageCount());
@@ -692,7 +690,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.activated();
 
       String queueName = randomString();
-      serverManager.createQueue(queueName, queueName);
+      serverManager.createQueue(queueName, queueName, null, true);
       queue = new JBossQueue(queueName);
    }
 

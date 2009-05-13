@@ -712,7 +712,8 @@ public class MessagingServerImpl implements MessagingServer
       return createQueue(address, queueName, filterString, durable, temporary, false);
    }
 
-   public Queue deployQueue(final SimpleString address,
+   public Queue
+   deployQueue(final SimpleString address,
                             final SimpleString queueName,
                             final SimpleString filterString,
                             final boolean durable,

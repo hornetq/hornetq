@@ -182,7 +182,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
          log.info("Restarting server");
          jmsServer1.start();
 
-         jmsServer1.createQueue("targetQueue", "queue/targetQueue");
+         jmsServer1.createQueue("targetQueue", "queue/targetQueue", null, true);
          
          createQueue("targetQueue", 1);
          

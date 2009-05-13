@@ -132,16 +132,26 @@
     	<xsd:attribute name="discovery-group-name" type="xsd:string" use="required"></xsd:attribute>
     </xsd:complexType>
 
-    <xsd:element name="queue" type="destinationType"></xsd:element>
-    
-    <xsd:complexType name="destinationType">
+    <xsd:element name="queue" type="queueType"></xsd:element>
+
+    <xsd:element name="topic" type="topicType"></xsd:element>
+
+   <xsd:complexType name="queueType">
+    	<xsd:sequence>
+    		<xsd:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+    	</xsd:sequence>
+    	<xsd:attribute name="name" type="xsd:ID" use="required"></xsd:attribute>
+      <xsd:attribute name="durable" type="xsd:boolean" use="optional"></xsd:attribute>
+      <xsd:attribute name="filter" type="xsd:string" use="optional"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="topicType">
     	<xsd:sequence>
     		<xsd:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
     	</xsd:sequence>
     	<xsd:attribute name="name" type="xsd:ID" use="required"></xsd:attribute>
     </xsd:complexType>
 
-    <xsd:element name="topic" type="destinationType"></xsd:element>
     
     <xsd:simpleType name="minusOneOrMoreInteger">
       <xsd:restriction base="xsd:int">

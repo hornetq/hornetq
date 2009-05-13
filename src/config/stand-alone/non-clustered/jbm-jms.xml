@@ -1,6 +1,6 @@
 <configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd ">
+            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-jms.xsd">
 
    <connection-factory name="ConnectionFactory">
       <connector-ref connector-name="netty"/>
@@ -10,7 +10,7 @@
       </entries>
    </connection-factory>
 
-   <queue name="DLQ">
+   <queue name="DLQ" durable="true" filter="foo='bar'">
       <entry name="/queue/DLQ"/>
    </queue>
 

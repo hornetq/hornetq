@@ -1,6 +1,6 @@
 <configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd">
+            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
 
    <!-- Connectors -->
    <connectors>
@@ -22,5 +22,17 @@
    <!-- Other config -->
 
    <journal-min-files>2</journal-min-files>
+
+   <security-settings>
+      <!--security for example topic-->
+      <security-setting match="jms.topic.exampleTopic">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+   </security-settings>
 
 </configuration>

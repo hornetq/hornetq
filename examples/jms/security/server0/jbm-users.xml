@@ -1,5 +1,5 @@
 <configuration xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-users.xsd ">
+            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-users.xsd">
    
    <user name="bill" password="jbossmessaging">
       <role name="user"/>

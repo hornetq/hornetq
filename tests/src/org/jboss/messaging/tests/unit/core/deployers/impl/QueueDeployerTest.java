@@ -22,9 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.deployers.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
@@ -33,6 +30,9 @@ import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A QueueDeployerTest
@@ -179,7 +179,7 @@ public class QueueDeployerTest extends UnitTestCase
          configs.add(config);
       }
 
-      public void deployQueue(String address, String name) throws Exception
+      public void deployQueue(String address, String name, String filterString) throws Exception
       {
          // TODO Auto-generated method stub
          

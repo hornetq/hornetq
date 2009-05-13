@@ -1,7 +1,0 @@
-<configuration xmlns="urn:jboss:messaging"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-configuration.xsd ">
-   
-   <!-- the example does not require any queue settings -->
-   
-</configuration>

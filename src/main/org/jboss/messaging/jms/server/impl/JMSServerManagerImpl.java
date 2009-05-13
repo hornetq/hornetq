@@ -22,18 +22,6 @@
 
 package org.jboss.messaging.jms.server.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
@@ -48,6 +36,17 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.utils.Pair;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
@@ -192,11 +191,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return server.getMessagingServerControl().getVersion();
    }
 
-   public synchronized boolean createQueue(final String queueName, final String jndiBinding) throws Exception
+   public synchronized boolean createQueue(final String queueName, final String jndiBinding, final String filterString, boolean durable) throws Exception
    {
       checkInitialised();
       JBossQueue jBossQueue = new JBossQueue(queueName);
-      server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(), jBossQueue.getAddress());
+      server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(), jBossQueue.getAddress(), filterString, durable);
       
       boolean added = bindToJndi(jndiBinding, jBossQueue);
       

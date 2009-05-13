@@ -12,9 +12,6 @@
 
 package org.jboss.messaging.jms.server.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -24,8 +21,12 @@ import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.utils.Pair;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -99,11 +100,17 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String QUEUE_NODE_NAME = "queue";
 
+   private static final String QUEUE_FILTER_STRING_ATTR_NAME = "filter";
+
+   private static final String QUEUE_DURABLE_ATTR_NAME = "durable";
+
    private static final String TOPIC_NODE_NAME = "topic";
 
    private static final String CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT = "connection-load-balancing-policy-class-name";
 
    private static final String DISCOVERY_INITIAL_WAIT_ELEMENT = "discovery-initial-wait";
+
+   private static final boolean DEFAULT_QUEUE_DURABILITY = true;
 
    public JMSServerDeployer(final JMSServerManager jmsServerManager,
                             final DeploymentManager deploymentManager,
@@ -428,7 +435,21 @@ public class JMSServerDeployer extends XmlDeployer
       }
       else if (node.getNodeName().equals(QUEUE_NODE_NAME))
       {
-         String queueName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
+         NamedNodeMap atts = node.getAttributes();
+         String queueName = atts.getNamedItem(getKeyAttribute()).getNodeValue();
+         String filterString = null;
+         Node filterNode = atts.getNamedItem(QUEUE_FILTER_STRING_ATTR_NAME);
+         if(filterNode != null)
+         {
+            filterString = filterNode.getNodeValue();
+         }
+         boolean durable = DEFAULT_QUEUE_DURABILITY;
+         Node durableNode = atts.getNamedItem(QUEUE_DURABLE_ATTR_NAME);
+         if(durableNode != null)
+         {
+            String val = durableNode.getNodeValue();
+            durable = val == null ? DEFAULT_QUEUE_DURABILITY:val.equalsIgnoreCase(Boolean.FALSE.toString());
+         }
          NodeList children = node.getChildNodes();
          for (int i = 0; i < children.getLength(); i++)
          {
@@ -437,7 +458,7 @@ public class JMSServerDeployer extends XmlDeployer
             if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               jmsServerControl.createQueue(queueName, jndiName);
+               jmsServerControl.createQueue(queueName, jndiName, filterString, durable);
             }
          }
       }

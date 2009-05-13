@@ -1,6 +1,6 @@
 <configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging ../../../../src/schemas/jbm-configuration.xsd">
+            xsi:schemaLocation="urn:jboss:messaging ../../../../src/schema/jbm-configuration.xsd">
 
    <jmx-management-enabled>true</jmx-management-enabled>
    <message-counter-enabled>true</message-counter-enabled>
@@ -26,5 +26,34 @@
    <!-- Other config -->
 
    <journal-min-files>2</journal-min-files>
+
+   <security-settings>
+      <!--security for example queue-->
+      <security-setting match="jms.queue.exampleQueue">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+
+      <!--security for dead letter queue-->
+      <security-setting match="jms.queue.expiryQueue">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+   </security-settings>
+
+   <address-settings>
+      <!--override the expiry address for the example-->
+      <address-setting match="jms.queue.exampleQueue">
+         <expiry-address>jms.queue.expiryQueue</expiry-address>
+      </address-setting>
+   </address-settings>
 
 </configuration>

@@ -22,25 +22,6 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-
-import javax.management.ListenerNotFoundException;
-import javax.management.MBeanNotificationInfo;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationFilter;
-import javax.management.NotificationListener;
-import javax.transaction.xa.Xid;
-
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -58,6 +39,24 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.utils.SimpleString;
+
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanNotificationInfo;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+import javax.transaction.xa.Xid;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -242,9 +241,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.isSecurityEnabled();
    }
 
-   public void deployQueue(final String address, final String name) throws Exception
+   public void deployQueue(final String address, final String name, String filterString) throws Exception
    {
-      server.deployQueue(new SimpleString(address), new SimpleString(name), null, true, false);
+      server.deployQueue(new SimpleString(address), new SimpleString(name), new SimpleString(filterString), true, false);
    }
 
    public void deployQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
