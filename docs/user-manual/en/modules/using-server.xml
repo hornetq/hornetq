@@ -20,6 +20,10 @@
         <para>This scripts are very simple and basically just set-up the classpath and some JVM
             parameters, and call the JBM bootstrap class as the Main class. The bootstrap is special
             JBoss Microcontainer class which causes the JBoss Microcontainer to start-up.</para>
+        <para>To stop the server you'll also find a unix/linux script <literal>stop.sh</literal> and
+            a windows batch file <literal>run.bat</literal></para>
+        <para>To run on Unix/Linux type <literal>./stop.sh</literal></para>
+        <para>To run on Windows type <literal>stop.bat</literal></para>
         <para>Please note that JBoss Messaging requires a Java 5 or later JDK to run. We recommend
             running on Java 6.</para>
     </section>
