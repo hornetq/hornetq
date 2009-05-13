@@ -18,7 +18,7 @@
      matching on the address settings.</p>
 
      <h2>Example setup</h2>
-     <p>Redelivery delay is specified in the queue settings configuration file <a href="server0/jbm-queues.xml">jbm-queues.xml</a>:</p>
+     <p>Redelivery delay is specified in the address settings configuration file <a href="server0/jbm-queues.xml">jbm-queues.xml</a>:</p>
      <p>In this example we set the redelivery delay to 5 seconds for the specific example queue. We could set redelivery delay on
      on multiple queues by specifying a wild-card in the match, e.g. <code>match="jms.#"</code> would apply the settings
      to all JMS queues and topics.</p>
@@ -26,7 +26,7 @@
      after 5 seconds.</p>
      <pre>
          <code>&lt;address-settings match="jms.queue.exampleQueue"&gt;           
-            &lt;redelivey-delay&gt;5000&lt;/redelivey-delay&gt;
+            &lt;redelivery-delay&gt;5000&lt;/redelivery-delay&gt;
          &lt;/address-settings&gt;
          </code>
      </pre>                 
@@ -155,6 +155,12 @@
            }</code>
         </pre>
      </ol>
+    
+     <h2>More information</h2>
+     
+     <ul>
+        <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#undelivered-messages">Undelivered Messages chapter</a></li>
+     </ul>
     
   </body>
 </html>

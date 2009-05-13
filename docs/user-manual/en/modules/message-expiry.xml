@@ -4,7 +4,7 @@
    <para>Messages can be retained in the messaging system for a limited period of time before being
       removed. JMS specification states that clients should not receive messages that have been
       expired (but it does not guarantee this will not happen).</para>
-   <para>JBoss Messaging's addresses can be assigned a expiry address that when messages are
+   <para>JBoss Messaging's addresses can be assigned a expiry address so that, when messages are
       expired, they are removed from the queue and sent to the expiry address. These
          <emphasis>expired</emphasis> messages can later be consumed for further inspection.</para>
    <section>
