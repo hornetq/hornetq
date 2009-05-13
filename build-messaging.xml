@@ -821,8 +821,12 @@
          <fileset dir="${src.bin.dir}">
             <include name="run.sh"/>
             <include name="run.bat"/>
+            <include name="stop.sh"/>
+            <include name="stop.bat"/>
          </fileset>
       </copy>
+      <chmod file="${build.distro.bin.dir}/run.sh" perm="ugo+rx"/>
+      <chmod file="${build.distro.bin.dir}/stop.sh" perm="ugo+rx"/>
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${native.bin.dir}">
             <include name="*.so"/>

@@ -356,6 +356,7 @@ public class MessagingServerImpl implements MessagingServer
       initialised = false;
       uuid = null;
       nodeID = null;
+      log.info("JBoss Messaging Server version " + getVersion().getFullVersion() + " stopped");
    }
 
    // MessagingServer implementation

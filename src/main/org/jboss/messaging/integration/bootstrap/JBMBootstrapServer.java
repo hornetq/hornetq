@@ -36,6 +36,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -69,12 +71,40 @@ public class JBMBootstrapServer extends BasicBootstrap
     */
    public static void main(final String[] args) throws Exception
    {
-      log.info("Starting JBoss Messaging server");
+      log.info("Starting JBoss Messaging Server");
 
-      JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
+      final JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
       
       bootstrap.run();
+      String dirName = System.getProperty("jbm.bootsrap.bin.dir", ".");
+      final File file = new File(dirName + "/KILL_ME");
+      if(file.exists())
+      {
+         file.delete();
+      }
+      final Timer timer = new Timer("JBM Server Shutdown Timer", true);
+      timer.scheduleAtFixedRate(new TimerTask()
+      {
+         @Override
+         public void run()
+         {
+            if(file.exists())
+            {
+               try
+               {
+                  log.info("Stopping JBoss Messaging Server");
+                  bootstrap.shutDown();
+                  timer.cancel();
+               }
+               finally
+               {
+                  Runtime.getRuntime().exit(0);
+               }
+            }
+         }
+      }, 500, 500);
    }
+
 
    public void run()
    {
@@ -213,7 +243,7 @@ public class JBMBootstrapServer extends BasicBootstrap
       ListIterator<KernelDeployment> iterator = deployments.listIterator(deployments.size());
       while (iterator.hasPrevious())
       {
-         KernelDeployment deployment = (KernelDeployment) iterator.previous();
+         KernelDeployment deployment = iterator.previous();
          try {undeploy(deployment);} catch (Throwable ignored){}
       }
    }
