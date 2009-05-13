@@ -13,7 +13,10 @@
 package org.jboss.messaging.core.transaction.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
@@ -21,6 +24,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
@@ -37,11 +41,11 @@ public class TransactionImpl implements Transaction
    private List<TransactionOperation> operations;
 
    private static final Logger log = Logger.getLogger(TransactionImpl.class);
-   
+
    private static final int INITIAL_NUM_PROPERTIES = 10;
-      
+
    private Object[] properties = new Object[INITIAL_NUM_PROPERTIES];
-      
+
    private final StorageManager storageManager;
 
    private final Xid xid;
@@ -55,7 +59,7 @@ public class TransactionImpl implements Transaction
    private final Object timeoutLock = new Object();
 
    private final long createTime;
-   
+
    public TransactionImpl(final StorageManager storageManager)
    {
       this.storageManager = storageManager;
@@ -92,6 +96,29 @@ public class TransactionImpl implements Transaction
    // Transaction implementation
    // -----------------------------------------------------------
 
+   public Set<Queue> getDistinctQueues()
+   {
+      HashSet<Queue> queues = new HashSet<Queue>();
+
+      if (operations != null)
+      {
+         for (TransactionOperation op : operations)
+         {
+            Collection<Queue> q = op.getDistinctQueues();
+            if (q == null)
+            {
+               log.warn("Operation " + op + " returned null getDistinctQueues");
+            }
+            else
+            {
+               queues.addAll(q);
+            }
+         }
+      }
+
+      return queues;
+   }
+
    public long getID()
    {
       return id;
@@ -114,7 +141,7 @@ public class TransactionImpl implements Transaction
             }
             else
             {
-               //Do nothing
+               // Do nothing
                return;
             }
          }
@@ -127,7 +154,7 @@ public class TransactionImpl implements Transaction
          {
             throw new IllegalStateException("Cannot prepare non XA transaction");
          }
-         
+
          if (operations != null)
          {
             for (TransactionOperation operation : operations)
@@ -146,12 +173,12 @@ public class TransactionImpl implements Transaction
             {
                operation.afterPrepare(this);
             }
-         }                 
+         }
       }
    }
 
    public void commit() throws Exception
-   {           
+   {
       commit(true);
    }
 
@@ -167,7 +194,7 @@ public class TransactionImpl implements Transaction
             }
             else
             {
-               //Do nothing
+               // Do nothing
                return;
             }
          }
@@ -176,7 +203,7 @@ public class TransactionImpl implements Transaction
          {
             if (onePhase)
             {
-               if(state == State.ACTIVE)
+               if (state == State.ACTIVE)
                {
                   prepare();
                }
@@ -202,7 +229,7 @@ public class TransactionImpl implements Transaction
             }
          }
 
-         if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED) )
+         if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED))
          {
             storageManager.commit(id);
          }
@@ -237,7 +264,7 @@ public class TransactionImpl implements Transaction
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
          }
-         
+
          if (operations != null)
          {
             for (TransactionOperation operation : operations)
@@ -256,7 +283,7 @@ public class TransactionImpl implements Transaction
             {
                operation.afterRollback(this);
             }
-         }                  
+         }
       }
    }
 
@@ -282,7 +309,7 @@ public class TransactionImpl implements Transaction
    {
       return state;
    }
-   
+
    public void setState(final State state)
    {
       this.state = state;
@@ -313,7 +340,7 @@ public class TransactionImpl implements Transaction
 
       operations.remove(operation);
    }
-   
+
    public int getOperationsCount()
    {
       return operations.size();
@@ -324,20 +351,20 @@ public class TransactionImpl implements Transaction
       if (index >= properties.length)
       {
          Object[] newProperties = new Object[index];
-         
+
          System.arraycopy(properties, 0, newProperties, 0, properties.length);
-         
+
          properties = newProperties;
       }
-      
-      properties[index] = property;      
+
+      properties[index] = property;
    }
-   
+
    public Object getProperty(int index)
    {
       return properties[index];
    }
-   
+
    // Private
    // -------------------------------------------------------------------
 

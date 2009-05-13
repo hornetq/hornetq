@@ -23,6 +23,7 @@
 package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -273,6 +274,14 @@ public class BindingImplTest extends UnitTestCase
       public void suspend()
       {
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.transaction.Transaction#getDistinctQueues()
+       */
+      public Set<Queue> getDistinctQueues()
+      {
+         return Collections.emptySet();
       }
 
    }
@@ -1368,6 +1377,20 @@ public class BindingImplTest extends UnitTestCase
       public void route(ServerMessage message, Transaction tx) throws Exception
       {
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#lock()
+       */
+      public void lockDelivery()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.server.Queue#unlock()
+       */
+      public void unlockDelivery()
+      {
       }
 
    }

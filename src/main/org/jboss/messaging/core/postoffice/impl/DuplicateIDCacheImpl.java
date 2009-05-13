@@ -23,12 +23,15 @@
 package org.jboss.messaging.core.postoffice.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.DuplicateIDCache;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
 import org.jboss.messaging.core.transaction.TransactionPropertyIndexes;
@@ -240,6 +243,14 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       public void afterRollback(final Transaction tx) throws Exception
       {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.transaction.TransactionOperation#getDistinctQueues()
+       */
+      public Collection<Queue> getDistinctQueues()
+      {
+         return Collections.emptySet();
       }
 
    }

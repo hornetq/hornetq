@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -53,8 +54,14 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.postoffice.Binding;
+import org.jboss.messaging.core.postoffice.Bindings;
+import org.jboss.messaging.core.postoffice.PostOffice;
+import org.jboss.messaging.core.postoffice.QueueBinding;
+import org.jboss.messaging.core.postoffice.impl.LocalQueueBinding;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessageReference;
+import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
@@ -736,6 +743,51 @@ public class UnitTestCase extends TestCase
    {
       return new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
    }
+   
+
+   protected int getMessageCount(final MessagingServer service, final String address) throws Exception
+   {
+      return getMessageCount(service.getPostOffice(), address);
+   }
+
+   /**
+    * @param address
+    * @param postOffice
+    * @return
+    * @throws Exception
+    */
+   protected int getMessageCount(final PostOffice postOffice, final String address) throws Exception
+   {
+      int messageCount = 0;
+      
+      List<QueueBinding> bindings = getLocalQueueBindings(postOffice, address);
+      
+      for (QueueBinding qBinding: bindings)
+      {
+         messageCount += qBinding.getQueue().getMessageCount();
+      }
+
+      return messageCount;
+   }
+   
+   protected List<QueueBinding> getLocalQueueBindings(final PostOffice postOffice, final String address) throws Exception
+   {
+      ArrayList<QueueBinding> bindingsFound = new ArrayList<QueueBinding>();
+
+      Bindings bindings = postOffice.getBindingsForAddress(new SimpleString(address));
+
+      for (Binding binding : bindings.getBindings())
+      {
+         if ((binding instanceof LocalQueueBinding))
+         {
+            bindingsFound.add((QueueBinding)binding);
+         }
+      }
+      return bindingsFound;
+   }
+
+
+   
    
    // Private -------------------------------------------------------
 

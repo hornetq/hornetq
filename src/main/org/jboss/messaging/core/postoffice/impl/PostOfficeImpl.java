@@ -23,6 +23,8 @@
 package org.jboss.messaging.core.postoffice.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -967,6 +969,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       void addMessageToPage(final ServerMessage message)
       {
          messagesToPage.add(message);
+      }
+
+      
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.transaction.TransactionOperation#getDistinctQueues()
+       */
+      public Collection<Queue> getDistinctQueues()
+      {
+         return Collections.emptySet();
       }
 
       public void afterCommit(final Transaction tx) throws Exception

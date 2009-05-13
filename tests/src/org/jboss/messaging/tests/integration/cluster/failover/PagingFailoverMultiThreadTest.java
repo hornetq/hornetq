@@ -25,6 +25,8 @@ package org.jboss.messaging.tests.integration.cluster.failover;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -45,12 +47,15 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.postoffice.QueueBinding;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.server.JournalType;
+import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
 import org.jboss.messaging.utils.SimpleString;
@@ -67,7 +72,6 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
    // Constants -----------------------------------------------------
    private static final int RECEIVE_TIMEOUT = 20000;
-
 
    final int PAGE_SIZE = 512;
 
@@ -87,9 +91,9 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
    protected static final SimpleString ADDRESS_GLOBAL = new SimpleString("FailoverTestAddress");
 
-   protected MessagingServer liveService;
+   protected MessagingServer liveServer;
 
-   protected MessagingServer backupService;
+   protected MessagingServer backupServer;
 
    protected final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -228,7 +232,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
          for (int i = 0; i < numSessions; i++)
          {
             SimpleString subName = new SimpleString(threadNum + "sub" + i);
-   
+
             s.deleteQueue(subName);
          }
       }
@@ -243,9 +247,9 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
    protected void stop() throws Exception
    {
-      backupService.stop();
+      backupServer.stop();
 
-      liveService.stop();
+      liveServer.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
 
@@ -386,14 +390,14 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
          backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
          backupConf.setPagingGlobalWatermarkSize(pageSize);
-         backupService = Messaging.newMessagingServer(backupConf);
+         backupServer = Messaging.newMessagingServer(backupConf);
       }
       else
       {
-         backupService = Messaging.newMessagingServer(backupConf, false);
+         backupServer = Messaging.newMessagingServer(backupConf, false);
       }
 
-      backupService.start();
+      backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
@@ -427,22 +431,22 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
       if (fileBased)
       {
-         liveService = Messaging.newMessagingServer(liveConf);
+         liveServer = Messaging.newMessagingServer(liveConf);
       }
       else
       {
-         liveService = Messaging.newMessagingServer(liveConf, false);
+         liveServer = Messaging.newMessagingServer(liveConf, false);
       }
 
       AddressSettings settings = new AddressSettings();
       settings.setPageSizeBytes(pageSize);
 
-      liveService.getAddressSettingsRepository().addMatch("#", settings);
-      backupService.getAddressSettingsRepository().addMatch("#", settings);
+      liveServer.getAddressSettingsRepository().addMatch("#", settings);
+      backupServer.getAddressSettingsRepository().addMatch("#", settings);
 
       clearData(getTestDir() + "/live");
 
-      liveService.start();
+      liveServer.start();
    }
 
    // Private -------------------------------------------------------

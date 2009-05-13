@@ -178,7 +178,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private final QueueFactory queueFactory;
 
    private final SimpleString nodeID;
-   
+
    private boolean backup;
 
    // The current currentLargeMessage being processed
@@ -263,7 +263,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.nodeID = server.getNodeID();
 
       this.replicatingChannel = replicatingChannel;
-      
+
       this.backup = backup;
    }
 
@@ -316,7 +316,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          throw new IllegalStateException("Cannot find consumer with id " + consumer.getID() + " to remove");
       }
    }
-   
+
    public void close() throws Exception
    {
       if (tx != null && tx.getXid() == null)
@@ -348,7 +348,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             log.error("Failed to delete large message file", error);
          }
       }
-      
+
       remotingConnection.removeFailureListener(this);
    }
 
@@ -378,15 +378,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    public void handleCreateQueue(final CreateQueueMessage packet)
    {
       if (replicatingChannel == null)
-      {         
+      {
          doHandleCreateQueue(packet);
       }
       else
-      {       
+      {
          replicatingChannel.replicatePacket(packet, oppositeChannelID, new Runnable()
          {
             public void run()
-            {              
+            {
                doHandleCreateQueue(packet);
             }
          });
@@ -487,7 +487,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       if (replicatingChannel == null)
       {
-         doHandleCommit(packet);
+            doHandleCommit(packet);
       }
       else
       {
@@ -502,18 +502,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    }
 
    public void handleRollback(final RollbackMessage packet)
-   {            
+   {
+      
+      
       if (replicatingChannel == null)
       {
          doHandleRollback(packet);
       }
       else
       {
+         final HashSet<Queue> queues = lockUsedQueues();
+
          replicatingChannel.replicatePacket(packet, oppositeChannelID, new Runnable()
          {
             public void run()
             {
-               doHandleRollback(packet);              
+               try
+               {
+                  doHandleRollback(packet);
+               }
+               finally
+               {
+                  for (Queue queue : queues)
+                  {
+                     queue.unlockDelivery();
+                  }
+               }
             }
          });
       }
@@ -734,7 +748,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          });
       }
    }
-   
+
    private void lockConsumers()
    {
       for (ServerConsumer consumer : consumers.values())
@@ -750,23 +764,29 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          consumer.unlock();
       }
    }
-   
+
    public void handleStart(final Packet packet)
    {
-      if (replicatingChannel != null)
-      {         
+      if (replicatingChannel == null)
+      {
+         setStarted(true);
+
+         channel.confirm(packet);
+      }
+      else
+      {
          lockConsumers();
-         
+
          try
-         {         
+         {
             setStarted(true);
-                        
+
             replicatingChannel.replicatePacket(packet, oppositeChannelID, new Runnable()
             {
                public void run()
                {
-                  //setStarted(true);
-   
+                  // setStarted(true);
+
                   channel.confirm(packet);
                }
             });
@@ -775,12 +795,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             unlockConsumers();
          }
-      }
-      else
-      {
-         setStarted(true);
-
-         channel.confirm(packet);
       }
    }
 
@@ -797,23 +811,31 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       // delivery is processed on backup
       // it's stopped so barfs and cannot process delivery
 
-      if (replicatingChannel != null)
+      if (replicatingChannel == null)
+      {
+         setStarted(false);
+
+         channel.confirm(packet);
+
+         channel.send(response);
+      }
+      else
       {
          lockConsumers();
-         
+
          try
          {
-         
+
             setStarted(false);
-            
+
             replicatingChannel.replicatePacket(packet, oppositeChannelID, new Runnable()
             {
                public void run()
                {
                   channel.confirm(packet);
-   
+
                   channel.send(response);
-      
+
                }
             });
          }
@@ -821,14 +843,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             unlockConsumers();
          }
-      }
-      else
-      {
-         setStarted(false);
-         
-         channel.confirm(packet);
-
-         channel.send(response);
       }
    }
 
@@ -844,12 +858,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleClose(final Packet packet)
    {
+      
       if (replicatingChannel == null)
       {
          doHandleClose(packet);
       }
       else
       {
+         final HashSet<Queue> queues = lockUsedQueues();
+
          // We need to stop the consumers first before replicating, to ensure no deliveries occur after this,
          // but we need to process the actual close() when the replication response returns, otherwise things
          // can happen like acks can come in after close
@@ -863,22 +880,46 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             public void run()
             {
-               doHandleClose(packet);
+               try
+               {
+                  doHandleClose(packet);
+               }
+               finally
+               {
+                  for (Queue queue : queues)
+                  {
+                     queue.unlockDelivery();
+                  }
+               }
             }
          });
       }
    }
 
    public void handleCloseConsumer(final SessionConsumerCloseMessage packet)
-   {      
+   {
       final ServerConsumer consumer = consumers.get(packet.getConsumerID());
-           
+      
+      consumer.setStarted(false);
+
       if (replicatingChannel == null)
-      {         
+      {
          doHandleCloseConsumer(packet, consumer);
       }
       else
       {
+         final Queue queue;
+         
+         if (consumer.getCountOfPendingDeliveries() > 0)
+         {
+            queue = consumer.getQueue();
+            queue.lockDelivery();
+         }
+         else
+         {
+            queue = null;
+         }
+         
          // We need to stop the consumer first before replicating, to ensure no deliveries occur after this,
          // but we need to process the actual close() when the replication response returns, otherwise things
          // can happen like acks can come in after close
@@ -889,13 +930,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             public void run()
             {
-               doHandleCloseConsumer(packet, consumer);
+               try
+               {
+                  doHandleCloseConsumer(packet, consumer);
+               }
+               finally
+               {
+                  if (queue != null)
+                  {
+                     queue.unlockDelivery();
+                  }
+               }
             }
          });
       }
    }
-
-   
 
    public void handleReceiveConsumerCredits(final SessionConsumerFlowCreditMessage packet)
    {
@@ -957,17 +1006,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                }
 
                currentLargeMessage = msg;
-               
+
                doSendLargeMessage(packet);
             }
          });
       }
    }
-   
+
    public void handleSend(final SessionSendMessage packet)
    {
       if (replicatingChannel == null)
-      {                  
+      {
          doSend(packet);
       }
       else
@@ -1003,7 +1052,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    public void handleReplicatedDelivery(final SessionReplicateDeliveryMessage packet)
    {
       ServerConsumer consumer = consumers.get(packet.getConsumerID());
-      
+
       if (consumer == null)
       {
          throw new IllegalStateException("Cannot handle replicated delivery, consumer is closed " + packet.getConsumerID() +
@@ -1044,20 +1093,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          // Put the id back to the original client session id
          this.id = this.oppositeChannelID;
-         
+
          this.oppositeChannelID = -1;
-         
+
          backup = false;
       }
-      
+
       remotingConnection.removeFailureListener(this);
-      
-      //Note. We do not destroy the replicating connection here. In the case the live server has really crashed
-      //then the connection will get cleaned up anyway when the server ping timeout kicks in.
-      //In the case the live server is really still up, i.e. a split brain situation (or in tests), then closing
-      //the replicating connection will cause the outstanding responses to be be replayed on the live server,
-      //if these reach the client who then subsequently fails over, on reconnection to backup, it will have
-      //received responses that the backup did not know about.
+
+      // Note. We do not destroy the replicating connection here. In the case the live server has really crashed
+      // then the connection will get cleaned up anyway when the server ping timeout kicks in.
+      // In the case the live server is really still up, i.e. a split brain situation (or in tests), then closing
+      // the replicating connection will cause the outstanding responses to be be replayed on the live server,
+      // if these reach the client who then subsequently fails over, on reconnection to backup, it will have
+      // received responses that the backup did not know about.
 
       channel.transferConnection(newConnection, this.id, replicatingChannel);
 
@@ -1068,7 +1117,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       remotingConnection.addFailureListener(this);
 
       int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
- 
+
       channel.replayCommands(lastReceivedCommandID, this.id);
 
       if (wasStarted)
@@ -1078,7 +1127,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       return serverLastReceivedCommandID;
    }
-   
+
    public Channel getChannel()
    {
       return channel;
@@ -1139,6 +1188,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
 
    }
+
    // Public
    // ----------------------------------------------------------------------------
 
@@ -1146,7 +1196,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       return tx;
    }
-   
+
    // Private
    // ----------------------------------------------------------------------------
 
@@ -1176,9 +1226,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       channel.confirm(packet);
 
-      channel.send(response);           
+      channel.send(response);
    }
-   
+
    private void doHandleCreateConsumer(final SessionCreateConsumerMessage packet)
    {
       SimpleString name = packet.getQueueName();
@@ -1188,7 +1238,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       boolean browseOnly = packet.isBrowseOnly();
 
       Packet response = null;
-      
+
       try
       {
          Binding binding = postOffice.getBinding(name);
@@ -1231,7 +1281,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             theQueue = (Queue)binding.getBindable();
          }
 
-         ServerConsumer consumer = new ServerConsumerImpl(server, idGenerator.generateID(),
+         ServerConsumer consumer = new ServerConsumerImpl(server,
+                                                          idGenerator.generateID(),
                                                           oppositeChannelID,
                                                           this,
                                                           (QueueBinding)binding,
@@ -1262,7 +1313,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
             props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
-            
+
             if (filterString != null)
             {
                props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
@@ -1473,7 +1524,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          List<SimpleString> names = new ArrayList<SimpleString>();
 
          Bindings bindings = postOffice.getMatchingBindings(address);
-         
+
          for (Binding binding : bindings.getBindings())
          {
             if (binding.getType() == BindingType.LOCAL_QUEUE)
@@ -1510,7 +1561,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       try
       {
          ServerConsumer consumer = consumers.get(packet.getConsumerID());
-         
+
          consumer.acknowledge(autoCommitAcks, tx, packet.getMessageID());
 
          if (packet.isRequiresResponse())
@@ -2163,7 +2214,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       channel.confirm(packet);
 
-      //We flush the confirmations to make sure any send confirmations get handled on the client side
+      // We flush the confirmations to make sure any send confirmations get handled on the client side
       channel.flushConfirmations();
 
       channel.send(response);
@@ -2200,7 +2251,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          log.error("Failed to create large message", e);
          Packet response = null;
 
-         
          channel.confirm(packet);
          if (response != null)
          {
@@ -2228,7 +2278,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       try
       {
          long id = storageManager.generateUniqueID();
-                 
+
          currentLargeMessage.setMessageID(id);
       }
       catch (Exception e)
@@ -2246,9 +2296,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       try
       {
          ServerMessage message = packet.getServerMessage();
-         
+
          long id = storageManager.generateUniqueID();
-         
+
          message.setMessageID(id);
 
          if (message.getDestination().equals(managementAddress))
@@ -2315,7 +2365,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             currentLargeMessage = null;
 
             message.complete();
-                       
+
             send(message);
          }
 
@@ -2380,7 +2430,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       LargeServerMessage largeMessage = storageManager.createLargeMessage();
 
-      MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header); 
+      MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
 
       largeMessage.decodeProperties(headerBuffer);
 
@@ -2458,6 +2508,32 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          postOffice.route(msg, tx);
       }
    }
+   
+   /**
+    * We need to avoid delivery when rolling back while doing replication, or the backup node could be on a different order
+    * @return
+    */
+   private HashSet<Queue> lockUsedQueues()
+   {
+      final HashSet<Queue> queues = new HashSet<Queue>();
+      
+      for (ServerConsumer consumer : consumers.values())
+      {
+         queues.add(consumer.getQueue());
+      }
+      
+      if (tx != null)
+      {
+         queues.addAll(tx.getDistinctQueues());
+      }
+      
+      for (Queue queue : queues)
+      {
+         queue.lockDelivery();
+      }
+      return queues;
+   }
+
 
    private void doSecurity(final ServerMessage msg) throws Exception
    {

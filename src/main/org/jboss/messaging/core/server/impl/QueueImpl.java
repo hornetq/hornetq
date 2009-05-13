@@ -17,6 +17,7 @@ import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIGINAL_DES
 import static org.jboss.messaging.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -111,6 +113,8 @@ public class QueueImpl implements Queue
    private final Runnable deliverRunner = new DeliverRunner();
 
    private final PagingManager pagingManager;
+
+   private final Semaphore lock = new Semaphore(1);
 
    private volatile PagingStore pagingStore;
 
@@ -328,6 +332,48 @@ public class QueueImpl implements Queue
 
    // Queue implementation ----------------------------------------------------------------------------------------
 
+   public void lockDelivery()
+   {
+      if (backup)
+      {
+         return;
+      }
+      
+      if (trace)
+      {
+         log.trace("Trying to lock queue=" + this.name + ", backup=" + this.backup, new Exception("trace"));
+      }
+      
+      try
+      {
+         lock.acquire();
+      }
+      catch (InterruptedException e)
+      {
+         log.warn(e.getMessage(), e);
+      }
+
+      if (trace)
+      {
+         log.trace("Locked, queue=" + this.name + ", backup=" + this.backup, new Exception("trace"));
+      }
+   }
+
+   public void unlockDelivery()
+   {
+      if (backup)
+      {
+         return;
+      }
+      
+      lock.release();
+
+      if (trace)
+      {
+         log.trace("UN-Locked, queue=" + this.name + ", backup = " + this.backup, new Exception("trace"));
+      }
+   }
+
    public boolean isDurable()
    {
       return durable;
@@ -359,8 +405,13 @@ public class QueueImpl implements Queue
    }
 
    public void addLast(final MessageReference ref)
-   {    
-      add(ref, false);      
+   {
+   
+      if (trace)
+      {
+      	log.trace("AddLast(" + this.getName() +  (backup?"@Backup":"@Live") + "::" + ref);
+      }
+      add(ref, false);
    }
 
    public void addFirst(final MessageReference ref)
@@ -425,11 +476,11 @@ public class QueueImpl implements Queue
       if (delay > 0)
       {
          if (consumers.size() == 0 && messageReferences.size() > 0)
-         {         
+         {
             DelayedAddRedistributor dar = new DelayedAddRedistributor(executor, replicatingChannel);
-   
+
             future = scheduledExecutor.schedule(dar, delay, TimeUnit.MILLISECONDS);
-   
+
             futures.add(future);
          }
       }
@@ -989,6 +1040,12 @@ public class QueueImpl implements Queue
    // Public
    // -----------------------------------------------------------------------------
 
+   /** To be used on tests only. Do not use it otherwise */
+   public PriorityLinkedList<MessageReference> getReferencesList()
+   {
+      return this.messageReferences;
+   }
+
    @Override
    public boolean equals(final Object other)
    {
@@ -1196,7 +1253,7 @@ public class QueueImpl implements Queue
    /*
     * Attempt to deliver all the messages in the queue
     */
-   private void deliver()
+   private synchronized void deliver()
    {
       // We don't do actual delivery if the queue is on a backup node - this is
       // because it's async and could get out of step
@@ -1470,9 +1527,14 @@ public class QueueImpl implements Queue
          // Must be set to false *before* executing to avoid race
          waitingToDeliver.set(false);
 
-         synchronized (QueueImpl.this)
+         QueueImpl.this.lockDelivery();
+         try
          {
             deliver();
+         }
+         finally
+         {
+            QueueImpl.this.unlockDelivery();
          }
       }
    }
@@ -1533,6 +1595,26 @@ public class QueueImpl implements Queue
                queue.postRollback(refs);
             }
          }
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.transaction.TransactionOperation#getDistinctQueues()
+       */
+      public synchronized Collection<Queue> getDistinctQueues()
+      {
+         HashSet<Queue> queues = new HashSet<Queue>();
+
+         for (MessageReference ref : refsToAck)
+         {
+            queues.add(ref.getQueue());
+         }
+
+         for (MessageReference ref : refsToAdd)
+         {
+            queues.add(ref.getQueue());
+         }
+
+         return queues;
       }
 
       public void afterCommit(final Transaction tx) throws Exception

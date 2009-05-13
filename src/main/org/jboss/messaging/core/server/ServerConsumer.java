@@ -40,6 +40,8 @@ public interface ServerConsumer extends Consumer
 	//void handleClose(Packet packet);
 	
 	void close() throws Exception;
+	
+	int getCountOfPendingDeliveries();
 
 	List<MessageReference> cancelRefs(boolean lastConsumedAsDelivered, Transaction tx) throws Exception;
 	

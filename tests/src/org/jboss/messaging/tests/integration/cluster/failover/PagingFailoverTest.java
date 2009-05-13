@@ -57,7 +57,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
    private final Logger log = Logger.getLogger(PagingFailoverTest.class);
   
-   final int RECEIVE_TIMEOUT = 25000;
+   final int RECEIVE_TIMEOUT = 50000;
 
    // Attributes ----------------------------------------------------
 
@@ -81,6 +81,8 @@ public class PagingFailoverTest extends FailoverTestBase
       int numberOfConsumedMessages = multiThreadConsumer(getNumberOfThreads(), false, false);
 
       assertEquals(numberOfProducedMessages, numberOfConsumedMessages);
+      
+      System.out.println("Done!");
 
    }
 
@@ -130,6 +132,10 @@ public class PagingFailoverTest extends FailoverTestBase
       try
       {
          ClientSessionFactory sf1 = createFailoverFactory();
+         
+         sf1.setBlockOnAcknowledge(true);
+         sf1.setBlockOnNonPersistentSend(true);
+         sf1.setBlockOnPersistentSend(true);
 
          session = sf1.createSession(null, null, false, true, true, false, 0);
 
@@ -283,6 +289,10 @@ public class PagingFailoverTest extends FailoverTestBase
             factory = createFailoverFactory();
             store = liveServer.getPostOffice().getPagingManager().getPageStore(ADDRESS);
          }
+         
+         factory.setBlockOnNonPersistentSend(true);
+         factory.setBlockOnAcknowledge(true);
+         factory.setBlockOnPersistentSend(true);
 
          session = factory.createSession(false, true, true, false);
 
@@ -436,6 +446,10 @@ public class PagingFailoverTest extends FailoverTestBase
       final PagingStore store = liveServer.getPostOffice().getPagingManager().getPageStore(ADDRESS);
 
       final ClientSessionFactory factory = createFailoverFactory();
+      
+      factory.setBlockOnNonPersistentSend(true);
+      factory.setBlockOnAcknowledge(true);
+      factory.setBlockOnPersistentSend(true);
 
       ClientSession session = factory.createSession(false, true, true, false);
       try

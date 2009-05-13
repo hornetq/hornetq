@@ -28,6 +28,8 @@ import static org.jboss.messaging.utils.DataConstants.SIZE_LONG;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -1582,6 +1584,14 @@ public class JournalStorageManager implements StorageManager
 
       private void pageMessages(final Transaction tx) throws Exception
       {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.transaction.TransactionOperation#getDistinctQueues()
+       */
+      public Collection<Queue> getDistinctQueues()
+      {
+         return Collections.emptySet();
       }
 
    }

@@ -929,6 +929,8 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                   {
                      Thread.sleep(10);
                   }
+                  
+                  assertNull(consumerImpl.getAvailableCredits());
                }
             }
          }

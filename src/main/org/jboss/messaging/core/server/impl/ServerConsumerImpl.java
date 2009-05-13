@@ -240,9 +240,18 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          MessageReference ref = iter.next();
 
+         if (trace)
+         {
+            log.trace("Adding reference " + ref + " into a Transaction for close/cancel");
+         }
+
          ref.getQueue().cancel(tx, ref);
       }
 
+      if (trace)
+      {
+         log.trace("***************** tx.rollback being called now *****************");
+      }
       tx.rollback();
 
       if (!browseOnly)
@@ -267,6 +276,11 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
 
+   public int getCountOfPendingDeliveries()
+   {
+      return deliveringRefs.size();
+   }
+   
    public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
    {
       boolean performACK = lastConsumedAsDelivered;
@@ -363,11 +377,12 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             throw new IllegalStateException(System.identityHashCode(this) + " Could not find reference on consumerID=" +
                                             id +
-                                            ", messageId " +
+                                            ", messageId = " +
                                             messageID +
-                                            " backup " +
+                                            " backup = " +
                                             messageQueue.isBackup() +
-                                            " closed " +
+                                            " queue = " + messageQueue.getName() + 
+                                            " closed = " +
                                             closed);
          }
 
@@ -424,6 +439,11 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void deliverReplicated(final long messageID) throws Exception
    {
+      if (trace)
+      {
+         log.trace("Replicating delivery Reference[" + messageID + "] queueOnConsumer=" + messageQueue.getName());
+      }
+
       MessageReference ref = messageQueue.removeFirstReference(messageID);
 
       if (ref == null)
@@ -434,8 +454,8 @@ public class ServerConsumerImpl implements ServerConsumer
          // force a depage
          if (!store.readPage()) // This returns false if there are no pages
          {
-            throw new IllegalStateException("Cannot find ref " + messageID +                                          
-                                            " in queue " +
+            throw new IllegalStateException("Cannot find Reference[" + messageID +
+                                            "] in queue " +
                                             messageQueue.getName());
          }
          else
@@ -444,7 +464,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
             if (ref == null)
             {
-               throw new IllegalStateException("Cannot find ref after depaging");
+               throw new IllegalStateException("Cannot find Reference[" + messageID +
+                                            "] after depaging on Queue " + messageQueue.getName());
             }
          }
       }
@@ -486,12 +507,30 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Public ---------------------------------------------------------------------------------------
 
-   
-   /** Only use this on tests */
+   /** To be used on tests only */
    public AtomicInteger getAvailableCredits()
    {
       return availableCredits;
    }
+
+   /** To be used on tests only */
+   public java.util.Queue<MessageReference> getDeliveringRefs()
+   {
+      return deliveringRefs;
+   }
+
+   /** To be used on tests only */
+   public ServerSession getSession()
+   {
+      return session;
+   }
+
+   /** To be used on tests only */
+   public long getReplicatedSessionID()
+   {
+      return replicatedSessionID;
+   }
+
    // Private --------------------------------------------------------------------------------------
 
    private void promptDelivery()
@@ -642,7 +681,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       if (replicatingChannel == null)
       {
-         // it doesn't need lock because deliverLargeMesasge is already inside the lock.lock()
+         // it doesn't need lock because deliverLargeMesasge is already inside the lock()
          largeMessageDeliverer = localDeliverer;
          largeMessageDeliverer.deliver();
       }
@@ -697,6 +736,10 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          // Not replicated - just send now
 
+         if (trace)
+         {
+            log.trace("delivering Message " + ref + " on backup");
+         }
          channel.send(packet);
       }
       else
@@ -708,6 +751,10 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             public void run()
             {
+               if (trace)
+               {
+                  log.trace("delivering Message " + ref + " on live");
+               }
                channel.send(packet);
             }
          });

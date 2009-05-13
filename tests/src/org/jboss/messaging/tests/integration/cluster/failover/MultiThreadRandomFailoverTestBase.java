@@ -1281,7 +1281,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
    protected int getLatchWait()
    {
-      return 20000;
+      return 60000;
    }
 
    protected int getNumIterations()

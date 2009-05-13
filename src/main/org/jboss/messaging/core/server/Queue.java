@@ -147,4 +147,8 @@ public interface Queue extends Bindable
    void deliverNow();
 
    boolean checkDLQ(MessageReference ref) throws Exception;
+   
+   void lockDelivery();
+   
+   void unlockDelivery();
 }

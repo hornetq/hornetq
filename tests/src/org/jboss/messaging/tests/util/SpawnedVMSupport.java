@@ -71,8 +71,17 @@ public class SpawnedVMSupport
    {
       return spawnVM(className, vmargs, true, args);
    }
+   
+   public static Process spawnVM(final String className,
+                                 final String[] vmargs,
+                                 final boolean logOutput,
+                                 final String... args) throws Exception
+   {
+      return spawnVM(className, "-Xms512m -Xmx512m ", vmargs, logOutput, args);
+   }
 
    public static Process spawnVM(final String className,
+                                 final String memoryArgs,
                                  final String[] vmargs,
                                  final boolean logOutput,
                                  final String... args) throws Exception
@@ -81,7 +90,7 @@ public class SpawnedVMSupport
 
       sb.append("java").append(' ');
 
-      sb.append("-Xms512m -Xmx512m ");
+      sb.append(memoryArgs);
 
       for (String vmarg : vmargs)
       {

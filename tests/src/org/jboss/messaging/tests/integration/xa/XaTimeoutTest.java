@@ -32,6 +32,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.TransactionOperation;
@@ -43,6 +44,9 @@ import org.jboss.messaging.utils.UUIDGenerator;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
+
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -544,6 +548,11 @@ public class XaTimeoutTest extends UnitTestCase
       public void afterRollback(Transaction tx) throws Exception
       {
          latch.countDown();
+      }
+
+      public Collection<Queue> getDistinctQueues()
+      {
+         return Collections.emptySet();
       }
    }
 }

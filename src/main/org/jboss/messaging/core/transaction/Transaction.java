@@ -22,9 +22,12 @@
 
 package org.jboss.messaging.core.transaction;
 
+import java.util.Set;
+
 import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.server.Queue;
 
 /**
  * A JBoss Messaging internal transaction
@@ -67,6 +70,8 @@ public interface Transaction
    void putProperty(int index, Object property);
    
    Object getProperty(int index);
+   
+   Set<Queue> getDistinctQueues();
 
    static enum State
    {
