@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="scheduled-messages">
-    <title>Scheduled Messages</title>
-    <para>blah</para>
-    
+   <title>Scheduled Messages</title>
+   <para>Scheduled messages are delivered at a time specified by the sender rather than when request by the receiver.</para>
+   <para>Messages are scheduled for later delivery if they have a well-known scheduled delivery property set.</para>
+   
+   <section>
+      <title>Scheduled Delivery Property</title>
+      <para>The property name used to identify a scheduled message is <literal>"_JBM_SCHED_DELIVERY"</literal> (or
+      the constant <literal>MessageImpl.HDR_SCHEDULED_DELIVERY_TIME</literal>).</para>
+      <para>The specified value must be a <literal>long</literal> corresponding to the time the message
+      must be delivered (in milliseconds).</para>
+      <programlisting>
+         TextMessage message = session.createTextMessage("This is a scheduled message message which will be delivered in 5 sec.");
+         message.setLongProperty("_JBM_SCHED_DELIVERY", System.currentTimeMillis() + 5000);
+         producer.send(message);
+
+         ...
+         
+         // message will not be received immediately but 5 seconds later
+         TextMessage messageReceived = (TextMessage) consumer.receive();
+        </programlisting>
+   </section>
+         
+   <section>
+      <title>Example</title>
+      <para>The <ulink url="../../../../examples/jms/scheduled-message/readme.html">Scheduled Message example</ulink> shows
+      how scheduled messages can be used with JMS.</para>
+   </section>
+   
 </chapter>

@@ -72,7 +72,7 @@ public class ScheduledMessageExample extends JMSExample
          MessageProducer producer = session.createProducer(queue);
 
          //Step 7. Create a Text Message
-         TextMessage message = session.createTextMessage("This is a scheduled message message will arrived in 5 sec.");
+         TextMessage message = session.createTextMessage("This is a scheduled message message which will be delivered in 5 sec.");
 
          //Step 8. Set the delivery time to be 5 sec later.
          long time = System.currentTimeMillis();
