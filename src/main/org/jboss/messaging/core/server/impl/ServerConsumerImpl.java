@@ -240,18 +240,9 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          MessageReference ref = iter.next();
 
-         if (trace)
-         {
-            log.trace("Adding reference " + ref + " into a Transaction for close/cancel");
-         }
-
          ref.getQueue().cancel(tx, ref);
       }
 
-      if (trace)
-      {
-         log.trace("***************** tx.rollback being called now *****************");
-      }
       tx.rollback();
 
       if (!browseOnly)
@@ -439,11 +430,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void deliverReplicated(final long messageID) throws Exception
    {
-      if (trace)
-      {
-         log.trace("Replicating delivery Reference[" + messageID + "] queueOnConsumer=" + messageQueue.getName());
-      }
-
       MessageReference ref = messageQueue.removeFirstReference(messageID);
 
       if (ref == null)
@@ -511,24 +497,6 @@ public class ServerConsumerImpl implements ServerConsumer
    public AtomicInteger getAvailableCredits()
    {
       return availableCredits;
-   }
-
-   /** To be used on tests only */
-   public java.util.Queue<MessageReference> getDeliveringRefs()
-   {
-      return deliveringRefs;
-   }
-
-   /** To be used on tests only */
-   public ServerSession getSession()
-   {
-      return session;
-   }
-
-   /** To be used on tests only */
-   public long getReplicatedSessionID()
-   {
-      return replicatedSessionID;
    }
 
    // Private --------------------------------------------------------------------------------------

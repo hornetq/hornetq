@@ -467,8 +467,6 @@ public class OrderingOnBackupTest extends FailoverTestBase
 
       assertEquals(0, errors.get());
 
-      compareConsumers(ADDRESS, PROPERTY_KEY, NTHREADS / 2);
-
       for (ConsumerThread t : cthreads)
       {
          if (t.sess != null)
@@ -687,8 +685,6 @@ public class OrderingOnBackupTest extends FailoverTestBase
 
       assertEquals(0, errors.get());
 
-      compareConsumers(ADDRESS, PROPERTY_KEY, NTHREADS / 2);
-
       for (ConsumerThread t : cthreads)
       {
          if (t.sess != null)
@@ -704,107 +700,6 @@ public class OrderingOnBackupTest extends FailoverTestBase
       stopServers();
       // ClientProducer p = s
 
-   }
-
-   /**
-    * Compare if Consumers between Backup and Live server are identical
-    * @param ADDRESS
-    * @param propertyToAssert
-    * @param NTHREADS
-    * @param NMESSAGES
-    * @throws Exception
-    */
-   private void compareConsumers(final SimpleString ADDRESS,
-                                 final SimpleString propertyToAssert,
-                                 int expectedNumberOfConsumers) throws Exception
-   {
-      List<QueueBinding> blive = getLocalQueueBindings(liveServer.getPostOffice(), ADDRESS.toString());
-      List<QueueBinding> bbackup = getLocalQueueBindings(backupServer.getPostOffice(), ADDRESS.toString());
-
-      assertEquals(1, blive.size());
-      assertEquals(1, bbackup.size());
-
-      QueueImpl qlive = (QueueImpl)blive.get(0).getQueue();
-      QueueImpl qbackup = (QueueImpl)bbackup.get(0).getQueue();
-
-      assertEquals(expectedNumberOfConsumers, qlive.getConsumerCount());
-
-      assertEquals(expectedNumberOfConsumers, qbackup.getConsumerCount());
-
-      debug("*****************************************************************************************");
-      debug("LiveConsumers:");
-      for (Consumer c : qlive.getConsumers())
-      {
-         ServerConsumerImpl sc = ((ServerConsumerImpl)c);
-         debug("ID: " + sc.getID() +
-               " SessionID = " +
-               sc.getSession().getID() +
-               " ReplicateSession = " +
-               sc.getReplicatedSessionID());
-      }
-
-      debug("*****************************************************************************************");
-      debug("BackupConsumers:");
-      for (Consumer c : qbackup.getConsumers())
-      {
-         ServerConsumerImpl sc = ((ServerConsumerImpl)c);
-         debug("ID: " + sc.getID() +
-               " SessionID = " +
-               sc.getSession().getID() +
-               " ReplicateSession = " +
-               sc.getReplicatedSessionID());
-      }
-
-      for (Consumer c1 : qlive.getConsumers())
-      {
-         ServerConsumerImpl liveConsumer = (ServerConsumerImpl)c1;
-
-         ServerConsumerImpl backupConsumer = null;
-
-         for (Consumer c2 : qbackup.getConsumers())
-         {
-            ServerConsumerImpl tmp2 = (ServerConsumerImpl)c2;
-            if (liveConsumer.getID() == tmp2.getID() && tmp2.getSession().getID() == liveConsumer.getReplicatedSessionID())
-            {
-               backupConsumer = tmp2;
-               break;
-            }
-         }
-
-         assertNotNull("Couldn't find a consumerID=" + liveConsumer.getID() + " on the backup node", backupConsumer);
-
-         long timeout = System.currentTimeMillis() + 5000;
-
-         // This is async, so a timed out check
-         while (System.currentTimeMillis() < timeout && liveConsumer.getDeliveringRefs().size() != backupConsumer.getDeliveringRefs()
-                                                                                                                 .size())
-         {
-            Thread.sleep(10);
-         }
-
-         assertEquals("Consumer ID = " + liveConsumer.getID() +
-                               " didn't have the same number of deliveries between live and backup node",
-                      liveConsumer.getDeliveringRefs().size(),
-                      backupConsumer.getDeliveringRefs().size());
-
-         Iterator<MessageReference> iterBackup = backupConsumer.getDeliveringRefs().iterator();
-         for (MessageReference refLive : liveConsumer.getDeliveringRefs())
-         {
-            MessageReference refBackup = iterBackup.next();
-
-            assertEquals(refLive.getMessage().getMessageID(), refBackup.getMessage().getMessageID());
-
-            // debug("Property on live = " + refLive.getMessage().getProperty(propertyToAssert));
-            // debug("Property on backup = " + refBackup.getMessage().getProperty(propertyToAssert));
-
-            assertNotNull(refLive.getMessage().getProperty(propertyToAssert));
-            assertTrue(refLive.getMessage()
-                              .getProperty(propertyToAssert)
-                              .equals(refBackup.getMessage().getProperty(propertyToAssert)));
-         }
-
-         assertFalse(iterBackup.hasNext());
-      }
    }
 
    /**
@@ -828,13 +723,13 @@ public class OrderingOnBackupTest extends FailoverTestBase
       QueueImpl qlive = (QueueImpl)blive.get(0).getQueue();
       QueueImpl qbackup = (QueueImpl)bbackup.get(0).getQueue();
 
-      assertEquals(expectedNumberOfMessages, qlive.getReferencesList().size());
+      assertEquals(expectedNumberOfMessages, qlive.list(null).size());
 
-      assertEquals(expectedNumberOfMessages, qbackup.getReferencesList().size());
+      assertEquals(expectedNumberOfMessages, qbackup.list(null).size());
 
-      Iterator<MessageReference> iterBackup = qbackup.getReferencesList().iterator();
+      Iterator<MessageReference> iterBackup = qbackup.list(null).iterator();
 
-      for (MessageReference refLive : qlive.getReferencesList())
+      for (MessageReference refLive : qlive.list(null))
       {
          assertTrue(iterBackup.hasNext());
          MessageReference refBackup = iterBackup.next();

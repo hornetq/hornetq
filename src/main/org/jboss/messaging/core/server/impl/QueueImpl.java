@@ -339,11 +339,6 @@ public class QueueImpl implements Queue
          return;
       }
       
-      if (trace)
-      {
-         log.trace("Trying to lock queue=" + this.name + ", backup=" + this.backup, new Exception("trace"));
-      }
-      
       try
       {
          lock.acquire();
@@ -351,11 +346,6 @@ public class QueueImpl implements Queue
       catch (InterruptedException e)
       {
          log.warn(e.getMessage(), e);
-      }
-
-      if (trace)
-      {
-         log.trace("Locked, queue=" + this.name + ", backup=" + this.backup, new Exception("trace"));
       }
    }
 
@@ -367,11 +357,6 @@ public class QueueImpl implements Queue
       }
       
       lock.release();
-
-      if (trace)
-      {
-         log.trace("UN-Locked, queue=" + this.name + ", backup = " + this.backup, new Exception("trace"));
-      }
    }
 
    public boolean isDurable()
@@ -406,11 +391,6 @@ public class QueueImpl implements Queue
 
    public void addLast(final MessageReference ref)
    {
-   
-      if (trace)
-      {
-      	log.trace("AddLast(" + this.getName() +  (backup?"@Backup":"@Live") + "::" + ref);
-      }
       add(ref, false);
    }
 
@@ -1040,12 +1020,6 @@ public class QueueImpl implements Queue
    // Public
    // -----------------------------------------------------------------------------
 
-   /** To be used on tests only. Do not use it otherwise */
-   public PriorityLinkedList<MessageReference> getReferencesList()
-   {
-      return this.messageReferences;
-   }
-
    @Override
    public boolean equals(final Object other)
    {
@@ -1605,11 +1579,6 @@ public class QueueImpl implements Queue
          HashSet<Queue> queues = new HashSet<Queue>();
 
          for (MessageReference ref : refsToAck)
-         {
-            queues.add(ref.getQueue());
-         }
-
-         for (MessageReference ref : refsToAdd)
          {
             queues.add(ref.getQueue());
          }

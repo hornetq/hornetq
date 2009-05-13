@@ -129,11 +129,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       log.trace(message);
    }
 
-   private static void trace(final String message, Exception t)
-   {
-      log.trace(message, t);
-   }
-
    // Constructors --------------------------------------------------
 
    public PagingStoreImpl(final PagingManager pagingManager,
@@ -394,17 +389,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
 
          currentPageLock.readLock().lock();
-         if (isTrace)
-         {
-         	if (pagingManager.isBackup())
-         	{
-            	trace("Paging Reference[" + message.getMessage(null).getMessageID() + "] on Backup");
-         	}
-         	else
-         	{
-            	trace("Paging Reference[" + message.getMessage(null).getMessageID() + "] on Live");
-         	}
-         }
 
          try
          {
@@ -485,11 +469,6 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                if (!depaging.get())
                {
-                  if (isTrace)
-                  {
-                     trace("Starting depaging for " + this.getStoreName(), new Exception ("trace"));
-                  }
-                     		
                   depaging.set(true);
                   Runnable depageAction = new DepageRunnable(executor);
                   executor.execute(depageAction);
@@ -957,11 +936,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       final boolean globalFull = isGlobalFull(getPageSizeBytes());
       if (pageFull || globalFull || !isPaging())
       {
-         if (isTrace) 
-         {
-            trace("clearDepage::true");
-         }
-         
          depaging.set(false);
          if (!globalFull)
          {
@@ -971,11 +945,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       else
       {
-         if (isTrace) 
-         {
-            trace("clearDepage::false");
-         }
-
          return false;
       }
    }
@@ -1064,10 +1033,6 @@ public class PagingStoreImpl implements TestSupportPageStore
                // the lock and this would dead lock
                if (running && !clearDepage())
                {
-                  if (isTrace)
-                  {
-                     trace("Scheduling to depage " + PagingStoreImpl.this.getStoreName());
-                  }
                   followingExecutor.execute(this);
                }
             }
