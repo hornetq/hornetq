@@ -1,26 +1,364 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="configuring-transports">
-    <title>Configuring Transports</title>
-    <para>blah</para>
+    <title>Configuring the Transport</title>
+    <para>JBoss Messaging has a fully pluggable and highly flexible transport layer and defines its
+        own Service Provider Interface (SPI) to make plugging in a new transport provider relatively
+        straightforward.</para>
+    <para>In this chapter we'll describe the concepts required for understanding JBoss Messaging
+        transports and where and how they're configured.</para>
     <section>
-        <title>Configuring Netty TCP</title>
-        <para></para>
+        <title>Understanding Acceptors</title>
+        <para>One of the most important concepts in JBoss Messaging transports is the
+                <emphasis>acceptor</emphasis>. Let's dive straight in and take a look at an acceptor
+            defined in xml in the configuration file <literal
+            >jbm-configuration.xml</literal>.</para>
+        <programlisting>
+&lt;acceptors&gt;                
+    &lt;acceptor name="netty"&gt;
+        &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
+        &lt;param key="jbm.remoting.netty.port" value="5446" type="Integer"/&gt;
+    &lt;/acceptor&gt;
+&lt;/acceptors&gt;            
+        </programlisting>
+        <para>Acceptors are always defined inside an <literal>acceptors</literal> element. There can
+            be one or more acceptors defined in the <literal>acceptors</literal> element. There's no
+            upper limit to the number of acceptors per server.</para>
+        <para>Each acceptor defines a way in which connections can be made to the JBoss Messaging
+            server.</para>
+        <para>In the above example we're defining an acceptor that uses Netty to listen for
+            connections at port <literal>5446</literal>. </para>
+        <para>The <literal>acceptor</literal> element contains a sub-element <literal
+                >factory-class</literal>, this element defines the factory used to create acceptor
+            instances. In this case we're using Netty to listen for connections so we use the Netty
+            implementation of an <literal>AcceptorFactory</literal> to do this. Basically, the
+                <literal>factory-class</literal> element determines which pluggable transport we're
+            going to use to do the actual listening.</para>
+        <para>The <literal>acceptor</literal> element can also be configured with zero or more
+                <literal>param</literal> sub-elements. Each <literal>param</literal> element defines
+            a key-value pair. These key-value pairs are used to configure the specific transport,
+            the set of valid key-value pairs depends on the specific transport be used and are
+            passed straight through to the underlying transport.</para>
+        <para>Examples of key-value pairs for a particular transport would be, say, to configure the
+            ip address to bind to, or the port to listen at.</para>
+        <para>Keys are always strings and values can be of type Long, Integer, String or
+            Boolean.</para>
     </section>
     <section>
-        <title>Configuring Netty SSL</title>
-        <para></para>
+        <title>Understanding Connectors</title>
+        <para>Whereas acceptors are used on the server to define how we accept connections,
+            connectors are used by a client to define how it connects to a server.</para>
+        <para>Let's look at a connector defined in our <literal>jbm-configuration.xml</literal>
+            file:</para>
+        <programlisting>
+&lt;connectors&gt;
+    &lt;connector name="netty"&gt;
+        &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class&gt;
+        &lt;param key="jbm.remoting.netty.port" value="5446" type="Integer"/&gt;
+    &lt;/connector&gt;
+&lt;/connectors&gt;            
+        </programlisting>
+        <para>Connectors can be defined inside an <literal>connectors</literal> element. There can
+            be one or more connectors defined in the <literal>connectors</literal> element. There's
+            no upper limit to the number of connectors per server.</para>
+        <para>You make ask yourself, if connectors are used by the <emphasis>client</emphasis> to
+            make connections then why are they defined on the <emphasis>server</emphasis>? There are
+            a couple of reasons for this:</para>
+        <itemizedlist>
+            <listitem>
+                <para>Sometimes the server acts as a client itself when it connects to another
+                    server, for example when one server is bridged to another, or when a server
+                    takes part in a cluster. In this cases the server needs to know how to connect
+                    to other servers. That's defined by <emphasis>connectors</emphasis>.</para>
+            </listitem>
+            <listitem>
+                <para>If you're using JMS and the server side JMS service to instantiate JMS
+                    ConnectionFactory instances and bind them in JNDI, then when creating the
+                        <literal>JBossConnectionFactory</literal> it needs to know what server that
+                    connection factory will create connections to.</para>
+                <para>That's defined by the <literal>connector-ref</literal> element in the <literal
+                        >jbm-jms.xml</literal>file on the server side. Let's take a look at a
+                    snipped from a <literal>jbm-jms.xml</literal> file that shows a JMS connection
+                    factory that references our netty connector defined in our <literal
+                        >jbm-configuration.xml</literal> file:</para>
+                <programlisting>
+&lt;connection-factory name="ConnectionFactory"&gt;
+    &lt;connector-ref connector-name="netty"/&gt;
+    &lt;entries&gt;
+        &lt;entry name="ConnectionFactory"/&gt;
+        &lt;entry name="XAConnectionFactory"/&gt;
+    &lt;/entries&gt;
+&lt;/connection-factory&gt;                
+            </programlisting>
+            </listitem>
+        </itemizedlist>
     </section>
     <section>
-        <title>Configuring Netty HTTP</title>
-        <para></para>
+        <title>Configuring the transport directly from the client side.</title>
+        <para>How do we configure a core <literal>ClientSessionFactory</literal> with the
+            information that it needs to connect with a server?</para>
+        <para>Connectors are also used indirectly when directly configuring a core <literal
+                >ClientSessionFactory</literal> to directly talk to a server. Although in this case
+            there's no need to define such a connector in the server side configuration, instead we
+            just create the parameters and tell the <literal>ClientSessionFactory</literal> which
+            connector factory to use.</para>
+        <para>Here's an example of creating a <literal>ClientSessionFactory</literal> which will
+            connect directly to the acceptor we defined earlier in this chapter, it uses the
+            standard Netty TCP transport and will try and connect on port 5446 to localhost
+            (default):</para>
+        <programlisting>
+Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
+    
+connectionParams.put(org.jboss.messaging.integration.transports.netty.PORT_PROP_NAME, 5446);
+
+TransportConfiguration transportConfiguration = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", connectionParams);
+
+ClientSessionFactory sessionFactory = new ClientSessionFactory(transportConfiguration);
+
+ClientSession session = sessionFactory.createSession(...);
+
+etc                       
+        </programlisting>
+        <para>Similarly, if you're using JMS, you can configure the JMS connection factory directly
+            on the client side without having to define a connector on the server side or define a
+            connection factory in <literal>jbm-jms.xml</literal>:</para>
+        <programlisting>
+Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
+
+connectionParams.put(org.jboss.messaging.integration.transports.netty.PORT_PROP_NAME, 5446);
+
+TransportConfiguration transportConfiguration = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", connectionParams);
+
+ConnectionFactory connectionFactory = new JBossConnectionFactory(transportConfiguration);
+
+Connection jmsConnection = connectionFactory.createConnection();
+
+etc                       
+        </programlisting>
     </section>
     <section>
-        <title>Configuring Netty Servlet</title>
-        <para></para>
+        <title>Configuring the Netty transport</title>
+        <para>Out of the box, JBoss Messaging currently uses <ulink
+                url="http://www.jboss.org/netty/">Netty</ulink>, a high performance low level
+            network library.</para>
+        <para>Our Netty transport can be configured in several different ways; to use old (blocking)
+            Java IO, or NIO (non-blocking), also to use straightforward TCP sockets, SSL, or to
+            tunnel over HTTP or HTTPS, on top of that we also provide a servlet transport.</para>
+        <para>We believe this caters for the vast majority of transport requirements.</para>
+        <section>
+            <title>Configuring Netty TCP</title>
+            <para> Netty TCP is a simple unencrypted TCP sockets based transport. Netty TCP can be
+                configured to use old blocking Java IO or non blocking Java NIO. We recommend you
+                use the default Java NIO for better scalability. </para>
+            <para>If you're running connections across an untrusted network please bear in mind this
+                transport is unencrypted. You may want to look at the SSL or HTTPS
+                configurations.</para>
+            <para>With the Netty TCP transport all connections are initiated from the client side.
+                I.e. the server does not initiate any connections to the client. This works well
+                with firewall policies that typically only allow connections to be initiated in one
+                direction.</para>
+            <para>All the valid Netty transport keys are defined in the class <literal
+                    >org.jboss.messaging.integration.transports.netty.TransportConstants</literal>.
+                The parameters can be used either with acceptors or connectors. The following
+                parameters can be used to configure Netty for simple TCP:</para>
+            <itemizedlist>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.usenio</literal>. If this is <literal
+                            >true</literal> then Java non blocking NIO will be used. If set to
+                            <literal>false</literal> than old blocking Java IO will be used.</para>
+                    <para>We highly recommend that you use non blocking Java NIO. Java NIO does not
+                        maintain a thread per connection so can scale to many more concurrent
+                        connections than with old blocking IO. We recommend the usage of Java 6 for
+                        NIO and the best scalability. The default value for this property is
+                            <literal>true</literal>.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.host</literal>. This specified the host name
+                        or ip address to connect to (when configuring a connector) or to listen on
+                        (when configuring an acceptor). The default value for this property is
+                            <literal>localhost</literal>. Note that if you want your servers
+                        accessible from other nodes, don't bind to localhost!</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.port</literal>. This specified the port to
+                        connect to (when configuring a connector) or to listen on (when configuring
+                        an acceptor). The default value for this property is <literal
+                        >5445</literal>.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.tcpnodelay</literal>. If this is <literal
+                            >true</literal> then <ulink
+                            url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
+                            algorithm</ulink> will be enabled. The default value for this property
+                        is <literal>true</literal>.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.tcpsendbuffersize</literal>. This parameter
+                        determines the size of the TCP send buffer in bytes. The default value for
+                        this property is <literal>32768</literal> bytes (32KiB).</para>
+                    <para>TCP buffer sizes should be tuned according to the bandwidth and latency of
+                        your network. Here's a good link that explains the theory behind <ulink
+                            url="http://www-didc.lbl.gov/TCP-tuning/">this</ulink>.</para>
+                    <para>In summary TCP send/receive buffer sizes should be calculated as:</para>
+                    <programlisting>
+                        buffer_size = bandwidth * RTT.
+                    </programlisting>
+                    <para>Where bandwidth is in <emphasis>bytes per second</emphasis> and network
+                        round trip time (RTT) is in seconds. RTT can be easily measured using the
+                            <literal>ping</literal> utility.</para>
+                    <para>For fast networks you may want to increase the buffer sizes from the
+                        defaults.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.tcpreceivebuffersize</literal>. This parameter
+                        determines the size of the TCP receive buffer in bytes. The default value
+                        for this property is <literal>32768</literal> bytes (32KiB).</para>
+                </listitem>
+            </itemizedlist>
+        </section>
+        <section>
+            <title>Configuring Netty SSL</title>
+            <para>Netty SSL is similar to the Netty TCP transport but it provides additional
+                security by encrypting TCP connections using the Secure Sockets Layer SSL</para>
+            <para>Please see the examples for a full working example of using Netty SSL.</para>
+            <para>Netty SSL uses all the same properties as Netty TCP but adds the following
+                additional properties:</para>
+            <itemizedlist>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.sslenabled</literal>. Must be <literal
+                            >true</literal> to enable SSL.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.keystorepath</literal>. This is the path to
+                        the SSL key store on the client which holds the client certificates.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.keystorepassword</literal>. This is the
+                        password for the client certificate key store on the client.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.truststorepath</literal>. This is the path to
+                        the trusted client certificate store on the server.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.truststorepassword</literal>. This is the
+                        password to the trusted client certificate store on the server.</para>
+                </listitem>
+            </itemizedlist>
+        </section>
+        <section>
+            <title>Configuring Netty HTTP</title>
+            <para>Netty HTTP tunnels packets over the HTTP protocol. It can be useful in scenarios
+                where firewalls only allow HTTP traffice to pass.</para>
+            <para>Please see the examples for a full working example of using Netty HTTP.</para>
+            <para>Netty HTTP uses the same properties as Netty TCP but adds the following additional
+                properties:</para>
+            <itemizedlist>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.httpenabled</literal>. Must be <literal
+                            >true</literal> to enable HTTP.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.httpclientidletime</literal>. TODO</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.httpclientidlescanperiod</literal>.
+                        TODO</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.httpresponsetime</literal>. TODO</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.httpserverscanperiod</literal>. TODO</para>
+                </listitem>
+                <listitem>
+                    <para><literal>jbm.remoting.netty.httprequiressessionid</literal>. TODO</para>
+                </listitem>
+            </itemizedlist>
+        </section>
+        <section>
+            <title>Configuring Netty Servlet</title>
+            <para>We also provide a Netty servlet transport for use with JBoss Messaging. The
+                servlet transport allows JBoss Messaging traffic to be tunneled over HTTP to a
+                servlet running in a servlet engine which then redirects it to an in-VM JBoss
+                Messaging server.</para>
+            <para>The servlet transport differs from the Netty HTTP transport in that, with the HTTP
+                transport JBoss Messaging effectively acts a web server listening for HTTP traffic
+                on, e.g. port 80 or 8080, whereas with the servlet transport JBM traffic is proxied
+                through a servlet engine which may already be serving web site or other
+                applications. This allows JBoss Messaging to be used where corporate policies may
+                only allow a single web server listening on an HTTP port, and this needs to serve
+                all applications including messaging.</para>
+            <para>Please see the examples for a full working example of the servlet transport being
+                used.</para>
+            <para>To configure a servlet engine to work the Netty Servlet transport we need to do
+                the following things:</para>
+            <itemizedlist>
+                <listitem>
+                    <para>Deploy the servlet. Here's an example web.xml describing a web application
+                        that uses the servlet:</para>
+                    <programlisting>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+    version="2.4"&gt;
+    &lt;context-param&gt;
+        &lt;param-name&gt;serverChannelName&lt;/param-name&gt;
+        &lt;param-value&gt;org.jboss.jbm&lt;/param-value&gt;
+    &lt;/context-param&gt;
+    
+    &lt;context-param&gt;
+        &lt;param-name&gt;streaming&lt;/param-name&gt;
+        &lt;param-value&gt;true&lt;/param-value&gt;
+    &lt;/context-param&gt;
+    
+    &lt;context-param&gt;
+        &lt;param-name&gt;reconnectTimeout&lt;/param-name&gt;
+        &lt;param-value&gt;3000&lt;/param-value&gt;
+    &lt;/context-param&gt;
+    
+    &lt;listener&gt;
+        &lt;listener-class&gt;org.jboss.netty.channel.socket.http.HttpTunnelingSessionListener&lt;/listener-class&gt;
+    &lt;/listener&gt;
+    
+    &lt;listener&gt;
+        &lt;listener-class&gt;org.jboss.netty.channel.socket.http.HttpTunnelingContextListener&lt;/listener-class&gt;
+    &lt;/listener&gt;
+    
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;NettyServlet&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.jboss.netty.channel.socket.http.HttpTunnelingServlet&lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+    
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;NettyServlet&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/JBMServlet&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+&lt;/web-app&gt;                    
+    
+                </programlisting>
+                    <para>Any traffic with the /JBMServlet url pattern will be considered JBoss
+                        Messaging tunneling traffic and be redirected to the servlet</para>
+                </listitem>
+                <listitem>
+                    <para>We also need to add a special Netty invm acceptor on the server side
+                        configuration. The servlet will forward all traffic to this acceptor. Here's
+                        a snippet from the <literal>jbm-configuration.xml</literal> file showing
+                        that acceptor being defined:</para>
+                    <programlisting>                    
+&lt;acceptor name="netty-servlet"&gt;
+    &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
+    &lt;param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/&gt;
+    &lt;param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/&gt;
+&lt;/acceptor&gt;                                         
+                </programlisting>
+                </listitem>
+            </itemizedlist>
+            <para>TODO need to explain what all these params on the servlet are and how they map to
+                the netty transport constants.</para>
+        </section>
     </section>
     <section>
         <title>Writing your own transport</title>
-        <para></para>
+        <para>TODO</para>
     </section>
-   
 </chapter>
