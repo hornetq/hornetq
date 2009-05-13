@@ -64,7 +64,7 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-users.xsd");
+      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "schema/jbm-users.xsd");
    }
 
    public void deploy(final Node node) throws Exception

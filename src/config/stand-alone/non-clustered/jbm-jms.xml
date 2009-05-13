@@ -10,7 +10,7 @@
       </entries>
    </connection-factory>
 
-   <queue name="DLQ" durable="true" filter="foo='bar'">
+   <queue name="DLQ">
       <entry name="/queue/DLQ"/>
    </queue>
 

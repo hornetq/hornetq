@@ -137,7 +137,7 @@ public class JMSServerDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-jms.xsd");
+      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "schema/jbm-jms.xsd");
    }
 
    /**

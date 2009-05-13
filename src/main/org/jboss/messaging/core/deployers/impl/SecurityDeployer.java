@@ -22,16 +22,16 @@
 
 package org.jboss.messaging.core.deployers.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Deploys the security settings into a security repository and adds them to the security store.
@@ -82,7 +82,7 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "jbm-configuration.xsd");
+      org.jboss.messaging.utils.XMLUtil.validate(rootNode, "schema/jbm-configuration.xsd");
    }
    
    /**
