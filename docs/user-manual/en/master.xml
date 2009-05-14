@@ -36,11 +36,12 @@
         <!ENTITY jms-bridge SYSTEM "modules/jms-bridge.xml">
         <!ENTITY ha-jndi SYSTEM "modules/ha-jndi.xml">
         <!ENTITY xa-recovery SYSTEM "modules/xa-recovery.xml">
+        <!ENTITY duplicate-detection SYSTEM "modules/duplicate-detection.xml">
         <!ENTITY core-bridges SYSTEM "modules/core-bridges.xml">
         <!ENTITY clusters SYSTEM "modules/clusters.xml">
         <!ENTITY ha SYSTEM "modules/ha.xml">
         <!ENTITY interoperability SYSTEM "modules/interoperability.xml">
-        <!ENTITY perf-tuning SYSTEM "modules/perf-tuning.xml">
+        <!ENTITY perf-tuning SYSTEM "modules/perf-tuning.xml">        
         ]>
 <book lang="en">
    <bookinfo>
@@ -85,6 +86,7 @@
    &jms-bridge;
    &ha-jndi;
    &core-bridges;
+   &duplicate-detection;
    &clusters;
    &ha;
    &interoperability;

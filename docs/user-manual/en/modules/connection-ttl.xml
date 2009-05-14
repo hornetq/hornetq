@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="clusters">
-    <title>Connection Clean-up, Time To Live (TTL), and number of client connections</title>
+    <title>Dead Connections, Time To Live and Session Multiplexing</title>
     <para>In this section we will discuss connection time-to-live (TTL) and explain how JBoss
         Messaging deals with crashed clients and clients which have exited without cleanly closing
         their resources. We'll also explain how to configure all the related parameters.</para>
@@ -56,62 +56,90 @@ finally
    }
 }
         </programlisting>
-        <para>Unfortunately users don't always write well behaved applications, and sometimes clients crash so don't have a chance to cleanup their
-        resources!</para>
-        <para>If this occurs then it can leave server side resources, e.g. representing the session objects, hanging on the server. If these were
-        not removed somehow then over time this would cause a resource leak on the server.</para>
-        <para>We have to balance this requirement for cleaning up dead client resources with the fact that sometimes the network between the client
-        and the server can fail and then come back, allowing the client to reconnect. JBoss Messaging supports client reconnection, so we don't want
-        to clean up "dead" server side resources too soon or this will prevent any client from reconnecting, as it won't be able to find its old sessions on
-        the server.</para>
-        <para>JBoss Messaging makes all of this configurable. For each <literal>ClientSessionFactory</literal> we define a <emphasis>connection TTL</emphasis>.
-        Each connection also sends a periodic "ping" to the server, when the server receives the "ping" it sends back "pong". Every time the server
-        receives a ping, it marks the time it received that last ping against the connection. If the server hasn't received a ping for the time given by 
-        the TTL, then it will be automatically cleaned up and its server side resources removed. Basically, the TTL determines how long the server will keep
-        a connection alive in the absence of a ping. Normally we configure the TTL to be much larger than the connection ping period so we can allow for
-        session reconnections at significant times later.</para>
-        <para>The ping period is defined by the <literal>PingPeriod</literal> attribute on the <literal>ClientSessionFactory</literal> instance.</para>
-        <para>If you're using JMS it's defined by the <literal>PingPeriod</literal> attribute on a <literal>JBossConnectionFactory</literal> instance,
-            or if you're deploying JMS connection factory instances direct into JNDI on the server side, you can specify it in the xml config, using
-            the parameter <literal>ping-period</literal>.</para>
+        <para>Unfortunately users don't always write well behaved applications, and sometimes
+            clients crash so they don't have a chance to clean up their resources!</para>
+        <para>If this occurs then it can leave server side resources, e.g. representing the session
+            objects, hanging on the server. If these were not removed somehow then over time this
+            would cause a resource leak on the server.</para>
+        <para>We have to balance this requirement for cleaning up dead client resources with the
+            fact that sometimes the network between the client and the server can fail and then come
+            back, allowing the client to reconnect. JBoss Messaging supports client reconnection, so
+            we don't want to clean up "dead" server side resources too soon or this will prevent any
+            client from reconnecting, as it won't be able to find its old sessions on the
+            server.</para>
+        <para>JBoss Messaging makes all of this configurable. For each <literal
+                >ClientSessionFactory</literal> we define a <emphasis>connection TTL</emphasis>.
+            Each connection also sends a periodic "ping" to the server, when the server receives the
+            "ping" it sends back "pong". Every time the server receives a ping, it marks the time it
+            received that last ping against the connection. If the server hasn't received a ping for
+            the time given by the TTL, then it will be automatically cleaned up and its server side
+            resources removed. Basically, the TTL determines how long the server will keep a
+            connection alive in the absence of a ping. Normally we configure the TTL to be much
+            larger than the connection ping period so we can allow for session reconnections at
+            significant times later.</para>
+        <para>The ping period is defined by the <literal>PingPeriod</literal> attribute on the
+                <literal>ClientSessionFactory</literal> instance.</para>
+        <para>If you're using JMS it's defined by the <literal>PingPeriod</literal> attribute on a
+                <literal>JBossConnectionFactory</literal> instance, or if you're deploying JMS
+            connection factory instances direct into JNDI on the server side, you can specify it in
+            the xml config, using the parameter <literal>ping-period</literal>.</para>
         <para>The default value for ping period is <literal>5000</literal>ms, i.e. 5 seconds.</para>
-        <para>The connection TTL is defined by the <literal>ConnectionTTL</literal> attribute on the <literal>ClientSessionFactory</literal> instance.</para>
-        <para>If you're using JMS it's defined by the <literal>ConnectionTTL</literal> attribute on a <literal>JBossConnectionFactory</literal> instance,
-        or if you're deploying JMS connection factory instances direct into JNDI on the server side, you can specify it in the xml config, using
-        the parameter <literal>connection-ttl</literal>.</para>
-        <para>The default value for connection ttl is <literal>300000</literal>ms, i.e. 5 minutes.</para>
-        <para>If you do not wish clients to be able to specify their own connection TTL, you can override all values used by a global value set
-        on the server side. This can be done by specifying the <literal>connection-ttl-override</literal> attribute in the server side configuration. The default
-        value for <literal>connection-ttl-override</literal> is <literal>-1</literal> which means "do not override" (i.e. let clients use their own values).</para>
-        <para>There's a thread on the server that periodically checks all the connections to see if they haven't been pinged for time TTL or over. The period
-        between checking connection is determined by the parameter<literal>connection-scan-period</literal> in the file <literal>jbm-configuration.xml</literal>.
-        The default value is <literal>1000</literal>ms.</para>
-                       
+        <para>The connection TTL is defined by the <literal>ConnectionTTL</literal> attribute on the
+                <literal>ClientSessionFactory</literal> instance.</para>
+        <para>If you're using JMS it's defined by the <literal>ConnectionTTL</literal> attribute on
+            a <literal>JBossConnectionFactory</literal> instance, or if you're deploying JMS
+            connection factory instances direct into JNDI on the server side, you can specify it in
+            the xml config, using the parameter <literal>connection-ttl</literal>.</para>
+        <para>The default value for connection ttl is <literal>300000</literal>ms, i.e. 5
+            minutes.</para>
+        <para>If you do not wish clients to be able to specify their own connection TTL, you can
+            override all values used by a global value set on the server side. This can be done by
+            specifying the <literal>connection-ttl-override</literal> attribute in the server side
+            configuration. The default value for <literal>connection-ttl-override</literal> is
+                <literal>-1</literal> which means "do not override" (i.e. let clients use their own
+            values).</para>
+        <para>There's a thread on the server that periodically checks all the connections to see if
+            they haven't been pinged for time TTL or over. The period between checking connection is
+            determined by the parameter<literal>connection-scan-period</literal> in the file
+                <literal>jbm-configuration.xml</literal>. The default value is <literal
+                >1000</literal>ms.</para>
     </section>
-    
     <section>
         <title>Detecting failure from the client side.</title>
-        <para>In the previous section we discussed how the client sends pings to the server and how "dead" connection resources are cleaned up
-        by the server. There's also another reason for pinging, and that's for the client to be able to detect that the server has failed.</para>
-        <para>Every <literal>pingPeriod</literal> milliseconds a ping is sent to the server, if, by the time the client is ready to send the next ping
-        to the server, the previous pong hasn't arrived then the client will consider the connection failed and will either initiate failover, or
-        call any FailureListener instances (or ExceptionListeners if you are using JMS) depending on how it has been configured.</para>
-        <para></para>
+        <para>In the previous section we discussed how the client sends pings to the server and how
+            "dead" connection resources are cleaned up by the server. There's also another reason
+            for pinging, and that's for the client to be able to detect that the server has
+            failed.</para>
+        <para>Every <literal>pingPeriod</literal> milliseconds a ping is sent to the server, if, by
+            the time the client is ready to send the next ping to the server, the previous pong
+            hasn't arrived then the client will consider the connection failed and will either
+            initiate failover, or call any FailureListener instances (or ExceptionListeners if you
+            are using JMS) depending on how it has been configured.</para>
+        <para/>
     </section>
-    
     <section>
-        <title>Number of client connections per factory</title>
-        <para>Each <literal>ClientSessionFactory</literal> creates connections on demand to the same server as you create sessions. Each instance will
-        create up to a maximum of <literal>maxConnections</literal> connections to the same server. Subsequent sessions will use one of the already created connections
-        in a round-robin fashion.</para>
-        <para>To illustrate this, let's say <literal>maxConnections</literal> is set to <literal>8</literal>. The first eight sessions that you create
-        will have a new underlying connection created for them, the next eight you create will use one of the previously created connections.</para>
-        <para>The default value for <literal>maxConnections</literal> is <literal>8</literal>, if you prefer you can set it to a lower value so each factory
-        maintains only one underlying connection. We choose a default value of <literal>8</literal> because on the server side each packet read from a particular
-        connection is read serially by the same thread, so if all traffic from the client's sessions is multiplexed on the same connection it will all be
-        processed by the same thread on the server, which might not be a good use of cores on the server. By choosing <literal>8</literal> then
-        different sessions traffic from the same client can be processed by different cores. If you have many different clients then this may not be relevant anyway.</para>
+        <title>Session Multiplexing</title>
+        <para>Each <literal>ClientSessionFactory</literal> creates connections on demand to the same
+            server as you create sessions. Each instance will create up to a maximum of <literal
+                >maxConnections</literal> connections to the same server. Subsequent sessions will
+            use one of the already created connections in a round-robin fashion.</para>
+        <para>To illustrate this, let's say <literal>maxConnections</literal> is set to <literal
+                >8</literal>. The first eight sessions that you create will have a new underlying
+            connection created for them, the next eight you create will use one of the previously
+            created connections.</para>
+        <para>The default value for <literal>maxConnections</literal> is <literal>8</literal>, if
+            you prefer you can set it to a lower value so each factory maintains only one underlying
+            connection. We choose a default value of <literal>8</literal> because on the server side
+            each packet read from a particular connection is read serially by the same thread, so if
+            all traffic from the client's sessions is multiplexed on the same connection it will all
+            be processed by the same thread on the server, which might not be a good use of cores on
+            the server. By choosing <literal>8</literal> then different sessions traffic from the
+            same client can be processed by different cores. If you have many different clients then
+            this may not be relevant anyway.</para>
+        <para>To change the value of <literal>maxConnections</literal> simply use the setter method
+            on the <literal>ClientSessionFactory</literal> immediately after constructing it, or if
+            you are using JMS use the setter on the <literal>JBossConnectionFactory</literal> or
+            specify the <literal>max-connections</literal> parameter in the connection factory xml
+            configuration in <literal>jbm-jms.xml</literal>.</para>
     </section>
-    
-    
 </chapter>
