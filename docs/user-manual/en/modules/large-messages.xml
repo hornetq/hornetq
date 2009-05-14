@@ -110,13 +110,13 @@
                             <entry>setBodyInputStream(InputStream)</entry>
                             <entry>Set the InputStream used on a message that will be sent over a
                                 producer</entry>
-                            <entry>JMS_JBM_INPUT_STREAM</entry>
+                            <entry>JMS_JBM_InputStream</entry>
                         </row>
                         <row>
                             <entry>setOutputStream(OutputStream)</entry>
                             <entry>Set the OutputStream that will receive the content of a message
                                 received in a non blocking way</entry>
-                            <entry>JMS_JBM_OUTPUT_STREAM</entry>
+                            <entry>JMS_JBM_OutputStream</entry>
                         </row>
                         <row>
                             <entry>saveOutputStream(OutputStream)</entry>
@@ -172,4 +172,11 @@
             
         </programlisting>
     </section>
+    
+    <section>
+        <title>Example</title>
+        <para>The <ulink url="../../../../examples/jms/large-message/readme.html">Large Message Example</ulink> shows
+            how large message is configured and used with JMS.</para>
+    </section>
+    
 </chapter>
