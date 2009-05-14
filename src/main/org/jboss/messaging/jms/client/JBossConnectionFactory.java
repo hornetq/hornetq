@@ -518,7 +518,6 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private void checkWrite()
    {
-      log.info("read only is " + readOnly);
       if (readOnly)
       {
          throw new IllegalStateException("Cannot set attribute on JBossConnectionFactory after it has been used");
