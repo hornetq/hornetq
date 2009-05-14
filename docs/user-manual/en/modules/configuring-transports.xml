@@ -92,7 +92,7 @@
             </listitem>
         </itemizedlist>
     </section>
-    <section>
+    <section id="configuring-transports.client.side">
         <title>Configuring the transport directly from the client side.</title>
         <para>How do we configure a core <literal>ClientSessionFactory</literal> with the
             information that it needs to connect with a server?</para>
