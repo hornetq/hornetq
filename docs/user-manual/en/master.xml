@@ -7,6 +7,7 @@
         <!ENTITY using-server SYSTEM "modules/using-server.xml">
         <!ENTITY using-jms SYSTEM "modules/using-jms.xml">
         <!ENTITY using-core SYSTEM "modules/using-core.xml">
+        <!ENTITY jms-core-mapping SYSTEM "modules/jms-core-mapping.xml">
         <!ENTITY embedding-jbm SYSTEM "modules/embedding-jbm.xml">
         <!ENTITY security SYSTEM "modules/security.xml">
         <!ENTITY wildcard-syntax SYSTEM "modules/wildcard-syntax.xml">
@@ -54,6 +55,7 @@
    &using-server;
    &using-jms;
    &using-core;
+   &jms-core-mapping;
    &embedding-jbm;
    &security;
    &wildcard-syntax;

@@ -11,24 +11,6 @@
             bound to addresses. A message is sent to an address and the server looks up the set of
             queues that are bound to that address, the server then routes the message to those set
             of queues.</para>
-        <para>JBoss Messaging core is JMS agnostic. It does not have any concept of a JMS Topic. A
-            JMS Topic is implemented in core as an address (the topic name) with zero or more queues
-            bound to it. Each queue bound to that address represents a topic subscription. A JMS
-            Queue is implemented as an address (the JMS Queue name) with one queue bound to it which
-            represents the JMS Queue.</para>
-        <para>By convention, all JMS Queues map to core queues where the core queue name has the
-            string <literal>jms.queue.</literal> prepended to it. E.g. the JMS Queue with the name
-            "orders.europe" would map to the core queue with the name "jms.queue.orders.europe". The
-            address aty which the core queue is bound is also given by the core queue name.</para>
-        <para>For JMS Topics the address at which the queues that represent the subscriptions are
-            bound is given by prepending the string "jms.topic." to the name of the JMS Topic. E.g.
-            the JMS Topic with name "news.europe" would map to the core address
-            "jms.topic.news.europe"</para>
-        <para>In other words if you send a JMS Message to a JMS Queue with name "orders.europe" it
-            will get routed on the server to any core queues bound to the address
-            "jms.queue.orders.europe". If you send a JMS Message to a JMS Topic with name
-            "news.europe" it will get routed on the server to any core queues bound to the address
-            "jms.topic.news.europe".</para>
         <para>JBoss Messaging allows sets of permissions to be defined against the queues based on
             their address. An exact match on the address can be used or a wildcard match can be used
             using the wildcard characters '<literal>#</literal>' and '<literal>*</literal>'.</para>
