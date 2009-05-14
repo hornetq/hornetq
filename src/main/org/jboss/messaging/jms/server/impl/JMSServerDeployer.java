@@ -100,9 +100,9 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String QUEUE_NODE_NAME = "queue";
 
-   private static final String QUEUE_FILTER_STRING_ATTR_NAME = "filter";
+   private static final String QUEUE_FILTER_NODE_NAME = "filter";
 
-   private static final String QUEUE_DURABLE_ATTR_NAME = "durable";
+   private static final String QUEUE_DURABLE_NODE_NAME = "durable";
 
    private static final String TOPIC_NODE_NAME = "topic";
 
@@ -438,19 +438,9 @@ public class JMSServerDeployer extends XmlDeployer
          NamedNodeMap atts = node.getAttributes();
          String queueName = atts.getNamedItem(getKeyAttribute()).getNodeValue();
          String filterString = null;
-         Node filterNode = atts.getNamedItem(QUEUE_FILTER_STRING_ATTR_NAME);
-         if(filterNode != null)
-         {
-            filterString = filterNode.getNodeValue();
-         }
          boolean durable = DEFAULT_QUEUE_DURABILITY;
-         Node durableNode = atts.getNamedItem(QUEUE_DURABLE_ATTR_NAME);
-         if(durableNode != null)
-         {
-            String val = durableNode.getNodeValue();
-            durable = val == null ? DEFAULT_QUEUE_DURABILITY:val.equalsIgnoreCase(Boolean.FALSE.toString());
-         }
          NodeList children = node.getChildNodes();
+         ArrayList<String> jndiNames = new ArrayList<String>();
          for (int i = 0; i < children.getLength(); i++)
          {
             Node child = children.item(i);
@@ -458,8 +448,24 @@ public class JMSServerDeployer extends XmlDeployer
             if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
-               jmsServerControl.createQueue(queueName, jndiName, filterString, durable);
+               jndiNames.add(jndiName);
             }
+            else if(QUEUE_DURABLE_NODE_NAME.equals(children.item(i).getNodeName()))
+            {
+               Node durableNode = children.item(i);
+               durable = durableNode.getNodeValue() == null ? DEFAULT_QUEUE_DURABILITY:durableNode.getNodeValue().equalsIgnoreCase(Boolean.FALSE.toString());
+            }
+            else if(QUEUE_FILTER_NODE_NAME.equals(children.item(i).getNodeName()))
+            {
+               Node filterNode = children.item(i);
+               Node attNode = filterNode.getAttributes().getNamedItem("string");
+               filterString = attNode.getNodeValue();
+            }
+         }
+         for (String jndiName : jndiNames)
+         {
+            jmsServerControl.createQueue(queueName, jndiName, filterString, durable);
+            System.out.println(queueName + jndiName + filterString + durable);
          }
       }
       else if (node.getNodeName().equals(TOPIC_NODE_NAME))
