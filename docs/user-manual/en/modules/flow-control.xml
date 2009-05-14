@@ -65,7 +65,7 @@
             <title>Using Core API</title>
             <para>If JBoss Messaging Core API is used, the consumer window size is specified
                by <literal>ClientSessionFactory.setConsumerWindowSize()</literal>
-               method.</para>
+               method and some of the <literal>ClientSession.createConsumer()</literal> methods.</para>
          </section>
          
          <section>
