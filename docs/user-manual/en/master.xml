@@ -82,9 +82,6 @@
    &client-reconnection;
    &server-discovery;
    &appserver-integration;
-   &jca-adaptor;
-   &jms-bridge;
-   &ha-jndi;
    &core-bridges;
    &duplicate-detection;
    &clusters;
