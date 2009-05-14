@@ -140,6 +140,8 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
 
    public static final boolean DEFAULT_BRIDGE_DUPLICATE_DETECTION = true;
+   
+   public static final int DEFAULT_BRIDGE_RECONNECT_ATTEMPTS = -1;
 
    // Attributes -----------------------------------------------------------------------------
 

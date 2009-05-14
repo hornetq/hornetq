@@ -32,8 +32,14 @@
             a property on the message to a unique value. You can create the value however you like,
             as long as it is unique. When the target server receives the message it will check if
             that property is set, if it is, then it will check in its in memory cache if it has
-            already received a message with that value of the header. If it has receieved a message
+            already received a message with that value of the header. If it has received a message
             with the same value before then it will ignore the message.</para>
+        <note>
+            <para>Using duplicate detection to move messages between nodes can give you the same
+                    <emphasis>once and only once</emphasis> delivery guarantees as if you were using
+                an XA transaction to consume messages from source and send them to the target, but
+                with less overhead and much easier configuration than using XA.</para>
+        </note>
         <para>If you're sending messages in a transaction then you don't have to set the property
             for <emphasis>every</emphasis> message you send in that transaction, you only need to
             set it once in the transaction. If the server detects a duplicate message for any
@@ -41,9 +47,10 @@
         <para>The name of the property that you set is given by the value of <literal
                 >org.jboss.messaging.core.message.impl.HDR_DUPLICATE_DETECTION_ID</literal>, which
             is <literal>_JBM_DUPL_ID</literal></para>
-        <para>The value of the property can be of type <literal>byte[]</literal> or <literal>SimpleString</literal> if you're using the
-            core API. If you're using JMS it must be a <literal>String</literal>, and it's valid should be unique. An easy way of generating
-        a unique id is by generating a UUID.</para>
+        <para>The value of the property can be of type <literal>byte[]</literal> or <literal
+                >SimpleString</literal> if you're using the core API. If you're using JMS it must be
+            a <literal>String</literal>, and it's valid should be unique. An easy way of generating
+            a unique id is by generating a UUID.</para>
         <para>Here's an example of setting the property using the core API:</para>
         <programlisting>
 ...     

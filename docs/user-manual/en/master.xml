@@ -20,6 +20,7 @@
         <!ENTITY diverts SYSTEM "modules/diverts.xml">
         <!ENTITY logging SYSTEM "modules/logging.xml">
         <!ENTITY scheduled-messages SYSTEM "modules/scheduled-messages.xml">
+        <!ENTITY filter-expressions SYSTEM "modules/filter-expressions.xml">
         <!ENTITY flow-control SYSTEM "modules/flow-control.xml">
         <!ENTITY undelivered-messages SYSTEM "modules/undelivered-messages.xml">
         <!ENTITY message-expiry SYSTEM "modules/message-expiry.xml">
@@ -69,6 +70,7 @@
    &diverts;
    &logging;
    &scheduled-messages;
+   &filter-expressions;
    &flow-control;
    &undelivered-messages;
    &message-expiry;

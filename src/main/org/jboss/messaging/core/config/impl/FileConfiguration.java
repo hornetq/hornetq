@@ -665,7 +665,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
-      int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+      int reconnectAttempts = ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS;
 
       boolean failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
