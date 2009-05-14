@@ -1,8 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="pre-acknowledge">
-    <title>Pre Acknowledge</title>
-    <para>blah.</para>
-   
+    <title>Pre-Acknowledge Mode</title>
+    <para>JMS specifies 3 acknowledgement modes:</para>
+    <itemizedlist>
+      <listitem><para><literal>AUTO_ACKNOWLEDGE</literal></para></listitem>
+      <listitem><para><literal>CLIENT_ACKNOWLEDGE</literal></para></listitem>
+      <listitem><para><literal>DUPS_OK_ACKNOWLEDGE</literal></para></listitem>
+    </itemizedlist>
+    
+    <para>The acknowledgement modes all involves sending acknowledgement from the client to the server.
+       However, in the case you can afford to lose messages in event of failure, it would make sense to
+       acknowledge the message on the server <emphasis>before</emphasis> delivering it to the client.</para>
+    <para>The disadvantage of acknowledging on the server before delivery is that the message will be lost
+       if the system crashes <emphasis>after</emphasis> acknowledging the message on the server but
+       <emphasis>before</emphasis> it is delivered to the client. In that case, the message is lost and will
+       not be recovered when the system restart.</para>
+   <para>Depending on your messaging case, <literal>pre-acknowledgement</literal> mode can avoid extra
+      network traffic and CPU at the cost of coping with message loss.</para>
+   <para>An example of a use case for pre-acknowledgement is for stock price update messages.
+       With these messages it might be reasonable to lose a message in event of crash, since the next
+        price update message will arrive soon, overriding the previous price.
+    </para>
 
+    <section>
+       <title>Using PRE_ACKNOWLEDGE</title>
+       <para>To use pre-acknowledgement mode, create a JMS Session with the
+          <literal>JBossSession.PRE_ACKNOWLEDGE</literal> constant.</para>
+       <programlisting>
+// messages will be acknowledge on the server *before* being delivered to the client
+Session session = connection.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
+       </programlisting>
+    </section>
+       
+    <section>
+       <title>Example</title>
+       <para>The <ulink url="../../../../examples/jms/pre-acknowledge/readme.html">Pre-acknowledgement example</ulink> shows
+          how to use pre-acknowledgement mode with with JMS.</para>
+    </section>
    
 </chapter>
