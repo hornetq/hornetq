@@ -92,10 +92,10 @@ public interface Message
    // Used on Message chunk
    void encodeBody(MessagingBuffer buffer, long start, int size);
    
-   /** Used to set the MessageBody out of a File or any other Streaming you choose */
+   /** Set the InputStream used on a message that will be sent over a producer */
    void setBodyInputStream(InputStream stream);
    
-   /** Used to set the MessageBody out of a File or any other Streaming you choose */
+   /** Get the InputStream used on a message that will be sent over a producer */
    InputStream getBodyInputStream();
    
    

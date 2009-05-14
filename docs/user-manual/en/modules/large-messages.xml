@@ -1,7 +1,175 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="large-messages">
     <title>Large Messages</title>
-    <para>blah</para>
-   
-   
+    <para>JBoss Messaging supports sending and receiving of messages larger than it would fit on
+        client or server. The only limit is the disk space available on server.</para>
+    <para>Large Messages are broken into smaller pieces and sent thorugh the JBM Transports and
+        saved as files on the server.</para>
+    <para> Flow Control (<xref linkend="flow-control"/>) will be used on the transmission of the
+        large message to prevent overusing the channel or running out of memory during the
+        transmission process, so it is possible to send and receive very large messages. </para>
+    <section>
+        <title>Setting the limits</title>
+        <para>The definition of what is a Large Message could be relative to the transport you are
+            using.</para>
+        <para>For example, you may configure a the servlet transport to consider messages greater
+            than 10K as large message.</para>
+        <para>This could be defined on the property MinLargeMessageSize on the
+            ConnectionFactory.</para>
+        <para>You can define min-large-message-size at <literal>jbm-jms.xml</literal>:</para>
+        <programlisting>            ...
+            &lt;connection-factory name="ConnectionFactory">
+                &lt;connector-ref connector-name="netty"/>
+                &lt;entries>
+                    &lt;entry name="ConnectionFactory"/>
+                    &lt;entry name="XAConnectionFactory"/>
+                &lt;/entries>
+                
+                &lt;min-large-message-size>250000&lt;/min-large-message-size>
+            &lt;/connection-factory>
+            ...
+        </programlisting>
+        <para>You could also change the property directly on the ClientSessionFactory core
+            class</para>
+        <programlisting>        ClientSessionFactory factory = ....;
+        factory.setMinLargeMessageSize(25000);</programlisting>
+        <para>The default value is aways 100K which is a good value for most cases based on our
+            tests.</para>
+    </section>
+    <section>
+        <title>Streaming Large messages</title>
+        <para>A very efficient way of sending and receiving large messages is by using <literal
+                >InputStream</literal> and <literal>OutputStream</literal>.</para>
+        <para>This is a specific JBoss Messaging extension, where you can use properties on
+            JMS.</para>
+        <para>You can use any kind of Stream you like. The most common use case is to send files
+            stored in your disk, but you could also send things like JDBC Blobs, <literal
+                >SocketInputStream</literal>, things you recovered from <literal
+                >HTTPRequest</literal> or any other Stream you like as long as it implements
+                <literal>java.io.InputStream</literal> for sending messages or <literal
+                >java.io.OutputStream</literal> for messages you are receiving.</para>
+        <section id="large-messages.streaming.over.jms">
+            <title>Streaming over JMS</title>
+            <para>The <literal>InputStream</literal> can be defined through the JMS Object Property
+                JMS_JBM_InputStream on messages being sent:</para>
+            <programlisting>
+                BytesMessage message = session.createBytesMessage();
+                FileInputStream fileInputStream = new FileInputStream(fileInput);
+                BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
+                message.setObjectProperty("JMS_JBM_InputStream", bufferedInput);
+                someProducer.send(message);</programlisting>
+            <para>The <literal>OutputStream</literal> can be set through the JMS Object Property
+                JMS_JBM_SaveStream on messages being received in a blocking way. This property is
+                internally mapped to the method saveOutputStream as specified on <xref
+                    linkend="large-messages.ClientMessageAPI"/></para>
+            <programlisting>
+                BytesMessage messageReceived = (BytesMessage)messageConsumer.receive(120000);
+                
+                File outputFile = new File("huge_message_received.dat");
+                
+                FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+                
+                BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream);
+                
+                // This will block until the entire content is saved on disk
+                messageReceived.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
+            </programlisting>
+            <para>You could also use the property JMS_JBM_INPUT_STREAM that would set the Streaming
+                Output in a non-blocking way, which may be a valid approach if you're keeping your
+                consumer aways opened. This property is internally mapped to setOutputStream as
+                specified on <xref linkend="large-messages.ClientMessageAPI"/></para>
+            <programlisting>
+                // This won't wait the stream to finish. You need to keep the consumer active.
+                messageReceived.setObjectProperty("JMS_JBM_InputStream", bufferedOutput);
+            </programlisting>
+            <warning>
+                <para>When using JMS, Streaming Large Message is only supported on ByteArray and
+                    ByteStream Messages because of the extra information required to process other
+                    types of messages</para>
+            </warning>
+        </section>
+        <section>
+            <title>Streaming over Core API</title>
+            <para>All the JMS Properties explained on <xref
+                    linkend="large-messages.streaming.over.jms"/> will have an equivalent on the
+                JBossMessaging core-api:</para>
+            <table frame="topbot" id="large-messages.ClientMessageAPI">
+                <title>org.jboss.messaging.core.client.ClientMessage API</title>
+                <tgroup cols="2">
+                    <colspec colname="Name" colnum="1"/>
+                    <colspec colname="Descr" colnum="2"/>
+                    <thead>
+                        <row>
+                            <entry>Name</entry>
+                            <entry>Description</entry>
+                            <entry>JMS Equivalent Property</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>setBodyInputStream(InputStream)</entry>
+                            <entry>Set the InputStream used on a message that will be sent over a
+                                producer</entry>
+                            <entry>JMS_JBM_INPUT_STREAM</entry>
+                        </row>
+                        <row>
+                            <entry>setOutputStream(OutputStream)</entry>
+                            <entry>Set the OutputStream that will receive the content of a message
+                                received in a non blocking way</entry>
+                            <entry>JMS_JBM_OUTPUT_STREAM</entry>
+                        </row>
+                        <row>
+                            <entry>saveOutputStream(OutputStream)</entry>
+                            <entry>Save the content of the message to the OutputStream. It will
+                                block until the entire content is transfered.</entry>
+                            <entry>JMS_JBM_SaveStream</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+    </section>
+    <section>
+        <title>ByteMessages and ByteArray</title>
+        <para>You may choose to not use the InputStream or OutputStream capability over JMS or core
+            API, however the Streaming process would be much more performatic. The data would be
+            written or read on the streaming very fast while using the getBytes would cause extra
+            checks to be made.</para>
+        <programlisting>
+         BytesMessage rm = (BytesMessage)cons.receive(10000);
+         byte data[] = new byte[1024];
+         for (int i = 0; i &lt; rm.getBodyLength(); i += 1024)
+         {
+            int numberOfBytes = rm.readBytes(data);
+            // Do whatever you want with the data
+         }        </programlisting>
+    </section>
+    <section>
+        <title>Other Types of Messages</title>
+        <para>JBossMessaging supports LargeMessages of type TextMessage, ObjectMessage and
+            MapMessage transparently. However those Messages will require a full reconstruction in
+            memory in order to work properly.</para>
+        <para>For example: You may choose to send a 1M String over a TextMessage. When you read the
+            message Java will need to parse the body of the message back into a String, so you need
+            to have enough memory to allocate your large-messages when using those types. If you use
+            ByteMessages on ByteArray and Streming this restriction won't apply.</para>
+    </section>
+    <section>
+        <title>Resending a LargeMessage</title>
+        <para>As LargeMessages are broken into smaller packets, we send them as a streaming from
+            server to client. Those messages are not kept in memory, so once they are read you can't
+            send them to another producer.</para>
+        <para><emphasis role="bold">As a result resending Large Messages like the following example
+                will not work:</emphasis></para>
+        <programlisting>
+            BytesMessage bm = (BytesMessage)cons.receive(1000);
+            
+            bm.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
+            
+            
+            /// <emphasis role="bold">This will not work! The body streaming is already gone!</emphasis>
+            someOtherProducer.send(bm); // resending the message to another destination;
+            
+        </programlisting>
+    </section>
 </chapter>

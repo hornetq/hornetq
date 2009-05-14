@@ -101,7 +101,7 @@ public class LargeMessageExample extends JMSExample
 
          System.out.println("File created.");
 
-         // Step 6. Create a BytesMessage - does it have to be a bytesmessage??
+         // Step 6. Create a BytesMessage
          BytesMessage message = session.createBytesMessage();
 
          // Step 7. We set the InputStream on the message. When sending the message will read the InputStream
