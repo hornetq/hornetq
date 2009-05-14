@@ -33,8 +33,7 @@
             class</para>
         <programlisting>        ClientSessionFactory factory = ....;
         factory.setMinLargeMessageSize(25000);</programlisting>
-        <para>The default value is aways 100K which is a good value for most cases based on our
-            tests.</para>
+        <para>The default value is aways 100K which is a good value for most cases.</para>
     </section>
     <section>
         <title>Streaming Large messages</title>

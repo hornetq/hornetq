@@ -22,13 +22,14 @@
 
 package org.jboss.messaging.tests.integration.cluster.failover;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientConsumer;
@@ -44,13 +45,10 @@ import org.jboss.messaging.core.paging.PagedMessage;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.postoffice.QueueBinding;
-import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.QueueImpl;
-import org.jboss.messaging.core.server.impl.ServerConsumerImpl;
 import org.jboss.messaging.tests.util.RandomUtil;
-import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -269,7 +267,17 @@ public class OrderingOnBackupTest extends FailoverTestBase
 
    }
 
+   public void testDeliveryOrderOnTransactionalRollbackMultiThreadXA() throws Exception
+   {
+      internalTestDeliveryOrderOnTransactionalRollbackMultiThread(true);
+   }
+
    public void testDeliveryOrderOnTransactionalRollbackMultiThread() throws Exception
+   {
+      internalTestDeliveryOrderOnTransactionalRollbackMultiThread(false);
+   }
+
+   public void internalTestDeliveryOrderOnTransactionalRollbackMultiThread(final boolean isXA) throws Exception
    {
 
       final SimpleString ADDRESS = new SimpleString("TEST");
@@ -314,7 +322,7 @@ public class OrderingOnBackupTest extends FailoverTestBase
                   msg.putStringProperty(PROPERTY_KEY, RandomUtil.randomSimpleString());
                   prod.send(msg);
                }
-               
+
                sess.commit();
             }
             catch (Throwable e)
@@ -346,6 +354,8 @@ public class OrderingOnBackupTest extends FailoverTestBase
 
          final CountDownLatch latchStart;
 
+         Xid xid = null;
+
          final boolean rollback;
 
          ConsumerThread(final ClientSessionFactory sf,
@@ -359,16 +369,42 @@ public class OrderingOnBackupTest extends FailoverTestBase
             this.rollback = rollback;
          }
 
+         public void close()
+         {
+            try
+            {
+               if (xid != null)
+               {
+                  sess.rollback(xid);
+                  xid = null;
+               }
+               sess.close();
+               sess = null;
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+
+         }
+
          @Override
          public void run()
          {
+
             ClientConsumer cons = null;
             try
             {
                latchAlign.countDown();
                latchStart.await();
 
-               sess = sf.createSession(false, false, false);
+               sess = sf.createSession(isXA, false, false);
+
+               if (isXA)
+               {
+                  xid = newXID();
+                  sess.start(xid, XAResource.TMNOFLAGS);
+               }
 
                cons = sess.createConsumer(ADDRESS);
 
@@ -390,9 +426,21 @@ public class OrderingOnBackupTest extends FailoverTestBase
             {
                try
                {
+                  if (isXA)
+                  {
+                     sess.end(xid, XAResource.TMSUCCESS);
+                  }
                   if (rollback)
                   {
-                     sess.rollback();
+                     if (isXA)
+                     {
+                        sess.rollback(xid);
+                        xid = null;
+                     }
+                     else
+                     {
+                        sess.rollback();
+                     }
                      cons.close();
                   }
                }
@@ -471,7 +519,7 @@ public class OrderingOnBackupTest extends FailoverTestBase
       {
          if (t.sess != null)
          {
-            t.sess.close();
+            t.close();
          }
       }
 

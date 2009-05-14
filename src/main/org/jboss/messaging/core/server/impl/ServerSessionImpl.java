@@ -511,7 +511,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
       else
       {
-         final HashSet<Queue> queues = lockUsedQueues();
+         final HashSet<Queue> queues = lockUsedQueues(null);
 
          replicatingChannel.replicatePacket(packet, oppositeChannelID, new Runnable()
          {
@@ -625,17 +625,30 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleXARollback(final SessionXARollbackMessage packet)
    {
+      
       if (replicatingChannel == null)
       {
          doHandleXARollback(packet);
       }
       else
       {
+         final Set<Queue> queues = lockUsedQueues(packet.getXid());
+
          replicatingChannel.replicatePacket(packet, oppositeChannelID, new Runnable()
          {
             public void run()
             {
-               doHandleXARollback(packet);
+               try
+               {
+                  doHandleXARollback(packet);
+               }
+               finally
+               {
+                  for (Queue queue : queues)
+                  {
+                     queue.unlockDelivery();
+                  }
+               }
             }
          });
       }
@@ -865,7 +878,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
       else
       {
-         final HashSet<Queue> queues = lockUsedQueues();
+         final HashSet<Queue> queues = lockUsedQueues(null);
 
          // We need to stop the consumers first before replicating, to ensure no deliveries occur after this,
          // but we need to process the actual close() when the replication response returns, otherwise things
@@ -2508,12 +2521,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          postOffice.route(msg, tx);
       }
    }
-   
+
    /**
     * We need to avoid delivery when rolling back while doing replication, or the backup node could be on a different order
     * @return
     */
-   private HashSet<Queue> lockUsedQueues()
+   private HashSet<Queue> lockUsedQueues(Xid xid)
    {
       final HashSet<Queue> queues = new HashSet<Queue>();
       
@@ -2522,9 +2535,19 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          queues.add(consumer.getQueue());
       }
       
-      if (tx != null)
+      Transaction localTX;
+      if (xid == null)
       {
-         queues.addAll(tx.getDistinctQueues());
+         localTX = tx;
+      }
+      else
+      {
+         localTX = resourceManager.getTransaction(xid);
+      }
+      
+      if (localTX != null)
+      {
+         queues.addAll(localTX.getDistinctQueues());
       }
       
       for (Queue queue : queues)
