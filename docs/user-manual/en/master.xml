@@ -27,7 +27,6 @@
         <!ENTITY intercepting-operations SYSTEM "modules/intercepting-operations.xml">
         <!ENTITY last-value-queues SYSTEM "modules/last-value-queues.xml">
         <!ENTITY message-grouping SYSTEM "modules/message-grouping.xml">
-        <!ENTITY consumer-buffering SYSTEM "modules/consumer-buffering.xml">
         <!ENTITY pre-acknowledge SYSTEM "modules/pre-acknowledge.xml">
         <!ENTITY client-reconnection SYSTEM "modules/client-reconnection.xml">
         <!ENTITY server-discovery SYSTEM "modules/server-discovery.xml">
@@ -77,7 +76,6 @@
    &intercepting-operations;
    &last-value-queues;
    &message-grouping;
-   &consumer-buffering;
    &pre-acknowledge;
    &client-reconnection;
    &server-discovery;
