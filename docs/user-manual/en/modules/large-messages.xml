@@ -77,10 +77,10 @@ factory.setMinLargeMessageSize(25000);</programlisting>
             sends more packets the output stream will receive the body of the message. </para>
         <para>You may choose to block while the output stream is recovered using the method <literal
                 >ClientMessage.saveOutputStream</literal>) or do it asynchronously using the method
-                <literal>ClientMessage.setOutputstream</literal>. </para>
-        <para>If you choose the non blocking method the caller of the method won't wait the
-            transmission to finish after <literal>setOutputStream</literal> is called so you need to
-            keep the message consumer active.</para>
+                <literal>ClientMessage.setOutputstream</literal>. If you choose the non blocking
+            method the caller of the method won't wait the transmission to finish after <literal
+                >setOutputStream</literal> is called so you need to keep the message consumer
+            active.</para>
         <para>You can use any kind of stream you like. The most common use case is to send files
             stored in your disk, but you could also send things like JDBC Blobs, <literal
                 >SocketInputStream</literal>, things you recovered from <literal
@@ -122,7 +122,7 @@ factory.setMinLargeMessageSize(25000);</programlisting>
                             <entry>saveOutputStream(OutputStream)</entry>
                             <entry>Save the content of the message to the <literal
                                     >OutputStream</literal>. It will block until the entire content
-                                is transfered to the <literal>OutputStream</literal>.</entry>
+                                is transferred to the <literal>OutputStream</literal>.</entry>
                             <entry>JMS_JBM_SaveStream</entry>
                         </row>
                     </tbody>
@@ -134,7 +134,7 @@ factory.setMinLargeMessageSize(25000);</programlisting>
 ClientMessage msg = consumer.receive(...);
 
 
-// This will block here until the stream was transfered
+// This will block here until the stream was transferred
 msg.saveOutputStream(someOutputStream); 
 
 ClientMessage msg2 = consumer.receive(...);
@@ -154,8 +154,8 @@ msg.setInputStream(dataInputStream);
         </section>
         <section id="large-messages.streaming.over.jms">
             <title>Streaming over JMS</title>
-            <para>When using JMS JBoss Messaging maps the the streaming methods as object properties
-                as seen on <xref linkend="large-messages.ClientMessageAPI"/>. You can use the method
+            <para>When using JMS JBoss Messaging maps the streaming methods as object properties as
+                seen on <xref linkend="large-messages.ClientMessageAPI"/>. You can use the method
                     <literal>Message.setObjectProperty</literal> to set the streaming.</para>
             <para>The <literal>InputStream</literal> can be defined through the JMS Object Property
                 JMS_JBM_InputStream on messages being sent:</para>
@@ -197,13 +197,22 @@ messageReceived.setObjectProperty("JMS_JBM_InputStream", bufferedOutput);
         </section>
     </section>
     <section>
-        <title>BytesMessage and StreamMessage</title>
-        <para>You may choose to not use the InputStream or OutputStream capability over JMS or core
-            API even knowing streaming would be the most performatic approach. </para>
-        <para>If you require that over the Core API the use of <literal>MessageBuffer</literal> is
-            transparent, just use the methods as part of the API.</para>
-        <para>If using JMS API on <literal>BytesMessage</literal> and <literal
-                >StreamMessage</literal> is supported transparently also.</para>
+        <title>Not using streaming</title>
+        <para>You may choose to not use the <literal>InputStream</literal> or <literal
+                >OutputStream</literal> capability over JMS or core API even knowing streaming would
+            be the most performatic approach. </para>
+        <para>You could still access the data transparently both using the core API or JMS.</para>
+        <para>On the Core API just get the bytes of the body as you normally would.</para>
+        <programlisting>ClientMessage msg = consumer.receive();
+         
+byte[] bytes = new byte[1024];
+for (int i = 0 ;  i &lt; msg.getBodySize(); i += bytes.length)
+{
+   msg.getBody().readBytes(bytes);
+   // Whatever you want to do with the bytes
+}</programlisting>
+        <para>If using JMS API, <literal>BytesMessage</literal> and <literal>StreamMessage</literal>
+            also supports is transparently.</para>
         <programlisting>BytesMessage rm = (BytesMessage)cons.receive(10000);
 
 byte data[] = new byte[1024];
@@ -216,9 +225,10 @@ for (int i = 0; i &lt; rm.getBodyLength(); i += 1024)
     </section>
     <section>
         <title>Other Types of Messages</title>
-        <para>JBossMessaging supports LargeMessages of type TextMessage, ObjectMessage and
-            MapMessage transparently. However those Messages will require a full reconstruction in
-            memory in order to work properly.</para>
+        <para>JBoss Messaging supports large messages of type <literal>TextMessage</literal>,
+                <literal>ObjectMessage</literal> and <literal>MapMessage</literal> transparently.
+            However those types of message will require a full reconstruction in memory in order to
+            work properly.</para>
         <para>For example: You may choose to send a 1MB String over a TextMessage. When you read the
             message Java will need to parse the body of the message back into a String, so you need
             to have enough memory to allocate your large messages when using those types. If you use
@@ -226,11 +236,12 @@ for (int i = 0; i &lt; rm.getBodyLength(); i += 1024)
             won't apply.</para>
     </section>
     <section>
-        <title>Resending a LargeMessage</title>
+        <title>Resending a large message</title>
         <para>As large messages are broken into smaller packets, we send them as a streaming from
             server to client. Those message bodies are not kept in memory so once they are read
             their body is gone therefore it is not possible to resend a large message.</para>
-        <para>As a result resending large messages like the following example will not work:</para>
+        <para>As a result resending large messages after reading them will not work as seen on this
+            example:</para>
         <programlisting>BytesMessage bm = (BytesMessage)cons.receive(1000);
                 
 bm.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);

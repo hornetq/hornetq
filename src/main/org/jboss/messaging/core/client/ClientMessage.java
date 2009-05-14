@@ -41,11 +41,11 @@ public interface ClientMessage extends Message
    
    void setDeliveryCount(int deliveryCount);
    
-   /** Sets the outputStream of large messages. It doesn't block on waiting the large-message to complete 
+  /** Sets the OutputStream that will receive the content of a message received in a non blocking way
     * @throws MessagingException */
    void setOutputStream(OutputStream out) throws MessagingException;
    
-   /** Save the content of the message to the outputStream. It blocks until the entire data was received */
+   /** Save the content of the message to the OutputStream. It will block until the entire content is transfered to the OutputStream. */
    void saveToOutputStream(OutputStream out) throws MessagingException;
 
    /**
