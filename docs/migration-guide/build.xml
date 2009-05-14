@@ -1,6 +1,6 @@
 <project name="jbmessaging.migration-guide" default="all" basedir=".">
 
-  <property name="build.dir" value="${basedir}/../../output/docs/migration-guide"/>
+  <property name="build.dir" value="build"/>
   <property name="pdf.name"  value="JBossMessaging_UserManual.pdf"/>
   <import file="${basedir}/../../lib/docbook-support/support.xml"/>
 
