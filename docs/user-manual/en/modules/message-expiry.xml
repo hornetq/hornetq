@@ -67,7 +67,7 @@ message.setExpiration(System.currentTimeMillis() + 5000);
    </section>
    <section>
       <title>Example</title>
-      <para>The <ulink url="../../../../examples/jms/expiry/readme.html">Expiry example</ulink> shows
+      <para>The <ulink url="../../../../examples/jms/expiry/readme.html"><literal>expiry</literal> example</ulink> shows
          how message expiry is configured and used with JMS.</para>
    </section>
 </chapter>

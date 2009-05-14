@@ -218,7 +218,7 @@
         </itemizedlist>
         <section>
             <title>Example</title>
-            <para>The <ulink url="../../../../examples/jms/jaas/readme.html">JAAS example</ulink>
+            <para>The <ulink url="../../../../examples/jms/jaas/readme.html"><literal>jaas</literal> example</ulink>
                 shows how JBoss Messaging can be configured to use JAAS.</para>
         </section>
     </section>

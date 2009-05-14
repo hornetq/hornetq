@@ -52,7 +52,7 @@
        
     <section>
        <title>Example</title>
-       <para>The <ulink url="../../../../examples/jms/message-group/readme.html">Message Group example</ulink> shows
+       <para>The <ulink url="../../../../examples/jms/message-group/readme.html"><literal>message-group</literal> example</ulink> shows
           how message groups are configured and used with JMS.</para>
     </section> 
 </chapter>

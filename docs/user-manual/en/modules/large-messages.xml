@@ -175,7 +175,7 @@
     
     <section>
         <title>Example</title>
-        <para>The <ulink url="../../../../examples/jms/large-message/readme.html">Large Message Example</ulink> shows
+        <para>The <ulink url="../../../../examples/jms/large-message/readme.html"><literal>large-message</literal> Example</ulink> shows
             how large message is configured and used with JMS.</para>
     </section>
     

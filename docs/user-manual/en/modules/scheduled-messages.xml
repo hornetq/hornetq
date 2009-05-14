@@ -24,7 +24,7 @@
          
    <section>
       <title>Example</title>
-      <para>The <ulink url="../../../../examples/jms/scheduled-message/readme.html">Scheduled Message example</ulink> shows
+      <para>The <ulink url="../../../../examples/jms/scheduled-message/readme.html"><literal>scheduled-message</literal> example</ulink> shows
       how scheduled messages can be used with JMS.</para>
    </section>
    

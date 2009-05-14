@@ -46,7 +46,7 @@
           
        <section>
           <title>Example</title>
-          <para>The <ulink url="../../../../examples/jms/last-value-queue/readme.html">Last-Value Queue example</ulink> shows
+          <para>The <ulink url="../../../../examples/jms/last-value-queue/readme.html"><literal>last-value-queue</literal> example</ulink> shows
              how last value queues are configured and used with JMS.</para>
        </section>
 </chapter>
