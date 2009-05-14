@@ -31,6 +31,7 @@
         <!ENTITY pre-acknowledge SYSTEM "modules/pre-acknowledge.xml">
         <!ENTITY client-reconnection SYSTEM "modules/client-reconnection.xml">
         <!ENTITY server-discovery SYSTEM "modules/server-discovery.xml">
+        <!ENTITY appserver-integration SYSTEM "modules/appserver-integration.xml">
         <!ENTITY jca-adaptor SYSTEM "modules/jca-adaptor.xml">
         <!ENTITY jms-bridge SYSTEM "modules/jms-bridge.xml">
         <!ENTITY ha-jndi SYSTEM "modules/ha-jndi.xml">
@@ -79,6 +80,7 @@
    &pre-acknowledge;
    &client-reconnection;
    &server-discovery;
+   &appserver-integration;
    &jca-adaptor;
    &jms-bridge;
    &ha-jndi;

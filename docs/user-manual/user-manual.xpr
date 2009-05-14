@@ -9,6 +9,7 @@
         <folder name="en">
             <folder name="images"/>
             <folder name="modules">
+                <file name="en/modules/appserver-integration.xml"/>
                 <file name="en/modules/architecture.xml"/>
                 <file name="en/modules/client-reconnection.xml"/>
                 <file name="en/modules/clusters.xml"/>
@@ -19,11 +20,8 @@
                 <file name="en/modules/embedding-jbm.xml"/>
                 <file name="en/modules/flow-control.xml"/>
                 <file name="en/modules/ha.xml"/>
-                <file name="en/modules/ha-jndi.xml"/>
                 <file name="en/modules/intercepting-operations.xml"/>
                 <file name="en/modules/interoperability.xml"/>
-                <file name="en/modules/jca-adaptor.xml"/>
-                <file name="en/modules/jms-bridge.xml"/>
                 <file name="en/modules/large-messages.xml"/>
                 <file name="en/modules/last-value-queues.xml"/>
                 <file name="en/modules/logging.xml"/>

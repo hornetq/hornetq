@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="xa-recovery">
+    <title>Application Server Integration and JavaEE</title>
+    <para>blah</para>
+    <section>
+        <title>Using and Configuring the JCA Adapter</title>
+        <para>blah</para>
+    </section>
+    <section>
+        <title>Using JBM with MDBs in JBoss AS</title>
+        <para>blah</para>
+    </section>
+    <section>
+        <title>High Availibility JNDI (HAJNDI)</title>
+        <para>blah</para>
+    </section>
+    <section>
+        <title>The JMS Bridge</title>
+        <para>blah</para>
+    </section>
+</chapter>
