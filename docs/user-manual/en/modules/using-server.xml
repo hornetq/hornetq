@@ -32,7 +32,7 @@
         <para>The run scripts <literal>run.sh</literal> and <literal>run.bat</literal> set some JVM
             settings for tuning running on Java 6 and choosing the garbage collection policy. We
             recommend using a parallel garbage collection algorithm to smooth out latency and
-            minmises large GC pauses.</para>
+            minimises large GC pauses.</para>
         <para>By default JBoss Messaging runs in a maximum of 1GB of RAM. To increase the memory
             settings change the <literal>-Xms</literal> and <literal>-Xmx</literal> memory settings
             as you would for any Java program.</para>
@@ -77,7 +77,7 @@
         <title>System properties</title>
         <para>JBoss Messaging also takes a couple of Java system properties on the command line for
             configuring logging properties</para>
-        <para>JBoss Messaging uses JDK logging to minmise dependencies on other logging systems. JDK
+        <para>JBoss Messaging uses JDK logging to minimise dependencies on other logging systems. JDK
             logging can then be configured to delegate to some other framework, e.g. log4j if that's
             what you prefer.</para>
         <para>For more information on configuring logging, please see the section configuring
