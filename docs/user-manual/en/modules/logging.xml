@@ -1,8 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="logging">
     <title>Logging</title>
-    <para>Logging</para>
-    
-
-   
+    <para>JBM leverages the Java Logging framework, JUL, for all its logging meaning we have no
+        dependencies on any logging framework. Users can provide their own logging handler to use or
+        alternatively use one of the handlers provided by JBM. There are 2 of these a Log4j handler
+        and a JBoss logging handler.</para>
+    <para>The handlers are configured via the JUL logging.properties file. This default location for
+        this file is under the <literal>lib</literal> directory found in the Java home directory
+        however can be overriden. The standalone JBM server does this and the <literal
+            >logging.properties</literal> file can be found under the config directory of the JBM
+        installation. </para>
+    <para>To use the Log4j  handler edit the <literal>logging.properties</literal> file and change
+        the <literal>handlers</literal> property to:</para>
+    <programlisting>handlers=org.jboss.messaging.integration.logging.Log4jLoggerHandler</programlisting>
+    <para>A log4j config file <literal>log4j.xml</literal> is provided for configuring Log4j. </para>
+    <para>To use the JBoss handler edit the <literal>logging.properties</literal> file and change
+        the <literal>handlers</literal> propert to:</para>
+    <programlisting>handlers=org.jboss.messaging.integration.logging.JBossLoggerHandler</programlisting>
+    <para>If using the JBoss handler the property <literal
+            >org.jboss.logging.Logger.pluginClass</literal> must be set. By default this is set to
+            <literal>org.jboss.messaging.integration.logging.JBMLoggerPlugin</literal> in the
+        standalone server. Only change this property if you want to use your own plugin
+        class.</para>
+    <note>
+        <para>If running JBM within the JBoss Application Server logging will default to what ever
+            the AS is using. Refer to the AS docs for more info on how to configure logging.</para>
+    </note>
 </chapter>
