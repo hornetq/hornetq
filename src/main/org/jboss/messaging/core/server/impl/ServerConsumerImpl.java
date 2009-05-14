@@ -137,12 +137,9 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final Binding binding;
 
-   private MessagingServer server;
-
    // Constructors ---------------------------------------------------------------------------------
 
-   public ServerConsumerImpl(final MessagingServer server,
-                             final long id,
+   public ServerConsumerImpl(final long id,
                              final long replicatedSessionID,
                              final ServerSession session,
                              final QueueBinding binding,
@@ -158,8 +155,6 @@ public class ServerConsumerImpl implements ServerConsumer
                              final Executor executor,
                              final ManagementService managementService) throws Exception
    {
-      this.server = server;
-
       this.id = id;
 
       this.replicatedSessionID = replicatedSessionID;
@@ -190,11 +185,11 @@ public class ServerConsumerImpl implements ServerConsumer
 
       this.managementService = managementService;
 
-      binding.getQueue().addConsumer(this);
-
-      minLargeMessageSize = session.getMinLargeMessageSize();
+      this.minLargeMessageSize = session.getMinLargeMessageSize();
 
       this.updateDeliveries = updateDeliveries;
+      
+      binding.getQueue().addConsumer(this);
    }
 
    // ServerConsumer implementation
@@ -271,7 +266,7 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       return deliveringRefs.size();
    }
-   
+
    public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
    {
       boolean performACK = lastConsumedAsDelivered;
@@ -334,9 +329,13 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (trace)
          {
-            log.trace("Received " + credits + " credits, previous value = " + previous + " currentValue = " + availableCredits.get());
+            log.trace("Received " + credits +
+                      " credits, previous value = " +
+                      previous +
+                      " currentValue = " +
+                      availableCredits.get());
          }
-         
+
          if (previous <= 0 && previous + credits > 0)
          {
             promptDelivery();
@@ -372,7 +371,8 @@ public class ServerConsumerImpl implements ServerConsumer
                                             messageID +
                                             " backup = " +
                                             messageQueue.isBackup() +
-                                            " queue = " + messageQueue.getName() + 
+                                            " queue = " +
+                                            messageQueue.getName() +
                                             " closed = " +
                                             closed);
          }
@@ -451,7 +451,8 @@ public class ServerConsumerImpl implements ServerConsumer
             if (ref == null)
             {
                throw new IllegalStateException("Cannot find Reference[" + messageID +
-                                            "] after depaging on Queue " + messageQueue.getName());
+                                               "] after depaging on Queue " +
+                                               messageQueue.getName());
             }
          }
       }
@@ -902,7 +903,7 @@ public class ServerConsumerImpl implements ServerConsumer
          pendingLargeMessage.releaseResources();
 
          int counter = pendingLargeMessage.decrementRefCount();
-         
+
          if (preAcknowledge && !browseOnly)
          {
             // PreAck will have an extra reference

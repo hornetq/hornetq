@@ -64,7 +64,7 @@ public class JBossMessage implements javax.jms.Message
    // Constants -----------------------------------------------------
 
    public static final SimpleString REPLYTO_HEADER_NAME = ClientMessageImpl.REPLYTO_HEADER_NAME;
-   
+
    public static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
 
    public static final SimpleString JBM_MESSAGE_ID = new SimpleString("JMSMessageID");
@@ -78,7 +78,7 @@ public class JBossMessage implements javax.jms.Message
    private static final SimpleString JMS_ = new SimpleString("JMS_");
 
    public static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
-   
+
    public static final String JMS_JBM_INPUT_STREAM = "JMS_JBM_InputStream";
 
    public static final String JMS_JBM_OUTPUT_STREAM = "JMS_JBM_OutputStream";
@@ -91,7 +91,7 @@ public class JBossMessage implements javax.jms.Message
    public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
 
    public static final byte TYPE = 0;
-   
+
    public static Map<String, Object> coreMaptoJMSMap(final Map<String, Object> coreMessage)
    {
       Map<String, Object> jmsMessage = new HashMap<String, Object>();
@@ -122,7 +122,7 @@ public class JBossMessage implements javax.jms.Message
             jmsMessage.put(entry.getKey(), entry.getValue());
          }
       }
-      
+
       return jmsMessage;
    }
 
@@ -154,17 +154,17 @@ public class JBossMessage implements javax.jms.Message
 
       switch (type)
       {
-         case JBossMessage.TYPE: //0
+         case JBossMessage.TYPE: // 0
          {
             msg = new JBossMessage(message, session);
             break;
          }
-         case JBossBytesMessage.TYPE: //4
+         case JBossBytesMessage.TYPE: // 4
          {
             msg = new JBossBytesMessage(message, session);
             break;
          }
-         case JBossMapMessage.TYPE: //5
+         case JBossMapMessage.TYPE: // 5
          {
             msg = new JBossMapMessage(message, session);
             break;
@@ -174,12 +174,12 @@ public class JBossMessage implements javax.jms.Message
             msg = new JBossObjectMessage(message, session);
             break;
          }
-         case JBossStreamMessage.TYPE:  //6
+         case JBossStreamMessage.TYPE: // 6
          {
             msg = new JBossStreamMessage(message, session);
             break;
          }
-         case JBossTextMessage.TYPE: //3
+         case JBossTextMessage.TYPE: // 3
          {
             msg = new JBossTextMessage(message, session);
             break;
@@ -577,7 +577,7 @@ public class JBossMessage implements javax.jms.Message
       {
          message.removeProperty(propName);
       }
-      
+
       propertiesReadOnly = false;
    }
 
@@ -804,12 +804,11 @@ public class JBossMessage implements javax.jms.Message
       {
          return message.getBodyInputStream();
       }
-      else
-      if (JMSXDELIVERYCOUNT.equals(name))
+      else if (JMSXDELIVERYCOUNT.equals(name))
       {
          return String.valueOf(message.getDeliveryCount());
       }
-      
+
       Object val = message.getProperty(new SimpleString(name));
       if (val instanceof SimpleString)
       {
@@ -899,28 +898,28 @@ public class JBossMessage implements javax.jms.Message
 
    public void setObjectProperty(final String name, final Object value) throws JMSException
    {
-      
       if (JMS_JBM_OUTPUT_STREAM.equals(name))
       {
-         this.setOutputStream((OutputStream)value);
+         setOutputStream((OutputStream)value);
+         
          return;
       }
-      else
-      if (JMS_JBM_SAVE_STREAM.equals(name))
+      else if (JMS_JBM_SAVE_STREAM.equals(name))
       {
-         this.saveToOutputStream((OutputStream)value);
+         saveToOutputStream((OutputStream)value);
+         
          return;
       }
-      
+
       checkProperty(name, value);
-      
 
       if (JMS_JBM_INPUT_STREAM.equals(name))
       {
-         this.setInputStream((InputStream)value);
+         setInputStream((InputStream)value);
+         
          return;
       }
-      
+
       SimpleString key = new SimpleString(name);
 
       if (value instanceof Boolean)
@@ -1001,8 +1000,7 @@ public class JBossMessage implements javax.jms.Message
    {
       return JBossMessage.TYPE;
    }
-   
-   
+
    public void setInputStream(final InputStream input) throws JMSException
    {
       checkStream();
@@ -1013,7 +1011,7 @@ public class JBossMessage implements javax.jms.Message
 
       message.setBodyInputStream(input);
    }
-   
+
    public void setOutputStream(final OutputStream output) throws JMSException
    {
       checkStream();
@@ -1021,7 +1019,7 @@ public class JBossMessage implements javax.jms.Message
       {
          throw new IllegalStateException("OutputStream property is only valid on received messages");
       }
-      
+
       try
       {
          message.setOutputStream(output);
@@ -1039,7 +1037,7 @@ public class JBossMessage implements javax.jms.Message
       {
          throw new IllegalStateException("OutputStream property is only valid on received messages");
       }
-      
+
       try
       {
          message.saveToOutputStream(output);
@@ -1062,7 +1060,6 @@ public class JBossMessage implements javax.jms.Message
          throw JMSExceptionHelper.convertFromMessagingException(e);
       }
    }
-   
 
    public String toString()
    {
@@ -1093,7 +1090,7 @@ public class JBossMessage implements javax.jms.Message
          throw new MessageNotReadableException("Message is write-only");
       }
    }
-   
+
    protected MessagingBuffer getBody()
    {
       return message.getBody();
@@ -1108,7 +1105,7 @@ public class JBossMessage implements javax.jms.Message
          throw new IllegalStateException("LargeMessage streaming is only possible on ByteMessage or StreamMessage");
       }
    }
-   
+
    private void checkProperty(final String name, final Object value) throws JMSException
    {
       if (propertiesReadOnly)

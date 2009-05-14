@@ -576,7 +576,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {
       SimpleString address = message.getDestination();
 
-      byte[] duplicateID = (byte[])message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
+      byte[] duplicateIDBytes = null;
+      
+      Object duplicateID = message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
 
@@ -584,7 +586,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       {
          cache = getDuplicateIDCache(message.getDestination());
 
-         if (cache.contains(duplicateID))
+         if (duplicateID instanceof SimpleString)
+         {
+            duplicateIDBytes = ((SimpleString)duplicateID).getData();
+         }
+         else
+         {
+            duplicateIDBytes = (byte[])duplicateID;
+         }
+         
+         if (cache.contains(duplicateIDBytes))
          {
             if (tx == null)
             {
@@ -614,7 +625,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             startedTx = true;
          }
          
-         cache.addToCache(duplicateID, tx);
+         cache.addToCache(duplicateIDBytes, tx);
       }
 
       if (tx == null)

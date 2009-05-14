@@ -11,6 +11,20 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
@@ -20,7 +34,6 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
-import static org.jboss.messaging.core.management.NotificationType.CONSUMER_CREATED;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.BindingType;
@@ -84,17 +97,6 @@ import org.jboss.messaging.utils.IDGenerator;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
-
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 
 /*
  * Session implementation 
@@ -487,7 +489,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       if (replicatingChannel == null)
       {
-            doHandleCommit(packet);
+         doHandleCommit(packet);
       }
       else
       {
@@ -503,8 +505,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleRollback(final RollbackMessage packet)
    {
-      
-      
+
       if (replicatingChannel == null)
       {
          doHandleRollback(packet);
@@ -625,7 +626,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleXARollback(final SessionXARollbackMessage packet)
    {
-      
+
       if (replicatingChannel == null)
       {
          doHandleXARollback(packet);
@@ -871,7 +872,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleClose(final Packet packet)
    {
-      
+
       if (replicatingChannel == null)
       {
          doHandleClose(packet);
@@ -912,7 +913,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    public void handleCloseConsumer(final SessionConsumerCloseMessage packet)
    {
       final ServerConsumer consumer = consumers.get(packet.getConsumerID());
-      
+
       consumer.setStarted(false);
 
       if (replicatingChannel == null)
@@ -922,7 +923,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       else
       {
          final Queue queue;
-         
+
          if (consumer.getCountOfPendingDeliveries() > 0)
          {
             queue = consumer.getQueue();
@@ -932,7 +933,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             queue = null;
          }
-         
+
          // We need to stop the consumer first before replicating, to ensure no deliveries occur after this,
          // but we need to process the actual close() when the replication response returns, otherwise things
          // can happen like acks can come in after close
@@ -1294,8 +1295,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             theQueue = (Queue)binding.getBindable();
          }
 
-         ServerConsumer consumer = new ServerConsumerImpl(server,
-                                                          idGenerator.generateID(),
+         ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
                                                           oppositeChannelID,
                                                           this,
                                                           (QueueBinding)binding,
@@ -2529,12 +2529,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private HashSet<Queue> lockUsedQueues(Xid xid)
    {
       final HashSet<Queue> queues = new HashSet<Queue>();
-      
+
       for (ServerConsumer consumer : consumers.values())
       {
          queues.add(consumer.getQueue());
       }
-      
+
       Transaction localTX;
       if (xid == null)
       {
@@ -2544,34 +2544,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          localTX = resourceManager.getTransaction(xid);
       }
-      
+
       if (localTX != null)
       {
          queues.addAll(localTX.getDistinctQueues());
       }
-      
+
       for (Queue queue : queues)
       {
          queue.lockDelivery();
       }
       return queues;
    }
-
-
-   private void doSecurity(final ServerMessage msg) throws Exception
-   {
-      try
-      {
-         securityStore.check(msg.getDestination(), CheckType.SEND, this);
-      }
-      catch (MessagingException e)
-      {
-         if (!autoCommitSends)
-         {
-            tx.markAsRollbackOnly(e);
-         }
-         throw e;
-      }
-   }
-
 }

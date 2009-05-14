@@ -58,7 +58,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = "org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy";
 
-   public static final long DEFAULT_PING_PERIOD = 1000000;
+   public static final long DEFAULT_PING_PERIOD = 5000;
 
    // 5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
    // or backup without fear of session having already been closed when connection times out.
@@ -107,7 +107,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
 
-   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 1;
+   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 2;
 
    // Attributes
    // -----------------------------------------------------------------------------------

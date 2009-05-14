@@ -365,7 +365,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             ByteBuffer buff = ByteBuffer.wrap(bytes);
 
             buff.putLong(msg.getMessageID());
-
+                        
             msg.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
          }
 

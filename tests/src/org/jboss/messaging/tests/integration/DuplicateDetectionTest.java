@@ -126,6 +126,72 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       sf.close();
    }
+   
+   public void testSimpleDuplicateDetectionWithString() throws Exception
+   {
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      producer.send(message);
+      ClientMessage message2 = consumer.receive(1000);
+      assertEquals(0, message2.getProperty(propKey));
+
+      message = createMessage(session, 1);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      message2 = consumer.receive(1000);
+      assertEquals(1, message2.getProperty(propKey));
+
+      message = createMessage(session, 2);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      message2 = consumer.receive(250);
+      assertNull(message2);
+
+      message = createMessage(session, 3);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      message2 = consumer.receive(250);
+      assertNull(message2);
+
+      // Now try with a different id
+
+      message = createMessage(session, 4);
+      SimpleString dupID2 = new SimpleString("hijklmnop");
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      message2 = consumer.receive(1000);
+      assertEquals(4, message2.getProperty(propKey));
+
+      message = createMessage(session, 5);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
+      producer.send(message);
+      message2 = consumer.receive(1000);
+      assertNull(message2);
+
+      message = createMessage(session, 6);
+      message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
+      producer.send(message);
+      message2 = consumer.receive(250);
+      assertNull(message2);
+
+      session.close();
+
+      sf.close();
+   }
 
    public void testCacheSize() throws Exception
    {

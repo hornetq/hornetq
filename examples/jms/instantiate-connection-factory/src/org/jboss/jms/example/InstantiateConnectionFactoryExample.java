@@ -68,7 +68,6 @@ public class InstantiateConnectionFactoryExample extends JMSExample
          // The server port etc.
 
          Map<String, Object> connectionParams = new HashMap<String, Object>();
-
          connectionParams.put(PORT_PROP_NAME, 5446);
 
          TransportConfiguration transportConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName(),
