@@ -21,11 +21,10 @@
  */
 package org.jboss.javaee.example;
 
-import java.util.Hashtable;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.naming.InitialContext;
+import java.util.Hashtable;
 
 /**
  * 

@@ -29,19 +29,6 @@
 
    <import file="../common/build.xml"/>
    
-   <target name="deploy-misc">
-      <echo>Deploy Servlet</echo>
-      <copy todir="${deploy.dir}/jms-servlet.war">
-         <fileset dir="${example.config.dir}/jms-servlet.war"/>
-      </copy>
-      <sleep seconds="5"/>
-   </target>
-
-   <target name="undeploy-misc">
-      <echo>Undeploy Servelt</echo>
-      <delete dir="${deploy.dir}/jms-servlet.war" />
-   </target>
-   
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.javaee.example.ServletTransportExample"/>

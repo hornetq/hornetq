@@ -21,9 +21,9 @@
  */
 package org.jboss.javaee.example;
 
-import javax.naming.InitialContext;
-
 import org.jboss.javaee.example.server.XARecoveryExampleService;
+
+import javax.naming.InitialContext;
 
 /**
  * An example which invokes an EJB. The EJB will "pause" the server so that it
@@ -43,7 +43,7 @@ public class XARecoverySenderExample
          initialContext = new InitialContext();
 
          // Step 2. Lookup the EJB
-         XARecoveryExampleService service = (XARecoveryExampleService)initialContext.lookup("mdb-example/XARecoveryExampleBean/remote");
+         XARecoveryExampleService service = (XARecoveryExampleService)initialContext.lookup("xarecovery-example/XARecoveryExampleBean/remote");
 
          // Step 3. Invoke the sendAndUpdate method
          service.send("This is a text message");

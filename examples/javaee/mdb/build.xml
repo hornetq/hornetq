@@ -28,7 +28,7 @@
 <project default="run" name="JBoss Messaging Java EE MDB Example">
 
    <import file="../common/build.xml"/>
-
+   
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.javaee.example.MDBClientExample"/>

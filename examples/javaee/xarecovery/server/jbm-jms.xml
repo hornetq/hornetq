@@ -1,18 +1,17 @@
 <configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging /schema/jbm-jms.xsd">
+
    <connection-factory name="ConnectionFactory">
-      <connector-ref connector-name="netty-connector"/>
+      <connector-ref connector-name="netty"/>
       <entries>
          <entry name="ConnectionFactory"/>
          <entry name="XAConnectionFactory"/>
+         <entry name="java:/XAConnectionFactory"/>
       </entries>
    </connection-factory>
 
-   <queue name="A">
-      <entry name="/queue/A"/>
-   </queue>
-   <queue name="B">
-      <entry name="/queue/B"/>
+   <queue name="testQueue">
+      <entry name="/queue/testQueue"/>
    </queue>
 </configuration>

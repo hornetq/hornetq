@@ -2,10 +2,11 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging /schema/jbm-jms.xsd">
 
-   <connection-factory name="TestServletConnectionFactory">
-      <connector-ref connector-name="netty-servlet"/>
+   <connection-factory name="ConnectionFactory">
+      <connector-ref connector-name="netty"/>
       <entries>
-         <entry name="/TestServletConnectionFactory"/>
+         <entry name="ConnectionFactory"/>
+         <entry name="XAConnectionFactory"/>
       </entries>
    </connection-factory>
 

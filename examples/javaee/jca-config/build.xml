@@ -29,47 +29,85 @@
 
    <import file="../common/build.xml"/>
 
-   <target name="deploy">
-      <property name="deploy.dir" value="${jboss.home}/server/default-with-jbm2/deploy/" />
-      <property name="deploy.dir2" value="${jboss.home}/server/default-with-jbm2_2/deploy/" />
+   <target name="jar2" depends="compile">
+      <jar destfile="${build.dir}/jca-config-example2.jar"
+           basedir="${classes.dir}"
+           includes="org/jboss/javaee/example/server2/**/*">
+      </jar>
+   </target>
+   <target name="ear2" depends="jar2">
+      <jar destfile="${build.dir}/jca-config-example2.ear" basedir="${build.dir}">
+         <include name="jca-config-example2.jar"/>
+      </jar>
+   </target>
 
+   <target name="deploy2" depends="ear2">
+      <property name="deploy.dir" value="${jboss.home}/server/jca-config-example-profile/" />
+      <property name="deploy.dir2" value="${jboss.home}/server/jca-config-example-profile2/" />
+
+      <mkdir dir="${deploy.dir2}"/>
+      <copy todir="${deploy.dir2}">
+         <fileset dir="${deploy.dir}">
+            <exclude  name="**/*jca-config-example.ear"/>
+            <exclude name="**/*ra.xml"/>
+         </fileset>
+      </copy>
+      <copy todir="${deploy.dir2}/deploy/messaging.sar">
+         <fileset dir="server2">
+            <include name="jms-remote-ds.xml"/>
+         </fileset>
+      </copy>
+      <copy todir="${deploy.dir2}/deploy/jms-ra.rar/META-INF">
+         <fileset dir="server2">
+            <include name="ra.xml"/>
+         </fileset>
+      </copy>
+      <copy todir="${deploy.dir2}/deploy">
+         <fileset dir="${build.dir}">
+            <include name="**/*jca-config-example2.ear"/>
+         </fileset>
+      </copy>
+
+      <exec dir="${jboss.home}/bin" command="./run.sh -c jca-config-example-profile2 -Djboss.service.binding.set=ports-01"/>
       <!-- copy 1st server resources  configuration -->
-      <copy file="./server-config/jms-remote-ds.xml" todir="${deploy.dir}" overwrite="yes"/>
-   	  <copy file="./server-config/jbm-queues.xml" tofile="${deploy.dir}/messaging.sar/jbm-queues.xml" overwrite="yes"/>
-   	  <copy file="./server-config/jbm-jms.xml" tofile="${deploy.dir}/messaging.sar/jbm-jms.xml" overwrite="yes"/>
+      <!--<copy file="./server/jms-remote-ds.xml" todir="${deploy.dir}" overwrite="yes"/>
+   	  <copy file="./server/jbm-queues.xml" tofile="${deploy.dir}/messaging.sar/jbm-queues.xml" overwrite="yes"/>
+   	  <copy file="./server/jbm-jms.xml" tofile="${deploy.dir}/messaging.sar/jbm-jms.xml" overwrite="yes"/>
 
-      <!-- copy 2nd server resources configuration -->
-      <copy file="./server-config/jbm-queues.xml" tofile="${deploy.dir2}/messaging.sar/jbm-queues.xml" overwrite="yes"/>
-   	  <copy file="./server-config/jbm-jms.xml" tofile="${deploy.dir2}/messaging.sar/jbm-jms.xml" overwrite="yes"/>
+      --><!-- copy 2nd server resources configuration --><!--
+      <copy file="./server/jbm-queues.xml" tofile="${deploy.dir2}/messaging.sar/jbm-queues.xml" overwrite="yes"/>
+   	  <copy file="./server/jbm-jms.xml" tofile="${deploy.dir2}/messaging.sar/jbm-jms.xml" overwrite="yes"/>
 
    	  <copy todir="${deploy.dir}/example-jbm-ra.rar.tmp" overwrite="yes">
          <fileset dir="${deploy.dir}/jms-ra.rar" includes="**/*" excludes="META-INF/ra.xml"/>
       </copy>
-   	  <copy file="./server-config/alternate-ra.xml" tofile="${deploy.dir}/example-jbm-ra.rar.tmp/META-INF/ra.xml" overwrite="yes"/>
-   	  <!-- We need the deployment atomic. We only rename the file after the ra.xml was copied -->
+   	  <copy file="./server/alternate-ra.xml" tofile="${deploy.dir}/example-jbm-ra.rar.tmp/META-INF/ra.xml" overwrite="yes"/>
+   	  --><!-- We need the deployment atomic. We only rename the file after the ra.xml was copied --><!--
    	  <move file="${deploy.dir}/example-jbm-ra.rar.tmp" tofile="${deploy.dir}/example-jbm-ra.rar" overwrite="yes"/>
    	  <sleep seconds="10"/>
       <antcall target="deploy-ear">
          <param name="deploy.dir" value="${deploy.dir}" />
-      </antcall>
+      </antcall>-->
    </target>
 
-   <target name="undeploy">
-      <property name="deploy.dir" value="${jboss.home}/server/default-with-jbm2/deploy/" />
+   <target name="undeploy2">
+      <property name="deploy.dir2" value="${jboss.home}/server/jca-config-example-profile2/" />
+      <delete dir="${deploy.dir2}"/>
+      <!--<property name="deploy.dir" value="${jboss.home}/server/default-with-jbm2/deploy/" />
       <property name="deploy.dir2" value="${jboss.home}/server/default-with-jbm2_2/deploy/" />
 
       <delete file="${deploy.dir}/mdb-example.ear" failonerror="false"/>
 
-      <!-- delete 1st server resources  configuration -->
+      --><!-- delete 1st server resources  configuration --><!--
       <delete file="${deploy.dir}/jms-remote-ds.xml" failonerror="false"/>
       <delete file="${deploy.dir}/messaging.sar/jbm-queues.xml" failonerror="false"/>
       <delete file="${deploy.dir}/messaging.sar/jbm-jms.xml" failonerror="false"/>
 
       <delete dir="${deploy.dir}/example-jbm-ra.rar" failonerror="false"/>
 
-      <!-- delete 2nd server resources configuration -->
+      --><!-- delete 2nd server resources configuration --><!--
       <delete file="${deploy.dir2}/messaging.sar/jbm-queues.xml" failonerror="false"/>
-      <delete file="${deploy.dir2}/messaging.sar/jbm-jms.xml" failonerror="false"/>
+      <delete file="${deploy.dir2}/messaging.sar/jbm-jms.xml" failonerror="false"/>-->
    </target>
 
    <target name="run">

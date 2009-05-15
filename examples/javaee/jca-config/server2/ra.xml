@@ -54,25 +54,13 @@
          <description>The transport configuration. These values must be in the form of key=val;key=val;</description>
          <config-property-name>ConnectionParameters</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
-         <config-property-value>jbm.remoting.netty.port=5545</config-property-value>
+         <config-property-value>jbm.remoting.netty.port=5445</config-property-value>
       </config-property>
        <config-property>
         <description>Use XA methods to obtain connections?</description>
         <config-property-name>UseXA</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value>true</config-property-value>
-      </config-property>
-      <config-property>
-        <description>The user name used to login to the JMS server</description>
-        <config-property-name>UserName</config-property-name>
-        <config-property-type>java.lang.String</config-property-type>
-        <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
-        <description>The password used to login to the JMS server</description>
-        <config-property-name>Password</config-property-name>
-        <config-property-type>java.lang.String</config-property-type>
-        <config-property-value></config-property-value>
       </config-property>
 
       <outbound-resourceadapter>

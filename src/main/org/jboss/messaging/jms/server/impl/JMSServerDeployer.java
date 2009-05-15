@@ -465,7 +465,6 @@ public class JMSServerDeployer extends XmlDeployer
          for (String jndiName : jndiNames)
          {
             jmsServerControl.createQueue(queueName, jndiName, filterString, durable);
-            System.out.println(queueName + jndiName + filterString + durable);
          }
       }
       else if (node.getNodeName().equals(TOPIC_NODE_NAME))

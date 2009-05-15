@@ -20,7 +20,7 @@ http://www.mysql.com/downloads/api-jdbc-stable.html
   </xa-datasource>
     
   <local-tx-datasource>
-    <jndi-name>DefaultDS</jndi-name>
+    <jndi-name>DefaultMessagingDS</jndi-name>
     <connection-url>jdbc:mysql://localhost:3306/jbossdb</connection-url>
     <driver-class>com.mysql.jdbc.Driver</driver-class>
     <user-name>jboss</user-name>

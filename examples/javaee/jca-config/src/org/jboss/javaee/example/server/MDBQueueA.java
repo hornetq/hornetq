@@ -38,9 +38,7 @@ import javax.jms.TextMessage;
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/A"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545") // Port on the second server
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
                      })
 public class MDBQueueA implements MessageListener
 {
@@ -52,7 +50,7 @@ public class MDBQueueA implements MessageListener
 
          String text = tm.getText();
 
-         System.out.println("Step 9: (MDBQueueA.java) Message received using the default adapter. Message = \"" + text + "\"" );
+         System.out.println("Step 10: (MDBQueueA.java) Message received using the default adapter. Message = \"" + text + "\"" );
          
       }
       catch (Exception e)

@@ -21,8 +21,6 @@
  */
 package org.jboss.javaee.example.server;
 
-import java.sql.PreparedStatement;
-
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.jms.Connection;
@@ -33,6 +31,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
+import java.sql.PreparedStatement;
 
 /**
  * An EJB which sends a JMS message and update a JDBC table in the same transaction.
@@ -50,7 +49,7 @@ public class SendMessageBean implements SendMessageService
    public void createTable() throws Exception
    {
       InitialContext ic = new InitialContext();
-      DataSource ds = (DataSource)ic.lookup("java:/DefaultDS");
+      DataSource ds = (DataSource)ic.lookup("java:/DefaultMessagingDS");
       java.sql.Connection con = ds.getConnection();
       
       // check if the table exists:

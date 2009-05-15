@@ -1,10 +1,296 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="xa-recovery">
     <title>Application Server Integration and JavaEE</title>
-    <para>blah</para>
+    <para>JBM is fully integrated with the JBoss Application Server version 5.1. For details on
+        installing JBM in the AS refer to Quick Start guide.</para>
+    <para>This section explains the basics behind configuring the different JEE components in the
+        AS.</para>
     <section>
         <title>Using and Configuring the JCA Adapter</title>
-        <para>blah</para>
+        <para>The Java Connector Architecture (JCA) Adapter is what allows JBM to be integrated with
+            JEE components such as MDB's and EJB's. It configures how components such as MDB's
+            consume messages from the JBM server and also how components can send messages.</para>
+        <para>The JBM JCA adapter is deployed via the <literal>jms-ra.rar</literal> archive. The
+            configuration of the Adapter is found in this archive under <literal
+                >META-INF/ra.xml</literal>.</para>
+        <para>The configuration will look something like the following:</para>
+        <programlisting>&lt;resourceadapter>
+      &lt;resourceadapter-class>org.jboss.messaging.ra.JBMResourceAdapter&lt;/resourceadapter-class>
+      &lt;config-property>
+         &lt;description>The transport type&lt;/description>
+         &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
+         &lt;config-property-type>java.lang.String&lt;/config-property-type>
+         &lt;config-property-value>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory&lt;/config-property-value>
+      &lt;/config-property>
+      &lt;config-property>
+         &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
+         &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
+         &lt;config-property-type>java.lang.String&lt;/config-property-type>
+         &lt;config-property-value>jbm.remoting.invm.serverid=0&lt;/config-property-value>
+      &lt;/config-property>
+       &lt;config-property>
+        &lt;description>Use XA methods to obtain connections?&lt;/description>
+        &lt;config-property-name>UseXA&lt;/config-property-name>
+        &lt;config-property-type>java.lang.Boolean&lt;/config-property-type>
+        &lt;config-property-value>true&lt;/config-property-value>
+      &lt;/config-property>
+
+      &lt;outbound-resourceadapter>
+         &lt;connection-definition>
+            &lt;managedconnectionfactory-class>org.jboss.messaging.ra.JBMManagedConnectionFactory&lt;/managedconnectionfactory-class>
+
+            &lt;config-property>
+               &lt;description>The default session type&lt;/description>
+               &lt;config-property-name>SessionDefaultType&lt;/config-property-name>
+               &lt;config-property-type>java.lang.String&lt;/config-property-type>
+               &lt;config-property-value>javax.jms.Queue&lt;/config-property-value>
+            &lt;/config-property>
+            &lt;config-property>
+               &lt;description>Try to obtain a lock within specified number of seconds; less than or equal to 0 disable this functionality&lt;/description>
+               &lt;config-property-name>UseTryLock&lt;/config-property-name>
+               &lt;config-property-type>java.lang.Integer&lt;/config-property-type>
+               &lt;config-property-value>0&lt;/config-property-value>
+            &lt;/config-property>
+
+            &lt;connectionfactory-interface>org.jboss.messaging.ra.JBMConnectionFactory&lt;/connectionfactory-interface>
+            &lt;connectionfactory-impl-class>org.jboss.messaging.ra.JBMConnectionFactoryImpl&lt;/connectionfactory-impl-class>
+            &lt;connection-interface>javax.jms.Session&lt;/connection-interface>
+            &lt;connection-impl-class>org.jboss.messaging.ra.JBMSession&lt;/connection-impl-class>
+         &lt;/connection-definition>
+         &lt;transaction-support>XATransaction&lt;/transaction-support>
+         &lt;authentication-mechanism>
+            &lt;authentication-mechanism-type>BasicPassword&lt;/authentication-mechanism-type>
+            &lt;credential-interface>javax.resource.spi.security.PasswordCredential&lt;/credential-interface>
+         &lt;/authentication-mechanism>
+         &lt;reauthentication-support>false&lt;/reauthentication-support>
+      &lt;/outbound-resourceadapter>
+
+      &lt;inbound-resourceadapter>
+         &lt;messageadapter>
+            &lt;messagelistener>
+               &lt;messagelistener-type>javax.jms.MessageListener&lt;/messagelistener-type>
+               &lt;activationspec>
+                  &lt;activationspec-class>org.jboss.messaging.ra.inflow.JBMActivationSpec&lt;/activationspec-class>
+                  &lt;required-config-property>
+                      &lt;config-property-name>destination&lt;/config-property-name>
+                  &lt;/required-config-property>
+               &lt;/activationspec>
+            &lt;/messagelistener>
+         &lt;/messageadapter>
+      &lt;/inbound-resourceadapter>
+
+   &lt;/resourceadapter></programlisting>
+        <para>There are 3 main parts to this configuration.</para>
+        <orderedlist>
+            <listitem>
+                <para>A set of global properties for the Adapter</para>
+            </listitem>
+            <listitem>
+                <para>The configuration for the outbound part of the adapter. This is used for
+                    creating JMS resources within EE components</para>
+            </listitem>
+            <listitem>
+                <para>The configuration of the inbound part of the adapter. This is used for
+                    controlling the consumption of messages via MDB's.</para>
+            </listitem>
+        </orderedlist>
+        <section>
+            <title>Adapter Global properties</title>
+            <para>The first element you see is <literal>resourceadapter-class</literal> which should
+                be left unchanged. This is the JBM resource adapter class.</para>
+            <para>After that there is a list of configuration properties. This will be where most of
+                the configuration is done. The first 2 configure the transport used by the adapter
+                and the rest configure the connection itself.</para>
+            <para>The following table explains what each property is for.</para>
+            <table frame="all" border="2">
+                <title>Global Configuration Properties</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1" colwidth="0.55*"/>
+                    <colspec colname="c2" colnum="2" colwidth="0.31*"/>
+                    <colspec colname="c3" colnum="3" colwidth="2.14*"/>
+                    <thead>
+                        <row>
+                            <entry>Property Name</entry>
+                            <entry>Property Type</entry>
+                            <entry>Property Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>ConnectorClassName</entry>
+                            <entry>java.lang.String</entry>
+                            <entry>The Connector class name see <xref
+                                    linkend="configuring-transports"/> for info on available
+                                connectors</entry>
+                        </row>
+                        <row>
+                            <entry>ConnectionParameters</entry>
+                            <entry>java.lang.String</entry>
+                            <entry>The transport configuration. These values must be in the form of
+                                key=val;key=val; and will be specific to the connector used</entry>
+                        </row>
+                        <row>
+                            <entry>UseXA</entry>
+                            <entry>java.lang.Boolean</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>UserName</entry>
+                            <entry>java.lang.String</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>Password</entry>
+                            <entry>java.lang.String</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>BackUpTransportType</entry>
+                            <entry>java.lang.String</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TransportConfiguration</entry>
+                            <entry>java.lang.String</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>DiscoveryGroupAddress</entry>
+                            <entry>java.lang.String</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>DiscoveryGroupPort</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>DiscoveryRefreshTimeout</entry>
+                            <entry>java.lang.Long</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>DiscoveryInitialWaitTimeout</entry>
+                            <entry>java.lang.Long</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>LoadBalancingPolicyClassName</entry>
+                            <entry>java.lang.String</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>PingPeriod</entry>
+                            <entry>java.lang.Long</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ConnectionTTL</entry>
+                            <entry>java.lang.Long</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>CallTimeout</entry>
+                            <entry>java.lang.Long</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>DupsOKBatchSize</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>TransactionBatchSize</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ConsumerWindowSize</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ConsumerMaxRate</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ProducerWindowSize</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ProducerMaxRate</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>MinLargeMessageSize</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>BlockOnAcknowledge</entry>
+                            <entry>java.lang.Boolean</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>BlockOnNonPersistentSend</entry>
+                            <entry>java.lang.Boolean</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>BlockOnPersistentSend</entry>
+                            <entry>java.lang.Boolean</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>AutoGroup</entry>
+                            <entry>java.lang.Boolean</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>MaxConnections</entry>
+                            <entry>java.lang.Integer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>PreAcknowledge</entry>
+                            <entry>java.lang.Boolean</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>RetryInterval</entry>
+                            <entry>java.lang.Long</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>RetryIntervalMultiplier</entry>
+                            <entry>java.lang.Double</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>FailoverOnServerShutdown</entry>
+                            <entry>java.lang.Boolean</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>ClientID</entry>
+                            <entry>java.lang.String</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section>
+            <title>Adapter Outbound configuration</title>
+            <para>blah</para>
+        </section>
+        <section>
+            <title>Adapter Inbound configuration</title>
+            <para>blah</para>
+        </section>
     </section>
     <section>
         <title>Using JBM with MDBs in JBoss AS</title>

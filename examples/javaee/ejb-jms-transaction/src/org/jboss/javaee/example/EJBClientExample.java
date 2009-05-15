@@ -21,6 +21,8 @@
  */
 package org.jboss.javaee.example;
 
+import org.jboss.javaee.example.server.SendMessageService;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -28,8 +30,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
-
-import org.jboss.javaee.example.server.SendMessageService;
 
 /**
  * An example showing how to invoke a EJB which sends a JMS message and update a JDBC table in the same transaction.
@@ -49,7 +49,7 @@ public class EJBClientExample
          initialContext = new InitialContext();
 
          // Step 2. Lookup the EJB
-         SendMessageService service = (SendMessageService)initialContext.lookup("mdb-example/SendMessageBean/remote");
+         SendMessageService service = (SendMessageService)initialContext.lookup("ejb-jms-transaction-example/SendMessageBean/remote");
 
          // Step 3. Create the DB table which will be updated
          service.createTable();

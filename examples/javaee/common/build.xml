@@ -28,6 +28,9 @@
 <project default="compile" name="javaeeexample" basedir=".">
    <dirname property="imported.basedir" file="${ant.file.javaeeexample}"/>
    <property file="${imported.basedir}/config/ant.properties"/>
+   <property name="example.config.dir" value="config"/>
+   <property file="${example.config.dir}/ant.properties"/>
+    <property name="example.server.dir" value="server"/>
    <property environment="ENV"/>
    <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
 
@@ -100,56 +103,65 @@
    </target>
 
    <target name="jar" depends="compile">
-      <jar destfile="${build.dir}/mdb-example.jar"
+      <jar destfile="${build.dir}/${example.name}-example.jar"
            basedir="${classes.dir}"
            includes="org/jboss/javaee/example/server/**/*">
       </jar>
    </target>
 
-   <target name="ear" depends="jar">
-      <jar destfile="${build.dir}/mdb-example.ear" basedir="${build.dir}">
-         <include name="mdb-example.jar"/>
+   <target name="war" depends="jar">
+        <jar destfile="${build.dir}/${example.name}-example.war" basedir="${example.config.dir}"
+             includes="WEB-INF/**/*"/>
+   </target>
+
+   <target name="ear" depends="war">
+      <jar destfile="${build.dir}/${example.name}-example.ear" basedir="${build.dir}">
+         <include name="${example.name}-example.jar"/>
+         <include name="${example.name}-example.war"/>
+         <fileset dir="${example.config.dir}">
+            <include name="META-INF/**"/>
+         </fileset>
       </jar>
    </target>
 
-   <target name="deploy" depends="validate-jboss">
-      <property name="deploy.dir" value="${jboss.home}/server/default-with-jbm2/deploy/" />
-   	  <antcall target="deploy-resources">
-         <param name="deploy.dir" value="${deploy.dir}"/>
-      </antcall>
-      <antcall target="deploy-ear">
-         <param name="deploy.dir" value="${deploy.dir}"/>
-      </antcall>
-      <antcall target="deploy-misc">
-         <param name="deploy.dir" value="${deploy.dir}"/>
-      </antcall>
+   <target name="deploy" depends="validate-jboss, copy-profile, ear">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <copy todir="${example-profile}/deploy/messaging.sar">
+         <fileset dir="${example.server.dir}"/>
+      </copy>
+      <copy todir="${example-profile}/deploy/">
+         <fileset dir="${build.dir}">
+            <include name="${example.name}-example.ear"/>
+         </fileset>
+      </copy>
+
+      <exec dir="${jboss.home}/bin" command="./run.sh -c ${example.name}-example-profile"/>
    </target>
 
-   <target name="deploy-ear" depends="ear">
-      <!-- some examples may choose to do a little extra on deploy and call this target directly -->
-      <copy file="${build.dir}/mdb-example.ear" todir="${deploy.dir}"/>
+   <target name="copy-profile" depends="profile.check" unless="donot.copy.profile">
+      <property name="profile" value="${jboss.home}/server/default-with-jbm2"/>
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <property name="deploy.dir" value="${example-profile}/deploy/"/>
+      <mkdir dir="${example-profile}"/>
+      <copy todir="${example-profile}">
+         <fileset dir="${profile}">
+            <exclude name="**/*jbm-configuration.xml"/>
+            <exclude name="**/*jbm-jms.xml"/>
+            <exclude name="**/*jbm-users.xml"/>
+         </fileset>
+      </copy>
    </target>
 
-   <target name="deploy-resources">
-      <copy file="${example.config.dir}/jbm-queues.xml" todir="${deploy.dir}/messaging.sar/" failonerror="false" />
-      <copy file="${example.config.dir}/jbm-jms.xml" todir="${deploy.dir}/messaging.sar/" failonerror="false" />
-      <sleep seconds="5"/>
-   </target>
-
-   <target name="deploy-misc">
-   </target>
-
-   <target name="undeploy-misc">
+   <target name="profile.check">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <condition property="donot.copy.profile">
+         <available  file="${example-profile}" type="dir"/>
+      </condition>
    </target>
 
    <target name="undeploy" depends="validate-jboss">
-      <property name="deploy.dir" value="${jboss.home}/server/default-with-jbm2/deploy/" />
-      <antcall target="undeploy-misc">
-         <param name="deploy.dir" value="${deploy.dir}"/>
-      </antcall>
-      <delete file="${deploy.dir}/mdb-example.ear"/>
-      <delete file="${deploy.dir}/messaging.sar/jbm-queues.xml" failonerror="false" />
-      <delete file="${deploy.dir}/messaging.sar/jbm-jms.xml" failonerror="false" />
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <delete dir="${example-profile}"/>
    </target>
 
    <target name="validate-jboss">
@@ -158,7 +170,7 @@
       <fail unless="default-config" message="${jboss.home}/server/default-with-jbm2 not found!"/>
    </target>
 
-   <target name="runExample" depends="compile">
+   <target name="runExample" depends="validate-jboss,compile">
       <java classname="${example.classname}" fork="true">
          <classpath refid="jms.runtime.classpath"/>
       </java>

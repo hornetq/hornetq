@@ -50,7 +50,7 @@ public class ServletTransportExample
          Queue queue = (Queue) initialContext.lookup("/queue/testQueue");
 
          //Step 3. Perform a lookup on the Connection Factory
-         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/TestServletConnectionFactory");
+         ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ServletConnectionFactory");
 
          //Step 4.Create a JMS Connection
          connection = cf.createConnection();

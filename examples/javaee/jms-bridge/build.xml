@@ -37,7 +37,7 @@
 
    <target name="deploy-misc">
       <echo>Deploy JMS Bridge</echo>
-      <copy file="${example.config.dir}/jms-bridge-jboss-beans.xml" todir="${deploy.dir}" />
+      <copy file="server/jms-bridge-jboss-beans.xml" todir="${deploy.dir}" />
    </target>
 
    <target name="undeploy-misc">

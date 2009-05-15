@@ -3,14 +3,17 @@
             xsi:schemaLocation="urn:jboss:messaging /schema/jbm-jms.xsd">
 
    <connection-factory name="ConnectionFactory">
-      <connector-ref connector-name="netty-connector"/>
+      <connector-ref connector-name="netty"/>
       <entries>
          <entry name="ConnectionFactory"/>
          <entry name="XAConnectionFactory"/>
       </entries>
    </connection-factory>
 
-   <queue name="testQueue">
-      <entry name="/queue/testQueue"/>
+   <queue name="source">
+      <entry name="/queue/source"/>
+   </queue>
+   <queue name="target">
+      <entry name="/queue/target"/>
    </queue>
 </configuration>

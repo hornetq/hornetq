@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.javaee.example.server;
+package org.jboss.javaee.example.server2;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -27,24 +27,19 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
-import org.jboss.ejb3.annotation.ResourceAdapter;
-
-
 /**
- * MDB that is connected to the remote queue, using an alternate resource-adapter
+ * MDB that is connected to the remote queue.
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 
-//Step 10. The message is received on the MDB, using a remote queue and a different ResourceAdapter
-@MessageDriven(name = "MDB_QueueB",
+//Step 9. The message is received on the MDB, using a remote queue.
+@MessageDriven(name = "MDB_QueueA",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/B"),
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
-                    })
-              @ResourceAdapter("example-jbm-ra.rar")
-
+                     })
 public class MDBQueueB implements MessageListener
 {
    public void onMessage(Message message)
@@ -55,9 +50,8 @@ public class MDBQueueB implements MessageListener
 
          String text = tm.getText();
 
+         System.out.println("Step 11: (MDBQueueB.java) Message received using the remote adapter. Message = \"" + text + "\"" );
 
-         System.out.println("Step 10: (MDBQueueB.java) Message received using the default adapter. Message = \"" + text + "\"" );
-         
       }
       catch (Exception e)
       {

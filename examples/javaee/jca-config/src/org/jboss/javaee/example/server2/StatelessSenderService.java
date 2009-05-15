@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.javaee.example.server;
+package org.jboss.javaee.example.server2;
 
 /**
  * A StatelessSenderService
