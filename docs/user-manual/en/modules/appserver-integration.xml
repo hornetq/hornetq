@@ -369,6 +369,273 @@ public class MDBRemoteExample implements MessageListener
     </section>
     <section>
         <title>The JMS Bridge</title>
-        <para>blah</para>
+        <para>The JMS bridge allows different JMS servers from different JMS providers to be
+            'bridged' together. A bridge will have a source destination from which it receives
+            messages and a target destination to which it sends messages.</para>
+        <para>The bridge is deployed by the JBoss Micro Container via a beans configuration file.
+            This would typically be deployed inside the JBoss Application Server and the following
+            example shows an example of a beans file that bridges 2 JBM servers although here they
+            are actually the same server. </para>
+        <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
+
+&lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+       &lt;bean name="JMSBridge" class="org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl">
+           &lt;!-- JBoss Messaging must be started before the bridge -->
+           &lt;depends>MessagingServer&lt;/depends>
+           &lt;constructor>
+               &lt;!-- Source ConnectionFactory Factory -->
+               &lt;parameter>
+                   &lt;inject bean="SourceCFF"/>
+               &lt;/parameter>
+               &lt;!-- Target ConnectionFactory Factory -->
+               &lt;parameter>
+                   &lt;inject bean="TargetCFF"/>
+               &lt;/parameter>
+               &lt;!-- Source DestinationFactory -->
+               &lt;parameter>
+                   &lt;inject bean="SourceDestinationFactory"/>
+               &lt;/parameter>
+               &lt;!-- Target DestinationFactory -->
+               &lt;parameter>
+                   &lt;inject bean="TargetDestinationFactory"/>
+               &lt;/parameter>
+               &lt;!-- Source username (no username here) -->
+               &lt;parameter>&lt;null />&lt;/parameter>
+               &lt;!-- Source password (no password here)-->
+               &lt;parameter>&lt;null />&lt;/parameter>
+               &lt;!-- Target username (no username here)-->
+               &lt;parameter>&lt;null />&lt;/parameter>
+               &lt;!-- Target password (no password here)-->
+               &lt;parameter>&lt;null />&lt;/parameter>
+               &lt;!-- Selector -->
+               &lt;parameter>&lt;null />&lt;/parameter>
+               &lt;!-- Interval to retry in case of failure (in ms) -->
+               &lt;parameter>5000&lt;/parameter>
+               &lt;!-- Maximum number of retries to connect to the source and target -->
+               &lt;parameter>10&lt;/parameter>
+               &lt;!-- Quality of service -->
+               &lt;parameter>ONCE_AND_ONLY_ONCE&lt;/parameter>
+               &lt;!-- Maximum batch size -->
+               &lt;parameter>1&lt;/parameter>
+               &lt;!-- Maximum batch time (-1 means infinite) -->
+               &lt;parameter>-1&lt;/parameter>
+               &lt;!-- Subscription name (no subscription name here)-->
+               &lt;parameter>&lt;null />&lt;/parameter>
+               &lt;!-- client ID  (no client ID here)-->
+               &lt;parameter>&lt;null />&lt;/parameter>
+               &lt;!-- concatenate JMS messageID to the target's message header -->
+               &lt;parameter>true&lt;/parameter>
+           &lt;/constructor>
+           &lt;property name="transactionManager">
+               &lt;inject bean="RealTransactionManager"/>
+           &lt;/property>
+       &lt;/bean>
+
+       &lt;!-- SourceCFF describes the ConnectionFactory used to connect to the source destination -->
+       &lt;bean name="SourceCFF" class="org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory">
+           &lt;constructor>
+               &lt;parameter>
+                   &lt;inject bean="JNDI" />
+               &lt;/parameter>
+               &lt;parameter>/ConnectionFactory&lt;/parameter>
+           &lt;/constructor>  
+       &lt;/bean>
+
+       &lt;!-- TargetCFF describes the ConnectionFactory used to connect to the target destination -->
+       &lt;bean name="TargetCFF" class="org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory">
+           &lt;constructor>
+               &lt;parameter>
+                   &lt;inject bean="JNDI" />
+               &lt;/parameter>
+               &lt;parameter>/ConnectionFactory&lt;/parameter>
+           &lt;/constructor>  
+       &lt;/bean>
+
+       &lt;!-- SourceDestinationFactory describes the Destination used as the source -->
+       &lt;bean name="SourceDestinationFactory" class="org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory">
+           &lt;constructor>
+               &lt;parameter>
+                   &lt;inject bean="JNDI" />
+               &lt;/parameter>
+               &lt;parameter>/queue/source&lt;/parameter>
+           &lt;/constructor>  
+       &lt;/bean>
+
+       &lt;!-- TargetDestinationFactory describes the Destination used as the target -->
+       &lt;bean name="TargetDestinationFactory" class="org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory">
+           &lt;constructor>
+               &lt;parameter>
+                   &lt;inject bean="JNDI" />
+               &lt;/parameter>
+               &lt;parameter>/queue/target&lt;/parameter>
+           &lt;/constructor>  
+       &lt;/bean>
+       
+       &lt;!-- JNDI is a Hashtable containing the JNDI properties required -->
+       &lt;!-- to connect to the sources and targets JMS resrouces         -->       
+      &lt;bean name="JNDI" class="java.util.Hashtable">
+         &lt;constructor class="java.util.Map">
+            &lt;map class="java.util.Hashtable" keyClass="java.lang.String"
+                                             valueClass="java.lang.String">
+               &lt;entry>
+                  &lt;key>java.naming.factory.initial&lt;/key>
+                  &lt;value>org.jnp.interfaces.NamingContextFactory&lt;/value>
+               &lt;/entry>
+               &lt;entry>
+                  &lt;key>java.naming.provider.url&lt;/key>
+                  &lt;value>jnp://localhost:1099&lt;/value>
+               &lt;/entry>
+               &lt;entry>
+                  &lt;key>java.naming.factory.url.pkgs&lt;/key>
+                  &lt;value>org.jboss.naming:org.jnp.interfaces"&lt;/value>
+               &lt;/entry>
+            &lt;/map>
+         &lt;/constructor>
+      &lt;/bean>
+
+&lt;/deployment></programlisting>
+        <para>The main bean deployed is the <literal>JMSBridge</literal> bean. A description of each
+            of its constructor parameters in order follows:</para>
+        <itemizedlist>
+            <listitem>
+                <para>Source Connection Factory Factory - This injects the <literal
+                        >SourceCFF</literal> bean that is the connection factory defined later in
+                    the beans file.</para>
+            </listitem>
+            <listitem>
+                <para>Target Connection Factory Factory - This injects the <literal
+                        >TargetCFF</literal> bean that is the connection factory defined later in
+                    the beans file.</para>
+            </listitem>
+            <listitem>
+                <para>Source Destination Factory Factory - This injects the <literal
+                        >SourceDestinationFactory</literal> bean that is used to create or lookup
+                    the sourcedestination.</para>
+            </listitem>
+            <listitem>
+                <para>Target Destination Factory Factory - This injects the <literal
+                        >TargetDestinationFactory</literal> bean that is used to create or lookup
+                    the target destination.</para>
+            </listitem>
+            <listitem>
+                <para>Source User Name - the user name to use for the source connection.</para>
+            </listitem>
+            <listitem>
+                <para>Source Password - The password to use for the source connection.</para>
+            </listitem>
+            <listitem>
+                <para>Target User Name - The user name to use for the target connection.</para>
+            </listitem>
+            <listitem>
+                <para>Target Password - The password to use for thetarget connection.</para>
+            </listitem>
+            <listitem>
+                <para>Retry Interval - Interval to retry in case of failure (in ms). </para>
+            </listitem>
+            <listitem>
+                <para>Retries - Maximum number of retries to connect to the source and
+                    target.</para>
+            </listitem>
+            <listitem>
+                <para>Quality of Service - Either 'QOS_AT_MOST_ONCE', 'QOS_DUPLICATES_OK' or
+                    'QOS_DUPLICATES_OK'. These are explained shortly.</para>
+            </listitem>
+            <listitem>
+                <para>Batch Size - When using transactions how many messages to send per
+                    batch.</para>
+            </listitem>
+            <listitem>
+                <para>Batch Time - The maximum time to wait before committing a transaction anyway
+                    (in MS).</para>
+            </listitem>
+            <listitem>
+                <para>Subscription Name - The name of the subscription if using a durable subscriber
+                    with the source connection.</para>
+            </listitem>
+            <listitem>
+                <para>Client ID - The client ID to use for the source connection. Needed when
+                    subscription name is provided.</para>
+            </listitem>
+            <listitem>
+                <para>Concatenate Message ID - If this is set the message ID from the received
+                    message will be concatenated as message header <literal
+                        >JBM_BRIDGE_MSG_ID_LIST</literal>. This is because it will change once the
+                    bridge forwards it. When passing through multiple bridges each ID is
+                    concatenated to the list.</para>
+                <note>
+                    <para>when you receive the message you can send back a response using the
+                        correlation id of the first message id, so when the original sender gets it
+                        back it will be able to correlate it. </para>
+                </note>
+            </listitem>
+        </itemizedlist>
+        <section>
+            <title>Source and Target Connection Factories</title>
+            <para>The source and target connection factory factories are used to create the
+                connection factory used to create the connection for the source or target
+                server.</para>
+            <para>In this example we have used the default provided by JBM that look up the
+                connection factory using JNDI. For other Application Servers or JMS providers a new
+                implementation may have to be provided. This can easily be done by implementing the
+                interface <literal
+                >org.jboss.messaging.jms.bridge.ConnectionFactoryFactory</literal>.</para>
+        </section>
+        <section>
+            <title>Source and Target Destination Factories</title>
+            <para>Again, similarly, these are used to create or lookup up the destinations. To
+                provid a new implementation simple implement <literal
+                    >org.jboss.messaging.jms.bridge.DestinationFactory</literal> interface.</para>
+        </section>
+        <section>
+            <title>Quality Of Service</title>
+            <para>The quality of service modes used by the bridge are described here in more
+                detail.</para>
+            <section>
+                <title>QOS_AT_MOST_ONCE</title>
+                <para>With this QoS mode messages will reach the destination from the source at most
+                    once. The messages are consumed from the source and acknowledged before sending
+                    to the destination. Therefore there is a possibility that if failure occurs
+                    between removing them from the source and them arriving at the destination they
+                    could be lost. Hence delivery will occur at most once. This mode is available
+                    for both persistent and non persistent messages.</para>
+            </section>
+            <section>
+                <title>QOS_DUPLICATES_OK</title>
+                <para>With this QoS mode, the messages are consumed from the source and then
+                    acknowledged after they have been successfully sent to the destination.
+                    Therefore there is a possibility that if failure occurs after sending to the
+                    destination but before acknowledging them, they could be sent again when the
+                    system recovers. I.e. the destination might receive duplicates after a failure.
+                    This mode is available for both persistent and non persistent messages.</para>
+            </section>
+            <section>
+                <title>QOS_ONCE_AND_ONLY_ONCE</title>
+                <para>This QoS mode ensures messages will reach the destination from the source once
+                    and only once. (Sometimes this mode is known as "exactly once"). If both the
+                    source and the destination are on the same JBoss Messaging server instance then
+                    this can be achieved by sending and acknowledging the messages in the same local
+                    transaction. If the source and destination are on different servers this is
+                    achieved by enlisting the sending and consuming sessions in a JTA transaction.
+                    The JTA transaction is controlled by JBoss Transactions JTA * implementation
+                    which is a fully recovering transaction manager, thus providing a very high
+                    degree of durability. If JTA is required then both supplied connection factories
+                    need to be XAConnectionFactory implementations. This mode is only available for
+                    persistent messages. This is likely to be the slowest mode since it requires
+                    extra persistence for the transaction logging.</para>
+                <note>
+                    <para>For a specific application it may possible to provide once and only once
+                        semantics without using the QOS_ONCE_AND_ONLY_ONCE QoS level. This can be
+                        done by using the QOS_DUPLICATES_OK mode and then checking for duplicates at
+                        the destination and discarding them. Some JMS servers provide automatic
+                        duplicate message detection functionality, or this may be possible to
+                        implement on the application level by maintaining a cache of received
+                        message ids on disk and comparing received messages to them. The cache would
+                        only be valid for a certain period of time so this approach is not as
+                        watertight as using QOS_ONCE_AND_ONLY_ONCE but may be a good choice
+                        depending on your specific application.</para>
+                </note>
+            </section>
+        </section>
     </section>
 </chapter>
