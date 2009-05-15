@@ -285,16 +285,83 @@
         </section>
         <section>
             <title>Adapter Outbound configuration</title>
-            <para>blah</para>
+            <para>The outbound configuration should remain unchanged as they define Connection
+                Factories that are used by EE components. These Connection Factories can be defined
+                inside a configuration file that matches the name <literal>*-ds.xml</literal>.
+                You'll find a default <literal>jms-ds.xml</literal> configuration under the <literal
+                    >messaging.sar</literal> directory in the Jboss AS deployment. the connection
+                factories defined in the config file inherit their properties from the main <literal
+                    >ra.xml</literal> config but can also be overridden, the following example show
+                how to define one.</para>
+            <programlisting>&lt;tx-connection-factory>
+      &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
+      &lt;xa-transaction/>
+      &lt;rar-name>jms-ra.rar&lt;/rar-name>
+      &lt;connection-definition>org.jboss.messaging.ra.JBMConnectionFactory&lt;/connection-definition>
+      &lt;config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic&lt;/config-property>
+      &lt;config-property name="ConnectorClassName" type="java.lang.String">org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/config-property>
+      &lt;config-property name="ConnectionParameters" type="java.lang.String">jbm.remoting.netty.port=5445&lt;/config-property>
+      &lt;max-pool-size>20&lt;/max-pool-size>
+&lt;/tx-connection-factory></programlisting>
+            <para>In this example the connection factory will be bound to JNDI with the name
+                    <literal>RemoteJmsXA</literal> and can be looked up in the usual way using JNDI
+                or defined within the EJB or MDB as such:</para>
+            <programlisting>@Resource(mappedName="java:RemoteJmsXA")
+private ConnectionFactory connectionFactory;</programlisting>
+            <para>The <literal>config-property</literal> elements are what over rides those in the
+                    <literal>ra.xml</literal> config.</para>
         </section>
         <section>
             <title>Adapter Inbound configuration</title>
-            <para>blah</para>
+            <para>The inbound configuration should again remain unchanged. This controls what
+                forwards messages onto MDB's. It is possible to override properties on the MDB by
+                adding an activation config to the MDB itself. This could be used to configure the
+                MDB to consume from a different server. The next section demonstrates over riding
+                the configuration.</para>
         </section>
     </section>
     <section>
         <title>Using JBM with MDBs in JBoss AS</title>
-        <para>blah</para>
+        <para>Once the JCA Connector is configured, as shown previously, the MDB's can be configured
+            to consume messages from the MDB server.</para>
+        <para>This is best done by using the <literal>MessageDriven</literal> tag on the MDB itself.
+            The following shows an example.</para>
+        <programlisting>@MessageDriven(name = "MessageMDBExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
+                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
+                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545")
+                     })
+public class MDBRemoteExample implements MessageListener
+{
+   public void onMessage(Message message)
+   {
+      try
+      {
+         //Step 9. We know the client is sending a text message so we cast
+         TextMessage tm = (TextMessage)message;
+
+         //Step 10. get the text from the message.
+         String text = tm.getText();
+
+         System.out.println("message " + text + " received");
+         
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+}</programlisting>
+        <para>In this example we have configured the MDB to consume from the queue named <literal
+                >queue/testQueue</literal>. It is also possible to override properties for the
+            inbound resource adapter here is well. Here the MDB is configured to connect to a
+            different server.</para>
+        <para>It is alsp possible to define these properties in the <literal>web.xml</literal>
+            confid file. Refer to the JBoss AS documentation on how to do this.</para>
     </section>
     <section>
         <title>High Availibility JNDI (HAJNDI)</title>
