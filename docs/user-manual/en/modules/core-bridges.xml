@@ -45,6 +45,8 @@
     &lt;connector-ref connector-name="remote-connector" backup-connector-name="backup-remote-connector"/&gt;          
 &lt;/bridge&gt;                        
         </programlisting>
+        <para>Please also note that in order for bridges to be deployed on a server, the <literal>clustered</literal> attribute needs to be set
+        to <literal>true</literal> in <literal>jbm-configuration.xml</literal>.</para>
         <para>In the above example we should all the parameters its possible to configure for a
             bridge. In practice you might use many of the defaults so it won't be necessary to
             specify them all explicitly.</para>
