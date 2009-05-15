@@ -6,32 +6,24 @@
     <section>
         <title>Clusters Overview</title>
         <para>JBoss Messaging clusters allow groups of JBoss Messaging servers to be grouped
-            together in order to share message processing load. Each active node in the cluster an
-            active JBoss Messaging server which manages its own messages and handles its own
+            together in order to share message processing load. Each active node in the cluster is
+            an active JBoss Messaging server which manages its own messages and handles its own
             connections.</para>
-        <para>The cluster is formed by each node declaring cluster connections to other nodes in the
-            core configuration file <literal>jbm-configuration.xml</literal>. When a node forms a
-            cluster connection to another node, internally it creates a core bridge (LINK)
-            connection between it and the other node, this is done transparently behind the scenes -
-            you don't have to declare an explicit bridge for each node. These cluster connections
-            allow messages to flow between the nodes of the cluster to balance load.</para>
+        <para>The cluster is formed by each node declaring <emphasis>cluster connections</emphasis>
+            to other nodes in the core configuration file <literal>jbm-configuration.xml</literal>.
+            When a node forms a cluster connection to another node, internally it creates a core
+            bridge (LINK) connection between it and the other node, this is done transparently
+            behind the scenes - you don't have to declare an explicit bridge for each node. These
+            cluster connections allow messages to flow between the nodes of the cluster to balance
+            load.</para>
         <para>Nodes can be connected together to form a cluster in many different topologies, we
-            will discuss the more common topologies in this chapter</para>
-        <itemizedlist>
-            <listitem>
-                <para>Symmetric cluster. In this topology every node is connected symmetrically to
-                    every other node in the cluster.</para>
-            </listitem>
-            <listitem>
-                <para>Chain cluster.</para>
-            </listitem>
-            <listitem>
-                <para>Chain cluster with mediator.</para>
-            </listitem>
-        </itemizedlist>
+            will discuss a couple of the more common topologies later in this chapter.</para>
         <para>We'll also discuss client side load balancing, where we can balance client connections
-            across the nodes of the cluster, and we'll talk about message redistribution where JBoss
+            across the nodes of the cluster, and we'll consider message redistribution where JBoss
             Messaging will redistribute messages between nodes to avoid starvation.</para>
+        <para>Another important part of clustering is <emphasis>server discovery</emphasis> where
+            servers can broadcast their connection details so clients or other servers can connect
+            to them with the minimum of configuration.</para>
     </section>
     <section>
         <title>Server discovery</title>
@@ -41,9 +33,10 @@
             <listitem>
                 <para>Discovery by messaging clients. A messaging client wants to be able to connect
                     to the servers of the cluster without having specific knowledge of which servers
-                    in the cluster are up at any one time. Messaging clients can initialised with an
-                    explicit list of the servers in a cluster, but this is not flexible or maintable
-                    as servers are added or removed from the cluster.</para>
+                    in the cluster are up at any one time. Messaging clients
+                        <emphasis>can</emphasis> be initialised with an explicit list of the servers
+                    in a cluster, but this is not flexible or maintainable as servers are added or
+                    removed from the cluster.</para>
             </listitem>
             <listitem>
                 <para>Discovery by other servers. Servers in a cluster want to be able to create
@@ -51,9 +44,10 @@
                     other servers in the cluster. </para>
             </listitem>
         </itemizedlist>
-        <para>Server discovery uses UDP (LINK) multicast to broadcast server connection settings. If
-            UDP is disabled on your network you won't be able to use this, and will have to specify
-            servers explicitly when setting up a cluster or using a messaging client.</para>
+        <para>Server discovery uses <ulink url="http://en.wikipedia.org/wiki/User_Datagram_Protocol"
+                >UDP</ulink> multicast to broadcast server connection settings. If UDP is disabled
+            on your network you won't be able to use this, and will have to specify servers
+            explicitly when setting up a cluster or using a messaging client.</para>
         <section>
             <title>Broadcast Groups</title>
             <para>A broadcast group is the means by which a server broadcasts connectors over the
@@ -245,11 +239,10 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 <para>If you're using the core API to directly instantiate <literal
                         >ClientSessionFactory</literal> instances, then you can specify the
                     discovery group parameters directly when creating the session factory. Here's an
-                    example:final String groupAddress = "231.7.7.7";                          final
-                    int groupPort = 9876;                          SessionFactory factory = new
-                    ClientSessionFactoryImpl(groupAddress, groupPort);
-                    ClientSession session1 = factory.createClientSession(...);  ClientSession
-                    session2 = factory.createClientSession(...);                         </para>
+                    example:final String groupAddress = "231.7.7.7"; final int groupPort = 9876;
+                    SessionFactory factory = new ClientSessionFactoryImpl(groupAddress, groupPort);
+                    ClientSession session1 = factory.createClientSession(...); ClientSession
+                    session2 = factory.createClientSession(...); </para>
                 <para>The <literal>refresh-timeout</literal> can be set directly on the session
                     factory by using the setter method <literal>setDiscoveryRefreshTimeout() if you
                         want to change the default value.</literal></para>
@@ -374,7 +367,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         are being forwarded has queues which have consumers, and if those consumers
                         have message filters (selectors) at least one of those selectors must match
                         the message.</para>
-                    <para>We will discuss this more fully later in the chapter.</para>
+                    <para>This parameter is optional, the default value is <literal
+                        >false</literal>.</para>
                 </listitem>
                 <listitem>
                     <para><literal>max-hops</literal>. When a cluster connection decides the set of
@@ -398,22 +392,13 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 </listitem>
             </itemizedlist>
         </section>
-        <section>
-            <title>Forwarding Irrespective of Consumers</title>
-            <para>Here's an example of a cluster connection that's configured to always forward
-                messages even when there are no matching consumers on the addresses on the other
-                nodes.</para>
-            <programlisting>
-                
-            </programlisting>
-        </section>
     </section>
     <section>
         <title>Client-Side Load balancing</title>
-        <para>With JBoss Messaging client-side connection load balancing subsequent client
+        <para>With JBoss Messaging client-side connection load balancing, subsequent client
             connections created using a single factory can be made to different nodes of the
             cluster. This allows connections to spread smoothly across the nodes of a cluster and
-            not "clumped" on any particular node.</para>
+            not be "clumped" on any particular node.</para>
         <para>The load balancing policy to be used by the client factory is configurable. JBoss
             Messaging provides two out-of-the-box load balancing policies and you can also implement
             your own and use that.</para>
@@ -465,27 +450,201 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
             two ways:</para>
         <itemizedlist>
             <listitem>
-                <para>Specifying servers explicitly</para>
+                <para>Specifying servers explicitly TODO TODO</para>
             </listitem>
             <listitem>
-                <para>Using discovery</para>
+                <para>Using discovery. Please see section [LINK] for an explanation on how to
+                    configure clients to use server discovery for discovering the list of servers to
+                    connect to.</para>
             </listitem>
         </itemizedlist>
+        <para/>
+    </section>
+    <section>
+        <title>Specifying Members of a Cluster Explicitly</title>
+        <para>Sometimes UDP is not enabled on a network so it's not possible to use UDP server
+            discovery for clients to discover the list of servers in the cluster, or for servers to
+            discover what other servers are in the cluster.</para>
+        <para>In this case, the list of servers in the cluster can be specified explicitly on each
+            node and on the client side. Let's look at how we do this:</para>
+        <section>
+            <title>Specify List of Servers on the Client Side</title>
+            <para>This differs depending on whether you're using JMS or the Core API</para>
+            <section>
+                <title>Specifying List of Servers using JMS</title>
+                <para>If you're using JMS, and you're using the JMS Service to load your JMS
+                    connection factory instances directly into JNDI on the server, then you can
+                    specify the list of servers in the server side configuration file <literal
+                        >jbm-jms.xml</literal>. Let's take a look at an example:</para>
+                <programlisting>&lt;connection-factory name="ConnectionFactory">
+   &lt;connector-ref connector-name="my-connector1" backup-connector-name="my-backup-connector1"/>
+   &lt;connector-ref connector-name="my-connector2" backup-connector-name="my-backup-connector2"/>
+   &lt;connector-ref connector-name="my-connector3" backup-connector-name="my-backup-connector3"/>
+   &lt;entries>
+      &lt;entry name="ConnectionFactory"/>
+   &lt;/entries>
+&lt;/connection-factory></programlisting>
+                <para>The <literal>connection-factory</literal> element can contain zero or more
+                        <literal>connector-ref</literal> elements, each one of which specifies a
+                        <literal>connector-name</literal> attribute and an optional <literal
+                        >backup-connector-name</literal> attribute. The <literal
+                        >connector-name</literal> attribute references a connector defined in
+                        <literal>jbm-configuration.xml</literal> which will be used as a live
+                    connector. The <literal>backup-connector-name</literal> is optional, and if
+                    specified it also references a connector defined in <literal
+                        >jbm-configuration.xml</literal>. For more information on connectors please
+                    see chapter [LINK].</para>
+                <para>The connection factory thus maintains a list of [connector, backup connector]
+                    pairs, these pairs are then used by the client connection load balancing policy
+                    on the client side when creating connections to the cluster.</para>
+                <para>If you're using JMS but you're not using JNDI then you can also specify the
+                    list of  [connector, backup connector] pairs directly when instantiating the
+                        <literal>JBossConnectionFactory</literal>, here's an
+                    example:<programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
+
+serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC0, backupTC0));
+serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC1, backupTC1));
+serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC2, backupTC2));
+
+ConnectionFactory jmsConnectionFactory = new JBossConnectionFactory(serverList);
+
+Connection jmsConnection1 = jmsConnectionFactory.createConnection();
+
+Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlisting></para>
+                <para>In the above snippet we create a list of pairs of <literal
+                        >TransportConfiguration</literal> objects. Each <literal
+                        >TransportConfiguration</literal> object contains knowledge of how to make a
+                    connection to a specific server. For more information on this please see the
+                    chapter on connectors [LINK].</para>
+                <para>A <literal>JBossConnectionFactory</literal> instance is then created passing
+                    the list of servers in the constructor. Any connections subsequently created by
+                    this factory will create connections according to the client connection load
+                    balancing policy applied to that list of servers.</para>
+            </section>
+        
+        <section>
+            <title>Specifying List of Servers using the Core API</title>
+            <para>If you're using the Core API you can also specify the list of servers directly
+                when creating the <literal>ClientSessionFactory</literal> instance. Here's an
+                example:</para>
+            <programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
+
+serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC0, backupTC0));
+serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC1, backupTC1));
+serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC2, backupTC2));
+
+ClientSessionFactory factory = new ClientSessionFactoryImpl(serverList);
+
+ClientSession sesison1 = factory.createClientSession(...);
+
+ClientSession session2 = factory.createClientSession(...);</programlisting>
+            <para>In the above snippet we create a list of pairs of <literal
+                    >TransportConfiguration</literal> objects. Each <literal
+                    >TransportConfiguration</literal> object contains knowledge of how to make a
+                connection to a specific server. For more information on this please see the chapter
+                on connectors [LINK].</para>
+            <para>A <literal>ClientSessionFactoryImpl</literal> instance is then created passing the
+                list of servers in the constructor. Any sessions subsequently created by this
+                factory will create sessions according to the client connection load balancing
+                policy applied to that list of servers.</para>
+        </section>
+        </section>
+        
     </section>
     <section>
         <title>Message Redistribution</title>
-        <para/>
+        <para>Another important part of clustering is message redistribution. Earlier we learned how
+            server side message load balancing round robins messages across the cluster. If <literal
+                >forward-when-no-consumers</literal> is false, then messages won't be forwarded to
+            nodes which don't have matching consumers, this is great and ensures that messages don't
+            arrive on a queue which has no consumers to consume them, however there is a situation
+            it doesn't solve: What happens if the consumers on a queue close after the messages have
+            been sent to the node? If there are no consumers on the queue the message won't get
+            consumed and we have a <emphasis>starvation</emphasis> situation.</para>
+        <para>This is where message redistribution comes in. With message redistribution JBoss
+            Messaging can be configured to automatically <emphasis>redistribute</emphasis> messages
+            from queues which have no consumers back to other nodes in the cluster which do have
+            matching consumers.</para>
+        <para>Mesage redistribution can be configured to kick in immediately after the last consumer
+            on a queue is closed, or to wait a configurable delay after the last consumer on a queue
+            is closed before redistributing. By default message redistribution is disabled.</para>
+        <para>Message redistribution can be configured on a per address basis, by specifying the
+            redistribution delay in the address settings, for more information on configuring
+            address settings please see the chapter [LINK].</para>
+        <para>Here's an address settings snippet from <literal>jbm-configuration.xml</literal>
+            showing how message redistribution is enabled for a set of queues:</para>
+        <programlisting>&lt;address-settings>     
+   &lt;address-setting match="jms.#">
+      &lt;redistribution-delay>0&lt;/redistribution-delay>
+   &lt;/address-setting>
+ &lt;/address-settings></programlisting>
+        <para>The above <literal>address-settings</literal> block would set a <literal
+                >redistribution-delay</literal> of <literal>0</literal> for any queue which is bound
+            to an address that starts with "jms.". All JMS queues and topic subscriptions are bound
+            to addresses that start with "jms.", so the above would enable instant (no delay)
+            redistribution for all JMS queues and topic subscriptions.</para>
+        <para>The attribute <literal>match</literal> can be an exact match or it can be a string
+            that conforms to the JBoss Messaging wildcard syntax. <xref linkend="wildcard_syntax"
+            /></para>
+        <para>The element <literal>redistribution-delay</literal> defines the delay in milliseconds
+            after the last consumer is closed on a queue before redistributing messages from that
+            queue to other nodes of the cluster which do have matching consumers. A delay of zero
+            means the messages will be immediately redistributed. A value of <literal>-1</literal>
+            signifies that messages will never be redistributed. The default value is <literal
+                >-1</literal>.</para>
+        <para>It often makes sense to introduce a delay before redistributing as it's a common case
+            that a consumer closes but another one quickly is created on the same queue, in such a
+            case you probably don't want to redistribute immediately since the new consumer will
+            arrive shortly.</para>
     </section>
     <section>
         <title>Cluster topologies</title>
-        <para/>
+        <para>JBoss Messaging clusters can be connected together in many different topologies, let's
+            consider the two most common ones here</para>
         <section>
             <title>Symmetric cluster</title>
-            <para/>
+            <para>A symmetric cluster is probably the most common cluster topology, and you'll be
+                familiar with if you've had experience of JBoss Application Server
+                clustering.</para>
+            <para>With a symmetric cluster every node in the cluster is connected to every other
+                node in the cluster. In other words every node in the cluster is no more than one
+                hop away from every other node.</para>
+            <para>To form a symmetric cluster every node in the cluster defines a cluster connection
+                with the attribute <literal>max-hops</literal> set to <literal>1</literal>.
+                Typically the cluster connection will use server discovery [LINK] in order to know
+                what other servers in the cluster it should connect to, although it is possible to
+                explicitly define each target server too in the cluster connection if, for example,
+                UDP is not available on your network.</para>
+            <para>With a symetric cluster each node knows about all the queues that exist on all the
+                other nodes and what consumers they have. With this knowledge it can determine how
+                to load balance and redistribute messages around the nodes.</para>
+            <para>DIAGRAM</para>
         </section>
         <section>
             <title>Chain cluster</title>
-            <para/>
+            <para>With a chain cluster, each node in the cluster is not connected to every node in
+                the cluster directly, instead the nodes form a chain with a node on each end of the
+                chain and all other nodes just connecting to the previous and next nodes in the
+                chain.</para>
+            <para>An exampe of this would be a three node chain consisting of nodes A, B and C. Node
+                A is hosted in one network and has many producer clients connected to it sending
+                order messages. Due to corporate policy, the order consumer clients need to be
+                hosted in a different network, and that network is only accessible via a third
+                network. In this setup node B acts as a mediator with no producers or consumers on
+                it. Any order messages arriving on node A will be forwarded to node B, which will in
+                turn forward them to node C where they can get consumed. Node A does not need to
+                directly connect to C, but all the nodes can still act as a part of the
+                cluster.</para>
+            <para>To set up a cluster in this way, node A would define a cluster connection that
+                connects to node B, and node B would define a cluster connection that connects to
+                node C. In this case we only want cluster connections in one direction since we're
+                only moving messages from node A->B->C and never from C->B->A.</para>
+            <para>For this topology we would set <literal>max-hops</literal> to <literal
+                >2</literal>. With a value of <literal>2</literal> the knowledge of what queues and
+                consumers that exist on node C would be propagated from node C to node B to node A.
+                Node A would then know to distribute messages to node B when they arrive, even
+                though node B has no consumers itself, it would know that a further hop away is node
+                C which does have consumers.</para>
         </section>
     </section>
 </chapter>
