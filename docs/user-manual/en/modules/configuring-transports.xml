@@ -296,65 +296,98 @@ etc
                 <listitem>
                     <para>Deploy the servlet. Here's an example web.xml describing a web application
                         that uses the servlet:</para>
-                    <programlisting>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+                    <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
 &lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-    version="2.4"&gt;
-    &lt;context-param&gt;
-        &lt;param-name&gt;serverChannelName&lt;/param-name&gt;
-        &lt;param-value&gt;org.jboss.jbm&lt;/param-value&gt;
-    &lt;/context-param&gt;
-    
-    &lt;context-param&gt;
-        &lt;param-name&gt;streaming&lt;/param-name&gt;
-        &lt;param-value&gt;true&lt;/param-value&gt;
-    &lt;/context-param&gt;
-    
-    &lt;context-param&gt;
-        &lt;param-name&gt;reconnectTimeout&lt;/param-name&gt;
-        &lt;param-value&gt;3000&lt;/param-value&gt;
-    &lt;/context-param&gt;
-    
-    &lt;listener&gt;
-        &lt;listener-class&gt;org.jboss.netty.channel.socket.http.HttpTunnelingSessionListener&lt;/listener-class&gt;
-    &lt;/listener&gt;
-    
-    &lt;listener&gt;
-        &lt;listener-class&gt;org.jboss.netty.channel.socket.http.HttpTunnelingContextListener&lt;/listener-class&gt;
-    &lt;/listener&gt;
-    
-    &lt;servlet&gt;
-        &lt;servlet-name&gt;NettyServlet&lt;/servlet-name&gt;
-        &lt;servlet-class&gt;org.jboss.netty.channel.socket.http.HttpTunnelingServlet&lt;/servlet-class&gt;
-    &lt;/servlet&gt;
-    
-    &lt;servlet-mapping&gt;
-        &lt;servlet-name&gt;NettyServlet&lt;/servlet-name&gt;
-        &lt;url-pattern&gt;/JBMServlet&lt;/url-pattern&gt;
-    &lt;/servlet-mapping&gt;
-&lt;/web-app&gt;                    
-    
-                </programlisting>
-                    <para>Any traffic with the /JBMServlet url pattern will be considered JBoss
-                        Messaging tunneling traffic and be redirected to the servlet</para>
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
+   &lt;context-param>
+      &lt;param-name>serverChannelName&lt;/param-name>
+      &lt;param-value>org.jboss.jbm&lt;/param-value>
+   &lt;/context-param>
+
+    &lt;context-param>
+      &lt;param-name>streaming&lt;/param-name>
+      &lt;param-value>true&lt;/param-value>
+   &lt;/context-param>
+
+   &lt;context-param>
+      &lt;param-name>reconnectTimeout&lt;/param-name>
+      &lt;param-value>3000&lt;/param-value>
+   &lt;/context-param>
+   
+   &lt;listener>
+      &lt;listener-class>org.jboss.netty.channel.socket.http.HttpTunnelingSessionListener&lt;/listener-class>
+   &lt;/listener>
+
+   &lt;listener>
+      &lt;listener-class>org.jboss.netty.channel.socket.http.HttpTunnelingContextListener&lt;/listener-class>
+   &lt;/listener>
+
+   &lt;servlet>
+      &lt;servlet-name>NettyServlet&lt;/servlet-name>
+      &lt;servlet-class>org.jboss.netty.channel.socket.http.HttpTunnelingServlet&lt;/servlet-class>
+   &lt;/servlet>
+
+   &lt;servlet-mapping>
+      &lt;servlet-name>NettyServlet&lt;/servlet-name>
+      &lt;url-pattern>/JBMServlet&lt;/url-pattern>
+   &lt;/servlet-mapping>
+&lt;/web-app>
+</programlisting>
                 </listitem>
                 <listitem>
                     <para>We also need to add a special Netty invm acceptor on the server side
-                        configuration. The servlet will forward all traffic to this acceptor. Here's
-                        a snippet from the <literal>jbm-configuration.xml</literal> file showing
-                        that acceptor being defined:</para>
+                        configuration.</para>
+                    <para>Here's a snippet from the <literal>jbm-configuration.xml</literal> file
+                        showing that acceptor being defined:</para>
                     <programlisting>                    
-&lt;acceptor name="netty-servlet"&gt;
-    &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
-    &lt;param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/&gt;
-    &lt;param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/&gt;
-&lt;/acceptor&gt;                                         
+&lt;acceptors>
+
+      &lt;acceptor name="netty-invm">
+         &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class>
+         &lt;param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
+         &lt;param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
+      &lt;/acceptor>
+
+&lt;/acceptors>                                         
                 </programlisting>
                 </listitem>
+                <listitem>
+                    <para>Lastly we need a connector for the client, this again will be configured
+                        in the <literal>jbm-configuration.xml</literal> file as such:</para>
+                    <programlisting>&lt;connectors>
+
+      &lt;connector name="netty-servlet">
+         &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+         &lt;param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         &lt;param key="jbm.remoting.netty.port" value="8080" type="Integer"/>
+         &lt;param key="jbm.remoting.netty.useservlet" value="true" type="Boolean"/>
+         &lt;param key="jbm.remoting.netty.servletpath" value="/messaging/JBMServlet" type="String"/>
+      &lt;/connector>
+
+ &lt;/connectors></programlisting>
+                </listitem>
             </itemizedlist>
-            <para>TODO need to explain what all these params on the servlet are and how they map to
-                the netty transport constants.</para>
+            <para>Heres a list of the context params and what they are used for</para>
+            <itemizedlist>
+                <listitem>
+                    <para>serverChannelName - This is the name of the netty acceptor that the
+                        servlet will forward its packets too. You can see it matches the name of the
+                            <literal>jbm.remoting.netty.host</literal> param.</para>
+                </listitem>
+                <listitem>
+                    <para>streaming - set to true means that all packets will be streamed as one
+                        continuous request rather than one request per packet.</para>
+                </listitem>
+                <listitem>
+                    <para>reconnectTimeout - How long in milliseconds the servlet will await for the
+                        client to reconnect after a connection being closed by the web server</para>
+                </listitem>
+            </itemizedlist>
+            <para>The servlet pattern configured in the <literal>web.xml</literal> is the path of
+                the URL that is used. The connector param <literal
+                    >jbm.remoting.netty.servletpath</literal>  on the connector config must match
+                this using the application context of the web app if there is one.</para>
         </section>
     </section>
     <section>
