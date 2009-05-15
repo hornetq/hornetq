@@ -119,7 +119,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_MANAGEMENT_REQUEST_TIMEOUT = 5000;
 
-   public static final long DEFAULT_BROADCAST_PERIOD = 5000;
+   public static final long DEFAULT_BROADCAST_PERIOD = 1000;
 
    public static final long DEFAULT_BROADCAST_REFRESH_TIMEOUT = 10000;
 
@@ -136,6 +136,8 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
 
    public static final int DEFAULT_CLUSTER_MAX_HOPS = 1;
+   
+   public static final int DEFAULT_CLUSTER_RETRY_INTERVAL = 500;
 
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
 

@@ -25,6 +25,8 @@ package org.jboss.messaging.core.config.impl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
@@ -564,7 +566,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       int maxHops = DEFAULT_CLUSTER_MAX_HOPS;
 
-      long retryInterval = DEFAULT_RETRY_INTERVAL;
+      long retryInterval = DEFAULT_CLUSTER_RETRY_INTERVAL;
 
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
 

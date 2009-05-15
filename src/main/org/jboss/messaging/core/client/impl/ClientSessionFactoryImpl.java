@@ -91,7 +91,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final boolean DEFAULT_PRE_ACKNOWLEDGE = false;
 
-   public static final long DEFAULT_DISCOVERY_INITIAL_WAIT = 10000;
+   public static final long DEFAULT_DISCOVERY_INITIAL_WAIT = 2000;
 
    public static final long DEFAULT_DISCOVERY_REFRESH_TIMEOUT = 10000;
 
