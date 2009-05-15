@@ -26,15 +26,15 @@
 ...
 
 &lt;/configuration</programlisting>
-        <para>If no value is specified, the default is <literal>data/largemessages</literal></para>
+        <para>By default the large message directory is <literal>data/largemessages</literal></para>
     </section>
     <section>
         <title>Setting the limits</title>
         <para>The definition of what is a large message is done on the session factory. For example,
             you may configure a factory on the http transport considering a message as large when
-            its size is greater than 10KB and another one considering messages greater than 200KB as
-            large.</para>
-        <para>If no value is specified, the default is 100KB.</para>
+            its size is greater than 10KB and another one on the socket transport considering
+            messages greater than 200KB as large.</para>
+        <para>By default the min large message size is 100KB.</para>
         <section>
             <title>Using Core API</title>
             <para>If the JBoss Messaging Core API is used, the minimal large message size is
@@ -212,7 +212,7 @@ for (int i = 0 ;  i &lt; msg.getBodySize(); i += bytes.length)
    // Whatever you want to do with the bytes
 }</programlisting>
         <para>If using JMS API, <literal>BytesMessage</literal> and <literal>StreamMessage</literal>
-            also supports is transparently.</para>
+            also supports it transparently.</para>
         <programlisting>BytesMessage rm = (BytesMessage)cons.receive(10000);
 
 byte data[] = new byte[1024];

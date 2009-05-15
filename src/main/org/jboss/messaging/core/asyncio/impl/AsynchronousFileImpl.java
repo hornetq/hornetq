@@ -24,7 +24,6 @@ package org.jboss.messaging.core.asyncio.impl;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,8 +47,7 @@ import org.jboss.messaging.utils.VariableLatch;
  */
 public class AsynchronousFileImpl implements AsynchronousFile
 {
-   // Static
-   // -------------------------------------------------------------------------------
+   // Static ----------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(AsynchronousFileImpl.class);
 
@@ -127,15 +125,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
       return loaded;
    }
 
-   // Attributes
-   // ---------------------------------------------------------------------------------
+   // Attributes ------------------------------------------------------------------------
 
    private boolean opened = false;
 
    private String fileName;
 
    private final VariableLatch pollerLatch = new VariableLatch();
-   
+
    private volatile Runnable poller;
 
    private int maxIO;
@@ -150,29 +147,27 @@ public class AsynchronousFileImpl implements AsynchronousFile
     *  Warning: Beware of the C++ pointer! It will bite you! :-)
     */
    private long handler;
-   
-   
+
    // A context switch on AIO would make it to synchronize the disk before
    // switching to the new thread, what would cause
    // serious performance problems. Because of that we make all the writes on
    // AIO using a single thread.
    private final Executor writeExecutor;
-   
+
    private final Executor pollerExecutor;
 
-   // AsynchronousFile implementation
-   // ------------------------------------------------------------------------------------
+   // AsynchronousFile implementation ---------------------------------------------------
 
    /**
     * @param writeExecutor It needs to be a single Thread executor. If null it will use the user thread to execute write operations
     * @param pollerExecutor The thread pool that will initialize poller handlers
     */
-   public AsynchronousFileImpl(Executor writeExecutor, Executor pollerExecutor)
+   public AsynchronousFileImpl(final Executor writeExecutor, final Executor pollerExecutor)
    {
       this.writeExecutor = writeExecutor;
       this.pollerExecutor = pollerExecutor;
    }
-   
+
    public void open(final String fileName, final int maxIO) throws MessagingException
    {
       writeLock.lock();
@@ -198,7 +193,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
             MessagingException ex = null;
             if (e.getCode() == MessagingException.NATIVE_ERROR_CANT_INITIALIZE_AIO)
             {
-               ex = new MessagingException(e.getCode(), "Can't initialize AIO. Currently AIO in use = " + totalMaxIO.get() + ", trying to allocate more " + maxIO, e);
+               ex = new MessagingException(e.getCode(),
+                                           "Can't initialize AIO. Currently AIO in use = " + totalMaxIO.get() +
+                                                    ", trying to allocate more " +
+                                                    maxIO,
+                                           e);
             }
             else
             {
@@ -232,10 +231,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          writeSemaphore = null;
          if (poller != null)
          {
-            stopPoller(handler);
-            // We need to make sure we won't call close until Poller is
-            // completely done, or we might get beautiful GPFs
-            this.pollerLatch.waitCompletion();
+            stopPoller();
          }
 
          closeInternal(handler);
@@ -261,14 +257,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          throw new NullPointerException("Null Callback");
       }
-      
+
       checkOpened();
       if (poller == null)
       {
          startPoller();
       }
       writeSemaphore.acquireUninterruptibly();
-      
+
       if (writeExecutor != null)
       {
          writeExecutor.execute(new Runnable()
@@ -381,22 +377,20 @@ public class AsynchronousFileImpl implements AsynchronousFile
    {
       bufferCallback = callback;
    }
-   
+
    /** Return the JNI handler used on C++ */
    public long getHandler()
    {
       return handler;
    }
-   
-   public static void clearBuffer(ByteBuffer buffer)
+
+   public static void clearBuffer(final ByteBuffer buffer)
    {
       resetBuffer(buffer, buffer.limit());
       buffer.position(0);
    }
 
-
-   // Private
-   // ---------------------------------------------------------------------------------
+   // Private ---------------------------------------------------------------------------
 
    /** The JNI layer will call this method, so we could use it to unlock readWriteLocks held in the java layer */
    @SuppressWarnings("unused")
@@ -412,7 +406,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
    }
 
-   @SuppressWarnings("unused")
    // Called by the JNI layer.. just ignore the
    // warning
    private void callbackError(final AIOCallback callback, final int errorCode, final String errorMessage)
@@ -465,20 +458,27 @@ public class AsynchronousFileImpl implements AsynchronousFile
          throw new RuntimeException("File is not opened");
       }
    }
-   // Native
-   // ------------------------------------------------------------------------------------------
+
+   /**
+    * @throws MessagingException
+    * @throws InterruptedException
+    */
+   private void stopPoller() throws MessagingException, InterruptedException
+   {
+      stopPoller(handler);
+      // We need to make sure we won't call close until Poller is
+      // completely done, or we might get beautiful GPFs
+      pollerLatch.waitCompletion();
+   }
+
+   // Native ----------------------------------------------------------------------------
 
    private static native void resetBuffer(ByteBuffer directByteBuffer, int size);
 
+   public static native void destroyBuffer(ByteBuffer buffer);
 
-   // Should we make this method static?
-	public static native void destroyBuffer(ByteBuffer buffer);
-	
-	// Should we make this method static?
-	private static native ByteBuffer newNativeBuffer(long size);
-	
-   
-   
+   private static native ByteBuffer newNativeBuffer(long size);
+
    private static native long init(String fileName, int maxIO, Logger logger) throws MessagingException;
 
    private native long size0(long handle) throws MessagingException;
@@ -495,13 +495,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    /** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
    private static native int getNativeVersion();
-   
 
    /** Poll asynchrounous events from internal queues */
    private static native void internalPollEvents(long handler);
 
-   // Inner classes
-   // -----------------------------------------------------------------------------------------
+   // Inner classes ---------------------------------------------------------------------
 
    private class PollerRunnable implements Runnable
    {
