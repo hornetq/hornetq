@@ -361,8 +361,6 @@ public class ManagementServiceImpl implements ManagementService
    public ServerMessage handleMessage(final ServerMessage message) throws Exception
    {
       // a reply message is sent with the result stored in the message body.
-      // we set its type to MessageImpl.OBJECT_TYPE so that I can be received
-      // as an ObjectMessage when using JMS to send management message
       ServerMessageImpl reply = new ServerMessageImpl(storageManager.generateUniqueID());
       reply.setBody(ChannelBuffers.dynamicBuffer(1024));
 
