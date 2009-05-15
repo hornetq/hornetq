@@ -498,7 +498,7 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                     pairs, these pairs are then used by the client connection load balancing policy
                     on the client side when creating connections to the cluster.</para>
                 <para>If you're using JMS but you're not using JNDI then you can also specify the
-                    list of  [connector, backup connector] pairs directly when instantiating the
+                    list of [connector, backup connector] pairs directly when instantiating the
                         <literal>JBossConnectionFactory</literal>, here's an
                     example:<programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
 
@@ -521,13 +521,12 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                     this factory will create connections according to the client connection load
                     balancing policy applied to that list of servers.</para>
             </section>
-        
-        <section>
-            <title>Specifying List of Servers using the Core API</title>
-            <para>If you're using the Core API you can also specify the list of servers directly
-                when creating the <literal>ClientSessionFactory</literal> instance. Here's an
-                example:</para>
-            <programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
+            <section>
+                <title>Specifying List of Servers using the Core API</title>
+                <para>If you're using the Core API you can also specify the list of servers directly
+                    when creating the <literal>ClientSessionFactory</literal> instance. Here's an
+                    example:</para>
+                <programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
 
 serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC0, backupTC0));
 serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC1, backupTC1));
@@ -538,18 +537,42 @@ ClientSessionFactory factory = new ClientSessionFactoryImpl(serverList);
 ClientSession sesison1 = factory.createClientSession(...);
 
 ClientSession session2 = factory.createClientSession(...);</programlisting>
-            <para>In the above snippet we create a list of pairs of <literal
-                    >TransportConfiguration</literal> objects. Each <literal
-                    >TransportConfiguration</literal> object contains knowledge of how to make a
-                connection to a specific server. For more information on this please see the chapter
-                on connectors [LINK].</para>
-            <para>A <literal>ClientSessionFactoryImpl</literal> instance is then created passing the
-                list of servers in the constructor. Any sessions subsequently created by this
-                factory will create sessions according to the client connection load balancing
-                policy applied to that list of servers.</para>
+                <para>In the above snippet we create a list of pairs of <literal
+                        >TransportConfiguration</literal> objects. Each <literal
+                        >TransportConfiguration</literal> object contains knowledge of how to make a
+                    connection to a specific server. For more information on this please see the
+                    chapter on connectors [LINK].</para>
+                <para>A <literal>ClientSessionFactoryImpl</literal> instance is then created passing
+                    the list of servers in the constructor. Any sessions subsequently created by
+                    this factory will create sessions according to the client connection load
+                    balancing policy applied to that list of servers.</para>
+            </section>
         </section>
+        <section>
+            <title>Specifying List of Servers to form a Cluster</title>
+            <para>Let's take a look at an example where each cluster connection is defined for a
+                symmetric cluster, but we're not using discovery for each node to discover its
+                neighbours, instead we'll configure each cluster connection to have explicit
+                knowledge of all the other nodes in the cluster.</para>
+            <para>Here's an example cluster connection definition showing that:</para>
+            <programlisting>&lt;cluster-connections&gt;
+    &lt;cluster-connection name="my-explicit-cluster"&gt;
+        &lt;address&gt;jms&lt;/address&gt;
+        &lt;connector-ref connector-name="my-connector1" backup-connector-name="my-backup-connector1"/>
+        &lt;connector-ref connector-name="my-connector2" backup-connector-name="my-backup-connector2"/>
+        &lt;connector-ref connector-name="my-connector3" backup-connector-name="my-backup-connector3"/>
+    &lt;/cluster-connection&gt;
+&lt;/cluster-connections&gt;</programlisting>
+            <para>The <literal>cluster-connection</literal> element can contain zero or more
+                    <literal>connector-ref</literal> elements, each one of which specifies a
+                    <literal>connector-name</literal> attribute and an optional <literal
+                    >backup-connector-name</literal> attribute. The <literal
+                    >connector-name</literal> attribute references a connector defined in <literal
+                    >jbm-configuration.xml</literal> which will be used as a live connector. The
+                    <literal>backup-connector-name</literal> is optional, and if specified it also
+                references a connector defined in <literal>jbm-configuration.xml</literal>. For more
+                information on connectors please see chapter [LINK].</para>
         </section>
-        
     </section>
     <section>
         <title>Message Redistribution</title>
