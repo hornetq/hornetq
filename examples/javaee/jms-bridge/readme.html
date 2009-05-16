@@ -28,21 +28,6 @@
      
      <p>Please refer to JBoss Messaging Quickstart guide to <a href="../../../docs/quickstartguide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
 
-     <h3>JBoss Messaging configuration</h3>
-
-     <p>We will add two queues to JBoss Messaging JMS configuration in 
-         <code>${JBOSS_HOME}/server/default-with-jbm2/deploy/messaging.sar/jbm-jms.xml</code></p>
-     <pre>
-         <code>&lt;queue name="source"&gt;
-            &lt;entry name="/queue/source"/&gt;
-         &lt;/queue&gt;
-         &lt;queue name="target"&gt;
-            &lt;entry name="/queue/target"/&gt;
-         &lt;/queue&gt;</code>
-     </pre>
-     
-     <p>These 2 queues are deployed in the application server when you run <code>ant deploy</code>.</p>
-     
      <h3>JMS Bridge configuration</h3>
 
      <p>The JMS Bridge is configured using JBoss microcontainer (<a href="config/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> contains comments about the various parameters 
@@ -51,7 +36,8 @@
          
      <h2>Example step-by-step</h2>
 
-     <p><em>Once JBoss AS 5 is configured and started, type <code>ant</code> to run the example</em>.</p>
+     <p><em>To deploy and start the server, type <code>ant deploy</code></em>.</p>
+     <p><em>Once the server has started, type <code>ant run</code> to run the example</em>.</p>
      
      <p>The example is simple: the application will send a message to the <em>source</em> queue and consume the same message
          from the <em>target</em> queue.</p>
