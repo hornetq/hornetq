@@ -14,66 +14,12 @@
   
      <h2>Example configuration</h2>
         
-     <p>
-         JBoss Messaging supports different transports through configuration. In fact JBoss Messaging provides a set of
-         simple SPI that allow new transports can be plugged in easily. In this example, netty's servlet transport is 
-         configured and used in sending and receiving messages with JBoss Message Server.
-         
-         To enable netty's servlet transport, following these steps
 
-         <ol>         
-         <li>Create a servlet</li>
-            There is a servlet for this example under config. Please take a look at 
-            <code>${JBOSS_HOME}/server/default-with-jbm2/config/jms-servlet/WEB-INF/web.xml</code> for 
-            details of the servlet configuration. The servlet is used to accept requests and send response. Before using servlet 
-            transport, the servlet need to be deployed to the AS 5.
-            
-         <li>Add servlet connector/acceptor entries in <code>${JBOSS_HOME}/server/default-with-jbm2/deploy/messaging.sar/jbm-configuration.xml</code></li>
-            The corresponding connector/acceptor need to be configured to tell JBoss Messaging to use netty servlet transport.
-            The configure looks like:
-            <p>
 
-      <pre><code>
-      &lt;connectors&gt;
-         ...
-         &lt;connector name=&quot;netty-servlet&quot;&gt;
-            &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class&gt;
-            &lt;param key=&quot;jbm.remoting.netty.host&quot; value=&quot;localhost&quot; type=&quot;String&quot;/&gt;
-            &lt;param key=&quot;jbm.remoting.netty.port&quot; value=&quot;8080&quot; type=&quot;Integer&quot;/&gt;
-            &lt;param key=&quot;jbm.remoting.netty.useservlet&quot; value=&quot;true&quot; type=&quot;Boolean&quot;/&gt;
-            &lt;param key=&quot;jbm.remoting.netty.servletpath&quot; value=&quot;/jms-servlet/JBMServlet&quot; type=&quot;String&quot;/&gt;
-         &lt;/connector&gt;
-         ...
-      &lt;/connectors&gt;
-
-      &lt;acceptors&gt;
-         ...
-         &lt;acceptor name=&quot;netty-servlet&quot;&gt;
-            &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
-            &lt;param key=&quot;jbm.remoting.netty.useinvm&quot; value=&quot;true&quot; type=&quot;Boolean&quot;/&gt;
-            &lt;param key=&quot;jbm.remoting.netty.host&quot; value=&quot;org.jboss.jbm&quot; type=&quot;String&quot;/&gt;
-         &lt;/acceptor&gt;
-         ...
-      &lt;/acceptor&gt;
-      </code></pre>
-            </p>
-     <li>You also need to use the Connection Factory that has configured to use the servlet connector in jbm-jms.xml, as</li>
-        <p>
-        <pre><code>
-        &lt;connection-factory name=&quot;TestServletConnectionFactory&quot;&gt;
-           &lt;connector-ref connector-name=&quot;netty-servlet&quot;/&gt;
-           &lt;entries&gt;
-              &lt;entry name=&quot;/TestServletConnectionFactory&quot;/&gt;
-           &lt;/entries&gt;
-        &lt;/connection-factory&gt;
-        </code></pre>
-        </p>
-     </ol>
-     </p>
      <h2>Example step-by-step</h2>
-     <p><em>From this directory, type <code>ant deploy</code> to deploy resources in the application server (including the WAR).</br >
-     Type <code>ant</code> to run the example.<br />
-     Finally type <code>ant undeploy</code> to undeploy the example resources from the application server.</em></p>
+     <p><em>To deploy and start the server, type <code>ant deploy</code>from the example directory</br >
+     Once the server has started type <code>ant run</code> to run the example.<br />
+     To remove the new profile type <code>ant undeploy</code>.</em></p>
      
      <br>
      <ol>
