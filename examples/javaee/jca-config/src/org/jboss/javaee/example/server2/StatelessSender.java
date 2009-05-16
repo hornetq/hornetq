@@ -57,27 +57,27 @@ public class StatelessSender implements StatelessSenderService
     */
    public void sendHello(String message) throws Exception
    {
-      // Step 5. Define the destination that will receive the message (instead of using JNDI to the remote server)
+      // Step 4. Define the destinations that will receive the message (instead of using JNDI to the remote server)
       JBossQueue destQueueA = new JBossQueue("A");
-
       JBossQueue destQueueB = new JBossQueue("B");
       
-      // Step 6. Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml)
+      // Step 5. Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml)
       Connection conn = connectionFactory.createConnection("guest", "guest");
       
-      // Step 7. Send a message to a QueueA on the remote server, which will be received by MDBQueueA
+      // Step 6. Send a message to a QueueA on the remote server, which will be received by MDBQueueA
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       MessageProducer prodA = sess.createProducer(destQueueA);
       prodA.send(sess.createTextMessage(message));
 
       System.out.println("Step 7 (StatelessSender.java): Sent message \"" + message + "\" to QueueA");
 
+      // Step 6. Send a message to a QueueB on the remote server, which will be received by MDBQueueA
       MessageProducer prodB = sess.createProducer(destQueueB);
       prodB.send(sess.createTextMessage(message));
       
       System.out.println("Step 8 (StatelessSender.java): Sent message \"" + message + "\" to QueueB");
 
-      // Step 8. Close the connection. (Since this is a JCA connection, this will just place the connection back to a connection pool)
+      // Step 7. Close the connection. (Since this is a JCA connection, this will just place the connection back to a connection pool)
       conn.close();
       System.out.println("Step 9 (StatelessSender.java): Closed Connection (sending it back to pool)");
       

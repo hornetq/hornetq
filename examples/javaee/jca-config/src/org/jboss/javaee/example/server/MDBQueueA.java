@@ -32,7 +32,7 @@ import javax.jms.TextMessage;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 
-//Step 9. The message is received on the MDB, using a remote queue.
+//Step 9. The message is received on the MDB, using a local queue.
 @MessageDriven(name = "MDB_QueueA",
                activationConfig =
                      {

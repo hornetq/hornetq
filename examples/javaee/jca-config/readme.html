@@ -50,6 +50,8 @@ public class MDBRemoteExample implements MessageListener
 ...
 </code></pre>
 
+     <p>In this example however we will configure the default adapter.</p>
+
      <p>Other application servers will provide different ways of binding the resource-adapter.</p>
      
      <h2>Connection Factory Properties</h2>
@@ -132,22 +134,17 @@ public class MDBRemoteExample implements MessageListener
      <p>You may choose to deploy multiple JBossMessaging Resource adapters on the same application server, for example if you are connecting to different JBM servers and if you wish to have a higher control of properties on each server you are connecting to. You will be able to determine which rar you are using individually at each <i>MDB</i> and <i>ConnectionFactory</i> as specified before here. Just copy the directory jms-ra.rar in your application as any other name with the extension .rar and use that file name at your deployments.</p>
 
      <p>Please refer to JBoss Messaging Quickstart guide to <a href="../../../docs/quickstartguide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
-     
-     <h2>Please follow these steps to configure the example:</h2>
-     <ol>
-     <li>Copy the directory <code>$JBOSS_HOME/server/default-with-jbm2</code> to <code>$JBOSS_HOME/server/default-with-jbm2_2</code>.</li>
-     <li>Start the first server with <code>./run.sh -c default-with-jbm2</code></li>
-     <li>Start the second server with <code>./run.sh -c default-with-jbm2_2 -Djboss.service.binding.set=ports-01</code></li>
-     </ol>
+
      
      <h2>Example step-by-step</h2>
-     <p><i>To deploy the example, simply type <code>ant deploy</code> from this directory **</i></p>
-     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
-     <p><i>To undeploy the example, simply type <code>ant undeploy</code> from this directory **</i></p>
+     <p><i>To deploy and start the first server, simply type <code>ant deploy</code> from the example directory</i></p>
+     <p><i>After the first server has started start the second server, simply type <code>ant deploy2</code> from the example directory</i></p>
+     <p><i>To run the example, simply type <code>ant run</code> from the example directory</i></p>
+     <p><i>To undeploy the example, simply type <code>ant undeploy undeploy2</code> from the example directory</i></p>
      <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
      <br>
      <ol>
-        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
+        <li>First we need to get an initial context so we can look-up the EJB on the second server from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
         <pre>
            <code>initialContext = new InitialContext();</code>
         </pre>
@@ -161,23 +158,11 @@ public class MDBRemoteExample implements MessageListener
          <pre><code>
          sender.sendHello("Hello there MDB!");
          </code></pre>
-         
-         
-         <li>Sending a message to Queue B, that will be received by MDBQueueB</li> 
-         <pre><code>
-         ConnectionFactory cf = new JBossConnectionFactory(transportConfiguration);
-         Queue queue = new JBossQueue("B");
-         Connection conn = cf.createConnection("guest", "guest");
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sess.createProducer(queue);
-         prod.send(sess.createTextMessage("Hello there MDB talking to another RAR!"));
-         conn.close();
-         </code></pre>
 
-
-         <li>On StatelessSender.java: Define the destination that will receive the message (instead of using JNDI to the remote server)</li>
+         <li>On the second server we invoke the EJB StatelessSender: This will send 2 messages to server 1 using the configured outbound adapter</li>
          <pre><code>
-         JBossQueue destQueue = new JBossQueue("testQueue");
+         JBossQueue destQueueA = new JBossQueue("A");
+         JBossQueue destQueueB = new JBossQueue("B");
          </code></pre>
       
          <li>Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml). JCA will actually manage this thorugh a <i>Connection Pool</i></li>
@@ -185,11 +170,17 @@ public class MDBRemoteExample implements MessageListener
          Connection conn = connectionFactory.createConnection("guest", "guest");
          </code></pre>
       
-         <li>Send a message to a QueueA on the remote server, which will be received by MDBQueueA</li>
+         <li>Send a message to a QueueA on server1, which will be received by MDBQueueA on server1</li>
          <pre><code>
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prod = sess.createProducer(destQueue);
+         MessageProducer prodA = sess.createProducer(destQueueA);
          prod.send(sess.createTextMessage(message));
+         </code></pre>
+
+         <li>Send a message to a QueueB on the remote server1, which will be received by MDBQueueA on server2</li>
+         <pre><code>
+         MessageProducer prodB = sess.createProducer(destQueueB);
+         prodB.send(sess.createTextMessage(message));
          </code></pre>
 
          <li>Close the connection. (Since this is a JCA connection, this close will save the connection to a connection pool)</li>
@@ -197,7 +188,7 @@ public class MDBRemoteExample implements MessageListener
          conn.close();
          </code></pre>
          
-         <li>The message is received on the MDBQueueA, using the Remote Queue</li>
+         <li>The message is received on the MDBQueueA on server1 which consumed from a local queue</li>
 
          <pre><code>
 @MessageDriven(name = "MDB_QueueA",
@@ -205,17 +196,15 @@ public class MDBRemoteExample implements MessageListener
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/A"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                        @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545") // Port on the second server
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"))
                      })
 public class MDBQueueA implements MessageListener
 {
-   public void onMessage(Message message)
+   public void onMessage(Message message).....
          </code></pre>         
           
 
-         <li>Another message is received on MDBQueueB, using the Remote Queue. This MDB is using a different ResourceAdapter. Notice you didn't need to specify any Connection properties here, as you have different default values when using this resource-adapter (example-jbm-ra.rar).</li>
+         <li>Another message is received on MDBQueueB on server2 which consumed from a remote queue on server1.
 
          <pre><code>
 @MessageDriven(name = "MDB_QueueB",
@@ -229,7 +218,7 @@ public class MDBQueueA implements MessageListener
 
 public class MDBQueueB implements MessageListener
 {
-
+   public void onMessage(Message message).....
          </code></pre>         
           
 

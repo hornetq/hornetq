@@ -32,8 +32,8 @@ import javax.jms.TextMessage;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 
-//Step 9. The message is received on the MDB, using a remote queue.
-@MessageDriven(name = "MDB_QueueA",
+//Step 10. The message is received on the MDB, using a remote queue.
+@MessageDriven(name = "MDB_QueueB",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
