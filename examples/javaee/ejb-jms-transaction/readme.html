@@ -18,6 +18,7 @@
      <p>To run the example, you need to download JBoss AS 5.x and create a configuration for JBoss Messaging.</p>
      <p>The example also requires a database. The instructions are for MySQL. If you use another database, please refer
          to the database documentation to configure it.</p>
+     <p>The example makes a copy of the default-with-jbm2 profile so please configure this for the database</p>
          
 
      <h3>JBoss AS configuration</h3>
@@ -47,9 +48,9 @@
      
      <h2>Example step-by-step</h2>
 
-     <p><em>To deploy the example, type <code>ant deploy</code> from this directory</em>.</p>
-     <p><em>Once the example is deployed in JBoss AS 5, type <code>ant</code> to run the example</em>.</p>
-     <p><em>Type <code>ant undeploy</code> to undeploy the example from JBoss AS 5</em>.</p>
+     <p><em>To deploy and run the server, type <code>ant deploy</code> from this directory</em>.</p>
+     <p><em>Once the second server has started, type <code>ant run</code> to run the example </em>.</p>
+     <p><em>Type <code>ant undeploy</code> to remove the profile from JBoss AS 5</em>.</p>
      
      The example code is composed of two main classes:
      <ul>
