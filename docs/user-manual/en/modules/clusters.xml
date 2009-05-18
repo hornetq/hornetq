@@ -302,7 +302,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
     &lt;/cluster-connection&gt;
 &lt;/cluster-connections&gt;                
             </programlisting>
-            <para>In the above cluster connection all parameters have been explicity specified. In
+            <para>In the above cluster connection all parameters have been explicitly specified. In
                 practice you might use the defaults for some.</para>
             <itemizedlist>
                 <listitem>
@@ -358,7 +358,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                     <para>If this is set to <literal>true</literal> then each incoming message will
                         be round robin'd even though the same queues on the other nodes of the
                         cluster may have no consumers at all, or they may have consumers that have
-                        non matching message filters (selectors).Note that JBoss Messaging will
+                        non matching message filters (selectors). Note that JBoss Messaging will
                             <emphasis>not</emphasis> forward messages to other nodes if there are no
                             <emphasis>queues</emphasis> of the same name on the other nodes, even if
                         this parameter is set to <literal>true</literal>.</para>
@@ -588,7 +588,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             Messaging can be configured to automatically <emphasis>redistribute</emphasis> messages
             from queues which have no consumers back to other nodes in the cluster which do have
             matching consumers.</para>
-        <para>Mesage redistribution can be configured to kick in immediately after the last consumer
+        <para>Message redistribution can be configured to kick in immediately after the last consumer
             on a queue is closed, or to wait a configurable delay after the last consumer on a queue
             is closed before redistributing. By default message redistribution is disabled.</para>
         <para>Message redistribution can be configured on a per address basis, by specifying the
@@ -607,7 +607,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             to addresses that start with "jms.", so the above would enable instant (no delay)
             redistribution for all JMS queues and topic subscriptions.</para>
         <para>The attribute <literal>match</literal> can be an exact match or it can be a string
-            that conforms to the JBoss Messaging wildcard syntax. <xref linkend="wildcard_syntax"
+            that conforms to the JBoss Messaging wildcard syntax. <xref linkend="wildcard-syntax"
             /></para>
         <para>The element <literal>redistribution-delay</literal> defines the delay in milliseconds
             after the last consumer is closed on a queue before redistributing messages from that
@@ -638,7 +638,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                 what other servers in the cluster it should connect to, although it is possible to
                 explicitly define each target server too in the cluster connection if, for example,
                 UDP is not available on your network.</para>
-            <para>With a symetric cluster each node knows about all the queues that exist on all the
+            <para>With a symmetric cluster each node knows about all the queues that exist on all the
                 other nodes and what consumers they have. With this knowledge it can determine how
                 to load balance and redistribute messages around the nodes.</para>
             <para>DIAGRAM</para>
@@ -649,7 +649,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                 the cluster directly, instead the nodes form a chain with a node on each end of the
                 chain and all other nodes just connecting to the previous and next nodes in the
                 chain.</para>
-            <para>An exampe of this would be a three node chain consisting of nodes A, B and C. Node
+            <para>An example of this would be a three node chain consisting of nodes A, B and C. Node
                 A is hosted in one network and has many producer clients connected to it sending
                 order messages. Due to corporate policy, the order consumer clients need to be
                 hosted in a different network, and that network is only accessible via a third
