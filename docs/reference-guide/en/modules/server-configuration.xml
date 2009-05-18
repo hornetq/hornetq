@@ -353,23 +353,6 @@
            </varlistentry>
          </variablelist>
       </section>    
-      <section id="paging-max-threads.configuration">
-         <title>paging-max-threads</title>
-         <variablelist>  
-           <varlistentry>
-             <term>type</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>default</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-           <varlistentry>
-             <term>description</term>
-             <listitem><para>TODO</para></listitem>
-           </varlistentry>
-         </variablelist>
-      </section>
       <section id="paging-directory.configuration">
          <title>paging-directory</title>
          <variablelist>  

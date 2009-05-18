@@ -42,8 +42,9 @@
                     message from a queue bound to matching addresses.</para>
             </listitem>
             <listitem>
-                <para><literal>manage</literal>. This permission allows the user to invoke management operations by sending
-                management messages to the management address.</para>
+                <para><literal>manage</literal>. This permission allows the user to invoke
+                    management operations by sending management messages to the management
+                    address.</para>
             </listitem>
         </itemizedlist>
         <para>For each permission, a list of roles who are granted that permission is specified. If
@@ -123,7 +124,8 @@
             be added into this file.</para>
         <para>Let's take a look at an example file:</para>
         <programlisting>
-&lt;configuration xmlns="urn:jboss:messaging" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+&lt;configuration xmlns="urn:jboss:messaging" 
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-users.xsd "&gt;
     
     &lt;defaultuser name="guest" password="guest"&gt;
@@ -165,7 +167,8 @@
             Messaging server when the JBoss Microcontainer starts up the beans.</para>
         <para>Let's take a look at a snippet from the default beans file:</para>
         <programlisting>           
-&lt;bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl"&gt;
+&lt;bean name="JBMSecurityManager" 
+      class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl"&gt;
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
 &lt;/bean&gt;            
@@ -192,7 +195,8 @@
             you need to specify the security manager as a JAASSecurityManager in the beans file.
             Here's an example:</para>
         <programlisting>
-&lt;bean name="JBMSecurityManager" class="org.jboss.messaging.integration.security.JAASSecurityManager"&gt;      
+&lt;bean name="JBMSecurityManager" 
+      class="org.jboss.messaging.integration.security.JAASSecurityManager"&gt;      
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
     
@@ -222,8 +226,8 @@
         </itemizedlist>
         <section>
             <title>Example</title>
-            <para>The <ulink url="../../../../examples/jms/jaas/readme.html"><literal>jaas</literal> example</ulink>
-                shows how JBoss Messaging can be configured to use JAAS.</para>
+            <para>The <ulink url="../../../../examples/jms/jaas/readme.html"><literal>jaas</literal>
+                    example</ulink> shows how JBoss Messaging can be configured to use JAAS.</para>
         </section>
     </section>
     <section>
@@ -240,10 +244,11 @@
     </section>
     <section>
         <title>Changing the Management password for Clustering</title>
-        <para>In order for cluster connections to work correctly, each node in the cluster must register for management notifications
-        from other nodes. To do this they must perform these actions as a user with a role that has <literal>admin</literal> permissions
-        on the management addresses.</para>
-        <para>This password should always be changed from its default after installation. Please see the management chapter for instructions
-        on how to do this.</para>
+        <para>In order for cluster connections to work correctly, each node in the cluster must
+            register for management notifications from other nodes. To do this they must perform
+            these actions as a user with a role that has <literal>admin</literal> permissions on the
+            management addresses.</para>
+        <para>This password should always be changed from its default after installation. Please see
+            the management chapter for instructions on how to do this.</para>
     </section>
 </chapter>

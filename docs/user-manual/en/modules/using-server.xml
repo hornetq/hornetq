@@ -77,9 +77,9 @@
         <title>System properties</title>
         <para>JBoss Messaging also takes a couple of Java system properties on the command line for
             configuring logging properties</para>
-        <para>JBoss Messaging uses JDK logging to minimise dependencies on other logging systems. JDK
-            logging can then be configured to delegate to some other framework, e.g. log4j if that's
-            what you prefer.</para>
+        <para>JBoss Messaging uses JDK logging to minimise dependencies on other logging systems.
+            JDK logging can then be configured to delegate to some other framework, e.g. log4j if
+            that's what you prefer.</para>
         <para>For more information on configuring logging, please see the section configuring
             logging</para>
     </section>
@@ -148,69 +148,68 @@
             security manager being used.</para>
         <para>Let's take a look at an example beans file from the stand-alone server:</para>
         <para>
-            <programlisting>
-                &lt;?xml version="1.0" encoding="UTF-8"?&gt;
-                
-                &lt;deployment xmlns="urn:jboss:bean-deployer:2.0"&gt;
-                
-                &lt;bean name="Naming" class="org.jnp.server.NamingBeanImpl"/&gt;
-                
-                &lt;!-- JNDI server. Disable this if you don't want JNDI --&gt;
-                &lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
-                &lt;property name="namingInfo"&gt;
-                &lt;inject bean="Naming"/&gt;
-                &lt;/property&gt;
-                &lt;property name="port"&gt;1099&lt;/property&gt;
-                &lt;property name="bindAddress"&gt;localhost&lt;/property&gt;
-                &lt;property name="rmiPort"&gt;1098&lt;/property&gt;
-                &lt;property name="rmiBindAddress"&gt;localhost&lt;/property&gt;
-                &lt;/bean&gt;
-                
-                &lt;!-- MBean server --&gt;
-                &lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
-                &lt;constructor factoryClass="java.lang.management.ManagementFactory"
-                factoryMethod="getPlatformMBeanServer"/&gt;
-                &lt;/bean&gt; 
-                
-                &lt;!-- The core configuration --&gt;
-                &lt;bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"&gt;
-                &lt;/bean&gt;
-                
-                &lt;!-- The security manager --&gt;
-                &lt;bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl"&gt;
-                &lt;start ignored="true"/&gt;
-                &lt;stop ignored="true"/&gt;
-                &lt;/bean&gt;
-                
-                &lt;!-- The core server --&gt;
-                &lt;bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl"&gt;
-                &lt;start ignored="true"/&gt;
-                &lt;stop ignored="true"/&gt;  
-                &lt;constructor&gt;
-                &lt;parameter&gt;
-                &lt;inject bean="Configuration"/&gt;
-                &lt;/parameter&gt;
-                &lt;parameter&gt;
-                &lt;inject bean="MBeanServer"/&gt;
-                &lt;/parameter&gt;
-                &lt;parameter&gt;
-                &lt;inject bean="JBMSecurityManager"/&gt;
-                &lt;/parameter&gt;        
-                &lt;/constructor&gt;         
-                &lt;/bean&gt;
-                
-                &lt;!-- The JMS server --&gt;
-                &lt;bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl"&gt;
-                &lt;constructor&gt;         
-                &lt;parameter&gt;
-                &lt;inject bean="MessagingServer"/&gt;
-                &lt;/parameter&gt;         
-                &lt;/constructor&gt;
-                &lt;/bean&gt;
-                
-                &lt;/deployment&gt;            
-                
-            </programlisting>
+            <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;deployment xmlns="urn:jboss:bean-deployer:2.0"&gt;
+
+&lt;bean name="Naming" class="org.jnp.server.NamingBeanImpl"/&gt;
+
+&lt;!-- JNDI server. Disable this if you don't want JNDI --&gt;
+&lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
+&lt;property name="namingInfo"&gt;
+&lt;inject bean="Naming"/&gt;
+&lt;/property&gt;
+&lt;property name="port"&gt;1099&lt;/property&gt;
+&lt;property name="bindAddress"&gt;localhost&lt;/property&gt;
+&lt;property name="rmiPort"&gt;1098&lt;/property&gt;
+&lt;property name="rmiBindAddress"&gt;localhost&lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;!-- MBean server --&gt;
+&lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
+&lt;constructor factoryClass="java.lang.management.ManagementFactory"
+factoryMethod="getPlatformMBeanServer"/&gt;
+&lt;/bean&gt; 
+
+&lt;!-- The core configuration --&gt;
+&lt;bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"&gt;
+&lt;/bean&gt;
+
+&lt;!-- The security manager --&gt;
+&lt;bean name="JBMSecurityManager" 
+      class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl"&gt;
+&lt;start ignored="true"/&gt;
+&lt;stop ignored="true"/&gt;
+&lt;/bean&gt;
+
+&lt;!-- The core server --&gt;
+&lt;bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl"&gt;
+&lt;start ignored="true"/&gt;
+&lt;stop ignored="true"/&gt;  
+&lt;constructor&gt;
+&lt;parameter&gt;
+&lt;inject bean="Configuration"/&gt;
+&lt;/parameter&gt;
+&lt;parameter&gt;
+&lt;inject bean="MBeanServer"/&gt;
+&lt;/parameter&gt;
+&lt;parameter&gt;
+&lt;inject bean="JBMSecurityManager"/&gt;
+&lt;/parameter&gt;        
+&lt;/constructor&gt;         
+&lt;/bean&gt;
+
+&lt;!-- The JMS server --&gt;
+&lt;bean name="JMSServerManager" 
+      class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl"&gt;
+&lt;constructor&gt;         
+&lt;parameter&gt;
+&lt;inject bean="MessagingServer"/&gt;
+&lt;/parameter&gt;         
+&lt;/constructor&gt;
+&lt;/bean&gt;
+
+&lt;/deployment&gt;</programlisting>
         </para>
         <para>We can see that, as well as the core JBoss Messaging server, the stand-alone server
             instantiates various different POJOs, lets look at them in turn:</para>
