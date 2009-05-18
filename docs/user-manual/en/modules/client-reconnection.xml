@@ -1,5 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="client-reconnection">
     <title>Client Reconnection</title>
-    <para>blah.</para>
+    <para>JBoss Messaging clients can be configured to automatically reconnect to the server in the event that a failure is detected in the connection
+    between the client and the server. If the client successfully reconnects, and the server still has a record of the clients session (i.e. the
+    server was not restarted) then the client will transparently re-attach to the session and it will be able to resume as if nothing had happened.</para>
+    <para>Client reconnnection is also used internally by components such as core bridges to allow them to reconnect to their target servers.</para>
+    <para>Client reconnection is configured using the following parameters:</para>
+    <itemizedlist>
+        <listitem>
+            <para><literal>retry-interval</literal>. This optional parameter determines the
+                period in milliseconds between subsequent reconnection attempts, if the
+                connection to the target server has failed. The default value is <literal
+                    >2000</literal>milliseconds.</para>
+        </listitem>
+        <listitem>
+            <para><literal>retry-interval-multiplier</literal>. This optional parameter
+                determines determines a multiplier to apply to the time since the last retry to
+                compute the time to the next retry.</para>
+            <para>This allows you to implement an <emphasis>exponential backoff</emphasis>
+                between retry attempts.</para>
+            <para>Let's take an example:</para>
+            <para>If we set <literal>retry-interval</literal>to <literal>1000</literal> ms and
+                we set <literal>retry-interval-multiplier</literal> to <literal>2.0</literal>,
+                then, if the first reconnect attempt fails, we will wait <literal>1000</literal>
+                ms then <literal>2000</literal> ms then <literal>4000</literal> ms between
+                subsequent reconnection attempts.</para>
+            <para>The default value is <literal>1.0</literal> meaning each reconnect attempt is
+                spaced at equal intervals.</para>
+        </listitem>
+        <listitem>
+            <para><literal>reconnect-attempts</literal>. This optional parameter determines the
+                total number of reconnect attempts the bridge will make before giving up and
+                shutting down. A value of <literal>-1</literal> signifies an unlimited number of
+                attempts. The default value is <literal>-1</literal>.</para>
+        </listitem>
+    </itemizedlist>
+    <para>If you're using JMS, and you're using the JMS Service on the server to load your JMS connection factory instances directly into JNDI, then
+    you can specify these parameters in the xml configuration in <literal>jbm-jms.xml</literal>, for example:</para>
+    <programlisting>
+        &lt;connection-factory name="ConnectionFactory"&gt;
+        &lt;connector-ref connector-name="netty"/&gt;
+        &lt;entries&gt;
+        &lt;entry name="ConnectionFactory"/&gt;
+        &lt;entry name="XAConnectionFactory"/&gt;
+        &lt;/entries&gt;
+        &lt;retry-interval&gt;1000&lt;/retry-interval&gt;
+        &lt;retry-interval-multiplier&gt;1.5&lt;/retry-interval-multiplier&gt;
+        &lt;reconnect-attempts&gt;1000&lt;/reconnect-attempts&gt;
+        &lt;/connection-factory&gt;          
+    </programlisting>
+    <para>If you're using JMS, but instantiating your JMS connection factory directly, you can specify the params using the appopriate setter methods
+    on the <literal>JBossConnectionFactory</literal> immediately after creating it.</para>
+    <para>If you're using the core API and instantiating the <literal>ClientSessionFactory</literal> instance directly you can also specify the params using the appopriate setter methods
+        on the <literal>ClientSessionFactory</literal> immediately after creating it.</para>
+    <para>If your client does manage to reconnect but the session is no longer available on the server, for instance if the server has been restarted or
+    it has timed out, then the client won't be able to re-attach, and any ExceptionListener or FailureListener instances registered on the connection
+    or session will be called.</para>
+    
+    
+    
     </chapter>
