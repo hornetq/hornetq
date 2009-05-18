@@ -60,8 +60,134 @@ server.start();
     </section>
     <section>
         <title>Dependency Frameworks</title>
-        <para>You may also choose to use a dependency injection framework such as JBoss Micro
-            Container or Spring.</para>
-        <para>TODO</para>
+        <para>You may also choose to use a dependency injection framework such as <trademark>JBoss
+                Micro Container</trademark> or <trademark>Spring Framework</trademark>.</para>
+        <para>JBoss Messaging standalone uses JBoss Micro Container as the injection framework.
+                <literal>JBMBootstrapServer</literal> and <literal>jbm-jboss-beans.xml</literal>
+            which are part of the JBoss Messaging distribution provide a very complete
+            implementation of what's needed to bootstrap the server using JBoss Micro Container. </para>
+        <para>When using JBoss Micro Container, you need to provide a XML with the four objects
+            required to instantiate a Server:</para>
+        <itemizedlist>
+            <listitem>
+                <para>The configuration. We will use ConfigurationImpl</para>
+            </listitem>
+            <listitem>
+                <para>A MBeanServer required by management.</para>
+            </listitem>
+            <listitem>
+                <para>The Security Manager</para>
+            </listitem>
+            <listitem>
+                <para>And the Messaging Server itself.</para>
+            </listitem>
+        </itemizedlist>
+        <para>A very basic XML Bean declaration for the JBoss Micro Container would be:</para>
+        <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
+
+&lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+    &lt;bean name="MBeanServer" class="javax.management.MBeanServer">
+      &lt;constructor factoryClass="java.lang.management.ManagementFactory"
+                   factoryMethod="getPlatformMBeanServer"/>
+   &lt;/bean> 
+
+   &lt;!-- The core configuration -->
+   &lt;bean name="Configuration" 
+         class="org.jboss.messaging.core.config.impl.FileConfiguration">
+   &lt;/bean>
+
+	&lt;!-- The security manager -->
+   &lt;bean name="JBMSecurityManager" 
+       class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
+      &lt;start ignored="true"/>
+      &lt;stop ignored="true"/>
+   &lt;/bean>
+
+	&lt;!-- The core server -->
+   &lt;bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+     &lt;start ignored="true"/>
+      &lt;stop ignored="true"/>  
+      &lt;constructor>
+         &lt;parameter>
+            &lt;inject bean="Configuration"/>
+         &lt;/parameter>
+         &lt;parameter>
+            &lt;inject bean="MBeanServer"/>
+         &lt;/parameter>
+         &lt;parameter>
+            &lt;inject bean="JBMSecurityManager"/>
+         &lt;/parameter>        
+      &lt;/constructor>         
+   &lt;/bean>
+   &lt;/deployment></programlisting>
+        <para><literal>JBMBootstrapServer</literal> provides an easy encapsulation of JBoss Micro
+            Container.</para>
+        <programlisting>JBMBootstrapServer bootStrap = new JBMBootstrapServer(new String[] {"jbm-jboss-beans.xml"});
+        bootStrap.run();</programlisting>
+    </section>
+    <section>
+        <title>Connecting to the Embedeed JBoss Messaging</title>
+        <para>There is no special requirement on connecting to an Embedded JBoss Messaging. As you
+            are managing POJOs directly you just instantiate the factories.</para>
+        <section>
+            <title>Core API</title>
+            <para>If using the core API, just create the <literal>ClientSessionFactory</literal> and
+                use the regular core API.</para>
+            <programlisting>ClientSessionFactory nettyFactory =  new ClientSessionFactoryImpl(
+                                     new TransportConfiguration(InVMConnectorFactory.class.getName()), null);
+ClientSession session = factory.createSession(false, true, true);
+session.createQueue("example", "example", true);
+
+ClientProducer producer = session.createProducer("example");
+ClientMessage message = session.createClientMessage(true);
+
+message.getBody().writeString("Hello");
+
+producer.send(message);
+
+session.start();
+
+ClientConsumer consumer = session.createConsumer("example");
+
+ClientMessage msgReceived = consumer.receive();
+System.out.println("message = " + msgReceived.getBody().readString());
+
+session.close();
+            </programlisting>
+        </section>
+        <section>
+            <title>JMS API</title>
+            <para>Connection on an Embedded JBoss Messaging through JMS is also simple. Just
+                instantiate <literal>JBossConnectionFactory</literal> directly. The following
+                example ilustrates that.</para>
+            <programlisting>JBossConnectionFactory cf = new JBossConnectionFactory(
+                            new TransportConfiguration(InVMConnectorFactory.class.getName()));
+
+Connection conn = cf.createConnection();
+
+conn.start();
+
+Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+MessageProducer prod = sess.createProducer(queue);
+
+TextMessage msg = sess.createTextMessage("Hello!");
+
+prod.send(msg);
+
+sess.commit();
+
+MessageConsumer consumer = sess.createConsumer(queue);
+
+TextMessage txtmsg = (TextMessage)consumer.receive();
+
+System.out.println("Msg = " + txtmsg.getText());
+
+sess.commit();
+
+conn.close();
+            </programlisting>
+        </section>
     </section>
 </chapter>

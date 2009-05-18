@@ -77,6 +77,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       sessionFactory = new ClientSessionFactoryImpl();
    }
 
+   public JBossConnectionFactory(final ClientSessionFactory sessionFactory)
+   {
+      this.sessionFactory = sessionFactory;
+   }
+
    public JBossConnectionFactory(final String discoveryAddress, final int discoveryPort)
    {
       sessionFactory = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);

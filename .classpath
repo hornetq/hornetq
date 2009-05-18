@@ -30,6 +30,7 @@
 	<classpathentry kind="src" path="examples/jms/delayed-redelivery/src"/>
 	<classpathentry kind="src" path="examples/jms/divert/src"/>
 	<classpathentry kind="src" path="examples/jms/durable-subscription/src"/>
+	<classpathentry kind="src" path="examples/jms/embedded/src"/>
 	<classpathentry kind="src" path="examples/jms/expiry/src"/>
 	<classpathentry kind="src" path="examples/jms/http-transport/src"/>
 	<classpathentry kind="src" path="examples/jms/instantiate-connection-factory/src"/>

@@ -1,0 +1,89 @@
+<html>
+  <head>
+    <title>JBoss Messaging Embedded Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>Embedded Example</h1>
+     <br>
+     <p>This examples shows how to setup and run JBoss Messaging embedded.</p>
+     <p>JBoss Messaging was designed to use POJOs (Plain Old Java Objects), what makes embedding JBoss Messaging as simple as instantiating a few objects.</p>
+     <p>JBoss Messaging Embedded could be used from very simple use cases with only InVM support to very complex cases with clustering, persistence and fail over.</p>
+     <br>
+     <h2>Example step-by-step</h2>     
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <p>In this we don't use any configuration files. (Everything is embedded). We simply instantiate ConfigurationImpl, MessagingServer, start it and operate on JMS regularly</p>
+     <br>
+     <ol>
+        <li>Create the Configuration, and set the properties accordingly</li>
+        <pre>
+         <code>Configuration configuration = new ConfigurationImpl();</code>
+         <code>configuration.setEnablePersistence(false);</code>
+         <code>configuration.setSecurityEnabled(false);</code></pre>
+         
+        <li>Create and start the server</li>
+        <pre>
+           <code>MessagingServer server = Messaging.newMessagingServer(configuration);</code>
+           <code>server.start();</code></pre>
+
+        <li>As we are not using a JNDI environment we instantiate the objects directly</li>
+        <pre>
+           <code>Queue queue = new JBossQueue("exampleQueue");</code>
+           <code>JBossConnectionFactory cf = new JBossConnectionFactory (new TransportConfiguration(InVMConnectorFactory.class.getName()));</code>
+        </pre>
+
+        <li>Create a JMS Destination by using the Core API</li>
+        <pre>
+           <code>
+         ClientSession coreSession = cf.getCoreFactory().createSession(false, false, false);
+         coreSession.createQueue("jms.queue.exampleQueue", "jms.queue.exampleQueue", true);
+         coreSession.close();</code>
+        </pre>
+
+        <li>Create the JMS objects</li>
+        <pre>
+           <code>
+            connection = cf.createConnection();
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageProducer producer = session.createProducer(queue);</code>
+        </pre>
+
+        <li>Create and send a TextMessage</li>
+        <pre><code>
+            TextMessage message = session.createTextMessage("Hello sent at " + new Date());
+            System.out.println("Sending the message.");
+            producer.send(message);</code></pre>
+
+        <li>Create the message consumer and start the connection</li>
+        <pre><code>
+            MessageConsumer messageConsumer = session.createConsumer(queue);
+            connection.start();</code></pre>
+
+        <li>Receive the message</li>
+        <pre><code>
+            TextMessage messageReceived = (TextMessage)messageConsumer.receive(1000);
+            System.out.println("Received TextMessage:" + messageReceived.getText());</code></pre>
+
+        <li>Be sure to close our resources!</li>
+
+        <pre>
+           <code>
+           finally
+           {
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }</code>
+        </pre>
+
+        <li>Stop the server</li>
+
+        <pre>
+           <code>
+           server.stop();
+		   </code>
+        </pre>
+     </ol>
+  </body>
+</html>

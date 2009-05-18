@@ -59,7 +59,7 @@ public class Messaging
 
    public static MessagingServer newMessagingServer(final Configuration config)
    {
-      return newMessagingServer(config, true);
+      return newMessagingServer(config, config.isEnablePersistence());
    }
 
    public static MessagingServer newMessagingServer(final Configuration config,
