@@ -29,8 +29,7 @@
         <!ENTITY last-value-queues SYSTEM "modules/last-value-queues.xml">
         <!ENTITY message-grouping SYSTEM "modules/message-grouping.xml">
         <!ENTITY pre-acknowledge SYSTEM "modules/pre-acknowledge.xml">
-        <!ENTITY client-reconnection SYSTEM "modules/client-reconnection.xml">
-        <!ENTITY server-discovery SYSTEM "modules/server-discovery.xml">
+        <!ENTITY client-reconnection SYSTEM "modules/client-reconnection.xml">      
         <!ENTITY appserver-integration SYSTEM "modules/appserver-integration.xml">
         <!ENTITY jca-adaptor SYSTEM "modules/jca-adaptor.xml">
         <!ENTITY jms-bridge SYSTEM "modules/jms-bridge.xml">
@@ -80,7 +79,6 @@
    &message-grouping;
    &pre-acknowledge;
    &client-reconnection;
-   &server-discovery;
    &appserver-integration;
    &core-bridges;
    &duplicate-detection;
