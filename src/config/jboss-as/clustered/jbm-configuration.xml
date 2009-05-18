@@ -13,8 +13,8 @@
       </connector>
       <connector name="netty-connector">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="jbm.remoting.netty.host" value="${jboss.bind.address}" type="String"/>
-         <param key="jbm.remoting.netty.port" value="${jbm.remoting.netty.port}" type="Integer"/>
+         <param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
+         <param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
       </connector>
       <connector name="in-vm-connector">
          <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
@@ -32,8 +32,8 @@
       <!-- Netty TCP Acceptor -->
       <acceptor name="netty-acceptor">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="jbm.remoting.netty.host" value="${jboss.bind.address}" type="String"/>
-         <param key="jbm.remoting.netty.port" value="${jbm.remoting.netty.port}" type="Integer"/>
+         <param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
+         <param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
       </acceptor>
    </acceptors>
 

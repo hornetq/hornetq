@@ -22,24 +22,6 @@
 
 package org.jboss.messaging.utils;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
 import org.jboss.messaging.core.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -48,6 +30,21 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -385,7 +382,7 @@ public class XMLUtil
       return s;
    }
 
-   public static String replaceSystemProps(String xml)
+  /* public static String replaceSystemProps(String xml)
    {
       Properties properties = System.getProperties();
       Enumeration e = properties.propertyNames();
@@ -397,6 +394,32 @@ public class XMLUtil
          {
             xml = xml.replace(s, properties.getProperty(key));
          }
+
+      }
+      return xml;
+   }*/
+   public static String replaceSystemProps(String xml)
+   {
+      while(xml.contains("${"))
+      {
+         int start = xml.indexOf("${");
+         int end = xml.indexOf("}") + 1;
+         if(end < 0)
+         {
+            break;
+         }
+         String subString = xml.substring(start, end);
+         String prop = subString.substring(2, subString.length() - 1).trim();
+         String val = "";
+         if(prop.contains(":"))
+         {
+            String[] parts = prop.split(":", 2);
+            prop = parts[0].trim();
+            val = parts[1].trim();
+         }
+         String sysProp = System.getProperty(prop, val);
+         log.debug("replacing " + subString + " with " + sysProp);
+         xml = xml.replace(subString, sysProp);
 
       }
       return xml;
