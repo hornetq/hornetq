@@ -9,8 +9,8 @@
     <section>
         <title>POJO instantiation</title>
         <para>You can follow this step-by-step guide:</para>
-        <para>Create the configuration object. If you need a configuration file, use
-            FileConfigurationImpl</para>
+        <para>Create the configuration object. If you need a configuration file, use <literal
+                >FileConfigurationImpl</literal></para>
         <programlisting>import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 
@@ -24,8 +24,8 @@ config.start();</programlisting>
                 >ConfigurationImpl</literal> and change the config parameters accordingly, such as
             adding acceptors. </para>
         <para>The acceptors are configured through <literal>ConfigurationImpl</literal>. Just add
-            the NettyAcceptorFactory on the transports the same way you would thorugh the main
-            configuration file.</para>
+            the <literal>NettyAcceptorFactory</literal> on the transports the same way you would
+            through the main configuration file.</para>
         <programlisting>import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 
@@ -70,16 +70,16 @@ server.start();
             required to instantiate a Server:</para>
         <itemizedlist>
             <listitem>
-                <para>The configuration. We will use ConfigurationImpl</para>
+                <para>The configuration. We will use <literal>ConfigurationImpl</literal></para>
             </listitem>
             <listitem>
-                <para>A MBeanServer required by management.</para>
+                <para>A <literal>MBeanServer</literal> required by management.</para>
             </listitem>
             <listitem>
-                <para>The Security Manager</para>
+                <para>The security manager</para>
             </listitem>
             <listitem>
-                <para>And the Messaging Server itself.</para>
+                <para>And the messaging server itself.</para>
             </listitem>
         </itemizedlist>
         <para>A very basic XML Bean declaration for the JBoss Micro Container would be:</para>
@@ -105,7 +105,8 @@ server.start();
    &lt;/bean>
 
 	&lt;!-- The core server -->
-   &lt;bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+   &lt;bean name="MessagingServer" 
+         class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
      &lt;start ignored="true"/>
       &lt;stop ignored="true"/>  
       &lt;constructor>
@@ -127,7 +128,7 @@ server.start();
         bootStrap.run();</programlisting>
     </section>
     <section>
-        <title>Connecting to the Embedeed JBoss Messaging</title>
+        <title>Connecting to the Embedded JBoss Messaging</title>
         <para>There is no special requirement on connecting to an Embedded JBoss Messaging. As you
             are managing POJOs directly you just instantiate the factories.</para>
         <section>
@@ -135,7 +136,9 @@ server.start();
             <para>If using the core API, just create the <literal>ClientSessionFactory</literal> and
                 use the regular core API.</para>
             <programlisting>ClientSessionFactory nettyFactory =  new ClientSessionFactoryImpl(
-                                     new TransportConfiguration(InVMConnectorFactory.class.getName()), null);
+                      new TransportConfiguration(
+                              InVMConnectorFactory.class.getName()), null);
+
 ClientSession session = factory.createSession(false, true, true);
 session.createQueue("example", "example", true);
 
@@ -160,7 +163,7 @@ session.close();
             <title>JMS API</title>
             <para>Connection on an Embedded JBoss Messaging through JMS is also simple. Just
                 instantiate <literal>JBossConnectionFactory</literal> directly. The following
-                example ilustrates that.</para>
+                example illustrates that.</para>
             <programlisting>JBossConnectionFactory cf = new JBossConnectionFactory(
                             new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
@@ -189,5 +192,11 @@ sess.commit();
 conn.close();
             </programlisting>
         </section>
+    </section>
+    <section>
+        <title>Embedding Example</title>
+        <para>The <ulink url="../../../../examples/jms/embedded/readme.html"><literal
+                    >Embedding</literal> Example</ulink> shows how to setup and run JBoss Messaging
+            embedded..</para>
     </section>
 </chapter>

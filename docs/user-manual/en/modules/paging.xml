@@ -162,4 +162,11 @@
             the Address enters in page mode, messages will be stored on disk and not routed to
             queues until messages are consumed on that queue.</para>
     </section>
+    
+    <section>
+        <title>Paging Example</title>
+        <para>The <ulink url="../../../../examples/jms/paging/readme.html"><literal
+            >Paging</literal> Example</ulink> shows how to JBoss Messaging avoids running out of memory.</para>
+    </section>
+    
 </chapter>
