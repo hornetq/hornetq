@@ -20,8 +20,6 @@
 
    <!-- Other config -->
 
-   <journal-min-files>2</journal-min-files>
-
    <security-settings>
       <!-- any user can have full control of generic topics -->
       <security-setting match="jms.topic.#">

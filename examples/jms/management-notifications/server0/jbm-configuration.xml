@@ -25,7 +25,6 @@
    </acceptors>
 
    <!--  Other configs -->      
-   <journal-min-files>2</journal-min-files>
 
    <security-settings>
       <!--security for example queue-->

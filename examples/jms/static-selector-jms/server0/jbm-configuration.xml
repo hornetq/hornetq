@@ -20,8 +20,6 @@
 
    <!-- Other config -->
 
-   <journal-min-files>2</journal-min-files>
-
    <security-settings>
       <!--security for example queue-->
       <security-setting match="jms.queue.selectorQueue">

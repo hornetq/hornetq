@@ -54,8 +54,6 @@
    
    <!-- Other config -->
 
-   <journal-min-files>2</journal-min-files>
-
    <security-settings>
       <!-- Default JMS security -->
       <security-setting match="jms.#">
