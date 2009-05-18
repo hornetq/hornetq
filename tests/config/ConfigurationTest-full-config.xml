@@ -28,7 +28,6 @@
       <queue-activation-timeout>12456</queue-activation-timeout>
       <backup>true</backup>
       <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>      
-      <paging-max-threads>2</paging-max-threads>
       <paging-directory>pagingdir</paging-directory>
       <paging-global-watermark-size>123</paging-global-watermark-size>
       <paging-max-global-size-bytes>4567</paging-max-global-size-bytes>
