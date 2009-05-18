@@ -160,10 +160,10 @@
    </section>
    <section>
       <title>Producer flow control</title>
-      <para>Producer flow control </para>
+      <para>JBoss Messaging allows producers to be created which limit</para>
       <section>
          <title>Window based flow control</title>
-         <para/>
+         <para>TODO</para>
       </section>
       <section>
          <title>Rate limited flow control</title>

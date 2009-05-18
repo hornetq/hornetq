@@ -14,14 +14,18 @@
                 <file name="en/modules/client-reconnection.xml"/>
                 <file name="en/modules/clusters.xml"/>
                 <file name="en/modules/configuring-transports.xml"/>
-                <file name="en/modules/consumer-buffering.xml"/>
+                <file name="en/modules/connection-ttl.xml"/>
                 <file name="en/modules/core-bridges.xml"/>
                 <file name="en/modules/diverts.xml"/>
+                <file name="en/modules/duplicate-detection.xml"/>
                 <file name="en/modules/embedding-jbm.xml"/>
+                <file name="en/modules/examples.xml"/>
+                <file name="en/modules/filter-expressions.xml"/>
                 <file name="en/modules/flow-control.xml"/>
                 <file name="en/modules/ha.xml"/>
                 <file name="en/modules/intercepting-operations.xml"/>
                 <file name="en/modules/interoperability.xml"/>
+                <file name="en/modules/jms-core-mapping.xml"/>
                 <file name="en/modules/large-messages.xml"/>
                 <file name="en/modules/last-value-queues.xml"/>
                 <file name="en/modules/logging.xml"/>
@@ -37,11 +41,12 @@
                 <file name="en/modules/queue-attributes.xml"/>
                 <file name="en/modules/scheduled-messages.xml"/>
                 <file name="en/modules/security.xml"/>
-                <file name="en/modules/server-discovery.xml"/>
+                <file name="en/modules/thread-pooling.xml"/>
                 <file name="en/modules/undelivered-messages.xml"/>
                 <file name="en/modules/using-core.xml"/>
                 <file name="en/modules/using-jms.xml"/>
                 <file name="en/modules/using-server.xml"/>
+                <file name="en/modules/wildcard-syntax.xml"/>
                 <file name="en/modules/xa-recovery.xml"/>
             </folder>
             <file name="en/master.xml"/>
