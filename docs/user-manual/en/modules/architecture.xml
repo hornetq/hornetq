@@ -43,7 +43,7 @@
         <para>A schematic illustrating this relationship is shown in figure 3.1 below:</para>
         <para/>
         <para>
-            <graphic fileref="../images/architecture1.jpg" align="center"/>
+            <graphic fileref="images/architecture1.jpg" align="center"/>
         </para>
         <para>Figure 3.1 shows two user applications interacting with a JBoss Mesaging server. User
             Application 1 is using the JMS API, while User Application 2 is using the core client
@@ -92,7 +92,7 @@
             which is an anti-pattern.</para>
         <para/>
         <para>
-            <graphic fileref="../images/architecture2.jpg"/>
+            <graphic fileref="images/architecture2.jpg"/>
         </para>
     </section>
     <section>
@@ -120,7 +120,7 @@
         <para>The stand-alone server architecture is shown in figure 3.3 below:</para>
         <para/>
         <para>
-            <graphic fileref="../images/architecture3.jpg"/>
+            <graphic fileref="images/architecture3.jpg"/>
         </para>
     </section>
 </chapter>
