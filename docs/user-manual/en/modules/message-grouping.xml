@@ -25,8 +25,14 @@
     </section>
 
     <section>
-       <title>Using JMSX Group properties</title>
-       <para>Using JMS, the property name used to identify the message group is <literal>JMSXGroupID</literal>.</para>
+       <title>Using Core API</title>
+       <para>The property name used to identify the message group is <literal>"_JBM_GROUP_ID""</literal>
+       (or the constant <literal>MessageImpl.HDR_GROUP_ID</literal>).</para>
+    </section>
+       
+    <section>
+       <title>Using JMS</title>
+       <para>The property name used to identify the message group is <literal>JMSXGroupID</literal>.</para>
        <para>Within the same group, messages can also set a <literal>JMSXGroupSeq</literal> 
          <literal>int</literal> property (starting at 1).</para>
        <programlisting>
@@ -44,12 +50,6 @@
        </programlisting>
     </section>
     
-    <section>
-       <title>Using JBoss Messaging Core Group properties</title>
-       <para>Using JBoss Messaging Core API, the property name used to identify the message group is <literal>"_JBM_GROUP_ID""</literal>
-       (or the constant <literal>MessageImpl.HDR_GROUP_ID</literal>).</para>
-    </section>
-       
     <section>
        <title>Example</title>
        <para>The <ulink url="../../../../examples/jms/message-group/readme.html"><literal>message-group</literal> example</ulink> shows

@@ -9,16 +9,16 @@
          <emphasis>expired</emphasis> messages can later be consumed for further inspection.</para>
    <section>
       <title>Message Expiry</title>
+            <para>Using JBoss Messaging Core API, you can set an expiration time directly on the
+               message:</para>
+            <programlisting>
+      // message will expire in 5000ms from now
+      message.setExpiration(System.currentTimeMillis() + 5000);         
+              </programlisting>
       <para>JMS MessageProducer allows to set a TimeToLive for the messages it sent:</para>
       <programlisting>
 // messages sent by this producer will be retained for 5s (5000ms) before expiration           
 producer.setTimeToLive(5000);
-        </programlisting>
-      <para>Using JBoss Messaging Core API, you can set an expiration time directly on the
-         message:</para>
-      <programlisting>
-// message will expire in 5000ms from now
-message.setExpiration(System.currentTimeMillis() + 5000);         
         </programlisting>
         <para>Expired messages which are consumed from an expiry address have the following properties:</para>
         <itemizedlist>
