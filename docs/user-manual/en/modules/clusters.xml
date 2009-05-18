@@ -48,7 +48,7 @@
                 >UDP</ulink> multicast to broadcast server connection settings. If UDP is disabled
             on your network you won't be able to use this, and will have to specify servers
             explicitly when setting up a cluster or using a messaging client.</para>
-        <section>
+        <section id="clusters.broadcast-groups">
             <title>Broadcast Groups</title>
             <para>A broadcast group is the means by which a server broadcasts connectors over the
                 network. A connector defines a way in which a client (or other server) can make
@@ -119,7 +119,7 @@
                 </listitem>
             </itemizedlist>
         </section>
-        <section>
+        <section id="clusters.discovery-groups">
             <title>Discovery Groups</title>
             <para>While the broadcast group defines who connector information is broadcast from a
                 server, a discovery group defines how connector information is received from a
@@ -282,7 +282,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             configured to only distribute to other nodes if they have matching consumers. We'll look
             at both these cases in turn with some examples, but first we'll discuss configuring
             cluster connections in general.</para>
-        <section>
+        <section id="clusters.cluster-connections">
             <title>Configuring Cluster Connections</title>
             <para>Cluster Connections group servers into clusters so that messages can be load
                 balanced between the nodes of the cluster. Let's take a look at a typical cluster

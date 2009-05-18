@@ -6,7 +6,7 @@
         straightforward.</para>
     <para>In this chapter we'll describe the concepts required for understanding JBoss Messaging
         transports and where and how they're configured.</para>
-    <section>
+    <section id="configuring-transports.acceptors">
         <title>Understanding Acceptors</title>
         <para>One of the most important concepts in JBoss Messaging transports is the
                 <emphasis>acceptor</emphasis>. Let's dive straight in and take a look at an acceptor
