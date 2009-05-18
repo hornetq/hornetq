@@ -59,36 +59,48 @@
         </section>
         <section>
             <title>Asychronous IO</title>
-            <para>TODO</para>
+            <para>Two threads are used on Asynchronous IO files. One for polling events, and one for
+                writing data. </para>
+            <para>The thread poller is used by the native layer to receive and dispatch events. You
+                will find it on a thread dump with the prefix JBM-AIO-poller-pool. JBoss Messaging
+                uses one poller per opened file on the journal. (there is usually one) and they are
+                aways distributed thorugh a pool.</para>
+            <para>The writing thread is a single thread used to invoke libaio. We do that to avoid
+                context switching on libaio what would cause performance issues. You will find this
+                thread on a thread dump with the prefix JBM-AIO-writer-pool.</para>
         </section>
     </section>
     <section>
         <title>Client-Side Thread Management</title>
-        <para>On the client side, JBoss Messaging maintains a single static scheduled thread pool and a single static general thread pool
-        for use by all clients using the same classloader in that JVM instance.</para>
-        <para>The static scheduled thread pool has a maximum size of <literal>2</literal> threads, and the general purpose thread
-        pool has an unbounded maximum size.</para>
-        <para>If required JBoss Messaging can also be configured so that each <literal>ClientSessionFactory</literal> instance does not use
-        these static pools but instead maintains its own scheduled and general purpose pool. Any sessions created from that <literal>ClientSessionFactory</literal>
-        will use those pools instead.</para>
-        <para>To configure a <literal>ClientSessionFactory</literal> instance to use its own pools, simply use the appropriate setter methods
-        immediately after creation, for example:</para>
+        <para>On the client side, JBoss Messaging maintains a single static scheduled thread pool
+            and a single static general thread pool for use by all clients using the same
+            classloader in that JVM instance.</para>
+        <para>The static scheduled thread pool has a maximum size of <literal>2</literal> threads,
+            and the general purpose thread pool has an unbounded maximum size.</para>
+        <para>If required JBoss Messaging can also be configured so that each <literal
+                >ClientSessionFactory</literal> instance does not use these static pools but instead
+            maintains its own scheduled and general purpose pool. Any sessions created from that
+                <literal>ClientSessionFactory</literal> will use those pools instead.</para>
+        <para>To configure a <literal>ClientSessionFactory</literal> instance to use its own pools,
+            simply use the appropriate setter methods immediately after creation, for
+            example:</para>
         <programlisting>
 ClientSessionFactory myFactory = new ClientSessionFactory(...);
 myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);            
         </programlisting>
-        <para>If you're using the JMS API, you can set the same parameters directly on the <literal>JBossConnectionFactory</literal>
-        instance, for example:</para>
+        <para>If you're using the JMS API, you can set the same parameters directly on the <literal
+                >JBossConnectionFactory</literal> instance, for example:</para>
         <programlisting>
 JBossConnectionFactory myFactory = new JBossConnectionFactory(...);
 myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);                  
         </programlisting>
-        <para>If you're using JNDI to instantiate <literal>JBossConnectionFactory</literal> instances, you can also set these parameters in the
-        <literal>jbm-jms.xml</literal> file where you describe your connection factory, for example:</para>
+        <para>If you're using JNDI to instantiate <literal>JBossConnectionFactory</literal>
+            instances, you can also set these parameters in the <literal>jbm-jms.xml</literal> file
+            where you describe your connection factory, for example:</para>
         <programlisting>
 &lt;connection-factory name="ConnectionFactory"&gt;
     &lt;connector-ref connector-name="netty"/&gt;
@@ -101,6 +113,5 @@ myFactory.setThreadPoolMaxSize(-1);
     &lt;thread-pool-max-size&gt;-1&lt;/thread-pool-max-size&gt;
 &lt;/connection-factory&gt;            
         </programlisting>
-
     </section>
 </chapter>
