@@ -12,7 +12,7 @@
     <section id="large.message.configuring">
         <title>Configuring the server</title>
         <para>Large messages are stored on a disk folder on the server side, as configured on the
-            main configuration file (<xref linkend="usingserver.mainconfig"/>)</para>
+            main configuration file.</para>
         <para>The configuration property <literal>large-messages-directory</literal> specifies where
             large messages are stored.</para>
         <programlisting>&lt;configuration xmlns="urn:jboss:messaging"

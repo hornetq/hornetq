@@ -89,8 +89,7 @@
     </section>
     <section id="paging.main.config">
         <title>Configuration</title>
-        <para>Global paging parameters are specified on the main configuration file. (<xref
-                linkend="usingserver.mainconfig"/>)</para>
+        <para>Global paging parameters are specified on the main configuration file.</para>
         <programlisting>&lt;configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
