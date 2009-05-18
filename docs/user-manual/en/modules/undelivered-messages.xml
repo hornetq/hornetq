@@ -95,5 +95,27 @@
             how dead letter is configured and used with JMS.</para>
         </section>
     </section>
+    
+    <section>
+      <title>Delivery Count Persistence</title>
+      <para>In normal use, JBoss Messaging does not update delivery count <emphasis>persistently</emphasis>
+         until a message is rolled back (i.e. the delivery count is not updated <emphasis>before</emphasis> the message
+         is delivered to the consumer). In most messaging use cases, the messages are consumed, acknowledged and
+         forgotten as soon as they are consumed. In these cases, updating the delivery count persistently
+         before delivering the message would add an extra persistent step <emphasis>for each message delivered</emphasis>,
+         implying a significant performance penalty.</para>
+      <para>However, if the delivery count is not updated persistently before the message delivery happens, in the event of 
+         a server crash, messages might not have been delivered. During the recovery phase, the server will not have
+         knowledge of that and will deliver the message with <literal>redelivered</literal> set to <literal>false</literal>
+         while it should be <literal>true</literal>.
+      </para>
+      <para>As this behavior breaks strict JMS semantics, JBoss Messaging allows to persist delivery count
+         before message delivery but disabled it by default for performance implications.</para>
+      <para>To enable it, set <literal>persist-delivery-count-before-delivery</literal> to <literal>true</literal> in <literal>jbm-configuration.xml</literal>:</para>
+      <programlisting>
+   &lt;persist-delivery-count-before-delivery&gt;true&lt;/persist-delivery-count-before-delivery&gt;
+      </programlisting>
+    </section>
+    
    
 </chapter>
