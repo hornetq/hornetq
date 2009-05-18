@@ -21,7 +21,8 @@
           &lt;/address-setting&gt;
        </programlisting>
        <para>By default, <literal>distribution-policy-class</literal> is set to <literal>org.jboss.messaging.core.server.impl.RoundRobinDistributor</literal>
-       and message groups will not be handled by the queue.</para>
+       and message groups will not be handled by the queue. Address wildcards can be used
+        to configure the distribution policy for a set of addresses (see <xref linkend="wildcard-syntax" />).</para>
     </section>
 
     <section>

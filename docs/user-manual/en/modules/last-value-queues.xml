@@ -16,7 +16,8 @@
        &lt;last-value-queue&gt;true&lt;/last-value-queue&gt;
     &lt;/address-setting&gt;
             </programlisting>
-          <para>By default, <literal>last-value-queue</literal> is false.</para>
+          <para>By default, <literal>last-value-queue</literal> is false. Address wildcards can be used
+          to configure Last-Value queues for a set of addresses (see <xref linkend="wildcard-syntax" />).</para>
        </section>
 
        <section>

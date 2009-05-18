@@ -39,6 +39,8 @@
            <para>If a <literal>redelivery-delay</literal> is specified, JBoss Messaging will wait this delay
            before redelivering the messages</para>
            <para>By default, there is no redelivery delay (<literal>redelivery-delay</literal>is set to 0).</para>
+           <para>Address wildcards can be used
+            to configure redelivery delay for a set of addresses (see <xref linkend="wildcard-syntax" />).</para>
         </section>
         <section>
             <title>Example</title>
@@ -73,6 +75,8 @@
            <para>By default, messages are redelivered 10 times at the maximum. Set <literal>max-delivery-attempts</literal> to -1 for infinite redeliveries.</para>
            <para>For example, a dead letter can be set globally for a set of matching addresses and you can set <literal>max-delivery-attempts</literal>
              to -1 for a specific address setting to allow infinite redeliveries only for this address.</para>
+           <para>Address wildcards can be used
+              to configure dead letter settings for a set of addresses (see <xref linkend="wildcard-syntax" />).</para>
         </section>
         <section>
            <title>Dead Letter Properties</title>

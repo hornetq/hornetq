@@ -44,7 +44,8 @@ producer.setTimeToLive(5000);
 &lt;/address-setting&gt;
         </programlisting>
       <para>If messages are expired and no expiry address is specified, messages are simply removed
-         from the queue.</para>
+         from the queue. Address wildcards can be used
+          to configure expiry address for a set of addresses (see <xref linkend="wildcard-syntax" />).</para>
    </section>
    <section>
       <title>Configuring The Expiry Reaper Thread</title>
