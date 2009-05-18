@@ -43,6 +43,7 @@ import javax.naming.InitialContext;
  * bigger than can fit in RAM.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */
 public class LargeMessageExample extends JMSExample
 {
@@ -94,8 +95,6 @@ public class LargeMessageExample extends JMSExample
                             "If this is too big for your disk you can easily change the FILE_SIZE in the example.");
 
          File fileInput = new File("huge_message_to_send.dat");
-
-         fileInput.createNewFile();
 
          createFile(fileInput, FILE_SIZE);
 
