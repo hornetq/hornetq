@@ -56,11 +56,6 @@ public class ObjectNames
       return getInstance(DOMAIN + ":module=Core,type=Server");
    }
 
-   public static ObjectName getResourceManagerObjectName() throws Exception
-   {
-      return getInstance(DOMAIN + ":module=Core,type=ResourceManager");
-   }
-
    public static ObjectName getAddressObjectName(final SimpleString address) throws Exception
    {
       return createObjectName(CORE_MODULE, "Address", address.toString());

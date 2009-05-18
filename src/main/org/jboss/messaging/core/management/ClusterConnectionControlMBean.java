@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.management;
 
-import javax.management.openmbean.TabularData;
 
 /**
  * A ClusterConnectionControlMBean

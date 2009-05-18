@@ -96,6 +96,38 @@ public interface MessagingServerControlMBean
 
    public String getPagingDirectory();
 
+   boolean isPersistDeliveryCountBeforeDelivery();
+
+   long getQueueActivationTimeout();
+
+   long getConnectionTTLOverride();
+
+   String getManagementAddress();
+
+   String getManagementNotificationAddress();
+
+   long getManagementRequestTimeout();
+
+   int getIDCacheSize();
+
+   boolean isPersistIDCache();
+
+   int getPagingGlobalWatermarkSize();
+
+   String getLargeMessagesDirectory();
+
+   boolean isWildcardRoutingEnabled();
+
+   long getTransactionTimeout();
+
+   long getTransactionTimeoutScanPeriod();
+
+   long getMessageExpiryScanPeriod();
+
+   long getMessageExpiryThreadPriority();
+   
+   Object[] getConnectors() throws Exception;
+
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a queue with the specified address", impact = ACTION)
@@ -163,38 +195,7 @@ public interface MessagingServerControlMBean
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID")
    String connectionID) throws Exception;
 
-   Object[] getConnectors() throws Exception;
-
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;
 
-   boolean isPersistDeliveryCountBeforeDelivery();
-
-   long getQueueActivationTimeout();
-
-   long getConnectionTTLOverride();
-
-   String getManagementAddress();
-
-   String getManagementNotificationAddress();
-
-   long getManagementRequestTimeout();
-
-   int getIDCacheSize();
-
-   boolean isPersistIDCache();
-
-   int getPagingGlobalWatermarkSize();
-
-   String getLargeMessagesDirectory();
-
-   boolean isWildcardRoutingEnabled();
-
-   long getTransactionTimeout();
-
-   long getTransactionTimeoutScanPeriod();
-
-   long getMessageExpiryScanPeriod();
-
-   long getMessageExpiryThreadPriority();
 
 }
