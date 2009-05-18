@@ -1,27 +1,160 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="ha">
     <title>High Availability and Failover</title>
-    <para>blah</para>
-    
+    <para>We define high availability as the <emphasis>ability for the system to continue
+            functioning after failure of one or more of the servers</emphasis>. A part of high
+        availability is <emphasis>failover</emphasis> which we define as the <emphasis>ability for
+            client connections to migrate from one server to another in event of server failure so
+            client applications can continue to operate</emphasis>.</para>
+    <para>JBoss Messaging provides high availability by replicating servers in pairs. It also
+        provides both 100% transparent client failover and application-level client failover.</para>
     <section>
         <title>Server replication</title>
-        <para></para>
+        <para>JBoss Messaging allows pairs of servers to be linked together as <emphasis>live -
+                backup</emphasis> pairs. In this release there is a single backup server for each
+            live server. Backup servers are not operational until failover occurs. In later releases
+            we will be supporting replication onto multiple backup servers and active - active
+            replication where both live and backup servers operate as active servers.</para>
+        <para>When a <emphasis>live - backup</emphasis> pair is configured, JBoss Messaging ensures
+            that the live server state is replicated to the backup server. Replicated state includes
+            session state, and also global state such as the set of queues and addresses on the
+            server. </para>
+        <para>When a client fails over from live to backup server, the backup server will already
+            have the correct global and session state, so the client will be able to resume its
+            session(s) on the backup server as if nothing happened.</para>
+        <para>Replication is performed in an asynchronous fashion between live and backup server.
+            Data is replicated one way in a stream, and responses that the data has reached the
+            backup is returned in another stream. By pipelining replications and responses to
+            replications in separate streams allows replication throughput to be much higher than if
+            we synchronously replicated data and waited for a response serially in an RPC manner
+            before replicating the next piece of data.</para>
+        <section>
+            <title>Configuring live-backup pairs</title>
+            <para>First, on the live server, in <literal>jbm-configuration.xml</literal> configure
+                the live server with knowledge of its backup server. This is done by specifying a
+                    <literal>backup-connector-ref</literal> element. This element references a
+                connector, also specified on the live server which contains knowledge of how to
+                connect to the backup server. Here's a snippet from <literal
+                    >jbm-configuration.xml</literal> showing a live server configured with a backup
+                server:</para>
+            <programlisting>&lt;backup-connector-ref connector-name="backup-connector"/>
+   
+&lt;!-- Connectors -->
+
+&lt;connectors>
+
+   ...
+   
+   &lt;!-- This connector specifies how to connect to the backup server -->
+   &lt;connector name="backup-connector">
+     &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+     &lt;param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+   &lt;/connector>
+
+&lt;/connectors></programlisting>
+            <para>Secondly, on the backup server, also in <literal>jbm-configuration.xml</literal> ,
+                the element <literal>backup</literal> must be set to true. I.e. :</para>
+            <programlisting>&lt;backup>true&lt;/backup>
+</programlisting>
+        </section>
+        <section>
+            <title>Synchronization of live-backup pairs</title>
+            <para>In order for live - backup pairs to operate properly, they must be identical
+                replicas. This means you cannot just use any backup server that's previously been
+                used for other purposes as a backup server, since it will have different data in its
+                persistent storage. If you try to do so you will receive an exceptin in the logs and
+                the server wil fail to start.</para>
+            <para>To create a backup server for a live server that's already been used for other
+                purposes, it's necessary to copy the <literal>data</literal> directory from the live
+                server to the backup server. This means the backup server will have an identical
+                persistent store to the backup server.</para>
+            <para>Similarly when a client fails over from a live server <literal>L</literal>to a
+                backup server <literal>B</literal>, the server <literal>L</literal>becomes invalid
+                since, from that point on, the data on <literal>L</literal> and <literal>B</literal>
+                tmay diverge. After such a failure, at the next available opportunity the <literal
+                    >B</literal> server should be taken down, and its <literal>data</literal>
+                directory copied back to the <literal>L</literal> server. Live and backup servers
+                can then be restarted. In this release of JBoss Messaging we do not provide any
+                automatic facility for re-assigning a backup node with a live node while it is
+                running.</para>
+            <para>For a backup server to function correctly it's also important that it has the same
+                set of bridges, predefined queues, cluster connections, broadcast groups and
+                discovery groups as defined on the live node. The easiest way to ensure this is just
+                to copy the entire server side configuration from live to backup and just make the
+                changes as specified in the previous section. </para>
+        </section>
+        <section>
+            <title>Queue activation timeout</title>
+            <para>If a live server fails, as client connections failover from the live node to the
+                backup, they do so at a rate determined by the client, and it might be the case that
+                some client connections never fail over.</para>
+            <para>Different client connections may have different consumers on the same queue(s).
+                The queue on the backup will wait for all its consumers to reattach before
+                activating delivery on itself. If all connections have not reattached with this
+                timeout then the queue will activate regardless.</para>
+            <para>This param is defined in <literal>jbm-configuration.xml</literal> using the
+                setting <literal>queue-activation-timeout</literal>. It's default value is <literal
+                    >30000</literal> milliseconds.</para>
+        </section>
     </section>
-    
     <section>
         <title>Automatic client failover</title>
-        <para></para>
+        <para>JBoss Messaging clients can be configured with knowledge of live and backup servers,
+            so that in event of connection failure of the client - live server connection, the
+            client will detect this and reconnect its sessions to the backup server. Because of
+            server replication, then backup server will already have those sessions in the same
+            state they were left on the live server and the client will be able to reconnect them
+            and resume them 100% transparently as if nothing happened.</para>
+        <para>For automatic failover JBoss Messaging requires <emphasis>zero</emphasis> coding of
+            special failover code on the client or server. This differs from other messaging systems
+            which intrusively require you to code special failover handling code. JBoss Messaging
+            automatic failover preserves all your normal JMS or core API semantics and allows your
+            client code to continue 100% uninterrupted on event of connection failure and failover
+            from a live to a backup server.</para>
+        <para>JBoss Messaging clients detect connection failure by using connection pinging on the
+            connection. If the client does not receive a pong response from the server in good time
+            after a ping is sent, it will assume the connection has failed and attempt
+            failover.</para>
+        <para>JBoss Messaging clients can be configured with the list of live-backup server pairs in
+            a number of different ways. They can be configured explicitly or probably the most
+            common way of doing this is to use <emphasis>server discovery</emphasis> for the client
+            to automatically discover the list. For full details on how to configure clients please
+            see the section on server discovery [LINK].</para>
+        <para>Sometimes you want a client to failover onto a backup server even if the live server
+            is just cleanly shutdown rather than having crashed or the connection failed. To
+            configure this you can set the property <literal>FailoverOnServerShutdown</literal> to
+            false either on the <literal>JBossConnectionFactory</literal> if you're using JMS or in
+            the <literal>jbm-jms.xml</literal> file when you define the connection factory, or if
+            using core by setting the property directly on the <literal
+                >ClientSessionFactoryImpl</literal> instance after creation. The default value for
+            this property is <literal>false</literal>, this means that by default <emphasis>JBoss
+                Messaging clients will not failover to a backup server if the live server is simply
+                shutdown cleanly.</emphasis></para>
+        <para>For a fully functional example of automatic failover please see [LINK].</para>
     </section>
-    
     <section>
         <title>Application-level client failover</title>
-        <para></para>
+        <para>In some cases you may not want automatic client failover, and prefer to handle any
+            connection failure yourself, and code your own manually reconnection logic in your own
+            failure handler. We define this as <emphasis>application-level</emphasis> failover,
+            since the failover is handled at the user application level.</para>
+        <para>If all your clients use application-level failover then you do not need server
+            replication on the server side, and should disabled this. Server replication has some
+            performance overhead and should be disabled if it is not required. To disable server
+            replication simply do not specify a <literal>backup-connector</literal> element for each
+            live server.</para>
+        <para>To implement application-level failover, if you're using JMS then you need to code an
+                <literal>ExceptionListener</literal> class on the JMS connection. The <literal
+                >ExceptionListener</literal> wil be called by JBoss Messaging in the event that
+            connection failure is detected. In your <literal>ExceptionListener</literal> you would
+            close your old JMS connections, potentially look up new connection factory instances
+            from JNDI and creating new connections. In this case you may well be using HA-JNDI
+            [link] to ensure that the new connection factory is looked up from a different
+            server.</para>
+        <para>For a working example of application-level failover please see example [LINK].</para>
+        <para>If you are using the core API, then the procedure is very similar - you would code a
+                <literal>FailureListener</literal> on your core <literal>ClientSession</literal>
+            instances.</para>
+        <para>For a fully functional example of application-level failover please see [LINK].</para>
     </section>
-    
-    <section>
-        <title>Network partitions</title>
-        <para></para>
-    </section>
-
-   
 </chapter>
