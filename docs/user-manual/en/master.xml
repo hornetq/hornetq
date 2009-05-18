@@ -41,7 +41,8 @@
         <!ENTITY clusters SYSTEM "modules/clusters.xml">
         <!ENTITY ha SYSTEM "modules/ha.xml">
         <!ENTITY interoperability SYSTEM "modules/interoperability.xml">
-        <!ENTITY perf-tuning SYSTEM "modules/perf-tuning.xml">        
+        <!ENTITY perf-tuning SYSTEM "modules/perf-tuning.xml">
+        <!ENTITY configuration-index SYSTEM "modules/configuration-index.xml">
         ]>
 <book lang="en">
    <bookinfo>
@@ -88,5 +89,6 @@
    &ha;
    &interoperability;
    &perf-tuning;
+   &configuration-index;
    
 </book>

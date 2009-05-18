@@ -3,7 +3,7 @@
     <title>Security</title>
     <para>This chapter describes how security works with JBoss Messaging and how you can configure
         it.</para>
-    <section>
+    <section id="security.settings.roles">
         <title>Role based security for addresses</title>
         <para>JBoss Messaging contains a flexible role-based security model for applying security to
             queues, based on their addresses.</para>

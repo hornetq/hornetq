@@ -98,10 +98,7 @@
 				</xsd:element>				
 				<xsd:element name="persist-delivery-count-before-delivery" type="xsd:boolean"
 					maxOccurs="1" minOccurs="0">
-				</xsd:element>				
-				<xsd:element name="allow-route-when-no-bindings" type="xsd:boolean"
-					maxOccurs="1" minOccurs="0">
-				</xsd:element>				
+				</xsd:element>
 				<xsd:element name="backup-connector-ref"
 					type="backup-connectorType" maxOccurs="1" minOccurs="0">
 				</xsd:element>
@@ -168,9 +165,6 @@
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
-				<xsd:element name="paging-max-threads" type="xsd:positiveInteger"
-					maxOccurs="1" minOccurs="0">
-				</xsd:element>
 				<xsd:element name="paging-directory" type="xsd:string"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>

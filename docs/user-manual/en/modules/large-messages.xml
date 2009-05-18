@@ -9,7 +9,7 @@
         transmission process, so it is possible to send and receive very large messages. </para>
     <para>For example, it is possible to send an 8GB message even if you only had 50MB of RAM on
         either client and server. </para>
-    <section>
+    <section id="large.message.configuring">
         <title>Configuring the server</title>
         <para>Large messages are stored on a disk folder on the server side, as configured on the
             main configuration file (<xref linkend="usingserver.mainconfig"/>)</para>

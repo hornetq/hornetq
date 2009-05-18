@@ -43,7 +43,7 @@
         <para>Keys are always strings and values can be of type Long, Integer, String or
             Boolean.</para>
     </section>
-    <section>
+    <section id="understanding.connectors">
         <title>Understanding Connectors</title>
         <para>Whereas acceptors are used on the server to define how we accept connections,
             connectors are used by a client to define how it connects to a server.</para>

@@ -4,7 +4,7 @@
     <para>In this section we will discuss connection time-to-live (TTL) and explain how JBoss
         Messaging deals with crashed clients and clients which have exited without cleanly closing
         their resources. We'll also explain how to configure all the related parameters.</para>
-    <section>
+    <section id="dead.connections">
         <title>Cleaning up Dead Connection Resources on the Server</title>
         <para>Before a JBoss Messaging client application exits it is considered good practice and
             part of its contract that it should close its resources in a controlled manager, using a

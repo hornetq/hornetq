@@ -13,6 +13,7 @@
                 <file name="en/modules/architecture.xml"/>
                 <file name="en/modules/client-reconnection.xml"/>
                 <file name="en/modules/clusters.xml"/>
+                <file name="en/modules/configuration-index.xml"/>
                 <file name="en/modules/configuring-transports.xml"/>
                 <file name="en/modules/connection-ttl.xml"/>
                 <file name="en/modules/core-bridges.xml"/>

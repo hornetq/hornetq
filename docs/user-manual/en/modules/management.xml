@@ -379,7 +379,7 @@
       </section>        
    </section>
          
-   <section>
+   <section id="management.replication">
       <title>Management Replication</title>
       <para>JBoss Messaging allows to <emphasis>replicate</emphasis> a live server on a backup server.
          This impacts management as resources created on the live server (e.g. a core address)
@@ -548,7 +548,7 @@
          </listitem>
       </itemizedlist>
       
-      <section>
+      <section id="configuring.message.counters">
          <title>Configuring Message Counters</title>
          <para>By default, message counters are disabled has it consumes memory (the metrics are kept in memory)
             and CPU (the queues are sampled at regular interval).</para>

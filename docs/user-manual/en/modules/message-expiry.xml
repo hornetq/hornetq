@@ -47,7 +47,7 @@ producer.setTimeToLive(5000);
          from the queue. Address wildcards can be used
           to configure expiry address for a set of addresses (see <xref linkend="wildcard-syntax" />).</para>
    </section>
-   <section>
+   <section id="configuring.expiry.reaper">
       <title>Configuring The Expiry Reaper Thread</title>
       <para>A reaper thread is periodically inspecting the queues to check if messages have
          expired.</para>

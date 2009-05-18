@@ -76,7 +76,7 @@ message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), myUniqueID);
 ...
         </programlisting>
     </section>
-    <section>
+    <section id="duplicate.id.cache">
         <title>Configuring the Duplicate ID Cache</title>
         <para>The server maintains caches of received values of the <literal
                 >org.jboss.messaging.core.message.impl.HDR_DUPLICATE_DETECTION_ID</literal> property

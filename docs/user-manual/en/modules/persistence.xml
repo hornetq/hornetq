@@ -81,7 +81,7 @@
         the chapter on paging [LINK]</para>
     <para>If no persistence is required at all, JBoss Messaging can also be configured not to
         persist any data at all to storage.</para>
-    <section>
+    <section id="configuring.bindings.journal">
         <title>Configuring the bindings journal</title>
         <para>The bindings journal is configured using the following attributes in <literal
                 >jbm-configuration.xml</literal></para>
@@ -100,7 +100,7 @@
             </listitem>
         </itemizedlist>
     </section>
-    <section>
+    <section id="configuring.message.journal">
         <title>Configuring the message journal</title>
         <para>The message journal is configured using the following attributes in <literal
                 >jbm-configuration.xml</literal></para>
@@ -199,7 +199,7 @@
         <para>Using aptitude, (e.g. on Ubuntu or Debian system):
             <programlisting>sudo apt-get install libaio1</programlisting></para>
     </section>
-    <section>
+    <section id="enable.persistence">
         <title>Configuring JBoss Messaging for zero persistence</title>
         <para> In some situations, zero persistence is sometimes required for a messaging system.
             Configuring JBoss Messaging to perform zero persistence is straightforward. Simply set

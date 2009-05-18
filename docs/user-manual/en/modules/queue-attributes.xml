@@ -4,7 +4,7 @@
     <para>Queue attributes can be set in one of 2 ways. Either by configuring them via the
         configuration file or when using the core API. This chapter will explain how to configure
         each attribute and what effect the attribute has.</para>
-    <section>
+    <section id="predefined.queues">
         <title>Predefined Queues</title>
         <para>Queues can be predefined via configuration at a core level or at a JMS level. Firstly
             lets look at a JMS level.</para>

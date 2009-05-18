@@ -28,7 +28,7 @@
             replications in separate streams allows replication throughput to be much higher than if
             we synchronously replicated data and waited for a response serially in an RPC manner
             before replicating the next piece of data.</para>
-        <section>
+        <section id="configuring.live.backup">
             <title>Configuring live-backup pairs</title>
             <para>First, on the live server, in <literal>jbm-configuration.xml</literal> configure
                 the live server with knowledge of its backup server. This is done by specifying a
@@ -83,7 +83,7 @@
                 to copy the entire server side configuration from live to backup and just make the
                 changes as specified in the previous section. </para>
         </section>
-        <section>
+        <section id="queue.activation.timeout">
             <title>Queue activation timeout</title>
             <para>If a live server fails, as client connections failover from the live node to the
                 backup, they do so at a rate determined by the client, and it might be the case that

@@ -13,7 +13,7 @@
             for both scheduled and non scheduled activity.</para>
         <para>There are also a small number of other places where threads are used directly, we'll
             discuss each in turn.</para>
-        <section>
+        <section id="server.scheduled.thread.pool">
             <title>Server Scheduled Thread Pool</title>
             <para>The server scheduled thread pool is used for most activities on the server side
                 that require running periodically or with delays. It maps internally to a <literal
