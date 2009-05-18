@@ -1,26 +1,393 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="management">
-    <title>Management</title>
-    <para>blah</para>
+   <title>Management</title>
+
+   <para>While JBoss Messaging servers are up and running, it is possible to interact with it
+      to modify its settings, create new resources (e.g. JMS queues and topics), inspect
+      these resources (e.g. how many messages are currently held in a queue) and interact
+      with it (e.g. to remove messages from a queue). All the operations allows to
+      <emphasis>manage</emphasis> JBoss Messaging.</para>
+    <para>There are 3 ways to manage JBoss Messaging:</para>
+    <itemizedlist>
+      <listitem><para>Using JMX -- JMX is the standard way to manage Java applications</para></listitem>
+      <listitem><para>Using Core API -- management operations are sent to JBoss Messaging server
+         using <emphasis>Core messages</emphasis></para></listitem>
+      <listitem><para>Using JMS API -- management operations are sent to JBoss Messaging server
+         using <emphasis>JMS messages</emphasis></para></listitem>
+    </itemizedlist>
+    <para>There are 3 ways to manage JBoss Messaging but they all allow the same set of operations.
+       If it is possible to manage a resource using JMX, it is also possible to achieve the same
+       result using Core messages or JMS messages.</para>
+    <para>This choice depends on your requirements, your application settings and your environment to
+       decide which way suits you best.</para>
     
-    <section>
-        <title>The management API</title>
-        <para></para>
-    </section>
+   <section>
+      <title>The Management API</title>
+      <para>Regardless of the way you <emphasis>invoke</emphasis> management operations, the management API
+      is the same.</para>
+      <para>For each <emphasis>managed resource</emphasis>, there exists a Java interface describing
+      what can be invoked for this type of resource.</para>
+      <para>JBoss Messaging exposes its managed resources in 2 packages:</para>
+      <itemizedlist>
+         <listitem><para><emphasis>Core</emphasis> resources are located in the 
+            <literal>org.jboss.messaging.core.management</literal> package</para></listitem>
+         <listitem><para><emphasis>JMS</emphasis> resources are located in the 
+            <literal>org.jboss.messaging.jms.server.management</literal> package</para></listitem>
+      </itemizedlist>
+      <para>Please refer to the API javadoc for a complete description on the management API.</para>
+      
+      <para>The way to invoke a <emphasis>management operations</emphasis> depends wether JMX, Core messages
+      , or JMS Messages are used.</para>
+   </section>
     
-    <section>
-        <title>Using management with JMX</title>
-        <para></para>
-    </section>
-    
-    <section>
-        <title>Using management via a core connection</title>
-        <para></para>
-    </section>
-    
-    <section>
-        <title>Management notifications</title>
-        <para></para>
-    </section>
+   <section id="management.jmx">
+      <title>Using Management Via JMX</title>
+      <para>JBoss Messaging can be managed using
+         <ulink url="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/">JMX</ulink>.
+      </para>
+      <para>The management API is exposed by JBoss Messaging using MBeans interfaces. JBoss
+         Messaging registers its resources with the domain <literal>org.jboss.messaging</literal>.</para>
+      <para>For example, the <literal>ObjectName</literal> to manage a JMS Queue <literal>exampleQueue</literal> is:</para>
+      <programlisting>
+   org.jboss.messaging:module=JMS,type=Queue,name="exampleQueue"   
+      </programlisting>
+      <para>and the MBean is:</para>
+      <programlisting>
+   org.jboss.messaging.jms.server.management.JMSQueueControlMBean   
+      </programlisting>
+      
+      <para>The MBean's <literal>ObjectName</literal> are built using the helper class
+         <literal>org.jboss.messaging.core.management.ObjectNames</literal>. You can also use
+         <literal>jconsole</literal> to find the <literal>ObjectName</literal> of the MBeans you want to manage.
+      </para>
+      
+      <para>Managing JBoss Messaging using JMX is identical to management of any Java Applications
+         using JMX. It can be done by reflection or by creating proxies of the MBeans.</para>
+      
+      <section id="management.jmx.configuration">
+         <title>Configuring JMX</title>
+         <para>By default, JMX is enabled to manage JBoss Messaging. It can be disabled by 
+            setting <literal>jmx-management-enabled</literal> to <literal>false</literal> in <literal>jbm-configuration.xml</literal>:</para>
+         <programlisting>
+   &lt;!-- false to disable JMX management for JBoss Messaging --&gt;
+   &lt;jmx-management-enabled&gt;false&lt;/jmx-management-enabled&gt;            
+         </programlisting>
+         
+         <para>If JMX is enabled, JBoss Messaging can be managed locally using <literal>jconsole</literal>.
+         Remote connections to JMX are not enabled by default for security reasons. Please refer to 
+         <ulink url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#remote">Java Management guide</ulink>
+         to configure the server for remote management (system properties must be set in <literal>run.sh</literal>
+         or <literal>run.bat</literal> scripts).</para>
+         
+         <para>By default, JBoss Messaging uses the Java Virtual Machine's <literal>Platform MBeanServer</literal>
+         to register its MBeans. This is configured in JBoss Microcontainer Beans file 
+         (see <xref linkend="server.microcontainer.configuration" />):</para>
+         <programlisting>
+   &lt;!-- MBeanServer --&gt;
+   &lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
+      &lt;constructor factoryClass="java.lang.management.ManagementFactory"
+                         factoryMethod="getPlatformMBeanServer" /&gt;
+   &lt;/bean&gt;            
+         </programlisting>
+      </section>
+
+      <section>
+         <title>Example</title>
+         <para>The <ulink url="../../../../examples/jms/jmx/readme.html"><literal>jmx</literal> example</ulink> shows
+            how to use a remote connection to JMX and MBean proxies to manage JBoss Messaging.</para>
+      </section>        
+   </section>
+
+   <section>
+      <title>Using Management Via Core API</title>
+      <para>Another way to manage JBoss Messaging is by sending Core messages to a special
+         address, the <emphasis>management address</emphasis>.</para>
+         <para><emphasis>Management messages</emphasis> are regular Core messages with well-known
+         properties that the server needs to understand to interact with the management API:</para>
+      <itemizedlist>
+         <listitem><para>The name of the managed resource</para></listitem>
+         <listitem><para>The name of the management operation</para></listitem>
+         <listitem><para>The parameters of the management operation</para></listitem>
+      </itemizedlist>
+      <para>When such a management message is sent to the management address, JBoss Messaging
+         server will handle it, extract the information, invoke the operation on the managed
+         resources and send a <emphasis>management reply</emphasis> to the management message's
+         reply-to address (specified by <literal>ClientMessageImpl.REPLYTO_HEADER_NAME</literal>).
+      </para>
+      <para>A <literal>ClientConsumer</literal> can be used to consumed the management reply
+         and retrieve the result of the operation (if any) stored in the reply's body.</para>
+      <para>These steps can be simplified to make it easier to invoke management operations
+         using Core messages:</para>
+      <orderedlist>
+         <listitem><para>create a <literal>ClientRequestor</literal> to send messages to the management
+            address and receive replies</para></listitem>
+         <listitem><para>create a <literal>ClientMessage</literal></para></listitem>
+         <listitem><para>use the helper class <literal>org.jboss.messaging.core.client.management.impl.ManagementHelper</literal>
+            to fill the message with the management properties</para>
+         </listitem>
+         <listitem><para>send the message using the <literal>ClientRequestor</literal></para></listitem>
+         <listitem><para>use the helper class <literal>org.jboss.messaging.core.client.management.impl.ManagementHelper</literal>
+            to retrieve the operation result from the management reply</para>
+         </listitem>         
+      </orderedlist>
+      <para>For example, to know the number of messages in the Core queue <literal>exampleQueue</literal>:</para>
+      <programlisting>
+   ClientSession session = ...
+   ClientRequestor requestor = new ClientRequestor(session, "jbm.management");
+   ClientMessage message = session.createClientMessage(false);
+   ManagementHelper.putAttribute(message, "core.queue.exampleQueue", "MessageCount");
+   ClientMessage reply = requestor.request(m);
+   int count = (Integer) ManagementHelper.getResult(reply);
+   System.out.println("There are " + count + " messages in exampleQueue");
+      </programlisting>
+      <para>Management operation name and parameters must conform to the Java interfaces defined
+         in the <literal>management</literal> packages.</para>
+      <para>Name of the resources are built using the helper class <literal>org.jboss.messaging.core.management.ResourceNames</literal> and are straightforward
+      (<literal>core.queue.exampleQueue</literal> for the Core Queue <literal>exampleQueue</literal>,
+      <literal>jms.topic.exampleTopic</literal> for the JMS Topic <literal>exampleTopic</literal>, etc.).</para>
+      
+      <section id="management.core.configuration">
+         <title>Configuring Core Management</title>
+         <para>the management address to send management messages is configured in <literal>jbm-configuration.xml</literal>:</para>
+         <programlisting>
+   &lt;management-address&gt;jbm.management&lt;/management-address&gt;
+         </programlisting>
+         <para>By default, the address is <literal>jbm.management</literal>.</para>
+         <para>The management address requires a <emphasis>special</emphasis> user permission 
+            <literal>manage</literal> to be able to receive and handle management messages. 
+            This is also configured in jbm-configuration.xml:</para>
+         <programlisting>
+   &lt;!-- users with the admin role will be allowed to manage --&gt; 
+   &lt;!-- JBoss Messaging using management messages        --&gt;
+   &lt;security-setting match="jbm.management"&gt;
+      &lt;permission type="manage" roles="admin" /&gt;
+   &lt;/security-setting&gt;
+         </programlisting>
+      </section>        
+
+   </section>
+
+   <section id="management.jms">
+      <title>Using Management Via JMS</title>
+      <para>Using JMS messages to manage JBoss Messaging is very similar to using Core API.</para>
+      <para>An important difference is that JMS requires to create a JMS Queue to send the messages
+         (instead of an address for the Core API).</para>
+      <para>The <emphasis>management queue</emphasis> is a special queue and needs to be instantiated
+      directly by the client:</para>
+      <programlisting>
+   Queue managementQueue = new JBossQueue("jbm.management", "jbm.management");   
+      </programlisting>
+      <para>All the other steps are the same than for the Core API but they use JMS API instead:</para>
+      <orderedlist>
+         <listitem><para>create a <literal>QueueRequestor</literal> to send messages to the management
+            address and receive replies</para></listitem>
+         <listitem><para>create a <literal>Message</literal></para></listitem>
+         <listitem><para>use the helper class <literal>org.jboss.messaging.jms.server.management.impl.JMSManagementHelper</literal>
+            to fill the message with the management properties</para>
+         </listitem>
+         <listitem><para>send the message using the <literal>QueueRequestor</literal></para></listitem>
+         <listitem><para>use the helper class <literal>org.jboss.messaging.jms.server.management.impl.JMSManagementHelper</literal>
+            to retrieve the operation result from the management reply</para>
+         </listitem>         
+      </orderedlist>
+      <para>For example, to know the number of messages in the JMS queue <literal>exampleQueue</literal>:</para>
+      <programlisting>
+   Queue managementQueue = new JBossQueue("jbm.management", "jbm.management");   
    
+   QueueSession session = ...      
+   QueueRequestor requestor = new QueueRequestor(session, managementQueue);
+   connection.start();
+   Message message = session.createMessage();
+   JMSManagementHelper.putAttribute(message, "jms.queue.exampleQueue", "MessageCount");
+   Message reply = requestor.request(message);
+   int count = (Integer)JMSManagementHelper.getResult(reply);
+   System.out.println("There are " + count + " messages in exampleQueue");
+      </programlisting>
+         
+      <section>
+         <title>Configuring JMS Management</title>
+         <para>Wether JMS or Core API is used for management, the configuration
+            steps are the same (see <xref linkend="management.core.configuration" />).</para>
+      </section>        
+ 
+      <section>
+         <title>Example</title>
+         <para>The <ulink url="../../../../examples/jms/management/readme.html"><literal>management</literal> example</ulink> shows
+            how to use JMS messages to manage JBoss Messaging server.</para>
+      </section>        
+   </section>
+         
+   <section>
+      <title>Management Replication</title>
+      <para>JBoss Messaging allows to <emphasis>replicate</emphasis> a live server on a backup server.
+         This impacts management as resources created on the live server (e.g. a core address)
+         must also be created on the backup server. Otherwise, when failover occurs, the backup server
+         will not be able to handle messages sent to this address since its resources will have been
+         created on the live server only and not on the backup.</para>
+      <para>JBoss Message <emphasis>replicate management operation</emphasis> regardless
+         of the way used to manage (JMX, Core messages, JMS messages). Any management operation invoked
+         on a live server will also be invoked on its backup server to ensure a proper replication of resources
+         and state. For example, you only need to manage the live server: if a queue is created on the live
+         server, JBoss Messaging will ensure that the same resource will also be created on the backup server.</para>
+      <para>To allow this management replication, JBoss Messaging defines a <emphasis>management cluster password</emphasis>:
+         this special password <emphasis>must be shared by all nodes</emphasis>. To configure it, change the value
+         in <literal>jbm-configuration.xml</literal>:</para>
+      <programlisting>
+   &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
+      </programlisting>
+         <para>By default, its value is <literal>CHANGE ME!!</literal>. It is strongly suggested to change it
+         to a safer value (this password is never sent on the network).</para>
+      <para>JBoss Messaging internally uses Core messages to replicate management operations
+         between the live and backup server. By default, there is a timeout of 5s (5000ms) to send
+         a management request from the live server to the backup server and wait for a reply.
+         If a reply is not received before the timeout is hit, JBoss Messaging considers the replication has failed.
+         This timeout can be configured in <literal>jbm-configuration.xml</literal>:</para>
+      <programlisting>
+         &lt;management-request-timeout&gt;5000&lt;/management-request-timeout&gt;
+      </programlisting>
+   </section>
+
+   <section id="management.notifications">
+      <title>Management Notifications</title>
+      <para>JBoss Messaging emits <emphasis>notifications</emphasis> to inform listeners of potentially
+      interesting events (creation of new resources, security violation, etc.).</para>
+      <para>These notifications can be received by 3 different ways:</para>
+      <itemizedlist>
+         <listitem><para>JMX notifications</para></listitem>
+         <listitem><para>Core messages</para></listitem>
+         <listitem><para>JMS messages</para></listitem>
+      </itemizedlist>
+      
+      
+      <section>
+         <title>JMX Notifications</title>
+         <para>If JMX is enabled (see <xref linkend="management.jmx.configuration"/>), JMX notifications 
+         can be received by subscribing to 2 MBeans:</para>
+         <itemizedlist>
+            <listitem><para><literal>org.jboss.messaging:module=Core,type=Server</literal> for notifications on <emphasis>Core</emphasis> resources</para></listitem>
+            <listitem><para><literal>org.jboss.messaging:module=JMS,type=Server</literal> for notifications on <emphasis>JMS</emphasis> resources</para></listitem>
+         </itemizedlist>         
+      </section>
+      
+      <section>
+         <title>Core Messages Notifications</title>         
+         <para>JBoss Messaging defines a special <emphasis>management notification address</emphasis>.
+         Core queues can be bound to this address so that clients will receive management notifications 
+         as Core messages</para>
+         
+         <section id="management.notifications.core.configuration">
+            <title>Configuring The Core Management Notification Address</title>
+            <para>the management notification address to receive management notifications is configured in <literal>jbm-configuration.xml</literal>:</para>
+            <programlisting>
+      &lt;management-notification-address&gt;jbm.notifications&lt;/management-notification-address&gt;
+            </programlisting>
+            <para>By default, the address is <literal>jbm.notifications</literal>.</para>
+         </section>
+         
+         <para>A Core client which wants to receive management notifications must create a Core
+            queue bound to the management notification address. It can then receive the notifications from
+            its queue.</para>
+         <para>Notifications messages are regular Core messages with additional properties corresponding
+            to the notification (its type, when it occurred, the resources which were concerned, etc.).</para>
+         <para>Since notifications are regular Core messages, it is possible to use message selectors
+            to filter out notifications and receives only a subset of all the notifications emitted by the
+            server.</para>         
+      </section>        
+
+      <section>
+         <title>JMS Messages Notifications</title>         
+         <para>JBoss Messaging's notifications can also be received using JMS messages.</para>
+         <para>It is similar to receiving notifications using Core API but an important difference 
+            is that JMS requires to create a JMS Destination to receive the messages (preferably
+            a Topic):</para>
+         <programlisting>
+   Topic notificationsTopic = new JBossTopic("jbm.notifications", "jbm.notifications");
+         </programlisting>
+         <para>Once the notification topic is created, you can receive messages from it
+            or set a <literal>MessageListener</literal>:</para>
+         <programlisting>
+   Topic notificationsTopic = new JBossTopic("jbm.notifications", "jbm.notifications");
+
+   Session session = ...
+   MessageConsumer notificationConsumer = session.createConsumer(notificationsTopic);
+      notificationConsumer.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message notif)
+         {
+            System.out.println("------------------------");
+            System.out.println("Received notification:");
+            try
+            {
+               Enumeration propertyNames = notif.getPropertyNames();
+               while (propertyNames.hasMoreElements())
+               {
+                  String propertyName = (String)propertyNames.nextElement();
+                  System.out.format("  %s: %s\n", propertyName, notif.getObjectProperty(propertyName));
+               }
+            }
+            catch (JMSException e)
+            {
+            }
+            System.out.println("------------------------");
+         }            
+      });            
+         </programlisting>
+      </section>
+
+      <section>
+         <title>Example</title>
+         <para>The <ulink url="../../../../examples/jms/management-notifications/readme.html"><literal>management-notifications</literal> example</ulink> shows
+            how to use a JMS <literal>MessageListener</literal> to receive management notifications
+            from JBoss Messaging server.</para>
+      </section>        
+   </section>
+
+   <section id="management.message-counters">
+      <title>Message Counters</title>
+      <para>Message counters can be used to have informations on queue <emphasis>over time</emphasis> 
+      as JBoss Messaging keeps a history on queue metrics.</para>
+      
+      <section>
+         <title>Configuring Message Counters</title>
+         <para>By default, message counters are disabled has it consumes memory (the metrics are kept in memory)
+            and CPU (the queues are sampled at regular interval).</para>
+         <para>To enable message counters, you can set it to <literal>true</literal> in <literal>jbm-configuration.xml</literal>:</para>
+         <programlisting>
+   &lt;message-counter-enabled&gt;true&lt;/message-counter-enabled&gt;
+         </programlisting>
+         <para>Message counters keeps a history of the queue metrics (10 days by default) and samples all the queues
+            at regular interval (10 seconds by default). If message counters are enabled, these values should
+            be configured to suit your messaging use case in <literal>jbm-configuration.xml</literal>:</para>
+         <programlisting>
+   &lt;!-- keep history for a week --&gt;
+   &lt;message-counter-max-day-history&gt;7&lt;/message-counter-max-day-history&gt;            
+   &lt;!-- sample the queues every minute (60000ms) --&gt;
+   &lt;message-counter-sample-period&gt;60000&lt;/message-counter-sample-period&gt;
+         </programlisting>
+      </section>        
+
+      <para>Message counters can be retrieved using the Management API. For example, to retrieve message counters on a JMS Queue using JMX:</para>
+      <programlisting>
+   // retrieve a connection to JBoss Messaging's MBeanServer
+   MBeanServerConnection mbsc = ...
+   JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+                                                                                                         on,
+                                                                                                         JMSQueueControlMBean.class,
+                                                                                                         false);
+   // message counters are retrieved as a JSON String                                                                                                      
+   String counters = queueControl.listMessageCounter();
+   // use the MessageCounterInfo helper class to manipulate message counters more easily
+   MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);         
+   System.out.format("%s message(s) in the queue (since last sample: %s)\n",
+                                 counter.getDepth(),
+                                 counter.getDepthDelta());
+      </programlisting>
+
+      <section>
+         <title>Example</title>
+         <para>The <ulink url="../../../../examples/jms/message-counters/readme.html"><literal>message-counters</literal> example</ulink> shows
+            how to use message counters to retrieve information on a JMS <literal>Queue</literal>.</para>
+      </section>        
+   </section>
+
 </chapter>

@@ -135,7 +135,7 @@
             </listitem>
         </itemizedlist>
     </section>
-    <section>
+    <section id="server.microcontainer.configuration">
         <title>JBoss Microcontainer Beans File</title>
         <para>The stand-alone server is basically a set of POJOs which are instantiated by the light
             weight JBoss Microcontainer engine. [LINK]</para>

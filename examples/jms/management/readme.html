@@ -180,21 +180,14 @@
      
      <h2>More information</h2>
      
-     <h3>How do I know the attributes and operations that can be managed using JMS messages?</h3>
-     <p>The attributes and operations that can be invoked are the <strong>same</strong> than the ones defined by JBoss Messaging MBeans.</p>
-     JBoss Messaging defines a set of MBeans for this core 
-         API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.jboss.messaging.core.management</a>
-          package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.jboss.messaging.jms.server.management</a> package)</p>
-     <p><strong>Please note that management attributes start with an upper case  character(<code><u>M</u>essageCount</code>), <em>not a lower case </em></strong></p>      
-
-     <h3>How do I know the name of the resource to manage?</h3>
-     <p><a href="../../../docs/api/org/jboss/messaging/core/management/ResourceNames.html">ResourceNames</a> is a helper class used to build the name of JBoss Messaging resources by messages<br />
-     The convention is simple: <code>jms.queue.</code> followed by the name of the queue for a JMS queue, <code>jms.topic.</code> followed by the name of a topic for a JMS topic, etc.<br />
-     The name for the JMS server resource is <code>jms.server</code>
+     <ul>
+        <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#management.jms">Using Management Via JMS chapter</a></li>
+        <li>JBoss Messaging defines a set of resources for this core 
+            API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.jboss.messaging.core.management</a>
+             package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.jboss.messaging.jms.server.management</a> package)
+         <li><a href="../../../docs/api/org/jboss/messaging/core/management/ResourceNames.html">ResourceNames</a> is a helper class used to build the name of JBoss Messaging resources by messages<br />
+            The convention is simple: <code>jms.queue.</code> followed by the name of the queue for a JMS queue, <code>jms.topic.</code> followed by the name of a topic for a JMS topic, etc.<br />
+            The name for the JMS server resource is <code>jms.server</code></li>
      </p>
-     
-     <p>Management address can be configured in the <a href="../../../docs/userguide/en/html/configuration.html#configuration.main">server configuration</a> by changing the <code>management-address</code> parameter.</p>
-         
-
   </body>
 </html>

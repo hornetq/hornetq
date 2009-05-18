@@ -79,11 +79,11 @@
                                                                                                         false);</code>
         </pre>
 
-        <li>We retrieve the message counter and display them. MessageCounters are retrieved as <code>CompositeData</code> for portability reason (wether
+        <li>We retrieve the message counter and display them. MessageCounters are retrieved as <code>JSON Strings</code> for portability reason (wether
             JMX is used for management or JMS messages). To make it simpler to use them in the code, there is a <code>MessageCounterInfo</code> data structure.</li>
         <pre>
-            <code>CompositeData compositeData = queueControl.listMessageCounter();
-            MessageCounterInfo messageCounter = MessageCounterInfo.from(compositeData);</code>>
+            <code>String counters = queueControl.listMessageCounter();
+            MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);</code>>
         </pre>
         
         <li>We display the message counters</li>
@@ -113,8 +113,8 @@
         
         <li>We list the message counters again</li>
         <pre>
-            <code>compositeData = queueControl.listMessageCounter();
-            messageCounter = MessageCounterInfo.from(compositeData);
+            <code>counters = queueControl.listMessageCounter();
+            messageCounter = MessageCounterInfo.fromJSON(counters);
             displayMessageCounter(messageCounter);</code>
         </pre>
         
@@ -144,8 +144,8 @@
         
         <li>We list the message counters a final time (this time with no message in the queue)</li>
         <pre>
-            <code>compositeData = queueControl.listMessageCounter();
-            messageCounter = MessageCounterInfo.from(compositeData);
+            <code>counters = queueControl.listMessageCounter();
+            messageCounter = MessageCounterInfo.fromJSON(counters);
             displayMessageCounter(messageCounter);</code>
         </pre>
 
@@ -167,10 +167,8 @@
         </pre>
      </ol>
      
-     <h2>More information</h2>
-     
-     <ul>
-         <li>Message counter is configured <a href="../../../docs/userguide/en/html/configuration.html#configuration.main">at the server level</a></li>
-     </ul>
+     <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#management.message-counters">Message Counters chapter</a></li>
+     <li><a href="../../../docs/api/org/jboss/messaging/core/management/MessageCounterInfo.html">MessageCounterInfo</a> is a helper class used 
+        to create a MessageCounterInfo object from the JSON String which represents message counters</li>
   </body>
 </html>
