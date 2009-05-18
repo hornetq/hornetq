@@ -76,6 +76,15 @@ public class JBMBootstrapServer extends BasicBootstrap
       final JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
       
       bootstrap.run();
+      
+      bootstrap.addShutdownHook();
+   }
+   
+   /**
+    * Add a simple shutdown hook to stop the server.
+    */
+   public void addShutdownHook()
+   {
       String dirName = System.getProperty("jbm.bootsrap.bin.dir", ".");
       final File file = new File(dirName + "/KILL_ME");
       if(file.exists())
@@ -93,7 +102,7 @@ public class JBMBootstrapServer extends BasicBootstrap
                try
                {
                   log.info("Stopping JBoss Messaging Server");
-                  bootstrap.shutDown();
+                  shutDown();
                   timer.cancel();
                }
                finally
