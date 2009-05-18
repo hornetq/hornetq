@@ -134,8 +134,9 @@
             <include name="${example.name}-example.ear"/>
          </fileset>
       </copy>
-
-      <exec dir="${jboss.home}/bin" command="./run.sh -c ${example.name}-example-profile"/>
+      <exec dir="${jboss.home}/bin" executable="sh">
+         <arg line="run.sh -c ${example.name}-example-profile"/>
+      </exec>
    </target>
 
    <target name="copy-profile" depends="profile.check" unless="donot.copy.profile">
