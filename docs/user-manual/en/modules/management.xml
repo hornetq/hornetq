@@ -229,7 +229,9 @@
          on a live server will also be invoked on its backup server to ensure a proper replication of resources
          and state. For example, you only need to manage the live server: if a queue is created on the live
          server, JBoss Messaging will ensure that the same resource will also be created on the backup server.</para>
-      <para>To allow this management replication, JBoss Messaging defines a <emphasis>management cluster password</emphasis>:
+      <para>If Core messages or JMS messages are used to invoke management operations, replication is handled
+         automatically by JBoss Messaging.</para>
+      <para>To allow this management replication with JMX, JBoss Messaging defines a <emphasis>management cluster password</emphasis>:
          this special password <emphasis>must be shared by all nodes</emphasis>. To configure it, change the value
          in <literal>jbm-configuration.xml</literal>:</para>
       <programlisting>
@@ -238,7 +240,7 @@
          <para>By default, its value is <literal>CHANGE ME!!</literal>. It is strongly suggested to change it
          to a safer value (this password is never sent on the network).</para>
       <para>JBoss Messaging internally uses Core messages to replicate management operations
-         between the live and backup server. By default, there is a timeout of 5s (5000ms) to send
+         between the live and backup server when JMX is used. By default, there is a timeout of 5s (5000ms) to send
          a management request from the live server to the backup server and wait for a reply.
          If a reply is not received before the timeout is hit, JBoss Messaging considers the replication has failed.
          This timeout can be configured in <literal>jbm-configuration.xml</literal>:</para>
