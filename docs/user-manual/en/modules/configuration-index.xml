@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="configuration-index">
     <title>Server Configuration Reference</title>
-    <para>This section is a quick index for looking up configuration.</para>
+    <para>This section is a quick index for looking up configuration. Click on the element name to
+        go to the specific chapter.</para>
     <section>
         <title>jbm-configuration.xml</title>
         <table frame="border">
