@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="examples">
+    <title>Examples</title>
+    <para>The JBoss Messaging distribution comes with a wide variety of examples demonstrating many of the features in an easy to use, fully
+    functional examples.</para>
+    <para>The examples are available in the distribution, in the <literal>examples</literal> directory. Examples are split into JMS and Core examples.
+    JMS examples show how a particular feature can be used by a normal JMS client. Core examples (TODO) show how the equivalent feature can be used
+    by a core messaging client.</para>
+    <para>To run a JMS example, simply <literal>cd</literal> into the appropriate example directory and type <literal>ant</literal></para>
+    <para>Here's a listing of the examples</para>
+    <section>
+        <title>example 1</title>
+        <para></para>
+    </section>
+    <section>
+        <title>example 2</title>
+        <para></para>
+    </section>
+    <section>
+        <title>example 3</title>
+        <para></para>
+    </section>
+    
+    
+</chapter>

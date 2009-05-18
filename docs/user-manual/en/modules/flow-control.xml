@@ -8,13 +8,10 @@
       <para>This controls the flow of messages between the server and the client. For performance
          reasons clients buffer messages before delivering to the consumer via the <literal
             >receive()</literal> method or asynchronously via a message listener. If the consumer
-         can not process messages as fast as they are being delivered and stored in the internal
-         buffer, then you end up with a situation where messages just keep building up and are not
-         processed for a long time. Consider a situation where a queue has 2 consumers 1 of which is
-         very slow. Messages are delivered in a round robin fashion to both consumers, the fast
-         consumer processes all of its messages very quickly until its buffer is empty. At this
-         point there are still messages awaiting to be processed by the slow consumer which could be
-         being consumed by the other consumer.</para>
+         cannot process messages as fast as they are being delivered and stored in the internal
+         buffer, then you could end up with a situation where messages just keep building up and are
+         not processed for a long time. </para>
+      <para/>
       <section id="flow-control.consumer.window">
          <title>Window-Based Flow Control</title>
          <para>By default, JBoss Messaging consumers buffer messages from the server in a client
@@ -35,13 +32,11 @@
                <para><literal>-1</literal> for an <emphasis>unbounded</emphasis> buffer</para>
             </listitem>
             <listitem>
-               <para><literal>0</literal> for <emphasis>no</emphasis> buffer at all</para>
+               <para><literal>0</literal> to not buffer any messages.</para>
             </listitem>
             <listitem>
-               <para><literal>1</literal> for a buffer of <emphasis>1</emphasis> message</para>
-            </listitem>
-            <listitem>
-               <para><literal>&gt;1</literal> for a buffer with the given maximum size</para>
+               <para><literal>&gt;0</literal> for a buffer with the given maximum size in
+                  bytes.</para>
             </listitem>
          </itemizedlist>
          <para>Setting the consumer window size can considerably improve performance depending on
@@ -64,15 +59,20 @@
                <listitem>
                   <para>Slow consumers takes significant time to process each message and it is
                      desirable to prevent buffering messages on the client side so that they can be
-                     delivered to another consumer instead</para>
+                     delivered to another consumer instead.</para>
+                  <para>Consider a situation where a queue has 2 consumers 1 of which is very slow.
+                     Messages are delivered in a round robin fashion to both consumers, the fast
+                     consumer processes all of its messages very quickly until its buffer is empty.
+                     At this point there are still messages awaiting to be processed by the slow
+                     consumer which could be being consumed by the other consumer.</para>
                   <para>To allow slow consumers, set the <literal>consumer-window-size</literal> to
-                     0 (for no buffer at all) or 1 (to buffer only 1 message). This will prevent
-                     from buffering many messages on the client side. Messages will remain on the
-                     server side ready to be consumed by other consumers.</para>
+                     0 (for no buffer at all) or 1 (to buffer only 1 message). This will prevent the
+                     slow consumer from buffering any messages on the client side. Messages will
+                     remain on the server side ready to be consumed by other consumers.</para>
                </listitem>
             </varlistentry>
          </variablelist>
-         <para>Most of the consumers can not be clearly identified as fast or slow consumers but are
+         <para>Most of the consumers cannot be clearly identified as fast or slow consumers but are
             in-between. In that case, setting the value of <literal>consumer-window-size</literal>
             to optimize performance depends on the messaging use case and requires benchmarks to
             find the optimal value. </para>
@@ -114,19 +114,22 @@
          <para>It is also possible to control the rate at which a consumer can consumer messages.
             This is a form of throttling and can be used to make sure that a consumer never consumes
             messages at a rate faster than the rate specified. </para>
-         <para>The rate must be a positive integer to enable and is the rate per second of messages
-            consumed. Setting to 0 or negative disables rate limited flow control.</para>
+         <para>The rate must be a positive integer to enable and is the maximum desired message
+            consumption rate specified in units of messages per second. Setting this to <literal
+               >-1</literal> disables rate limited flow control. The default value is <literal
+               >-1</literal>.</para>
          <section>
             <title>Using Core API</title>
             <para>If the JBoss Messaging core API is being used the rate can be set via the <literal
                   >ClientSessionFactory.setConsumerMaxRate(int consumerMaxRate)</literal> method or
                alternatively via some of the <literal>ClientSession.createConsumer()</literal>
                methods. </para>
-            <section>
-               <title>Using JMS</title>
-               <para>If JNDI is used to look up the connection factory, the max rate can be
-                  configured in <literal>jbm-jms.xml</literal>:</para>
-               <programlisting>&lt;connection-factory name="ConnectionFactory">
+         </section>
+         <section>
+            <title>Using JMS</title>
+            <para>If JNDI is used to look up the connection factory, the max rate can be configured
+               in <literal>jbm-jms.xml</literal>:</para>
+            <programlisting>&lt;connection-factory name="ConnectionFactory">
       &lt;connector-ref connector-name="netty-connector"/>
       &lt;entries>
          &lt;entry name="ConnectionFactory"/>       
@@ -135,17 +138,16 @@
       of 10 messages per sec -->
       &lt;consumer-max-rate>10&lt;/consumer-max-rate>
  &lt;/connection-factory></programlisting>
-               <para>If the connection factory is directly instantiated, the max rate size can be
-                  set via the <literal>JBossConnectionFactory.setConsumerMaxRate(int
-                     consumerMaxRate)</literal> method.</para>
-               <note>
-                  <para>Rate limited flow control can be used in conjunction with window based flow
-                     control. Rate limited flow control only effects how many messages a client can
-                     consume in a second and not how many messages are in its buffer. So if you had
-                     a slow rate limit and a high window based limit the clients internal buffer
-                     would soon fill up with messages.</para>
-               </note>
-            </section>
+            <para>If the connection factory is directly instantiated, the max rate size can be set
+               via the <literal>JBossConnectionFactory.setConsumerMaxRate(int
+                  consumerMaxRate)</literal> method.</para>
+            <note>
+               <para>Rate limited flow control can be used in conjunction with window based flow
+                  control. Rate limited flow control only effects how many messages a client can
+                  consume in a second and not how many messages are in its buffer. So if you had a
+                  slow rate limit and a high window based limit the clients internal buffer would
+                  soon fill up with messages.</para>
+            </note>
          </section>
          <section>
             <title>Example</title>
@@ -158,14 +160,48 @@
    </section>
    <section>
       <title>Producer flow control</title>
-      <para>Producer flow control can be controlled using window size or rate limit </para>
+      <para>Producer flow control </para>
       <section>
          <title>Window based flow control</title>
          <para/>
       </section>
       <section>
          <title>Rate limited flow control</title>
-         <para/>
+         <para>JBoss Messaging also allows the rate a producer can emit message to be limited, in
+            units of messages per second. By specifying such a rate, JBoss Messaging will ensure
+            that producer never produces messages at a rate higher than that specified.</para>
+         <para>The rate must be a positive integer to enable and is the maximum desired message
+            consumption rate specified in units of messages per second. Setting this to <literal
+               >-1</literal> disables rate limited flow control. The default value is <literal
+               >-1</literal>.</para>
+         <section>
+            <title>Using Core API</title>
+            <para>If the JBoss Messaging core API is being used the rate can be set via the <literal
+                  >ClientSessionFactory.setProducerMaxRate(int consumerMaxRate)</literal> method or
+               alternatively via some of the <literal>ClientSession.createProducer()</literal>
+               methods. </para>
+         </section>
+         <section>
+            <title>Using JMS</title>
+            <para>If JNDI is used to look up the connection factory, the max rate can be configured
+               in <literal>jbm-jms.xml</literal>:</para>
+            <programlisting>&lt;connection-factory name="ConnectionFactory">
+      &lt;connector-ref connector-name="netty-connector"/>
+      &lt;entries>
+         &lt;entry name="ConnectionFactory"/>       
+      &lt;/entries>
+      &lt;!-- We limit producers created on this connection factory to produce messages at a maximum rate
+      of 10 messages per sec -->
+      &lt;producer-max-rate>10&lt;/producer-max-rate>
+ &lt;/connection-factory></programlisting>
+            <para>If the connection factory is directly instantiated, the max rate size can be set
+               via the <literal>JBossConnectionFactory.setProducerMaxRate(int
+                  consumerMaxRate)</literal> method.</para>
+         </section>
+         <section>
+            <title>Example</title>
+            <para>[LINK] to producer rate limit example</para>
+         </section>
       </section>
    </section>
 </chapter>
