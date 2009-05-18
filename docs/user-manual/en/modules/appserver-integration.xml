@@ -132,152 +132,158 @@
                         <row>
                             <entry>UseXA</entry>
                             <entry>java.lang.Boolean</entry>
-                            <entry/>
+                            <entry>True will enable XA transactions</entry>
                         </row>
                         <row>
                             <entry>UserName</entry>
                             <entry>java.lang.String</entry>
-                            <entry/>
+                            <entry>The user name to use when making a connection </entry>
                         </row>
                         <row>
                             <entry>Password</entry>
                             <entry>java.lang.String</entry>
-                            <entry/>
+                            <entry>The password to use when making a connection</entry>
                         </row>
                         <row>
                             <entry>BackUpTransportType</entry>
                             <entry>java.lang.String</entry>
-                            <entry/>
+                            <entry>The back up transport to use on failure.</entry>
                         </row>
                         <row>
                             <entry>TransportConfiguration</entry>
                             <entry>java.lang.String</entry>
-                            <entry/>
+                            <entry>The back up transport configuration</entry>
                         </row>
                         <row>
                             <entry>DiscoveryGroupAddress</entry>
                             <entry>java.lang.String</entry>
-                            <entry/>
+                            <entry>The discovery group address to use to autodetect a server</entry>
                         </row>
                         <row>
                             <entry>DiscoveryGroupPort</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The port to use for discovery</entry>
                         </row>
                         <row>
                             <entry>DiscoveryRefreshTimeout</entry>
                             <entry>java.lang.Long</entry>
-                            <entry/>
+                            <entry>The timeout, in milli seconds, to refresh.</entry>
                         </row>
                         <row>
                             <entry>DiscoveryInitialWaitTimeout</entry>
                             <entry>java.lang.Long</entry>
-                            <entry/>
+                            <entry>The initial time to wait for discovery.</entry>
                         </row>
                         <row>
                             <entry>LoadBalancingPolicyClassName</entry>
                             <entry>java.lang.String</entry>
-                            <entry/>
+                            <entry>The load balancing policy class to use.</entry>
                         </row>
                         <row>
                             <entry>PingPeriod</entry>
                             <entry>java.lang.Long</entry>
-                            <entry/>
+                            <entry>The period, in milliseconds, to ping the server for
+                                failure.</entry>
                         </row>
                         <row>
                             <entry>ConnectionTTL</entry>
                             <entry>java.lang.Long</entry>
-                            <entry/>
+                            <entry>The time to live for the connection.</entry>
                         </row>
                         <row>
                             <entry>CallTimeout</entry>
                             <entry>java.lang.Long</entry>
-                            <entry/>
+                            <entry>the call timeout, in milli seconds, for each packet sent.</entry>
                         </row>
                         <row>
                             <entry>DupsOKBatchSize</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The batch size of message acks to use if Dups ok is used.</entry>
                         </row>
                         <row>
                             <entry>TransactionBatchSize</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The batch size to use for sending messages  within a
+                                transaction</entry>
                         </row>
                         <row>
                             <entry>ConsumerWindowSize</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The window size for the consumers internal buffer.</entry>
                         </row>
                         <row>
                             <entry>ConsumerMaxRate</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The max rate a consumer can receive.</entry>
                         </row>
                         <row>
                             <entry>ProducerWindowSize</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The window size for the sending of messages.</entry>
                         </row>
                         <row>
                             <entry>ProducerMaxRate</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The max rate a producer can send messages.</entry>
                         </row>
                         <row>
                             <entry>MinLargeMessageSize</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The size a message can be, in bytes, before it is sent as a multi
+                                part large message.</entry>
                         </row>
                         <row>
                             <entry>BlockOnAcknowledge</entry>
                             <entry>java.lang.Boolean</entry>
-                            <entry/>
+                            <entry>If true then block on acknowledge of messages.</entry>
                         </row>
                         <row>
                             <entry>BlockOnNonPersistentSend</entry>
                             <entry>java.lang.Boolean</entry>
-                            <entry/>
+                            <entry>If true then block when sending non persistent messages</entry>
                         </row>
                         <row>
                             <entry>BlockOnPersistentSend</entry>
                             <entry>java.lang.Boolean</entry>
-                            <entry/>
+                            <entry>If true then block when sending persistent messages</entry>
                         </row>
                         <row>
                             <entry>AutoGroup</entry>
                             <entry>java.lang.Boolean</entry>
-                            <entry/>
+                            <entry>If true then auto group messages</entry>
                         </row>
                         <row>
                             <entry>MaxConnections</entry>
                             <entry>java.lang.Integer</entry>
-                            <entry/>
+                            <entry>The max number of connections.</entry>
                         </row>
                         <row>
                             <entry>PreAcknowledge</entry>
                             <entry>java.lang.Boolean</entry>
-                            <entry/>
+                            <entry>Whether to pre acknowledge messages before sending to
+                                consumer</entry>
                         </row>
                         <row>
                             <entry>RetryInterval</entry>
                             <entry>java.lang.Long</entry>
-                            <entry/>
+                            <entry>How long to wait , in milli seconds, before retrying a failed
+                                connection</entry>
                         </row>
                         <row>
                             <entry>RetryIntervalMultiplier</entry>
                             <entry>java.lang.Double</entry>
-                            <entry/>
+                            <entry>Used for calculating the retry interval</entry>
                         </row>
                         <row>
                             <entry>FailoverOnServerShutdown</entry>
                             <entry>java.lang.Boolean</entry>
-                            <entry/>
+                            <entry>If true client will reconnect to another server if
+                                available</entry>
                         </row>
                         <row>
                             <entry>ClientID</entry>
                             <entry>java.lang.String</entry>
-                            <entry/>
+                            <entry>The client ID of the connection</entry>
                         </row>
                     </tbody>
                 </tgroup>
@@ -364,8 +370,18 @@ public class MDBRemoteExample implements MessageListener
             confid file. Refer to the JBoss AS documentation on how to do this.</para>
     </section>
     <section>
-        <title>High Availibility JNDI (HAJNDI)</title>
-        <para>blah</para>
+        <title>High Availability JNDI (HAJNDI)</title>
+        <para>When using JBM in a clustered environment you will need to use the HAJNDI. This will
+            round robin look ups for connection factories and give load balanced connections.</para>
+        <para>To use it use the following properties when connecting to JNDI.</para>
+        <programlisting>Hashtable&lt;String, String> jndiParameters = new Hashtable&lt;String, String>();
+jndiParameters.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+jndiParameters.put("java.naming.factory.url.pkgs=", "org.jboss.naming:org.jnp.interfaces");
+
+initialContext = new InitialContext(jndiParameters);</programlisting>
+        <para>For more information visit <ulink
+                url="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/5/html/clustering-jndi.html"
+            /></para>
     </section>
     <section>
         <title>The JMS Bridge</title>
