@@ -1,19 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="interoperability">
     <title>Interoperability</title>
-    <para>blah</para>
-    <section>
-        <title>JMS</title>
-        <para/>
-    </section>
-    <section>
-        <title>Core Protocol</title>
-        <para/>
-    </section>
-    <section>
-        <title>AMQP</title>
-        <para/>
-    </section>
     <section>
         <title>Stomp and StompConnect</title>
         <para>Stomp is a wire protocol that allows stomp clients from to communicate with Stomp
@@ -32,9 +19,5 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
             Messaging jars and simply run <literal>java
             org.codehaus.stomp.jms.Main</literal>.</para>
         <para>JBoss Messaging is now available for Stomp clients to connect to.</para>
-    </section>
-    <section>
-        <title>REST</title>
-        <para/>
     </section>
 </chapter>
