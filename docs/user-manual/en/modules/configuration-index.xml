@@ -354,7 +354,7 @@
                         <entry/>
                     </row>
                     <row>
-                        <entry><link linkend="discoverclusters.discovery-groups"
+                        <entry><link linkend="clusters.discovery-groups"
                                 >discovery-groups</link></entry>
                         <entry>DiscoveryGroup</entry>
                         <entry>A list of discovery groups to create</entry>
