@@ -27,7 +27,7 @@
             it from the client.</para>
         <para/>
     </section>
-    <section>
+    <section id="using-jms.server.configuration">
         <title>JMS Server Configuration</title>
         <para>The file <literal>jbm-jms.xml</literal> on the server classpath contains any JMS
             Queue, Topic and ConnectionFactory instances that we wish to pre-deploy into the JNDI

@@ -652,6 +652,49 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                         depending on your specific application.</para>
                 </note>
             </section>
+            
+            <section>
+               <title>Example</title>
+               <para>The <literal>javaee/jms-bridge</literal> example shows
+                  how to configure and use a JMS Bridge to send messages to the source destination
+                  and consume them from the target destination.</para>
+            </section>
+            
         </section>
-    </section>
+   </section>
+     
+   <section id="xa-recovery">
+      <title>XA Recovery</title>
+      <para>When JBoss Messaging is integrated with JBoss AS, it can take advantage of JBoss Transactions
+         to provide <emphasis>XA Recovery</emphasis>. If messages are involved in a XA transaction, in the
+         event of a server crash, the recovery Manager will ensure that the messages will be properly redelivered
+         when the server is restarted.</para>
+      
+      <section>
+         <title>XA Recovery Configuration</title>
+         <para>To enable JBoss Messaging's XA Recovery, the following property must be added to
+            the <literal>jta</literal> section of <literal>conf/jbossts-properties.xml</literal> of JBoss AS profiles:</para>
+         <programlisting>
+   &lt;properties depends="arjuna" name="jta"&gt;
+      ...
+                     
+      &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+               value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;java:/XAConnectionFactory"/&gt;
+   &lt;/properties&gt;
+         </programlisting>
+      
+         <para>This informs the recovery manager that it can recovers JBoss Messaging XA 
+            Resources using the <literal>XAConnectionFactory</literal> bound to <literal>java:/XAConnectionFactory</literal> in JNDI.
+            A ConnectionFactory must have been configured with this JNDI name in <literal>jbm-jms.xml</literal> (see <xref linkend="using-jms.server.configuration" />).</para>
+         <para>Please note that to configure the recovery manager to recovery transactions from any node of the cluster it will be
+            necessary to specify this property for every node of the cluster</para>
+      </section>
+      
+      <section>
+         <title>Example</title>
+         <para>The <literal>javaee/xarecovery</literal> example shows
+            how to configure XA Recovery and recover messages after a server crash.</para>
+      </section>
+      
+   </section>         
 </chapter>

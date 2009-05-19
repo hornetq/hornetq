@@ -41,7 +41,6 @@
         <!ENTITY using-jms               SYSTEM "modules/using-jms.xml">        
         <!ENTITY using-server            SYSTEM "modules/using-server.xml">
         <!ENTITY wildcard-syntax         SYSTEM "modules/wildcard-syntax.xml">
-        <!ENTITY xa-recovery             SYSTEM "modules/xa-recovery.xml">
         ]>
 <book lang="en">
    <bookinfo>
@@ -84,7 +83,6 @@
    &pre-acknowledge;
    &client-reconnection;
    &appserver-integration;
-   &xa-recovery;
    &core-bridges;
    &duplicate-detection;
    &clusters;
