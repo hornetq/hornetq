@@ -665,9 +665,16 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
      
    <section id="xa-recovery">
       <title>XA Recovery</title>
+      <para><emphasis>XA recovery</emphasis> deals with system or application failures to ensure that 
+          of a transaction are applied consistently to all resources affected by the transaction,
+          even if any of the application processes or the machine hosting them crash or 
+          lose network connectivity. For more information on XA Recovery, refer to 
+          <ulink url="http://www.jboss.org/community/wiki/JBossTransactions">JBoss Transactions</ulink>.</para>
+         
       <para>When JBoss Messaging is integrated with JBoss AS, it can take advantage of JBoss Transactions
-         to provide <emphasis>XA Recovery</emphasis>. If messages are involved in a XA transaction, in the
-         event of a server crash, the recovery Manager will ensure that the messages will be properly redelivered
+         to provide recovery of messaging resources. If messages are involved in a XA transaction, in the
+         event of a server crash, the recovery manager will ensure that the transactions are recovered
+         and the messages will either be committed or rolled back (depending on the transaction outcome)
          when the server is restarted.</para>
       
       <section>
@@ -686,8 +693,6 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
          <para>This informs the recovery manager that it can recovers JBoss Messaging XA 
             Resources using the <literal>XAConnectionFactory</literal> bound to <literal>java:/XAConnectionFactory</literal> in JNDI.
             A ConnectionFactory must have been configured with this JNDI name in <literal>jbm-jms.xml</literal> (see <xref linkend="using-jms.server.configuration" />).</para>
-         <para>Please note that to configure the recovery manager to recovery transactions from any node of the cluster it will be
-            necessary to specify this property for every node of the cluster</para>
       </section>
       
       <section>
