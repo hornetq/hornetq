@@ -138,9 +138,9 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
 
-      assertEquals(3, ((Object[])proxy.invokeOperation("listAllSubscriptions", null)).length);
-      assertEquals(1, ((Object[])proxy.invokeOperation("listNonDurableSubscriptions", null)).length);
-      assertEquals(2, ((Object[])proxy.invokeOperation("listDurableSubscriptions", null)).length);
+      assertEquals(3, ((Object[])proxy.invokeOperation("listAllSubscriptions")).length);
+      assertEquals(1, ((Object[])proxy.invokeOperation("listNonDurableSubscriptions")).length);
+      assertEquals(2, ((Object[])proxy.invokeOperation("listDurableSubscriptions")).length);
 
       connection_1.close();
       connection_2.close();
@@ -258,7 +258,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       durableSubscriber_2.close();
 
       assertEquals(2, proxy.retrieveAttributeValue("SubscriptionCount"));
-      proxy.invokeOperation("dropAllSubscriptions", null);
+      proxy.invokeOperation("dropAllSubscriptions");
 
       assertEquals(0, proxy.retrieveAttributeValue("SubscriptionCount"));
 
@@ -277,7 +277,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       assertEquals(3 * 2, proxy.retrieveAttributeValue("MessageCount"));
 
-      int removedCount = (Integer)proxy.invokeOperation("removeAllMessages", null);
+      int removedCount = (Integer)proxy.invokeOperation("removeAllMessages");
       assertEquals(3 * 2, removedCount);
       assertEquals(0, proxy.retrieveAttributeValue("MessageCount"));
 

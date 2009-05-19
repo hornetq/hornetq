@@ -373,7 +373,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
 
-      Object[] data = (Object[])proxy.invokeOperation("listAllMessages", null) ;
+      Object[] data = (Object[])proxy.invokeOperation("listAllMessages") ;
       assertEquals(1, data.length);
       //MessageInfo[] messageInfos = MessageInfo.from(data);
       Map messageReceived = (Map)data[0];
@@ -382,7 +382,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
 
       consumeMessages(1, session, queue);
 
-      data = (Object[])proxy.invokeOperation("listAllMessages", null) ;
+      data = (Object[])proxy.invokeOperation("listAllMessages") ;
       assertEquals(0, data.length);
 
       session.deleteQueue(queue);
@@ -746,7 +746,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       assertEquals(2, proxy.retrieveAttributeValue("MessageCount"));
 
       // the message IDs are set on the server
-      Object[] data = (Object[])proxy.invokeOperation("listAllMessages", null);    
+      Object[] data = (Object[])proxy.invokeOperation("listAllMessages");    
       assertEquals(2, data.length);
       Map message = (Map)data[0];
       long messageID = (Long)message.get("MessageID");
