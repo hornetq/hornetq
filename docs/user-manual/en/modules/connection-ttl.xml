@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter id="clusters">
+<chapter id="connection-ttl">
     <title>Dead Connections, Time To Live and Session Multiplexing</title>
     <para>In this section we will discuss connection time-to-live (TTL) and explain how JBoss
         Messaging deals with crashed clients and clients which have exited without cleanly closing

@@ -207,7 +207,8 @@
                         <entry>false</entry>
                     </row>
                     <row>
-                        <entry>persist-delivery-count-before-delivery</entry>
+                        <entry><link linkend="configuring.delivery.count.persistence">
+                           persist-delivery-count-before-delivery</link></entry>
                         <entry>Boolean</entry>
                         <entry>True means that the delivery count is persisted before delivery.
                             False means that this only happens after a message has been

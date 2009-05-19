@@ -1,48 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
-        "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [       
-        <!ENTITY preface      SYSTEM "modules/preface.xml">
-        <!ENTITY messaging-concepts SYSTEM "modules/messaging-concepts.xml">       
-        <!ENTITY architecture SYSTEM "modules/architecture.xml">
-        <!ENTITY using-server SYSTEM "modules/using-server.xml">
-        <!ENTITY using-jms SYSTEM "modules/using-jms.xml">
-        <!ENTITY using-core SYSTEM "modules/using-core.xml">
-        <!ENTITY jms-core-mapping SYSTEM "modules/jms-core-mapping.xml">
-        <!ENTITY examples SYSTEM "modules/examples.xml">
-        <!ENTITY embedding-jbm SYSTEM "modules/embedding-jbm.xml">
-        <!ENTITY security SYSTEM "modules/security.xml">
-        <!ENTITY wildcard-syntax SYSTEM "modules/wildcard-syntax.xml">
-        <!ENTITY persistence SYSTEM "modules/persistence.xml">
-        <!ENTITY management SYSTEM "modules/management.xml">
-        <!ENTITY large-messages SYSTEM "modules/large-messages.xml">
-        <!ENTITY paging SYSTEM "modules/paging.xml">
-        <!ENTITY queue-attributes SYSTEM "modules/queue-attributes.xml">
-        <!ENTITY thread-pooling SYSTEM "modules/thread-pooling.xml">
-        <!ENTITY diverts SYSTEM "modules/diverts.xml">
-        <!ENTITY logging SYSTEM "modules/logging.xml">
-        <!ENTITY scheduled-messages SYSTEM "modules/scheduled-messages.xml">
-        <!ENTITY filter-expressions SYSTEM "modules/filter-expressions.xml">
-        <!ENTITY flow-control SYSTEM "modules/flow-control.xml">
-        <!ENTITY undelivered-messages SYSTEM "modules/undelivered-messages.xml">
-        <!ENTITY message-expiry SYSTEM "modules/message-expiry.xml">
-        <!ENTITY configuring-transports SYSTEM "modules/configuring-transports.xml">
+        "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [  
+        <!ENTITY appserver-integration   SYSTEM "modules/appserver-integration.xml">     
+        <!ENTITY architecture            SYSTEM "modules/architecture.xml">
+        <!ENTITY client-reconnection     SYSTEM "modules/client-reconnection.xml">     
+        <!ENTITY clusters                SYSTEM "modules/clusters.xml">
+        <!ENTITY configuration-index     SYSTEM "modules/configuration-index.xml">
+        <!ENTITY configuring-transports  SYSTEM "modules/configuring-transports.xml">
+        <!ENTITY connection-ttl          SYSTEM "modules/connection-ttl.xml">
+        <!ENTITY core-bridges            SYSTEM "modules/core-bridges.xml">
+        <!ENTITY diverts                 SYSTEM "modules/diverts.xml">
+        <!ENTITY duplicate-detection     SYSTEM "modules/duplicate-detection.xml">
+        <!ENTITY embedding-jbm           SYSTEM "modules/embedding-jbm.xml">
+        <!ENTITY examples                SYSTEM "modules/examples.xml">
+        <!ENTITY filter-expressions      SYSTEM "modules/filter-expressions.xml">
+        <!ENTITY flow-control            SYSTEM "modules/flow-control.xml">
+        <!ENTITY ha                      SYSTEM "modules/ha.xml">
         <!ENTITY intercepting-operations SYSTEM "modules/intercepting-operations.xml">
-        <!ENTITY last-value-queues SYSTEM "modules/last-value-queues.xml">
-        <!ENTITY message-grouping SYSTEM "modules/message-grouping.xml">
-        <!ENTITY pre-acknowledge SYSTEM "modules/pre-acknowledge.xml">
-        <!ENTITY client-reconnection SYSTEM "modules/client-reconnection.xml">      
-        <!ENTITY appserver-integration SYSTEM "modules/appserver-integration.xml">
-        <!ENTITY jca-adaptor SYSTEM "modules/jca-adaptor.xml">
-        <!ENTITY jms-bridge SYSTEM "modules/jms-bridge.xml">
-        <!ENTITY ha-jndi SYSTEM "modules/ha-jndi.xml">
-        <!ENTITY xa-recovery SYSTEM "modules/xa-recovery.xml">
-        <!ENTITY duplicate-detection SYSTEM "modules/duplicate-detection.xml">
-        <!ENTITY core-bridges SYSTEM "modules/core-bridges.xml">
-        <!ENTITY clusters SYSTEM "modules/clusters.xml">
-        <!ENTITY ha SYSTEM "modules/ha.xml">
-        <!ENTITY interoperability SYSTEM "modules/interoperability.xml">
-        <!ENTITY perf-tuning SYSTEM "modules/perf-tuning.xml">
-        <!ENTITY configuration-index SYSTEM "modules/configuration-index.xml">
+        <!ENTITY interoperability        SYSTEM "modules/interoperability.xml">
+        <!ENTITY jms-core-mapping        SYSTEM "modules/jms-core-mapping.xml">
+        <!ENTITY large-messages          SYSTEM "modules/large-messages.xml">
+        <!ENTITY last-value-queues       SYSTEM "modules/last-value-queues.xml">
+        <!ENTITY logging                 SYSTEM "modules/logging.xml">
+        <!ENTITY management              SYSTEM "modules/management.xml">
+        <!ENTITY message-expiry          SYSTEM "modules/message-expiry.xml">
+        <!ENTITY message-grouping        SYSTEM "modules/message-grouping.xml">
+        <!ENTITY messaging-concepts      SYSTEM "modules/messaging-concepts.xml">       
+        <!ENTITY paging                  SYSTEM "modules/paging.xml">
+        <!ENTITY perf-tuning             SYSTEM "modules/perf-tuning.xml">
+        <!ENTITY persistence             SYSTEM "modules/persistence.xml">
+        <!ENTITY pre-acknowledge         SYSTEM "modules/pre-acknowledge.xml">
+        <!ENTITY preface                 SYSTEM "modules/preface.xml">
+        <!ENTITY queue-attributes        SYSTEM "modules/queue-attributes.xml">
+        <!ENTITY scheduled-messages      SYSTEM "modules/scheduled-messages.xml">
+        <!ENTITY security                SYSTEM "modules/security.xml">
+        <!ENTITY thread-pooling          SYSTEM "modules/thread-pooling.xml">
+        <!ENTITY undelivered-messages    SYSTEM "modules/undelivered-messages.xml">
+        <!ENTITY using-core              SYSTEM "modules/using-core.xml">
+        <!ENTITY using-jms               SYSTEM "modules/using-jms.xml">        
+        <!ENTITY using-server            SYSTEM "modules/using-server.xml">
+        <!ENTITY wildcard-syntax         SYSTEM "modules/wildcard-syntax.xml">
+        <!ENTITY xa-recovery             SYSTEM "modules/xa-recovery.xml">
         ]>
 <book lang="en">
    <bookinfo>
@@ -64,6 +62,7 @@
    &security;
    &wildcard-syntax;
    &persistence;
+   &connection-ttl;
    &management;
    &large-messages;
    &paging;
@@ -83,6 +82,7 @@
    &pre-acknowledge;
    &client-reconnection;
    &appserver-integration;
+   &xa-recovery;
    &core-bridges;
    &duplicate-detection;
    &clusters;

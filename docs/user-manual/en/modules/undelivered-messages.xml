@@ -96,7 +96,7 @@
         </section>
     </section>
     
-    <section>
+    <section id="configuring.delivery.count.persistence">
       <title>Delivery Count Persistence</title>
       <para>In normal use, JBoss Messaging does not update delivery count <emphasis>persistently</emphasis>
          until a message is rolled back (i.e. the delivery count is not updated <emphasis>before</emphasis> the message

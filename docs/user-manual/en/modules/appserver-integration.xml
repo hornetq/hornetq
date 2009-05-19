@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter id="xa-recovery">
+<chapter id="appserver-integration">
     <title>Application Server Integration and JavaEE</title>
     <para>JBM is fully integrated with the JBoss Application Server version 5.1. For details on
         installing JBM in the AS refer to Quick Start guide.</para>
