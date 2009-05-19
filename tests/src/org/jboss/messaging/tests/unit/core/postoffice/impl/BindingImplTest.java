@@ -769,6 +769,114 @@ public class BindingImplTest extends UnitTestCase
          return 0;
       }
 
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#containsProperty(java.lang.String)
+       */
+      public boolean containsProperty(String key)
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#getProperty(java.lang.String)
+       */
+      public Object getProperty(String key)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putBooleanProperty(java.lang.String, boolean)
+       */
+      public void putBooleanProperty(String key, boolean value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putByteProperty(java.lang.String, byte)
+       */
+      public void putByteProperty(String key, byte value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putBytesProperty(java.lang.String, byte[])
+       */
+      public void putBytesProperty(String key, byte[] value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putDoubleProperty(java.lang.String, double)
+       */
+      public void putDoubleProperty(String key, double value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putFloatProperty(java.lang.String, float)
+       */
+      public void putFloatProperty(String key, float value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putIntProperty(java.lang.String, int)
+       */
+      public void putIntProperty(String key, int value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putLongProperty(java.lang.String, long)
+       */
+      public void putLongProperty(String key, long value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putShortProperty(java.lang.String, short)
+       */
+      public void putShortProperty(String key, short value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#putStringProperty(java.lang.String, java.lang.String)
+       */
+      public void putStringProperty(String key, String value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.message.Message#removeProperty(java.lang.String)
+       */
+      public Object removeProperty(String key)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
    }
 
    class FakeFilter implements Filter
