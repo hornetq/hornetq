@@ -32,6 +32,7 @@
         <!ENTITY persistence             SYSTEM "modules/persistence.xml">
         <!ENTITY pre-acknowledge         SYSTEM "modules/pre-acknowledge.xml">
         <!ENTITY preface                 SYSTEM "modules/preface.xml">
+        <!ENTITY project-info            SYSTEM "modules/project-info.xml">
         <!ENTITY queue-attributes        SYSTEM "modules/queue-attributes.xml">
         <!ENTITY scheduled-messages      SYSTEM "modules/scheduled-messages.xml">
         <!ENTITY security                SYSTEM "modules/security.xml">
@@ -41,7 +42,7 @@
         <!ENTITY using-core              SYSTEM "modules/using-core.xml">
         <!ENTITY using-jms               SYSTEM "modules/using-jms.xml">        
         <!ENTITY using-server            SYSTEM "modules/using-server.xml">
-        <!ENTITY wildcard-syntax         SYSTEM "modules/wildcard-syntax.xml">
+        <!ENTITY wildcard-syntax         SYSTEM "modules/wildcard-syntax.xml">       
         ]>
 <book lang="en">
    <bookinfo>
@@ -92,5 +93,6 @@
    &interoperability;
    &perf-tuning;
    &configuration-index;
+   &project-info;
    
 </book>

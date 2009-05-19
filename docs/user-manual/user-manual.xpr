@@ -39,9 +39,11 @@
                 <file name="en/modules/persistence.xml"/>
                 <file name="en/modules/pre-acknowledge.xml"/>
                 <file name="en/modules/preface.xml"/>
+                <file name="en/modules/project-info.xml"/>
                 <file name="en/modules/queue-attributes.xml"/>
                 <file name="en/modules/scheduled-messages.xml"/>
                 <file name="en/modules/security.xml"/>
+                <file name="en/modules/send-guarantees.xml"/>
                 <file name="en/modules/thread-pooling.xml"/>
                 <file name="en/modules/undelivered-messages.xml"/>
                 <file name="en/modules/using-core.xml"/>

@@ -386,7 +386,7 @@ etc
             </itemizedlist>
             <para>The servlet pattern configured in the <literal>web.xml</literal> is the path of
                 the URL that is used. The connector param <literal
-                    >jbm.remoting.netty.servletpath</literal>  on the connector config must match
+                    >jbm.remoting.netty.servletpath</literal> on the connector config must match
                 this using the application context of the web app if there is one.</para>
         </section>
     </section>
