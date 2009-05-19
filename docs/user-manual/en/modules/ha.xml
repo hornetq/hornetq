@@ -97,7 +97,7 @@
                     >30000</literal> milliseconds.</para>
         </section>
     </section>
-    <section>
+    <section id="ha.client.automatic">
         <title>Automatic client failover</title>
         <para>JBoss Messaging clients can be configured with knowledge of live and backup servers,
             so that in event of connection failure of the client - live server connection, the

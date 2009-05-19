@@ -70,7 +70,7 @@
                 thread on a thread dump with the prefix JBM-AIO-writer-pool.</para>
         </section>
     </section>
-    <section>
+    <section id="thread-pooling.client.side">
         <title>Client-Side Thread Management</title>
         <para>On the client side, JBoss Messaging maintains a single static scheduled thread pool
             and a single static general thread pool for use by all clients using the same

@@ -581,25 +581,29 @@
                             <entry>org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</entry>
                         </row>
                         <row>
-                            <entry>initialWaitTimeout</entry>
+                            <entry><link linkend="clusters-discovery.groups.clientside"
+                                    >initialWaitTimeout</link></entry>
                             <entry>long</entry>
                             <entry/>
                             <entry>2000</entry>
                         </row>
                         <row>
-                            <entry>useGlobalPools</entry>
+                            <entry><link linkend="thread-pooling.client.side"
+                                >useGlobalPools</link></entry>
                             <entry>boolean</entry>
                             <entry/>
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry>scheduledThreadPoolMaxSize</entry>
+                            <entry><link linkend="thread-pooling.client.side"
+                                    >scheduledThreadPoolMaxSize</link></entry>
                             <entry>int</entry>
                             <entry/>
                             <entry>2</entry>
                         </row>
                         <row>
-                            <entry>threadPoolMaxSize</entry>
+                            <entry><link linkend="thread-pooling.client.side"
+                                    >threadPoolMaxSize</link></entry>
                             <entry>int</entry>
                             <entry/>
                             <entry>-1</entry>
@@ -623,7 +627,8 @@
                             <entry>0</entry>
                         </row>
                         <row>
-                            <entry>failoverOnServerShutdown</entry>
+                            <entry><link linkend="ha.client.automatic"
+                                    >failoverOnServerShutdown</link></entry>
                             <entry>boolean</entry>
                             <entry/>
                             <entry>false</entry>
