@@ -23,27 +23,28 @@ package org.jboss.jms.example;
 
 import java.util.Date;
 
-import javax.jms.Connection;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
+import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
- * This example demonstrates how to run a JBoss Messaging embedded with JMS
  * 
- * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
+ * This exammple shows how to run a JBoss Messaging core client and server embedded in your
+ * own application
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
  */
 public class EmbeddedExample
 {
@@ -63,45 +64,54 @@ public class EmbeddedExample
          server.start();
    
    
-         // Step 3. As we are not using a JNDI environment we instantiate the objects directly
-         Queue queue = new JBossQueue("exampleQueue");
-         JBossConnectionFactory cf = new JBossConnectionFactory (new TransportConfiguration(InVMConnectorFactory.class.getName()));
+         // Step 3. As we are not using a JNDI environment we instantiate the objects directly         
+         ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(InVMConnectorFactory.class.getName()));
          
-         // Step 4. Create a JMS Destination by using the Core API
-         ClientSession coreSession = cf.getCoreFactory().createSession(false, false, false);
-         coreSession.createQueue("jms.queue.exampleQueue", "jms.queue.exampleQueue", true);
+         // Step 4. Create a core queue
+         ClientSession coreSession = sf.createSession(false, false, false);
+         
+         final String queueName = "queue.exampleQueue";
+         
+         coreSession.createQueue(queueName, queueName, true);
+         
          coreSession.close();
-         
-         
-         Connection connection = null;
+                  
+         ClientSession session = null;
    
          try
          {
    
-            // Step 5. Create the JMS objects
-            connection = cf.createConnection();
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            MessageProducer producer = session.createProducer(queue);
+            // Step 5. Create the session, and producer
+            session = sf.createSession(false, true, true);
+            
+                       
+            ClientProducer producer = session.createProducer(queueName);
    
-            // Step 6. Create and send a TextMessage
-            TextMessage message = session.createTextMessage("Hello sent at " + new Date());
+            // Step 6. Create and send a message
+            ClientMessage message = session.createClientMessage(false);
+            
+            final String propName = "myprop";
+            
+            message.putStringProperty(propName, "Hello sent at " + new Date());
+            
             System.out.println("Sending the message.");
+            
             producer.send(message);
 
             // Step 7. Create the message consumer and start the connection
-            MessageConsumer messageConsumer = session.createConsumer(queue);
-            connection.start();
+            ClientConsumer messageConsumer = session.createConsumer(queueName);
+            session.start();
    
             // Step 8. Receive the message. 
-            TextMessage messageReceived = (TextMessage)messageConsumer.receive(1000);
-            System.out.println("Received TextMessage:" + messageReceived.getText());
+            ClientMessage messageReceived = messageConsumer.receive(1000);
+            System.out.println("Received TextMessage:" + messageReceived.getProperty(propName));
          }
          finally
          {
             // Step 9. Be sure to close our resources!
-            if (connection != null)
+            if (session != null)
             {
-               connection.close();
+               session.close();
             }
             
             // Step 10. Stop the server
