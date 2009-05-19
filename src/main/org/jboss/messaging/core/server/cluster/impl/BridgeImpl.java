@@ -156,9 +156,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private boolean activated;
    
-   
-   private MessagingServer server;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -280,8 +277,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       this.replicatingChannel = replicatingChannel;
 
       this.activated = activated;  
-      
-      this.server = server;
    }
 
    public synchronized void start() throws Exception

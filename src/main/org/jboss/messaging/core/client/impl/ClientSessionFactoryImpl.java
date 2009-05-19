@@ -58,7 +58,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = "org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy";
 
-   public static final long DEFAULT_PING_PERIOD = 1000000;
+   public static final long DEFAULT_PING_PERIOD = 100000;
 
    // 5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
    // or backup without fear of session having already been closed when connection times out.
@@ -369,10 +369,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    final TransportConfiguration backupConnectorConfig)
    {
       this();
-      
+
       staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
 
-      staticConnectors.add(new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig, backupConnectorConfig));
+      staticConnectors.add(new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
+                                                                                    backupConnectorConfig));
    }
 
    public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig)
@@ -692,12 +693,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    }
 
    public ClientSession createSession(final String username,
-                                                   final String password,
-                                                   final boolean xa,
-                                                   final boolean autoCommitSends,
-                                                   final boolean autoCommitAcks,
-                                                   final boolean preAcknowledge,
-                                                   final int ackBatchSize) throws MessagingException
+                                      final String password,
+                                      final boolean xa,
+                                      final boolean autoCommitSends,
+                                      final boolean autoCommitAcks,
+                                      final boolean preAcknowledge,
+                                      final int ackBatchSize) throws MessagingException
    {
       return createSessionInternal(username,
                                    password,
@@ -707,18 +708,36 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    preAcknowledge,
                                    ackBatchSize);
    }
+   
+   public ClientSession createXASession() throws MessagingException
+   {
+      return createSessionInternal(null, null, true, false, false, preAcknowledge, this.ackBatchSize);
+   }
+   
+   public ClientSession createTransactedSession() throws MessagingException
+   {
+      return createSessionInternal(null, null, false, false, false, preAcknowledge, this.ackBatchSize);
+   }
+   
+   public ClientSession createSession() throws MessagingException
+   {
+      return createSessionInternal(null, null, false, true, true, preAcknowledge, this.ackBatchSize);
+   }
+   
+   public ClientSession createSession(final boolean autoCommitSends, final boolean autoCommitAcks) throws MessagingException
+   {
+      return createSessionInternal(null, null, false, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
+   }
 
-   public ClientSession createSession(final boolean xa,
-                                                   final boolean autoCommitSends,
-                                                   final boolean autoCommitAcks) throws MessagingException
+   public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws MessagingException
    {
       return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa,
-                                                   final boolean autoCommitSends,
-                                                   final boolean autoCommitAcks,
-                                                   final boolean preAcknowledge) throws MessagingException
+                                      final boolean autoCommitSends,
+                                      final boolean autoCommitAcks,
+                                      final boolean preAcknowledge) throws MessagingException
    {
       return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
    }

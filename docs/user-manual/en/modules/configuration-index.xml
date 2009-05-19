@@ -307,7 +307,7 @@
                         <entry><link linkend="configuring.message.journal"
                             >journal-file-size</link></entry>
                         <entry>Long</entry>
-                        <entry>The max size, in bytes, each journal file should be</entry>
+                        <entry>The size, in bytes, each journal file should be</entry>
                         <entry>10485760</entry>
                     </row>
                     <row>

@@ -411,6 +411,51 @@ public abstract class MessageImpl implements Message
    {
       properties.putStringProperty(key, value);
    }
+   
+   public void putBooleanProperty(final String key, final boolean value)
+   {
+      properties.putBooleanProperty(new SimpleString(key), value);
+   }
+
+   public void putByteProperty(final String key, final byte value)
+   {
+      properties.putByteProperty(new SimpleString(key), value);
+   }
+
+   public void putBytesProperty(final String key, final byte[] value)
+   {
+      properties.putBytesProperty(new SimpleString(key), value);
+   }
+
+   public void putShortProperty(final String key, final short value)
+   {
+      properties.putShortProperty(new SimpleString(key), value);
+   }
+
+   public void putIntProperty(final String key, final int value)
+   {
+      properties.putIntProperty(new SimpleString(key), value);
+   }
+
+   public void putLongProperty(final String key, final long value)
+   {
+      properties.putLongProperty(new SimpleString(key), value);
+   }
+
+   public void putFloatProperty(final String key, final float value)
+   {
+      properties.putFloatProperty(new SimpleString(key), value);
+   }
+
+   public void putDoubleProperty(final String key, final double value)
+   {
+      properties.putDoubleProperty(new SimpleString(key), value);
+   }
+
+   public void putStringProperty(final String key, final String value)
+   {
+      properties.putStringProperty(new SimpleString(key), new SimpleString(value));
+   }
 
    public void putTypedProperties(TypedProperties otherProps)
    {
@@ -421,15 +466,30 @@ public abstract class MessageImpl implements Message
    {
       return properties.getProperty(key);
    }
+   
+   public Object getProperty(final String key)
+   {
+      return properties.getProperty(new SimpleString(key));
+   }
 
    public Object removeProperty(final SimpleString key)
    {
       return properties.removeProperty(key);
    }
+   
+   public Object removeProperty(final String key)
+   {
+      return properties.removeProperty(new SimpleString(key));
+   }
 
    public boolean containsProperty(final SimpleString key)
    {
       return properties.containsProperty(key);
+   }
+   
+   public boolean containsProperty(final String key)
+   {
+      return properties.containsProperty(new SimpleString(key));
    }
 
    public Set<SimpleString> getPropertyNames()

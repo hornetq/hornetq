@@ -82,9 +82,8 @@ public class EmbeddedExample
          {
    
             // Step 5. Create the session, and producer
-            session = sf.createSession(false, true, true);
-            
-                       
+            session = sf.createSession();
+                                   
             ClientProducer producer = session.createProducer(queueName);
    
             // Step 6. Create and send a message

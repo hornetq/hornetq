@@ -194,9 +194,9 @@ conn.close();
         </section>
     </section>
     <section>
-        <title>Embedding Example</title>
+        <title>JMS Embedding Example</title>
         <para>The <ulink url="../../../../examples/jms/embedded/readme.html"><literal
-                    >Embedding</literal> Example</ulink> shows how to setup and run JBoss Messaging
-            embedded..</para>
+                    >JMS Embedding</literal> Example</ulink> shows how to setup and run JBoss Messaging
+            embedded with JMS...</para>
     </section>
 </chapter>

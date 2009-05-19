@@ -126,6 +126,24 @@ public interface Message
    
    void putStringProperty(SimpleString key, SimpleString value);
    
+   void putBooleanProperty(String key, boolean value);
+   
+   void putByteProperty(String key, byte value);
+   
+   void putBytesProperty(String key, byte[] value);
+   
+   void putShortProperty(String key, short value);
+   
+   void putIntProperty(String key, int value);
+   
+   void putLongProperty(String key, long value);
+   
+   void putFloatProperty(String key, float value);
+   
+   void putDoubleProperty(String key, double value);
+   
+   void putStringProperty(String key, String value);
+   
    void putTypedProperties(TypedProperties properties);
 
    // TODO - should have typed property getters and do conversions herein
@@ -135,6 +153,12 @@ public interface Message
    Object removeProperty(SimpleString key);
    
    boolean containsProperty(SimpleString key);
+   
+   Object getProperty(String key);
+   
+   Object removeProperty(String key);
+   
+   boolean containsProperty(String key);
    
    Set<SimpleString> getPropertyNames();
    

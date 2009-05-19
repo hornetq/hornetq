@@ -81,8 +81,6 @@ public class FilterImpl implements Filter
 
    private static final SimpleString JBM_PRIORITY = new SimpleString("JBMPriority");
 
-   private static final SimpleString JBM_MESSAGE_ID = new SimpleString("JBMMessageID");
-
    private static final SimpleString JBM_SIZE = new SimpleString("JBMSize");
 
    private static final SimpleString JBM_PREFIX = new SimpleString("JBM");
@@ -177,11 +175,7 @@ public class FilterImpl implements Filter
 
    private Object getHeaderFieldValue(final ServerMessage msg, final SimpleString fieldName)
    {
-      if (JBM_MESSAGE_ID.equals(fieldName))
-      {
-         return msg.getMessageID();
-      }
-      else if (JBM_PRIORITY.equals(fieldName))
+      if (JBM_PRIORITY.equals(fieldName))
       {
          return new Integer(msg.getPriority());
       }

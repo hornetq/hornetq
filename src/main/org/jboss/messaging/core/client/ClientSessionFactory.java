@@ -35,6 +35,14 @@ import org.jboss.messaging.utils.Pair;
  */
 public interface ClientSessionFactory
 {
+   ClientSession createXASession() throws MessagingException;
+   
+   ClientSession createTransactedSession() throws MessagingException;
+   
+   ClientSession createSession() throws MessagingException;
+   
+   ClientSession createSession(boolean autoCommitSends, boolean autoCommitAcks) throws MessagingException;
+   
    ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks) throws MessagingException;
 
    ClientSession createSession(String username,
