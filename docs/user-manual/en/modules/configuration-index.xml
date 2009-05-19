@@ -1,405 +1,614 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="configuration-index">
-    <title>Server Configuration Reference</title>
+    <title>Configuration Reference</title>
     <para>This section is a quick index for looking up configuration. Click on the element name to
         go to the specific chapter.</para>
     <section>
-        <title>jbm-configuration.xml</title>
-        <table frame="border">
-            <title>Server Configuration</title>
-            <tgroup cols="4">
-                <colspec colname="c1" colnum="1"/>
-                <colspec colname="c2" colnum="2"/>
-                <colspec colname="c3" colnum="3"/>
-                <colspec colname="newCol4" colnum="4"/>
-                <thead>
-                    <row>
-                        <entry>Element Name</entry>
-                        <entry>Element Type</entry>
-                        <entry>Description</entry>
-                        <entry>Default</entry>
-                    </row>
-                </thead>
-                <tbody>
-                    <row>
-                        <entry>clustered</entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that the server is clustered</entry>
-                        <entry>false</entry>
-                    </row>
-                    <row>
-                        <entry>enable-file-deployment</entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that the server will load configuration from the
-                            configuration files</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="enable.persistence">enable-persistence</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that the server will use the file based journal for
-                            persistence.</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="server.scheduled.thread.pool"
-                                >scheduled-thread-pool-max-size</link></entry>
-                        <entry>Integer</entry>
-                        <entry>The number of threads that the main scheduled thread pool
-                            has.</entry>
-                        <entry>5</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="server.scheduled.thread.pool"
-                                >thread-pool-max-size</link></entry>
-                        <entry>Integer</entry>
-                        <entry>The number of threads that the main thread pool has. -1 means no
-                            limit</entry>
-                        <entry>-1</entry>
-                    </row>
-                    <row>
-                        <entry>security-enabled</entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that security is enabled</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry>security-invalidation-interval</entry>
-                        <entry>Long</entry>
-                        <entry>How long, in milli seconds, to wait before invalidating the security
-                            cache</entry>
-                        <entry>10000</entry>
-                    </row>
-                    <row>
-                        <entry>wild-card-routing-enabled</entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that the server supports wild card routing</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="management.core.configuration"
-                                >management-address</link></entry>
-                        <entry>String</entry>
-                        <entry>The name of the management address to send management messages
-                            too.</entry>
-                        <entry>jbm.management</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="management.notifications.core.configuration"
-                                >management-notification-address</link></entry>
-                        <entry>String</entry>
-                        <entry>The name of the address that consumers bind to to receive management
-                            notifications</entry>
-                        <entry>jbm.notifications</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="management.replication"
-                                >management-cluster-password</link></entry>
-                        <entry>String</entry>
-                        <entry>The password used to for replicating management operations between
-                            clustered nodes</entry>
-                        <entry>CHANGE ME!!</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="management.replication"
-                                >management-request-timeout</link></entry>
-                        <entry>Long</entry>
-                        <entry>How long, in milli seconds, to wait for a reply to a management
-                            request</entry>
-                        <entry>5000</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="management.jmx.configuration"
-                                >jmx-management-enabled</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that the management API is available via JMX</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.counters"
-                                >message-counter-enabled</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that message counters are enabled</entry>
-                        <entry>false</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.counters"
-                                >message-counter-sample-period</link></entry>
-                        <entry>Long</entry>
-                        <entry>The sample period to use for message counters</entry>
-                        <entry>10000</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.counters"
-                                >message-counter-max-day-history</link></entry>
-                        <entry>Integer</entry>
-                        <entry>How many days to keep message counter history</entry>
-                        <entry>10</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="dead.connections"
-                            >connection-scan-period</link></entry>
-                        <entry>Long</entry>
-                        <entry>How often, in milli seconds, to scan for failed connections on the
-                            server </entry>
-                        <entry>1000</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="dead.connections"
-                            >connection-ttl-override</link></entry>
-                        <entry>Long</entry>
-                        <entry>If set, this will override how long to keep a connection alive
-                            without receiving a ping. </entry>
-                        <entry>-1</entry>
-                    </row>
-                    <row>
-                        <entry>transaction-timeout</entry>
-                        <entry>Long</entry>
-                        <entry>How long before a transaction can be removed from the resource
-                            manager after create time</entry>
-                        <entry>60000</entry>
-                    </row>
-                    <row>
-                        <entry>transaction-timeout-scan-period</entry>
-                        <entry>Long</entry>
-                        <entry>How often, in milli seconds, to scan for timeout transactions</entry>
-                        <entry>1000</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.expiry.reaper"
-                                >message-expiry-scan-period</link></entry>
-                        <entry>Long</entry>
-                        <entry>How often, in milli seconds, to scan for expired messages</entry>
-                        <entry>30000</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.expiry.reaper"
-                                >message-expiry-thread-priority</link></entry>
-                        <entry>Integer</entry>
-                        <entry>The priority of the thread expiring messages</entry>
-                        <entry>3</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="duplicate.id.cache">id-cache-size</link></entry>
-                        <entry>Integer</entry>
-                        <entry>The size of the cache for pre creating message id's</entry>
-                        <entry>2000</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="duplicate.id.cache">persist-id-cache</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that id's are persisted to the journal</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="queue.activation.timeout"
-                                >queue-activation-timeout</link></entry>
-                        <entry>Long</entry>
-                        <entry>After failout occurs, this time specifies how long to wait for
-                            consumers to re attach before commencing delivery</entry>
-                        <entry>30000</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.live.backup">backup</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that this server is a back up to another node in the a
-                            cluster</entry>
-                        <entry>false</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.delivery.count.persistence">
-                           persist-delivery-count-before-delivery</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that the delivery count is persisted before delivery.
-                            False means that this only happens after a message has been
-                            cancelled.</entry>
-                        <entry>false</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.live.backup"
-                            >backup-connector-ref</link></entry>
-                        <entry>String</entry>
-                        <entry>The name of the remoting connector to use for the backup node
-                            when.</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="paging.main.config">paging-directory</link></entry>
-                        <entry>String</entry>
-                        <entry>The directory to store paged messages in</entry>
-                        <entry>data/paging</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="paging.main.config"
-                                >paging-global-watermark-size</link></entry>
-                        <entry>Long</entry>
-                        <entry>JBoss Messaging enters into global page mode as soon as the total
-                            memory consumed by messages hits this value</entry>
-                        <entry>10 * 1024 * 1024</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="paging.main.config"
-                                >paging-max-global-size-bytes</link></entry>
-                        <entry>Long</entry>
-                        <entry>The watermark used to determine when we start depaging</entry>
-                        <entry>-1</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.bindings.journal"
-                                >bindings-directory</link></entry>
-                        <entry>String</entry>
-                        <entry>The directory to store the persisted bindings to</entry>
-                        <entry>data/bindings</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.bindings.journal"
-                                >create-bindings-dir</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that the server will create the bindings directory on
-                            start up</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                            >journal-directory</link></entry>
-                        <entry>String</entry>
-                        <entry>The directory to store the journal files in</entry>
-                        <entry>data/journal</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                            >create-journal-dir</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>True means that the journal directory will be created</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                            >journal-type</link></entry>
-                        <entry>ASYNCIO|NIO</entry>
-                        <entry>What type of journal to use</entry>
-                        <entry>ASYNCIO</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                                >journal-buffer-reuse-size</link></entry>
-                        <entry>Long</entry>
-                        <entry>The journal will try and re use any buffers smaller than this
-                            size.</entry>
-                        <entry>1024</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                                >journal-sync-transactional</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>If true wait for transaction data to be synced to the journal before
-                            returning response to client.</entry>
-                        <entry>true</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                                >journal-sync-non-transactional</link></entry>
-                        <entry>Boolean</entry>
-                        <entry>If true wait for non transaction data to be synced to the journal
-                            before returning response to client.</entry>
-                        <entry>false</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                            >journal-file-size</link></entry>
-                        <entry>Long</entry>
-                        <entry>The size, in bytes, each journal file should be</entry>
-                        <entry>10485760</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                            >journal-min-files</link></entry>
-                        <entry>Integer</entry>
-                        <entry>How many journal files to pre create</entry>
-                        <entry>2</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring.message.journal"
-                            >journal-max-aio</link></entry>
-                        <entry>Integer</entry>
-                        <entry>The maximum number of write requests that can be in the AIO queue at
-                            any one time</entry>
-                        <entry>5000</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="large.message.configuring"
-                                >large-messages-directory</link></entry>
-                        <entry>String</entry>
-                        <entry>The directory to store large messages</entry>
-                        <entry>data/largemessages</entry>
-                    </row>
-                    <row>
-                        <entry><link linkend="understanding.connectors">connectors</link></entry>
-                        <entry>Connector</entry>
-                        <entry>A list of remoting connectors configurations to create</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="configuring-transports.acceptors"
-                            >acceptors</link></entry>
-                        <entry>Acceptor</entry>
-                        <entry>A list of remoting acceptors to create</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="clusters.broadcast-groups"
-                            >broadcast-groups</link></entry>
-                        <entry>BroadcastGroup</entry>
-                        <entry>A list of broadcast groups to create</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="clusters.discovery-groups"
+        <title>Server Configuration</title>
+        <section>
+            <title>jbm-configuration.xml</title>
+            <table frame="topbot" border="2">
+                <title>Server Configuration</title>
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="newCol4" colnum="4"/>
+                    <thead>
+                        <row>
+                            <entry>Element Name</entry>
+                            <entry>Element Type</entry>
+                            <entry>Description</entry>
+                            <entry>Default</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>clustered</entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that the server is clustered</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>enable-file-deployment</entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that the server will load configuration from the
+                                configuration files</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="enable.persistence"
+                                >enable-persistence</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that the server will use the file based journal for
+                                persistence.</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="server.scheduled.thread.pool"
+                                    >scheduled-thread-pool-max-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The number of threads that the main scheduled thread pool
+                                has.</entry>
+                            <entry>5</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="server.scheduled.thread.pool"
+                                    >thread-pool-max-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The number of threads that the main thread pool has. -1 means no
+                                limit</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry>security-enabled</entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that security is enabled</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry>security-invalidation-interval</entry>
+                            <entry>Long</entry>
+                            <entry>How long, in milli seconds, to wait before invalidating the
+                                security cache</entry>
+                            <entry>10000</entry>
+                        </row>
+                        <row>
+                            <entry>wild-card-routing-enabled</entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that the server supports wild card routing</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.core.configuration"
+                                    >management-address</link></entry>
+                            <entry>String</entry>
+                            <entry>The name of the management address to send management messages
+                                too.</entry>
+                            <entry>jbm.management</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.notifications.core.configuration"
+                                    >management-notification-address</link></entry>
+                            <entry>String</entry>
+                            <entry>The name of the address that consumers bind to to receive
+                                management notifications</entry>
+                            <entry>jbm.notifications</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.replication"
+                                    >management-cluster-password</link></entry>
+                            <entry>String</entry>
+                            <entry>The password used to for replicating management operations
+                                between clustered nodes</entry>
+                            <entry>CHANGE ME!!</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.replication"
+                                    >management-request-timeout</link></entry>
+                            <entry>Long</entry>
+                            <entry>How long, in milli seconds, to wait for a reply to a management
+                                request</entry>
+                            <entry>5000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.jmx.configuration"
+                                    >jmx-management-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that the management API is available via JMX</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.counters"
+                                    >message-counter-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that message counters are enabled</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.counters"
+                                    >message-counter-sample-period</link></entry>
+                            <entry>Long</entry>
+                            <entry>The sample period to use for message counters</entry>
+                            <entry>10000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.counters"
+                                    >message-counter-max-day-history</link></entry>
+                            <entry>Integer</entry>
+                            <entry>How many days to keep message counter history</entry>
+                            <entry>10</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="dead.connections"
+                                >connection-scan-period</link></entry>
+                            <entry>Long</entry>
+                            <entry>How often, in milli seconds, to scan for failed connections on
+                                the server </entry>
+                            <entry>1000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="dead.connections"
+                                >connection-ttl-override</link></entry>
+                            <entry>Long</entry>
+                            <entry>If set, this will override how long to keep a connection alive
+                                without receiving a ping. </entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry>transaction-timeout</entry>
+                            <entry>Long</entry>
+                            <entry>How long before a transaction can be removed from the resource
+                                manager after create time</entry>
+                            <entry>60000</entry>
+                        </row>
+                        <row>
+                            <entry>transaction-timeout-scan-period</entry>
+                            <entry>Long</entry>
+                            <entry>How often, in milli seconds, to scan for timeout
+                                transactions</entry>
+                            <entry>1000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.expiry.reaper"
+                                    >message-expiry-scan-period</link></entry>
+                            <entry>Long</entry>
+                            <entry>How often, in milli seconds, to scan for expired messages</entry>
+                            <entry>30000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.expiry.reaper"
+                                    >message-expiry-thread-priority</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The priority of the thread expiring messages</entry>
+                            <entry>3</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="duplicate.id.cache">id-cache-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The size of the cache for pre creating message id's</entry>
+                            <entry>2000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="duplicate.id.cache"
+                                >persist-id-cache</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that id's are persisted to the journal</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="queue.activation.timeout"
+                                    >queue-activation-timeout</link></entry>
+                            <entry>Long</entry>
+                            <entry>After failout occurs, this time specifies how long to wait for
+                                consumers to re attach before commencing delivery</entry>
+                            <entry>30000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.live.backup">backup</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that this server is a back up to another node in the a
+                                cluster</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.delivery.count.persistence">
+                                    persist-delivery-count-before-delivery</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that the delivery count is persisted before delivery.
+                                False means that this only happens after a message has been
+                                cancelled.</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.live.backup"
+                                    >backup-connector-ref</link></entry>
+                            <entry>String</entry>
+                            <entry>The name of the remoting connector to use for the backup node
+                                when.</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="paging.main.config"
+                                >paging-directory</link></entry>
+                            <entry>String</entry>
+                            <entry>The directory to store paged messages in</entry>
+                            <entry>data/paging</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="paging.main.config"
+                                    >paging-global-watermark-size</link></entry>
+                            <entry>Long</entry>
+                            <entry>JBoss Messaging enters into global page mode as soon as the total
+                                memory consumed by messages hits this value</entry>
+                            <entry>10 * 1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="paging.main.config"
+                                    >paging-max-global-size-bytes</link></entry>
+                            <entry>Long</entry>
+                            <entry>The watermark used to determine when we start depaging</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.bindings.journal"
+                                    >bindings-directory</link></entry>
+                            <entry>String</entry>
+                            <entry>The directory to store the persisted bindings to</entry>
+                            <entry>data/bindings</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.bindings.journal"
+                                    >create-bindings-dir</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that the server will create the bindings directory on
+                                start up</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                    >journal-directory</link></entry>
+                            <entry>String</entry>
+                            <entry>The directory to store the journal files in</entry>
+                            <entry>data/journal</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                    >create-journal-dir</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>True means that the journal directory will be created</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                >journal-type</link></entry>
+                            <entry>ASYNCIO|NIO</entry>
+                            <entry>What type of journal to use</entry>
+                            <entry>ASYNCIO</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                    >journal-buffer-reuse-size</link></entry>
+                            <entry>Long</entry>
+                            <entry>The journal will try and re use any buffers smaller than this
+                                size.</entry>
+                            <entry>1024</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                    >journal-sync-transactional</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>If true wait for transaction data to be synced to the journal
+                                before returning response to client.</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                    >journal-sync-non-transactional</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>If true wait for non transaction data to be synced to the journal
+                                before returning response to client.</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                    >journal-file-size</link></entry>
+                            <entry>Long</entry>
+                            <entry>The size, in bytes, each journal file should be</entry>
+                            <entry>10485760</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                    >journal-min-files</link></entry>
+                            <entry>Integer</entry>
+                            <entry>How many journal files to pre create</entry>
+                            <entry>2</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                    >journal-max-aio</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The maximum number of write requests that can be in the AIO queue
+                                at any one time</entry>
+                            <entry>5000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="large.message.configuring"
+                                    >large-messages-directory</link></entry>
+                            <entry>String</entry>
+                            <entry>The directory to store large messages</entry>
+                            <entry>data/largemessages</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="understanding.connectors"
+                                >connectors</link></entry>
+                            <entry>Connector</entry>
+                            <entry>A list of remoting connectors configurations to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring-transports.acceptors"
+                                >acceptors</link></entry>
+                            <entry>Acceptor</entry>
+                            <entry>A list of remoting acceptors to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.broadcast-groups"
+                                >broadcast-groups</link></entry>
+                            <entry>BroadcastGroup</entry>
+                            <entry>A list of broadcast groups to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.discovery-groups"
                                 >discovery-groups</link></entry>
-                        <entry>DiscoveryGroup</entry>
-                        <entry>A list of discovery groups to create</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="diverts">diverts</link></entry>
-                        <entry>Divert</entry>
-                        <entry>A list of diverts to use</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="predefined.queues">queues</link></entry>
-                        <entry>Queue</entry>
-                        <entry>A list of pre configured queues to create</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="core-bridges">bridges</link></entry>
-                        <entry>Bridge</entry>
-                        <entry>A list of bridges to create</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="clusters.cluster-connections"
-                                >cluster-connections</link></entry>
-                        <entry>ClusterConnection</entry>
-                        <entry>A list of cluster connections</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry><link linkend="security.settings.roles"
-                            >security-settings</link></entry>
-                        <entry>SecuritySetting</entry>
-                        <entry>A list of security settings</entry>
-                        <entry/>
-                    </row>
-                    <row>
-                        <entry>address-settings</entry>
-                        <entry>AddressSetting</entry>
-                        <entry>A list of address settings</entry>
-                        <entry/>
-                    </row>
-                </tbody>
-            </tgroup>
-        </table>
+                            <entry>DiscoveryGroup</entry>
+                            <entry>A list of discovery groups to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts">diverts</link></entry>
+                            <entry>Divert</entry>
+                            <entry>A list of diverts to use</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="predefined.queues">queues</link></entry>
+                            <entry>Queue</entry>
+                            <entry>A list of pre configured queues to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges">bridges</link></entry>
+                            <entry>Bridge</entry>
+                            <entry>A list of bridges to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections</link></entry>
+                            <entry>ClusterConnection</entry>
+                            <entry>A list of cluster connections</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="security.settings.roles"
+                                >security-settings</link></entry>
+                            <entry>SecuritySetting</entry>
+                            <entry>A list of security settings</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>address-settings</entry>
+                            <entry>AddressSetting</entry>
+                            <entry>A list of address settings</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+        <section>
+            <title>jbm-jms.xml</title>
+            <table frame="topbot" border="2">
+                <title>JMS Server Configuration</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <thead>
+                        <row>
+                            <entry>Element Name</entry>
+                            <entry>Element Type</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                    >connection-factory</link></entry>
+                            <entry>ConnectionFactory</entry>
+                            <entry>A list of connection factories to create and add to JNDI</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                >queue</link></entry>
+                            <entry>Queue</entry>
+                            <entry>A queue to create and add to JNDI</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                >topic</link></entry>
+                            <entry>Topic</entry>
+                            <entry>A topic to create and add to JNDI</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
+    </section>
+    <section>
+        <title>Client Configuration</title>
+        <section>
+            <title>Client Session Factory API Configuration</title>
+            <table frame="topbot" border="2">
+                <title>Client Session Factory API</title>
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <thead>
+                        <row>
+                            <entry>Parameter</entry>
+                            <entry>Parameter Type</entry>
+                            <entry>Description</entry>
+                            <entry>Default</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>discoveryRefreshTimeout</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>10000</entry>
+                        </row>
+                        <row>
+                            <entry>pingPeriod</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>1000000</entry>
+                        </row>
+                        <row>
+                            <entry>connectionTTL</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>5 * 60000</entry>
+                        </row>
+                        <row>
+                            <entry>callTimeout</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>30000</entry>
+                        </row>
+                        <row>
+                            <entry>maxConnections</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>8</entry>
+                        </row>
+                        <row>
+                            <entry>minLargeMessageSize</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>100 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry>consumerWindowSize</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry>consumerMaxRate</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry>producerWindowSize</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry>producerMaxRate</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry>blockOnAcknowledge</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>blockOnPersistentSend</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>blockOnNonPersistentSend</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>autoGroup</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>ackBatchSize</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry>loadBalancingPolicyClassName</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</entry>
+                        </row>
+                        <row>
+                            <entry>initialWaitTimeout</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>2000</entry>
+                        </row>
+                        <row>
+                            <entry>useGlobalPools</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry>threadPoolMaxSize</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry>retryInterval</entry>
+                            <entry/>
+                            <entry/>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>retryIntervalMultiplier</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>1d</entry>
+                        </row>
+                        <row>
+                            <entry>reconnectAttempts</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>0</entry>
+                        </row>
+                        <row>
+                            <entry>failoverOnServerShutdown</entry>
+                            <entry/>
+                            <entry/>
+                            <entry>false</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </section>
     </section>
 </chapter>

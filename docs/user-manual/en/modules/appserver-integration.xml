@@ -102,7 +102,7 @@
                 the configuration is done. The first 2 configure the transport used by the adapter
                 and the rest configure the connection itself.</para>
             <para>The following table explains what each property is for.</para>
-            <table frame="all" border="2">
+            <table frame="topbot" border="2">
                 <title>Global Configuration Properties</title>
                 <tgroup cols="3">
                     <colspec colname="c1" colnum="1" colwidth="0.55*"/>
