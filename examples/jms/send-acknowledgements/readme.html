@@ -1,0 +1,117 @@
+<html>
+  <head>
+    <title>JBoss Messaging Asynchronous Send Acknowledgements Example</title>
+    <link rel="stylesheet" type="text/css" href="../common/common.css">
+  </head>
+  <body>
+     <h1>Asynchronous Send Acknowledgements Example</h1>
+     <br>
+     <p>Asynchronous Send Acknowledgements are an advanced feature of JBoss Messaging which allow you to
+     receive acknowledgements that messages were successfully received at the server in a separate stream
+     to the stream of messages being sent to the server.<p/>
+     <p>In this example we create a normal JMS session, then set a SendAcknowledgementHandler on the JMS 
+     session's underlying core session. We send many messages to the server without blocking, and asynchronously
+     the server calls the handler when it has successfully received each message.
+     <br>
+     <p>For more information on Asynchronous Send Acknowledgements please see the user manual</p>
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <br>
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
+        <pre>
+           <code>InitialContext initialContext = getContext();</code>
+        </pre>
+
+        <li>We look-up the JMS queue object from JNDI</li>
+        <pre>
+           <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
+        </pre>
+
+        <li>We look-up the JMS connection factory object from JNDI</li>
+        <pre>
+           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
+        </pre>
+
+        <li>We create a JMS connection</li>
+        <pre>
+           <code>connection = cf.createConnection();</code>
+        </pre>
+
+        <li>Define a SendAcknowledgementHandler which will receive asynchronous acknowledgements</li>
+        <pre>
+           <code>
+         class MySendAcknowledgementsHandler implements SendAcknowledgementHandler
+         {
+            int count = 0;
+            
+            public void sendAcknowledged(final Message message)
+            {
+               System.out.println("Received send acknowledgement for message " + count++);
+            }            
+         }           
+           </code>
+        </pre>
+
+        <li>Create a JMS session</li>
+        <pre>
+          <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
+       </pre>
+
+        <li>Set the handler on the underlying core session</li>
+        <pre>
+           <code>
+         ClientSession coreSession = ((JBossSession)session).getCoreSession();
+         
+         coreSession.setSendAcknowledgementHandler(new MySendAcknowledgementsHandler());
+           
+           </code>
+        </pre>
+
+        <li>Create a JMS Message Producer</li>
+        <pre>
+           <code>
+         MessageProducer producer = session.createProducer(queue);
+         
+         producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);           
+           </code>
+        </pre>
+
+        <li>Send 5000 messages, the handler will get called asynchronously some time later after the messages are sent.</li>
+          <pre>
+           <code>
+         final int numMessages = 5000;
+         
+         for (int i = 0; i < numMessages; i++)
+         {
+            javax.jms.Message jmsMessage = session.createMessage();
+            
+            producer.send(jmsMessage);
+            
+            System.out.println("Sent message " + i);
+         }           
+           </code>
+        </pre>
+
+       
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre>
+           <code>finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }</code>
+        </pre>
+
+
+
+     </ol>
+  </body>
+</html>
