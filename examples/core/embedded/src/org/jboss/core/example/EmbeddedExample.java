@@ -23,8 +23,6 @@ package org.jboss.core.example;
 
 import java.util.Date;
 
-import javax.jms.TextMessage;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;

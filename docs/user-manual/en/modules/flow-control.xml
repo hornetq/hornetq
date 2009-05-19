@@ -163,7 +163,9 @@
       <para>JBoss Messaging allows producers to be created which limit</para>
       <section>
          <title>Window based flow control</title>
-         <para>TODO</para>
+         <para>JBoss Messaging clients maintain a buffer of commands that have been sent to the server, thus provides a form
+         of flow control. Please see the chapter on <xref linkend="command-buffering">command buffering</xref> for more information
+         on this.</para>
       </section>
       <section>
          <title>Rate limited flow control</title>

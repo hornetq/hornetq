@@ -15,6 +15,7 @@
         <!ENTITY examples                SYSTEM "modules/examples.xml">
         <!ENTITY filter-expressions      SYSTEM "modules/filter-expressions.xml">
         <!ENTITY flow-control            SYSTEM "modules/flow-control.xml">
+        <!ENTITY command-buffering       SYSTEM "modules/command-buffering.xml">
         <!ENTITY ha                      SYSTEM "modules/ha.xml">
         <!ENTITY intercepting-operations SYSTEM "modules/intercepting-operations.xml">
         <!ENTITY interoperability        SYSTEM "modules/interoperability.xml">
@@ -74,6 +75,7 @@
    &scheduled-messages;
    &filter-expressions;
    &flow-control;
+   &command-buffering;
    &undelivered-messages;
    &message-expiry;
    &configuring-transports;
