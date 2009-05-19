@@ -231,7 +231,7 @@ public class JMSQueueControl implements JMSQueueControlMBean
       return coreQueueControl.expireMessages(filter);
    }
 
-   public boolean sendMessageToDLQ(final String messageID) throws Exception
+   public boolean sendMessageToDeadLetterAddress(final String messageID) throws Exception
    {
       String filter = createFilterForJMSMessageID(messageID);
       int dead = coreQueueControl.sendMessagesToDeadLetterAddress(filter);

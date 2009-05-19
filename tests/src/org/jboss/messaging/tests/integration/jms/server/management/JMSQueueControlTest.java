@@ -464,7 +464,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(deadLetterAddress, queueControl.getDeadLetterAddress());
    }
 
-   public void testSendMessageToDLQ() throws Exception
+   public void testSendMessageToDeadLetterAddress() throws Exception
    {
       String deadLetterQueue = randomString();
       serverManager.createQueue(deadLetterQueue, deadLetterQueue, null, true);
@@ -489,7 +489,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       queueControl.setDeadLetterAddress(dlq.getAddress());
 
-      boolean movedToDeadLetterAddress = queueControl.sendMessageToDLQ(message.getJMSMessageID());
+      boolean movedToDeadLetterAddress = queueControl.sendMessageToDeadLetterAddress(message.getJMSMessageID());
       assertTrue(movedToDeadLetterAddress);
       assertEquals(1, queueControl.getMessageCount());
       assertEquals(1, dlqControl.getMessageCount());
@@ -503,7 +503,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(deadLetterQueue);
    }
 
-   public void testSendMessageToDLQWithUnknownMessageID() throws Exception
+   public void testSendMessageToDeadLetterAddressWithUnknownMessageID() throws Exception
    {
       String unknownMessageID = randomString();
 
@@ -511,7 +511,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       try
       {
-         queueControl.sendMessageToDLQ(unknownMessageID);
+         queueControl.sendMessageToDeadLetterAddress(unknownMessageID);
          fail();
       }
       catch (Exception e)

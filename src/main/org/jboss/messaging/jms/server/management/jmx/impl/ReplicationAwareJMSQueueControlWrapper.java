@@ -204,9 +204,9 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return (Boolean)replicationAwareInvoke("removeMessage", messageID);
    }
 
-   public boolean sendMessageToDLQ(final String messageID) throws Exception
+   public boolean sendMessageToDeadLetterAddress(final String messageID) throws Exception
    {
-      return (Boolean)replicationAwareInvoke("sendMessageToDLQ", messageID);
+      return (Boolean)replicationAwareInvoke("sendMessageToDeadLetterAddress", messageID);
    }
 
    public void setExpiryAddress(final String expiryAddress) throws Exception

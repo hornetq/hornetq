@@ -141,7 +141,7 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
 
       assertEquals(2, proxy.retrieveAttributeValue("MessageCount"));
 
-      Object[] maps = (Object[])proxy.invokeOperation("listAllMessages", null);
+      Object[] maps = (Object[])proxy.invokeOperation("listAllMessages");
       assertEquals(2, maps.length);
 
       // retrieve the first message info
@@ -453,7 +453,7 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
       assertEquals(deadLetterAddress, proxy.retrieveAttributeValue("DeadLetterAddress"));
    }
 
-   public void testSendMessageToDLQ() throws Exception
+   public void testSendMessageToDeadLetterAddress() throws Exception
    {
       String deadLetterQueue = randomString();
       serverManager.createQueue(deadLetterQueue, deadLetterQueue, null, true);
@@ -478,7 +478,7 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
 
       proxy.invokeOperation("setDeadLetterAddress", dlq.getAddress());
 
-      boolean movedToDeadLetterAddress = (Boolean)proxy.invokeOperation("sendMessageToDLQ", message.getJMSMessageID());
+      boolean movedToDeadLetterAddress = (Boolean)proxy.invokeOperation("sendMessageToDeadLetterAddress", message.getJMSMessageID());
       assertTrue(movedToDeadLetterAddress);
       assertEquals(1, proxy.retrieveAttributeValue("MessageCount"));
       assertEquals(1, dlqControl.getMessageCount());
@@ -492,7 +492,7 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
       serverManager.destroyQueue(deadLetterQueue);
    }
 
-   public void testSendMessageToDLQWithUnknownMessageID() throws Exception
+   public void testSendMessageToDeadLetterAddressWithUnknownMessageID() throws Exception
    {
       String unknownMessageID = randomString();
 
@@ -500,7 +500,7 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
 
       try
       {
-         proxy.invokeOperation("sendMessageToDLQ", unknownMessageID);
+         proxy.invokeOperation("sendMessageToDeadLetterAddress", unknownMessageID);
          fail();
       }
       catch (Exception e)

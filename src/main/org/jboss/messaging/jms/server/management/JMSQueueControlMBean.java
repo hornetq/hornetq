@@ -96,7 +96,7 @@ public interface JMSQueueControlMBean extends DestinationControlMBean
    String messageID) throws Exception;
 
    @Operation(desc = "Send the message corresponding to the given messageID to the queue's Dead Letter Queue", impact = ACTION)
-   boolean sendMessageToDLQ(@Parameter(name = "messageID", desc = "A message ID")
+   boolean sendMessageToDeadLetterAddress(@Parameter(name = "messageID", desc = "A message ID")
    String messageID) throws Exception;
 
    @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = ACTION)

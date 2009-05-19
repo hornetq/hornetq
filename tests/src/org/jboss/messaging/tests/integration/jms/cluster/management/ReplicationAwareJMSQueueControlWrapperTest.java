@@ -271,7 +271,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      assertTrue(liveQueueControl.sendMessageToDLQ(message.getJMSMessageID()));
+      assertTrue(liveQueueControl.sendMessageToDeadLetterAddress(message.getJMSMessageID()));
       
       // check the message is no longer in the queue on both live & backup nodes
       assertEquals(0, liveQueueControl.getMessageCount());
