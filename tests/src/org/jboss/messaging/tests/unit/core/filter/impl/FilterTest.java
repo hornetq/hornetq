@@ -116,19 +116,6 @@ public class FilterTest  extends UnitTestCase
       }
    }
    
-   public void testJBMMessageID() throws Exception
-   {
-      filter = new FilterImpl(new SimpleString("JBMMessageID=11223344"));
-      
-      message.setMessageID(78676);
-      
-      assertFalse(filter.match(message));
-      
-      message.setMessageID(11223344);
-      
-      assertTrue(filter.match(message));
-   }
-   
    public void testJBMTimestamp() throws Exception
    {
       filter = new FilterImpl(new SimpleString("JBMTimestamp=12345678"));
