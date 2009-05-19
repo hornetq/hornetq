@@ -48,7 +48,6 @@
                 <file name="en/modules/using-jms.xml"/>
                 <file name="en/modules/using-server.xml"/>
                 <file name="en/modules/wildcard-syntax.xml"/>
-                <file name="en/modules/xa-recovery.xml"/>
             </folder>
             <file name="en/master.xml"/>
         </folder>

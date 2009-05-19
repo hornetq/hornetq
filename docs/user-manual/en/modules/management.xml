@@ -215,7 +215,7 @@
 
       <section>
          <title>JMS Management API</title>
-         <para>JBoss Messaging defines a JMS Management API to manage JMS resources.</para>
+         <para>JBoss Messaging defines a JMS Management API to manage JMS <emphasis>administrated objects</emphasis>.</para>
          
          <section>
             <title>JMS Server Management</title>
@@ -226,19 +226,28 @@
             <itemizedlist>
                <listitem>
                   <para>Creating/destroying connection factories</para>
-                  <para>TODO</para>
+                  <para>JMS connection factories can be created (resp. destroyed) using the <literal>createConnectionFactory()</literal>
+                     methods (resp. <literal>destroyConnectionFactory()</literal>) methods. 
+                     These connection factories are bound to JNDI so that JMS clients can look them up</para>
                </listitem>            
                <listitem>
                   <para>Creating/destroying queues</para>
-                  <para>TODO</para>
+                  <para>JMS queues can be created (resp. destroyed) using the <literal>createQueue()</literal>
+                     methods (resp. <literal>destroyQueue()</literal>) methods. 
+                     These queues are bound to JNDI so that JMS clients can look them up</para>
                </listitem>            
                <listitem>
                   <para>Creating/destroying topics</para>
-                  <para>TODO</para>
+                  <para>JMS topics can be created (resp. destroyed) using the <literal>createTopic()</literal>
+                     methods (resp. <literal>destroyTopic()</literal>) methods. 
+                     These topics are bound to JNDI so that JMS clients can look them up</para>
                </listitem>            
                <listitem>
-                  <para>listing and closing remote connections</para>
-                  <para>TODO</para>
+                  <para>Listing and closing remote connections</para>
+                  <para>JMS Client's remote addresses can be retrieved using <literal>listRemoteAddresses()</literal>. It is also possible
+                     to close the connections associated with a remote address using the <literal>closeConnectionsForAddress()</literal> method.</para>               
+                  <para>Alternatively, connection IDs can be listed using <literal>listConnectionIDs()</literal> and all the
+                     sessions for a given connection ID can be listed using <literal>listSessions()</literal>.</para>
                </listitem>            
             </itemizedlist>
          </section>
@@ -252,8 +261,11 @@
             
             <itemizedlist>
                <listitem>
-                  <para>listing and closing remote connections</para>
-                  <para>TODO</para>
+                  <para>Retrieving connection factory attributes</para>
+                  <para>The <literal>ConnectionFactoryControlMBean</literal> exposes JMS ConnectionFactory
+                  configuration through its attributes (e.g. <literal>getConsumerWindowSize()</literal> to retrieve the 
+                  consumer window size for flow control, <literal>isBlockOnNonPersistentSend()</literal> to know wether the 
+                  producers created from the connection factory will block or not when sending non-persistent messages, etc.)</para>
                </listitem>            
             </itemizedlist>
          </section>
@@ -264,11 +276,50 @@
             <para>JMS Queues can be managed using the 
                <literal>JMSQueueControlMBean</literal> class (with the ObjectName <literal>org.jboss.messaging:module=JMS,type=Queue,name="&lt;the queue name&gt;"</literal>
                or the resource name <literal>jms.queue.&lt;the queue name&gt;</literal>).</para>
+               <literal>The management operations on a JMS queue are very similar to the operations on a Core queue.</literal>
             
             <itemizedlist>
                <listitem>
-                  <para>listing and closing remote connections</para>
-                  <para>TODO</para>
+                  <para>Expiring, sending to a dead letter address and moving messages</para>
+                  <para>Messages can be expired from a queue by using the <literal>expireMessages()</literal> method.
+                     If an expiry address is defined, messages will be be sent to it, otherwise they are discarded.
+                     The queue's expiry address can be set with the <literal>setExpiryAddress()</literal> method.</para>
+                  <para>Messages can also be sent to a dead letter address with the <literal>sendMessagesToDeadLetterAddress()</literal> method. It returns
+                     the number of messages which are sent to the dead letter address. If a dead letter address is not defined, message are removed from the queue
+                     and discarded.
+                     The queue's dead letter address can be set with the <literal>setDeadLetterAddress()</literal> method.</para>
+                  <para>Messages can also be moved from a queue to another queue by using the <literal>moveMatchingMessages()</literal> method.</para>
+               </listitem>
+               <listitem>
+                  <para>Listing and removing messages</para>
+                  <para>Messages can be listed from a queue by using the <literal>listMessages()</literal> method which
+                     returns an array of <literal>Map</literal>, one <literal>Map</literal> for each message.</para>
+                  <para>Messages can also be removed from the queue by using the <literal>removeMatchingMessages()</literal> method 
+                     which returns a <literal>boolean</literal> for the single message ID variant or the number of removed
+                     messages for the filter variant.</para>
+               </listitem>
+               <listitem>
+                  <para>Counting messages</para>
+                  <para>The number of messages in a queue is returned by the <literal>getMessageCount()</literal> method.
+                     Alternatively, the <literal>countMessages()</literal> will return the number of messages in the queue
+                     which <emphasis>match a given filter</emphasis></para>
+               </listitem>
+               <listitem>
+                  <para>Changing message priority</para>
+                  <para>The message priority can be changed by using the <literal>changeMessagesPriority()</literal> method 
+                     which returns a <literal>boolean</literal> for the single message ID variant or the number of updated
+                     messages for the filter variant.</para>
+               </listitem>
+               <listitem>
+                  <para>Message counters</para>
+                  <para>Message counters can be listed for a queue with the <literal>listMessageCounter()</literal>
+                     and <literal>listMessageCounterHistory()</literal> methods (see <xref linkend="management.message-counters" />)</para>
+               </listitem>
+               <listitem>
+                  <para>Retrieving the queue attributes</para>
+                  <para>The <literal>JMSQueueControlMBean</literal> exposes JMS queue settings
+                  through its attributes (e.g. <literal>isTemporary()</literal> to know wether the queue is temporary or not, 
+                  <literal>isDurable()</literal> to know wether the queue is durable or not, etc.)</para>
                </listitem>            
             </itemizedlist>
          </section>
@@ -282,8 +333,22 @@
             
             <itemizedlist>
                <listitem>
-                  <para>listing and closing remote connections</para>
-                  <para>TODO</para>
+                  <para>Listing subscriptions and messages</para>
+                  <para>JMS topic's subscriptions can be listed using the <literal>listAllSubscriptions()</literal>,
+                  <literal>listDurableSubscriptions()</literal>, <literal>listNonDurableSubscriptions()</literal> methods.
+                  These methods return arrays of <literal>Object</literal> representing the subscriptions information (subscription name,
+                  client ID, durability, message count, etc.). It is also possible to list the JMS messages for a given
+                  subscription with the <literal>listMessagesForSubscription()</literal> method.</para>
+               </listitem>
+               <listitem>
+                  <para>Dropping subscriptions</para>
+                  <para>Durable subscriptions can be dropped from the topic using the <literal>dropDurableSubscription()</literal> method.</para>
+               </listitem>            
+               <listitem>
+                  <para>Counting subscription's messages</para>
+                  <para>The <literal>countMessagesForSubscription()</literal> method 
+                  can be used to know the number of messages held for a given subscription (with an optional message selector
+                  to know the number of messages matching the selector)</para>
                </listitem>            
             </itemizedlist>
          </section>
@@ -366,7 +431,10 @@
          reply-to address (specified by <literal>ClientMessageImpl.REPLYTO_HEADER_NAME</literal>).
       </para>
       <para>A <literal>ClientConsumer</literal> can be used to consumed the management reply
-         and retrieve the result of the operation (if any) stored in the reply's body.</para>
+         and retrieve the result of the operation (if any) stored in the reply's body. For portability, results
+         are returned as a <ulink url="http://json.org">JSON</ulink> String rather than Java Serialization
+         (the <literal>org.jboss.messaging.core.client.management.impl.ManagementHelper</literal> can be used
+         to convert the JSON string to Java objects).</para>
       <para>These steps can be simplified to make it easier to invoke management operations
          using Core messages:</para>
       <orderedlist>
