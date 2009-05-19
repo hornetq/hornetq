@@ -1,25 +1,450 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="examples">
     <title>Examples</title>
-    <para>The JBoss Messaging distribution comes with a wide variety of examples demonstrating many of the features in an easy to use, fully
-    functional examples.</para>
-    <para>The examples are available in the distribution, in the <literal>examples</literal> directory. Examples are split into JMS and Core examples.
-    JMS examples show how a particular feature can be used by a normal JMS client. Core examples (TODO) show how the equivalent feature can be used
-    by a core messaging client.</para>
-    <para>To run a JMS example, simply <literal>cd</literal> into the appropriate example directory and type <literal>ant</literal></para>
-    <para>Here's a listing of the examples</para>
+    <para>The JBoss Messaging distribution comes with a wide variety of examples demonstrating many
+        of the features in an easy to use, fully functional examples.</para>
+    <para>The examples are available in the distribution, in the <literal>examples</literal>
+        directory. Examples are split into JMS and Core examples. JMS examples show how a particular
+        feature can be used by a normal JMS client. Core examples (TODO) show how the equivalent
+        feature can be used by a core messaging client.</para>
+    <para>A set of Java EE examples are also provided which need the JBoss Application Server
+        installed to be able to run.</para>
     <section>
-        <title>example 1</title>
-        <para></para>
+        <title>JMS Examples</title>
+        <para>To run a JMS example, simply <literal>cd</literal> into the appropriate example
+            directory and type <literal>ant</literal></para>
+        <para>Here's a listing of the examples with a brief description.</para>
+        <section>
+            <title>Application-Layer Failover</title>
+            <para>JBoss Messaging implements fully transparent automatic failover of connections
+                from a live to backup node, this requires no special coding for failover, and is
+                described in a different example. Automatic failover requires server
+                replication.</para>
+            <para>However, JBoss Messaging also supports Application-Layer failover, useful in the
+                case that replication is not enabled on the server side.</para>
+            <para>With Application-Layer failover, it's up to the application to register a JMS
+                ExceptionListener with JBoss Messaging which will be called by JBoss Messaging in
+                the event that connection failure is detected.</para>
+            <para>The code in the ExceptionListener then recreates the JMS Connection, Session, etc
+                on another node and the application can continue.</para>
+            <para>Application-Layer failover is an alternative approach to High Availability
+                (HA).Application-Layer failover differs from automatic failover in that some client
+                side coding is required in order to implement this. Also, with Application-Layer
+                failover, since the old Session object dies and a new one is created, any
+                uncommitted work in the old Session will be lost, and any unacknowledged messages
+                might be redelivered.</para>
+        </section>
+        <section>
+            <title>Automatic (Transparent) Failover</title>
+            <para>This example demonstrates two servers coupled as a live-backup pair for high
+                availability (HA), and a client connection transparently failing over from live to
+                backup when the live server is crashed.</para>
+            <para>JBoss Messaging implements seamless, transparent failover of client connections
+                between live and backup servers. This is implemented by the replication of state
+                between live and backup nodes. When replication is configured and a live node
+                crashes, the client connections can carry on as if nothing happened and carry on
+                sending and consuming messages.</para>
+        </section>
+        <section>
+            <title>Core Bridge Example</title>
+            <para>This example demonstrates a core bridge deployed on one server, which consumes
+                messages from a local queue and forwards them to an address on a second
+                server.</para>
+            <para>Core bridges are used to create message flows between any two JBoss Messaging
+                servers which are remotely separated. Core bridges are resilient and will cope with
+                temporary connection failure allowing them to be an ideal choice for forwarding over
+                unreliable connections, e.g. a WAN.</para>
+        </section>
+        <section>
+            <title>Browser</title>
+            <para>This example shows you how to use a JMS QueueBrowser with JBoss Messaging.</para>
+            <para>Queues are a standard part of JMS, please consult the JMS 1.1 specification for
+                full details.</para>
+            <para> A QueueBrowser is used to look at messages on the queue without removing them. It
+                can scan the entire content of a queue or only messages matching a message
+                selector.</para>
+        </section>
+        <section>
+            <title>Client Kickoff</title>
+            <para>This example shows how to kick off a client connected to JBoss Messaging using
+                JMX.</para>
+        </section>
+        <section>
+            <title>Client Side Load-Balancing</title>
+            <para>This example demonstrates how subsequent connections created from a JMS Connection
+                Factory can be created to different nodes of the cluster. In other words it
+                demonstrates how JBoss Messaging does client side load balancing of connections
+                across the cluster.</para>
+        </section>
+        <section>
+            <title>JMS Durable Subscription</title>
+            <para>This example demonstrates a clustered JMS durable subscription. Normally durable
+                subscriptions exist on a single node and can only have one subscriber at any one
+                time, however, with JBM 2.0 it's possible to create durable subscription instances
+                with the same name and client-id on different nodes of the cluster, and consume from
+                them simultaneously.</para>
+        </section>
+        <section>
+            <title>JMS Load Balanced Clustered Queue</title>
+            <para>This example demonstrates a JMS queue deployed on two different nodes. The two
+                nodes are configured to form a cluster.</para>
+            <para>We then create a consumer on the queue on each node, and we create a producer on
+                only one of the nodes. We then send some messages via the producer, and we verify
+                that both consumers receive the sent messages in a round-robin fashion.</para>
+            <para>In other words, JBoss Messaging load balances the sent messages across all
+                consumers on the cluster</para>
+        </section>
+        <section>
+            <title>JMS Clustered Topic</title>
+            <para>This example demonstrates a JMS Topic deployed on two different nodes. The two
+                nodes are configured to form a cluster. We then create a subscriber on the topic on
+                each node, and we create a producer on only one of the nodes. We then send some
+                messages via the producer, and we verify that both subscribers receive all the sent
+                messages.</para>
+        </section>
+        <section>
+            <title>JMS Message Consumer Rate Limiting</title>
+            <para>With JBoss Messaging you can specify a maximum consume rate at which a JMS
+                MessageConsumer will consume messages. This can be specified when creating or
+                deploying the connection factory.</para>
+            <para>If this value is specified then JBoss Messaging will ensure that messages are
+                never consumed at a rate higher than the specified rate. This is a form of consumer
+                throttling.</para>
+        </section>
+        <section>
+            <title>Dead Letter</title>
+            <para>This example shows you how to define and deal with dead letter messages. Messages
+                can be delivered unsuccessfully (e.g. if the transacted session used to consume them
+                is rolled back). </para>
+            <para>Such a message goes back to the JMS destination ready to be redelivered. However,
+                this means it is possible for a message to be delivered again and again without any
+                success and remain in the destination, clogging the system.</para>
+            <para>To prevent this, messaging systems define dead letter messages: after a specified
+                unsuccessful delivery attempts, the message is removed from the destination and put
+                instead in a dead letter destination where they can be consumed for further
+                investigation.</para>
+        </section>
+        <section>
+            <title>Delayed Redelivery</title>
+            <para>This example demonstrates how JBoss Messaging can be configured to provide a
+                delayed redelivery in the case a message needs to be redelivered.</para>
+            <para>Delaying redelivery can often be useful in the case that clients regularly fail or
+                roll-back. Without a delayed redelivery, the system can get into a "thrashing"
+                state, with delivery being attempted, the client rolling back, and delivery being
+                re-attempted ad infinitum in quick succession, using up valuable CPU and network
+                resources.</para>
+        </section>
+        <section>
+            <title>Divert</title>
+            <para>JBoss Messaging diverts allow messages to be transparently "diverted" from one
+                address to another with just some simple configuration defined on the server
+                side.</para>
+        </section>
+        <section>
+            <title>JMS Durable Subscription</title>
+            <para>This example shows you how to use a durable subscription with JBoss Messaging.
+                Durable subscriptions are a standard part of JMS, please consult the JMS 1.1
+                specification for full details.</para>
+            <para>Unlike non durable subscriptions, the key function of durable subscriptions is
+                that the messages contained in them persist longer than the lifetime of the
+                subscriber - i.e. they will accumulate messages sent to the topic even if there is
+                no active subscriber on them. They will also survive server restarts. Note that for
+                the messages to be persisted, the messages sent to them must be marked as persistent
+                messages. </para>
+        </section>
+        <section>
+            <title>Message Expiration</title>
+            <para>This example shows you how to define and deal with message expiration. Messages
+                can be retained in the messaging system for a limited period of time before being
+                removed. JMS specification states that clients should not receive messages that have
+                been expired (but it does not guarantee this will not happen).</para>
+            <para>JBoss Messaging can assign an expiry destination to a given queue so that when
+                messages are expired, they are removed from the queue and sent to the expiry
+                destination. These "expired" messages can later be consumed from the expiry
+                destination for further inspection.</para>
+        </section>
+        <section>
+            <title>JMS HTTP Transport</title>
+            <para>This example shows you how to configure JBoss Messaging to use HTTP protocol as
+                its transport layer.</para>
+        </section>
+        <section>
+            <title>JMS Instantiate Connection Factory</title>
+            <para>Usually, JMS Objects such as ConnectionFactory, Queue and Topic instances are
+                looked up from JNDI before being used by the client code. This objects are called
+                "administered objects" in JMS specification terminology.</para>
+            <para>However, in some cases a JNDI server may not be available or desired. To come to
+                the rescue JBoss Messaging also supports the direct instantiation of these
+                administered objects on the client side.</para>
+        </section>
+        <section>
+            <title>JMS Interceptor</title>
+            <para>JBoss Messaging allows an application to use an interceptor to hook into the
+                messaging system. Interceptors allow you to handle various message events in JBoss
+                Messaging.</para>
+        </section>
+        <section>
+            <title>JAAS</title>
+            <para>This example shows you how to configure JBoss Messaging to use JAAS for security.
+                JBoss Messaging can leverage JAAS to delegate user authentication and authorization
+                to existing security infrastructure.</para>
+        </section>
+        <section>
+            <title>JMX Management</title>
+            <para>This example shows how to manage JBoss Messaging using JMX.</para>
+        </section>
+        <section>
+            <title>Large Message</title>
+            <para>This example shows you how to send and receive very large messages with JBoss
+                Messaging. JBoss Messaging supports the sending and receiving of huge messages, much
+                larger than can fit in available RAM on the client or server. Effectively the only
+                limit to message size is the amount of disk space you have on the server.</para>
+            <para>Large messages are persisted on the server so they can survive a server restart.
+                In other words JBoss Messaging doesn't just do a simple socket stream from the
+                sender to the consumer.</para>
+        </section>
+        <section>
+            <title>Last-Value Queue</title>
+            <para>This example shows you how to define and deal with last-value queues. Last-Value
+                queues are special queues which discard any messages when a newer message with the
+                same value for a well-defined Last-Value property is put in the queue. In other
+                words, a Last-Value queue only retains the last value.</para>
+            <para>A typical example for Last-Value queue is for stock prices, where you are only
+                interested by the latest value for a particular stock.</para>
+        </section>
+        <section>
+            <title>Management</title>
+            <para>This example shows how to manage JBoss Messaging using JMS Messages to invoke
+                management operations on the server.</para>
+        </section>
+        <section>
+            <title>Management Notification</title>
+            <para>This example shows how to receive management notifications from JBoss Messaging
+                using JMS Messages. JBoss Messaging servers emit management notifications when
+                events of interest occur (consumers are created or closed, destinations are created
+                or deleted, security authentication fails, etc.).</para>
+        </section>
+        <section>
+            <title>Message Counter</title>
+            <para>This example shows you how to use message counters to obtain message information
+                for a JMS queue.</para>
+        </section>
+        <section>
+            <title>Message Group</title>
+            <para>This example shows you how to configure and use message groups with JBoss
+                Messaging. Message groups are sets of messages that has the following
+                characteristics:</para>
+            <para>
+                <itemizedlist>
+                    <listitem>
+                        <para>Messages in a message group share the same group id, i.e. they have
+                            same JMSXGroupID string property values</para>
+                    </listitem>
+                    <listitem>
+                        <para>The consumer that receives the first message of a group will receive
+                            all the messages that belongs to the group</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+        </section>
+        <section>
+            <title>JMS Message Priority</title>
+            <para>Message Priority carries the delivery preference of messages. It can be retrieved
+                by the message's standard header field 'JMSPriority' as defined in JMS specification
+                version 1.1. The value is of type integer, ranging from 0 (the lowest) to 9 (the
+                highest). When messages are being delivered, their priorities will effect their
+                order of delivery. Messages of higher priorities will likely be delivered before
+                those of lower priorities. Messages of equal priorities are delivered in the natural
+                order of their arrival at their destinations. Please consult the JMS 1.1
+                specification for full details.</para>
+        </section>
+        <section>
+            <title>No Consumer Buffering</title>
+            <para>By default, JBoss Messaging consumers buffer messages from the server in a client
+                side buffer before you actually receive them on the client side. This improves
+                performance since otherwise every time you called receive() or had processed the
+                last message in a <literal>MessageListener onMessage()</literal> method, the JBoss
+                Messaging client would have to go the server to request the next message, which
+                would then get sent to the client side, if one was available. This would involve a
+                network round trip for every message and really reduce performance. Therefore, by
+                default, JBoss Messaging pre-fetches messages into a buffer on each consumer.</para>
+        </section>
+        <section>
+            <title>Paging</title>
+            <para>This example shows how JBoss Messaging would avoid running out of resources by
+                paging messages.</para>
+        </section>
+        <section>
+            <title>JMS Pre-Acknowledge</title>
+            <para>Standard JMS supports three acknowledgement modes: AUTO_ACKNOWLEDGE,
+                CLIENT_ACKNOWLEDGE, and DUPS_OK_ACKNOWLEDGE. For a full description on these modes
+                please consult the JMS specification, or any JMS tutorial.</para>
+            <para>All of these standard modes involve sending acknowledgements from the client to
+                the server. However in some cases, you really don't mind losing messages in event of
+                failure, so it would make sense to acknowledge the message on the server before
+                delivering it to the client. This example demonstrates how JBoss Messaging soes
+                this.</para>
+        </section>
+        <section>
+            <title>JMS Message Producer Rate Limiting</title>
+            <para>This example demonstrates how,  with JBoss Messaging, you can specify a maximum
+                send rate at which a JMS message producer will send messages.</para>
+        </section>
+        <section>
+            <title>JMS Queue</title>
+            <para>A simple example demonstrating a JMS Queue.</para>
+        </section>
+        <section>
+            <title>Message Redistribution</title>
+            <para>This example demonstrates message redistribution between queues with the same name
+                deployed in different nodes of a cluster.</para>
+        </section>
+        <section>
+            <title>JMS Queue Requestor</title>
+            <para>A simple example demonstrating a JMS queue requestor.</para>
+        </section>
+        <section>
+            <title>JMS Queue with Message Selector</title>
+            <para>This example shows you how to selectively consume messages using message selectors
+                with queue consumers.</para>
+        </section>
+        <section>
+            <title>JMS Automatic Reconnect Same Server</title>
+            <para>This example demonstrates how JBoss Messaging connections can be configured to be
+                resilient to temporary network failures. In the case of a network failure being
+                detected, either as a result of a failure to read/write to the connection, or the
+                failure of a pong to arrive back from the server in good time after a ping is sent,
+                instead of failing the connection immediately and notifying any user
+                ExceptionListener objects, JBoss Messaging can be configured to automatically retry
+                the connection, and reconnect to the server when it becomes available again across
+                the network.</para>
+        </section>
+        <section>
+            <title>JMS Request-Reply</title>
+            <para>A simple example showing the JMS request-reply pattern.</para>
+        </section>
+        <section>
+            <title>Scheduled Message</title>
+            <para>This example shows you how to send a scheduled message to a JMS Queue with JBoss
+                Messaging.</para>
+        </section>
+        <section>
+            <title>JMS Security</title>
+            <para>This example shows you how configure and use security with JBoss Messaging.</para>
+        </section>
+        <section>
+            <title>JMS over SSL</title>
+            <para>This example shows you how to configure SSL with JBoss Messaging to send and
+                receive message.</para>
+        </section>
+        <section>
+            <title>Static Message Selector</title>
+            <para>This example shows you how to configure a JBoss Messaging queue with static
+                message selectors (filters).</para>
+        </section>
+        <section>
+            <title>Static Message Selector Using JMS</title>
+            <para>This example shows you how to configure a JBoss Messaging queue with static
+                message selectors (filters) using JMS.</para>
+        </section>
+        <section>
+            <title>Symmetric Cluster</title>
+            <para>This examples demonstrates a symmetric cluster set-up with JBoss Messaging.</para>
+            <para>JBoss Messaging has extremely flexible clustering which allows you to set-up
+                servers in many different topologies. The most common topology that you'll perhaps
+                be familiar with if you are used to application server clustering is a symmetric
+                cluster.</para>
+            <para>With a symmetric cluster, the cluster is homogeneous, i.e. each node is configured
+                the same as every other node, and every node is connected to every other node in the
+                cluster.</para>
+        </section>
+        <section>
+            <title>JMS Temporary Queue</title>
+            <para>A simple example demonstrating how to use a JMS temporary queue.</para>
+        </section>
+        <section>
+            <title>JMS Topic</title>
+            <para>A simple example demonstrating a JMS Topic.</para>
+        </section>
+        <section>
+            <title>Topic Hierarchy</title>
+            <para>JBoss Messaging supports topic hierarchies. With a topic hierarchy you can
+                register a subscriber with a wild-card and that subscriber will receive any messages
+                sent to an address that matches the wild card.</para>
+        </section>
+        <section>
+            <title>JMS Topic Selector 1</title>
+            <para>This example shows you how to send message to a JMS Topic, and subscribe them
+                using selectors with JBoss Messaging.</para>
+        </section>
+        <section>
+            <title>JMS Topic Selector 2</title>
+            <para>This example shows you how to selectively consume messages using message selectors
+                with topic consumers.</para>
+        </section>
+        <section>
+            <title>JMS Transactional Session</title>
+            <para>This example shows you how to use a transactional Session with JBoss
+                Messaging.</para>
+        </section>
+        <section>
+            <title>JMS XA Heuristic</title>
+            <para>This example shows you how to make an XA heuristic decision through JBoss
+                Messaging Management Interface. A heuristic decision is a unilateral decision to
+                commit or rollback an XA transaction branch after it has been prepared.</para>
+        </section>
+        <section>
+            <title>JMS XA Receive</title>
+            <para>This example shows you how message receiving behaves in an XA transaction in JBoss
+                Messaging.</para>
+        </section>
+        <section>
+            <title>JMS XA Send</title>
+            <para>This example shows you how message sending behaves in an XA transaction in JBoss
+                Messaging.</para>
+        </section>
+        <section>
+            <title>JMS XA with JTA</title>
+            <para>This example shows you how to use JTA interfaces to control transactions with
+                JBoss Messaging.</para>
+        </section>
     </section>
     <section>
-        <title>example 2</title>
-        <para></para>
+        <title>Java EE Examples</title>
+        <para>Most of the Java EE examples can be run the following way. simply cd into the
+            appropriate example directory an type <literal>ant deploy</literal>. This will cretae a
+            new JBoss AS profile and start the server. When the server is started from a different
+            window type <literal>ant run</literal> to run the example. Some examples require further
+            steps, please refer to the examples documentation for further instructions.</para>
+        <section>
+            <title>EJB/JMS Transaction</title>
+            <para>An example that shows using an EJB and JMS together within a transaction.</para>
+        </section>
+        <section>
+            <title>HAJNDI (High Availability)</title>
+            <para>A simple example demonstrating using JNDI within a cluster.</para>
+        </section>
+        <section>
+            <title>Resource Adapter Configuration</title>
+            <para>This example demonstrates how to configure several properties on the JBoss
+                Messaging Resource Adapter.</para>
+        </section>
+        <section>
+            <title>JMS Bridge</title>
+            <para>An example demonstrating the use of the JBoss Messaging JMS bridge.</para>
+        </section>
+        <section>
+            <title>MDB (Message Driven Bean)</title>
+            <para>A simple example of a message driven bean.</para>
+        </section>
+        <section>
+            <title>Servlet Transport</title>
+            <para>An example of how to use the JBoss Messaging servlet transport.</para>
+        </section>
+        <section>
+            <title>XA Recovery</title>
+            <para>An example of how XA recovery works within the JBoss Application server using
+                JBoss Messaging.</para>
+        </section>
     </section>
-    <section>
-        <title>example 3</title>
-        <para></para>
-    </section>
-    
-    
 </chapter>
