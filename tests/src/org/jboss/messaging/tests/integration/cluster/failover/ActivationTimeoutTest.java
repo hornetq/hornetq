@@ -167,7 +167,7 @@ public class ActivationTimeoutTest extends UnitTestCase
 
    public void testTimeoutAfterAllConsumerFailsToReattach() throws Exception
    {
-      for (int j = 0; j < 10000; j++)
+      for (int j = 0; j < 5; j++)
       {
          log.info("*************** ITERATION " + j);
          
