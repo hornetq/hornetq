@@ -25,20 +25,23 @@
 <!-- =========================================================================================== -->
 
 
-<project default="sender" name="JBoss Messaging XA Recovery Example">
+<project default="run" name="JBoss Messaging XA Recovery Example">
 
    <import file="../common/build.xml"/>
 
-   <target name="sender">
+   <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.javaee.example.XARecoverySenderExample"/>
+         <param name="example.classname" value="org.jboss.javaee.example.XARecoveryExample"/>
       </antcall>
    </target>
 
-   <target name="receiver">
-      <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.javaee.example.XARecoveryReceiverExample"/>
-      </antcall>
+   <target name="restart">   
+   <echo>==============================</echo>
+   <echo>Restart the server and recover</echo>
+   <echo>==============================</echo>
+      <exec dir="${jboss.home}/bin" executable="sh">
+         <arg line="run.sh -c ${example.name}-example-profile"/>
+      </exec>
+
    </target>
-    
 </project>

@@ -21,6 +21,8 @@
  */
 package org.jboss.javaee.example;
 
+import java.util.Date;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -29,16 +31,77 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.javaee.example.server.XARecoveryExampleService;
+
 /**
- * An example showing how to receive a JMS message.
- * The JMS message was recovered after the server was crashed and restarted.
- *  
+ * An example which invokes an EJB. The EJB will be involved in a
+ * transaction with a "buggy" XAResource to crash the server.
+ * When the server is restarted, the recovery manager will recover the message
+ * so that the consumer can receive it.
+ * 
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class XARecoveryReceiverExample
+public class XARecoveryExample
 {
+
    public static void main(String[] args) throws Exception
+   {
+      InitialContext initialContext = null;
+      try
+      {
+         // Step 1. Obtain an Initial Context
+         initialContext = new InitialContext();
+
+         // Step 2. Lookup the EJB
+         XARecoveryExampleService service = (XARecoveryExampleService)initialContext.lookup("xarecovery-example/XARecoveryExampleBean/remote");
+
+         // Step 3. Invoke the send method. This will crash the server
+         String message = "This is a text message sent at " + new Date();
+         System.out.println("invoking the EJB service with text: " + message);
+         try
+         {
+            service.send(message);
+         }
+         catch (Exception e)
+         {
+            System.out.println("#########################");
+            System.out.println("The server crashed: " + e.getMessage());
+            System.out.println("#########################");
+         }
+
+         System.out.println("\n\n\nRestart the server by running 'ant restart' in a terminal");
+
+         // Step 4. We will try to receive a message. Once the server is restarted, the message 
+         // will be recovered and the consumer will receive it
+         System.out.println("Waiting for the server to restart and recover before receiving a message");
+         
+         boolean received = false;
+         while (!received)
+         {
+            try
+            {
+               Thread.sleep(15000);
+               receiveMessage();
+               received = true;
+            }
+            catch (Exception e)
+            {
+               System.out.println(".");
+            }
+         }
+      }
+      finally
+      {
+         // Step 4. Be sure to close the resources!
+         if (initialContext != null)
+         {
+            initialContext.close();
+         }
+      }
+   }
+
+   private static void receiveMessage() throws Exception
    {
       InitialContext initialContext = null;
       Connection connection = null;
@@ -61,11 +124,10 @@ public class XARecoveryReceiverExample
          // Step 5. Start the connection
          connection.start();
 
-         System.out.println("waiting to receive a message...");
-
          // Step 6. Receive the message sent by the EJB
+         System.out.println("\nwaiting to receive a message...");
          TextMessage messageReceived = (TextMessage)consumer.receive(3600 * 1000);
-         System.out.format("Received message: %s (%s)\n", messageReceived.getText(), messageReceived.getJMSMessageID());
+         System.out.format("Received message: %s \n\t(JMS MessageID: %s)\n", messageReceived.getText(), messageReceived.getJMSMessageID());
       }
       finally
       {

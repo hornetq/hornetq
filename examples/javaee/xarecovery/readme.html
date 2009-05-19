@@ -37,26 +37,24 @@
           
      <h2>Example step-by-step</h2>
 
+     <p><strong>Make sure you have configured XA recovery in <code>$JBOSS_HOME/server/default-with-jbm2/conf/jbossts-properties.xml</code>.</strong></p>
      <p><em>You need to deploy the example <em>before starting the server</em>, type <code>ant deploy</code> from this directory<br />
-    You need to start JBoss AS 5 with the <code>default-with-jbm2</code> configuration.<br />
-    Once the example is deployed in JBoss AS 5, type <code>ant sender</code> to start the example. 
-    This will also crash the server, you will need to restart it.<br />
-    Once it is restarted, type <code>ant receiver</code> to receive the JMS messages which was recovered.<br />
+    Once the example is deployed in JBoss AS 5, type <code>ant run</code> to start the example. <br />
+    This will crash the server: when informed, type <code>ant restart</code> in the terminal where you deployed the example
+    to restart the server.<br />
     Type <code>ant undeploy</code> to undeploy the example from JBoss AS 5.</em></p>
      
-     The example code is composed of 3 main classes:
+     The example code is composed of 2 main classes:
      <dl>
-         <dt><code>XARecoverySenderExample</code></dt>
-         <dd>the client application to invoke the EJB</dd>
-         <dt><code>XARecoveryReceiverExample</code></dt>
-         <dd>the client application to receive a JMS message</dd>
+         <dt><code>XARecoveryExample</code></dt>
+         <dd>the client application to invoke the EJB and receive the message</dd>
          <dt><code>XARecoveryExampleBean</code></dt>
          <dd>a Stateless EJB</dd>
      </dl>
      
      <h3>Example Application</h3>
      
-     <p>Let's take a look at XARecoverySenderExample first.</p>
+     <p>Let's take a look at XARecoveryExample first.</p>
          
      <ol>
          <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <a href="config/jndi.properties">jndi.properties</a></li>
@@ -73,8 +71,42 @@
          <li>We invoke the EJB's <code>send</code> method. This method will send a JMS text message (with the text passed in parameter)
              and crash the server when committing the transaction</li>
          <pre>
-             <code>service.send("This is a text message");</code>
+             <code>String message = "This is a text message sent at " + new Date();
+             System.out.println("invoking the EJB service with text: " + message);
+             try
+             {
+                service.send(message);
+             }
+             catch (Exception e)
+             {
+                System.out.println("#########################");
+                System.out.println("The server crashed: " + e.getMessage());
+                System.out.println("#########################");
+             }</code>
          </pre>
+         
+         <p><em>At that time, the server is crashed and must be restarted by typing <code>ant restart</code>
+            in the terminal where you typed <code>ant deploy</code></em></p>
+            
+         <li>We will try to receive a message. Once the server is restarted, the message will be recovered and the consumer will receive it
+         <pre>
+            <code>boolean received = false;
+            while (!received)
+            {
+               try
+               {
+                  Thread.sleep(15000);
+                  receiveMessage();
+                  received = true;
+               }
+               catch (Exception e)
+               {
+                  System.out.println(".");
+               }
+            }</code>
+         </pre>
+         <p>The <code>receiveMessage()</code> method contains code to receive a text message from the
+            JMS Queue and display it.</p>
 
          <li>And finally, <b>always</b> remember to close your resources after use, in a <code>finally</code> block.</li>
          

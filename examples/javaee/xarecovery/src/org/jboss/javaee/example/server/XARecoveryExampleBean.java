@@ -91,7 +91,7 @@ public class XARecoveryExampleBean implements XARecoveryExampleService
          // Step 10. Send The Text Message
          TextMessage message = session.createTextMessage(text);
          messageProducer.send(message);
-         System.out.format("Sent message: %s (%s)\n", message.getText(), message.getJMSMessageID());
+         System.out.format("Sent message: %s\n\t(JMS MessageID: %s)\n", message.getText(), message.getJMSMessageID());
 
          // Step 12. Delist the failing XAResource
          tx.delistResource(failingXAResource, XAResource.TMSUCCESS);
