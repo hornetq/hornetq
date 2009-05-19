@@ -1,0 +1,1 @@
+dir >> KILL_ME
