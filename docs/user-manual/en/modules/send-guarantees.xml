@@ -71,7 +71,7 @@
             and the server has a guarantee that the data has been persisted to disk. The default
             value for this parameter is <literal>false</literal>.</para>
     </section>
-    <section>
+    <section id="send-guarantees.nontrans.acks">
         <title>Guarantees of Non Transactional Acknowledgements</title>
         <para>If you are acknowledging the delivery of a message at the client side using a non
             transacted session, JBoss Messaging can be configured to block the call to acknowledge

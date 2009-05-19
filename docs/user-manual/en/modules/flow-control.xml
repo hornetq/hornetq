@@ -76,7 +76,7 @@
             in-between. In that case, setting the value of <literal>consumer-window-size</literal>
             to optimize performance depends on the messaging use case and requires benchmarks to
             find the optimal value. </para>
-         <section>
+         <section id="flow-control.core.api">
             <title>Using Core API</title>
             <para>If JBoss Messaging Core API is used, the consumer window size is specified by
                   <literal>ClientSessionFactory.setConsumerWindowSize()</literal> method and some of
@@ -118,7 +118,7 @@
             consumption rate specified in units of messages per second. Setting this to <literal
                >-1</literal> disables rate limited flow control. The default value is <literal
                >-1</literal>.</para>
-         <section>
+         <section id="flow-control.rate.core.api">
             <title>Using Core API</title>
             <para>If the JBoss Messaging core API is being used the rate can be set via the <literal
                   >ClientSessionFactory.setConsumerMaxRate(int consumerMaxRate)</literal> method or
@@ -176,7 +176,7 @@
             consumption rate specified in units of messages per second. Setting this to <literal
                >-1</literal> disables rate limited flow control. The default value is <literal
                >-1</literal>.</para>
-         <section>
+         <section id="flow-control.producer.rate.core.api">
             <title>Using Core API</title>
             <para>If the JBoss Messaging core API is being used the rate can be set via the <literal
                   >ClientSessionFactory.setProducerMaxRate(int consumerMaxRate)</literal> method or

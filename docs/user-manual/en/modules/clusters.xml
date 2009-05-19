@@ -185,7 +185,7 @@
                 </listitem>
             </itemizedlist>
         </section>
-        <section>
+        <section id="clusters-discovery.groups.clientside">
             <title>Discovery Groups on the Client Side</title>
             <para>Let's discuss how to configure a JBoss Messaging client to use discovery to
                 discover a list of servers to which it can connect. The way to do this differs
@@ -393,7 +393,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             </itemizedlist>
         </section>
     </section>
-    <section>
+    <section id="clusters.client.loadbalancing">
         <title>Client-Side Load balancing</title>
         <para>With JBoss Messaging client-side connection load balancing, subsequent client
             connections created using a single factory can be made to different nodes of the

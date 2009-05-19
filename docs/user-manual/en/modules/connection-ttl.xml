@@ -117,7 +117,7 @@ finally
             are using JMS) depending on how it has been configured.</para>
         <para/>
     </section>
-    <section>
+    <section id="connection-ttl.session.multiplexing">
         <title>Session Multiplexing</title>
         <para>Each <literal>ClientSessionFactory</literal> creates connections on demand to the same
             server as you create sessions. Each instance will create up to a maximum of <literal

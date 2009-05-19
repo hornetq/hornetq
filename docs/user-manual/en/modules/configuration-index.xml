@@ -469,140 +469,162 @@
                     </thead>
                     <tbody>
                         <row>
-                            <entry>discoveryRefreshTimeout</entry>
-                            <entry/>
+                            <entry><link linkend="clusters-discovery.groups.clientside"
+                                    >discoveryRefreshTimeout</link></entry>
+                            <entry>long</entry>
                             <entry/>
                             <entry>10000</entry>
                         </row>
                         <row>
-                            <entry>pingPeriod</entry>
-                            <entry/>
+                            <entry><link linkend="dead.connections">pingPeriod</link></entry>
+                            <entry>long</entry>
                             <entry/>
                             <entry>1000000</entry>
                         </row>
                         <row>
-                            <entry>connectionTTL</entry>
-                            <entry/>
+                            <entry><link linkend="dead.connections">connectionTTL</link></entry>
+                            <entry>long</entry>
                             <entry/>
                             <entry>5 * 60000</entry>
                         </row>
                         <row>
                             <entry>callTimeout</entry>
-                            <entry/>
+                            <entry>long</entry>
                             <entry/>
                             <entry>30000</entry>
                         </row>
                         <row>
-                            <entry>maxConnections</entry>
-                            <entry/>
+                            <entry><link linkend="connection-ttl.session.multiplexing"
+                                    >maxConnections</link></entry>
+                            <entry>int</entry>
                             <entry/>
                             <entry>8</entry>
                         </row>
                         <row>
-                            <entry>minLargeMessageSize</entry>
-                            <entry/>
+                            <entry><link linkend="large-messages.core.config"
+                                    >minLargeMessageSize</link></entry>
+                            <entry>int</entry>
                             <entry/>
                             <entry>100 * 1024</entry>
                         </row>
                         <row>
-                            <entry>consumerWindowSize</entry>
-                            <entry/>
+                            <entry><link linkend="flow-control.core.api"
+                                >consumerWindowSize</link></entry>
+                            <entry>int</entry>
                             <entry/>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry>consumerMaxRate</entry>
-                            <entry/>
+                            <entry><link linkend="flow-control.rate.core.api"
+                                >consumerMaxRate</link></entry>
+                            <entry>int</entry>
                             <entry/>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry>producerWindowSize</entry>
-                            <entry/>
+                            <entry>int</entry>
                             <entry/>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry>producerMaxRate</entry>
-                            <entry/>
+                            <entry><link linkend="flow-control.producer.rate.core.api"
+                                    >producerMaxRate</link></entry>
+                            <entry>int</entry>
                             <entry/>
                             <entry>-1</entry>
                         </row>
                         <row>
-                            <entry>blockOnAcknowledge</entry>
-                            <entry/>
-                            <entry/>
-                            <entry>false</entry>
-                        </row>
-                        <row>
-                            <entry>blockOnPersistentSend</entry>
-                            <entry/>
+                            <entry><link linkend="send-guarantees.nontrans.acks"
+                                    >blockOnAcknowledge</link></entry>
+                            <entry>boolean</entry>
                             <entry/>
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry>blockOnNonPersistentSend</entry>
+                            <entry><link linkend="non-transactional-sends"
+                                    >blockOnPersistentSend</link></entry>
+                            <entry>boolean</entry>
                             <entry/>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="non-transactional-sends"
+                                    >blockOnNonPersistentSend</link></entry>
+                            <entry>boolean</entry>
                             <entry/>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry>autoGroup</entry>
+                            <entry>boolean</entry>
                             <entry/>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>preAcknowledge</entry>
+                            <entry>boolean</entry>
                             <entry/>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry>ackBatchSize</entry>
-                            <entry/>
+                            <entry>int</entry>
                             <entry/>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry>loadBalancingPolicyClassName</entry>
-                            <entry/>
+                            <entry><link linkend="clusters.client.loadbalancing"
+                                    >loadBalancingPolicyClassName</link></entry>
+                            <entry>String</entry>
                             <entry/>
                             <entry>org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</entry>
                         </row>
                         <row>
                             <entry>initialWaitTimeout</entry>
-                            <entry/>
+                            <entry>long</entry>
                             <entry/>
                             <entry>2000</entry>
                         </row>
                         <row>
                             <entry>useGlobalPools</entry>
-                            <entry/>
+                            <entry>boolean</entry>
                             <entry/>
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry>threadPoolMaxSize</entry>
+                            <entry>scheduledThreadPoolMaxSize</entry>
+                            <entry>int</entry>
                             <entry/>
+                            <entry>2</entry>
+                        </row>
+                        <row>
+                            <entry>threadPoolMaxSize</entry>
+                            <entry>int</entry>
                             <entry/>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry>retryInterval</entry>
+                            <entry>long</entry>
                             <entry/>
-                            <entry/>
-                            <entry/>
+                            <entry>2000</entry>
                         </row>
                         <row>
                             <entry>retryIntervalMultiplier</entry>
-                            <entry/>
+                            <entry>double</entry>
                             <entry/>
                             <entry>1d</entry>
                         </row>
                         <row>
                             <entry>reconnectAttempts</entry>
-                            <entry/>
+                            <entry>int</entry>
                             <entry/>
                             <entry>0</entry>
                         </row>
                         <row>
                             <entry>failoverOnServerShutdown</entry>
-                            <entry/>
+                            <entry>boolean</entry>
                             <entry/>
                             <entry>false</entry>
                         </row>

@@ -35,7 +35,7 @@
             its size is greater than 10KB and another one on the socket transport considering
             messages greater than 200KB as large.</para>
         <para>By default the min large message size is 100KB.</para>
-        <section>
+        <section id="large-messages.core.config">
             <title>Using Core API</title>
             <para>If the JBoss Messaging Core API is used, the minimal large message size is
                 specified by <literal>ClientSessionFactory.setMinLargeMessageSize</literal>.</para>
