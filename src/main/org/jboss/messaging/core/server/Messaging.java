@@ -59,7 +59,7 @@ public class Messaging
 
    public static MessagingServer newMessagingServer(final Configuration config)
    {
-      return newMessagingServer(config, config.isEnablePersistence());
+      return newMessagingServer(config, config.isPersistenceEnabled());
    }
 
    public static MessagingServer newMessagingServer(final Configuration config,
@@ -92,7 +92,7 @@ public class Messaging
                                                     final JBMSecurityManager securityManager,
                                                     final boolean enablePersistence)
    {
-      config.setEnablePersistence(enablePersistence);
+      config.setPersistenceEnabled(enablePersistence);
 
       MessagingServer server = new MessagingServerImpl(config, mbeanServer, securityManager);
 

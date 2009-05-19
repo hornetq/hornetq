@@ -75,7 +75,7 @@ public class SpawnedJMSServer
          Configuration conf = new ConfigurationImpl();
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
-         conf.setEnableFileDeployment(false);
+         conf.setFileDeploymentEnabled(false);
 
          // disable server persistence since JORAM tests do not restart server
          final MessagingServer server = Messaging.newMessagingServer(conf, false);

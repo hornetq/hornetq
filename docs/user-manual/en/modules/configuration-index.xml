@@ -30,15 +30,15 @@
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry>enable-file-deployment</entry>
+                            <entry>file-deployment-enabled</entry>
                             <entry>Boolean</entry>
                             <entry>True means that the server will load configuration from the
                                 configuration files</entry>
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry><link linkend="enable.persistence"
-                                >enable-persistence</link></entry>
+                            <entry><link linkend="persistence.enabled"
+                                >persistence-enabled</link></entry>
                             <entry>Boolean</entry>
                             <entry>True means that the server will use the file based journal for
                                 persistence.</entry>

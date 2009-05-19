@@ -70,7 +70,7 @@ server.start();
             required to instantiate a Server:</para>
         <itemizedlist>
             <listitem>
-                <para>The configuration. We will use <literal>ConfigurationImpl</literal></para>
+                <para>The configuration</para>
             </listitem>
             <listitem>
                 <para>A <literal>MBeanServer</literal> required by management.</para>
@@ -195,8 +195,8 @@ conn.close();
     </section>
     <section>
         <title>JMS Embedding Example</title>
-        <para>The <ulink url="../../../../examples/jms/embedded/readme.html"><literal
-                    >JMS Embedding</literal> Example</ulink> shows how to setup and run JBoss Messaging
+        <para>The <ulink url="../../../../examples/jms/embedded/readme.html"><literal>JMS
+                    Embedding</literal> Example</ulink> shows how to setup and run JBoss Messaging
             embedded with JMS...</para>
     </section>
 </chapter>

@@ -20,7 +20,7 @@
         file to be about the right size to fit on a disk cylinder. Modern disk topologies are
         complex and we are not in control over which cylinder(s) the file is mapped onto so this is
         not an exact science. By minimising the number of disk cylinders the file is using, we can
-        minimise the amount of disk head movement, since an entire disk cyclinder is accessible
+        minimise the amount of disk head movement, since an entire disk cylinder is accessible
         simply by the disk rotating - the head does not have to move.</para>
     <para>As delete records are added to the journal, JBoss Messaging has a sophisticated file
         garbage collection algorithm which can determine if a particular journal file is needed any
@@ -112,7 +112,7 @@
                 <para>For the best performance, we recommend the journal is located on its own
                     volume in order to minimise disk head movement. If the journal is on a volume
                     which is shared with other processes which might be writing other files (e.g.
-                    bindings journal, database, or transaction co-ordinator) then the disk head may
+                    bindings journal, database, or transaction coordinator) then the disk head may
                     well be moving rapidly between these files as it writes them, thus reducing
                     performance.</para>
                 <para>When the message journal is stored on a SAN we recommend each journal instance
@@ -130,7 +130,7 @@
                 <para>Valid values are <literal>NIO</literal> or <literal>AIO</literal>.</para>
                 <para>Choosing <literal>NIO</literal> chooses the Java NIO journal. Choosing
                         <literal>AIO</literal> chooses the Linux asynchronous IO journal. If you
-                    choose <literal>AIO</literal> but are not running Linux or you you do not have
+                    choose <literal>AIO</literal> but are not running Linux or you do not have
                     libaio installed then JBoss Messaging will detect this and automatically fall
                     back to using <literal>NIO</literal>.</para>
             </listitem>
@@ -175,7 +175,7 @@
             </listitem>
             <listitem>
                 <para><literal>journal-buffer-reuse-size</literal></para>
-                <para>Creaing direct byte buffers is an expensive operation, so the journal will
+                <para>Creaking direct byte buffers is an expensive operation, so the journal will
                     attempt to re-use any buffers with a size less than this setting, in bytes. If
                     this value is set to <literal>-1</literal> then the journal will not attempt to
                     re-use any buffers. This setting only takes effect if the journal is <literal
@@ -199,11 +199,11 @@
         <para>Using aptitude, (e.g. on Ubuntu or Debian system):
             <programlisting>sudo apt-get install libaio1</programlisting></para>
     </section>
-    <section id="enable.persistence">
+    <section id="persistence.enabled">
         <title>Configuring JBoss Messaging for zero persistence</title>
         <para> In some situations, zero persistence is sometimes required for a messaging system.
             Configuring JBoss Messaging to perform zero persistence is straightforward. Simply set
-            the parameter <literal>enable-persistence</literal> in <literal
+            the parameter <literal>persistence-enabled</literal> in <literal
                 >jbm-configuration.xml</literal> to <literal>false</literal>. </para>
         <para>Please note that if you set this parameter to false, then <emphasis>zero</emphasis>
             persistence will occur. That means no bindings data, message data, large message data,

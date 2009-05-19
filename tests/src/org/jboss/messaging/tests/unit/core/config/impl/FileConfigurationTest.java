@@ -43,8 +43,10 @@ public class FileConfigurationTest extends ConfigurationImplTest
    public void testDefaults()
    {
       //Check they match the values from the test file
+      assertEquals(false, conf.isPersistenceEnabled());
+      assertEquals(true, conf.isFileDeploymentEnabled());
       assertEquals(true, conf.isClustered());
-      assertEquals(true, conf.isEnableFileDeployment());
+      assertEquals(true, conf.isFileDeploymentEnabled());
       assertEquals(12345, conf.getScheduledThreadPoolMaxSize());
       assertEquals(54321, conf.getThreadPoolMaxSize());      
       assertEquals(false, conf.isSecurityEnabled());

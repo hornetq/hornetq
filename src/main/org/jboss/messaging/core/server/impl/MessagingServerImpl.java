@@ -286,7 +286,7 @@ public class MessagingServerImpl implements MessagingServer
       remotingService.stop();
 
       // Stop the deployers
-      if (configuration.isEnableFileDeployment())
+      if (configuration.isFileDeploymentEnabled())
       {
          basicUserCredentialsDeployer.stop();
 
@@ -896,12 +896,12 @@ public class MessagingServerImpl implements MessagingServer
    {
       // Create the hard-wired components
 
-      if (configuration.isEnableFileDeployment())
+      if (configuration.isFileDeploymentEnabled())
       {
          deploymentManager = new FileDeploymentManager(configuration.getFileDeployerScanPeriod());
       }
 
-      if (configuration.isEnablePersistence())
+      if (configuration.isPersistenceEnabled())
       {
          storageManager = new JournalStorageManager(configuration, threadPool);
       }
@@ -953,7 +953,7 @@ public class MessagingServerImpl implements MessagingServer
 
       // Address settings need to deployed initially, since they're require on paging manager.start()
 
-      if (configuration.isEnableFileDeployment())
+      if (configuration.isFileDeploymentEnabled())
       {
          addressSettingsDeployer = new AddressSettingsDeployer(deploymentManager, addressSettingsRepository);
 
@@ -973,7 +973,7 @@ public class MessagingServerImpl implements MessagingServer
       resourceManager.start();
 
       // Deploy all security related config
-      if (configuration.isEnableFileDeployment())
+      if (configuration.isFileDeploymentEnabled())
       {
          basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
 
@@ -994,7 +994,7 @@ public class MessagingServerImpl implements MessagingServer
       // Deploy any predefined queues - on backup we don't start queue deployer - instead deployments
       // are replicated from live
 
-      if (configuration.isEnableFileDeployment() && !configuration.isBackup())
+      if (configuration.isFileDeploymentEnabled() && !configuration.isBackup())
       {
          queueDeployer = new QueueDeployer(deploymentManager, messagingServerControl);
 

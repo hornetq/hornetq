@@ -60,13 +60,13 @@ public interface Configuration extends Serializable, MessagingComponent
 
    void setBackup(boolean backup);
    
-   boolean isEnableFileDeployment();
+   boolean isFileDeploymentEnabled();
    
-   void setEnableFileDeployment(boolean enable);
+   void setFileDeploymentEnabled(boolean enable);
    
-   boolean isEnablePersistence();
+   boolean isPersistenceEnabled();
    
-   void setEnablePersistence(boolean enable);
+   void setPersistenceEnabled(boolean enable);
    
    long getFileDeployerScanPeriod();
    
@@ -227,6 +227,8 @@ public interface Configuration extends Serializable, MessagingComponent
    String getLargeMessagesDirectory();
 
    void setLargeMessagesDirectory(String directory);
+
+   // Other Properties ---------------------------------------------------------------------
 
    boolean isWildcardRoutingEnabled();
 

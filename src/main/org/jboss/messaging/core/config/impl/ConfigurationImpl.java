@@ -47,9 +47,9 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_BACKUP = false;
 
-   public static final boolean DEFAULT_ENABLE_FILE_DEPLOYMENT = false;
+   public static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
 
-   public static final boolean DEFAULT_ENABLE_PERSISTENCE = true;
+   public static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
 
    public static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
 
@@ -136,13 +136,13 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
 
    public static final int DEFAULT_CLUSTER_MAX_HOPS = 1;
-   
+
    public static final int DEFAULT_CLUSTER_RETRY_INTERVAL = 500;
 
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
 
    public static final boolean DEFAULT_BRIDGE_DUPLICATE_DETECTION = true;
-   
+
    public static final int DEFAULT_BRIDGE_RECONNECT_ATTEMPTS = -1;
 
    // Attributes -----------------------------------------------------------------------------
@@ -151,9 +151,9 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean backup = DEFAULT_BACKUP;
 
-   protected boolean enableFileDeployment = DEFAULT_ENABLE_FILE_DEPLOYMENT;
+   protected boolean fileDeploymentEnabled = DEFAULT_FILE_DEPLOYMENT_ENABLED;
 
-   protected boolean enablePersistence = DEFAULT_ENABLE_PERSISTENCE;
+   protected boolean persistenceEnabled = DEFAULT_PERSISTENCE_ENABLED;
 
    protected long fileDeploymentScanPeriod = DEFAULT_FILE_DEPLOYER_SCAN_PERIOD;
 
@@ -289,24 +289,24 @@ public class ConfigurationImpl implements Configuration
       return backup;
    }
 
-   public boolean isEnableFileDeployment()
+   public boolean isFileDeploymentEnabled()
    {
-      return enableFileDeployment;
+      return fileDeploymentEnabled;
    }
 
-   public void setEnableFileDeployment(final boolean enable)
+   public void setFileDeploymentEnabled(final boolean enable)
    {
-      enableFileDeployment = enable;
+      fileDeploymentEnabled = enable;
    }
 
-   public boolean isEnablePersistence()
+   public boolean isPersistenceEnabled()
    {
-      return this.enablePersistence;
+      return this.persistenceEnabled;
    }
 
-   public void setEnablePersistence(boolean enable)
+   public void setPersistenceEnabled(boolean enable)
    {
-      this.enablePersistence = enable;
+      this.persistenceEnabled = enable;
    }
 
    public long getFileDeployerScanPeriod()

@@ -803,8 +803,8 @@
             </varlistentry>
           </variablelist>
        </section>
-       <section id="enable-file-deployment.configuration">
-          <title>enable-file-deployment</title>
+       <section id="file-deployment-enabled.configuration">
+          <title>file-deployment-enabled</title>
           <variablelist>  
             <varlistentry>
               <term>type</term>

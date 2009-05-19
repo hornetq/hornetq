@@ -69,7 +69,7 @@
                         <row>
                             <entry><literal>page-size-bytes</literal></entry>
                             <entry>The size of each page file used on the paging system</entry>
-                            <entry>10MB (10 * 1024 * 1024 bytes)</entry>
+                            <entry>10MiB (10 * 1024 * 1024 bytes)</entry>
                         </row>
                         <row>
                             <entry><literal>drop-messages-when-full</literal></entry>
@@ -133,7 +133,7 @@
                             <entry><literal>paging-global-watermark-size</literal></entry>
                             <entry>The watermark used to determine when we start depaging. This
                                 value should be equivalent to a page-file size.</entry>
-                            <entry>10MB (10 * 1024 * 1024 bytes)</entry>
+                            <entry>10MiB (10 * 1024 * 1024 bytes)</entry>
                         </row>
                     </tbody>
                 </tgroup>
@@ -162,11 +162,9 @@
             the Address enters in page mode, messages will be stored on disk and not routed to
             queues until messages are consumed on that queue.</para>
     </section>
-    
     <section>
         <title>Paging Example</title>
-        <para>The <ulink url="../../../../examples/jms/paging/readme.html"><literal
-            >Paging</literal> Example</ulink> shows how to JBoss Messaging avoids running out of memory.</para>
+        <para>The <ulink url="../../../../examples/jms/paging/readme.html"><literal>Paging</literal>
+                Example</ulink> shows how to JBoss Messaging avoids running out of memory.</para>
     </section>
-    
 </chapter>

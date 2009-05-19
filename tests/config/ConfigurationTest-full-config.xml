@@ -1,11 +1,12 @@
 <configuration 
    xmlns="urn:jboss:messaging" 
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
+   xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd">
       <clustered>true</clustered>
-      <enable-file-deployment>true</enable-file-deployment>
       <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>             
       <thread-pool-max-size>54321</thread-pool-max-size>
+      <persistence-enabled>false</persistence-enabled>
+      <file-deployment-enabled>true</file-deployment-enabled>
       <security-enabled>false</security-enabled>
       <security-invalidation-interval>5423</security-invalidation-interval>
       <wild-card-routing-enabled>true</wild-card-routing-enabled>

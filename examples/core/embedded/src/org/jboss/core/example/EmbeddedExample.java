@@ -54,7 +54,7 @@ public class EmbeddedExample
          
          // Step 1. Create the Configuration, and set the properties accordingly
          Configuration configuration = new ConfigurationImpl();
-         configuration.setEnablePersistence(false);
+         configuration.setPersistenceEnabled(false);
          configuration.setSecurityEnabled(false);
          
          // Step 2. Create and start the server

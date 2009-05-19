@@ -7,7 +7,7 @@
         files on the server. Flow control (<xref linkend="flow-control"/>) is used on the
         transmission to prevent overusing the channel or running out of memory during the
         transmission process, so it is possible to send and receive very large messages. </para>
-    <para>For example, it is possible to send an 8GB message even if you only had 50MB of RAM on
+    <para>For example, it is possible to send an 8GiB message even if you only had 50MiB of RAM on
         either client and server. </para>
     <section id="large.message.configuring">
         <title>Configuring the server</title>
@@ -32,16 +32,16 @@
         <title>Setting the limits</title>
         <para>The definition of what is a large message is done on the session factory. For example,
             you may configure a factory on the http transport considering a message as large when
-            its size is greater than 10KB and another one on the socket transport considering
-            messages greater than 200KB as large.</para>
-        <para>By default the min large message size is 100KB.</para>
+            its size is greater than 10KiB and another one on the socket transport considering
+            messages greater than 200KiB as large.</para>
+        <para>By default the min large message size is 100KiB.</para>
         <section id="large-messages.core.config">
             <title>Using Core API</title>
             <para>If the JBoss Messaging Core API is used, the minimal large message size is
                 specified by <literal>ClientSessionFactory.setMinLargeMessageSize</literal>.</para>
             <programlisting>ClientSessionFactory factory = new ClientSessionFactoryImpl(new 
                         TransportConfiguration(NettyConnectorFactory.class.getName()), null);
-factory.setMinLargeMessageSize(25000);</programlisting>
+factory.setMinLargeMessageSize(25 * 1024);</programlisting>
             <para><xref linkend="configuring-transports.client.side"/> will provide more information
                 on how to instantiate the session factory.</para>
         </section>
@@ -230,11 +230,11 @@ for (int i = 0; i &lt; rm.getBodyLength(); i += 1024)
                 <literal>ObjectMessage</literal> and <literal>MapMessage</literal> transparently.
             However those types of message will require a full reconstruction in memory in order to
             work properly.</para>
-        <para>For example: You may choose to send a 1MB String over a TextMessage. When you read the
-            message Java will need to parse the body of the message back into a String, so you need
-            to have enough memory to allocate your large messages when using those types. If you use
-                <literal>BytesMessage</literal> or <literal>StreamMessage</literal> this restriction
-            won't apply.</para>
+        <para>For example: You may choose to send a 1MiB String over a TextMessage. When you read
+            the message Java will need to parse the body of the message back into a String, so you
+            need to have enough memory to allocate your large messages when using those types. If
+            you use <literal>BytesMessage</literal> or <literal>StreamMessage</literal> this
+            restriction won't apply.</para>
     </section>
     <section>
         <title>Resending a large message</title>
