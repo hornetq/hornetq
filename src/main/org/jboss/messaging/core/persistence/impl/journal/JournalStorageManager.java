@@ -35,7 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
@@ -1241,36 +1240,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class DestinationEncoding implements EncodingSupport
-   {
-      SimpleString destination;
-
-      DestinationEncoding(final SimpleString destination)
-      {
-         this.destination = destination;
-      }
-
-      DestinationEncoding()
-      {
-      }
-
-      public void decode(final MessagingBuffer buffer)
-      {
-         destination = buffer.readSimpleString();
-      }
-
-      public void encode(final MessagingBuffer buffer)
-      {
-         buffer.writeSimpleString(destination);
-      }
-
-      public int getEncodeSize()
-      {
-         return SimpleString.sizeofString(destination);
-      }
-
-   }
-
    private static class PersistentIDEncoding implements EncodingSupport
    {
       UUID uuid;
@@ -1579,10 +1548,6 @@ public class JournalStorageManager implements StorageManager
       }
 
       public void beforeRollback(final Transaction tx) throws Exception
-      {
-      }
-
-      private void pageMessages(final Transaction tx) throws Exception
       {
       }
 
