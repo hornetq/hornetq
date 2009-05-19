@@ -34,6 +34,7 @@
         <!ENTITY queue-attributes        SYSTEM "modules/queue-attributes.xml">
         <!ENTITY scheduled-messages      SYSTEM "modules/scheduled-messages.xml">
         <!ENTITY security                SYSTEM "modules/security.xml">
+        <!ENTITY send-guarantees         SYSTEM "modules/send-guarantees.xml">
         <!ENTITY thread-pooling          SYSTEM "modules/thread-pooling.xml">
         <!ENTITY undelivered-messages    SYSTEM "modules/undelivered-messages.xml">
         <!ENTITY using-core              SYSTEM "modules/using-core.xml">
@@ -62,6 +63,7 @@
    &security;
    &wildcard-syntax;
    &persistence;
+   &send-guarantees;
    &connection-ttl;
    &management;
    &large-messages;

@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="perf-tuning">
     <title>Performance Tuning</title>
-    <para>blah</para>
-   
+    <para>In this chapter we'll discuss how to tune JBoss Messaging for optimum performance.</para>
+    <section>
+        <title>Tuning the journal</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Tuning JMS</title>
+        <para></para>
+    </section>
+    <section>
+        <title>Tuning the VM</title>
+        <para></para>
+    </section>
+    
+    
    
 </chapter>

@@ -18,6 +18,5 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
         <para>Make sure this file is in the classpath along with the StompConnect jar and the JBoss
             Messaging jars and simply run <literal>java
             org.codehaus.stomp.jms.Main</literal>.</para>
-        <para>JBoss Messaging is now available for Stomp clients to connect to.</para>
     </section>
 </chapter>
