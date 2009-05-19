@@ -95,6 +95,11 @@
                 consumers on the cluster</para>
         </section>
         <section>
+            <title>Embedded</title>
+            <para>This example shows how to embed the JBoss Messaging Server within your own
+                code.</para>
+        </section>
+        <section>
             <title>JMS Clustered Topic</title>
             <para>This example demonstrates a JMS Topic deployed on two different nodes. The two
                 nodes are configured to form a cluster. We then create a subscriber on the topic on
@@ -412,7 +417,7 @@
     <section>
         <title>Java EE Examples</title>
         <para>Most of the Java EE examples can be run the following way. simply cd into the
-            appropriate example directory an type <literal>ant deploy</literal>. This will cretae a
+            appropriate example directory an type <literal>ant deploy</literal>. This will create a
             new JBoss AS profile and start the server. When the server is started from a different
             window type <literal>ant run</literal> to run the example. Some examples require further
             steps, please refer to the examples documentation for further instructions.</para>
