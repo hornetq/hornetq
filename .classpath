@@ -57,6 +57,7 @@
 	<classpathentry kind="src" path="examples/jms/request-reply/src"/>
 	<classpathentry kind="src" path="examples/jms/scheduled-message/src"/>
 	<classpathentry kind="src" path="examples/jms/security/src"/>
+	<classpathentry kind="src" path="examples/jms/send-acknowledgements/src"/>
 	<classpathentry kind="src" path="examples/jms/ssl-enabled/src"/>
 	<classpathentry kind="src" path="examples/jms/static-selector/src"/>
 	<classpathentry kind="src" path="examples/jms/symmetric-cluster/src"/>
