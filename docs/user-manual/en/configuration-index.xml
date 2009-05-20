@@ -14,7 +14,7 @@
                     <colspec colname="c1" colnum="1"/>
                     <colspec colname="c2" colnum="2"/>
                     <colspec colname="c3" colnum="3"/>
-                    <colspec colname="newCol4" colnum="4"/>
+                    <colspec colname="c4" colnum="4"/>
                     <thead>
                         <row>
                             <entry>Element Name</entry>
@@ -80,16 +80,7 @@
                             <entry>True means that the server supports wild card routing</entry>
                             <entry>true</entry>
                         </row>
-                    </tbody>
-                </tgroup>
-            </table>
-            <informaltable frame="topbot" border="2">
-                <tgroup cols="4">
-                    <colspec colname="c1" colnum="1"/>
-                    <colspec colname="c2" colnum="2"/>
-                    <colspec colname="c3" colnum="3"/>
-                    <colspec colname="c4" colnum="4"/>
-                    <tbody>
+
                         <row>
                             <entry><link linkend="management.core.configuration"
                                     >management-address</link></entry>
@@ -151,8 +142,7 @@
                             <entry>10</entry>
                         </row>
                         <row>
-                            <entry><link linkend="dead.connections"
-                                >connection-scan-period</link></entry>
+                            <entry><link linkend="dead.connections">connection-scan-period</link></entry>
                             <entry>Long</entry>
                             <entry>How often, in milli seconds, to scan for failed connections on
                                 the server </entry>
@@ -387,10 +377,76 @@
                             <entry/>
                         </row>
                         <row>
+                            <entry>divert.name (attribute)</entry>
+                            <entry>String</entry>
+                            <entry>A unique name for the divert - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>divert.routing-name</entry>
+                            <entry>String</entry>
+                            <entry>The routing name for the divert - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>divert.address</entry>
+                            <entry>String</entry>
+                            <entry>The address this divert will divert from - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>divert.forwarding-address</entry>
+                            <entry>String</entry>
+                            <entry>The forwarding address for the divert - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>divert.exclusive</entry>
+                            <entry>Booleab</entry>
+                            <entry>Is this divert exclusive?</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>divert.filter</entry>
+                            <entry>String</entry>
+                            <entry>An optional core filter expression</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry>divert.transformer-class-name</entry>
+                            <entry>String</entry>
+                            <entry>An optional class name of a transformer</entry>
+                            <entry/>
+                        </row>
+                        <row>
                             <entry><link linkend="predefined.queues">queues</link></entry>
                             <entry>Queue</entry>
                             <entry>A list of pre configured queues to create</entry>
                             <entry/>
+                        </row>
+                        <row>
+                            <entry>queues.name (attribute)</entry>
+                            <entry>String</entry>
+                            <entry>Unique name of this queue</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>queues.address</entry>
+                            <entry>String</entry>
+                            <entry>Address for this queue - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>queues.filter</entry>
+                            <entry>String</entry>
+                            <entry>Optional core filter expression for this queue</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry>queues.durable</entry>
+                            <entry>Boolean</entry>
+                            <entry>Is this queue durable?</entry>
+                            <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges">bridges</link></entry>
@@ -399,11 +455,143 @@
                             <entry/>
                         </row>
                         <row>
+                            <entry>bridges.name (attribute)</entry>
+                            <entry>String</entry>
+                            <entry>Unique name for this bridge</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>bridges.queue-name</entry>
+                            <entry>String</entry>
+                            <entry>Name of queue that this bridge consumes from - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>bridges.forwarding-address</entry>
+                            <entry>String</entry>
+                            <entry>Address to forward to. If ommitted original destination is used.</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.filter</entry>
+                            <entry>String</entry>
+                            <entry>Optional core filter expression</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.transformer-class-name</entry>
+                            <entry>String</entry>
+                            <entry>Optional name of transformer class</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.retry-interval</entry>
+                            <entry>Long</entry>
+                            <entry>Period in ms between successive retries</entry>
+                            <entry>2000 ms</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.retry-interval-multiplier</entry>
+                            <entry>Double</entry>
+                            <entry>Multiplier to apply to successive retry intervals</entry>
+                            <entry>1.0</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.reconnect-attempts</entry>
+                            <entry>Integer</entry>
+                            <entry>Max. number of retry attempts, -1 signifies infinite</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.failover-on-server-shutdown</entry>
+                            <entry>Boolean</entry>
+                            <entry>Should failover be prompted if target server is cleanly shutdown?</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.use-duplicate-detection</entry>
+                            <entry>Boolean</entry>
+                            <entry>Should duplicate detection headers be inserted in forwarded messages?</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.discovery-group-ref</entry>
+                            <entry>String</entry>
+                            <entry>Name of discovery group used by this bridge</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry>bridges.connector-ref.connector-name (attribute)</entry>
+                            <entry>String</entry>
+                            <entry>Name of connector to use for live connection</entry>
+                            <entry></entry>
+                        </row>
+                        <row>
+                            <entry>bridges.connector-ref.backup-connector-name (attribute)</entry>
+                            <entry>String</entry>
+                            <entry>Optional name of connector to use for backup connection</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections</link></entry>
                             <entry>ClusterConnection</entry>
                             <entry>A list of cluster connections</entry>
                             <entry/>
+                        </row>
+                        <row>
+                            <entry>cluster-connections.name (attribute)</entry>
+                            <entry>String</entry>
+                            <entry>Unique name for this cluster connection</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>cluster-connections.address</entry>
+                            <entry>String</entry>
+                            <entry>Name of address this cluster connection applies to</entry>
+                            <entry/>
+                        </row>   
+                        <row>
+                            <entry>cluster-connections.forward-when-no-consumers</entry>
+                            <entry>Boolean</entry>
+                            <entry>Should messages be load balanced if there are no matching consumers on target?</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry>cluster-connections.max-hops</entry>
+                            <entry>Integer</entry>
+                            <entry>Max number of hops cluster topology is propagated</entry>
+                            <entry>1</entry>
+                        </row>
+                        <row>
+                            <entry>cluster-connections.retry-interval</entry>
+                            <entry>Long</entry>
+                            <entry>Period in ms between successive retries</entry>
+                            <entry>2000 ms</entry>
+                        </row>                        
+                        <row>
+                            <entry>cluster-connections.use-duplicate-detection</entry>
+                            <entry>Boolean</entry>
+                            <entry>Should duplicate detection headers be inserted in forwarded messages?</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry>cluster-connections.discovery-group-ref</entry>
+                            <entry>String</entry>
+                            <entry>Name of discovery group used by this bridge</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry>cluster-connections.connector-ref.connector-name (attribute)</entry>
+                            <entry>String</entry>
+                            <entry>Name of connector to use for live connection</entry>
+                            <entry></entry>
+                        </row>
+                        <row>
+                            <entry>cluster-connections.connector-ref.backup-connector-name (attribute)</entry>
+                            <entry>String</entry>
+                            <entry>Optional name of connector to use for backup connection</entry>
+                            <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="security.settings.roles"
@@ -420,7 +608,7 @@
                         </row>
                     </tbody>
                 </tgroup>
-            </informaltable>
+            </table>
         </section>
         <section>
             <title>jbm-jms.xml</title>
