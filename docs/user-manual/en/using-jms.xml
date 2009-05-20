@@ -130,8 +130,7 @@ System.out.println("Got order: " + receivedMessage.getText());
             examples directory in the distribution.</para>
     </section>
     <section>
-        <title>Directly instantiating JMS Queue, Topic and ConnectionFactory instances without using
-            JNDI</title>
+        <title>Directly instantiating JMS Resources without using JNDI</title>
         <para>Although it's a very common JMS usage pattern to lookup JMS <emphasis>Administered
                 Objects</emphasis> (that's JMS Queues, Topics and Connection Factories) from JNDI,
             in some cases a JNDI server is not available and you still want to use JMS, or you just
