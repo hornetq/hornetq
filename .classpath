@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
+	<classpathentry kind="src" path="src/config/common"/>
 	<classpathentry kind="src" path="build/src"/>
-	<classpathentry excluding="schema/" kind="src" path="src/config/common"/>
 	<classpathentry kind="src" path="tests/jms-tests/config"/>
 	<classpathentry kind="src" path="tests/config"/>
 	<classpathentry kind="src" path="src/config/stand-alone/non-clustered"/>
