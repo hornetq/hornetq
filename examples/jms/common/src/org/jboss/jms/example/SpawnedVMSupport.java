@@ -63,6 +63,10 @@ public class SpawnedVMSupport
       
       for (String vmarg : vmargs)
       {
+         if (System.getProperty("os.name").contains("Windows"))
+         {
+            vmarg = vmarg.replaceAll("/", "\\\\");    
+         }
          sb.append(vmarg).append(' ');
       }
       
@@ -71,16 +75,21 @@ public class SpawnedVMSupport
       classPath = classPath + pathSeparater + ".";
       //System.out.println("classPath = " + classPath);
       // I guess it'd be simpler to check if the OS is Windows...
-      if (System.getProperty("os.name").equals("Linux") || System.getProperty("os.name").equals("Mac OS X"))
-      {
-         sb.append("-cp").append(" ").append(classPath).append(" ");
-      }
-      else
+      if (System.getProperty("os.name").contains("Windows"))
       {
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
       }
-
-      sb.append("-Djava.library.path=").append(System.getProperty("java.library.path", "./native/bin")).append(" ");
+      else
+      {
+         sb.append("-cp").append(" ").append(classPath).append(" ");
+      }
+      String libPath = "-Djava.library.path=" + System.getProperty("java.library.path", "./native/bin");
+      if (System.getProperty("os.name").contains("Windows"))
+      {
+          libPath = libPath.replaceAll("/", "\\\\");
+          libPath = "\"" + libPath + "\"";
+      }
+      sb.append("-Djava.library.path=").append(libPath).append(" ");
 
       // sb.append("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 ");
       sb.append(className).append(' ');
@@ -92,7 +101,7 @@ public class SpawnedVMSupport
 
       String commandLine = sb.toString();
 
-      log.trace("command line: " + commandLine);
+      log.info("command line: " + commandLine);
 
       Process process = Runtime.getRuntime().exec(commandLine, new String[]{}, new File(configDir));
 
