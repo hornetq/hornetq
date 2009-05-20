@@ -1,46 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="intercepting-operations">
    <title>Intercepting Operations</title>
-      <para>JBoss Messaging supports <emphasis>interceptors</emphasis> to add behavior into 
-      the messaging server.</para>
-
-      <section>
-         <title>Implementing The Interceptors</title>
-         <para>A interceptor must implement the <literal>Interceptor interface</literal>:</para>
-         <programlisting>
+   <para>JBoss Messaging supports <emphasis>interceptors</emphasis> to add behavior into the
+      messaging server.</para>
+   <section>
+      <title>Implementing The Interceptors</title>
+      <para>A interceptor must implement the <literal>Interceptor interface</literal>:</para>
+      <programlisting>
 package org.jboss.messaging.core.remoting;
 
 public interface Interceptor
 {   
-   boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException;
+   boolean intercept(Packet packet, RemotingConnection connection) 
+                throws MessagingException;
 }
          </programlisting>
-         <para>The returned boolean value is important:</para>
-         <itemizedlist>
-            <listitem><para>if <literal>true</literal> is returned, the process continues normally</para></listitem>
-            <listitem><para>if <literal>false</literal> is returned, the process is aborted, no other interceptors will be called
-            and the packet will not be handled by the server at all.</para></listitem>
-         </itemizedlist>
-         
-      </section>
-
-      <section>
-         <title>Configuring The Interceptors</title>
-         <para>The interceptors are configured in <literal>jbm-configuration.xml</literal>:</para>
-         <programlisting>
+      <para>The returned boolean value is important:</para>
+      <itemizedlist>
+         <listitem>
+            <para>if <literal>true</literal> is returned, the process continues normally</para>
+         </listitem>
+         <listitem>
+            <para>if <literal>false</literal> is returned, the process is aborted, no other
+               interceptors will be called and the packet will not be handled by the server at
+               all.</para>
+         </listitem>
+      </itemizedlist>
+   </section>
+   <section>
+      <title>Configuring The Interceptors</title>
+      <para>The interceptors are configured in <literal>jbm-configuration.xml</literal>:</para>
+      <programlisting>
 &lt;remoting-interceptors&gt;
    &lt;class-name&gt;org.jboss.jms.example.LoginInterceptor&lt;/class-name&gt;
    &lt;class-name&gt;org.jboss.jms.example.AdditionalPropertyInterceptor&lt;/class-name&gt;
 &lt;/remoting-interceptors&gt;
          </programlisting>
-         <para>The interceptors classes (and their dependencies) must be added to the server classpath
-            to be properly instantiated and called.</para>
-      </section>
-
-      <section>
-         <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/interceptor/readme.html"><literal>interceptor</literal>
-          example</ulink> shows how to use interceptors to add properties to a message on the server.</para>
-      </section>
-          
+      <para>The interceptors classes (and their dependencies) must be added to the server classpath
+         to be properly instantiated and called.</para>
+   </section>
+   <section>
+      <title>Example</title>
+      <para>The <ulink url="../../../../examples/jms/interceptor/readme.html"><literal
+               >interceptor</literal> example</ulink> shows how to use interceptors to add
+         properties to a message on the server.</para>
+   </section>
 </chapter>
