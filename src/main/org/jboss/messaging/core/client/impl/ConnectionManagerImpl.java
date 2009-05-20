@@ -775,7 +775,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          for (ConnectionEntry entry : copy)
          {           
             try
-            {
+            {              
                entry.connection.destroy();
             }
             catch (Throwable ignore)
@@ -884,9 +884,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          conn.addFailureListener(new DelegatingFailureListener(conn.getID()));
 
+         connections.put(conn.getID(), new ConnectionEntry(conn, connector));         
+         
          conn.startPinger();
-
-         connections.put(conn.getID(), new ConnectionEntry(conn, connector));
 
          if (debug)
          {
