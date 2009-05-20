@@ -39,8 +39,9 @@
             <title>Using Core API</title>
             <para>If the JBoss Messaging Core API is used, the minimal large message size is
                 specified by <literal>ClientSessionFactory.setMinLargeMessageSize</literal>.</para>
-            <programlisting>ClientSessionFactory factory = new ClientSessionFactoryImpl(new 
-                        TransportConfiguration(NettyConnectorFactory.class.getName()), null);
+            <programlisting>ClientSessionFactory factory = 
+            new ClientSessionFactoryImpl(new 
+            TransportConfiguration(NettyConnectorFactory.class.getName()), null);
 factory.setMinLargeMessageSize(25 * 1024);</programlisting>
             <para><xref linkend="configuring-transports.client.side"/> will provide more information
                 on how to instantiate the session factory.</para>
