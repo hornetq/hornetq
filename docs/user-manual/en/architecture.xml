@@ -41,7 +41,6 @@
             wire using the JBoss Messaging wire format.</para>
         <para>The server always just deals with core API interactions.</para>
         <para>A schematic illustrating this relationship is shown in figure 3.1 below:</para>
-        <para/>
         <para>
             <graphic fileref="images/architecture1.jpg" align="center"/>
         </para>
@@ -90,7 +89,6 @@
             the JBoss Messaging server. This is not recommended as you'll most likely end up
             creating a new connection and session every time you want to interact from the EJB,
             which is an anti-pattern.</para>
-        <para/>
         <para>
             <graphic fileref="images/architecture2.jpg"/>
         </para>
@@ -116,9 +114,8 @@
         <para>The stand-alone server configuration uses JBoss Microcontainer to instantiate and
             enforce dependencies between the components. JBoss Microcontainer is a very lightweight
             POJO bootstrapper.</para>
-        <para>[TODO]  need to add mbean server, jndi server etc to diagram</para>
+        <para>[TODO] need to add mbean server, jndi server etc to diagram</para>
         <para>The stand-alone server architecture is shown in figure 3.3 below:</para>
-        <para/>
         <para>
             <graphic fileref="images/architecture3.jpg"/>
         </para>

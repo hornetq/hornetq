@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="undelivered-messages">
-    <title>Undelivered Messages</title>
+    <title>Message Redelivery and Undelivered Messages</title>
     <para>Messages can be delivered unsuccessfully (e.g. if the transacted session used to consume them is rolled back).
         Such a message goes back to its queue ready to be redelivered.
         However, this means it is possible for a message to be delivered 
@@ -105,7 +105,7 @@
          before delivering the message would add an extra persistent step <emphasis>for each message delivered</emphasis>,
          implying a significant performance penalty.</para>
       <para>However, if the delivery count is not updated persistently before the message delivery happens, in the event of 
-         a server crash, messages might not have been delivered. During the recovery phase, the server will not have
+         a server crash, messages might have been delivered but that will not have been reflected in the delivery count. During the recovery phase, the server will not have
          knowledge of that and will deliver the message with <literal>redelivered</literal> set to <literal>false</literal>
          while it should be <literal>true</literal>.
       </para>

@@ -141,7 +141,7 @@ server.start();
                       new TransportConfiguration(
                               InVMConnectorFactory.class.getName()), null);
 
-ClientSession session = factory.createSession(false, true, true);
+ClientSession session = factory.createSession();
 session.createQueue("example", "example", true);
 
 ClientProducer producer = session.createProducer("example");

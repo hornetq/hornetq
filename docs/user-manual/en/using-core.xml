@@ -8,24 +8,43 @@
         that are not normally available using JMS.</para>
     <section>
         <title>Core Messaging Concepts</title>
-        <para>Some of the core messaging concepts are similar to JMS concepts, but Core messaging
-            concepts differ in some ways. In general the core messaging API is simply than the JMS
+        <para>Some of the core messaging concepts are similar to JMS concepts, but core messaging
+            concepts differ in some ways. In general the core messaging API is simpler than the JMS
             API, since we remove distinctions between queues, topics and subscriptions. We'll
             discuss each of the major core messaging concepts in turn:</para>
         <section>
             <title>Message</title>
-            <para>Messages are sent to <literal>addresses</literal>. When the message arrives on the
-                server the server routes it to zero or more queues depending on the address. Many
-                queues can be bound to a particular address on the server. The server will route the
-                message to all queues bound to that address.</para>
+            <para>A message is the unit of data which is sent between clients and servers.</para>
+            <para>A message has a body which is effectively a byte[], it also has a set of
+                properties which are key-value pairs. Each property key is a string and property
+                values can be of type integer, long, short, byte, byte[], String, double, float or
+                boolean.</para>
+            <para>A message has a destination which represents the <emphasis>address</emphasis> it
+                is being sent to. When the message arrives on the server the server route the
+                message to zero or more queues depending on the address. Many queues can be bound to
+                a particular address on the server. The server will route the message to all queues
+                bound to that address.</para>
             <para>Messages can durable or non durable. Durable messages in a durable queue will
                 survive a server crash or restart. Non durable messages will never survive a server
                 crash or restart.</para>
+            <para>Messages can be specified with a priority value betwen 0 and 9.  0 represents the
+                highest priority and 9 represents the lowest. JBoss Messaging will attempt to
+                deliver higher priority messages before lower priority ones.</para>
+            <para>Messages can be specified with an optional expiry time. JBoss Messaging will not
+                deliver messages after its expiry time has been exceeded.</para>
+            <para>Messages also have an optional timestamp which represents the time the message was
+                sent.</para>
         </section>
         <section>
             <title>Address</title>
-            <para>In core, there is no concept of a Topic, Topic is a JMS only term. Instead, in
-                core, we just deal with <emphasis>addresses</emphasis> and
+            <para>A server maintains a mapping between an address and a set of queues. Zero or more
+                queues can be bound to a single address. Each queue can be bound with an optional
+                message filter. When a message is routed to an address it is routed to the set of
+                queues bound to the message's destination address. If any of the queues are bound
+                with a filter expression, then the message will only be routed to the subset of
+                bound queues which match that filter expression.</para>
+            <para>Note that, in core, there is no concept of a Topic, Topic is a JMS only term.
+                Instead, in core, we just deal with <emphasis>addresses</emphasis> and
                     <emphasis>queues</emphasis>.</para>
             <para>For example, a JMS topic would implemented by a single address to which many
                 queues are bound. Each queue represents a subscription of the topic. A JMS Queue
@@ -42,6 +61,8 @@
             <para>Queues can be bound with an optional filter expression. If a filter expression is
                 supplied then the server will only route messages who match that filter expression
                 to any queues bound to the address.</para>
+            <para>Many queues can be bound to a single address. A particular queue is only bound to
+                a maximum of one address.</para>
         </section>
         <section>
             <title>ClientSessionFactory</title>
@@ -51,9 +72,12 @@
         </section>
         <section>
             <title>ClientSession</title>
-            <para>blah blah blah</para>
-            <para>ClientSession also fully supports both local and XA transactional
-                semantics.</para>
+            <para>A client uses a ClientSession for consuming and producing messages and for
+                grouping them in transactions. ClientSession instances can support both
+                transactional and non transactional semantics and also provide an <literal
+                    >XAResource</literal> interface so messaging operations can be performed as part
+                of a JTA transaction.</para>
+            <para>ClientSession instances group ClientConsumers and ClientProducers.</para>
         </section>
         <section>
             <title>ClientConsumer</title>
@@ -66,15 +90,37 @@
         <section>
             <title>ClientProducer</title>
             <para>Clients create <literal>ClientProducer</literal> instances on <literal
-                    >ClientSession</literal> instances so they can send messages.</para>
+                    >ClientSession</literal> instances so they can send messages. ClientProducer
+                instances can specify an address to which all sent messages are routed, or they can
+                have no specified address, and the address is specified at send time for the
+                message.</para>
         </section>
     </section>
     <section>
         <title>A simple example of using Core</title>
-        <para/>
-    </section>
-    <section>
-        <title>Core transactions</title>
-        <para/>
+        <para>Here's a very simple program using the core messaging API to send and receive a
+            message:</para>
+        <programlisting>ClientSessionFactory nettyFactory =  new ClientSessionFactoryImpl(
+                      new TransportConfiguration(
+                              InVMConnectorFactory.class.getName()), null);
+
+ClientSession session = factory.createSession();
+session.createQueue("example", "example", true);
+
+ClientProducer producer = session.createProducer("example");
+ClientMessage message = session.createClientMessage(true);
+
+message.getBody().writeString("Hello");
+
+producer.send(message);
+
+session.start();
+
+ClientConsumer consumer = session.createConsumer("example");
+
+ClientMessage msgReceived = consumer.receive();
+System.out.println("message = " + msgReceived.getBody().readString());
+
+session.close();</programlisting>
     </section>
 </chapter>
