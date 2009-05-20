@@ -56,8 +56,7 @@ server.start();</programlisting>
         new MessagingServerImpl(config,
                                 ManagementFactory.getPlatformMBeanServer(),
                                 new JBMSecurityManagerImpl());
-server.start();
-        </programlisting>
+server.start();</programlisting>
     </section>
     <section>
         <title>Dependency Frameworks</title>
@@ -141,7 +140,7 @@ server.start();
                       new TransportConfiguration(
                               InVMConnectorFactory.class.getName()), null);
 
-ClientSession session = factory.createSession();
+ClientSession session = factory.createSession(false, true, true);
 session.createQueue("example", "example", true);
 
 ClientProducer producer = session.createProducer("example");
@@ -158,8 +157,7 @@ ClientConsumer consumer = session.createConsumer("example");
 ClientMessage msgReceived = consumer.receive();
 System.out.println("message = " + msgReceived.getBody().readString());
 
-session.close();
-            </programlisting>
+session.close();</programlisting>
         </section>
         <section>
             <title>JMS API</title>
@@ -192,8 +190,7 @@ System.out.println("Msg = " + txtmsg.getText());
 
 sess.commit();
 
-conn.close();
-            </programlisting>
+conn.close();</programlisting>
         </section>
     </section>
     <section>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="jar-dependencies">
+    <title>Jar Dependencies</title>
+    <para>JBoss Messaging was designed to have as few dependencies on external jars as possible. In
+        fact, JBoss Messaging core has zero dependencies on any jars other than the standard JDK
+        classes!</para>
+    <para>However depending on how you're running JBoss Messaging, you may require extra jars. Each
+        section here will explain the requirements.</para>
+    <section>
+        <title>JBoss Messaging Jars</title>
+        <table frame="topbot">
+            <title>List of jars distributed by JBoss Messaging</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1"/>
+                <colspec colname="c2" colnum="2"/>
+                <colspec colname="c3" colnum="3"/>
+                <thead>
+                    <row>
+                        <entry>Name</entry>
+                        <entry>Description</entry>
+                        <entry>Dependencies</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry><link linkend="using-core">jbm-core.jar</link></entry>
+                        <entry>JBoss Messaging Core</entry>
+                        <entry>No dependencies</entry>
+                    </row>
+                    <row>
+                        <entry><link linkend="using-core">jbm-core-client.jar</link></entry>
+                        <entry>JBoss Messaging Core Client</entry>
+                        <entry>No dependencies</entry>
+                    </row>
+                    <row>
+                        <entry><link linkend="using-jms">jbm-jms.jar</link></entry>
+                        <entry>JBoss Messaging JMS wrappers</entry>
+                        <entry>jbm-core.jar</entry>
+                    </row>
+                    <row>
+                        <entry><link linkend="using-server">jbm-bootstrap.jar</link></entry>
+                        <entry>Standalone server support</entry>
+                        <entry>jbm-core.jar and JBoss Micro Container</entry>
+                    </row>
+                    <row>
+                        <entry><link linkend="logging">jbm-logging.jar</link></entry>
+                        <entry>Wrapper to other Logger Frameworks</entry>
+                        <entry>Log4j or JBoss Logger depending on the logging configuration</entry>
+                    </row>
+                    <row>
+                        <entry><link linkend="logging">jbm-logging.jar</link></entry>
+                        <entry>Wrapper to other Logger Frameworks</entry>
+                        <entry>Log4j or JBoss Logger depending on the logging configuration</entry>
+                    </row>
+                    <row>
+                        <entry><link linkend="security">jbm-jbossas-security.jar</link></entry>
+                        <entry>Classes used to start a standalone server</entry>
+                        <entry>Only JDK if using <literal>JAAS</literal> or JBoss libraries if using <literal>JBossASSecurityManager</literal></entry>
+                    </row>
+                    <row>
+                        <entry><link linkend="configuring-transports">jbm-transports.jar</link></entry>
+                        <entry>Socket and HTTP Transport plugins</entry>
+                        <entry>Netty jars</entry>
+                    </row>
+                    
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+</chapter>

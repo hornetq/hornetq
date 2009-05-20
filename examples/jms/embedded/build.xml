@@ -32,12 +32,26 @@
 
    <import file="../../common/build.xml"/>
 
-   <target name="run">   	
-      <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.EmbeddedExample"/>
-         <!-- We limit the client to running in only 50MB of RAM -->
-     	   <param name="java-min-memory" value="50M"/>
-     	   <param name="java-max-memory" value="50M"/>
-      </antcall>
+   <!-- We use a minimal classpath on this example -->
+   <path id="local.classpath">
+	  <fileset dir="${jbm.jars.dir}">
+	       <include name="jbm-core.jar"/>
+	       <include name="jbm-jms.jar"/>
+	  </fileset>
+	 	
+	  <fileset dir="${jars.dir}">
+	       <include name="jboss/jboss-javaee/lib/jboss-javaee.jar"/>
+	  </fileset>
+
+   	  <pathelement location="${classes.dir}"/>	   	
+   </path>
+
+   <target name="run" depends="compile">   	
+
+    <java classname="org.jboss.jms.example.EmbeddedExample" fork="true" resultproperty="example-result">
+       <jvmarg value="-Xms50M"/>
+       <jvmarg value="-Xmx50M"/>
+       <classpath refid="local.classpath"/>
+    </java>
    </target>
 </project>

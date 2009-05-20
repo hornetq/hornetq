@@ -44,7 +44,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
 ...        </programlisting>
             <para>
                 <table frame="topbot">
-                    <title/>
+                    <title>Paging Configuration Parameters</title>
                     <tgroup cols="3">
                         <colspec colname="c1" colnum="1"/>
                         <colspec colname="c2" colnum="2"/>
@@ -102,7 +102,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
             <para>This is the list of available parameters on the address settings.</para>
             <para>
                 <table frame="topbot">
-                    <title/>
+                    <title>Paging Address Settings</title>
                     <tgroup cols="3">
                         <colspec colname="c1" colnum="1"/>
                         <colspec colname="c2" colnum="2"/>

@@ -75,7 +75,6 @@
                 temporary connection failure allowing them to be an ideal choice for forwarding over
                 unreliable connections, e.g. a WAN.</para>
         </section>
-        
         <section>
             <title>Client Kickoff</title>
             <para>This example shows how to kick off a client connected to JBoss Messaging using
@@ -96,8 +95,6 @@
                 messages via the producer, and we verify that both subscribers receive all the sent
                 messages.</para>
         </section>
-        
-       
         <section>
             <title>Dead Letter</title>
             <para>This example shows you how to define and deal with dead letter messages. Messages
@@ -144,9 +141,6 @@
             <para>This example shows how to embed the JBoss Messaging Server within your own
                 code.</para>
         </section>
-        
-        
-        
         <section>
             <title>HTTP Transport</title>
             <para>This example shows you how to configure JBoss Messaging to use HTTP protocol as
@@ -309,12 +303,10 @@
                 delivering it to the client. This example demonstrates how JBoss Messaging soes
                 this.</para>
         </section>
-        
         <section>
             <title>Queue</title>
             <para>A simple example demonstrating a JMS Queue.</para>
         </section>
-        
         <section>
             <title>Queue Requestor</title>
             <para>A simple example demonstrating a JMS queue requestor.</para>
@@ -324,7 +316,6 @@
             <para>This example shows you how to selectively consume messages using message selectors
                 with queue consumers.</para>
         </section>
-        
         <section>
             <title>Request-Reply</title>
             <para>A simple example showing the JMS request-reply pattern.</para>
@@ -338,7 +329,6 @@
             <title>Security</title>
             <para>This example shows you how configure and use security with JBoss Messaging.</para>
         </section>
-        
         <section>
             <title>Static Message Selector</title>
             <para>This example shows you how to configure a JBoss Messaging queue with static
@@ -414,6 +404,16 @@
             <title>XA with Transaction Manager</title>
             <para>This example shows you how to use JTA interfaces to control transactions with
                 JBoss Messaging.</para>
+        </section>
+    </section>
+    <section>
+        <title>Core API Examples</title>
+        <para>To run a Core API example, simply <literal>cd</literal> into the appropriate example
+            directory and type <literal>ant</literal></para>
+        <section>
+            <title>Embedded</title>
+            <para>This example shows how to embed the JBoss Messaging Server within your own
+                code.</para>
         </section>
     </section>
     <section>
