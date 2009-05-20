@@ -36,17 +36,21 @@
     &lt;queue-name&gt;jms.queue.sausage-factory&lt;/queue-name&gt;
     &lt;forwarding-address&gt;jms.queue.mincing-machine&lt;/forwarding-address&gt;
     &lt;filter-string="name='aardvark'"/&gt;
-    &lt;transformer-class-name&gt;org.jboss.jms.example.HatColourChangeTransformer&lt;/transformer-class-name&gt;
+    &lt;transformer-class-name&gt;
+        org.jboss.jms.example.HatColourChangeTransformer
+    &lt;/transformer-class-name&gt;
     &lt;retry-interval&gt;1000&lt;/retry-interval&gt;
     &lt;retry-interval-multiplier&gt;1.0&lt;/retry-interval-multiplier&gt;
     &lt;reconnect-attempts&gt;-1&lt;/reconnect-attempts&gt;
     &lt;failover-on-server-shutdown&gt;false&lt;/failover-on-server-shutdown&gt;
     &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
-    &lt;connector-ref connector-name="remote-connector" backup-connector-name="backup-remote-connector"/&gt;          
+    &lt;connector-ref connector-name="remote-connector" 
+        backup-connector-name="backup-remote-connector"/&gt;          
 &lt;/bridge&gt;                        
         </programlisting>
-        <para>Please also note that in order for bridges to be deployed on a server, the <literal>clustered</literal> attribute needs to be set
-        to <literal>true</literal> in <literal>jbm-configuration.xml</literal>.</para>
+        <para>Please also note that in order for bridges to be deployed on a server, the <literal
+                >clustered</literal> attribute needs to be set to <literal>true</literal> in
+                <literal>jbm-configuration.xml</literal>.</para>
         <para>In the above example we should all the parameters its possible to configure for a
             bridge. In practice you might use many of the defaults so it won't be necessary to
             specify them all explicitly.</para>
