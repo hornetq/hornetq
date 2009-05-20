@@ -134,7 +134,8 @@
       &lt;entries>
          &lt;entry name="ConnectionFactory"/>       
       &lt;/entries>
-      &lt;!-- We limit consumers created on this connection factory to consume messages at a maximum rate
+      &lt;!-- We limit consumers created on this connection factory to consume messages
+             at a maximum rate
       of 10 messages per sec -->
       &lt;consumer-max-rate>10&lt;/consumer-max-rate>
  &lt;/connection-factory></programlisting>
@@ -163,9 +164,10 @@
       <para>JBoss Messaging allows producers to be created which limit</para>
       <section>
          <title>Window based flow control</title>
-         <para>JBoss Messaging clients maintain a buffer of commands that have been sent to the server, thus provides a form
-         of flow control. Please see the chapter on <xref linkend="command-buffering">command buffering</xref> for more information
-         on this.</para>
+         <para>JBoss Messaging clients maintain a buffer of commands that have been sent to the
+            server, thus provides a form of flow control. Please see the chapter on <xref
+               linkend="command-buffering">command buffering</xref> for more information on
+            this.</para>
       </section>
       <section>
          <title>Rate limited flow control</title>
@@ -192,7 +194,8 @@
       &lt;entries>
          &lt;entry name="ConnectionFactory"/>       
       &lt;/entries>
-      &lt;!-- We limit producers created on this connection factory to produce messages at a maximum rate
+      &lt;!-- We limit producers created on this connection factory to produce messages 
+                at a maximum rate
       of 10 messages per sec -->
       &lt;producer-max-rate>10&lt;/producer-max-rate>
  &lt;/connection-factory></programlisting>
