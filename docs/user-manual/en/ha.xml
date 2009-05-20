@@ -47,7 +47,9 @@
    
    &lt;!-- This connector specifies how to connect to the backup server -->
    &lt;connector name="backup-connector">
-     &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+     &lt;factory-class>
+        org.jboss.messaging.integration.transports.netty.NettyConnectorFactory
+     &lt;/factory-class>
      &lt;param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
    &lt;/connector>
 
