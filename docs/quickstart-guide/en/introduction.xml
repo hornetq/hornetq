@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="introduction">
-   <title>Introduction</title>
-   <para>TODO</para>
+    <title>Introduction</title>
+    <para>This guide will help you to download, install and run JBoss Messaging. It will also get
+        you started by running some examples. For more in depth information use the JBoss Messaging
+        User Guide.</para>
 </chapter>

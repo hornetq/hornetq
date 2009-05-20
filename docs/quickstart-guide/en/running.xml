@@ -1,41 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="running">
    <title>Starting The Server</title>
-
    <section id="running.standalone">
       <title>Standalone JBoss Messaging</title>
-      <para>To run a standalone server, open up a shell or command prompt and navigate into the <literal>bin</literal> directory. 
-      Then execute <literal>./run.sh</literal> (or <literal>run.bat</literal> on Windows) and you should see the following output
-      </para>
+      <para>To run a standalone server, open up a shell or command prompt and navigate into the
+            <literal>bin</literal> directory. Then execute <literal>./run.sh</literal> (or <literal
+            >run.bat</literal> on Windows) and you should see the following output </para>
       <programlisting>
          bin$ ./run.sh
          
          15:05:54,108 INFO  @main [JBMBootstrapServer] Starting JBoss Messaging server
          ...
-         15:06:02,566 INFO  @main [MessagingServerImpl] JBoss Messaging Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+         15:06:02,566 INFO  @main [MessagingServerImpl] JBoss Messaging Server version 
+         2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
       </programlisting>
-      <para>JBoss Messaging is now running. If any errors are displayed or if the server was not started properly, please refer to the troubleshooting guide for help</para>
-      <para>By default, JBoss Messaging is run in a <emphasis>non-clustered</emphasis> configuration (based on the configuration in
-      <literal>config/stand-alone/non-clustered</literal> directory).</para>
+      <para>JBoss Messaging is now running. If any errors are displayed or if the server was not
+         started properly, please refer to the troubleshooting guide for help</para>
+      <para>By default, JBoss Messaging is run in a <emphasis>non-clustered</emphasis> configuration
+         (based on the configuration in <literal>config/stand-alone/non-clustered</literal>
+         directory).</para>
    </section>
-
    <section id="running.jboss.as">
       <title>JBoss Messaging In JBoss AS 5</title>
-      <para>To run JBoss Messaging in JBoss AS 5, you need to create the 
-         <link linkend="installation.jboss">AS 5 profiles for JBoss Messaging</link> first.
-         Then run JBoss AS 5 with one these profiles. For example, to run JBoss AS 5 with a 
-         <emphasis>non-clustered</emphasis> JBoss Messaging server, got to <literal>$JBOSS_HOME/bin</literal>
-         directory and type:</para>
+      <para>To run JBoss Messaging in JBoss AS 5, you need to create the <link
+            linkend="installation.jboss">AS 5 profiles for JBoss Messaging</link> first. Then run
+         JBoss AS 5 with one these profiles. For example, to run JBoss AS 5 with a
+            <emphasis>non-clustered</emphasis> JBoss Messaging server, got to <literal
+            >$JBOSS_HOME/bin</literal> directory and type:</para>
       <programlisting>
         bin$ ./run.sh -c default-with-jbm2
         
         15:18:35,460 INFO  [ServerImpl] Starting JBoss (Microcontainer)...
-        15:18:35,462 INFO  [ServerImpl] Release ID: JBoss [The Oracle] 5.1.0.CR1 (build: SVNTag=JBoss_5_1_0_CR1 date=200904091504)
+        15:18:35,462 INFO  [ServerImpl] Release ID: JBoss [The Oracle] 5.1.0.CR1 (build: 
+        SVNTag=JBoss_5_1_0_CR1 date=200904091504)
         ...
-        15:19:30,305 INFO  [MessagingServerImpl] JBoss Messaging Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+        15:19:30,305 INFO  [MessagingServerImpl] JBoss Messaging Server version 
+        2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
         ...
-        15:19:43,601 INFO  [ServerImpl] JBoss (Microcontainer) [5.1.0.CR1 (build: SVNTag=JBoss_5_1_0_CR1 date=200904091504)] Started in 1m:8s:121ms
+        15:19:43,601 INFO  [ServerImpl] JBoss (Microcontainer) [5.1.0.CR1 (build: 
+        SVNTag=JBoss_5_1_0_CR1 date=200904091504)] Started in 1m:8s:121ms
       </programlisting>
    </section>
-
 </chapter>

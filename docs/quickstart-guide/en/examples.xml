@@ -113,6 +113,8 @@ Total time: 13 seconds
       <para>Once set we can then deploy the application, from inside the <literal
             >examples/javaee/mdb</literal> directory run the command:</para>
       <programlisting>ant deploy</programlisting>
+      <para>This will make a copy of the messaging profile in the JBoss Application server and start
+         the server.</para>
       <para>In the shell window you should see something like the following output:</para>
       <programlisting>Buildfile: build.xml
 
@@ -140,40 +142,29 @@ ear:
 
 deploy-ear:
      [copy] Copying 1 file to /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-     /server/default-with-jbm2/deploy
 
-deploy-misc:
+     .......
 
-BUILD SUCCESSFUL
-Total time: 6 seconds
+
+     [exec] 16:01:04,607 INFO  [JBossASKernel] 	Class:javax.jms.MessageListener
+     [exec] 16:01:04,607 INFO  [JBossASKernel] Added bean(jboss.j2ee:ear=mdb-example.ear,
+     jar=mdb-example.jar,name=MessageMDBExample,service=EJB3) to KernelDeployment of: 
+     mdb-example.jar
+     [exec] 16:01:04,702 INFO  [EJBContainer] STARTED EJB: org.jboss.javaee.example.server
+     .MDBExample ejbName: MessageMDBExample
+     [exec] 16:01:09,496 INFO  [TomcatDeployment] deploy, ctxPath=/mdb-example
+     [exec] 16:01:09,812 WARNING [config] Unable to process deployment descriptor for cont
+     ext '/mdb-example'
+     [exec] 16:01:09,812 INFO  [config] Initializing Mojarra (1.2_12-b01-FCS) for context 
+     '/mdb-example'
+     [exec] 16:01:09,958 INFO  [Http11Protocol] Starting Coyote HTTP/1.1 on http-127.0.0.1-
+     8080
+     [exec] 16:01:09,990 INFO  [AjpProtocol] Starting Coyote AJP/1.3 on ajp-127.0.0.1-8009
+     [exec] 16:01:10,001 INFO  [ServerImpl] JBoss (Microcontainer) [5.1.0.GA (build: SVNTag
+     =JBoss_5_1_0_GA date=200905151005)] Started in 6m:21s:797ms
+
 </programlisting>
-      <para>You can then confirm that the application has been succesfully deployed by checking the
-         output from the JBoss Application Server, you should see something like:</para>
-      <programlisting>
-16:26:31,584 INFO  [Ejb3DependenciesDeployer] Encountered deployment AbstractVFSDeploymen
-tContext@1992739{vfszip:/home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA/server
-/default-with-jbm2/deploy/mdb-example.ear/mdb-example.jar/}
-16:26:31,584 INFO  [Ejb3DependenciesDeployer] Encountered deployment AbstractVFSDeploymen
-tContext@1992739{vfszip:/home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA/server
-/default-with-jbm2/deploy/mdb-example.ear/mdb-example.jar/}
-16:26:31,621 INFO  [JBossASKernel] Created KernelDeployment for: mdb-example.jar
-16:26:31,622 INFO  [JBossASKernel] installing bean: jboss.j2ee:ear=mdb-example.ear,jar=md
-b-example.jar,name=Mes
-sageMDBExample,service=EJB3
-16:26:31,622 INFO  [JBossASKernel]   with dependencies:
-16:26:31,622 INFO  [JBossASKernel]   and demands:
-16:26:31,622 INFO  [JBossASKernel] 	jboss.ejb:service=EJBTimerService
-16:26:31,622 INFO  [JBossASKernel]   and supplies:
-16:26:31,622 INFO  [JBossASKernel] 	jndi:null
-16:26:31,622 INFO  [JBossASKernel] 	Class:javax.jms.MessageListener
-16:26:31,622 INFO  [JBossASKernel] Added bean(jboss.j2ee:ear=mdb-example.ear,jar=mdb-examp
-le.jar,name=MessageMD
-BExample,service=EJB3) to KernelDeployment of: mdb-example.jar
-16:26:31,651 INFO  [EJBContainer] STARTED EJB: org.jboss.javaee.example.server.MDBExample 
-ejbName: MessageMDBEx
-ample
-</programlisting>
-      <para>We can now run the example, do this by running the follwing command from within the
+      <para>We can now run the example, do this by running the following command from within the
             <literal>mdb</literal> directory.</para>
       <programlisting>ant</programlisting>
       <para>You should see some output similar to the following:</para>
