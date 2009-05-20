@@ -33,18 +33,20 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JBMExample;
+
 /**
- * A simple JMS example that shows how static message selectors work.
+ * A simple JMS example that shows how static message selectors work when using JMS config.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class StaticSelectorExample extends JMSExample
+public class StaticSelectorJMSExample extends JBMExample
 {
    private volatile boolean result = true;
 
    public static void main(String[] args)
    {
-      new StaticSelectorExample().run(args);
+      new StaticSelectorJMSExample().run(args);
    }
 
    public boolean runExample() throws Exception

@@ -187,14 +187,14 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    // Public ---------------------------------------------------------------------------------------
 
-   public synchronized String getLoadBalancingPolicyClassName()
+   public synchronized String getConnectionLoadBalancingPolicyClassName()
    {
-      return sessionFactory.getLoadBalancingPolicyClassName();
+      return sessionFactory.getConnectionLoadBalancingPolicyClassName();
    }
 
-   public synchronized void setLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   public synchronized void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
    {
-      sessionFactory.setLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
+      sessionFactory.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
    }
 
    public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
@@ -237,14 +237,14 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       sessionFactory.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
    }
 
-   public synchronized long getInitialWaitTimeout()
+   public synchronized long getDiscoveryInitialWaitTimeout()
    {
-     return sessionFactory.getInitialWaitTimeout();
+     return sessionFactory.getDiscoveryInitialWaitTimeout();
    }
 
-   public synchronized void setInitialWaitTimeout(long discoveryInitialWaitTimeout)
+   public synchronized void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
    {
-      sessionFactory.setInitialWaitTimeout(discoveryInitialWaitTimeout);
+      sessionFactory.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
    }
 
    public synchronized String getClientID()

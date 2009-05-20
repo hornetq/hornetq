@@ -64,9 +64,9 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String BLOCK_ON_ACKNOWLEDGE_ELEMENT = "block-on-acknowledge";
 
-   private static final String SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-np-messages-synchronously";
+   private static final String BLOCK_ON_NON_PERSISTENT_SEND_ELEMENT = "block-on-non-persistent-send";
 
-   private static final String SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-p-messages-synchronously";
+   private static final String BLOCK_ON_PERSISTENT_SEND_ELEMENT = "block-on-persistent-send";
 
    private static final String AUTO_GROUP_ELEMENT = "auto-group";
 
@@ -108,7 +108,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME_ELEMENT = "connection-load-balancing-policy-class-name";
 
-   private static final String DISCOVERY_INITIAL_WAIT_ELEMENT = "discovery-initial-wait";
+   private static final String DISCOVERY_INITIAL_WAIT_TIMEOUT_ELEMENT = "discovery-initial-wait-timeout";
 
    private static final boolean DEFAULT_QUEUE_DURABILITY = true;
 
@@ -193,7 +193,7 @@ public class JMSServerDeployer extends XmlDeployer
          List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
          DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
          String connectionLoadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-         long discoveryInitialWait = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT;
+         long discoveryInitialWaitTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
 
          for (int j = 0; j < children.getLength(); j++)
          {
@@ -247,11 +247,11 @@ public class JMSServerDeployer extends XmlDeployer
             {
                blockOnAcknowledge = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
-            else if (SEND_NP_MESSAGES_SYNCHRONOUSLY_ELEMENT.equals(child.getNodeName()))
+            else if (BLOCK_ON_NON_PERSISTENT_SEND_ELEMENT.equals(child.getNodeName()))
             {
                blockOnNonPersistentSend = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
-            else if (SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT.equals(child.getNodeName()))
+            else if (BLOCK_ON_PERSISTENT_SEND_ELEMENT.equals(child.getNodeName()))
             {
                blockOnPersistentSend = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
@@ -313,9 +313,9 @@ public class JMSServerDeployer extends XmlDeployer
             {
                connectionLoadBalancingPolicyClassName = child.getTextContent().trim();
             }
-            else if (DISCOVERY_INITIAL_WAIT_ELEMENT.equals(child.getNodeName()))
+            else if (DISCOVERY_INITIAL_WAIT_TIMEOUT_ELEMENT.equals(child.getNodeName()))
             {
-               discoveryInitialWait = org.jboss.messaging.utils.XMLUtil.parseInt(child);
+               discoveryInitialWaitTimeout = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
             else if (CONNECTOR_LINK_ELEMENT.equals(child.getNodeName()))
             {
@@ -391,7 +391,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      connectionLoadBalancingPolicyClassName,
                                                      transactionBatchSize,
                                                      dupsOKBatchSize,
-                                                     discoveryInitialWait,
+                                                     discoveryInitialWaitTimeout,
                                                      useGlobalPools,
                                                      scheduledThreadPoolMaxSize,
                                                      threadPoolMaxSize,

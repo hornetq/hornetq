@@ -93,7 +93,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                              ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
                              ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
@@ -153,7 +153,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                              ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
                              ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
@@ -204,7 +204,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                              ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
                              ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
@@ -255,7 +255,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                              ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
                              ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
@@ -306,7 +306,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                              ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
-                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT,
+                             ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
                              ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                              ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
@@ -380,9 +380,9 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
       cf.setAutoGroup(autoGroup);
       cf.setPreAcknowledge(preAcknowledge);
-      cf.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+      cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
       cf.setAckBatchSize(ackBatchSize);
-      cf.setInitialWaitTimeout(initialWaitTimeout);
+      cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
       cf.setUseGlobalPools(useGlobalPools);
       cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
       cf.setThreadPoolMaxSize(threadPoolMaxSize);
@@ -409,9 +409,9 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       assertEquals(blockOnNonPersistentSend, cf.isBlockOnNonPersistentSend());
       assertEquals(autoGroup, cf.isAutoGroup());
       assertEquals(preAcknowledge, cf.isPreAcknowledge());
-      assertEquals(loadBalancingPolicyClassName, cf.getLoadBalancingPolicyClassName());
+      assertEquals(loadBalancingPolicyClassName, cf.getConnectionLoadBalancingPolicyClassName());
       assertEquals(ackBatchSize, cf.getAckBatchSize());
-      assertEquals(initialWaitTimeout, cf.getInitialWaitTimeout());
+      assertEquals(initialWaitTimeout, cf.getDiscoveryInitialWaitTimeout());
       assertEquals(useGlobalPools, cf.isUseGlobalPools());
       assertEquals(scheduledThreadPoolMaxSize, cf.getScheduledThreadPoolMaxSize());
       assertEquals(threadPoolMaxSize, cf.getThreadPoolMaxSize());
@@ -621,7 +621,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       }
       try
       {
-         cf.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+         cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
          fail("Should throw exception");
       }
       catch (IllegalStateException e)
@@ -639,7 +639,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       }
       try
       {
-         cf.setInitialWaitTimeout(initialWaitTimeout);
+         cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
          fail("Should throw exception");
       }
       catch (IllegalStateException e)
@@ -728,9 +728,9 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       cf.isBlockOnNonPersistentSend();
       cf.isAutoGroup();
       cf.isPreAcknowledge();
-      cf.getLoadBalancingPolicyClassName();
+      cf.getConnectionLoadBalancingPolicyClassName();
       cf.getAckBatchSize();
-      cf.getInitialWaitTimeout();
+      cf.getDiscoveryInitialWaitTimeout();
       cf.isUseGlobalPools();
       cf.getScheduledThreadPoolMaxSize();
       cf.getThreadPoolMaxSize();
@@ -802,9 +802,9 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       assertEquals(cf.isBlockOnNonPersistentSend(), blockOnNonPersistentSend);
       assertEquals(cf.isAutoGroup(), autoGroup);
       assertEquals(cf.isPreAcknowledge(), preAcknowledge);
-      assertEquals(cf.getLoadBalancingPolicyClassName(), loadBalancingPolicyClassName);
+      assertEquals(cf.getConnectionLoadBalancingPolicyClassName(), loadBalancingPolicyClassName);
       assertEquals(cf.getAckBatchSize(), ackBatchSize);
-      assertEquals(cf.getInitialWaitTimeout(), initialWaitTimeout);
+      assertEquals(cf.getDiscoveryInitialWaitTimeout(), initialWaitTimeout);
       assertEquals(cf.isUseGlobalPools(), useGlobalPools);
       assertEquals(cf.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
       assertEquals(cf.getThreadPoolMaxSize(), threadPoolMaxSize);

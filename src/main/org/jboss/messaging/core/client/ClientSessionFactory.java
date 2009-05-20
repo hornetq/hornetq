@@ -119,9 +119,9 @@ public interface ClientSessionFactory
 
    void setAckBatchSize(int ackBatchSize);
 
-   long getInitialWaitTimeout();
+   long getDiscoveryInitialWaitTimeout();
 
-   void setInitialWaitTimeout(long initialWaitTimeout);
+   void setDiscoveryInitialWaitTimeout(long initialWaitTimeout);
 
    boolean isUseGlobalPools();
 
@@ -151,9 +151,9 @@ public interface ClientSessionFactory
 
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
    
-   String getLoadBalancingPolicyClassName();
+   String getConnectionLoadBalancingPolicyClassName();
 
-   void setLoadBalancingPolicyClassName(String loadBalancingPolicyClassName);
+   void setConnectionLoadBalancingPolicyClassName(String loadBalancingPolicyClassName);
    
    String getDiscoveryAddress();   
 

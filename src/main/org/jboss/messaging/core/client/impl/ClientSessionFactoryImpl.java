@@ -91,7 +91,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final boolean DEFAULT_PRE_ACKNOWLEDGE = false;
 
-   public static final long DEFAULT_DISCOVERY_INITIAL_WAIT = 2000;
+   public static final long DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT = 2000;
 
    public static final long DEFAULT_DISCOVERY_REFRESH_TIMEOUT = 10000;
 
@@ -137,6 +137,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private int discoveryPort;
 
    private long discoveryRefreshTimeout;
+   
+   private long discoveryInitialWaitTimeout;
 
    private long pingPeriod;
 
@@ -166,11 +168,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private boolean preAcknowledge;
 
-   private String loadBalancingPolicyClassName;
+   private String connectionLoadBalancingPolicyClassName;
 
    private int ackBatchSize;
-
-   private long initialWaitTimeout;
 
    private boolean useGlobalPools;
 
@@ -330,9 +330,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       ackBatchSize = DEFAULT_ACK_BATCH_SIZE;
 
-      loadBalancingPolicyClassName = DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+      connectionLoadBalancingPolicyClassName = DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 
-      initialWaitTimeout = DEFAULT_DISCOVERY_INITIAL_WAIT;
+      discoveryInitialWaitTimeout = DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
 
       useGlobalPools = DEFAULT_USE_GLOBAL_POOLS;
 
@@ -560,15 +560,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.ackBatchSize = ackBatchSize;
    }
 
-   public synchronized long getInitialWaitTimeout()
+   public synchronized long getDiscoveryInitialWaitTimeout()
    {
-      return initialWaitTimeout;
+      return discoveryInitialWaitTimeout;
    }
 
-   public synchronized void setInitialWaitTimeout(long initialWaitTimeout)
+   public synchronized void setDiscoveryInitialWaitTimeout(long initialWaitTimeout)
    {
       checkWrite();
-      this.initialWaitTimeout = initialWaitTimeout;
+      this.discoveryInitialWaitTimeout = initialWaitTimeout;
    }
 
    public synchronized boolean isUseGlobalPools()
@@ -648,15 +648,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
-   public synchronized String getLoadBalancingPolicyClassName()
+   public synchronized String getConnectionLoadBalancingPolicyClassName()
    {
-      return loadBalancingPolicyClassName;
+      return connectionLoadBalancingPolicyClassName;
    }
 
-   public synchronized void setLoadBalancingPolicyClassName(String loadBalancingPolicyClassName)
+   public synchronized void setConnectionLoadBalancingPolicyClassName(String loadBalancingPolicyClassName)
    {
       checkWrite();
-      this.loadBalancingPolicyClassName = loadBalancingPolicyClassName;
+      this.connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
    }
 
    public synchronized String getDiscoveryAddress()
@@ -916,7 +916,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       if (discoveryGroup != null && !receivedBroadcast)
       {
-         boolean ok = discoveryGroup.waitForBroadcast(initialWaitTimeout);
+         boolean ok = discoveryGroup.waitForBroadcast(discoveryInitialWaitTimeout);
 
          if (!ok)
          {
@@ -952,7 +952,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private void instantiateLoadBalancingPolicy()
    {
-      if (loadBalancingPolicyClassName == null)
+      if (connectionLoadBalancingPolicyClassName == null)
       {
          throw new IllegalStateException("Please specify a load balancing policy class name on the session factory");
       }
@@ -960,12 +960,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       try
       {
-         Class<?> clazz = loader.loadClass(loadBalancingPolicyClassName);
+         Class<?> clazz = loader.loadClass(connectionLoadBalancingPolicyClassName);
          loadBalancingPolicy = (ConnectionLoadBalancingPolicy)clazz.newInstance();
       }
       catch (Exception e)
       {
-         throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + loadBalancingPolicyClassName +
+         throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + connectionLoadBalancingPolicyClassName +
                                                      "\"",
                                             e);
       }

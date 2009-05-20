@@ -12,7 +12,7 @@
    <!--the queue used by the example-->
    <queue name="selectorQueue">
       <entry name="/queue/selectorQueue"/>
-      <filter string="color='red'"/>
+      <selector string="color='red'"/>
    </queue>
 
 </configuration>

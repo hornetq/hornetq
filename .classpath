@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
 	<classpathentry kind="src" path="build/src"/>
-	<classpathentry kind="src" path="src/config/common"/>
+	<classpathentry excluding="schema/" kind="src" path="src/config/common"/>
 	<classpathentry kind="src" path="tests/jms-tests/config"/>
 	<classpathentry kind="src" path="tests/config"/>
 	<classpathentry kind="src" path="src/config/stand-alone/non-clustered"/>
@@ -59,6 +59,7 @@
 	<classpathentry kind="src" path="examples/jms/send-acknowledgements/src"/>
 	<classpathentry kind="src" path="examples/jms/ssl-enabled/src"/>
 	<classpathentry kind="src" path="examples/jms/static-selector/src"/>
+	<classpathentry kind="src" path="examples/jms/static-selector-jms/src"/>
 	<classpathentry kind="src" path="examples/jms/symmetric-cluster/src"/>
 	<classpathentry kind="src" path="examples/jms/temp-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/topic/src"/>

@@ -21,12 +21,12 @@
       <dups-ok-batch-size>3456</dups-ok-batch-size>
       <transaction-batch-size>4567</transaction-batch-size>
       <block-on-acknowledge>true</block-on-acknowledge>
-      <send-np-messages-synchronously>false</send-np-messages-synchronously>
-      <send-p-messages-synchronously>true</send-p-messages-synchronously>
+      <block-on-non-persistent-send>false</block-on-non-persistent-send>
+      <block-on-persistent-send>true</block-on-persistent-send>
       <auto-group-id>false</auto-group-id>
       <pre-acknowledge>true</pre-acknowledge>
       <connection-ttl>2345</connection-ttl>
-      <discovery-initial-wait>678</discovery-initial-wait>
+      <discovery-initial-wait-timeout>678</discovery-initial-wait-timeout>
       <failover-on-server-shutdown>false</failover-on-server-shutdown>
       <load-balancing-policy-class-name>FooClass</load-balancing-policy-class-name>
       <max-connections>12</max-connections>

@@ -361,7 +361,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
          cf.setAutoGroup(autoGroup);
          cf.setPreAcknowledge(preAcknowledge);
-         cf.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+         cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
          cf.setTransactionBatchSize(transactionBatchSize);
          cf.setDupsOKBatchSize(dupsOKBatchSize);
          cf.setUseGlobalPools(useGlobalPools);
@@ -429,10 +429,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
          cf.setAutoGroup(autoGroup);
          cf.setPreAcknowledge(preAcknowledge);
-         cf.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+         cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
          cf.setTransactionBatchSize(transactionBatchSize);
          cf.setDupsOKBatchSize(dupsOKBatchSize);
-         cf.setInitialWaitTimeout(initialWaitTimeout);
+         cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
          cf.setUseGlobalPools(useGlobalPools);
          cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
          cf.setThreadPoolMaxSize(threadPoolMaxSize);

@@ -4,8 +4,8 @@
    <!--the connection factory used by the example-->
    <connection-factory name="ConnectionFactory">
       <connector-ref connector-name="netty-connector"/>
-      <send-p-messages-synchronously>true</send-p-messages-synchronously>
-      <send-np-messages-synchronously>true</send-np-messages-synchronously>
+      <block-on-persistent-send>true</block-on-persistent-send>
+      <block-on-non-persistent-send>true</block-on-non-persistent-send>
       <entries>
          <entry name="ConnectionFactory"/>
       </entries>

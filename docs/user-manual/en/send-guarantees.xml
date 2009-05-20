@@ -56,8 +56,8 @@
         <para>If you are using JMS and you're using the JMS service on the server to load your JMS
             connection factory instances into JNDI then these parameters can be configured in
                 <literal>jbm-jms.xml</literal> using the elements <literal
-                >send-p-messages-synchronously</literal> and <literal
-                >send-np-messages-synchronously</literal>. If you're using JMS but not using JNDI
+                >block-on-persistent-send</literal> and <literal
+                >block-on-non-persistent-send</literal>. If you're using JMS but not using JNDI
             then you can set these values directly on the <literal>JBossConnectionFactory</literal>
             instance using the appropriate setter methods.</para>
         <para>If you're using core you can set these values directly on the <literal

@@ -28,7 +28,7 @@
    		<xsd:all>
            	<xsd:element name="connector-ref" type="connector-refType" maxOccurs="1" minOccurs="0"></xsd:element>
            	<xsd:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0"></xsd:element>
-           	<xsd:element name="discovery-initial-wait" type="xsd:unsignedLong" maxOccurs="1" minOccurs="0"></xsd:element>
+           	<xsd:element name="discovery-initial-wait-timeout" type="xsd:unsignedLong" maxOccurs="1" minOccurs="0"></xsd:element>
            	
            	<xsd:element name="entries" maxOccurs="1" minOccurs="0">
                 <xsd:complexType>
@@ -75,10 +75,10 @@
             <xsd:element name="block-on-acknowledge" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="send-np-messages-synchronously" type="xsd:boolean"
+            <xsd:element name="block-on-non-persistent-send" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="send-p-messages-synchronously" type="xsd:boolean"
+            <xsd:element name="block-on-persistent-send" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="auto-group-id" type="xsd:boolean"
@@ -139,7 +139,7 @@
    <xsd:complexType name="queueType">
     	<xsd:sequence>
     		<xsd:element name="entry" type="entryType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
-          <xsd:element name="filter" maxOccurs="1" minOccurs="0">
+          <xsd:element name="selector" maxOccurs="1" minOccurs="0">
                 <xsd:complexType>
                    <xsd:attribute name="string" type="xsd:string" use="required"></xsd:attribute>
                 </xsd:complexType>
