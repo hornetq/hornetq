@@ -34,6 +34,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.jboss.common.example.JMSExample;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;

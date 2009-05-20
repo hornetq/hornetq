@@ -30,7 +30,7 @@
 
 <project default="run" name="JBoss Messaging JMS Clustered Queue Example">
 
-   <import file="../common/build.xml"/>
+   <import file="../../common/build.xml"/>
 
    <target name="run" depends="delete-files">
       <antcall target="runExample">

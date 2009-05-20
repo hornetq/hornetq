@@ -33,6 +33,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 
 /**

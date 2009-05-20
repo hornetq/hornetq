@@ -38,6 +38,7 @@ import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.common.example.JMSExample;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.utils.UUIDGenerator;
 

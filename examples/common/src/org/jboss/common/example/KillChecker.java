@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.jms.example;
+package org.jboss.common.example;
 
 import java.io.File;
 

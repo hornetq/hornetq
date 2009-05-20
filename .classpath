@@ -25,7 +25,7 @@
 	<classpathentry kind="src" path="examples/jms/clustered-durable-subscription/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-queue/src"/>
 	<classpathentry kind="src" path="examples/jms/clustered-topic/src"/>
-	<classpathentry kind="src" path="examples/jms/common/src"/>
+	<classpathentry kind="src" path="examples/common/src"/>
 	<classpathentry kind="src" path="examples/jms/consumer-rate-limit/src"/>
 	<classpathentry kind="src" path="examples/jms/dead-letter/src"/>
 	<classpathentry kind="src" path="examples/jms/delayed-redelivery/src"/>

@@ -31,6 +31,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * This example demonstrates a core bridge set-up between two nodes, consuming messages from a queue
  * on one node and forwarding them to an address on the second node.

@@ -30,7 +30,7 @@
 
 <project default="run" name="JBoss Messaging JMS XA with JTA Example">
 
-   <import file="../common/build.xml"/>
+   <import file="../../common/build.xml"/>
 
    <path id="extra.classpath">
       <fileset dir="build/jta">

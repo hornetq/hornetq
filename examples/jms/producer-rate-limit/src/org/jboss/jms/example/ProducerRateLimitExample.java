@@ -30,6 +30,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * This example demonstrates how a message producer can be limited to produce messages at a maximum rate
  * specified in messages per sec.

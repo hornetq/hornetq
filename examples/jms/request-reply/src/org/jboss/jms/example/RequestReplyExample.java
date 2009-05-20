@@ -34,6 +34,9 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+
+import org.jboss.common.example.JMSExample;
+
 import java.util.HashMap;
 import java.util.Map;
 

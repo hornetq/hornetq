@@ -37,6 +37,8 @@ import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.jta.TransactionManager;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * A simple JMS example showing the JBoss Messaging XA support with JTA.
  *

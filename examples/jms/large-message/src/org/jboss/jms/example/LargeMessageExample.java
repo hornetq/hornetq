@@ -38,6 +38,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * This example demonstrates the ability of JBoss Messaging to send and consume a very large message, much
  * bigger than can fit in RAM.

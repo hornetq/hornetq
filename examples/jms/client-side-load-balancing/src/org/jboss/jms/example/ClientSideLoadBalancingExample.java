@@ -30,6 +30,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * This example demonstrates how subsequent connections created from a single connection factory can be load
  * balanced across the different nodes of the cluster.

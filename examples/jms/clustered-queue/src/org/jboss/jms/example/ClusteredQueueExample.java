@@ -30,6 +30,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * A simple example that demonstrates server side load-balancing of messages between the queue instances on different 
  * nodes of the cluster.

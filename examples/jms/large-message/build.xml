@@ -30,7 +30,7 @@
 
 <project default="run" name="JBoss Messaging Large Message Example">
 
-   <import file="../common/build.xml"/>
+   <import file="../../common/build.xml"/>
 
    <target name="run"  depends="delete-large-messages">   	
       <antcall target="runExample">

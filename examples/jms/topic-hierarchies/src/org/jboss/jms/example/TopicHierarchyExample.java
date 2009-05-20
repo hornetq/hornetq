@@ -31,6 +31,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
 import org.jboss.messaging.jms.JBossTopic;
 
 /**

@@ -35,6 +35,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * A simple example that demonstrates application-layer failover of the JMS connection from one node to another
  * when the live server crashes

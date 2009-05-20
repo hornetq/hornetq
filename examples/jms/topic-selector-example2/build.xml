@@ -30,7 +30,7 @@
 
 <project default="run" name="JBoss Messaging JMS Topic Selector Example 2">
 
-   <import file="../common/build.xml"/>
+   <import file="../../common/build.xml"/>
 
    <target name="run">
       <antcall target="runExample">

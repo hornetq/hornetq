@@ -35,6 +35,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;

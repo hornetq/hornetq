@@ -31,6 +31,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends then receives a message.
  *

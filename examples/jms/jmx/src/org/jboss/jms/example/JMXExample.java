@@ -39,6 +39,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 

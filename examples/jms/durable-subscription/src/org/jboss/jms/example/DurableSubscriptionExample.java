@@ -30,6 +30,8 @@ import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * A simple JMS example that shows how to use a durable subscription.
  *

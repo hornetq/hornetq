@@ -30,6 +30,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * This example demonstrates how JBoss Messaging can be configured with a redelivery delay in the event a message
  * is redelivered.

@@ -32,6 +32,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * This examples demonstrates the use of JBoss Messaging "Diverts" to transparently divert or copy messages
  * from one address to another.

@@ -30,6 +30,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * A simple JMS Topic example that creates a producer and consumer on a queue and sends and receives a message.
  *

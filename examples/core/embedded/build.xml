@@ -30,11 +30,11 @@
 
 <project default="run" name="JBoss Messaging Embedded Example">
 
-   <import file="../common/build.xml"/>
+   <import file="../../common/build.xml"/>
 
    <target name="run">   	
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.EmbeddedExample"/>
+         <param name="example.classname" value="org.jboss.core.example.EmbeddedExample"/>
          <!-- We limit the client to running in only 50MB of RAM -->
      	   <param name="java-min-memory" value="50M"/>
      	   <param name="java-max-memory" value="50M"/>

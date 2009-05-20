@@ -30,6 +30,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * This example demonstrates a queue with the same name deployed on two nodes of a cluster.
  * Messages are initially round robin'd between both nodes of the cluster.

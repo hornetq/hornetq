@@ -33,6 +33,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * This example shows how to configure and use a <em>Last-Value</em> queues.
  * Only the last message with a well-defined property is hold by the queue.

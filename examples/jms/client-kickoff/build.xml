@@ -30,7 +30,7 @@
 
 <project default="run" name="JBoss Messaging Client Kickoff Example">
 
-   <import file="../common/build.xml"/>
+   <import file="../../common/build.xml"/>
 
     <target name="run">
       <antcall target="runExample">

@@ -30,7 +30,7 @@
 
 <project default="run" name="JBoss Messaging JMS Producer Rate Limit Example">
 
-   <import file="../common/build.xml"/>
+   <import file="../../common/build.xml"/>
 
    <target name="run">
       <antcall target="runExample">

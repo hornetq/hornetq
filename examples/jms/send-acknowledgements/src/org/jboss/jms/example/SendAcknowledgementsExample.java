@@ -29,6 +29,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.SendAcknowledgementHandler;
 import org.jboss.messaging.core.message.Message;

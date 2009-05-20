@@ -30,6 +30,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * A simple example that shows a JMS Topic clustered across two nodes of a cluster.
  * Messages are sent on one node and received by consumers on both nodes.

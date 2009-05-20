@@ -30,6 +30,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.jboss.common.example.JMSExample;
+
 /**
  * An example showing how messages are moved to dead letter destination when they are unsuccessfully delivered multiple times
  *
