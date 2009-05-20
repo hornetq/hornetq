@@ -30,14 +30,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS example that shows how to implement and use interceptors with JBoss Messaging.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class InterceptorExample extends JMSExample
+public class InterceptorExample extends JBMExample
 {
    public static void main(String[] args)
    {

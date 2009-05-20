@@ -33,7 +33,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * This example shows how to configure and use a <em>Last-Value</em> queues.
@@ -42,7 +42,7 @@ import org.jboss.common.example.JMSExample;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class LastValueQueueExample extends JMSExample
+public class LastValueQueueExample extends JBMExample
 {
    public static void main(String[] args)
    {

@@ -36,7 +36,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.jms.client.JBossMessage;
 
 /**
@@ -44,7 +44,7 @@ import org.jboss.messaging.jms.client.JBossMessage;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class MessageGroupExample extends JMSExample
+public class MessageGroupExample extends JBMExample
 {
    private Map<String, String> messageReceiverMap = new ConcurrentHashMap<String, String>();
    private boolean result = true;

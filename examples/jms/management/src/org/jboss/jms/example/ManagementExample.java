@@ -34,7 +34,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;
 
@@ -43,7 +43,7 @@ import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ManagementExample extends JMSExample
+public class ManagementExample extends JBMExample
 {
    public static void main(String[] args)
    {

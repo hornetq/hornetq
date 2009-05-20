@@ -26,7 +26,7 @@ import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class SpawnedJMSServer
+public class SpawnedJBMServer
 {
    public static void main(String[] args)
    {

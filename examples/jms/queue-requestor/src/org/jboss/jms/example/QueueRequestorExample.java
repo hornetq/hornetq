@@ -31,14 +31,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS example that shows how to use queues requestors.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class QueueRequestorExample extends JMSExample
+public class QueueRequestorExample extends JBMExample
 {
    public static void main(String[] args)
    {

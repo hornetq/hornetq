@@ -37,14 +37,14 @@ import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.jta.TransactionManager;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS example showing the JBoss Messaging XA support with JTA.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class XAwithJTAExample extends JMSExample
+public class XAwithJTAExample extends JBMExample
 {
    private volatile boolean result = true;
    

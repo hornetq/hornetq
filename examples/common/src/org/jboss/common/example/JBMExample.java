@@ -34,9 +34,9 @@ import java.util.logging.Logger;
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public abstract class JMSExample
+public abstract class JBMExample
 {
-   protected static Logger log = Logger.getLogger(JMSExample.class.getName());
+   protected static Logger log = Logger.getLogger(JBMExample.class.getName());
 
    private Process[] servers;
 
@@ -182,7 +182,7 @@ public abstract class JMSExample
       }
       log.info("and vm args: " + args.toString());
       servers[index] = SpawnedVMSupport.spawnVM(
-            SpawnedJMSServer.class.getName(),
+            SpawnedJBMServer.class.getName(),
             allVMArgs,
             logServerOutput,
             "STARTED::",

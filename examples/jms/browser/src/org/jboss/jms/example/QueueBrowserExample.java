@@ -32,7 +32,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 import java.util.Enumeration;
 
@@ -43,7 +43,7 @@ import java.util.Enumeration;
  *
  *
  */
-public class QueueBrowserExample extends JMSExample
+public class QueueBrowserExample extends JBMExample
 {
    public static void main(String[] args)
    {

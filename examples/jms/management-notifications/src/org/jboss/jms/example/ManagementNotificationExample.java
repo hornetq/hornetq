@@ -36,7 +36,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.jms.JBossTopic;
 
 /**
@@ -44,7 +44,7 @@ import org.jboss.messaging.jms.JBossTopic;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ManagementNotificationExample extends JMSExample
+public class ManagementNotificationExample extends JBMExample
 {
    public static void main(String[] args)
    {

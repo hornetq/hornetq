@@ -32,14 +32,14 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS example that shows how to access messaging with security configured.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class SecurityExample extends JMSExample
+public class SecurityExample extends JBMExample
 {
    private boolean result = true;
    

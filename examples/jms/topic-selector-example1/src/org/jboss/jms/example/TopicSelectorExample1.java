@@ -30,14 +30,14 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS Topic example that creates a producer and consumer on a queue and sends and receives a message.
  *
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
-public class TopicSelectorExample1 extends JMSExample
+public class TopicSelectorExample1 extends JBMExample
 {
    public static void main(String[] args)
    {

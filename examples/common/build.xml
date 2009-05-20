@@ -62,7 +62,7 @@
    <path id="extra.classpath">
    </path>
 
-   <path id="jms.compilation.classpath">
+   <path id="compilation.classpath">
       <fileset dir="${jbm.jars.dir}">
          <include name="**/*.jar"/>
       </fileset>
@@ -73,8 +73,8 @@
       <path refid="extra.classpath"/>
    </path>
 
-   <path id="jms.runtime.classpath">
-      <path refid="jms.compilation.classpath"/>
+   <path id="runtime.classpath">
+      <path refid="compilation.classpath"/>
       <pathelement location="${config.dir}"/>
       <pathelement location="${example.config.dir}"/>
       <pathelement location="${classes.dir}"/>
@@ -103,7 +103,7 @@
             <pathelement path="${src.dir}"/>
             <pathelement path="${src.example.dir}"/>
          </src>
-         <classpath refid="jms.compilation.classpath"/>
+         <classpath refid="compilation.classpath"/>
       </javac>
    </target>
 
@@ -127,7 +127,7 @@
          <jvmarg value="-Djbm.example.logserveroutput=${jbm.example.logserveroutput}"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
          <arg line="${jbm.example.beans.file}"/>
-         <classpath refid="jms.runtime.classpath"/>
+         <classpath refid="runtime.classpath"/>
       </java>
       <!-- if the example exited with a result value != 0, we fail the build -->
       <fail message="Example ${example.classname} failed">
@@ -169,7 +169,7 @@
       </delete>
    </target>
     
-   <target name="all" description="Run all the JMS examples">
+   <target name="all" description="Run all the examples">
       <subant target="run" failonerror="true">
          <fileset dir=".." includes="*/build.xml" excludes="common/build.xml"/>
       </subant>

@@ -33,14 +33,14 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS example that consumes messages using selectors.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class TopicSelectorExample2 extends JMSExample
+public class TopicSelectorExample2 extends JBMExample
 {
    private volatile boolean result = true;
    

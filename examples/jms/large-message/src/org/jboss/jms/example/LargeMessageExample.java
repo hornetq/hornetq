@@ -38,7 +38,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * This example demonstrates the ability of JBoss Messaging to send and consume a very large message, much
@@ -47,7 +47,7 @@ import org.jboss.common.example.JMSExample;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */
-public class LargeMessageExample extends JMSExample
+public class LargeMessageExample extends JBMExample
 {
    public static void main(String[] args)
    {

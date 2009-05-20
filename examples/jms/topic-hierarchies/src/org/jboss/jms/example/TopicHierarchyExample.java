@@ -31,7 +31,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.jms.JBossTopic;
 
 /**
@@ -41,7 +41,7 @@ import org.jboss.messaging.jms.JBossTopic;
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class TopicHierarchyExample extends JMSExample
+public class TopicHierarchyExample extends JBMExample
 {
    public static void main(String[] args)
    {

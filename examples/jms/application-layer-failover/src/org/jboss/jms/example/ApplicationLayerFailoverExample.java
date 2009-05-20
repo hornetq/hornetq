@@ -35,7 +35,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple example that demonstrates application-layer failover of the JMS connection from one node to another
@@ -43,7 +43,7 @@ import org.jboss.common.example.JMSExample;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class ApplicationLayerFailoverExample extends JMSExample
+public class ApplicationLayerFailoverExample extends JBMExample
 {
    public static void main(String[] args)
    {

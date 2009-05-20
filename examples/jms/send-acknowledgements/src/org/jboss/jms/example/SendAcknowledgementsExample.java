@@ -29,7 +29,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.SendAcknowledgementHandler;
 import org.jboss.messaging.core.message.Message;
@@ -45,7 +45,7 @@ import org.jboss.messaging.jms.client.JBossSession;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SendAcknowledgementsExample extends JMSExample
+public class SendAcknowledgementsExample extends JBMExample
 {
    public static void main(String[] args)
    {

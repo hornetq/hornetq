@@ -31,14 +31,14 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS example that shows how to use temporary queues.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class TemporaryQueueExample extends JMSExample
+public class TemporaryQueueExample extends JBMExample
 {
    public static void main(String[] args)
    {

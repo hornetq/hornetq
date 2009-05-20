@@ -33,7 +33,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 
 /**
@@ -41,7 +41,7 @@ import org.jboss.messaging.core.message.impl.MessageImpl;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class ScheduledMessageExample extends JMSExample
+public class ScheduledMessageExample extends JBMExample
 {
    public static void main(String[] args)
    {

@@ -39,7 +39,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
@@ -50,7 +50,7 @@ import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class MessageCounterExample extends JMSExample
+public class MessageCounterExample extends JBMExample
 {
    private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
 

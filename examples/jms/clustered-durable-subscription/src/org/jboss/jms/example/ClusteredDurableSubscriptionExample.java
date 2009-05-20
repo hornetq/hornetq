@@ -30,7 +30,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple example that shows a JMS Durable Subscription across two nodes of a cluster.
@@ -40,7 +40,7 @@ import org.jboss.common.example.JMSExample;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class ClusteredDurableSubscriptionExample extends JMSExample
+public class ClusteredDurableSubscriptionExample extends JBMExample
 {
    public static void main(String[] args)
    {

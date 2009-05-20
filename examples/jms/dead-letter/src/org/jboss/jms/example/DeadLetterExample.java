@@ -30,7 +30,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * An example showing how messages are moved to dead letter destination when they are unsuccessfully delivered multiple times
@@ -38,7 +38,7 @@ import org.jboss.common.example.JMSExample;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class DeadLetterExample extends JMSExample
+public class DeadLetterExample extends JBMExample
 {
    public static void main(String[] args)
    {

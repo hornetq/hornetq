@@ -30,14 +30,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS Queue example that uses SSL secure transport.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class SSLExample extends JMSExample
+public class SSLExample extends JBMExample
 {
    public static void main(String[] args)
    {

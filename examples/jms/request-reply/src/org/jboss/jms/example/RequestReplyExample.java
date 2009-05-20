@@ -35,7 +35,7 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +45,7 @@ import java.util.Map;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class RequestReplyExample extends JMSExample
+public class RequestReplyExample extends JBMExample
 {
    private Map<String, TextMessage> requestMap = new HashMap<String, TextMessage>();
    

@@ -30,14 +30,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS example that sends and consume message transactionally.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class TransactionalExample extends JMSExample
+public class TransactionalExample extends JBMExample
 {
    public static void main(String[] args)
    {

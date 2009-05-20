@@ -30,7 +30,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * This example demonstrates how a message producer can be limited to produce messages at a maximum rate
@@ -38,7 +38,7 @@ import org.jboss.common.example.JMSExample;
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class ProducerRateLimitExample extends JMSExample
+public class ProducerRateLimitExample extends JBMExample
 {
    public static void main(String[] args)
    {

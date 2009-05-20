@@ -36,14 +36,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * A simple JMS example that shows the delivery order of messages with priorities.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class MessagePriorityExample extends JMSExample
+public class MessagePriorityExample extends JBMExample
 {
    private volatile boolean result = true;
    private ArrayList<TextMessage> msgReceived = new ArrayList<TextMessage>();

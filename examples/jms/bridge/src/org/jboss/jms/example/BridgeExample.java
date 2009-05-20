@@ -31,7 +31,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * This example demonstrates a core bridge set-up between two nodes, consuming messages from a queue
@@ -39,7 +39,7 @@ import org.jboss.common.example.JMSExample;
  * 
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class BridgeExample extends JMSExample
+public class BridgeExample extends JBMExample
 {
    public static void main(String[] args)
    {

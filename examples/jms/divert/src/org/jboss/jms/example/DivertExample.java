@@ -32,7 +32,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * This examples demonstrates the use of JBoss Messaging "Diverts" to transparently divert or copy messages
@@ -42,7 +42,7 @@ import org.jboss.common.example.JMSExample;
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class DivertExample extends JMSExample
+public class DivertExample extends JBMExample
 {
    public static void main(String[] args)
    {

@@ -30,7 +30,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
@@ -52,7 +52,7 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class SymmetricClusterExample extends JMSExample
+public class SymmetricClusterExample extends JBMExample
 {
    public static void main(String[] args)
    {

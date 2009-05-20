@@ -31,7 +31,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;
 
@@ -42,7 +42,7 @@ import org.jboss.messaging.jms.server.management.impl.JMSManagementHelper;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class ReconnectSameNodeExample extends JMSExample
+public class ReconnectSameNodeExample extends JBMExample
 {
    public static void main(String[] args)
    {

@@ -30,7 +30,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 
 /**
  * This example demonstrates how subsequent connections created from a single connection factory can be load
@@ -44,7 +44,7 @@ import org.jboss.common.example.JMSExample;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class ClientSideLoadBalancingExample extends JMSExample
+public class ClientSideLoadBalancingExample extends JBMExample
 {
    public static void main(String[] args)
    {

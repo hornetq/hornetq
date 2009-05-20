@@ -36,7 +36,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.core.management.MessagingServerControlMBean;
 import org.jboss.messaging.core.management.ObjectNames;
 
@@ -45,7 +45,7 @@ import org.jboss.messaging.core.management.ObjectNames;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ClientKickoffExample extends JMSExample
+public class ClientKickoffExample extends JBMExample
 {
    private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
 

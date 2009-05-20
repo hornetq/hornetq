@@ -44,7 +44,7 @@ import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.jboss.common.example.JMSExample;
+import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.utils.UUIDGenerator;
@@ -54,7 +54,7 @@ import org.jboss.messaging.utils.UUIDGenerator;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class XAHeuristicExample extends JMSExample
+public class XAHeuristicExample extends JBMExample
 {
    private volatile boolean result = true;
    private ArrayList<String> receiveHolder = new ArrayList<String>();
