@@ -32,10 +32,12 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.jms.client.SelectorTranslator;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -191,11 +193,20 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return server.getMessagingServerControl().getVersion();
    }
 
-   public synchronized boolean createQueue(final String queueName, final String jndiBinding, final String filterString, boolean durable) throws Exception
+   public synchronized boolean createQueue(final String queueName, final String jndiBinding, final String selectorString, boolean durable) throws Exception
    {
       checkInitialised();
       JBossQueue jBossQueue = new JBossQueue(queueName);
-      server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(), jBossQueue.getAddress(), filterString, durable);
+      
+      //Convert from JMS selector to core filter
+      String coreFilterString = null;
+
+      if (selectorString != null)
+      {
+         coreFilterString = SelectorTranslator.convertToJBMFilterString(selectorString);
+      }
+      
+      server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(), jBossQueue.getAddress(), coreFilterString, durable);
       
       boolean added = bindToJndi(jndiBinding, jBossQueue);
       

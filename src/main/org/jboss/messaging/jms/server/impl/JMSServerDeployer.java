@@ -68,7 +68,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String SEND_P_MESSAGES_SYNCHRONOUSLY_ELEMENT = "send-p-messages-synchronously";
 
-   private static final String AUTO_GROUP_ID_ELEMENT = "auto-group-id";
+   private static final String AUTO_GROUP_ELEMENT = "auto-group";
 
    private static final String MAX_CONNECTIONS_ELEMENT = "max-connections";
 
@@ -81,12 +81,12 @@ public class JMSServerDeployer extends XmlDeployer
    private static final String RECONNECT_ATTEMPTS = "reconnect-attempts";
 
    private static final String FAILOVER_ON_SERVER_SHUTDOWN = "failover-on-server-shutdown";
-   
+
    private static final String USE_GLOBAL_POOLS = "use-global-pools";
-   
+
    private static final String SCHEDULED_THREAD_POOL_MAX_SIZE = "scheduled-thread-pool-max-size";
-   
-   private static final String THREAD_POOL_MAX_SIZE = "thread-pool-max-size";     
+
+   private static final String THREAD_POOL_MAX_SIZE = "thread-pool-max-size";
 
    private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
 
@@ -100,7 +100,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String QUEUE_NODE_NAME = "queue";
 
-   private static final String QUEUE_FILTER_NODE_NAME = "filter";
+   private static final String QUEUE_SELECTOR_NODE_NAME = "selector";
 
    private static final String QUEUE_DURABLE_NODE_NAME = "durable";
 
@@ -255,7 +255,7 @@ public class JMSServerDeployer extends XmlDeployer
             {
                blockOnPersistentSend = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
-            else if (AUTO_GROUP_ID_ELEMENT.equals(child.getNodeName()))
+            else if (AUTO_GROUP_ELEMENT.equals(child.getNodeName()))
             {
                autoGroup = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
             }
@@ -437,7 +437,7 @@ public class JMSServerDeployer extends XmlDeployer
       {
          NamedNodeMap atts = node.getAttributes();
          String queueName = atts.getNamedItem(getKeyAttribute()).getNodeValue();
-         String filterString = null;
+         String selectorString = null;
          boolean durable = DEFAULT_QUEUE_DURABILITY;
          NodeList children = node.getChildNodes();
          ArrayList<String> jndiNames = new ArrayList<String>();
@@ -450,21 +450,23 @@ public class JMSServerDeployer extends XmlDeployer
                String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
                jndiNames.add(jndiName);
             }
-            else if(QUEUE_DURABLE_NODE_NAME.equals(children.item(i).getNodeName()))
+            else if (QUEUE_DURABLE_NODE_NAME.equals(children.item(i).getNodeName()))
             {
                Node durableNode = children.item(i);
-               durable = durableNode.getNodeValue() == null ? DEFAULT_QUEUE_DURABILITY:durableNode.getNodeValue().equalsIgnoreCase(Boolean.FALSE.toString());
+               durable = durableNode.getNodeValue() == null ? DEFAULT_QUEUE_DURABILITY
+                                                           : durableNode.getNodeValue()
+                                                                        .equalsIgnoreCase(Boolean.FALSE.toString());
             }
-            else if(QUEUE_FILTER_NODE_NAME.equals(children.item(i).getNodeName()))
+            else if (QUEUE_SELECTOR_NODE_NAME.equals(children.item(i).getNodeName()))
             {
-               Node filterNode = children.item(i);
-               Node attNode = filterNode.getAttributes().getNamedItem("string");
-               filterString = attNode.getNodeValue();
+               Node selectorNode = children.item(i);
+               Node attNode = selectorNode.getAttributes().getNamedItem("string");
+               selectorString = attNode.getNodeValue();
             }
          }
          for (String jndiName : jndiNames)
          {
-            jmsServerControl.createQueue(queueName, jndiName, filterString, durable);
+            jmsServerControl.createQueue(queueName, jndiName, selectorString, durable);
          }
       }
       else if (node.getNodeName().equals(TOPIC_NODE_NAME))

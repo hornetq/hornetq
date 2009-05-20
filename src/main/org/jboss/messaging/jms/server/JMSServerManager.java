@@ -54,14 +54,14 @@ public interface JMSServerManager extends MessagingComponent
     *           The name of the queue to create
     * @param jndiBinding
     *           the name of the binding for JNDI
-    * @param filterString
+    * @param selectorString
     * @param durable
     * @return true if the queue is created or if it existed and was added to
     *         JNDI
     * @throws Exception
     *            if problems were encountered creating the queue.
     */
-   boolean createQueue(String queueName, String jndiBinding, String filterString, boolean durable) throws Exception;
+   boolean createQueue(String queueName, String jndiBinding, String selectorString, boolean durable) throws Exception;
 
    /**
     * Creates a JMS Topic
