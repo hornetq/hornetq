@@ -1,42 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="message-grouping">
-    <title>Message Grouping</title>
-    <para>Message groups are sets of messages that has the following characteristics:</para>
-    <itemizedlist>
-      <listitem><para>Messages in a message group share the same group id, i.e. they have same 
-         group identifier property (<literal>JMSXGroupID</literal> for JMS, 
-         <literal>_JBM_GROUP_ID</literal> for JBoss Messaging Core API).</para></listitem>
-      <listitem><para>Messages in a message group will be all delivered to no more
-         than one of the queue's consumers. The consumer that receives the first message of a group 
-         will receive all the messages that belong to this group.</para></listitem>      
-    </itemizedlist>
-
-    <section>
-       <title>Configuring Message Grouping</title>
-       <para>Message grouping must be enabled in the address-setting configuration
-          by using a specific <literal>distribution-policy-class</literal>:</para>
-       <programlisting>
+   <title>Message Grouping</title>
+   <para>Message groups are sets of messages that has the following characteristics:</para>
+   <itemizedlist>
+      <listitem>
+         <para>Messages in a message group share the same group id, i.e. they have same group
+            identifier property (<literal>JMSXGroupID</literal> for JMS, <literal
+               >_JBM_GROUP_ID</literal> for JBoss Messaging Core API).</para>
+      </listitem>
+      <listitem>
+         <para>Messages in a message group will be all delivered to no more than one of the queue's
+            consumers. The consumer that receives the first message of a group will receive all the
+            messages that belong to this group.</para>
+      </listitem>
+   </itemizedlist>
+   <section>
+      <title>Configuring Message Grouping</title>
+      <para>Message grouping must be enabled in the address-setting configuration by using a
+         specific <literal>distribution-policy-class</literal>:</para>
+      <programlisting>
           &lt;address-setting match="jms.queue.exampleQueue"&gt;
-             &lt;distribution-policy-class&gt;org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor&lt;/distribution-policy-class&gt;
+             &lt;distribution-policy-class&gt;
+                org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor
+             &lt;/distribution-policy-class&gt;
           &lt;/address-setting&gt;
        </programlisting>
-       <para>By default, <literal>distribution-policy-class</literal> is set to <literal>org.jboss.messaging.core.server.impl.RoundRobinDistributor</literal>
-       and message groups will not be handled by the queue. Address wildcards can be used
-        to configure the distribution policy for a set of addresses (see <xref linkend="wildcard-syntax" />).</para>
-    </section>
-
-    <section>
-       <title>Using Core API</title>
-       <para>The property name used to identify the message group is <literal>"_JBM_GROUP_ID""</literal>
-       (or the constant <literal>MessageImpl.HDR_GROUP_ID</literal>).</para>
-    </section>
-       
-    <section>
-       <title>Using JMS</title>
-       <para>The property name used to identify the message group is <literal>JMSXGroupID</literal>.</para>
-       <para>Within the same group, messages can also set a <literal>JMSXGroupSeq</literal> 
+      <para>By default, <literal>distribution-policy-class</literal> is set to <literal
+            >org.jboss.messaging.core.server.impl.RoundRobinDistributor</literal> and message groups
+         will not be handled by the queue. Address wildcards can be used to configure the
+         distribution policy for a set of addresses (see <xref linkend="wildcard-syntax"/>).</para>
+   </section>
+   <section>
+      <title>Using Core API</title>
+      <para>The property name used to identify the message group is <literal
+            >"_JBM_GROUP_ID""</literal> (or the constant <literal
+         >MessageImpl.HDR_GROUP_ID</literal>).</para>
+   </section>
+   <section>
+      <title>Using JMS</title>
+      <para>The property name used to identify the message group is <literal
+         >JMSXGroupID</literal>.</para>
+      <para>Within the same group, messages can also set a <literal>JMSXGroupSeq</literal>
          <literal>int</literal> property (starting at 1).</para>
-       <programlisting>
+      <programlisting>
           // send 2 messages in the same group to ensure the same
           // consumer will receive both
           Message message = ...
@@ -49,11 +55,11 @@
           message.setIntProperty("JMSXGroupSeq", 2);
           producer.send(message);          
        </programlisting>
-    </section>
-    
-    <section>
-       <title>Example</title>
-       <para>The <ulink url="../../../../examples/jms/message-group/readme.html"><literal>message-group</literal> example</ulink> shows
-          how message groups are configured and used with JMS.</para>
-    </section> 
+   </section>
+   <section>
+      <title>Example</title>
+      <para>The <ulink url="../../../../examples/jms/message-group/readme.html"><literal
+               >message-group</literal> example</ulink> shows how message groups are configured and
+         used with JMS.</para>
+   </section>
 </chapter>
