@@ -79,6 +79,16 @@
                             <entry>True means that the server supports wild card routing</entry>
                             <entry>true</entry>
                         </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <informaltable frame="topbot" border="2">
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <tbody>
                         <row>
                             <entry><link linkend="management.core.configuration"
                                     >management-address</link></entry>
@@ -237,16 +247,19 @@
                         </row>
                         <row>
                             <entry><link linkend="paging.main.config"
-                                    >global-page-size</link></entry>
+                                >global-page-size</link></entry>
                             <entry>Long</entry>
-                            <entry>The standard size of a page-file. JBoss Messaging will only read messages when there is enough space to read at least one page file, determined by this value.</entry>
+                            <entry>The standard size of a page-file. JBoss Messaging will only read
+                                messages when there is enough space to read at least one page file,
+                                determined by this value.</entry>
                             <entry>10 * 1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="paging.main.config"
                                     >paging-max-global-size-bytes</link></entry>
                             <entry>Long</entry>
-                            <entry>JBoss Messaging enters into global page mode as soon as the total memory consumed by messages hits this value.</entry>
+                            <entry>JBoss Messaging enters into global page mode as soon as the total
+                                memory consumed by messages hits this value.</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
@@ -406,7 +419,7 @@
                         </row>
                     </tbody>
                 </tgroup>
-            </table>
+            </informaltable>
         </section>
         <section>
             <title>jbm-jms.xml</title>
@@ -492,6 +505,16 @@
                             <entry>the time out, in milliseconds, for remote calls</entry>
                             <entry>30000</entry>
                         </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <informaltable frame="topbot">
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <tbody>
                         <row>
                             <entry><link linkend="connection-ttl.session.multiplexing"
                                     >maxConnections</link></entry>
@@ -639,7 +662,7 @@
                         </row>
                     </tbody>
                 </tgroup>
-            </table>
+            </informaltable>
         </section>
     </section>
 </chapter>
