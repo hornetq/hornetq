@@ -52,9 +52,10 @@ MessagingServer server = Messaging.newMessagingServer(config);
 server.start();</programlisting>
         <para>You also have the option of instantiating <literal>MessagingServerImpl</literal>
             directly:</para>
-        <programlisting>MessagingServer server = new MessagingServerImpl(config,
-                                                 ManagementFactory.getPlatformMBeanServer(),
-                                                 new JBMSecurityManagerImpl());
+        <programlisting>MessagingServer server = 
+        new MessagingServerImpl(config,
+                                ManagementFactory.getPlatformMBeanServer(),
+                                new JBMSecurityManagerImpl());
 server.start();
         </programlisting>
     </section>
@@ -124,7 +125,8 @@ server.start();
    &lt;/deployment></programlisting>
         <para><literal>JBMBootstrapServer</literal> provides an easy encapsulation of JBoss Micro
             Container.</para>
-        <programlisting>JBMBootstrapServer bootStrap = new JBMBootstrapServer(new String[] {"jbm-jboss-beans.xml"});
+        <programlisting>JBMBootstrapServer bootStrap = 
+        new JBMBootstrapServer(new String[] {"jbm-jboss-beans.xml"});
         bootStrap.run();</programlisting>
     </section>
     <section>
@@ -164,8 +166,9 @@ session.close();
             <para>Connection on an Embedded JBoss Messaging through JMS is also simple. Just
                 instantiate <literal>JBossConnectionFactory</literal> directly. The following
                 example illustrates that.</para>
-            <programlisting>JBossConnectionFactory cf = new JBossConnectionFactory(
-                            new TransportConfiguration(InVMConnectorFactory.class.getName()));
+            <programlisting>JBossConnectionFactory cf = 
+    new JBossConnectionFactory(
+    new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
 Connection conn = cf.createConnection();
 
