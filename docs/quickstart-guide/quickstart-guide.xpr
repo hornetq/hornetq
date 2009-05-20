@@ -5,18 +5,16 @@
             positiveFilePatterns="" showHiddenFiles="false"/>
         <options/>
     </meta>
-    <projectTree name="quickstart.xpr">
+    <projectTree name="quickstart-guide.xpr">
         <folder name="en">
             <folder name="images"/>
-            <folder name="modules">
-                <file name="en/modules/about.xml"/>
-                <file name="en/modules/download.xml"/>
-                <file name="en/modules/examples.xml"/>
-                <file name="en/modules/installation.xml"/>
-                <file name="en/modules/introduction.xml"/>
-                <file name="en/modules/running.xml"/>
-            </folder>
+            <file name="en/about.xml"/>
+            <file name="en/download.xml"/>
+            <file name="en/examples.xml"/>
+            <file name="en/installation.xml"/>
+            <file name="en/introduction.xml"/>
             <file name="en/master.xml"/>
+            <file name="en/running.xml"/>
         </folder>
     </projectTree>
 </project>
