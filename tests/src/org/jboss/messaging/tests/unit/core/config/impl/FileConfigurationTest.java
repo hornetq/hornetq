@@ -72,7 +72,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(true, conf.isBackup());
       assertEquals(true, conf.isPersistDeliveryCountBeforeDelivery());      
       assertEquals("pagingdir", conf.getPagingDirectory());
-      assertEquals(123, conf.getPagingGlobalWatermarkSize());
+      assertEquals(123, conf.getGlobalPagingSize());
       assertEquals(4567, conf.getPagingMaxGlobalSizeBytes());
       assertEquals("somedir", conf.getBindingsDirectory());
       assertEquals(false, conf.isCreateBindingsDir());

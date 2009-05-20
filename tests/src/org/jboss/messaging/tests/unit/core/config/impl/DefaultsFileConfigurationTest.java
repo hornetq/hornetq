@@ -120,7 +120,7 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 
       assertEquals(ConfigurationImpl.DEFAULT_PAGE_MAX_GLOBAL_SIZE, conf.getPagingMaxGlobalSizeBytes());
 
-      assertEquals(ConfigurationImpl.DEFAULT_PAGE_WATERMARK_SIZE, conf.getPagingGlobalWatermarkSize());
+      assertEquals(ConfigurationImpl.DEFAULT_GLOBAL_PAGE_SIZE, conf.getGlobalPagingSize());
       
       assertEquals(ConfigurationImpl.DEFAULT_LARGE_MESSAGES_DIR, conf.getLargeMessagesDirectory());
       

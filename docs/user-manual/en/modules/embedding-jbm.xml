@@ -41,7 +41,7 @@ config.setAcceptorConfigurations(transports);</programlisting>
         <para>You need to instantiate and start JBoss Messaging server. The class <literal
                 >Messaging</literal> on package <literal>org.jboss.messaging.core.server</literal>
             has a few static methods helpful on instantiating the server, which is aways our
-            preferable way of instantiating the server.</para>
+            preferable way.</para>
         <programlisting>import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 

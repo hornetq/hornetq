@@ -471,7 +471,7 @@ public class LargeMessageTestBase extends ServiceTestBase
 
          session.close();
 
-         long globalSize = server.getPostOffice().getPagingManager().getGlobalSize();
+         long globalSize = server.getPostOffice().getPagingManager().getTotalMemory();
          assertEquals(0l, globalSize);
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());

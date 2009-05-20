@@ -347,7 +347,7 @@ public class QueueDeployerTest extends UnitTestCase
          return null;
       }
 
-      public int getPagingGlobalWatermarkSize()
+      public int getGlobalPageSize()
       {
          // TODO Auto-generated method stub
          return 0;

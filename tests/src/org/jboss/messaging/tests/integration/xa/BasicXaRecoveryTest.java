@@ -341,7 +341,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       clientSession.createQueue(pageQueue, pageQueue, null, true);
       
-      long initialPageSize = this.server.getPostOffice().getPagingManager().getGlobalSize();
+      long initialPageSize = this.server.getPostOffice().getPagingManager().getTotalMemory();
 
       clientSession.start(xid, XAResource.TMNOFLAGS);
 
@@ -379,7 +379,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       assertNull(pageConsumer.receive(100));
       
-      long globalSize = this.server.getPostOffice().getPagingManager().getGlobalSize();
+      long globalSize = this.server.getPostOffice().getPagingManager().getTotalMemory();
       // Management message (from createQueue) will not be taken into account again as it is nonPersistent
       
       log.info("global size is " + globalSize +  " initial page size is " + initialPageSize);

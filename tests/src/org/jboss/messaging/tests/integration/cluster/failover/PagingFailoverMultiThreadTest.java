@@ -389,7 +389,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
          backupConf.setJournalType(JournalType.ASYNCIO);
 
          backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
-         backupConf.setPagingGlobalWatermarkSize(pageSize);
+         backupConf.setGlobalPagingSize(pageSize);
          backupServer = Messaging.newMessagingServer(backupConf);
       }
       else
@@ -423,7 +423,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
          liveConf.setPagingDirectory(getPageDir(getTestDir() + "/live"));
 
          liveConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
-         liveConf.setPagingGlobalWatermarkSize(pageSize);
+         liveConf.setGlobalPagingSize(pageSize);
          liveConf.setJournalFileSize(100 * 1024);
 
          liveConf.setJournalType(JournalType.ASYNCIO);

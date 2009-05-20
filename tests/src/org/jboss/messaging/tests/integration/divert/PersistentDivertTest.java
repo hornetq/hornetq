@@ -369,7 +369,7 @@ public class PersistentDivertTest extends ServiceTestBase
       
       sf.close();
       
-      assertEquals(0, messagingService.getPostOffice().getPagingManager().getGlobalSize());
+      assertEquals(0, messagingService.getPostOffice().getPagingManager().getTotalMemory());
       
       messagingService.stop();
    }

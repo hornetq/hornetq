@@ -78,7 +78,7 @@ public class PagingTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
@@ -136,7 +136,7 @@ public class PagingTest extends ServiceTestBase
 
          sf = createInVMFactory();
 
-         assertTrue(server.getPostOffice().getPagingManager().getGlobalSize() > 0);
+         assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -172,7 +172,7 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
 
       }
       finally
@@ -203,7 +203,7 @@ public class PagingTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
@@ -309,7 +309,7 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
 
       }
       finally
@@ -342,7 +342,7 @@ public class PagingTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
@@ -450,7 +450,7 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
 
       }
       finally
@@ -473,7 +473,7 @@ public class PagingTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
@@ -497,7 +497,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         long initialSize = server.getPostOffice().getPagingManager().getGlobalSize();
+         long initialSize = server.getPostOffice().getPagingManager().getTotalMemory();
 
          ClientMessage message = null;
 
@@ -527,7 +527,7 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(initialSize, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(initialSize, server.getPostOffice().getPagingManager().getTotalMemory());
       }
       finally
       {
@@ -549,7 +549,7 @@ public class PagingTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
@@ -573,7 +573,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         long initialSize = server.getPostOffice().getPagingManager().getGlobalSize();
+         long initialSize = server.getPostOffice().getPagingManager().getTotalMemory();
 
          ClientMessage message = null;
 
@@ -609,7 +609,7 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(initialSize, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(initialSize, server.getPostOffice().getPagingManager().getTotalMemory());
       }
       finally
       {
@@ -668,7 +668,7 @@ public class PagingTest extends ServiceTestBase
          set.setMaxSizeBytes(10 * 1024);
       }
 
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = createServer(true, config, settings);
 
@@ -719,7 +719,7 @@ public class PagingTest extends ServiceTestBase
 
          assertNull(consumer.receive(100));
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
          assertEquals(0, server.getPostOffice().getPagingManager().getPageStore(ADDRESS).getAddressSize());
 
          for (int i = 0; i < numberOfMessages; i++)
@@ -780,7 +780,7 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
          assertEquals(0, server.getPostOffice().getPagingManager().getPageStore(ADDRESS).getAddressSize());
 
       }
@@ -806,7 +806,7 @@ public class PagingTest extends ServiceTestBase
       int NUMBER_OF_MESSAGES = 2;
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
 
@@ -855,7 +855,7 @@ public class PagingTest extends ServiceTestBase
 
          sf = createInVMFactory();
 
-         assertTrue(server.getPostOffice().getPagingManager().getGlobalSize() > 0);
+         assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -893,7 +893,7 @@ public class PagingTest extends ServiceTestBase
 
          assertEquals("There are pending messages on the server", 0, server.getPostOffice()
                                                                            .getPagingManager()
-                                                                           .getGlobalSize());
+                                                                           .getTotalMemory());
 
       }
       finally
@@ -917,7 +917,7 @@ public class PagingTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
 
       configuration.setPagingMaxGlobalSizeBytes(0);
-      configuration.setPagingGlobalWatermarkSize(0);
+      configuration.setGlobalPagingSize(0);
 
       Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
 
@@ -1024,7 +1024,7 @@ public class PagingTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
 
       configuration.setPagingMaxGlobalSizeBytes(0);
-      configuration.setPagingGlobalWatermarkSize(0);
+      configuration.setGlobalPagingSize(0);
 
       Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
 
@@ -1159,7 +1159,7 @@ public class PagingTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
 
       configuration.setPagingMaxGlobalSizeBytes(30 * 1024);
-      configuration.setPagingGlobalWatermarkSize(1024);
+      configuration.setGlobalPagingSize(1024);
 
       Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
 
@@ -1298,9 +1298,6 @@ public class PagingTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setPagingMaxGlobalSizeBytes(104857600);
 
-      System.out.println("getPagingMaxGlobalSizeBytes:" + configuration.getPagingMaxGlobalSizeBytes());
-      System.out.println("getPagingGlobalWatermarkSize:" + configuration.getPagingGlobalWatermarkSize());
-      
       Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
 
       addresses.put("#", new AddressSettings());
@@ -1355,7 +1352,7 @@ public class PagingTest extends ServiceTestBase
                                                        .getPageStore(PAGED_ADDRESS_A)
                                                        .getAddressSize() +
                             " globalSize = " +
-                            server.getPostOffice().getPagingManager().getGlobalSize());
+                            server.getPostOffice().getPagingManager().getTotalMemory());
 
          for (int i = 0; i < NUMBER_OF_MESSAGES_GLOBAL; i++)
          {
@@ -1368,7 +1365,7 @@ public class PagingTest extends ServiceTestBase
                                                        .getPageStore(PAGED_ADDRESS_A)
                                                        .getAddressSize() +
                             " globalSize = " +
-                            server.getPostOffice().getPagingManager().getGlobalSize());
+                            server.getPostOffice().getPagingManager().getTotalMemory());
 
          assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
          assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_GLOBAL).isPaging());

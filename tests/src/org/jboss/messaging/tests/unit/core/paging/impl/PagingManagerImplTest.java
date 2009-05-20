@@ -50,7 +50,7 @@ import org.jboss.messaging.utils.SimpleString;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class PagingManagerITest extends UnitTestCase
+public class PagingManagerImplTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
@@ -79,7 +79,7 @@ public class PagingManagerITest extends UnitTestCase
 
       managerImpl.start();
 
-      TestSupportPageStore store = (TestSupportPageStore)managerImpl.createPageStore(new SimpleString("simple-test"));
+      TestSupportPageStore store = (TestSupportPageStore)managerImpl.getPageStore(new SimpleString("simple-test"));
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 

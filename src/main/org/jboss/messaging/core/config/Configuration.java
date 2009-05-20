@@ -218,9 +218,9 @@ public interface Configuration extends Serializable, MessagingComponent
 
    void setPagingMaxGlobalSizeBytes(long maxGlobalSize);
 
-   int getPagingGlobalWatermarkSize();
+   int getGlobalPagingSize();
 
-   void setPagingGlobalWatermarkSize(int pageWatermarkSize);
+   void setGlobalPagingSize(int globalPageSize);
 
    // Large Messages Properties ------------------------------------------------------------
 

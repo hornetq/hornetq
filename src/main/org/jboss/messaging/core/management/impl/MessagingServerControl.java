@@ -597,9 +597,9 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.getMessageExpiryThreadPriority();
    }
 
-   public int getPagingGlobalWatermarkSize()
+   public int getGlobalPageSize()
    {
-      return configuration.getPagingGlobalWatermarkSize();
+      return configuration.getGlobalPagingSize();
    }
 
    public long getQueueActivationTimeout()

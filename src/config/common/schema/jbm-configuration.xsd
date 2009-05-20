@@ -168,7 +168,7 @@
 				<xsd:element name="paging-directory" type="xsd:string"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="paging-global-watermark-size" type="xsd:unsignedLong"
+				<xsd:element name="global-page-size" type="xsd:unsignedLong"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="paging-max-global-size-bytes"

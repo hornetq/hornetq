@@ -94,7 +94,7 @@ public class PageCrashTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer messagingService = createServer(true, config, new HashMap<String, AddressSettings>());
 
@@ -136,7 +136,7 @@ public class PageCrashTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = newMessagingServer(config);
 
@@ -181,7 +181,7 @@ public class PageCrashTest extends ServiceTestBase
 
          session.close();
 
-         assertTrue(server.getPostOffice().getPagingManager().getGlobalSize() > 0);
+         assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -202,7 +202,7 @@ public class PageCrashTest extends ServiceTestBase
 
          session.close();
 
-         assertEquals(0, server.getPostOffice().getPagingManager().getGlobalSize());
+         assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
 
       }
       finally
@@ -230,7 +230,7 @@ public class PageCrashTest extends ServiceTestBase
       MessagingServer server = new FailingMessagingServerImpl(configuration, securityManager);
 
       AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
+      defaultSetting.setPageSizeBytes(configuration.getGlobalPagingSize());
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
@@ -256,7 +256,7 @@ public class PageCrashTest extends ServiceTestBase
                                       super.getStorageManager(),
                                       super.getAddressSettingsRepository(),
                                       super.getConfiguration().getPagingMaxGlobalSizeBytes(),
-                                      super.getConfiguration().getPagingGlobalWatermarkSize(),
+                                      super.getConfiguration().getGlobalPagingSize(),
                                       super.getConfiguration().isJournalSyncNonTransactional(),
                                       false);
       }

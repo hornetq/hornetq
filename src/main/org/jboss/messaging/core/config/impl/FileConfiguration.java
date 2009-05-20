@@ -272,7 +272,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);
 
-      pageWatermarkSize = getInteger(e, "paging-global-watermark-size", pageWatermarkSize);
+      globalPageSize = getInteger(e, "global-page-size", globalPageSize);
       
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 

@@ -170,11 +170,11 @@ public class PagingFailoverTest extends FailoverTestBase
 
          final RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
 
-         assertEquals("GloblSize", pmLive.getGlobalSize(), pmBackup.getGlobalSize());
+         assertEquals("GloblSize", pmLive.getTotalMemory(), pmBackup.getTotalMemory());
 
-         assertEquals("PageSizeLive", storeLive.getAddressSize(), pmLive.getGlobalSize());
+         assertEquals("PageSizeLive", storeLive.getAddressSize(), pmLive.getTotalMemory());
 
-         assertEquals("PageSizeBackup", storeBackup.getAddressSize(), pmBackup.getGlobalSize());
+         assertEquals("PageSizeBackup", storeBackup.getAddressSize(), pmBackup.getTotalMemory());
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -202,10 +202,10 @@ public class PagingFailoverTest extends FailoverTestBase
 
          if (!fail)
          {
-            assertEquals(0, pmLive.getGlobalSize());
+            assertEquals(0, pmLive.getTotalMemory());
             assertEquals(0, storeLive.getAddressSize());
          }
-         assertEquals(0, pmBackup.getGlobalSize());
+         assertEquals(0, pmBackup.getTotalMemory());
          assertEquals(0, storeBackup.getAddressSize());
 
       }

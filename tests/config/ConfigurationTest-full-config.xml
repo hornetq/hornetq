@@ -30,7 +30,7 @@
       <backup>true</backup>
       <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>      
       <paging-directory>pagingdir</paging-directory>
-      <paging-global-watermark-size>123</paging-global-watermark-size>
+      <global-page-size>123</global-page-size>
       <paging-max-global-size-bytes>4567</paging-max-global-size-bytes>
       <bindings-directory>somedir</bindings-directory>
       <create-bindings-dir>false</create-bindings-dir>

@@ -23,7 +23,7 @@
 
    <paging-max-global-size-bytes>20485760</paging-max-global-size-bytes>
    
-   <paging-global-watermark-size>1048576</paging-global-watermark-size>
+   <global-page-size>1048576</global-page-size>
 
    <security-settings>
       <!--security for example queue-->

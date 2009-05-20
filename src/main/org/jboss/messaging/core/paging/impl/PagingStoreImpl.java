@@ -226,15 +226,15 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (isDropWhenMaxSize())
       {
          addAddressSize(size);
-         pagingManager.addGlobalSize(size);
+         pagingManager.addSize(size);
 
          return;
       }
       else
       {
-         final long currentGlobalSize = pagingManager.addGlobalSize(size);
+         final long currentGlobalSize = pagingManager.addSize(size);
 
-         final long maxGlobalSize = pagingManager.getMaxGlobalSize();
+         final long maxGlobalSize = pagingManager.getMaxMemory();
 
          final long addressSize = addAddressSize(size);
 
@@ -265,8 +265,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
          else
          {
-            // When in Global mode, we use the default page size as the minimal
-            // watermark to start depage
+            // When in Global mode, we use the default page size as the mark to start depage
 
             if (isTrace)
             {
@@ -274,16 +273,16 @@ public class PagingStoreImpl implements TestSupportPageStore
                log.trace(" globalDepage = " + pagingManager.isGlobalPageMode() +
                          " currentGlobalSize = " +
                          currentGlobalSize +
-                         " GlobalWatermark = " +
-                         pagingManager.getGlobalDepageWatermarkBytes() +
+                         " GlobalPageSize = " +
+                         pagingManager.getGlobalPageSize() +
                          " maxGlobalSize = " +
                          maxGlobalSize +
                          " maxGlobalSize - defaultPageSize = " +
-                         (maxGlobalSize - pagingManager.getGlobalDepageWatermarkBytes()));
+                         (maxGlobalSize - pagingManager.getGlobalPageSize()));
             }
 
             if (maxGlobalSize > 0 && pagingManager.isGlobalPageMode() &&
-                currentGlobalSize < maxGlobalSize - pagingManager.getGlobalDepageWatermarkBytes())
+                currentGlobalSize < maxGlobalSize - pagingManager.getGlobalPageSize())
             {
                pagingManager.startGlobalDepage();
             }
@@ -917,7 +916,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     */
    private boolean isGlobalFull(final long nextPageSize)
    {
-      return pagingManager.getMaxGlobalSize() > 0 && pagingManager.getGlobalSize() + nextPageSize > pagingManager.getMaxGlobalSize();
+      return pagingManager.getMaxMemory() > 0 && pagingManager.getTotalMemory() + nextPageSize > pagingManager.getMaxMemory();
    }
 
    private long addAddressSize(final long delta)
@@ -1002,8 +1001,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    private boolean isDrop()
    {
       return getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes() ||
-             pagingManager.getMaxGlobalSize() > 0 &&
-             pagingManager.getGlobalSize() > pagingManager.getMaxGlobalSize();
+             pagingManager.getMaxMemory() > 0 &&
+             pagingManager.getTotalMemory() > pagingManager.getMaxMemory();
    }
 
    // Inner classes -------------------------------------------------

@@ -103,7 +103,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());      
       assertEquals(conf.getPagingDirectory(), serverControl.getPagingDirectory());
       assertEquals(conf.getPagingMaxGlobalSizeBytes(), serverControl.getPagingMaxGlobalSizeBytes());
-      assertEquals(conf.getPagingGlobalWatermarkSize(), serverControl.getPagingGlobalWatermarkSize());
+      assertEquals(conf.getGlobalPagingSize(), serverControl.getGlobalPageSize());
       assertEquals(conf.getLargeMessagesDirectory(), serverControl.getLargeMessagesDirectory());
       assertEquals(conf.isWildcardRoutingEnabled(), serverControl.isWildcardRoutingEnabled());
       assertEquals(conf.getTransactionTimeout(), serverControl.getTransactionTimeout());

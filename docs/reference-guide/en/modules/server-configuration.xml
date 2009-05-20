@@ -370,8 +370,8 @@
            </varlistentry>
          </variablelist>
       </section>          
-      <section id="paging-global-watermark-size.configuration">
-         <title>paging-global-watermark-size</title>
+      <section id="global-page-size.configuration">
+         <title>global-page-size</title>
          <variablelist>  
            <varlistentry>
              <term>type</term>

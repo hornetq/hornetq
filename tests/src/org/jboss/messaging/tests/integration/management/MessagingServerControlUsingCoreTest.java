@@ -252,9 +252,9 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             return (String)proxy.retrieveAttributeValue("PagingDirectory");
          }
 
-         public int getPagingGlobalWatermarkSize()
+         public int getGlobalPageSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("PagingGlobalWatermarkSize");
+            return (Integer)proxy.retrieveAttributeValue("GlobalPageSize");
          }
 
          public long getPagingMaxGlobalSizeBytes()

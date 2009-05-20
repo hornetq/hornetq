@@ -103,7 +103,7 @@ public class LargeMessageCleanupTest extends LargeMessageTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       server = createServer(true, config, new HashMap<String, AddressSettings>());
 

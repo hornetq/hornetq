@@ -1206,7 +1206,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       Configuration config = createDefaultConfig();
 
       config.setPagingMaxGlobalSizeBytes(20 * 1024);
-      config.setPagingGlobalWatermarkSize(10 * 1024);
+      config.setGlobalPagingSize(10 * 1024);
 
       server = createServer(realFiles, config, new HashMap<String, AddressSettings>());
 
@@ -1336,12 +1336,12 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       // addGlobalSize on LargeMessage is only done after the delivery, and the addSize could be asynchronous
       long timeout = System.currentTimeMillis() + 5000;
-      while (timeout > System.currentTimeMillis() && server.getPostOffice().getPagingManager().getGlobalSize() != 0)
+      while (timeout > System.currentTimeMillis() && server.getPostOffice().getPagingManager().getTotalMemory() != 0)
       {
          Thread.sleep(100);
       }
 
-      assertEquals(0l, server.getPostOffice().getPagingManager().getGlobalSize());
+      assertEquals(0l, server.getPostOffice().getPagingManager().getTotalMemory());
    }
 
 

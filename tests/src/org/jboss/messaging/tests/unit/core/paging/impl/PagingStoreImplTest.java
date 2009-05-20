@@ -731,177 +731,108 @@ public class PagingStoreImplTest extends UnitTestCase
    class FakePagingManager implements PagingManager
    {
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#activate()
-       */
       public void activate()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#addGlobalSize(long)
-       */
-      public long addGlobalSize(final long size)
+      public long addSize(final long size)
       {
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#addTransaction(org.jboss.messaging.core.paging.PageTransactionInfo)
-       */
       public void addTransaction(final PageTransactionInfo pageTransaction)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#createPageStore(org.jboss.messaging.utils.SimpleString)
-       */
       public PagingStore createPageStore(final SimpleString destination) throws Exception
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#getGlobalDepageWatermarkBytes()
-       */
-      public long getGlobalDepageWatermarkBytes()
+      public long getGlobalPageSize()
       {
-         return ConfigurationImpl.DEFAULT_PAGE_WATERMARK_SIZE;
+         return ConfigurationImpl.DEFAULT_GLOBAL_PAGE_SIZE;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#getGlobalSize()
-       */
-      public long getGlobalSize()
+      public long getTotalMemory()
       {
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#getMaxGlobalSize()
-       */
-      public long getMaxGlobalSize()
+      public long getMaxMemory()
       {
          return 0;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#getPageStore(org.jboss.messaging.utils.SimpleString)
-       */
       public PagingStore getPageStore(final SimpleString address) throws Exception
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#getTransaction(long)
-       */
       public PageTransactionInfo getTransaction(final long transactionID)
       {
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#isBackup()
-       */
       public boolean isBackup()
       {
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#isGlobalPageMode()
-       */
       public boolean isGlobalPageMode()
       {
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#isPaging(org.jboss.messaging.utils.SimpleString)
-       */
       public boolean isPaging(final SimpleString destination) throws Exception
       {
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#page(org.jboss.messaging.core.server.ServerMessage, boolean)
-       */
       public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
       {
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#page(org.jboss.messaging.core.server.ServerMessage, long, boolean)
-       */
       public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection) throws Exception
       {
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#reloadStores()
-       */
       public void reloadStores() throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#removeTransaction(long)
-       */
       public void removeTransaction(final long transactionID)
       {
 
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#setGlobalPageMode(boolean)
-       */
       public void setGlobalPageMode(final boolean globalMode)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#setPostOffice(org.jboss.messaging.core.postoffice.PostOffice)
-       */
       public void setPostOffice(final PostOffice postOffice)
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#startGlobalDepage()
-       */
       public void startGlobalDepage()
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.paging.PagingManager#sync(java.util.Collection)
-       */
       public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.server.MessagingComponent#isStarted()
-       */
       public boolean isStarted()
       {
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.server.MessagingComponent#start()
-       */
       public void start() throws Exception
       {
       }
 
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.server.MessagingComponent#stop()
-       */
       public void stop() throws Exception
       {
       }
@@ -913,8 +844,6 @@ public class PagingStoreImplTest extends UnitTestCase
 
       public void setUniqueIDSequence(long id)
       {
-         // TODO Auto-generated method stub
-         
       }
 
       /* (non-Javadoc)
@@ -1177,13 +1106,11 @@ public class PagingStoreImplTest extends UnitTestCase
 
       public Object getNotificationLock()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public Bindings getMatchingBindings(SimpleString address)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 

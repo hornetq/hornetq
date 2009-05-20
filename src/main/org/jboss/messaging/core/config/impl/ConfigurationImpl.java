@@ -77,7 +77,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_PAGING_DIR = "data/paging";
 
-   public static final int DEFAULT_PAGE_WATERMARK_SIZE = 10 * 1024 * 1024;
+   public static final int DEFAULT_GLOBAL_PAGE_SIZE = 10 * 1024 * 1024;
 
    public static final long DEFAULT_PAGE_MAX_GLOBAL_SIZE = -1;
 
@@ -207,7 +207,7 @@ public class ConfigurationImpl implements Configuration
 
    protected long pagingMaxGlobalSize = DEFAULT_PAGE_MAX_GLOBAL_SIZE;
 
-   protected int pageWatermarkSize = DEFAULT_PAGE_WATERMARK_SIZE;
+   protected int globalPageSize = DEFAULT_GLOBAL_PAGE_SIZE;
 
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
 
@@ -723,17 +723,17 @@ public class ConfigurationImpl implements Configuration
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.config.Configuration#getPagingDefaultSize()
     */
-   public int getPagingGlobalWatermarkSize()
+   public int getGlobalPagingSize()
    {
-      return pageWatermarkSize;
+      return globalPageSize;
    }
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.config.Configuration#setPagingDefaultSize(long)
     */
-   public void setPagingGlobalWatermarkSize(final int pageSize)
+   public void setGlobalPagingSize(final int pageSize)
    {
-      pageWatermarkSize = pageSize;
+      globalPageSize = pageSize;
    }
 
    public String getLargeMessagesDirectory()
@@ -832,6 +832,6 @@ public class ConfigurationImpl implements Configuration
              cother.getScheduledThreadPoolMaxSize() == getScheduledThreadPoolMaxSize() &&
              cother.getSecurityInvalidationInterval() == getSecurityInvalidationInterval() &&
              cother.getManagementAddress().equals(getManagementAddress()) &&
-             cother.getPagingGlobalWatermarkSize() == getPagingGlobalWatermarkSize();
+             cother.getGlobalPagingSize() == getGlobalPagingSize();
    }
 }

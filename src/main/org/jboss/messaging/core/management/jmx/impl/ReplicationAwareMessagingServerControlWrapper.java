@@ -361,9 +361,9 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getMessageExpiryThreadPriority();
    }
 
-   public int getPagingGlobalWatermarkSize()
+   public int getGlobalPageSize()
    {
-      return localControl.getPagingGlobalWatermarkSize();
+      return localControl.getGlobalPageSize();
    }
 
    public long getQueueActivationTimeout()

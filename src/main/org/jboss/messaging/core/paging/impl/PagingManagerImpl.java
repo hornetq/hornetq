@@ -61,7 +61,7 @@ public class PagingManagerImpl implements PagingManager
 
    private volatile boolean backup;
 
-   private final AtomicLong globalSize = new AtomicLong(0);
+   private final AtomicLong totalMemoryBytes = new AtomicLong(0);
 
    private final AtomicBoolean globalMode = new AtomicBoolean(false);
 
@@ -73,7 +73,7 @@ public class PagingManagerImpl implements PagingManager
 
    private final StorageManager storageManager;
 
-   private final long globalDepageWatermarkBytes;
+   private final long globalPageSize;
 
    private final boolean syncNonTransactional;
 
@@ -91,14 +91,14 @@ public class PagingManagerImpl implements PagingManager
                             final StorageManager storageManager,
                             final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                             final long maxGlobalSize,
-                            final long globalDepageWatermarkBytes,
+                            final long globalPageSize,
                             final boolean syncNonTransactional,
                             final boolean backup)
    {
       pagingStoreFactory = pagingSPI;
       this.addressSettingsRepository = addressSettingsRepository;
       this.storageManager = storageManager;
-      this.globalDepageWatermarkBytes = globalDepageWatermarkBytes;
+      this.globalPageSize = globalPageSize;
       this.maxGlobalSize = maxGlobalSize;
       this.syncNonTransactional = syncNonTransactional;
       this.backup = backup;
@@ -151,7 +151,7 @@ public class PagingManagerImpl implements PagingManager
     * @param destination
     * @return
     */
-   public synchronized PagingStore createPageStore(final SimpleString storeName) throws Exception
+   private synchronized PagingStore createPageStore(final SimpleString storeName) throws Exception
    {
       PagingStore store = stores.get(storeName);
 
@@ -188,9 +188,9 @@ public class PagingManagerImpl implements PagingManager
       pagingStoreFactory.setPostOffice(postOffice);
    }
 
-   public long getGlobalDepageWatermarkBytes()
+   public long getGlobalPageSize()
    {
-      return globalDepageWatermarkBytes;
+      return globalPageSize;
    }
 
    public boolean isPaging(final SimpleString destination) throws Exception
@@ -278,7 +278,7 @@ public class PagingManagerImpl implements PagingManager
 
       pagingStoreFactory.stop();
 
-      globalSize.set(0);
+      totalMemoryBytes.set(0);
 
       globalMode.set(false);
    }
@@ -309,23 +309,23 @@ public class PagingManagerImpl implements PagingManager
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#getGlobalSize()
     */
-   public long getGlobalSize()
+   public long getTotalMemory()
    {
-      return globalSize.get();
+      return totalMemoryBytes.get();
    }
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#addGlobalSize(long)
     */
-   public long addGlobalSize(final long size)
+   public long addSize(final long size)
    {
-      return globalSize.addAndGet(size);
+      return totalMemoryBytes.addAndGet(size);
    }
 
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.paging.PagingManager#getMaxGlobalSize()
     */
-   public long getMaxGlobalSize()
+   public long getMaxMemory()
    {
       return maxGlobalSize;
    }

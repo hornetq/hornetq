@@ -237,17 +237,16 @@
                         </row>
                         <row>
                             <entry><link linkend="paging.main.config"
-                                    >paging-global-watermark-size</link></entry>
+                                    >global-page-size</link></entry>
                             <entry>Long</entry>
-                            <entry>JBoss Messaging enters into global page mode as soon as the total
-                                memory consumed by messages hits this value</entry>
+                            <entry>The standard size of a page-file. JBoss Messaging will only read messages when there is enough space to read at least one page file, determined by this value.</entry>
                             <entry>10 * 1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="paging.main.config"
                                     >paging-max-global-size-bytes</link></entry>
                             <entry>Long</entry>
-                            <entry>The watermark used to determine when we start depaging</entry>
+                            <entry>JBoss Messaging enters into global page mode as soon as the total memory consumed by messages hits this value.</entry>
                             <entry>-1</entry>
                         </row>
                         <row>

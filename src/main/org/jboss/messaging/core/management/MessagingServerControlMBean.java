@@ -112,7 +112,7 @@ public interface MessagingServerControlMBean
 
    boolean isPersistIDCache();
 
-   int getPagingGlobalWatermarkSize();
+   int getGlobalPageSize();
 
    String getLargeMessagesDirectory();
 

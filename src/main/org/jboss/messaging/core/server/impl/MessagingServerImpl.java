@@ -786,7 +786,7 @@ public class MessagingServerImpl implements MessagingServer
                                    storageManager,
                                    addressSettingsRepository,
                                    configuration.getPagingMaxGlobalSizeBytes(),
-                                   configuration.getPagingGlobalWatermarkSize(),
+                                   configuration.getGlobalPagingSize(),
                                    configuration.isJournalSyncNonTransactional(),
                                    configuration.isBackup());
    }

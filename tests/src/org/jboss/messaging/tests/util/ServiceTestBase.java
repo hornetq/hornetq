@@ -152,7 +152,7 @@ public class ServiceTestBase extends UnitTestCase
       }
 
       AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
+      defaultSetting.setPageSizeBytes(configuration.getGlobalPagingSize());
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
@@ -181,7 +181,7 @@ public class ServiceTestBase extends UnitTestCase
       }
 
       AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
+      defaultSetting.setPageSizeBytes(configuration.getGlobalPagingSize());
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
@@ -220,7 +220,7 @@ public class ServiceTestBase extends UnitTestCase
       }
 
       AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(configuration.getPagingGlobalWatermarkSize());
+      defaultSetting.setPageSizeBytes(configuration.getGlobalPagingSize());
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
