@@ -69,7 +69,8 @@
       &lt;group-address>231.7.7.7&lt;/group-address>
       &lt;group-port>9876&lt;/group-port>
       &lt;broadcast-period>1000&lt;/broadcast-period>
-      &lt;connector-ref connector-name="netty-connector" backup-connector-name="backup-connector"/>
+      &lt;connector-ref connector-name="netty-connector" 
+        backup-connector-name="backup-connector"/>
    &lt;/broadcast-group>
 &lt;/broadcast-groups></programlisting>
             <para>Some of the broadcast group parameters are optional and you'll normally use the
@@ -218,7 +219,8 @@
 
 final int groupPort = 9876;
 
-ConnectionFactory jmsConnectionFactory = new JBossConnectionFactory(groupAddress, groupPort);
+ConnectionFactory jmsConnectionFactory = 
+        new JBossConnectionFactory(groupAddress, groupPort);
 
 Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
@@ -428,7 +430,9 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
     &lt;entries&gt;
         &lt;entry name="ConnectionFactory"/&gt;
     &lt;/entries&gt;
-            &lt;connection-load-balancing-policy-class-name&gt;org.jboss.messaging.core.client.impl.RandomConnectionLoadBalancingPolicy&lt;/connection-load-balancing-policy-class-name&gt;
+    &lt;connection-load-balancing-policy-class-name&gt;
+    org.jboss.messaging.core.client.impl.RandomConnectionLoadBalancingPolicy
+    &lt;/connection-load-balancing-policy-class-name&gt;
 &lt;/connection-factory&gt;            
         </programlisting>
             The above example would deploy a JMS connection factory that uses the random connection
@@ -477,9 +481,12 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                     specify the list of servers in the server side configuration file <literal
                         >jbm-jms.xml</literal>. Let's take a look at an example:</para>
                 <programlisting>&lt;connection-factory name="ConnectionFactory">
-   &lt;connector-ref connector-name="my-connector1" backup-connector-name="my-backup-connector1"/>
-   &lt;connector-ref connector-name="my-connector2" backup-connector-name="my-backup-connector2"/>
-   &lt;connector-ref connector-name="my-connector3" backup-connector-name="my-backup-connector3"/>
+   &lt;connector-ref connector-name="my-connector1" 
+        backup-connector-name="my-backup-connector1"/>
+   &lt;connector-ref connector-name="my-connector2" 
+        backup-connector-name="my-backup-connector2"/>
+   &lt;connector-ref connector-name="my-connector3" 
+        backup-connector-name="my-backup-connector3"/>
    &lt;entries>
       &lt;entry name="ConnectionFactory"/>
    &lt;/entries>
@@ -500,11 +507,15 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                 <para>If you're using JMS but you're not using JNDI then you can also specify the
                     list of [connector, backup connector] pairs directly when instantiating the
                         <literal>JBossConnectionFactory</literal>, here's an
-                    example:<programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
+                    example:<programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = 
+        new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
 
-serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC0, backupTC0));
-serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC1, backupTC1));
-serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC2, backupTC2));
+serverList.add(new Pair&lt;TransportConfiguration, 
+        TransportConfiguration>(liveTC0, backupTC0));
+serverList.add(new Pair&lt;TransportConfiguration, 
+        TransportConfiguration>(liveTC1, backupTC1));
+serverList.add(new Pair&lt;TransportConfiguration, 
+        TransportConfiguration>(liveTC2, backupTC2));
 
 ConnectionFactory jmsConnectionFactory = new JBossConnectionFactory(serverList);
 
@@ -526,11 +537,15 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 <para>If you're using the Core API you can also specify the list of servers directly
                     when creating the <literal>ClientSessionFactory</literal> instance. Here's an
                     example:</para>
-                <programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
+                <programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = 
+        new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
 
-serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC0, backupTC0));
-serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC1, backupTC1));
-serverList.add(new Pair&lt;TransportConfiguration, TransportConfiguration>(liveTC2, backupTC2));
+serverList.add(new Pair&lt;TransportConfiguration, 
+        TransportConfiguration>(liveTC0, backupTC0));
+serverList.add(new Pair&lt;TransportConfiguration, 
+        TransportConfiguration>(liveTC1, backupTC1));
+serverList.add(new Pair&lt;TransportConfiguration, 
+        TransportConfiguration>(liveTC2, backupTC2));
 
 ClientSessionFactory factory = new ClientSessionFactoryImpl(serverList);
 
@@ -558,9 +573,12 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             <programlisting>&lt;cluster-connections&gt;
     &lt;cluster-connection name="my-explicit-cluster"&gt;
         &lt;address&gt;jms&lt;/address&gt;
-        &lt;connector-ref connector-name="my-connector1" backup-connector-name="my-backup-connector1"/>
-        &lt;connector-ref connector-name="my-connector2" backup-connector-name="my-backup-connector2"/>
-        &lt;connector-ref connector-name="my-connector3" backup-connector-name="my-backup-connector3"/>
+        &lt;connector-ref connector-name="my-connector1" 
+            backup-connector-name="my-backup-connector1"/>
+        &lt;connector-ref connector-name="my-connector2" 
+            backup-connector-name="my-backup-connector2"/>
+        &lt;connector-ref connector-name="my-connector3" 
+            backup-connector-name="my-backup-connector3"/>
     &lt;/cluster-connection&gt;
 &lt;/cluster-connections&gt;</programlisting>
             <para>The <literal>cluster-connection</literal> element can contain zero or more
@@ -588,9 +606,10 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             Messaging can be configured to automatically <emphasis>redistribute</emphasis> messages
             from queues which have no consumers back to other nodes in the cluster which do have
             matching consumers.</para>
-        <para>Message redistribution can be configured to kick in immediately after the last consumer
-            on a queue is closed, or to wait a configurable delay after the last consumer on a queue
-            is closed before redistributing. By default message redistribution is disabled.</para>
+        <para>Message redistribution can be configured to kick in immediately after the last
+            consumer on a queue is closed, or to wait a configurable delay after the last consumer
+            on a queue is closed before redistributing. By default message redistribution is
+            disabled.</para>
         <para>Message redistribution can be configured on a per address basis, by specifying the
             redistribution delay in the address settings, for more information on configuring
             address settings please see the chapter [LINK].</para>
@@ -638,9 +657,9 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                 what other servers in the cluster it should connect to, although it is possible to
                 explicitly define each target server too in the cluster connection if, for example,
                 UDP is not available on your network.</para>
-            <para>With a symmetric cluster each node knows about all the queues that exist on all the
-                other nodes and what consumers they have. With this knowledge it can determine how
-                to load balance and redistribute messages around the nodes.</para>
+            <para>With a symmetric cluster each node knows about all the queues that exist on all
+                the other nodes and what consumers they have. With this knowledge it can determine
+                how to load balance and redistribute messages around the nodes.</para>
             <para>DIAGRAM</para>
         </section>
         <section>
@@ -649,10 +668,10 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                 the cluster directly, instead the nodes form a chain with a node on each end of the
                 chain and all other nodes just connecting to the previous and next nodes in the
                 chain.</para>
-            <para>An example of this would be a three node chain consisting of nodes A, B and C. Node
-                A is hosted in one network and has many producer clients connected to it sending
-                order messages. Due to corporate policy, the order consumer clients need to be
-                hosted in a different network, and that network is only accessible via a third
+            <para>An example of this would be a three node chain consisting of nodes A, B and C.
+                Node A is hosted in one network and has many producer clients connected to it
+                sending order messages. Due to corporate policy, the order consumer clients need to
+                be hosted in a different network, and that network is only accessible via a third
                 network. In this setup node B acts as a mediator with no producers or consumers on
                 it. Any order messages arriving on node A will be forwarded to node B, which will in
                 turn forward them to node C where they can get consumed. Node A does not need to
