@@ -15,7 +15,9 @@
         <programlisting>
 &lt;acceptors&gt;                
     &lt;acceptor name="netty"&gt;
-        &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
+        &lt;factory-class&gt;
+org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory
+        &lt;/factory-class&gt;
         &lt;param key="jbm.remoting.netty.port" value="5446" type="Integer"/&gt;
     &lt;/acceptor&gt;
 &lt;/acceptors&gt;            
@@ -52,7 +54,9 @@
         <programlisting>
 &lt;connectors&gt;
     &lt;connector name="netty"&gt;
-        &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class&gt;
+        &lt;factory-class&gt;
+            org.jboss.messaging.integration.transports.netty.NettyConnectorFactory
+        &lt;/factory-class&gt;
         &lt;param key="jbm.remoting.netty.port" value="5446" type="Integer"/&gt;
     &lt;/connector&gt;
 &lt;/connectors&gt;            
@@ -108,9 +112,13 @@
         <programlisting>
 Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
     
-connectionParams.put(org.jboss.messaging.integration.transports.netty.PORT_PROP_NAME, 5446);
+connectionParams.put(org.jboss.messaging.integration.transports.netty.PORT_PROP_NAME, 
+                    5446);
 
-TransportConfiguration transportConfiguration = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", connectionParams);
+TransportConfiguration transportConfiguration = 
+    new TransportConfiguration(
+    "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", 
+    connectionParams);
 
 ClientSessionFactory sessionFactory = new ClientSessionFactory(transportConfiguration);
 
@@ -126,7 +134,10 @@ Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;()
 
 connectionParams.put(org.jboss.messaging.integration.transports.netty.PORT_PROP_NAME, 5446);
 
-TransportConfiguration transportConfiguration = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", connectionParams);
+TransportConfiguration transportConfiguration = 
+    new TransportConfiguration(
+    "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", 
+    connectionParams);
 
 ConnectionFactory connectionFactory = new JBossConnectionFactory(transportConfiguration);
 
@@ -258,20 +269,27 @@ etc
                             >true</literal> to enable HTTP.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpclientidletime</literal>. TODO</para>
+                    <para><literal>jbm.remoting.netty.httpclientidletime</literal>. How long a
+                        client can be idle before sending an empty http request to keep the
+                        connection alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpclientidlescanperiod</literal>.
-                        TODO</para>
+                    <para><literal>jbm.remoting.netty.httpclientidlescanperiod</literal>. How often,
+                        in milliseconds,  to scan for idle clients</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpresponsetime</literal>. TODO</para>
+                    <para><literal>jbm.remoting.netty.httpresponsetime</literal>. How long the
+                        server can wait before sending an empty http response to keep the connection
+                        alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpserverscanperiod</literal>. TODO</para>
+                    <para><literal>jbm.remoting.netty.httpserverscanperiod</literal>. How often, in
+                        milliseconds, to scan for clients needing responses</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httprequiressessionid</literal>. TODO</para>
+                    <para><literal>jbm.remoting.netty.httprequiressessionid</literal>. If true the
+                        client will wait after the first call to receive a session id. Used the http
+                        connector is connecting to servlet acceptor (not recommended) </para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -297,9 +315,7 @@ etc
                     <para>Deploy the servlet. Here's an example web.xml describing a web application
                         that uses the servlet:</para>
                     <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
-&lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
-         version="2.4">
+&lt;web-app>
    &lt;context-param>
       &lt;param-name>serverChannelName&lt;/param-name>
       &lt;param-value>org.jboss.jbm&lt;/param-value>
@@ -316,16 +332,22 @@ etc
    &lt;/context-param>
    
    &lt;listener>
-      &lt;listener-class>org.jboss.netty.channel.socket.http.HttpTunnelingSessionListener&lt;/listener-class>
+      &lt;listener-class>
+        org.jboss.netty.channel.socket.http.HttpTunnelingSessionListener
+      &lt;/listener-class>
    &lt;/listener>
 
    &lt;listener>
-      &lt;listener-class>org.jboss.netty.channel.socket.http.HttpTunnelingContextListener&lt;/listener-class>
+      &lt;listener-class>
+        org.jboss.netty.channel.socket.http.HttpTunnelingContextListener
+      &lt;/listener-class>
    &lt;/listener>
 
    &lt;servlet>
       &lt;servlet-name>NettyServlet&lt;/servlet-name>
-      &lt;servlet-class>org.jboss.netty.channel.socket.http.HttpTunnelingServlet&lt;/servlet-class>
+      &lt;servlet-class>
+        org.jboss.netty.channel.socket.http.HttpTunnelingServlet
+      &lt;/servlet-class>
    &lt;/servlet>
 
    &lt;servlet-mapping>
@@ -344,7 +366,9 @@ etc
 &lt;acceptors>
 
       &lt;acceptor name="netty-invm">
-         &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class>
+         &lt;factory-class>
+            org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory
+         &lt;/factory-class>
          &lt;param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
          &lt;param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
       &lt;/acceptor>
@@ -358,11 +382,14 @@ etc
                     <programlisting>&lt;connectors>
 
       &lt;connector name="netty-servlet">
-         &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+         &lt;factory-class>
+            org.jboss.messaging.integration.transports.netty.NettyConnectorFactory
+         &lt;/factory-class>
          &lt;param key="jbm.remoting.netty.host" value="localhost" type="String"/>
          &lt;param key="jbm.remoting.netty.port" value="8080" type="Integer"/>
          &lt;param key="jbm.remoting.netty.useservlet" value="true" type="Boolean"/>
-         &lt;param key="jbm.remoting.netty.servletpath" value="/messaging/JBMServlet" type="String"/>
+         &lt;param key="jbm.remoting.netty.servletpath" 
+            value="/messaging/JBMServlet" type="String"/>
       &lt;/connector>
 
  &lt;/connectors></programlisting>
