@@ -2,7 +2,7 @@
 <chapter id="large-messages">
     <title>Large Messages</title>
     <para>JBoss Messaging supports sending and receiving of messages larger than it would fit on
-        client or server. The only limit is the disk space available on server.</para>
+        client's or server's memory. The only limit is the disk space.</para>
     <para>Large messages are broken into smaller pieces and sent through the transport and saved as
         files on the server. Flow control (<xref linkend="flow-control"/>) is used on the
         transmission to prevent overusing the channel or running out of memory during the
@@ -33,7 +33,7 @@
         <para>The definition of what is a large message is done on the session factory. For example,
             you may configure a factory on the http transport considering a message as large when
             its size is greater than 10KiB and another one on the socket transport considering
-            messages greater than 200KiB as large.</para>
+            messages greater than 200KiB.</para>
         <para>By default the min large message size is 100KiB.</para>
         <section id="large-messages.core.config">
             <title>Using Core API</title>
@@ -77,7 +77,7 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
         <para>For messages being received it is possible to set the output stream and as the server
             sends more packets the output stream will receive the body of the message. </para>
         <para>You may choose to block while the output stream is recovered using the method <literal
-                >ClientMessage.saveOutputStream</literal>) or do it asynchronously using the method
+                >ClientMessage.saveOutputStream</literal> or do it asynchronously using the method
                 <literal>ClientMessage.setOutputstream</literal>. If you choose the non blocking
             method the caller of the method won't wait the transmission to finish after <literal
                 >setOutputStream</literal> is called so you need to keep the message consumer
