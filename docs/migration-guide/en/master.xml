@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
       "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
-      <!ENTITY introduction SYSTEM "modules/introduction.xml">
-      <!ENTITY installation SYSTEM "modules/installation.xml">
-      <!ENTITY differences  SYSTEM "modules/differences.xml">
-      <!ENTITY migration    SYSTEM "modules/migration.xml">
+      <!ENTITY introduction SYSTEM "introduction.xml">
+      <!ENTITY installation SYSTEM "installation.xml">
+      <!ENTITY differences  SYSTEM "differences.xml">
+      <!ENTITY migration    SYSTEM "migration.xml">
       ]>
 <book>
    <bookinfo>

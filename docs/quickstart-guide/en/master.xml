@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
         "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
-        <!ENTITY about        SYSTEM "modules/about.xml">
-        <!ENTITY introduction SYSTEM "modules/introduction.xml">
-        <!ENTITY download     SYSTEM "modules/download.xml">
-        <!ENTITY installation SYSTEM "modules/installation.xml">
-        <!ENTITY running      SYSTEM "modules/running.xml">
-        <!ENTITY examples     SYSTEM "modules/examples.xml">
+        <!ENTITY about        SYSTEM "about.xml">
+        <!ENTITY introduction SYSTEM "introduction.xml">
+        <!ENTITY download     SYSTEM "download.xml">
+        <!ENTITY installation SYSTEM "installation.xml">
+        <!ENTITY running      SYSTEM "running.xml">
+        <!ENTITY examples     SYSTEM "examples.xml">
         ]>
 <book lang="en">
    <bookinfo>
