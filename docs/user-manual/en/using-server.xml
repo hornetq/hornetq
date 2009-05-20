@@ -183,7 +183,8 @@ factoryMethod="getPlatformMBeanServer"/&gt;
 &lt;/bean&gt;
 
 &lt;!-- The core server --&gt;
-&lt;bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl"&gt;
+&lt;bean name="MessagingServer" 
+    class="org.jboss.messaging.core.server.impl.MessagingServerImpl"&gt;
 &lt;start ignored="true"/&gt;
 &lt;stop ignored="true"/&gt;  
 &lt;constructor&gt;
