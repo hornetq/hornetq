@@ -543,7 +543,7 @@ public class AsynchronousFileTest extends AIOTestBase
       try
       {
 
-         final int NUMBER_LINES = 10000;
+         final int NUMBER_LINES = 1000;
          final int SIZE = 1024;
 
          controller.open(FILE_NAME, 1000);
@@ -556,7 +556,7 @@ public class AsynchronousFileTest extends AIOTestBase
 
             for (int i = 0; i < NUMBER_LINES; i++)
             {
-               if (i % 1000 == 0)
+               if (i % 100 == 0)
                {
                   System.out.println("Wrote " + i + " lines");
                }
@@ -583,11 +583,9 @@ public class AsynchronousFileTest extends AIOTestBase
 
          readBuffer = AsynchronousFileImpl.newBuffer(SIZE);
 
-         Thread t = null;
-
          for (int i = 0; i < NUMBER_LINES; i++)
          {
-            if (i % 1000 == 0)
+            if (i % 100 == 0)
             {
                System.out.println("Read " + i + " lines");
             }
@@ -597,34 +595,6 @@ public class AsynchronousFileTest extends AIOTestBase
             CountDownCallback aio = new CountDownCallback(latch);
 
             controller.read(i * SIZE, SIZE, readBuffer, aio);
-
-            // at the first 20 lines, we will force a lot of garbage, to make sure the pointers are well isolated from Garbage Collection
-            if (i < 20)
-            {
-               if (t != null)
-               {
-                  t.join();
-               }
-
-               t = new Thread()
-               {
-                  public void run()
-                  {
-                     // Force a lot of garbage during reading, to make sure the memory read is well isolated from
-                     // garbage collection
-                     WeakReference<Object> garbage = new WeakReference<Object>(new Object());
-                     // Stays in loop until GC kicks in to clean up this reference
-                     while (garbage.get() != null)
-                     {
-                        @SuppressWarnings("unused")
-                        byte[] garbage2 = new byte[10 * 1024 * 1024]; // More Garbage
-                     }
-
-                  }
-               };
-
-               t.start();
-            }
 
             latch.await();
             assertFalse(aio.errorCalled);
