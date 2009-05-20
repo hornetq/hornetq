@@ -59,7 +59,7 @@ public class JBMRAProperties implements Serializable
    private Long discoveryInitialWaitTimeout;
 
    /** */
-   private String loadBalancingPolicyClassName;
+   private String connectionLoadBalancingPolicyClassName;
 
    /** */
    private Long pingPeriod;
@@ -269,28 +269,28 @@ public class JBMRAProperties implements Serializable
     * Get load balancing policy class name
     * @return The value
     */
-   public String getLoadBalancingPolicyClassName()
+   public String getConnectionLoadBalancingPolicyClassName()
    {
       if (trace)
       {
          log.trace("getLoadBalancingPolicyClassName()");
       }
 
-      return loadBalancingPolicyClassName;
+      return connectionLoadBalancingPolicyClassName;
    }
 
    /**
     * Set load balancing policy class name
-    * @param loadBalancingPolicyClassName The value
+    * @param connectionLoadBalancingPolicyClassName The value
     */
-   public void setLoadBalancingPolicyClassName(final String loadBalancingPolicyClassName)
+   public void setConnectionLoadBalancingPolicyClassName(final String loadBalancingPolicyClassName)
    {
       if (trace)
       {
          log.trace("setLoadBalancingPolicyClassName(" + loadBalancingPolicyClassName + ")");
       }
 
-      this.loadBalancingPolicyClassName = loadBalancingPolicyClassName;
+      this.connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
    }
 
    /**
@@ -1009,7 +1009,7 @@ public class JBMRAProperties implements Serializable
                                                                                                     you.getDiscoveryGroupPort()) &&
                 Util.compare(discoveryRefreshTimeout, you.getDiscoveryRefreshTimeout()) &&
                 Util.compare(discoveryInitialWaitTimeout, you.getDiscoveryInitialWaitTimeout()) &&
-                Util.compare(loadBalancingPolicyClassName, you.getLoadBalancingPolicyClassName()) &&
+                Util.compare(connectionLoadBalancingPolicyClassName, you.getConnectionLoadBalancingPolicyClassName()) &&
                 Util.compare(pingPeriod, you.getPingPeriod()) &&
                 Util.compare(connectionTTL, you.getConnectionTTL()) &&
                 Util.compare(callTimeout, you.getCallTimeout()) &&
@@ -1057,7 +1057,7 @@ public class JBMRAProperties implements Serializable
       hash += 31 * hash + (discoveryGroupPort != null ? discoveryGroupPort.hashCode() : 0);
       hash += 31 * hash + (discoveryRefreshTimeout != null ? discoveryRefreshTimeout.hashCode() : 0);
       hash += 31 * hash + (discoveryInitialWaitTimeout != null ? discoveryInitialWaitTimeout.hashCode() : 0);
-      hash += 31 * hash + (loadBalancingPolicyClassName != null ? loadBalancingPolicyClassName.hashCode() : 0);
+      hash += 31 * hash + (connectionLoadBalancingPolicyClassName != null ? connectionLoadBalancingPolicyClassName.hashCode() : 0);
       hash += 31 * hash + (pingPeriod != null ? pingPeriod.hashCode() : 0);
       hash += 31 * hash + (connectionTTL != null ? connectionTTL.hashCode() : 0);
       hash += 31 * hash + (callTimeout != null ? callTimeout.hashCode() : 0);

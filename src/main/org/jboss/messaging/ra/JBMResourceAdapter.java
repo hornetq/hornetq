@@ -409,7 +409,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("getLoadBalancingPolicyClassName()");
       }
 
-      return raProperties.getLoadBalancingPolicyClassName();
+      return raProperties.getConnectionLoadBalancingPolicyClassName();
    }
 
    /**
@@ -424,7 +424,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("setLoadBalancingPolicyClassName(" + loadBalancingPolicyClassName + ")");
       }
 
-      raProperties.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+      raProperties.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
    }
 
    /**
