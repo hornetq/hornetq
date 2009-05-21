@@ -10,16 +10,14 @@
      
      <p>Static message selectors are JBoss Messaging's extension to message selectors as defined in JMS spec 1.1.
      Rather than specifying the selector in the application code, static message selectors are defined in one of 
-     JBoss Messaging's configuration files, jbm-configuration.xml, as an element called 'filter' inside each queue
+     JBoss Messaging's configuration files, jbm-jms.xml, as an element called 'filter' inside each queue
      definition, like</p>
      
      <pre><code>
-      &lt;queues&gt;     
-      	&lt;queue name=&quot;jms.queue.selectorQueue&quot;&gt;
-      	    &lt;address&gt;jms.queue.selectorQueue&lt;/address&gt;
+      	&lt;queue name=&quot;SelectorQueue&quot;&gt;
+            &lt;entry name=&quot;/queue/selectorQueue&quot;&gt;
       	    &lt;filter string=&quot;color='red'&quot;/&gt;
       	&lt;/queue&gt;
-      &lt;/queues&gt;
      </code></pre>
      
      <p>Once thus configured, as this example does, the queue 'selectorQueue' only delivers messages that are selected against the filter, i.e.,
