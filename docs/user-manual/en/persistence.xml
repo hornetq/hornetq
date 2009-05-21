@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="persistence">
     <title>Persistence</title>
-    <para>In this chapter we will describe how persistence works with JBoss Messaging, and you will
-        discover how to configure it.</para>
-    <para>JBoss Messaging includes a high performance journal to provide excellent persistent
-        message performance. By managing its own persistence JBoss Messaging does not require a
-        relational or other database to perform that function. This means that JBoss Messaging can
-        provide much higher persistent rates than are available using a database for persistence
-        since the journal is optimised for its goal, whereas a database is for general purpose data
-        persistence.</para>
+    <para>In this chapter we will describe how persistence works with JBoss Messaging and how to
+        configure it.</para>
+    <para>JBoss Messaging ships with a high performance journal. This journal has been implemented
+        by the JBoss Messaging team with a view to providing high performance in a messaging system.
+        Since JBoss Messaging handles its own persistence, rather than relying on a database or
+        other 3rd party persistence engine, we have been able to tune the journal to gain optimal
+        performance for the persistence of messages and transactions.</para>
     <para>A JBoss Messaging journal is an <emphasis>append only</emphasis> journal. It consists of a
-        set of files on disk. Each file is of a fixed size and is initially filled with padding. As
-        operations are performed on the server, e.g. add message, update message, delete message, a
-        record is appended to the journal for each operation.</para>
-    <para>Operation records are only added to the end of the journal. By only adding records to the
-        end of the journal, we minimise disk head movement since we're not doing random access
-        operations.</para>
-    <para>When one journal file is full we move to the next one. We typically choose each journal
-        file to be about the right size to fit on a disk cylinder. Modern disk topologies are
-        complex and we are not in control over which cylinder(s) the file is mapped onto so this is
-        not an exact science. By minimising the number of disk cylinders the file is using, we can
-        minimise the amount of disk head movement, since an entire disk cylinder is accessible
-        simply by the disk rotating - the head does not have to move.</para>
+        set of files on disk. Each file is pre created to a fixed size and initially filled with
+        padding. As operations are performed on the server, e.g. add message, update message, delete
+        message, records are appended to the journal. When one journal file is full we move to the
+        next one.</para>
+    <para>Because records are only appended, i.e. added to the end, of the journal we minimise disk
+        head movement since we're not doing random access operations.</para>
+    <para>Making the file size configurable means that an optimal size can be chosen, i.e. making
+        each file fit on a disk cylinder. Modern disk topologies are complex and we are not in
+        control over which cylinder(s) the file is mapped onto so this is not an exact science. By
+        minimising the number of disk cylinders the file is using, we can minimise the amount of
+        disk head movement, since an entire disk cylinder is accessible simply by the disk rotating
+        - the head does not have to move.</para>
     <para>As delete records are added to the journal, JBoss Messaging has a sophisticated file
         garbage collection algorithm which can determine if a particular journal file is needed any
         more - i.e. has all it's data been deleted in the same or other files. If so, the file can
@@ -29,27 +28,26 @@
     <para>JBoss Messaging also has a compaction algorithm which removes dead space from the journal
         and compresses up the data so it takes up less files on disk.</para>
     <para>The journal is also fully local and XA transaction capable.</para>
-    <para>The majority of the journal is written as common code in Java, and we abstract out the
-        interaction with the actual file system in a thin abstraction layer. We ship JBoss Messaging
-        with two implementations of that abstraction layer:</para>
+    <para>The majority of the journal is written in Java, however we abstract out the interaction
+        with the actual file system to allow different pluggable implementations. We ship JBoss
+        Messaging with two implementations:</para>
     <itemizedlist>
         <listitem>
             <para>Java NIO.</para>
             <para>The first implementation uses standard Java NIO to interface with the file system.
-                This provides very good performance and runs on any platform for which there is a
-                JDK 5+ JVM.</para>
+                This provides very good performance and runs on any platform.</para>
         </listitem>
         <listitem>
             <para>Linux Asynchronous IO (AIO).</para>
-            <para>The second implementation uses a thin JNI wrapper to talk to the Linux
-                asynchronous IO library from Java. In a highly concurrent environment, AIO can
-                provide better overall persistent throughput than is available with Java NIO since
-                it does not require each individual transaction boundary to be synced to disk. Most
-                disks can only support a limited number of syncs per second, so a syncing approach
-                does not scale well with the number of concurrent transactions that need to commit.
-                With AIO, JBoss Messaging will be called back when the data has made it to disk,
-                allowing us to avoid explicit syncs altogether and simply send back confirmation of
-                completion when AIO informs us that the data has been persisted.</para>
+            <para>The second implementation uses a thin native wrapper to talk to the Linux
+                asynchronous IO library (AIO). In a highly concurrent environment, AIO can provide
+                better overall persistent throughput since it does not require each individual
+                transaction boundary to be synced to disk. Most disks can only support a limited
+                number of syncs per second, so a syncing approach does not scale well when the
+                number of concurrent transactions needed to be committed grows too large. With AIO,
+                JBoss Messaging will be called back when the data has made it to disk, allowing us
+                to avoid explicit syncs altogether and simply send back confirmation of completion
+                when AIO informs us that the data has been persisted.</para>
             <para>The AIO journal is only available when running Linux kernel 2.6 or later and after
                 having installed libaio (if it's not already installed). For instructions on how to
                 install libaio please see [LINK]</para>
@@ -83,8 +81,8 @@
         persist any data at all to storage.</para>
     <section id="configuring.bindings.journal">
         <title>Configuring the bindings journal</title>
-        <para>The bindings journal is configured using the following attributes in <literal
-                >jbm-configuration.xml</literal></para>
+        <para>The bindings journal is configured using the following attributes in
+                <literal>jbm-configuration.xml</literal></para>
         <itemizedlist>
             <listitem>
                 <para><literal>bindings-directory</literal></para>
@@ -94,16 +92,16 @@
             <listitem>
                 <para><literal>create-bindings-dir</literal></para>
                 <para>If this is set to <literal>true</literal> then the bindings directory will be
-                    automatically created at the location specified in <literal
-                        >bindings-directory</literal> if it does not already exist. The default
-                    value is <literal>true</literal></para>
+                    automatically created at the location specified in
+                        <literal>bindings-directory</literal> if it does not already exist. The
+                    default value is <literal>true</literal></para>
             </listitem>
         </itemizedlist>
     </section>
     <section id="configuring.message.journal">
         <title>Configuring the message journal</title>
-        <para>The message journal is configured using the following attributes in <literal
-                >jbm-configuration.xml</literal></para>
+        <para>The message journal is configured using the following attributes in
+                <literal>jbm-configuration.xml</literal></para>
         <itemizedlist>
             <listitem>
                 <para><literal>journal-directory</literal></para>
@@ -121,9 +119,9 @@
             <listitem>
                 <para><literal>create-journal-dir</literal></para>
                 <para>If this is set to <literal>true</literal> then the journal directory will be
-                    automatically created at the location specified in <literal
-                        >journal-directory</literal> if it does not already exist. The default value
-                    is <literal>true</literal></para>
+                    automatically created at the location specified in
+                        <literal>journal-directory</literal> if it does not already exist. The
+                    default value is <literal>true</literal></para>
             </listitem>
             <listitem>
                 <para><literal>journal-type</literal></para>
@@ -144,8 +142,8 @@
                 <para><literal>journal-sync-non-transactional</literal></para>
                 <para>If this is set to true then JBoss Messaging will wait for any non
                     transactional data to be persisted to disk on a send before sending the response
-                    back to the client. The default value for this is <literal
-                    >false</literal>.</para>
+                    back to the client. The default value for this is
+                    <literal>false</literal>.</para>
             </listitem>
             <listitem>
                 <para><literal>journal-file-size</literal></para>
@@ -178,9 +176,9 @@
                 <para>Creaking direct byte buffers is an expensive operation, so the journal will
                     attempt to re-use any buffers with a size less than this setting, in bytes. If
                     this value is set to <literal>-1</literal> then the journal will not attempt to
-                    re-use any buffers. This setting only takes effect if the journal is <literal
-                        >AIO</literal>. The default value for this setting is <literal
-                        >1024</literal> bytes.</para>
+                    re-use any buffers. This setting only takes effect if the journal is
+                        <literal>AIO</literal>. The default value for this setting is
+                        <literal>1024</literal> bytes.</para>
             </listitem>
         </itemizedlist>
     </section>
@@ -191,8 +189,8 @@
             performance especially under high concurrency.</para>
         <para>It's not possible to use the AIO journal under other operating systems or earlier
             versions of the Linux kernel.</para>
-        <para>If you are running Linux kernel 2.6 or later and don't already have <literal
-                >libaio</literal> installed, you can easily install it using the following
+        <para>If you are running Linux kernel 2.6 or later and don't already have
+                <literal>libaio</literal> installed, you can easily install it using the following
             steps:</para>
         <para>Using yum, (e.g. on Fedora or Red Hat Enterprise Linux):
             <programlisting>sudo yum install libaio1</programlisting></para>
@@ -203,8 +201,8 @@
         <title>Configuring JBoss Messaging for zero persistence</title>
         <para> In some situations, zero persistence is sometimes required for a messaging system.
             Configuring JBoss Messaging to perform zero persistence is straightforward. Simply set
-            the parameter <literal>persistence-enabled</literal> in <literal
-                >jbm-configuration.xml</literal> to <literal>false</literal>. </para>
+            the parameter <literal>persistence-enabled</literal> in
+                <literal>jbm-configuration.xml</literal> to <literal>false</literal>. </para>
         <para>Please note that if you set this parameter to false, then <emphasis>zero</emphasis>
             persistence will occur. That means no bindings data, message data, large message data,
             duplicate id caches or paging data will be persisted.</para>
