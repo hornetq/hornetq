@@ -1,92 +1,114 @@
 <html>
-  <head>
-    <title>JBoss Messaging Performance Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
-  </head>
-  <body>
-     <h1>Performance Example TODO TODO</h1>
-     <br>
-     <p>This example shows you how to send and receive a message to a JMS Queue with JBoss Messaging.</p>
-     <p>Queues are a standard part of JMS, please consult the JMS 1.1 specification for full details.</p>
-     <p>A Queue is used to send messages point to point, from a producer to a consumer. The queue guarantees message ordering between these 2 points.</p>
-     <br>
-     <h2>Example step-by-step</h2>
-     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
-     <br>
-     <ol>
-        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
-        <pre>
-           <code>InitialContext initialContext = getContext();</code>
+   <head>
+      <title>JBoss Messaging Performance Example</title>
+      <link rel="stylesheet" type="text/css" href="../../common/common.css"/>
+   </head>
+   <body>
+      <h1>Performance Example</h1>
+      <br/>
+      <p>This example is used to measure performance on JBoss Messaging through different
+         scenarios.</p>
+      <p>To play with these difference scenarios, change server configurations and change properties
+         on perf.properties:</p>
+      <p>
+         <ul>
+            <li>num-messages - Number of messages generated and read on this scenario</li>
+            <li>message-size - Number of bytes written on the message body</li>
+            <li>durable - Boolean value if the message should be persisted on disk before delivery</li>
+            <li>transacted - Boolean value if the test should use transactions</li>
+            <li>batch-size - Number of elements per transactions</li>
+            <li>drain-queue - Boolean value if the test should read all elements on the queue before starting</li>
+            <li>queue-name - Name of the queue used on the test</li>
+            <li>address - Address used to send message</li>
+            <li>throttle-rate - TODO</li>
+         </ul>
+      </p>
+      <h2>Example step-by-step</h2>
+      <p>After configured server and perf.properties:</p>
+      <br/>
+      <ol>
+         <li>Start the server in one Window. Just call ant runServer:</li>
+         <pre><code>user@myserver:/jboss-messaging/examples/core/perf$ ant runServer
+Buildfile: build.xml
+
+init:
+
+compile:
+[echo] src.example.dir=/jboss-messaging/examples/core/perf/src
+
+runServer:
+[java] May 21, 2009 4:44:55 PM org.jboss.messaging.core.logging.Logger warn
+[java] WARNING: It has been detected that the cluster admin password which is used to replicate management operation from one node to the other has not had its password changed from the installation default. Please see the JBoss Messaging user guide for instructions on how to do this.
+[java] May 21, 2009 4:44:56 PM org.jboss.messaging.core.logging.Logger warn
+[java] WARNING: Property jbm.remoting.netty.tcpsendbuffersize must be an Integer
+[java] May 21, 2009 4:44:56 PM org.jboss.messaging.core.logging.Logger warn
+[java] WARNING: Property jbm.remoting.netty.tcpreceivebuffersize must be an Integer
+[java] May 21, 2009 4:44:56 PM org.jboss.messaging.core.logging.Logger info
+[java] INFO: JBoss Messaging Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+[java] STARTED::</code>
         </pre>
+         <li>Start the listener. Just call ant runListener</li>
+         <pre><code>user@myserver:/jboss-messaging/examples/core/perf$ ant runListener
+Buildfile: build.xml
 
-        <li>We look-up the JMS queue object from JNDI</li>
-        <pre>
-           <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
-        </pre>
+init:
 
-        <li>We look-up the JMS connection factory object from JNDI</li>
-        <pre>
-           <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
-        </pre>
+compile:
+[echo] src.example.dir=/jboss-messaging/examples/core/perf/src
 
-        <li>We create a JMS connection</li>
-        <pre>
-           <code>connection = cf.createConnection();</code>
-        </pre>
+runListener:
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: num-messages: 1000000
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: num-warmup-messages: 50000
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: message-size: 0
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: durable: false
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: transacted: false
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: batch-size: 1000
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: drain-queue: true
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: address: perfAddress
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: throttle-rate: -1
+[java] May 21, 2009 4:47:48 PM org.jboss.core.example.PerfBase drainQueue
+[java] INFO: Draining queue
+[java] May 21, 2009 4:47:51 PM org.jboss.core.example.PerfBase drainQueue
+[java] INFO: Drained 0 messages
+[java] May 21, 2009 4:47:51 PM org.jboss.core.example.PerfBase runListener
+[java] INFO: READY!!!</code></pre>
+         <li>Start the sender. Just call ant runSender</li>
+         <pre><code>user@myserver:/jboss-messaging/examples/core/perf$ ant runSender
+Buildfile: build.xml
 
-        <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
-        <pre>
-           <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
-        </pre>
+init:
 
-        <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
-        <pre>
-          <code>MessageProducer messageProducer = session.createProducer(topic);</code>
-       </pre>
+compile:
+[echo] src.example.dir=/work/projects/trunk/examples/core/perf/src
 
-        <li>We create a JMS text message that we are going to send.</li>
-        <pre>
-           <code>TextMessage message = session.createTextMessage("This is a text message");</code>
-        </pre>
+runSender:
+[java] May 21, 2009 4:51:16 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: num-messages: 1000000
+[java] May 21, 2009 4:51:16 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: num-warmup-messages: 50000
+[java] May 21, 2009 4:51:16 PM org.jboss.core.example.PerfBase getParams
 
-        <li>We send message to the queue</li>
-        <pre>
-           <code>messageProducer.send(message);</code>
-        </pre>
+...
 
-        <li>We create a JMS Message Consumer to receive the message.</li>
-          <pre>
-           <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
-        </pre>
-
-        <li>We start the connection. In order for delivery to occur on any consumers or subscribers on a connection, the connection must be started</li>
-        <pre>
-           <code>connection.start();</code>
-        </pre>
-
-        <li>The message arrives at the consumer. In this case we use a timeout of 5000 milliseconds but we could use a blocking 'receive()'</li>
-        <pre>
-           <code>TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);</code>
-        </pre>
-
-        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
-
-        <pre>
-           <code>finally
-           {
-              if (initialContext != null)
-              {
-                initialContext.close();
-              }
-              if (connection != null)
-              {
-                 connection.close();
-              }
-           }</code>
-        </pre>
-
-
-
-     </ol>
-  </body>
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase sendMessages
+[java] INFO: sent 994000 messages in 10.60s
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase sendMessages
+[java] INFO: sent 996000 messages in 10.61s
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase sendMessages
+[java] INFO: sent 998000 messages in 10.61s
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase sendMessages
+[java] INFO: sent 1000000 messages in 10.62s
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase displayAverage
+[java] INFO: average: 94197.44 msg/s (1000000 messages in 10.62s)</code></pre>
+      </ol>
+   </body>
 </html>

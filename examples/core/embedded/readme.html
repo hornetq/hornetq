@@ -8,7 +8,7 @@
      <br>
      <p>This examples shows how to setup and run JBoss Messaging embedded.</p>
      <p>JBoss Messaging was designed to use POJOs (Plain Old Java Objects), what makes embedding JBoss Messaging as simple as instantiating a few objects.</p>
-     <p>On this example, we only one jars (jbm-core.jar, jbm-jms.jar and jboss-javaee.jar).</p>
+     <p>On this example, we are only using one jar (jbm-core.jar).</p>
      
      <p>JBoss Messaging Embedded could be used from very simple use cases with only InVM support to very complex cases with clustering, persistence and fail over.</p>
      <br>
@@ -30,41 +30,44 @@
 
         <li>As we are not using a JNDI environment we instantiate the objects directly</li>
         <pre>
-           <code>Queue queue = new JBossQueue("exampleQueue");</code>
-           <code>JBossConnectionFactory cf = new JBossConnectionFactory (new TransportConfiguration(InVMConnectorFactory.class.getName()));</code>
+           <code>ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(InVMConnectorFactory.class.getName()));</code>
         </pre>
 
-        <li>Create a JMS Destination by using the Core API</li>
+        <li>Create a Core Queue</li>
         <pre>
            <code>
-         ClientSession coreSession = cf.getCoreFactory().createSession(false, false, false);
-         coreSession.createQueue("jms.queue.exampleQueue", "jms.queue.exampleQueue", true);
-         coreSession.close();</code>
+         ClientSession coreSession = sf.createSession(false, false, false);
+         final String queueName = "queue.exampleQueue";
+         coreSession.createQueue(queueName, queueName, true);
+         coreSession.close();
         </pre>
 
-        <li>Create the JMS objects</li>
+        <li>Create the session and producer</li>
         <pre>
            <code>
-            connection = cf.createConnection();
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            MessageProducer producer = session.createProducer(queue);</code>
+            session = sf.createSession();
+                                   
+            ClientProducer producer = session.createProducer(queueName);
+            </code>
         </pre>
 
-        <li>Create and send a TextMessage</li>
+        <li>Create and send a Message</li>
         <pre><code>
-            TextMessage message = session.createTextMessage("Hello sent at " + new Date());
+            ClientMessage message = session.createClientMessage(false);
+            message.putStringProperty(propName, "Hello sent at " + new Date());
             System.out.println("Sending the message.");
-            producer.send(message);</code></pre>
+            producer.send(message);
+       </code></pre>
 
         <li>Create the message consumer and start the connection</li>
         <pre><code>
-            MessageConsumer messageConsumer = session.createConsumer(queue);
-            connection.start();</code></pre>
+            ClientConsumer messageConsumer = session.createConsumer(queueName);
+            session.start();</code></pre>
 
         <li>Receive the message</li>
         <pre><code>
-            TextMessage messageReceived = (TextMessage)messageConsumer.receive(1000);
-            System.out.println("Received TextMessage:" + messageReceived.getText());</code></pre>
+                        ClientMessage messageReceived = messageConsumer.receive(1000);
+            System.out.println("Received TextMessage:" + messageReceived.getProperty(propName));</code></pre>
 
         <li>Be sure to close our resources!</li>
 

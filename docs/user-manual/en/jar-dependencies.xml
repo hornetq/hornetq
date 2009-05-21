@@ -50,8 +50,8 @@
                     <row>
                         <entry><link linkend="security">jbm-jbossas-security.jar</link></entry>
                         <entry>Classes used to start a standalone server</entry>
-                        <entry>No dependencies if using <literal>JAAS</literal> or JBoss security libraries if using
-                                <literal>JBossASSecurityManager</literal></entry>
+                        <entry>No dependencies if using <literal>JAAS</literal> or JBoss security
+                            libraries if using <literal>JBossASSecurityManager</literal></entry>
                     </row>
                     <row>
                         <entry><link linkend="configuring-transports"
@@ -83,8 +83,8 @@
         <title>Micro Container</title>
         <para><trademark>JBoss Micro Container</trademark> is the kernel around JBoss Application
             Server, and it relies on a few other projects.</para>
-        <para>JBoss Micro Container distributes a series of Jars that are used on other injection
-            frameworks. The following list only shows what is required by JBoss Messaging</para>
+        <para>JBoss Micro Container distributes a series of jars. The following list only shows what
+            is required by JBoss Messaging</para>
         <table frame="topbot">
             <title>JBoss Micro Container jars</title>
             <tgroup cols="3">
@@ -103,23 +103,19 @@
                         <entry>jboss-kernel.jar</entry>
                         <entry>The Micro Container Kernel</entry>
                         <entry>Listed on <xref linkend="jar-dependencies.micro-container-thirdparty"
-                        /></entry>
+                            /></entry>
                     </row>
                     <row>
                         <entry>jboss-dependency.jar</entry>
                         <entry>Dependency Framework from JBoss Micro Container</entry>
                         <entry>Listed on <xref linkend="jar-dependencies.micro-container-thirdparty"
-                        /></entry>
+                            /></entry>
                     </row>
                 </tbody>
             </tgroup>
         </table>
-        
-        
         <para>The following table lists the third party libraries used by JBoss Micro
-        Container.</para>
-        
-        
+            Container.</para>
         <table frame="topbot" id="jar-dependencies.micro-container-thirdparty">
             <title>Jars used by the JBoss Micro Container</title>
             <tgroup cols="2">
@@ -155,10 +151,6 @@
                     <row>
                         <entry>jaxb-api.jar</entry>
                         <entry>Sun's jaxb api</entry>
-                    </row>
-                    <row>
-                        <entry>jboss-aop.jar</entry>
-                        <entry>JBoss AOP</entry>
                     </row>
                     <row>
                         <entry>jboss-aop.jar</entry>

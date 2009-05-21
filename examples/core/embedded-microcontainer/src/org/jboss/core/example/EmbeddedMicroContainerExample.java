@@ -52,13 +52,14 @@ public class EmbeddedMicroContainerExample
       try
       {
          
+         // Step 1. Start the server         
          jbm = new JBMBootstrapServer("./server0/jbm-jboss-beans.xml");
          jbm.run();
          
-         // Step 4. As we are not using a JNDI environment we instantiate the objects directly         
+         // Step 2. As we are not using a JNDI environment we instantiate the objects directly         
          ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(NettyConnectorFactory.class.getName()));
          
-         // Step 5. Create a core queue
+         // Step 3. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
          
          final String queueName = "queue.exampleQueue";
@@ -72,12 +73,12 @@ public class EmbeddedMicroContainerExample
          try
          {
    
-            // Step 6. Create the session, and producer
+            // Step 4. Create the session, and producer
             session = sf.createSession();
                                    
             ClientProducer producer = session.createProducer(queueName);
    
-            // Step 7. Create and send a message
+            // Step 5. Create and send a message
             ClientMessage message = session.createClientMessage(false);
             
             final String propName = "myprop";
@@ -88,23 +89,24 @@ public class EmbeddedMicroContainerExample
             
             producer.send(message);
 
-            // Step 8. Create the message consumer and start the connection
+            // Step 6. Create the message consumer and start the connection
             ClientConsumer messageConsumer = session.createConsumer(queueName);
             session.start();
    
-            // Step 9. Receive the message. 
+            // Step 7. Receive the message. 
             ClientMessage messageReceived = messageConsumer.receive(1000);
             
             System.out.println("Received TextMessage:" + messageReceived.getProperty(propName));
          }
          finally
          {
-            // Step 10. Be sure to close our resources!
+            // Step 8. Be sure to close our resources!
             if (session != null)
             {
                session.close();
             }
 
+            // Step 9. Shutdown the container
             if (jbm != null)
             {
                jbm.shutDown();
