@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="using-server">
     <title>Using the Server</title>
-    <para>In this chapter you'll get familiar with the JBoss Messaging server.</para>
+    <para>This chapter will familiarise you with how to use the JBoss Messaging server.</para>
     <para>We'll show where it is, how to start and stop it, and we'll describe the directory layout
         and what all the files are and what they do.</para>
     <para>For the remainder of this chapter when we talk about the JBoss Messaging server we mean
@@ -13,13 +13,13 @@
         <title>Starting and Stopping the standalone server</title>
         <para>In the distribution you will find a directory called <literal>bin</literal>.</para>
         <para><literal>cd</literal> into that directory and you'll find a unix/linux script called
-                <literal>run.sh</literal> and a windows batch file called <literal
-            >run.bat</literal></para>
+                <literal>run.sh</literal> and a windows batch file called
+            <literal>run.bat</literal></para>
         <para>To run on Unix/Linux type <literal>./run.sh</literal></para>
         <para>To run on Windows type <literal>run.bat</literal></para>
-        <para>This scripts are very simple and basically just set-up the classpath and some JVM
-            parameters, and call the JBM bootstrap class as the Main class. The bootstrap is special
-            JBoss Microcontainer class which causes the JBoss Microcontainer to start-up.</para>
+        <para>These scripts are very simple and basically just set-up the classpath and some JVM
+            parameters and start the JBoss Microcontainer. The Microcontainer is a light weight
+            container used to deploy the JBoss Messaging POJO's</para>
         <para>To stop the server you'll also find a unix/linux script <literal>stop.sh</literal> and
             a windows batch file <literal>run.bat</literal></para>
         <para>To run on Unix/Linux type <literal>./stop.sh</literal></para>
@@ -68,10 +68,6 @@
             directory when running the run script.</para>
         <para>Just make sure the directory is on the classpath and JBoss Messaging will search there
             when starting up.</para>
-        <para>The run scripts also add the location for the various XML schema definition files (xsd
-            files) used by JBoss Messaging to describe its configuration files. By default these are
-            located in <literal>schemas</literal> directory from the root of the
-            distribution.</para>
     </section>
     <section>
         <title>System properties</title>
@@ -80,23 +76,23 @@
         <para>JBoss Messaging uses JDK logging to minimise dependencies on other logging systems.
             JDK logging can then be configured to delegate to some other framework, e.g. log4j if
             that's what you prefer.</para>
-        <para>For more information on configuring logging, please see the section configuring
-            logging</para>
+        <para>For more information on configuring logging, please see the section <link
+                linkend="logging">configuring logging</link></para>
     </section>
     <section>
         <title>Configuration files</title>
-        <para>The configuration directory is specified on the classpath in the run scripts <literal
-                >run.sh</literal> and <literal>run.bat</literal> This directory can contain the
-            following files.</para>
+        <para>The configuration directory is specified on the classpath in the run scripts
+                <literal>run.sh</literal> and <literal>run.bat</literal> This directory can contain
+            the following files.</para>
         <itemizedlist>
             <listitem>
                 <para><literal>jbm-jboss-beans.xml</literal>. This is the JBoss Microcontainer beans
-                    file which instructs it what beans to create and what dependencies to enforce
-                    between them. Remember that JBoss Messaging is just a set of POJOs. In the
-                    stand-alone server, it's the JBoss Microcontainer which instantiates these POJOs
-                    and enforces dependencies between them and other beans. Please see the <xref
-                        linkend="usingserver.mainconfig"/> section for more information on this
-                    file.</para>
+                    file which defines what beans the Microcontainer should create and what
+                    dependencies to enforce between them. Remember that JBoss Messaging is just a
+                    set of POJOs. In the stand-alone server, it's the JBoss Microcontainer which
+                    instantiates these POJOs and enforces dependencies between them and other beans.
+                    Please see the <xref linkend="usingserver.mainconfig"/> section for more
+                    information on this file.</para>
             </listitem>
             <listitem>
                 <para><literal>jbm-configuration.xml</literal>. This is the main JBoss Messaging
@@ -106,8 +102,8 @@
                 <para><literal>jbm-queues.xml</literal>. This file contains pre-defined queues,
                     queue settings and security settings. The file is optional - all this
                     configuration can also live in <literal>jbm-configuration.xml</literal>. In
-                    fact, the default configuration sets do not have a <literal
-                        >jbm.queues.xml</literal> file. The purpose of allowing queues to be
+                    fact, the default configuration sets do not have a
+                        <literal>jbm.queues.xml</literal> file. The purpose of allowing queues to be
                     configured in these files is to allow you to manage your queue configuration
                     over many files instead of being forced to maintain it in a single file. There
                     can be many <literal>jbm-queues.xml</literal> files on the classpath. All will
@@ -115,9 +111,9 @@
             </listitem>
             <listitem>
                 <para><literal>jbm-users.xml</literal> JBoss Messaging ships with a security manager
-                    impementation which obtains user credentials from the <literal
-                        >jbm-users.xml</literal> file. This file contains user, password and role
-                    information. For more information on security please see the section
+                    impementation which obtains user credentials from the
+                        <literal>jbm-users.xml</literal> file. This file contains user, password and
+                    role information. For more information on security please see the section
                     [LINK]</para>
             </listitem>
             <listitem>
@@ -128,10 +124,12 @@
                     file.</para>
             </listitem>
             <listitem>
-                <para><literal>logging.properties</literal></para>
+                <para><literal>logging.properties</literal> This is used to configure the logging
+                    handlers used by the Java logger.</para>
             </listitem>
             <listitem>
-                <para><literal>log4j.xml</literal></para>
+                <para><literal>log4j.xml</literal> This is the Log4j configuration if the Log4j
+                    handler is configured.</para>
             </listitem>
         </itemizedlist>
     </section>
@@ -139,13 +137,11 @@
         <title>JBoss Microcontainer Beans File</title>
         <para>The stand-alone server is basically a set of POJOs which are instantiated by the light
             weight JBoss Microcontainer engine. [LINK]</para>
-        <para>Also when running JBoss Messaging in JBoss Application Server, a beans file is also
-            required since JBoss Application Server version 5 or later is basically just an instance
-            of JBoss Microcontainer with various different services running in it.</para>
-        <para>The beans file is what tells JBoss Microcontainer which POJOs to instantiate and what
-            their dependencies are. The beans files used when running in JBoss Messaging stand-alone
-            and when running in JBoss Application Server are slightly different, mainly due to the
-            security manager being used.</para>
+        <note>
+            <para>A beans file is also needed when the server is deployed in the JBoss Application
+                Server although this will deploy a slightly different set of objects since the
+                Application Server will already have things like security etc deployed.</para>
+        </note>
         <para>Let's take a look at an example beans file from the stand-alone server:</para>
         <para>
             <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -240,7 +236,7 @@ factoryMethod="getPlatformMBeanServer"/&gt;
                     pluggable. The default one used just reads user-role information from the
                         <literal>jbm-users.xml</literal> file on disk. However it can be replaced by
                     a JAAS security manager, or when running inside JBoss Application Server it is
-                    configure to use the JBoss AS security manager for tight integration with JBoss
+                    configured to use the JBoss AS security manager for tight integration with JBoss
                     AS security.</para>
             </listitem>
             <listitem>
@@ -261,18 +257,13 @@ factoryMethod="getPlatformMBeanServer"/&gt;
     </section>
     <section id="usingserver.mainconfig">
         <title>The main configuration file.</title>
-        <para>The configuration for the JBoss Messaging core server is contained in <literal
-                >jbm-configuration.xml</literal>. This is what the FileConfiguration bean uses to
-            configure the messaging server.</para>
-        <para>There are many attributes which which you can configure JBoss Messaging. In most cases
-            the defaults will do fine, in fact every attribute can be defaulted which means a file
-            with a single empty <literal>configuration</literal> element is a valid configuration
-            file.</para>
-        <para>We'll take a look at an example <literal>jbm-configuration.xml</literal> file where
-            all attributes have been specified, and we'll give a brief explanation of each with a
-            link to the appropriate section for its related concepts.</para>
-        <para>Note that in any real example you'd rarely have to explicitly specify each attribute
-            value.</para>
-        <para>TODO jbm configuration file and explanation.</para>
+        <para>The configuration for the JBoss Messaging core server is contained in
+                <literal>jbm-configuration.xml</literal>. This is what the FileConfiguration bean
+            uses to configure the messaging server.</para>
+        <para>There are many attributes which you can configure JBoss Messaging. In most cases the
+            defaults will do fine, in fact every attribute can be defaulted which means a file with
+            a single empty <literal>configuration</literal> element is a valid configuration file.
+            The different configuration will be explained throughout the manual or you can refer to
+            the configuration reference <link linkend="configuration-index">here</link>.</para>
     </section>
 </chapter>
