@@ -7,13 +7,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
-      <properties />
-    </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/examples/jms/common/build.xml">
-      <additionalClassPath />
-      <antReference projectDefault="true" />
-      <customJdkName value="" />
-      <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/queue/build.xml">
@@ -21,6 +15,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/topic/build.xml">
@@ -28,6 +23,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/expiry/build.xml">
@@ -35,6 +31,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/dead-letter/build.xml">
@@ -42,6 +39,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/browser/build.xml">
@@ -49,6 +47,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/paging/build.xml">
@@ -56,6 +55,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/queue-requestor/build.xml">
@@ -63,6 +63,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/request-reply/build.xml">
@@ -70,6 +71,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/temp-queue/build.xml">
@@ -77,6 +79,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/transactional/build.xml">
@@ -84,6 +87,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/clustered-queue/build.xml">
@@ -91,6 +95,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/durable-subscription/build.xml">
@@ -98,6 +103,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/large-message/build.xml">
@@ -105,6 +111,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/jms/clustered-topic/build.xml">
@@ -112,6 +119,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties />
     </buildFile>
     <buildFile url="file://$PROJECT_DIR$/examples/javaee/mdb/build.xml">
@@ -119,6 +127,7 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties>
         <property name="ENV.JBOSS_HOME" value="/home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.CR1" />
       </properties>
@@ -128,9 +137,18 @@
       <antReference projectDefault="true" />
       <customJdkName value="" />
       <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
       <properties>
         <property name="ENV.JBOSS_HOME" value="/home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.CR1" />
       </properties>
+    </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/jms/static-selector-jms/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
+      <properties />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
@@ -162,6 +180,9 @@
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
     </wildcardResourcePatterns>
+  </component>
+  <component name="CopyrightManager" default="">
+    <module2copyright />
   </component>
   <component name="CppTools.Loader" reportImplicitCastToBool="false" warnedAboutFileOutOfSourceRoot="true" version="1" currentProject="$PROJECT_DIR$/native/Makefile" />
   <component name="DependenciesAnalyzeManager">
@@ -445,6 +466,9 @@
     <option name="projectName" value="messaging" />
   </component>
   <component name="ProjectFileVersion" converted="true" />
+  <component name="ProjectKey">
+    <option name="state" value="https://svn.jboss.org/repos/messaging/trunk/messaging.ipr" />
+  </component>
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/messaging.iml" filepath="$PROJECT_DIR$/messaging.iml" />
@@ -455,7 +479,7 @@
       <module fileurl="file://$PROJECT_DIR$/tests/messaging-tests.iml" filepath="$PROJECT_DIR$/tests/messaging-tests.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
       <value>
@@ -490,7 +514,8 @@
         </entry>
       </map>
     </option>
-    <option name="myVersion" value="123" />
+    <option name="myVersion" value="124" />
+    <option name="mySupportsUserInfoFilter" value="true" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="" />
@@ -507,15 +532,12 @@
   <component name="libraryTable">
     <library name="messaging">
       <CLASSES>
-        <root url="file://$PROJECT_DIR$/src/schemas" />
-        <root url="file://$PROJECT_DIR$/src/config" />
         <root url="file://$PROJECT_DIR$/src/config/common" />
         <root url="file://$PROJECT_DIR$/src/config/stand-alone/non-clustered" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
       <jarDirectory url="file://$PROJECT_DIR$/src/etc" recursive="false" />
-      <jarDirectory url="file://$PROJECT_DIR$/src/schemas" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tests/etc" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tests/jms-tests/etc" recursive="false" />
     </library>
@@ -553,7 +575,9 @@
         <root url="file://$PROJECT_DIR$/thirdparty/jboss/common-core/lib" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/thirdparty/netty/lib/netty-3.1.0.BETA1-sources.jar!/" />
+      </SOURCES>
       <jarDirectory url="file://$PROJECT_DIR$/thirdparty/apache-log4j/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/thirdparty/apache-logging/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/thirdparty/apache-xerces/lib" recursive="false" />
@@ -609,6 +633,14 @@
     <library name="messaging-jms-examples">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/examples/jms/common/config" />
+        <root url="file://$PROJECT_DIR$/src/config/common" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-javaee-examples">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/src/config/common" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

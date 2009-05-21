@@ -2,8 +2,8 @@
 <module relativePaths="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/output/classes" />
+    <output-test url="file://$MODULE_DIR$/output" />
     <exclude-output />
-    <output-test url="file:///test/messaging-tests" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/jms-tests" />
@@ -17,7 +17,6 @@
     <orderEntry type="module" module-name="messaging" />
     <orderEntry type="library" name="messaging_jars" level="project" />
     <orderEntry type="library" name="messaging-tests" level="project" />
-    <orderEntryProperties />
   </component>
 </module>
 
