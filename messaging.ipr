@@ -477,6 +477,7 @@
       <module fileurl="file://$PROJECT_DIR$/tests/jms-tests/messaging-jms-tests.iml" filepath="$PROJECT_DIR$/tests/jms-tests/messaging-jms-tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/joram-tests/messaging-joram-tests.iml" filepath="$PROJECT_DIR$/tests/joram-tests/messaging-joram-tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/messaging-tests.iml" filepath="$PROJECT_DIR$/tests/messaging-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/examples/core/messagiong-core-examples.iml" filepath="$PROJECT_DIR$/examples/core/messagiong-core-examples.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK" />
