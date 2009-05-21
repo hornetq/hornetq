@@ -50,8 +50,9 @@
         <para>For each permission, a list of roles who are granted that permission is specified. If
             the user has any of those roles, he/she will be granted that permission for that set of
             addresses.</para>
-        <para>Let's take a simple example, here's a security block from <literal
-                >jbm-configuration.xml</literal> or <literal>jbm-queues.xml</literal> file:</para>
+        <para>Let's take a simple example, here's a security block from
+                <literal>jbm-configuration.xml</literal> or <literal>jbm-queues.xml</literal>
+            file:</para>
         <programlisting>
 &lt;security-setting match="globalqueues.europe.#"&gt;
     &lt;permission type="createDurableQueue" roles="admin"/&gt;
@@ -150,21 +151,20 @@
         </programlisting>
         <para>The first thing to note is the element <literal>default-user</literal>. This defines
             what user will be assumed when the client does not specify a username/password when
-            creating a session. In this case they be the user <literal>guest</literal> and have the
-            role also called <literal>guest</literal>. Multiple roles can be specified for a default
-            user.</para>
-        <para>Then we have three more users, the user <literal>tim</literal> has the role <literal
-                >admin</literal>. The user <literal>andy</literal> has the roles <literal
-                >admin</literal> and <literal>guest</literal>, and the user <literal>jeff</literal>
-            has the roles <literal>europe-users</literal> and <literal>guest</literal>.</para>
+            creating a session. In this case they will be the user <literal>guest</literal> and have
+            the role also called <literal>guest</literal>. Multiple roles can be specified for a
+            default user.</para>
+        <para>We then have three more users, the user <literal>tim</literal> has the role
+                <literal>admin</literal>. The user <literal>andy</literal> has the roles
+                <literal>admin</literal> and <literal>guest</literal>, and the user
+                <literal>jeff</literal> has the roles <literal>europe-users</literal> and
+                <literal>guest</literal>.</para>
     </section>
     <section>
         <title>Changing the security manager</title>
-        <para>If you do not want to use the default security manager which reads user credentials
-            from the <literal>jbm-users.xml</literal> file, then you can specify the security
-            manager that JBoss Messaging uses by editing the <literal>jbm-jboss-beans.xml</literal>
-            file and changing the class of the security manager that gets injected into the JBoss
-            Messaging server when the JBoss Microcontainer starts up the beans.</para>
+        <para>If you do not want to use the default security manager then you can specify a
+            different one by editing the <literal>jbm-jboss-beans.xml</literal> file and changing
+            the class for the <literal>JBMSecurityManager</literal> bean.</para>
         <para>Let's take a look at a snippet from the default beans file:</para>
         <programlisting>           
 &lt;bean name="JBMSecurityManager" 
@@ -173,17 +173,15 @@
     &lt;stop ignored="true"/&gt;
 &lt;/bean&gt;            
         </programlisting>
-        <para>The class <literal
-                >org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl</literal> is the
-            security manager that reads user credentials from the <literal>jbm-users.xml</literal>
-            file. So if you don't want to use that you can replace this with the class name of the
-            security manager of your choice.</para>
+        <para>The class
+                <literal>org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl</literal> is
+            the default security manager that reads used by the standalone server.</para>
         <para>JBoss Messaging ships with two other security manager implementations you can use off
             the shelf - one a JAAS security manager and another for integrating with JBoss
             Application Sever security, alternatively you could write your own implementation by
             implementing the <literal>org.jboss.messaging.core.security.SecurityManager</literal>
-            interface, and specifying the classname of your implementation in the <literal
-                >jbm-jboss-beans.xml</literal> file.</para>
+            interface, and specifying the classname of your implementation in the
+                <literal>jbm-jboss-beans.xml</literal> file.</para>
         <para>These two implementations are discussed in the next two sections.</para>
     </section>
     <section>
@@ -232,12 +230,11 @@
     </section>
     <section>
         <title>JBoss AS Security Manager</title>
-        <para> The JBoss AS security manager is used when running JBoss Messaging inside JBoss
-            Application server and when you want tight integration with JBoss Application Server's
+        <para>The JBoss AS security manager is used when running JBoss Messaging inside the JBoss
+            Application server. This allows tight integration with the JBoss Application Server's
             security model.</para>
-        <para>When running inside JBoss Application Server you will, by default, be using this
-            security manager. The class name of this security manager is <literal
-                >org.jboss.messaging.integration.security.JBossASSecurityManager</literal></para>
+        <para>The class name of this security manager is
+                <literal>org.jboss.messaging.integration.security.JBossASSecurityManager</literal></para>
         <para>Take a look at one of the default <literal>jbm-jboss-beans.xml</literal> files for
             JBoss Application Server that are bundled in the distribution for an example of how this
             is configured.</para>
