@@ -31,21 +31,17 @@
 <project name="JBoss Messaging Perf Example">
 
    <import file="../../common/build.xml"/>
-   
+
+    <path id="extra.classpath">
+      <!--<fileset dir=".">
+         <include name="server0"/>
+      </fileset>-->
+       <path location="server0"/>
+   </path>
+
    <target name="runSender">
       <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">
-		   <jvmarg value="-Xms512M"/>      
-		   <jvmarg value="-Xmx512M"/>
-         <jvmarg value="-XX:+UseParallelGC"/>
-         <jvmarg value="-XX:+AggressiveOpts"/>
-		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
-         <classpath refid="runtime.classpath"/>
-      </java>
-   </target>
-   
-   <target name="runListener">
-      <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">
-         <jvmarg value="-Xms512M"/>      
+		   <jvmarg value="-Xms512M"/>
 		   <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
@@ -54,9 +50,9 @@
       </java>
    </target>
 
-   <target name="runServer">
-      <java classname="org.jboss.core.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
-         <jvmarg value="-Xms512M"/>      
+   <target name="runListener">
+      <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">
+         <jvmarg value="-Xms512M"/>
 		   <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
@@ -64,5 +60,17 @@
          <classpath refid="runtime.classpath"/>
       </java>
    </target>
-   
+
+   <target name="runServer" depends="compile">
+      <java classname="org.jboss.common.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
+         <jvmarg value="-Xms512M"/>
+		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <arg line="jbm-jboss-beans.xml"/>
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
 </project>
