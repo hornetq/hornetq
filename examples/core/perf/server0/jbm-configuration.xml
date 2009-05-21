@@ -1,0 +1,15 @@
+<configuration xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>         
+      </acceptor>
+   </acceptors>
+   
+   <security-enabled>false</security-enabled>
+
+</configuration>

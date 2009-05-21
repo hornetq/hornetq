@@ -28,25 +28,41 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging Embedded Example">
+<project name="JBoss Messaging Perf Example">
 
    <import file="../../common/build.xml"/>
-
-   <!-- We use a minimal classpath on this example -->
-   <path id="local.classpath">
-      <fileset dir="${jbm.jars.dir}">
-         <include name="jbm-core.jar"/>
-      </fileset>
-      <pathelement location="${classes.dir}"/>	   	
-   </path>
-
-   <target name="run" depends="compile">   	
-
-	   <java classname="org.jboss.core.example.EmbeddedExample" fork="true" resultproperty="example-result">
-	      <jvmarg value="-Xms50M"/>      
-	      <jvmarg value="-Xmx50M"/>
-	      <classpath refid="local.classpath"/>
-	   </java>
-      
+   
+   <target name="runSender">
+      <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">
+		   <jvmarg value="-Xms512M"/>      
+		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <classpath refid="runtime.classpath"/>
+      </java>
    </target>
+   
+   <target name="runListener">
+      <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">
+         <jvmarg value="-Xms512M"/>      
+		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+
+   <target name="runServer">
+      <java classname="org.jboss.core.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
+         <jvmarg value="-Xms512M"/>      
+		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <classpath refid="runtime.classpath"/>
+      </java>
+   </target>
+   
 </project>
