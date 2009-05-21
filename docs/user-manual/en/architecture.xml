@@ -16,7 +16,7 @@
             uses for message and other persistence.</para>
         <para>Using a high performance journal allows outrageous persistence message performance,
             something not achievable when using a relational database for persistence.</para>
-        <para>JBoss Messaging clients, potential on different physical machines interact with the
+        <para>JBoss Messaging clients, potentially on different physical machines interact with the
             JBoss Messaging server. JBoss Messaging currently provides two APIs for messaging at the
             client side:</para>
         <para>
@@ -83,8 +83,8 @@
             since you will not be able to take advantage of the JCA features.</para>
         <para>Figure 3.2 belows shows a JEE application server integrating with a JBoss Messaging
             server via the JBoss Messaging JCA adaptor. Note that all communication between EJB
-            session or entiry beans and Message Driven beans go through the adaptor and not directly
-            to JBoss Messaging.</para>
+            sessions or entity beans and Message Driven beans go through the adaptor and not
+            directly to JBoss Messaging.</para>
         <para>The large arrow with the prohibited sign shows an EJB session bean talking directly to
             the JBoss Messaging server. This is not recommended as you'll most likely end up
             creating a new connection and session every time you want to interact from the EJB,
@@ -114,7 +114,6 @@
         <para>The stand-alone server configuration uses JBoss Microcontainer to instantiate and
             enforce dependencies between the components. JBoss Microcontainer is a very lightweight
             POJO bootstrapper.</para>
-        <para>[TODO] need to add mbean server, jndi server etc to diagram</para>
         <para>The stand-alone server architecture is shown in figure 3.3 below:</para>
         <para>
             <graphic fileref="images/architecture3.jpg"/>
