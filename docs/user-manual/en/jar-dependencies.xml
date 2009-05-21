@@ -35,7 +35,7 @@
                     <row>
                         <entry><link linkend="using-jms">jbm-jms.jar</link></entry>
                         <entry>JBoss Messaging JMS wrappers</entry>
-                        <entry>jbm-core.jar</entry>
+                        <entry>jbm-core.jar, jboss-javaee.jar</entry>
                     </row>
                     <row>
                         <entry><link linkend="using-server">jbm-bootstrap.jar</link></entry>
@@ -107,7 +107,7 @@
                     </row>
                     <row>
                         <entry>jboss-dependency.jar</entry>
-                        <entry>Dependency Framework from JBoss MicroContainer</entry>
+                        <entry>Dependency Framework from JBoss Micro Container</entry>
                         <entry>Listed on <xref linkend="jar-dependencies.micro-container-thirdparty"
                         /></entry>
                     </row>
@@ -116,7 +116,7 @@
         </table>
         
         
-        <para>The following table lists the thirdparty libraries used by JBoss Micro
+        <para>The following table lists the third party libraries used by JBoss Micro
         Container.</para>
         
         
@@ -157,10 +157,6 @@
                         <entry>Sun's jaxb api</entry>
                     </row>
                     <row>
-                        <entry>jaxb-api.jar</entry>
-                        <entry>Sun's jaxb api</entry>
-                    </row>
-                    <row>
                         <entry>jboss-aop.jar</entry>
                         <entry>JBoss AOP</entry>
                     </row>
@@ -174,7 +170,7 @@
                     </row>
                     <row>
                         <entry>javassist.jar</entry>
-                        <entry>Bytecode manipulations used by AOP</entry>
+                        <entry>Byte code manipulations used by AOP</entry>
                     </row>
                 </tbody>
             </tgroup>
