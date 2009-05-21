@@ -25,13 +25,12 @@
             restart or crash. We also want to predeploy the queue, i.e. specifiy the queue in the
             server JMS config so it's created automatically without us having to explicitly create
             it from the client.</para>
-        <para/>
     </section>
     <section id="using-jms.server.configuration">
         <title>JMS Server Configuration</title>
         <para>The file <literal>jbm-jms.xml</literal> on the server classpath contains any JMS
-            Queue, Topic and ConnectionFactory instances that we wish to pre-deploy into the JNDI
-            server so we can look them up.</para>
+            Queue, Topic and ConnectionFactory instances that we wish to create and make available
+            to lookup via the JNDI.</para>
         <para>A JMS ConnectionFactory object is used by the client to make connections to the
             server. It knows the location of the server it is connecting to, as well as many other
             configuration parameters. In most cases the defaults will be acceptable.</para>
@@ -59,10 +58,12 @@
         <para>We deploy one ConnectionFactory called <literal>ConnectionFactory</literal> and bind
             it in just one place in JNDI as given by the <literal>entry</literal> element.
             ConnectionFactory instances can be bound in many places in JNDI if you require. </para>
-        <para>Note that the JMS connection factory references a <literal>connector</literal> called
-                <literal>netty</literal>. This is a reference to a connector object deployed in the
-            main core configuration file <literal>jbm-configuration.xml</literal> which defines the
-            transport and parameters used to actually connect to the server.</para>
+        <note>
+            <para>The JMS connection factory references a <literal>connector</literal> called
+                    <literal>netty</literal>. This is a reference to a connector object deployed in
+                the main core configuration file <literal>jbm-configuration.xml</literal> which
+                defines the transport and parameters used to actually connect to the server.</para>
+        </note>
     </section>
     <section>
         <title>JNDI configuration</title>
@@ -96,8 +97,11 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
     &lt;property name="rmiBindAddress"&gt;localhost&lt;/property&gt;
 &lt;/bean&gt;                        
         </programlisting>
-        <para>If you want your JNDI server to be available to non local clients make sure you change
-            it's bind address to something other than <literal>localhost</literal>!</para>
+        <note>
+            <para>If you want your JNDI server to be available to non local clients make sure you
+                change it's bind address to something other than
+                <literal>localhost</literal>!</para>
+        </note>
     </section>
     <section>
         <title>The code</title>
