@@ -48,7 +48,7 @@ public class JBMBootstrapServerTest extends UnitTestCase
    }
    public void testRun() throws Exception
    {
-      JBMBootstrapServer bootstrap = new JBMBootstrapServer(new String[]{beans1});
+      JBMBootstrapServer bootstrap = new JBMBootstrapServer(beans1);
       bootstrap.run();
       assertTrue(DummyBean.started);
       bootstrap.shutDown();
@@ -59,7 +59,7 @@ public class JBMBootstrapServerTest extends UnitTestCase
    {
       Properties properties = new Properties();
       properties.setProperty("test", "foo");
-      JBMBootstrapServer bootstrap = new JBMBootstrapServer(new String[]{beans1}, new PropertyKernelConfig(properties));
+      JBMBootstrapServer bootstrap = new JBMBootstrapServer(new PropertyKernelConfig(properties), beans1);
       bootstrap.run();
       assertTrue(DummyBean.started);
       bootstrap.shutDown();

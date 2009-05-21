@@ -48,8 +48,21 @@ public class SpawnedVMSupport
 
    // Static --------------------------------------------------------
 
-
    public static Process spawnVM(final String className,
+                                 final String[] vmargs,
+                                 final boolean logOutput,
+                                 final String success,
+                                 final String failure,
+                                 final String configDir,
+                                 final String... args) throws Exception
+   {
+      String classPath = System.getProperty("java.class.path");
+      
+      return spawnVM(classPath, vmargs, logOutput, success, failure, configDir, args);
+   }
+
+   public static Process spawnVM(String classPath,
+                                 final String className,
                                  final String[] vmargs,
                                  final boolean logOutput,
                                  final String success,
@@ -60,20 +73,18 @@ public class SpawnedVMSupport
       StringBuffer sb = new StringBuffer();
 
       sb.append("java").append(' ');
-      
+
       for (String vmarg : vmargs)
       {
          if (System.getProperty("os.name").contains("Windows"))
          {
-            vmarg = vmarg.replaceAll("/", "\\\\");    
+            vmarg = vmarg.replaceAll("/", "\\\\");
          }
          sb.append(vmarg).append(' ');
       }
-      
-      String classPath = System.getProperty("java.class.path");
       String pathSeparater = System.getProperty("path.separator");
       classPath = classPath + pathSeparater + ".";
-      //System.out.println("classPath = " + classPath);
+      // System.out.println("classPath = " + classPath);
       // I guess it'd be simpler to check if the OS is Windows...
       if (System.getProperty("os.name").contains("Windows"))
       {
@@ -86,8 +97,8 @@ public class SpawnedVMSupport
       String libPath = "-Djava.library.path=" + System.getProperty("java.library.path", "./native/bin");
       if (System.getProperty("os.name").contains("Windows"))
       {
-          libPath = libPath.replaceAll("/", "\\\\");
-          libPath = "\"" + libPath + "\"";
+         libPath = libPath.replaceAll("/", "\\\\");
+         libPath = "\"" + libPath + "\"";
       }
       sb.append("-Djava.library.path=").append(libPath).append(" ");
 
@@ -103,18 +114,30 @@ public class SpawnedVMSupport
 
       log.info("command line: " + commandLine);
 
-      Process process = Runtime.getRuntime().exec(commandLine, new String[]{}, new File(configDir));
+      Process process = Runtime.getRuntime().exec(commandLine, new String[] {}, new File(configDir));
 
       log.trace("process: " + process);
 
       CountDownLatch latch = new CountDownLatch(1);
 
-      ProcessLogger outputLogger = new ProcessLogger(logOutput, process.getInputStream(), className, false, success, failure, latch);
+      ProcessLogger outputLogger = new ProcessLogger(logOutput,
+                                                     process.getInputStream(),
+                                                     className,
+                                                     false,
+                                                     success,
+                                                     failure,
+                                                     latch);
       outputLogger.start();
 
       // Adding a reader to System.err, so the VM won't hang on a System.err.println as identified on this forum thread:
       // http://www.jboss.org/index.html?module=bb&op=viewtopic&t=151815
-      ProcessLogger errorLogger = new ProcessLogger(true, process.getErrorStream(), className, true, success, failure, latch);
+      ProcessLogger errorLogger = new ProcessLogger(true,
+                                                    process.getErrorStream(),
+                                                    className,
+                                                    true,
+                                                    success,
+                                                    failure,
+                                                    latch);
       errorLogger.start();
 
       if (!latch.await(30, TimeUnit.SECONDS))
@@ -151,7 +174,13 @@ public class SpawnedVMSupport
 
       boolean failed = false;
 
-      ProcessLogger(final boolean print, final InputStream is, final String className, boolean sendToErr, String success, String failure, CountDownLatch latch) throws ClassNotFoundException
+      ProcessLogger(final boolean print,
+                    final InputStream is,
+                    final String className,
+                    boolean sendToErr,
+                    String success,
+                    String failure,
+                    CountDownLatch latch) throws ClassNotFoundException
       {
          this.is = is;
          this.print = print;
@@ -198,7 +227,7 @@ public class SpawnedVMSupport
          }
          catch (IOException e)
          {
-            //ok, stream closed
+            // ok, stream closed
          }
 
       }

@@ -141,7 +141,7 @@ public class LocalTestServer implements Server, Runnable
       }
 
       PropertyKernelConfig propertyKernelConfig = new PropertyKernelConfig(System.getProperties());
-      bootstrap = new JBMBootstrapServer(containerConfig, propertyKernelConfig);
+      bootstrap = new JBMBootstrapServer(propertyKernelConfig, containerConfig);
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       bootstrap.run();
       started = true;

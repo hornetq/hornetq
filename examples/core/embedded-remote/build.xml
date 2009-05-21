@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "../../../thirdparty/libraries.ent">
+      ]>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<project default="run" name="JBoss Messaging Embedded Example">
+
+   <import file="../../common/build.xml"/>
+
+   <!-- We use a minimal classpath on this example -->
+   <path id="local.classpath">
+      <fileset dir="${jbm.jars.dir}">
+        <include name="jbm-core-client.jar"/>
+        <include name="jbm-transports.jar"/>
+      </fileset>
+   	  <fileset dir="${jars.dir}">
+        <include name="netty/lib/*jar"/>
+        <exclude name="**/*-sources.jar"/>
+   	  </fileset>
+      <pathelement location="${classes.dir}"/>	   	
+   </path>
+	
+   <path id="remote.classpath">
+    <fileset dir="${jbm.jars.dir}">
+      <include name="jbm-core.jar"/>
+      <include name="jbm-transports.jar"/>
+    </fileset>
+ 	  <fileset dir="${jars.dir}">
+      <include name="netty/lib/*jar"/>
+      <exclude name="**/*-sources.jar"/>
+ 	  </fileset>
+    <pathelement location="${classes.dir}"/>	   	
+   </path>
+
+   <target name="run" depends="compile">
+   	
+   	   <pathconvert refid="remote.classpath" property="remote-classpath"/>
+   	
+   	   <echo message="path = ${remote-classpath}"/>
+
+	   <java classname="org.jboss.core.example.EmbeddedNettyExample" fork="true" resultproperty="example-result">
+	      <jvmarg value="-Xms50M"/>      
+	      <jvmarg value="-Xmx50M"/>
+	   	  <sysproperty key="remote-classpath" value="${remote-classpath}"/>
+	      <classpath refid="local.classpath"/>
+	   </java>
+      
+   </target>
+</project>

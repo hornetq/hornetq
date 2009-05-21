@@ -48,21 +48,134 @@
                         <entry>Log4j or JBoss Logger depending on the logging configuration</entry>
                     </row>
                     <row>
-                        <entry><link linkend="logging">jbm-logging.jar</link></entry>
-                        <entry>Wrapper to other Logger Frameworks</entry>
-                        <entry>Log4j or JBoss Logger depending on the logging configuration</entry>
-                    </row>
-                    <row>
                         <entry><link linkend="security">jbm-jbossas-security.jar</link></entry>
                         <entry>Classes used to start a standalone server</entry>
-                        <entry>Only JDK if using <literal>JAAS</literal> or JBoss libraries if using <literal>JBossASSecurityManager</literal></entry>
+                        <entry>No dependencies if using <literal>JAAS</literal> or JBoss security libraries if using
+                                <literal>JBossASSecurityManager</literal></entry>
                     </row>
                     <row>
-                        <entry><link linkend="configuring-transports">jbm-transports.jar</link></entry>
+                        <entry><link linkend="configuring-transports"
+                            >jbm-transports.jar</link></entry>
                         <entry>Socket and HTTP Transport plugins</entry>
-                        <entry>Netty jars</entry>
+                        <entry>netty.jar</entry>
                     </row>
-                    
+                    <row>
+                        <entry><link linkend="appserver-integration">jbm-ra.rar</link></entry>
+                        <entry>Java Connector Plugin, used to Application Server integration</entry>
+                        <entry>jbm-core-client.jar, jbm-jms.jar (are contained on the rar)</entry>
+                    </row>
+                    <row>
+                        <entry><link linkend="appserver-integration">jbm-ra.jar</link></entry>
+                        <entry>It contains the resource adapter implementation. Use jbm-ra.rar
+                            instead.</entry>
+                        <entry>jbm-core-client.jar, jbm-jms.jar</entry>
+                    </row>
+                    <row>
+                        <entry>netty.jar</entry>
+                        <entry>NIO Socket library used by JBoss Messaging</entry>
+                        <entry>No dependencies</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+    <section>
+        <title>Micro Container</title>
+        <para><trademark>JBoss Micro Container</trademark> is the kernel around JBoss Application
+            Server, and it relies on a few other projects.</para>
+        <para>JBoss Micro Container distributes a series of Jars that are used on other injection
+            frameworks. The following list only shows what is required by JBoss Messaging</para>
+        <table frame="topbot">
+            <title>JBoss Micro Container jars</title>
+            <tgroup cols="3">
+                <colspec colname="c1" colnum="1"/>
+                <colspec colname="c2" colnum="2"/>
+                <colspec colname="c3" colnum="3"/>
+                <thead>
+                    <row>
+                        <entry>Name</entry>
+                        <entry>Description</entry>
+                        <entry>Dependencies</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>jboss-kernel.jar</entry>
+                        <entry>The Micro Container Kernel</entry>
+                        <entry>Listed on <xref linkend="jar-dependencies.micro-container-thirdparty"
+                        /></entry>
+                    </row>
+                    <row>
+                        <entry>jboss-dependency.jar</entry>
+                        <entry>Dependency Framework from JBoss MicroContainer</entry>
+                        <entry>Listed on <xref linkend="jar-dependencies.micro-container-thirdparty"
+                        /></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+        
+        
+        <para>The following table lists the thirdparty libraries used by JBoss Micro
+        Container.</para>
+        
+        
+        <table frame="topbot" id="jar-dependencies.micro-container-thirdparty">
+            <title>Jars used by the JBoss Micro Container</title>
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1"/>
+                <colspec colname="c2" colnum="2"/>
+                <thead>
+                    <row>
+                        <entry>Name</entry>
+                        <entry>Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>jboss-common-logging-spi.jar</entry>
+                        <entry>Logging integration library</entry>
+                    </row>
+                    <row>
+                        <entry>jboss-reflect.jar</entry>
+                        <entry>Reflection framework</entry>
+                    </row>
+                    <row>
+                        <entry>jboss-commong-core.jar</entry>
+                        <entry>Common application server</entry>
+                    </row>
+                    <row>
+                        <entry>jboss-mdr.jar</entry>
+                        <entry>Meta data classes</entry>
+                    </row>
+                    <row>
+                        <entry>jboss-xml-binding.jar</entry>
+                        <entry>XML Readers</entry>
+                    </row>
+                    <row>
+                        <entry>jaxb-api.jar</entry>
+                        <entry>Sun's jaxb api</entry>
+                    </row>
+                    <row>
+                        <entry>jaxb-api.jar</entry>
+                        <entry>Sun's jaxb api</entry>
+                    </row>
+                    <row>
+                        <entry>jboss-aop.jar</entry>
+                        <entry>JBoss AOP</entry>
+                    </row>
+                    <row>
+                        <entry>jboss-aop.jar</entry>
+                        <entry>JBoss AOP</entry>
+                    </row>
+                    <row>
+                        <entry>trove.jar</entry>
+                        <entry>Native collections used by AOP</entry>
+                    </row>
+                    <row>
+                        <entry>javassist.jar</entry>
+                        <entry>Bytecode manipulations used by AOP</entry>
+                    </row>
                 </tbody>
             </tgroup>
         </table>

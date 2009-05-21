@@ -137,13 +137,13 @@ public class JBMBootstrapServer extends BasicBootstrap
     * @param args the arguments
     * @throws Exception for any error
     */
-   public JBMBootstrapServer(String[] args) throws Exception
+   public JBMBootstrapServer(String ... args) throws Exception
    {
       super();
       this.args = args;
    }
 
-   public JBMBootstrapServer(final String[] args, KernelConfig kernelConfig) throws Exception
+   public JBMBootstrapServer(KernelConfig kernelConfig, final String ... args) throws Exception
    {
       super(kernelConfig);
       this.args = args;
