@@ -21,19 +21,19 @@
         of your hardware resources, minimising the amount of threads blocking on IO operations, and
         to use your network bandwidth to its full capacity. With an RPC approach you have to wait
         for a response for each request you make so are limited by the network round trip time, or
-            <emphasis role="italic">latency</emphasis> of your network. With an asynchronous you can
-        pipeline flows of messages in different directions, so are limited by the network <emphasis
-            role="italic">bandwidth</emphasis> not the latency. This typically allows you to create
-        much higher performance applications.</para>
+            <emphasis role="italic">latency</emphasis> of your network. With an asynchronous system
+        you can pipeline flows of messages in different directions, so are limited by the network
+            <emphasis role="italic">bandwidth</emphasis> not the latency. This typically allows you
+        to create much higher performance applications.</para>
     <para>Messaging systems decouple the senders of messages from the consumers of messages. The
         senders and consumers of messages are completely independent and know nothing of each other.
         This allows you to create flexible, loosely coupled systems.</para>
-    <para>Often, large enterprises use a messaging system to implement a message bus which is to
-        loosely couple heterogenous systems together. Message buses often form the core of an <ulink
+    <para>Often, large enterprises use a messaging system to implement a message bus which loosely
+        couples heterogeneous systems together. Message buses often form the core of an <ulink
             url="http://en.wikipedia.org/wiki/Enterprise_service_bus">Enterprise Service
         Bus</ulink>. (ESB). Using a message bus to couple disparate systems can allow the system to
-        grow and adapt more flexible as new systems are added and old ones retired, without each
-        system having hard, brittle dependencies on each other.</para>
+        grow and adapt. It also allows more flexibility add new systems or retire old ones since
+        they don't have brittle dependencies on each other.</para>
     <section>
         <title>Messaging styles</title>
         <para>Messaging systems normally support two main styles of asynchronous messaging;<ulink
@@ -68,12 +68,13 @@
                 processing components. Different messages can be processed by order processors, but
                 a single order is only processed by one order processor - this ensures orders aren't
                 processed twice.</para>
-            <para>As an order processor receives a message, its fulfils the order - sends order
-                information to the warehous system and then updates the order database with the
+            <para>As an order processor receives a message, its fulfils the order, sends order
+                information to the warehouse system and then updates the order database with the
                 order details. Once it's done that it acknowledges the message to tell the server
                 that the order message is done and can be forgotten about. Often the send to the
                 warehouse system, update in database and acknowledgement will be completed in a
-                single transaction to ensure ACID properties.</para>
+                single transaction to ensure <ulink url="http://en.wikipedia.org/wiki/ACID"
+                    >ACID</ulink> properties.</para>
         </section>
         <section>
             <title>The Publish-Subscribe Pattern</title>
@@ -100,8 +101,8 @@
                 messaging</emphasis>. With reliable messaging the server gives a guarantee that the
             message will be delivered once and only once to each consumer of a queue or each
             subscription of a topic, even in the event of system failure. This is crucial for many
-            businesses - you don't want your orders fulfilled more than once, or your trades to be
-            lost or occur more than once.</para>
+            businesses, you don't want your orders fulfilled more than once or your orders to be
+            lost.</para>
         <para>In other cases you may not care about a once and only once delivery guarantee and are
             happy to cope with duplicate deliveries. The messaging system allows you to configure
             which delivery guarantees you require.</para>
@@ -115,7 +116,7 @@
     </section>
     <section>
         <title>Durability</title>
-        <para> Messages are either durable or non durable. Durable messages will persisted in
+        <para>Messages are either durable or non durable. Durable messages will persisted in
             permanent storage and will survive server failure. Non durable messages will not survive
             server failure or restart. Examples of durable messages might be orders or trades, where
             they cannot be lost. An example of a non durable message might be a stock price update.
@@ -147,10 +148,10 @@
         </section>
         <section>
             <title>System specific APIs</title>
-            <para>Many systems provide their own programmic API for which to interact with the
+            <para>Many systems provide their own programmatic API for which to interact with the
                 messaging system. The advantage of this it allows the full set of system
-                functionality to be exposed tp the client application. APIs like JMS are not
-                normally rich enough to expose all the extra featurs that most messaging systems
+                functionality to be exposed to the client application. API's like JMS are not
+                normally rich enough to expose all the extra features that most messaging systems
                 provide.</para>
             <para>JBoss Messaging provides its own core client API for clients to use if they wish
                 to have access to functionality over and above that accesible via the JMS
@@ -193,8 +194,8 @@
     <section>
         <title>High Availability</title>
         <para>High Availability (HA) means that the system should remain operation after failure of
-            one or more of the servers. The degree of support for HA varies from messaging system to
-            messaging system.</para>
+            one or more of the servers. The degree of support for HA varies between various
+            messaging systems.</para>
         <para>Some messaging systems require you to deal with server side failure by writing some
             client side code which gets called on event of server failure, and in which you are
             supposed to recreate your connections to another server.</para>
@@ -206,12 +207,12 @@
     <section>
         <title>Clusters</title>
         <para>Many messaging systems allow you to create groups of messaging servers called
-                <emphasis role="italic">clusters</emphasis>. Cluster allow the load of sending and
+                <emphasis role="italic">clusters</emphasis>. Clusters allow the load of sending and
             consuming messages to be spread over many servers. This allows your system to be able
             scale horizontally by adding new servers to the cluster.</para>
-        <para>Degrees of support for clusters varies from messaging system to messaging system, with
-            some systems having fairly basic clusters where the cluster members being hardly aware
-            of each other.</para>
+        <para>Degrees of support for clusters varies between messaging systems, with some systems
+            having fairly basic clusters where the cluster members being hardly aware of each
+            other.</para>
         <para>JBoss Messaging provides very configurable state of the art clustering where messages
             can be intelligently load balanced between the servers in the cluster, according to the
             number of consumers on each node, and whether they are ready for messages.</para>
@@ -245,8 +246,17 @@
                     message will be discarded or possibly sent to a configurable other
                     destination.</para>
             </listitem>
-            <listitem><para>Message redelivery</para></listitem>
-            <listitem><para>Blah blah</para></listitem>
+            <listitem>
+                <para>Message redelivery</para>
+                <para>Messages that have been delivered to a consumer and ultimately cancelled, i.e.
+                    the consumer received the message but didn't acknowledge it before closing, can
+                    be redelivered with some pre configured semantics.</para>
+            </listitem>
+            <listitem>
+                <para>Message Scheduling</para>
+                <para>When sending a message it is possible to schedule when the message will
+                    actually get delivered to a consumer.</para>
+            </listitem>
         </itemizedlist>
     </section>
 </chapter>
