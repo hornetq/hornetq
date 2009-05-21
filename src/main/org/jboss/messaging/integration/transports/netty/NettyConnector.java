@@ -233,6 +233,8 @@ public class NettyConnector implements Connector
 
    public synchronized void start()
    {
+      log.info("starting netty connector on port " + port);
+      
       if (channelFactory != null)
       {
          return;

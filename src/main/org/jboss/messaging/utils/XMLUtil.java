@@ -497,8 +497,6 @@ public class XMLUtil
    {
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
       
-      log.info("schema file is " + schemaFile);
-      
       Schema schema = factory.newSchema(Thread.currentThread().getContextClassLoader().getResource(schemaFile));
       Validator validator = schema.newValidator();
 

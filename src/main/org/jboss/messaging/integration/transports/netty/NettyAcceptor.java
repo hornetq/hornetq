@@ -298,6 +298,8 @@ public class NettyAcceptor implements Acceptor
       startServerChannels();
       
       paused = false;
+      
+      log.info("*** started netty acceptor on " + port);
    }
    
    private void startServerChannels()

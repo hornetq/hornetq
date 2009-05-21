@@ -36,7 +36,7 @@
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.PagingExample"/>
 
-        <!-- We limit the client to running in only 50MB of RAM -->
+         <!-- We limit the client to running in only 50MB of RAM -->
     	   <param name="java-min-memory" value="50M"/>
     	   <param name="java-max-memory" value="50M"/>
       </antcall>

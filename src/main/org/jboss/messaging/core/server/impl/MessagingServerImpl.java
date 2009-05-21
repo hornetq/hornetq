@@ -17,6 +17,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.AddressSettingsDeployer;
@@ -91,6 +92,8 @@ import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.messaging.utils.VersionLoader;
 
 import javax.management.MBeanServer;
+
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -201,23 +204,41 @@ public class MessagingServerImpl implements MessagingServer
    // Constructors
    // ---------------------------------------------------------------------------------
 
+   public MessagingServerImpl()
+   {
+      this(null, null, null);
+   }
+   
+   public MessagingServerImpl(final Configuration configuration)
+   {
+      this(configuration, null, null);
+   }
+   
    public MessagingServerImpl(final Configuration configuration,
-                              final MBeanServer mbeanServer,
+                              MBeanServer mbeanServer)
+   {
+      this(configuration, mbeanServer, null);
+   }
+   
+   public MessagingServerImpl(final Configuration configuration,                              
+                              final JBMSecurityManager securityManager)
+   {
+      this(configuration, null, securityManager);
+   }
+   
+   public MessagingServerImpl(Configuration configuration,
+                              MBeanServer mbeanServer,
                               final JBMSecurityManager securityManager)
    {
       if (configuration == null)
       {
-         throw new NullPointerException("Must inject Configuration into MessagingServer constructor");
+         configuration = new ConfigurationImpl();
       }
 
       if (mbeanServer == null)
       {
-         throw new NullPointerException("Must inject MBeanServer into MessagingServer constructor");
-      }
-
-      if (securityManager == null)
-      {
-         throw new NullPointerException("Must inject SecurityManager into MessagingServer constructor");
+         //Just use JVM mbean server
+         mbeanServer = ManagementFactory.getPlatformMBeanServer();
       }
 
       // We need to hard code the version information into a source file
@@ -294,7 +315,10 @@ public class MessagingServerImpl implements MessagingServer
 
          queueDeployer.stop();
 
-         securityDeployer.stop();
+         if (securityDeployer != null)
+         {            
+            securityDeployer.stop();
+         }
 
          deploymentManager.stop();
       }
@@ -303,7 +327,10 @@ public class MessagingServerImpl implements MessagingServer
 
       storageManager.stop();
 
-      securityManager.stop();
+      if (securityManager != null)
+      {
+         securityManager.stop();
+      }
 
       if (replicatingConnection != null)
       {
@@ -962,7 +989,10 @@ public class MessagingServerImpl implements MessagingServer
 
       storageManager.start();
 
-      securityManager.start();
+      if (securityManager != null)
+      {
+         securityManager.start();
+      }
 
       postOffice.start();
 
@@ -977,11 +1007,14 @@ public class MessagingServerImpl implements MessagingServer
       {
          basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
 
-         securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
-
          basicUserCredentialsDeployer.start();
-
-         securityDeployer.start();
+                 
+         if (securityManager != null)
+         {
+            securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
+            
+            securityDeployer.start();
+         }        
       }
 
       // Load the journal and populate queues, transactions and caches in memory

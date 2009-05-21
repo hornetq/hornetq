@@ -107,7 +107,7 @@
                       new TransportConfiguration(
                               InVMConnectorFactory.class.getName()), null);
 
-ClientSession session = factory.createSession();
+ClientSession session = nettyFactory.createSession();
 session.createQueue("example", "example", true);
 
 ClientProducer producer = session.createProducer("example");

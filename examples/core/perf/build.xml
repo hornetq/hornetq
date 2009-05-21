@@ -39,7 +39,7 @@
        <path location="server0"/>
    </path>
 
-   <target name="runSender">
+   <target name="runSender" depends="compile">
       <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">
 		   <jvmarg value="-Xms512M"/>
 		   <jvmarg value="-Xmx512M"/>
@@ -50,8 +50,8 @@
       </java>
    </target>
 
-   <target name="runListener">
-      <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">
+   <target name="runListener" depends="compile">
+      <java classname="org.jboss.core.example.PerfListener" fork="true" resultproperty="example-result">
          <jvmarg value="-Xms512M"/>
 		   <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>

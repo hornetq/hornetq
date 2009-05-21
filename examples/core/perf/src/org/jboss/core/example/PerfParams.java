@@ -41,6 +41,7 @@ public class PerfParams implements Serializable
    private int batchSize = 5000;
    private boolean drainQueue = true;
    private String queueName = "perfQueue";  
+   private String address = "perfAddress";
    private int throttleRate;
 
    public int getNoOfMessagesToSend()
@@ -122,7 +123,16 @@ public class PerfParams implements Serializable
    {
       this.queueName = queueName;
    }
+   
+   public String getAddress()
+   {
+      return address;
+   }
 
+   public void setAddress(final String address)
+   {
+      this.address = address;
+   }
    
    public int getThrottleRate()
    {

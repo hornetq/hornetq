@@ -254,7 +254,7 @@ public class JournalStorageManager implements StorageManager
    // Non transactional operations
 
    public void storeMessage(final ServerMessage message) throws Exception
-   {
+   {  
       if (message.getMessageID() <= 0)
       {
          throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
