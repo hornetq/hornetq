@@ -5,8 +5,8 @@
         of the features in an easy to use, fully functional examples.</para>
     <para>The examples are available in the distribution, in the <literal>examples</literal>
         directory. Examples are split into JMS and Core examples. JMS examples show how a particular
-        feature can be used by a normal JMS client. Core examples (TODO) show how the equivalent
-        feature can be used by a core messaging client.</para>
+        feature can be used by a normal JMS client. Core examples show how the equivalent feature
+        can be used by a core messaging client.</para>
     <para>A set of Java EE examples are also provided which need the JBoss Application Server
         installed to be able to run.</para>
     <section>

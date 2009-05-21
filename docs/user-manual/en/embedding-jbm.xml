@@ -9,8 +9,8 @@
     <section>
         <title>POJO instantiation</title>
         <para>You can follow this step-by-step guide:</para>
-        <para>Create the configuration object. If you need a configuration file, use <literal
-                >FileConfigurationImpl</literal></para>
+        <para>Create the configuration object. If you need a configuration file, use
+                <literal>FileConfigurationImpl</literal></para>
         <programlisting>import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.FileConfiguration;
 
@@ -20,9 +20,9 @@ import org.jboss.messaging.core.config.impl.FileConfiguration;
 Configuration config = new FileConfiguration();
 config.setConfigurationUrl(urlToYourconfigfile);
 config.start();</programlisting>
-        <para>If you don't need to support a configuration file, just use <literal
-                >ConfigurationImpl</literal> and change the config parameters accordingly, such as
-            adding acceptors. </para>
+        <para>If you don't need to support a configuration file, just use
+                <literal>ConfigurationImpl</literal> and change the config parameters accordingly,
+            such as adding acceptors. </para>
         <para>The acceptors are configured through <literal>ConfigurationImpl</literal>. Just add
             the <literal>NettyAcceptorFactory</literal> on the transports the same way you would
             through the main configuration file.</para>
@@ -38,10 +38,9 @@ transports.add(new TransportConfiguration(NettyAcceptorFactory.class.getName()))
 transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
 config.setAcceptorConfigurations(transports);</programlisting>
-        <para>You need to instantiate and start JBoss Messaging server. The class <literal
-                >Messaging</literal> on package <literal>org.jboss.messaging.core.server</literal>
-            has a few static methods helpful on instantiating the server, which is aways our
-            preferable way.</para>
+        <para>You need to instantiate and start JBoss Messaging server. The class
+                <literal>org.jboss.messaging.core.serverMessaging</literal>  has a few static
+            methods for creating servers with common configurations.</para>
         <programlisting>import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 
