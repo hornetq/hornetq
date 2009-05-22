@@ -76,9 +76,6 @@
                         linkend="send-guarantees"/>send guarantees</para> for more information on
                 this.</listitem>
             <listitem>
-                <para/>
-            </listitem>
-            <listitem>
                 <para>Use pre-acknowledge mode. With pre-acknowledge mode, messages are acknowledged
                         <literal>before</literal> they are sent to the client. This reduces the
                     amount of acknowledgment traffic on the wire. For more information on this see
@@ -137,13 +134,28 @@
             JRockit)</para>
         <itemizedlist>
             <listitem>
-                <para>Garbage collection.</para>
+                <para>Garbage collection. For smooth server operation we recommend using a parallel
+                    garbage collection algorithm, e.g. using the JVM argument <literal
+                        >-XX:+UseParallelGC</literal> on Sun JDKs.</para>
             </listitem>
             <listitem>
-                <para>Memory settings.</para>
+                <para>Memory settings. Give as much memory as you can to the server. JBoss Messaging
+                    can run in low memory by using <xref linkend="">paging</xref> but if it can run
+                    with all queues in RAM this will improve performance. The amount of memory you
+                    require will depend on the size and number of your queues and the size and
+                    number of your messages. Use the JVM arguments <literal>-Xms</literal> and
+                        <literal>-Xmx</literal> to set server available RAM. We recommend setting
+                    them to the same high value.</para>
             </listitem>
             <listitem>
-                <para>Other settings.</para>
+                <para>Aggressive options. Different JVMs provide differents sets of JVM tuning
+                    parameters, for the Sun Hotspot JVM the full list of options is available <ulink
+                        url="http://java.sun.com/javase/technologies/hotspot/vmoptions.jsp"
+                        >here</ulink>. We recommend at least using <literal
+                        >-XX:+AggressiveOpts</literal> and<literal>
+                        -XX:+UseFastAccessorMethods</literal>. You may get some mileage with the
+                    other tuning params depending on your OS platform and application usage
+                    patterns.</para>
             </listitem>
         </itemizedlist>
     </section>
