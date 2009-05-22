@@ -24,7 +24,7 @@ package org.jboss.messaging.tests.unit.core.security.impl;
 
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
-import org.jboss.messaging.integration.security.JAASSecurityManager;
+import org.jboss.messaging.core.security.impl.JAASSecurityManager;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.security.SimpleGroup;
 

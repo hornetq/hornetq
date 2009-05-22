@@ -28,10 +28,9 @@ import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
-import org.jboss.security.SecurityAssociation;
+import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
-import org.jboss.security.SecurityContext;
 
 
 /** A collection of privileged actions for this package

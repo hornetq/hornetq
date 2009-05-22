@@ -34,12 +34,12 @@
                     </row>
                     <row>
                         <entry><link linkend="using-jms">jbm-jms.jar</link></entry>
-                        <entry>JBoss Messaging JMS wrappers</entry>
+                        <entry>JBoss Messaging JMS facade</entry>
                         <entry>jbm-core.jar, jboss-javaee.jar</entry>
                     </row>
                     <row>
                         <entry><link linkend="using-server">jbm-bootstrap.jar</link></entry>
-                        <entry>Standalone server support</entry>
+                        <entry>Classes to bootstrap JBM in the JBoss Microcontainer</entry>
                         <entry>jbm-core.jar and JBoss Micro Container</entry>
                     </row>
                     <row>
@@ -49,14 +49,14 @@
                     </row>
                     <row>
                         <entry><link linkend="security">jbm-jbossas-security.jar</link></entry>
-                        <entry>Classes used to start a standalone server</entry>
+                        <entry>Security Manager implementations for JAAS and JBoss AS</entry>
                         <entry>No dependencies if using <literal>JAAS</literal> or JBoss security
                             libraries if using <literal>JBossASSecurityManager</literal></entry>
                     </row>
                     <row>
                         <entry><link linkend="configuring-transports"
                             >jbm-transports.jar</link></entry>
-                        <entry>Socket and HTTP Transport plugins</entry>
+                        <entry>Implementation of the JBM transport provider SPI for Netty</entry>
                         <entry>netty.jar</entry>
                     </row>
                     <row>

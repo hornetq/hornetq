@@ -63,8 +63,8 @@
 
    <target name="runServer" depends="compile">
       <java classname="org.jboss.common.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
-         <jvmarg value="-Xms512M"/>
-		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-Xms2048M"/>
+		   <jvmarg value="-Xmx2048M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
 		   <jvmarg value="-XX:+UseFastAccessorMethods"/>

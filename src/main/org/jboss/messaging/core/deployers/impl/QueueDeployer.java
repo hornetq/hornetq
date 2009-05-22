@@ -97,7 +97,7 @@ public class QueueDeployer extends XmlDeployer
       String name = node.getAttributes().getNamedItem("name").getNodeValue();
       String address = null;
       String filterString = null;
-      boolean durable = false;
+      boolean durable = true;
 
       NodeList children = node.getChildNodes();
 

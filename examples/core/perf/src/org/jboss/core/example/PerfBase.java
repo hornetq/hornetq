@@ -135,6 +135,7 @@ public abstract class PerfBase
       params.put(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME, 1024 * 1024);
 
       factory = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
+      factory.setPreAcknowledge(true);
 
       factory.setAckBatchSize(perfParams.getBatchSize());
 
