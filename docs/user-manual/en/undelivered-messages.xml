@@ -44,14 +44,14 @@
       </section>
       <section>
          <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/delayed-redelivery/readme.html"><literal
-                  >delayed-redelivery</literal> example</ulink> shows how delayed redelivery is
-            configured and used with JMS.</para>
+         <para>The <ulink url="../../../../examples/jms/delayed-redelivery/readme.html"
+                  ><literal>delayed-redelivery</literal> example</ulink> shows how delayed
+            redelivery is configured and used with JMS.</para>
       </section>
    </section>
    <section>
       <title>Dead Letter Addresses</title>
-      <para>To prevent a client to receive infinitely the same undelivered message (regardless of
+      <para>To prevent a client infinitely receiving the same undelivered message (regardless of
          what is causing the unsuccessful deliveries), messaging systems define dead letter
          messages: after a specified unsuccessful delivery attempts, the message is removed from the
          queue and send instead to a dead letter address. </para>
@@ -73,8 +73,8 @@
              </programlisting>
          <para>If a <literal>dead-letter-address</literal> is not specified, messages will removed
             after <literal>max-delivery-attempts</literal> unsuccessful attempts.</para>
-         <para>By default, messages are redelivered 10 times at the maximum. Set <literal
-               >max-delivery-attempts</literal> to -1 for infinite redeliveries.</para>
+         <para>By default, messages are redelivered 10 times at the maximum. Set
+               <literal>max-delivery-attempts</literal> to -1 for infinite redeliveries.</para>
          <para>For example, a dead letter can be set globally for a set of matching addresses and
             you can set <literal>max-delivery-attempts</literal> to -1 for a specific address
             setting to allow infinite redeliveries only for this address.</para>
@@ -95,9 +95,9 @@
       </section>
       <section>
          <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/dead-letter/readme.html"><literal
-                  >dead-letter</literal> example</ulink> shows how dead letter is configured and
-            used with JMS.</para>
+         <para>The <ulink url="../../../../examples/jms/dead-letter/readme.html"
+                  ><literal>dead-letter</literal> example</ulink> shows how dead letter is
+            configured and used with JMS.</para>
       </section>
    </section>
    <section id="configuring.delivery.count.persistence">
@@ -117,8 +117,8 @@
       <para>As this behavior breaks strict JMS semantics, JBoss Messaging allows to persist delivery
          count before message delivery but disabled it by default for performance
          implications.</para>
-      <para>To enable it, set <literal>persist-delivery-count-before-delivery</literal> to <literal
-            >true</literal> in <literal>jbm-configuration.xml</literal>:</para>
+      <para>To enable it, set <literal>persist-delivery-count-before-delivery</literal> to
+            <literal>true</literal> in <literal>jbm-configuration.xml</literal>:</para>
       <programlisting>
    &lt;persist-delivery-count-before-delivery&gt;true&lt;/persist-delivery-count-before-delivery&gt;
       </programlisting>
