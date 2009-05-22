@@ -47,6 +47,8 @@ public class PerfParams implements Serializable
    private int port;
    private int tcpBufferSize;
    private boolean tcpNoDelay;
+   private boolean preAck;
+   private int sendWindow;
      
    public int getNoOfMessagesToSend()
    {
@@ -195,6 +197,26 @@ public class PerfParams implements Serializable
    public synchronized void setTcpNoDelay(boolean tcpNoDelay)
    {
       this.tcpNoDelay = tcpNoDelay;
+   }
+
+   public synchronized boolean isPreAck()
+   {
+      return preAck;
+   }
+
+   public synchronized void setPreAck(boolean preAck)
+   {
+      this.preAck = preAck;
+   }
+
+   public synchronized int getSendWindow()
+   {
+      return sendWindow;
+   }
+
+   public synchronized void setSendWindow(int sendWindow)
+   {
+      this.sendWindow = sendWindow;
    }
 
 

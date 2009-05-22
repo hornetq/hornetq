@@ -91,6 +91,8 @@ public abstract class PerfBase
       int port = Integer.valueOf(props.getProperty("port"));
       int tcpBufferSize = Integer.valueOf(props.getProperty("tcp-buffer"));
       boolean tcpNoDelay = Boolean.valueOf(props.getProperty("tcp-no-delay"));
+      boolean preAck = Boolean.valueOf(props.getProperty("pre-ack"));
+      int sendWindowSize = Integer.valueOf(props.getProperty("send-window"));
 
       log.info("num-messages: " + noOfMessages);
       log.info("num-warmup-messages: " + noOfWarmupMessages);
@@ -105,6 +107,8 @@ public abstract class PerfBase
       log.info("port: " + port);
       log.info("tcp buffer: " + tcpBufferSize);
       log.info("tcp no delay: " + tcpNoDelay);
+      log.info("pre-ack: " + preAck);
+      log.info("send-window: " + sendWindowSize);
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -121,6 +125,8 @@ public abstract class PerfBase
       perfParams.setPort(port);
       perfParams.setTcpBufferSize(tcpBufferSize);
       perfParams.setTcpNoDelay(tcpNoDelay);
+      perfParams.setPreAck(preAck);
+      perfParams.setSendWindow(sendWindowSize);
 
       return perfParams;
    }
@@ -150,7 +156,8 @@ public abstract class PerfBase
       params.put(TransportConstants.PORT_PROP_NAME, perfParams.getPort());
 
       factory = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
-      factory.setPreAcknowledge(true);
+      factory.setPreAcknowledge(perfParams.isPreAck());
+      factory.setProducerWindowSize(perfParams.getSendWindow());
 
       factory.setAckBatchSize(perfParams.getBatchSize());
 
